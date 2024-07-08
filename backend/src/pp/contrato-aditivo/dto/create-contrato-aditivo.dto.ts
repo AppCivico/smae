@@ -1,0 +1,47 @@
+import { IsOptional, IsInt, IsNumberString, ValidateIf, IsNumber, Max, Min } from 'class-validator';
+import { DateTransform } from 'src/auth/transforms/date.transform';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { Transform, Type } from 'class-transformer';
+
+export class CreateContratoAditivoDto {
+    @IsInt()
+    @Type(() => Number)
+    contrato_id: number;
+
+    @IsInt()
+    @Type(() => Number)
+    tipo_aditivo_id: number;
+
+    @IsInt()
+    @Type(() => Number)
+    numero: number;
+
+    @Transform(DateTransform)
+    @IsOnlyDate()
+    data: Date;
+
+    @IsOptional()
+    @Transform(DateTransform)
+    @IsOnlyDate()
+    data_termino_atualizada?: Date;
+
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    valor: number;
+
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Min(0, { message: '$property| precisa ser positivo ou zero' })
+    @Max(100, { message: '$property| Máximo é 100' })
+    percentual_medido: number;
+}
