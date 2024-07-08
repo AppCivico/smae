@@ -83,6 +83,13 @@ export class CreateContratoDto {
     @IsOptional()
     @MinLength(14)
     @MaxLength(14)
+    @IsNumberString(
+        {},
+        {
+            message: '$property| Precisa ser número de CNPJ com 14 dígitos, enviado em formato String',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
     cnpj_contratada?: string;
 
     @IsOptional()
