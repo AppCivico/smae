@@ -138,7 +138,7 @@
           class="label"
           for="regiao-ids"
         >
-          {{ schema.fields.regiao_ids?.spec.label || 'Campo faltando no schema' }}
+          {{ schema.fields.regiao_id?.spec.label }}
         </label>
         <select
           id="regiao-ids"
@@ -315,7 +315,7 @@
 <script setup>
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { variável } from '@/consts/formSchemas';
+import { variavelGlobal as schema } from '@/consts/formSchemas';
 import periodicidades from '@/consts/periodicidades';
 import truncate from '@/helpers/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
@@ -332,8 +332,6 @@ const props = defineProps({
     default: false,
   },
 });
-
-const schema = variável();
 
 const colunasParaOrdenacao = {
   id: {

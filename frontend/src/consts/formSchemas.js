@@ -21,6 +21,7 @@ import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
+import periodicidades from '@/consts/periodicidades';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import statusObras from '@/consts/statusObras';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
@@ -96,6 +97,7 @@ setLocale({
     integer: ({ label }) => (label ? `${label} deve ser um número inteiro` : 'Deve ser um número inteiro'),
     max: ({ label, max }) => (label ? `${label} deve ser no máximo ${max}` : 'Deve ser no máximo ${max}'),
     min: ({ label, min }) => (label ? `${label} deve ser no mínimo ${min}` : 'Deve ser no mínimo ${min}'),
+    positive: ({ label }) => (label ? `${label} deve ser positivo` : 'Deve ser positivo'),
   },
   string: {
     email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
@@ -3033,6 +3035,176 @@ export const variávelComposta = object()
       .label('Título')
       .required(),
   });
+
+export const variavelGlobal = object({
+  acumulativa: boolean()
+    .required(),
+  ano_base: number()
+    .positive()
+    .integer()
+    .nullable(),
+  assuntos: array()
+    .label('Assuntos')
+    .nullable()
+    .of(
+      number()
+        .positive()
+        .required(),
+    ),
+  atraso_meses: number()
+    .label('Defasagem da medição (Meses)')
+    .min(0)
+    .integer(),
+  casas_decimais: number()
+    .label('Casas decimais')
+    .integer()
+    .min(0)
+    .max(12)
+    .required(),
+  codigo: string()
+    .label('Código')
+    .min(1)
+    .max(60)
+    .required(),
+  dado_aberto: boolean()
+    .label('Dado aberto')
+    .nullable(),
+  descricao: string()
+    .label('Descrição')
+    .nullable(),
+  fim_medicao: date()
+    .label('Fim da medição')
+    .nullable()
+    .max(dataMax)
+    .min(ref('inicio_medicao'), 'Precisa ser posterior à data de início'),
+  fonte_id: number()
+    .label('Fonte')
+    .positive()
+    .nullable(),
+  inicio_medicao: date()
+    .label('Início da medição')
+    .required()
+    .min(dataMin),
+  liberacao_grupo_ids: array()
+    .label('Grupos de liberação')
+    .nullable()
+    .of(
+      number()
+        .positive()
+        .required(),
+    ),
+  medicao_grupo_ids: array()
+    .label('Grupos de medição')
+    .nullable()
+    .of(
+      number()
+        .positive()
+        .required(),
+    ),
+  metodologia: string()
+    .label('Metodologia')
+    .nullable(),
+  mostrar_monitoramento: boolean()
+    .label('Utilizar esta variável composta no ciclo de monitoramento')
+    .required(),
+  nivel_regionalizacao: number()
+    .label('Nível de regionalização')
+    .min(1)
+    .max(4)
+    .nullable(),
+  orgao_id: number()
+    .label('Órgão responsável')
+    .positive()
+    .required(),
+  orgao_proprietario_id: number()
+    .label('Órgão proprietário')
+    .nullable()
+    .positive(),
+  periodicidade: mixed()
+    .label('Periodicidade')
+    .oneOf(Object.keys(periodicidades.variaveis))
+    .required(),
+  periodos: object({
+    preenchimento_inicio: number()
+      .label('Preenchimento início')
+      .max(31)
+      .positive()
+      .required(),
+    preenchimento_fim: number()
+      .label('Preenchimento início')
+      .max(31)
+      .positive()
+      .required(),
+    validacao_inicio: number()
+      .label('Preenchimento início')
+      .max(31)
+      .positive()
+      .required(),
+    validacao_fim: number()
+      .label('Preenchimento início')
+      .max(31)
+      .positive()
+      .required(),
+    validacao_grupo_ids: array()
+      .label('Grupos de validação')
+      .nullable()
+      .of(
+        number()
+          .positive()
+          .required(),
+      ),
+    liberacao_inicio: number()
+      .label('Preenchimento início')
+      .max(31)
+      .positive()
+      .required(),
+    liberacao_fim: number()
+      .label('Preenchimento início')
+      .max(31)
+      .positive()
+      .required(),
+  })
+    .required(),
+  regiao_id: number()
+    .label('Região')
+    .positive()
+    .nullable(),
+  responsaveis: array()
+    .label('Responsáveis')
+    .min(1)
+    .of(
+      number()
+        .required()
+        .positive(),
+    )
+    .required(),
+  supraregional: boolean()
+    .label('Incluir variável supra regional')
+    .nullable(),
+  titulo: string()
+    .label('Nome')
+    .max(256)
+    .required(),
+  unidade_medida_id: number()
+    .label('Unidade de medida')
+    .required(),
+  validacao_grupo_ids: array()
+    .label('Grupos de validação')
+    .nullable()
+    .of(
+      number()
+        .positive()
+        .required(),
+    ),
+  valor_base: number() // como string
+    .label('Valor base')
+    .min(0)
+    .required('Preencha o valor base'),
+  variavel_categorica_id: number()
+    .label('Variável categórica')
+    .positive()
+    .nullable(),
+});
 
 export const valoresRealizadoEmLote = object()
   .shape({
