@@ -185,7 +185,7 @@
           v-for="coluna in colunasParaOrdenacao"
           :key="coluna.valor"
           :value="coluna.valor"
-          :selected="Number($route.query.ordem_coluna) === coluna.valor"
+          :selected="$route.query.ordem_coluna === coluna.valor"
         >
           {{ coluna.nome }}
         </option>
