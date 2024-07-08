@@ -3,15 +3,15 @@ import { StatusContrato } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoModalidadeContratacaoDto } from 'src/pp/_mdo/modalidade-contratacao/dto/mod-contratacao.dto';
+import { ContratoAditivoItemDto } from 'src/pp/contrato-aditivo/entities/contrato-aditivo.entity';
 import { ProjetoRecursos } from 'src/pp/projeto/entities/projeto.entity';
-import { ProjetoTipoAditivoDto } from 'src/tipo-aditivo/dto/tipo-aditivo.dto';
 
 export class ContratoDetailDto {
     id: number;
     modalidade_contratacao: ProjetoModalidadeContratacaoDto | null;
     orgao: IdSiglaDescricao | null;
     fontes_recurso: ProjetoRecursos[];
-    aditivos: ContratoAditivoDto[];
+    aditivos: ContratoAditivoItemDto[];
     numero: string;
     contrato_exclusivo: boolean;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
@@ -46,14 +46,4 @@ export class ContratoItemDto {
 
 export class ListContratoDto {
     linhas: ContratoItemDto[];
-}
-
-export class ContratoAditivoDto {
-    id: number;
-    numero: number;
-    tipo: ProjetoTipoAditivoDto;
-    data: Date;
-    data_termino_atualizada: Date | null;
-    valor: Decimal;
-    percentual_medido: Decimal;
 }

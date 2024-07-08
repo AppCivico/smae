@@ -6536,10 +6536,10 @@ model ContratoAditivo {
     tipo_aditivo    TipoAditivo @relation(fields: [tipo_aditivo_id], references: [id])
 
     numero                  Int
-    data                    DateTime  @db.Date()
+    data                    DateTime? @db.Date()
     data_termino_atualizada DateTime? @db.Date()
-    valor                   Decimal   @db.Decimal(15, 2)
-    percentual_medido       Decimal   @db.Decimal(7, 4)
+    valor                   Decimal?  @db.Decimal(15, 2)
+    percentual_medido       Decimal?  @db.Decimal(7, 4)
 
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)

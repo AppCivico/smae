@@ -5,10 +5,10 @@ export class ContratoAditivoItemDto {
     id: number;
     numero: number;
     tipo: ProjetoTipoAditivoDto;
-    data: Date;
+    data: Date | null;
     data_termino_atualizada: Date | null;
-    valor: Decimal;
-    percentual_medido: Decimal;
+    valor: Decimal | null;
+    percentual_medido: Decimal | null;
 }
 
 export class ListContratoAditivoDto {
