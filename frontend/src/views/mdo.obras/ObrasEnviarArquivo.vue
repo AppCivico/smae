@@ -127,11 +127,10 @@ watch(arquivoParaEdição, (novosValores) => {
             :schema="schema"
           />
           <Field
-            v-focus
             name="descricao"
             as="textarea"
             class="inputtext light mb1"
-            :class="{ 'error': errors.descricao }"
+            :class="{ error: errors.descricao }"
           />
           <ErrorMessage
             class="error-msg mb1"
