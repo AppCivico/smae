@@ -3,7 +3,7 @@ import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import { variavelGlobal as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { usePsVariaveisStore } from '@/stores/ps.variaveis.store.ts';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
@@ -12,22 +12,22 @@ const route = useRoute();
 
 const alertStore = useAlertStore();
 
-const psVariaveisStore = usePsVariaveisStore();
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
 const {
   lista, chamadasPendentes, erros, paginacao,
-} = storeToRefs(psVariaveisStore);
+} = storeToRefs(variaveisGlobaisStore);
 
 async function excluirVariavel(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover a variável "${nome}"?`, async () => {
-    if (await psVariaveisStore.excluirItem(id)) {
-      psVariaveisStore.buscarTudo();
+    if (await variaveisGlobaisStore.excluirItem(id)) {
+      variaveisGlobaisStore.buscarTudo();
       alertStore.success('Portfólio removido.');
     }
   }, 'Remover');
 }
 
 watchEffect(() => {
-  psVariaveisStore.buscarTudo({
+  variaveisGlobaisStore.buscarTudo({
     assuntos: route.query.assuntos,
     codigo: route.query.codigo,
     descricao: route.query.descricao,
