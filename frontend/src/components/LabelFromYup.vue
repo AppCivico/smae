@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   as: {
     type: String,
     default: 'label',
@@ -20,6 +22,20 @@ defineProps({
     default: () => null,
   },
 });
+
+const caminhoNoSchema = computed(() => {
+  if (!props.schema) {
+    return null;
+  }
+
+  if (props.schema.fields[props.name]) {
+    return props.schema.fields[props.name];
+  }
+
+  return props.name.split('.').reduce((acc, key, i, array) => (array[i + 1]
+    ? acc[key]?.fields
+    : acc[key]), (props.schema.fields || {})) || null;
+});
 </script>
 <template>
   <component
@@ -32,16 +48,16 @@ defineProps({
     <slot name="prepend" />
     <slot>
       <pre
-        v-if="!schema.fields?.[name]"
+        v-if="!caminhoNoSchema"
         v-ScrollLockDebug
       >
       Etiqueta não encontrada para `{{ name }}`
     </pre>
       <template v-else>
         <template v-if="schema">
-          {{ schema.fields?.[name]?.spec?.label || `Campo: ${name}` }}
+          {{ caminhoNoSchema?.spec?.label || `Campo: ${name}` }}
         </template>&nbsp;<span
-          v-if="required || schema.fields[name]?.spec?.presence === 'required'"
+          v-if="required || caminhoNoSchema?.spec?.presence === 'required'"
           class="tvermelho"
         >*</span>
       </template>
