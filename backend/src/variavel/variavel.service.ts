@@ -158,6 +158,7 @@ export class VariavelService {
         await this.validaGruposResponsavel(dto, MIN_DTO_SAFE_NUM);
 
         this.checkOrgaoProprietario(tipo, dto, user);
+        const responsaveis = 'responsaveis' in dto ? dto.responsaveis : [];
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -182,7 +183,7 @@ export class VariavelService {
                         throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
                 }
 
-                const ret = await this.performVariavelSave(tipo, prismaTx, dto, indicador, dto.responsaveis, logger);
+                const ret = await this.performVariavelSave(tipo, prismaTx, dto, indicador, responsaveis, logger);
                 await logger.saveLogs(prismaTx, user.getLogData());
                 return ret;
             },
@@ -228,7 +229,7 @@ export class VariavelService {
             indicador_id = dto.indicador_id;
         }
 
-        const responsaveis = dto.responsaveis;
+        const responsaveis = 'responsaveis' in dto ? dto.responsaveis : [];
 
         const indicador = indicador_id ? await this.buscaIndicadorParaVariavel(indicador_id) : undefined;
 
@@ -910,7 +911,7 @@ export class VariavelService {
             return plano;
         };
 
-        const perm = user.hasSomeRoles(['CadastroIndicadorPS.editar', 'CadastroGrupoVariavel.administrador']);
+        const perm = user.hasSomeRoles(['CadastroIndicadorPS.editar', 'CadastroIndicadorPS.administrador']);
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -1183,9 +1184,10 @@ export class VariavelService {
         // Portanto tratando para não dar problema com a FK no Prisma.
         if (dto.regiao_id == 0 && selfBefUpdate.supraregional == true) delete dto.regiao_id;
 
+        const responsaveis = 'responsaveis' in dto ? dto.responsaveis : [];
+
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            const responsaveis = dto.responsaveis;
             const suspendida = dto.suspendida;
 
             const self = await prismaTxn.variavel.findFirstOrThrow({

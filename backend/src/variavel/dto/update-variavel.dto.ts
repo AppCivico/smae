@@ -1,8 +1,8 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { CreateVariavelBaseDto } from './create-variavel.dto';
 import { IsBoolean, IsOptional } from 'class-validator';
+import { CreateVariavelPDMDto } from './create-variavel.dto';
 
-export class UpdateVariavelDto extends OmitType(PartialType(CreateVariavelBaseDto), [
+export class UpdateVariavelDto extends OmitType(PartialType(CreateVariavelPDMDto), [
     'supraregional',
 ] as const) {
     @IsOptional()
