@@ -111,7 +111,7 @@ watchEffect(() => {
             {{ item.titulo }}
           </th>
           <td>
-            {{ item.fonte }}
+            {{ item.fonte?.nome || item.fonte || '-' }}
           </td>
           <td class="cell--nowrap">
             {{ item.periodicidade }}
