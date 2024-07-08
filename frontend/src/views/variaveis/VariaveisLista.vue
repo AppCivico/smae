@@ -2,6 +2,7 @@
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import { variavelGlobal as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
@@ -75,7 +76,6 @@ watchEffect(() => {
       <col class="col--minimum">
       <col class="col--minimum">
       <col>
-      <col>
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <thead>
@@ -91,9 +91,6 @@ watchEffect(() => {
           </th>
           <th class="cell--nowrap">
             {{ schema.fields.orgao_id?.spec.label }}
-          </th>
-          <th>
-            Uso
           </th>
           <th>
             Planos
@@ -124,25 +121,31 @@ watchEffect(() => {
               {{ item.orgao.sigla || item.orgao }}
             </abbr>
           </td>
-          <td>
-            {{ item.planos.length || '-' }}
-          </td>
-          <td>
-            <template v-if="Array.isArray(item.planos)">
-              <component
-                :is="temPermissãoPara([
-                  'CadastroPS.administrador',
-                  'CadastroPS.administrador_no_orgao'
-                ])
-                  ? 'router-link'
-                  : 'span'"
+          <td class="contentStyle">
+            <ul v-if="Array.isArray(item.planos)">
+              <li
                 v-for="plano in item.planos"
                 :key="plano.id"
-                :to="{ name: 'planosSetoriaisResumo', params: { planoSetorialId: plano.id } }"
               >
-                {{ plano.nome }}
-              </component>
-            </template>
+                <component
+                  :is="temPermissãoPara([
+                    'CadastroPS.administrador',
+                    'CadastroPS.administrador_no_orgao'
+                  ])
+                    ? 'router-link'
+                    : 'span'"
+                  :to="{
+                    name: 'planosSetoriaisResumo', params: {
+                      planoSetorialId:
+                        plano.id
+                    }
+                  }"
+                  :title="plano.nome?.length > 36 ? plano.nome : null"
+                >
+                  {{ truncate(plano.nome, 36) }}
+                </component>
+              </li>
+            </ul>
           </td>
           <td>
             <svg
@@ -159,7 +162,7 @@ watchEffect(() => {
         </tr>
         <tr v-if="item.metodologia">
           <td
-            colspan="8"
+            colspan="7"
             aria-label="schema.fields.metodologia?.spec.label || 'Campo faltando no schema'"
           >
             {{ item.metodologia }}
@@ -169,17 +172,17 @@ watchEffect(() => {
 
       <tbody>
         <tr v-if="chamadasPendentes.lista">
-          <td colspan="6">
+          <td colspan="7">
             Carregando
           </td>
         </tr>
         <tr v-else-if="erros.lista">
-          <td colspan="6">
+          <td colspan="7">
             Erro: {{ erros.lista }}
           </td>
         </tr>
         <tr v-else-if="!lista.length">
-          <td colspan="6">
+          <td colspan="7">
             Nenhum resultado encontrado.
           </td>
         </tr>
