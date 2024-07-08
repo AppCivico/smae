@@ -3,6 +3,7 @@ import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import { variavelGlobal as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -11,8 +12,11 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 
 const alertStore = useAlertStore();
-
+const authStore = useAuthStore();
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
+
+const { temPermissãoPara } = storeToRefs(authStore);
+
 const {
   lista, chamadasPendentes, erros, paginacao,
 } = storeToRefs(variaveisGlobaisStore);
@@ -87,10 +91,10 @@ watchEffect(() => {
             {{ schema.fields.orgao_id?.spec.label }}
           </th>
           <th>
-            {{ schema.fields.uso?.spec.label || 'Campo faltando no schema' }}
+            Uso
           </th>
           <th>
-            {{ schema.fields.planos?.spec.label || 'Campo faltando no schema' }}
+            Planos
           </th>
           <th />
           <th />
@@ -119,10 +123,24 @@ watchEffect(() => {
             </abbr>
           </td>
           <td>
-            {{ item.uso }}
+            {{ item.planos.length || '-' }}
           </td>
           <td>
-            {{ item.planos }}
+            <template v-if="Array.isArray(item.planos)">
+              <component
+                :is="temPermissãoPara([
+                  'CadastroPS.administrador',
+                  'CadastroPS.administrador_no_orgao'
+                ])
+                  ? 'router-link'
+                  : 'span'"
+                v-for="plano in item.planos"
+                :key="plano.id"
+                :to="{ name: 'planosSetoriaisResumo', params: { planoSetorialId: plano.id } }"
+              >
+                {{ plano.nome }}
+              </component>
+            </template>
           </td>
           <td>
             <svg
