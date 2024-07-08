@@ -51,6 +51,7 @@ export class VariavelItemDto {
     mostrar_monitoramento: boolean;
     variavel_categorica_id: number | null;
     etapa: IdTituloDto | null;
+    // TODO mover fonte pra cá, ou criar novo detail para tipo global
 }
 
 export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
