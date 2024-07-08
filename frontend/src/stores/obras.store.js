@@ -186,9 +186,9 @@ export const useObrasStore = defineStore('obrasStore', {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.projetoId}/documento/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.obraId}/documento/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.projetoId}/documento`, params);
+          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.obraId}/documento`, params);
         }
 
         this.chamadasPendentes.arquivos = false;
