@@ -133,6 +133,33 @@
           </option>
         </select>
       </div>
+
+      <div class="f1 fb10em">
+        <label
+          class="label"
+          for="nivel-regionalizacao"
+        >
+          {{ schema.fields.nivel_regionalizacao?.spec.label }}
+        </label>
+        <select
+          id="nivel-regionalizacao"
+          v-model="nivelRegionalizacao"
+          name="nivel_regionalizacao"
+          class="inputtext light"
+          @change="regiaoId = null"
+        >
+          <option :value="null" />
+          <option
+            v-for="nível in níveisRegionalização"
+            :key="nível.id"
+            :value="nível.id"
+            :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
+            :selected="Number($route.query.nivel_regionalizacao) === nível.id"
+          >
+            {{ nível.nome }}
+          </option>
+        </select>
+      </div>
       <div class="f1 fb10em">
         <label
           class="label"
@@ -142,15 +169,17 @@
         </label>
         <select
           id="regiao-ids"
-          name="regioes"
+          name="regiao_id"
           class="inputtext light"
           :aria-busy="regions.loading"
+          :disabled="!nivelRegionalizacao"
         >
-          <option value="" />
+          <option :value="null" />
           <option
-            v-for="regiao in regiõesPorNível[3]"
+            v-for="regiao in regiõesPorNívelOrdenadas[nivelRegionalizacao]"
             :key="regiao.id"
             :value="regiao.id"
+            :selected="Number($route.query.regiao_id) === regiao.id"
           >
             {{ regiao.descricao }}
           </option>
@@ -316,6 +345,7 @@
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobal as schema } from '@/consts/formSchemas';
+import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import truncate from '@/helpers/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
@@ -324,7 +354,8 @@ import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { usePsMetasStore } from '@/stores/ps.metas.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
-import { onUnmounted, ref } from 'vue';
+import { nextTick, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const props = defineProps({
   ariaBusy: {
@@ -379,6 +410,8 @@ const itensPorPagina = [
   100,
 ];
 
+const route = useRoute();
+
 const assuntosStore = useAssuntosStore();
 const MetasStore = usePsMetasStore();
 const ÓrgãosStore = useOrgansStore();
@@ -409,19 +442,39 @@ const {
 } = storeToRefs(assuntosStore);
 
 const {
-  regions, regiõesPorNível,
+  regions, regiõesPorNívelOrdenadas,
 } = storeToRefs(regionsStore);
 
 const pronto = ref(false);
 
-function iniciar() {
+const nivelRegionalizacao = ref(null);
+const regiaoId = ref(null);
+
+async function iniciar() {
+  const regiaoSelecionada = Number(route.query.regiao_id);
+  const nivelSelecionado = Number(route.query.nivel_regionalizacao);
+
+  const cargaDeRegioes = regionsStore.getAll();
+
   const promessas = [
     assuntosStore.buscarTudo(),
     MetasStore.buscarTudo(),
     ÓrgãosStore.getAll(),
     planosSetoriaisStore.buscarTudo(),
-    regionsStore.getAll(),
+    cargaDeRegioes,
   ];
+
+  cargaDeRegioes.then(async () => {
+    if (nivelSelecionado) {
+      nivelRegionalizacao.value = nivelSelecionado;
+    }
+
+    await nextTick();
+
+    if (regiaoSelecionada) {
+      regiaoId.value = regiaoSelecionada;
+    }
+  });
 
   Promise.allSettled(promessas)
     .then(() => {
