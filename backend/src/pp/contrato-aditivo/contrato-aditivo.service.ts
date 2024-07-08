@@ -17,6 +17,15 @@ export class ContratoAditivoService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const similarExiste = await prismaTx.contratoAditivo.count({
+                    where: {
+                        numero: dto.numero,
+                        contrato_id: contrato_id,
+                        removido_em: null,
+                    },
+                });
+                if (similarExiste > 0) throw new HttpException('Número igual já existe em outro registro ativo', 400);
+
                 const tipoAditivo = await prismaTx.tipoAditivo.findFirstOrThrow({
                     where: {
                         id: dto.tipo_aditivo_id,
@@ -98,9 +107,31 @@ export class ContratoAditivoService {
     }
 
     async update(contrato_id: number, id: number, dto: UpdateContratoAditivoDto, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const now = new Date(Date.now());
+                const self = await prismaTx.contratoAditivo.findFirstOrThrow({
+                    where: {
+                        removido_em: null,
+                        id: id,
+                        contrato_id: contrato_id,
+                    },
+                    select: {
+                        numero: true,
+                    },
+                });
+
+                if (dto.numero !== undefined && dto.numero !== self.numero) {
+                    const similarExiste = await prismaTx.contratoAditivo.count({
+                        where: {
+                            numero: dto.numero,
+                            contrato_id: contrato_id,
+                            removido_em: null,
+                        },
+                    });
+                    if (similarExiste > 0)
+                        throw new HttpException('Número igual já existe em outro registro ativo', 400);
+                }
 
                 return await prismaTx.contratoAditivo.update({
                     where: {

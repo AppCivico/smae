@@ -37,6 +37,16 @@ export class ContratoService {
                     }
                 }
 
+                const similarExiste = await prismaTx.contrato.count({
+                    where: {
+                        numero: { equals: dto.numero, mode: 'insensitive' },
+                        projeto_id: projeto_id,
+                        removido_em: null,
+                    },
+                });
+                if (similarExiste > 0)
+                    throw new HttpException('Número igual ou semelhante já existe em outro registro ativo', 400);
+
                 const contrato = await prismaTx.contrato.create({
                     data: {
                         projeto_id: projeto_id,
@@ -271,7 +281,18 @@ export class ContratoService {
         const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                //const self = await this.findOne(projeto_id, id, user);
+                const self = await this.findOne(projeto_id, id, user);
+                if (dto.numero != undefined && dto.numero != self.numero) {
+                    const similarExiste = await prismaTx.contrato.count({
+                        where: {
+                            numero: { equals: dto.numero, mode: 'insensitive' },
+                            projeto_id: projeto_id,
+                            removido_em: null,
+                        },
+                    });
+                    if (similarExiste > 0)
+                        throw new HttpException('Número igual ou semelhante já existe em outro registro ativo', 400);
+                }
 
                 if (dto.processos_sei != undefined) {
                     await prismaTx.contratoSei.deleteMany({
