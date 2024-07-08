@@ -1001,7 +1001,7 @@ export class VariavelService {
                 orgao_id: filters.orgao_id,
                 orgao_proprietario_id: filters.orgao_proprietario_id,
                 periodicidade: filters.periodicidade,
-                regiao: filters.regiao_id ? { id: filters.regiao_id } : undefined,
+                regiao_id: filters.regiao_id,
             },
         ];
 
