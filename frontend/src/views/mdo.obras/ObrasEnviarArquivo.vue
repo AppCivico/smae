@@ -175,27 +175,44 @@ watch(arquivoParaEdição, (novosValores) => {
           />
         </div>
       </div>
-
+      <div>
+        <LabelFromYup
+          :schema="schema"
+          name="diretorio_caminho"
+        >
+          {{ schema.fields.diretorio_caminho.spec.label }}
+          <small class="t13 tc500 lc">(níveis representados por <code>/</code>)</small>
+        </LabelFromYup>
+        <Field
+          id="diretorio_caminho"
+          name="diretorio_caminho"
+          class="inputtext light mb1"
+          list="diretóriosConsolidados"
+          autocomplete="off"
+          :class="{ error: errors.diretorio_caminho }"
+        />
+        <ErrorMessage
+          class="error-msg"
+          name="diretorio_caminho"
+        />
+      </div>
       <div class="flex g2 mb2">
         <div class="f1">
           <LabelFromYup
+            name="data"
             :schema="schema"
-            name="diretorio_caminho"
-          >
-            {{ schema.fields.diretorio_caminho.spec.label }}
-            <small class="t13 tc500 lc">(níveis representados por <code>/</code>)</small>
-          </LabelFromYup>
+          />
           <Field
-            id="diretorio_caminho"
-            name="diretorio_caminho"
+            name="data"
+            type="date"
             class="inputtext light mb1"
-            list="diretóriosConsolidados"
-            autocomplete="off"
-            :class="{ 'error': errors.diretorio_caminho }"
+            maxlength="10"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('data', $v || null); }"
           />
           <ErrorMessage
-            class="error-msg"
-            name="diretorio_caminho"
+            class="error-msg mb1"
+            name="data"
           />
         </div>
 
