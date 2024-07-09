@@ -247,7 +247,7 @@ export class VariavelService {
 
         let contador: number = -1;
 
-        for (let i = 0; i < 100; i++ && contador == -1) {
+        for (let i = 0; i < 100; i++ && contador !== -1) {
             try {
                 const tryUpdate = await this.prisma.variavelNumeroSequencial.upsert({
                     where: { ano_referencia: ano },
