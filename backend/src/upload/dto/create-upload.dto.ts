@@ -38,6 +38,11 @@ export class CreateUploadDto {
 
 export class ArquivoBaseDto {
     id: number;
+    @ApiProperty({
+        deprecated: true,
+        description:
+            'Sempre null, não usar, pois as descrições geralmente corretas estão nos documentos e não nos arquivos.',
+    })
     descricao: string | null;
     tamanho_bytes: number;
     nome_original: string;

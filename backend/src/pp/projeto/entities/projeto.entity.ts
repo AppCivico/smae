@@ -313,13 +313,8 @@ export class ProjetoRecursos {
     valor_nominal: number | null;
 }
 
-export class ArquivoProjetoDto extends ArquivoBaseDto {
-    @ApiProperty({ deprecated: true, description: 'Usar "data" no nivel superior, em ProjetoDocumentoDto' })
-    data: Date | null;
-}
-
 export class ProjetoDocumentoDto {
-    arquivo: ArquivoProjetoDto;
+    arquivo: ArquivoBaseDto;
     id: number;
     descricao: string | null;
     data: Date | null;

@@ -11,6 +11,7 @@ import {
     FilterAnaliseQualitativaDto,
     MfListAnaliseQualitativaDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 
 @Injectable()
 export class MetasAnaliseQualiService {
@@ -79,7 +80,6 @@ export class MetasAnaliseQualiService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
                     },
@@ -93,7 +93,11 @@ export class MetasAnaliseQualiService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
-                    arquivo: { ...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes') },
+                    arquivo: {
+                        ...r.arquivo,
+                        descricao: null,
+                        ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes'),
+                    } satisfies ArquivoBaseDto,
                 };
             }),
             analises: analisesResult.map((r) => {
