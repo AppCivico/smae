@@ -118,6 +118,13 @@ export class ContratoAditivoService {
                     },
                     select: {
                         numero: true,
+                        tipo_aditivo: {
+                            select: {
+                                id: true,
+                                habilita_valor: true,
+                                habilita_valor_data_termino: true,
+                            },
+                        },
                     },
                 });
 
@@ -131,6 +138,26 @@ export class ContratoAditivoService {
                     });
                     if (similarExiste > 0)
                         throw new HttpException('Número igual já existe em outro registro ativo', 400);
+                }
+
+                // Verifica se o tipo de aditivo exige valor e se o valor foi informado.
+                if (dto.tipo_aditivo_id !== undefined && dto.tipo_aditivo_id != self.tipo_aditivo.id) {
+                    const tipoAditivo = await prismaTx.tipoAditivo.findFirstOrThrow({
+                        where: {
+                            id: dto.tipo_aditivo_id,
+                            removido_em: null,
+                        },
+                        select: {
+                            habilita_valor: true,
+                            habilita_valor_data_termino: true,
+                        },
+                    });
+
+                    if (tipoAditivo.habilita_valor && dto.valor === null)
+                        throw new HttpException('Valor| Obrigatório para este tipo de aditivo', 400);
+
+                    if (tipoAditivo.habilita_valor_data_termino && dto.data === null)
+                        throw new HttpException('Data| Obrigatória para este tipo de aditivo', 400);
                 }
 
                 return await prismaTx.contratoAditivo.update({
