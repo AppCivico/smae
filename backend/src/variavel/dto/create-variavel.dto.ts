@@ -21,6 +21,7 @@ import {
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { NumberTransform } from '../../auth/transforms/number.transform';
 
 // o js ta bugando depois de 13, ta criado com decimal até 30, pg nativamente vai até 1000 sem recompilar.
 // precisa mudar o js pra usar Decimail.js ou Math.js pra usar mais casas se precisar
@@ -30,30 +31,36 @@ export class VariaveisPeriodosDto {
     @IsInt()
     @Min(1)
     @Max(31)
+    @Transform(NumberTransform)
     preenchimento_inicio: number;
     @IsInt()
     @Min(1)
     @Max(31)
+    @Transform(NumberTransform)
     preenchimento_fim: number;
     @IsInt()
     @Min(1)
     @Max(31)
+    @Transform(NumberTransform)
     validacao_inicio: number;
     @IsInt()
     @Min(1)
     @Max(31)
+    @Transform(NumberTransform)
     validacao_fim: number;
     @IsInt()
     @Min(1)
     @Max(31)
+    @Transform(NumberTransform)
     liberacao_inicio: number;
     @IsInt()
     @Min(1)
     @Max(31)
+    @Transform(NumberTransform)
     liberacao_fim: number;
 }
 
-export class    CreateVariavelBaseDto {
+export class CreateVariavelBaseDto {
     /**
      * ID do órgão
      */
