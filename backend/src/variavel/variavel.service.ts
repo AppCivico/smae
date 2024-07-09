@@ -220,7 +220,7 @@ export class VariavelService {
         dto: Pick<CreateVariavelBaseDto, 'periodicidade' | 'inicio_medicao' | 'variavel_categorica_id'>
     ): Promise<string> {
         const deparaTipoCategorica: Record<TipoVariavelCategorica, string> = {
-            Binaria: 'BIN',
+            Binaria: 'BIN', // ou "SN" pra SIM/NAO ?
             Cronograma: 'CRONO',
             Qualitativa: 'QUALI',
         };
@@ -232,14 +232,14 @@ export class VariavelService {
         };
 
         const deparaPeriodicidade: Record<Periodicidade, string> = {
-            Mensal: 'MEN',
-            Bimestral: 'BIM',
-            Trimestral: 'TRI',
-            Quadrimestral: 'QDR',
-            Semestral: 'SEM',
-            Anual: 'ANU',
-            Quinquenal: 'QUI',
-            Secular: 'SEC',
+            Mensal: 'MENSAL',
+            Bimestral: 'BIMEST',
+            Trimestral: 'TRIMEST',
+            Quadrimestral: 'QUADRIM',
+            Semestral: 'SEMEST',
+            Anual: 'ANUAL',
+            Quinquenal: 'QUINQUE',
+            Secular: 'SECULAR', // tao raro que poderia sair do padrão?
         };
 
         if (!dto.inicio_medicao) throw new BadRequestException('Inicio de medição é obrigatório para gerar código');
@@ -276,7 +276,7 @@ export class VariavelService {
         }
 
         const dotParts = [categorica, deparaAmbienteVariavel[tipo], deparaPeriodicidade[dto.periodicidade], contadorStr]
-            .filter((e) => e)
+            .filter((e) => e && e.length > 0)
             .join('.');
 
         return `${dotParts}/${ano}`;
