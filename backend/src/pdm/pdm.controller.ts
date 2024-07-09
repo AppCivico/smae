@@ -10,7 +10,7 @@ import { MacroTemaService } from '../macro-tema/macro-tema.service';
 import { SubTemaService } from '../subtema/subtema.service';
 import { TagService } from '../tag/tag.service';
 import { TemaService } from '../tema/tema.service';
-import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
+import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
@@ -142,6 +142,17 @@ export class PdmController {
         return { linhas: await this.pdmService.list_document(this.tipoPdm, params.id, user) };
     }
 
+    @Patch(':id/documento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar'])
+    async updateDocumento(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdatePdmDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.pdmService.updateDocumento(this.tipoPdm, params.id, params.id2, dto, user);
+    }
+
     @Delete(':id/documento/:id2')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar'])
@@ -254,6 +265,17 @@ export class PlanoSetorialController {
     @Roles(PermsPS)
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDocument> {
         return { linhas: await this.pdmService.list_document(this.tipoPdm, params.id, user) };
+    }
+
+    @Patch(':id/documento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar'])
+    async updateDocumento(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdatePdmDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.pdmService.updateDocumento(this.tipoPdm, params.id, params.id2, dto, user);
     }
 
     @Delete(':id/documento/:id2')

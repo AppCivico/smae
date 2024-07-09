@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class CreatePdmDocumentDto {
     /**
@@ -10,4 +10,21 @@ export class CreatePdmDocumentDto {
     @IsOptional()
     @IsString({ message: '$property| Caminho do diretório de arquivos' })
     diretorio_caminho: string;
+}
+
+export class UpdatePdmDocumentDto {
+    /**
+     * Token para encontrar documento
+     */
+    @IsString({ message: '$property| upload_token do documento' })
+    upload_token: string;
+
+    @IsString()
+    @IsOptional()
+    diretorio_caminho?: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    descricao?: string | null;
 }

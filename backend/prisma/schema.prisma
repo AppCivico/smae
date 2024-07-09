@@ -97,9 +97,9 @@ model Pessoa {
     ArquivoQueCriei      Arquivo[] @relation("Criador")
     ArquivosQueAtualizei Arquivo[] @relation("Atualizador")
 
-    ArquivoDocQueCriei     ArquivoDocumento[] @relation("Criador")
-    ArquivoDocQueDesativei ArquivoDocumento[] @relation("Removedor")
-    ArquivoDocQueAtualizei ArquivoDocumento[] @relation("Atualizador")
+    ArquivoDocQueCriei     PdmDocumento[] @relation("Criador")
+    ArquivoDocQueDesativei PdmDocumento[] @relation("Removedor")
+    ArquivoDocQueAtualizei PdmDocumento[] @relation("Atualizador")
 
     PPArquivoDocQueCriei     ProjetoDocumento[] @relation("Criador")
     PPArquivoDocQueDesativei ProjetoDocumento[] @relation("Removedor")
@@ -767,7 +767,7 @@ model Pdm {
     Eixo                MacroTema[]
     Tag                 Tag[]
     ObjetivoEstrategico Tema[]
-    ArquivoDocumento    ArquivoDocumento[]
+    ArquivoDocumento    PdmDocumento[]
     SubTema             SubTema[]
     Meta                Meta[]
 
@@ -1087,7 +1087,7 @@ model Arquivo {
     TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
     Tag                             Tag[]
     Regiao                          Regiao[]
-    ArquivoDocumento                ArquivoDocumento[]
+    ArquivoDocumento                PdmDocumento[]
     Pdm                             Pdm[]
     VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
@@ -1121,7 +1121,7 @@ model Diretorio {
     @@map("diretorio")
 }
 
-model ArquivoDocumento {
+model PdmDocumento {
     id Int @id @default(autoincrement())
 
     arquivo_id Int
@@ -1129,6 +1129,8 @@ model ArquivoDocumento {
 
     pdm_id Int?
     pdm    Pdm? @relation(fields: [pdm_id], references: [id])
+
+    descricao String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
