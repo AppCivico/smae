@@ -233,11 +233,11 @@ export class VariavelService {
 
         const deparaPeriodicidade: Record<Periodicidade, string> = {
             Mensal: 'MENSAL',
+            Anual: 'ANUAL',
             Bimestral: 'BIMEST',
             Trimestral: 'TRIMEST',
             Quadrimestral: 'QUADRIM',
             Semestral: 'SEMEST',
-            Anual: 'ANUAL',
             Quinquenal: 'QUINQUE',
             Secular: 'SECULAR', // tao raro que poderia sair do padrão?
         };
@@ -272,7 +272,7 @@ export class VariavelService {
                 select: { tipo: true },
             });
             if (!variavelCategorica) throw new BadRequestException('Variável categórica não encontrada');
-            categorica = deparaTipoCategorica[variavelCategorica.tipo] + '.';
+            categorica = deparaTipoCategorica[variavelCategorica.tipo];
         }
 
         const dotParts = [categorica, deparaAmbienteVariavel[tipo], deparaPeriodicidade[dto.periodicidade], contadorStr]
