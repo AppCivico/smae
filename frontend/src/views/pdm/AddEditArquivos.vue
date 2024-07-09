@@ -50,12 +50,17 @@ async function onSubmit(values) {
     values.tipo = 'DOCUMENTO';
     const formData = new FormData();
     Object.entries(values).forEach((x) => {
-      formData.append(x[0], x[1]);
+      if (x[0] !== 'descricao') {
+        formData.append(x[0], x[1]);
+      }
     });
 
     const u = await requestS.upload(`${baseUrl}/upload`, formData);
     if (u.upload_token) {
-      r = await PdMStore.insertArquivo(pdm_id, { upload_token: u.upload_token });
+      r = await PdMStore.insertArquivo(pdm_id, {
+        upload_token: u.upload_token,
+        descricao: values.descricao
+      });
       if (r == true) {
         msg = 'Item adicionado com sucesso!';
         PdMStore.clearLoad();
