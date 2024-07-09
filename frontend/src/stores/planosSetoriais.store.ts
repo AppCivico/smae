@@ -148,12 +148,18 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
     },
 
-    async associarArquivo(params = {}, idDoPlanoSetorial = 0): Promise<boolean> {
+    async associarArquivo(params = {}, id=0, idDoPlanoSetorial = 0,): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
       this.erros.arquivos = null;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+        let resposta;
+
+        if (id) {
+          resposta = await this.requestS.patch(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento/${id}`, params);
+        } else {
+          resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+        }
 
         this.chamadasPendentes.arquivos = false;
         return resposta;
