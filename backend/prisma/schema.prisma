@@ -1463,6 +1463,14 @@ enum TipoVariavel {
     Calculada @map("Composta")
 }
 
+model VariavelNumeroSequencial {
+    id Int @id @default(autoincrement())
+    ano_referencia Int
+    sequencial     Int
+
+    @@map("variavel_numero_sequencial")
+}
+
 model Variavel {
     id                Int           @id @default(autoincrement())
     orgao_id          Int
@@ -1482,6 +1490,8 @@ model Variavel {
     variavel_categorica    VariavelCategorica? @relation(fields: [variavel_categorica_id], references: [id])
 
     tipo TipoVariavel @default(PDM)
+
+    polaridade Polaridade @default(Neutra)
 
     codigo String
 

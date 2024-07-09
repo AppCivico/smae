@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
-import { Periodicidade, Serie } from '@prisma/client';
+import { Periodicidade, Polaridade, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
@@ -39,6 +39,7 @@ export class VariavelItemDto {
     periodicidade: Periodicidade;
     orgao: OrgaoResumo;
     regiao: Regiao | null;
+    polaridade: Polaridade;
     indicador_variavel: IndicadorVariavel[];
     responsaveis?: IdNomeExibicaoDto[];
     ano_base?: number | null;

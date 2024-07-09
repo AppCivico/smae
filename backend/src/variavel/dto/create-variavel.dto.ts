@@ -1,5 +1,5 @@
-import { ApiProperty, IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import { Periodicidade } from '@prisma/client';
+import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
+import { Periodicidade, Polaridade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -112,6 +112,17 @@ export class CreateVariavelBaseDto {
     })
     periodicidade: Periodicidade;
 
+    /**
+     * Polaridade
+     * @example "Neutra"
+     */
+    @IsOptional()
+    @ApiProperty({ enum: Polaridade, enumName: 'Polaridade' })
+    @IsEnum(Periodicidade, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
+    })
+    polaridade?: Polaridade;
+
     @IsInt({ message: '$property| unidade de medida precisa ser numérico' })
     @Type(() => Number)
     unidade_medida_id: number;
@@ -128,11 +139,6 @@ export class CreateVariavelBaseDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
     ano_base?: number | null;
-
-    @IsString()
-    @MaxLength(60)
-    @MinLength(1)
-    codigo: string;
 
     /**
      * inicio_medicao [obrigatório apenas caso a periodicidade for diferente do indicador, se for igual, será transformado em null]
@@ -223,6 +229,11 @@ export class CreateVariavelBaseDto {
 }
 
 export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
+    @IsString()
+    @MaxLength(60)
+    @MinLength(1)
+    codigo: string;
+
     /**
      * ID do indicador (é required para criar já o relacionamento)
      */
@@ -240,12 +251,12 @@ export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
     responsaveis: number[]; // manter undefined pq precisamos apagar antes do insert
 }
 
-export class CreatePeloIndicadorDto extends PickType(CreateVariavelBaseDto, ['codigo', 'titulo', 'orgao_id']) {
+export class CreatePeloIndicadorDto extends PickType(CreateVariavelBaseDto, ['titulo', 'orgao_id']) {
     @IsInt()
     indicador_id: number;
 }
 
-export class CreateGeradorVariaveBaselDto extends OmitType(CreateVariavelBaseDto, ['codigo']) {
+export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
     /**
      * prefixo que será adicionado em vários
      */
