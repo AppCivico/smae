@@ -257,13 +257,6 @@ export class CreatePeloIndicadorDto extends PickType(CreateVariavelBaseDto, ['ti
 }
 
 export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
-    /**
-     * prefixo que será adicionado em vários
-     */
-    @IsString()
-    @MaxLength(60)
-    codigo: string;
-
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
     @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(1000, { message: '$property| tag(s): precisa ter no máximo 1000 items' })
@@ -271,4 +264,11 @@ export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
     regioes: number[];
 }
 
-export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {}
+export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {
+    /**
+     * prefixo que será adicionado em vários
+     */
+    @IsString()
+    @MaxLength(60)
+    codigo: string;
+}
