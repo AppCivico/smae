@@ -147,7 +147,6 @@ export class VariavelGlobalController {
     @Get('variavel/:id')
     @ApiBearerAuth('access-token')
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
-    @ApiPaginatedWithPagesResponse(VariavelGlobalItemDto)
     async findOne(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
