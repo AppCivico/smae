@@ -100,7 +100,7 @@ export class UploadService {
             String(user.id),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, ''),
+            originalname.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
         ].join('/');
 
         createUploadDto.tipo_documento_id =
