@@ -1373,7 +1373,7 @@ export class PessoaService {
 
         if (filterModulos.length == 2) {
             const removePrivilegios = (privilege: string) => {
-                ret.privilegios = ret.privilegios.filter((value) => value.toString().startsWith(privilege + '.'));
+                ret.privilegios = ret.privilegios.filter((value) => !value.toString().startsWith(privilege + '.'));
             };
 
             const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
