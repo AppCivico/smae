@@ -222,9 +222,23 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       rotulo_tema: emFoco?.rotulo_tema || '',
       upload_logo: emFoco?.logo || null,
     }),
-
-    arquivosPorId: ({ arquivos }: Estado) => arquivos
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    
+    arquivosPorId: ({ arquivos }: Estado) => {
+      const result = arquivos.reduce((acc, cur) => {
+        return {
+          ...acc,
+          [cur.id]: {
+            ...cur,
+            arquivo: {
+              ...cur.arquivo,
+              descricao: cur.descricao,
+              id: cur.id,
+            }
+          },
+        };
+      }, {});
+      return result;
+    },
 
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: ListPdm } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
