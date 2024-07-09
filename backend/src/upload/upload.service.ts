@@ -116,7 +116,8 @@ export class UploadService {
             'x-tipo': createUploadDto.tipo,
             'x-tipo-documento-id': createUploadDto.tipo_documento_id || 'sem-tipo',
             'x-uploaded-ip': ip || 'sem-ip',
-            'x-description': typeof createUploadDto.descricao == 'string' ? createUploadDto.descricao : '',
+            'x-description':
+                typeof createUploadDto.descricao === 'string' ? encodeURIComponent(createUploadDto.descricao) : '',
         });
 
         await this.prisma.arquivo.create({
