@@ -864,6 +864,7 @@ export class PdmService {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
                 arquivo_id: arquivoId,
+                descricao: dto.descricao,
                 pdm_id: pdm_id,
             },
             select: {

@@ -8,23 +8,13 @@ export class CreatePdmDocumentDto {
     upload_token: string;
 
     @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    descricao?: string | null;
+
+    @IsOptional()
     @IsString({ message: '$property| Caminho do diretório de arquivos' })
     diretorio_caminho: string;
 }
 
-export class UpdatePdmDocumentDto {
-    /**
-     * Token para encontrar documento
-     */
-    @IsString({ message: '$property| upload_token do documento' })
-    upload_token: string;
-
-    @IsString()
-    @IsOptional()
-    diretorio_caminho?: string;
-
-    @IsOptional()
-    @IsString()
-    @ValidateIf((object, value) => value !== null)
-    descricao?: string | null;
-}
+export class UpdatePdmDocumentDto extends CreatePdmDocumentDto {}
