@@ -258,6 +258,15 @@ export class VariavelService {
         if (indicador) this.fixIndicadorInicioFim(dto, indicador);
         // TODO para Global: aqui precisa calcular o inicio/fim da variavel de alguma forma, ou obrigar a passar
 
+        let codigo: string;
+        if (tipo == 'Global') {
+            codigo = await this.geraCodigoVariavelGlobal(dto);
+        } else {
+            if (!('codigo' in dto) || !dto.codigo)
+                throw new BadRequestException('Código é obrigatório para variáveis do PDM');
+            codigo = dto.codigo;
+        }
+
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId[]> => {
                 const ids: number[] = [];
@@ -267,7 +276,7 @@ export class VariavelService {
                     select: { pdm_codigo_sufixo: true, descricao: true, id: true },
                 });
 
-                const prefixo = dto.codigo;
+                const prefixo = codigo;
                 delete (dto as any).regioes;
                 delete (dto as any).codigo;
                 for (const regiao of regions) {
