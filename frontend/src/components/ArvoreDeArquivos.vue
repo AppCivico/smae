@@ -138,16 +138,16 @@ const éPossívelAbrir = (item) => !item.children?.length
                   <span>
                     {{ truncate((arquivo?.arquivo?.nome_original), 16) }}
                   </span>
-                  <span v-if="arquivo?.arquivo?.descricao">
-                    -- {{ truncate(arquivo?.arquivo?.descricao, 300) }}
+                  <span v-if="arquivo?.descricao">
+                    -- {{ truncate(arquivo?.descricao, 300) }}
                   </span>
                 </component>
 
                 <small
-                  v-if="arquivo?.arquivo?.data"
+                  v-if="arquivo?.data"
                   class="arvore-de-arquivos__data ml1"
                 >
-                  {{ dateToField(arquivo?.arquivo?.data) }}
+                  {{ dateToField(arquivo?.data) }}
                 </small>
 
                 <router-link
