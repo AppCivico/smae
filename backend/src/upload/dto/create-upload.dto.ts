@@ -30,6 +30,7 @@ export class CreateUploadDto {
     @IsOptional()
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MaxLength(10000, { message: '$property| descrição: Máximo 10000 caracteres' })
+    @ApiProperty({ deprecated: true, description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08'})
     descricao?: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: true })
