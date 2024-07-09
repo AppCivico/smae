@@ -244,10 +244,9 @@ export class VariavelService {
 
         if (!dto.inicio_medicao) throw new BadRequestException('Inicio de medição é obrigatório para gerar código');
         const ano = +dto.inicio_medicao.getFullYear().toString();
-
         let contador: number = -1;
 
-        for (let i = 0; i < 100; i++ && contador !== -1) {
+        for (let i = 0; i < 100 && contador === -1; i++) {
             try {
                 const tryUpdate = await this.prisma.variavelNumeroSequencial.upsert({
                     where: { ano_referencia: ano },
