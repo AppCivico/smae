@@ -1369,6 +1369,24 @@ export class PessoaService {
         if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
+        const ret = dados[0];
+
+        if (filterModulos.length == 2) {
+            const removePrivilegios = (privilege: string) => {
+                ret.privilegios = ret.privilegios.filter((value) => value.toString().startsWith(privilege + '.'));
+            };
+
+            const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
+
+            if (!(sistema == 'MDO' || sistema == 'Projetos')) {
+                removePrivilegios('TipoAditivo.');
+                removePrivilegios('ModalidadeContratacao.');
+            }
+
+            if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
+                removePrivilegios('CadastroGrupoVariavel.');
+            }
+        }
 
         return dados[0];
     }
