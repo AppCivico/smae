@@ -33,5 +33,54 @@ export default {
       path: '',
       component: () => import('@/views/variaveis/VariaveisLista.vue'),
     },
+    {
+      component: () => import('@/views/variaveis/VariaveisCriarEditar.vue'),
+      path: 'novo',
+      name: 'variaveisCriar',
+      meta: {
+        limitarÀsPermissões: [
+          'CadastroIndicadorPS.inserir',
+        ],
+        rotaDeEscape: 'variaveisListar',
+        rotasParaMigalhasDePão: [
+          'variaveisListar',
+        ],
+        título: 'Cadastro de Variável',
+      },
+    },
+    {
+      component: () => import('@/views/variaveis/VariaveisItem.vue'),
+      path: ':variavelId',
+      props: ({ params }) => ({
+        ...params,
+        variavelId: Number.parseInt(params.variavelId, 10) || undefined,
+      }),
+      meta: {
+        rotasParaMenuSecundário: [
+          // 'variaveisResumo',
+        ],
+        rotasParaMigalhasDePão: [
+          'variaveisListar',
+        ],
+      },
+      children: [
+        {
+          component: () => import('@/views/variaveis/VariaveisCriarEditar.vue'),
+          name: 'variaveisEditar',
+          path: '',
+          props: ({ params }) => ({
+            ...params,
+            variavelId: Number.parseInt(params.variavelId, 10) || undefined,
+          }),
+          meta: {
+            limitarÀsPermissões: [
+              'CadastroIndicadorPS.inserir',
+            ],
+            rotaDeEscape: 'variaveisListar',
+            título: 'Editar Variável',
+          },
+        },
+      ],
+    },
   ],
 };

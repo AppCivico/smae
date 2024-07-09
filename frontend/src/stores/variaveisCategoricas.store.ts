@@ -118,6 +118,7 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
     },
   },
   getters: {
+    variaveisPositivas: ({ lista }: Estado) => lista.filter((variavel) => variavel.id > 0),
     variaveisPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },

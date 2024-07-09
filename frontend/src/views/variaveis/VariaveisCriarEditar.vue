@@ -1,0 +1,1135 @@
+<script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import LabelFromYup from '@/components/LabelFromYup.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import {
+  variavelGlobal as schemaCriacao,
+  variavelGlobalParaGeracao as schemaGeracao,
+} from '@/consts/formSchemas';
+import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import periodicidades from '@/consts/periodicidades';
+import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useResourcesStore } from '@/stores/resources.store';
+import { useUsersStore } from '@/stores/users.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const textInputOptions = {
+  format: 'MM/yyyy',
+};
+
+const alertStore = useAlertStore();
+
+const assuntosStore = useAssuntosStore();
+const {
+  lista: listaDeAssuntos,
+  chamadasPendentes: chamadasPendentesDeAssuntos,
+  erro: erroDeAssuntos,
+} = storeToRefs(assuntosStore);
+
+const authStore = useAuthStore();
+const { temPermissãoPara, user } = storeToRefs(authStore);
+
+const ÓrgãosStore = useOrgansStore();
+const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
+
+const usersStore = useUsersStore();
+
+const RegionsStore = useRegionsStore();
+const { regions, regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
+
+const resourcesStore = useResourcesStore();
+const { resources } = storeToRefs(resourcesStore);
+
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
+const {
+  variaveisPositivas: listaDeVariaveisCategoricas,
+  chamadasPendentes: chamadasPendentesDeVariaveisCategoricas,
+  variaveisPorId: variaveisCategoricasPorId,
+} = storeToRefs(variaveisCategoricasStore);
+
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
+const {
+  chamadasPendentes,
+  emFoco,
+  erros,
+  itemParaEdição,
+} = storeToRefs(variaveisGlobaisStore);
+
+const props = defineProps({
+  variavelId: {
+    type: [
+      Number,
+    ],
+    default: 0,
+  },
+});
+
+const router = useRouter();
+const route = useRoute();
+
+const gerarMultiplasVariaveis = ref(false);
+
+const schema = computed(() => (gerarMultiplasVariaveis.value
+  ? schemaGeracao
+  : schemaCriacao
+));
+
+const {
+  errors, handleSubmit, resetForm, resetField, values, controlledValues,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema.value,
+});
+
+const estãoTodasAsRegiõesSelecionadas = computed({
+  get: () => {
+    if (!values.regioes) {
+      return false;
+    }
+
+    return values.regioes?.length === regiõesPorNívelOrdenadas
+      .value?.[values.nivel_regionalizacao]?.length;
+  },
+  set: (valor) => {
+    if (valor) {
+      resetField(
+        'regioes',
+        {
+          value: regiõesPorNívelOrdenadas.value?.[values.nivel_regionalizacao]?.map((r) => r.id),
+        },
+      );
+    } else {
+      resetField(
+        'regioes',
+        {
+          value: [],
+        },
+      );
+    }
+  },
+});
+
+const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroIndicadorPS.administrador')
+  ? órgãosComoLista.value
+  : órgãosComoLista.value.filter((orgao) => orgao.id === user.value.orgao_id)));
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const cargaManipulada = nulificadorTotal(valoresControlados);
+
+  const msg = props.variavelId
+    ? `Variável "${cargaManipulada.titulo}" salva!`
+    : `Variável "${cargaManipulada.titulo}" adicionada!`;
+
+  const resposta = await variaveisGlobaisStore.salvarItem(cargaManipulada, props.variavelId);
+
+  try {
+    if (resposta) {
+      alertStore.success(msg);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+        });
+      }
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+const formulárioSujo = useIsFormDirty();
+
+async function iniciar() {
+  const requisições = [
+    ÓrgãosStore.getAll(),
+    assuntosStore.buscarTudo(),
+    usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true }),
+    variaveisCategoricasStore.buscarTudo(),
+  ];
+
+  if (!regions.length) {
+    requisições.push(RegionsStore.getAll());
+  }
+
+  if (!resources.length) {
+    requisições.push(resourcesStore.getAll());
+  }
+
+  await Promise.allSettled(requisições);
+}
+
+iniciar();
+
+watch(itemParaEdição, (novoValor) => {
+  resetForm({
+    initialValues: novoValor,
+  });
+}/* , { immediate: true } */);
+
+watch(gerarMultiplasVariaveis, (novoValor) => {
+  if (!novoValor) {
+    resetField('codigo', { value: null });
+    resetField('criar_formula_composta', { value: null });
+    resetField('nivel_regionalizacao', { value: null });
+    resetField('regioes', { value: null });
+  }
+});
+</script>
+<template>
+  <header class="flex flexwrap spacebetween center mb2 g2">
+    <TítuloDePágina />
+
+    <hr class="f1">
+
+    <CheckClose :formulário-sujo="formulárioSujo" />
+  </header>
+
+  <div
+    v-ScrollLockDebug
+    class="flex flexwrap g2 mb1"
+  >
+    <textarea
+      readonly
+      class="f1"
+      rows="20"
+    >emFoco: {{ emFoco }}</textarea>
+    <textarea
+      readonly
+      class="f1"
+      rows="20"
+    >values: {{ values }}</textarea>
+    <textarea
+      readonly
+      class="f1"
+      rows="20"
+    >controlledValues: {{ controlledValues }}</textarea>
+  </div>
+
+  <form
+    :aria-busy="chamadasPendentes.emFoco && !emFoco"
+    @submit="onSubmit"
+  >
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="orgao_proprietario_id"
+            :schema="schema"
+          />
+          <Field
+            name="orgao_proprietario_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.orgao_proprietario_id }"
+            :aria-busy="organs.loading"
+          >
+            <option :value="null">
+              Selecionar
+            </option>
+
+            <option
+              v-for="item in orgaosDisponiveis"
+              :key="item"
+              :value="item.id"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="orgao_proprietario_id"
+          />
+        </div>
+
+        <div
+          v-if="variavelId"
+          class="f1 fb15em"
+        >
+          <label
+            for="codigo"
+            class="label"
+          >
+            Código
+          </label>
+          <input
+            id="codigo"
+            name="codigo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ error: errors.codigo }"
+            :value="emFoco?.codigo"
+            aria-disabled="true"
+            readonly
+          >
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="titulo"
+            :schema="schema"
+          />
+          <Field
+            name="titulo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ error: errors.titulo }"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="titulo"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="descricao"
+              :schema="schema"
+            />
+            <Field
+              name="descricao"
+              as="textarea"
+              rows="5"
+              class="inputtext light mb1"
+              maxlength="500"
+              :class="{ 'error': errors.descricao }"
+            />
+            <ErrorMessage
+              name="descricao"
+              class="error-msg"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="metodologia"
+              :schema="schema"
+            />
+            <Field
+              name="metodologia"
+              as="textarea"
+              rows="5"
+              class="inputtext light mb1"
+              maxlength="500"
+              :class="{ 'error': errors.metodologia }"
+            />
+            <ErrorMessage
+              name="metodologia"
+              class="error-msg"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb25em">
+          <LabelFromYup
+            name="assuntos"
+            :schema="schema"
+          />
+          <AutocompleteField
+            name="assuntos"
+            :controlador="{
+              busca: '',
+              participantes: values.assuntos || []
+            }"
+            :grupo="listaDeAssuntos || []"
+            :aria-busy="chamadasPendentesDeAssuntos.lista"
+            :class="{
+              error: errors.assuntos
+            }"
+            label="nome"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="assuntos"
+          />
+        </div>
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="variavel_categorica_id"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            name="variavel_categorica_id"
+            as="select"
+            class="inputtext light mb1"
+            :aria-disabled="!listaDeVariaveisCategoricas.length || !!variavelId"
+            :aria-busy="chamadasPendentesDeVariaveisCategoricas.lista"
+            :class="{ error: errors.variavel_categorica_id }"
+          >
+            <option value="">
+              Numérica
+            </option>
+            <optgroup label="Categórica">
+              <option
+                v-for="v, i in listaDeVariaveisCategoricas"
+                :key="i"
+                :value="v.id"
+                :title="v.descricao"
+              >
+                {{ v.titulo }}
+              </option>
+            </optgroup>
+          </Field>
+
+          <input
+            v-else
+            readonly
+            aria-disabled="true"
+            :value="variaveisCategoricasPorId[emFoco?.variavel_categorica_id]?.titulo || 'Numérica'"
+            class="inputtext light mb1"
+          >
+
+          <ErrorMessage
+            class="error-msg"
+            name="variavel_categorica_id"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="polaridade"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            name="polaridade"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.polaridade }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="p, k in polaridadeDeVariaveis"
+              :key="k"
+              :value="p.valor"
+            >
+              {{ p.nome }}
+            </option>
+          </Field>
+
+          <input
+            v-else
+            readonly
+            aria-disabled="true"
+            :value="values?.polaridade"
+            class="inputtext light mb1"
+          >
+
+          <ErrorMessage
+            class="error-msg"
+            name="polaridade"
+          />
+        </div>
+        <div class="f2 fb15em">
+          <LabelFromYup
+            name="unidade_medida_id"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            name="unidade_medida_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.unidade_medida_id }"
+          >
+            <option value="">
+              Selecione
+            </option>
+            <option
+              v-for="unidade in resources"
+              :key="unidade.id"
+              :value="unidade.id"
+            >
+              {{ unidade.sigla }} - {{ unidade.descricao }}
+            </option>
+          </Field>
+
+          <input
+            v-else
+            readonly
+            aria-disabled="true"
+            :value="emFoco?.unidade_medida?.descricao"
+            class="inputtext light mb1"
+          >
+
+          <ErrorMessage
+            class="error-msg"
+            name="unidade_medida_id"
+          />
+        </div>
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="casas_decimais"
+            :schema="schema"
+          />
+          <Field
+            name="casas_decimais"
+            type="number"
+            min="0"
+            class="inputtext light mb1"
+            :class="{ error: errors.casas_decimais }"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="casas_decimais"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="valor_base"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            :value="values.valor_base"
+            name="valor_base"
+            class="inputtext light mb1"
+            converter-para="string"
+            :aria-disabled="!!variavelId"
+            :standalone="!!variavelId"
+            :readonly="!!variavelId"
+            :class="{ error: errors.valor_base }"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="valor_base"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="ano_base"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            name="ano_base"
+            type="number"
+            min="1900"
+            class="inputtext light mb1"
+            :class="{ error: errors.ano_base }"
+          />
+          <input
+            v-else
+            :value="emFoco?.ano_base"
+            min="1900"
+            class="inputtext light mb1"
+            aria-disabled="true"
+            readonly
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="ano_base"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="inicio_medicao"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            v-slot="{ field, value, handleChange }"
+            name="inicio_medicao"
+          >
+            <VueDatePicker
+              v-bind="field"
+              :model-value="value"
+              cancel-text="Cancelar"
+              select-text="Selecionar"
+              :text-input="textInputOptions"
+              hide-input-icon
+              month-picker
+              auto-apply
+              locale="pt-br"
+              :enable-time-picker="false"
+              :clearable="true"
+              model-type="yyyy-MM-dd"
+              @update:model-value="handleChange"
+            >
+              <template #dp-input="{ value: valor }">
+                <input
+                  type="text"
+                  class="inputtext light mb1"
+                  :class="{ error: errors.inicio_medicao }"
+                  :value="valor"
+                  autocomplete="off"
+                >
+              </template>
+            </VueDatePicker>
+          </Field>
+
+          <input
+            v-else
+            readonly
+            aria-disabled="true"
+            :value="emFoco?.inicio_medicao"
+            class="inputtext light mb1"
+          >
+
+          <ErrorMessage
+            class="error-msg"
+            name="inicio_medicao"
+          />
+        </div>
+
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="fim_medicao"
+            :schema="schema"
+          />
+          <Field
+            v-slot="{ field, value, handleChange }"
+            name="fim_medicao"
+          >
+            <VueDatePicker
+              v-bind="field"
+              :model-value="value"
+              cancel-text="Cancelar"
+              select-text="Selecionar"
+              :text-input="textInputOptions"
+              hide-input-icon
+              month-picker
+              auto-apply
+              locale="pt-br"
+              :enable-time-picker="false"
+              :clearable="true"
+              model-type="yyyy-MM-dd"
+              @update:model-value="handleChange"
+            >
+              <template #dp-input="{ value: valor }">
+                <input
+                  type="text"
+                  class="inputtext light mb1"
+                  :class="{ error: errors.fim_medicao }"
+                  :value="valor"
+                  autocomplete="off"
+                >
+              </template>
+            </VueDatePicker>
+          </Field>
+
+          <ErrorMessage
+            class="error-msg"
+            name="fim_medicao"
+          />
+        </div>
+
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="periodicidade"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            id="periodicidade"
+            name="periodicidade"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.periodicidade }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="p, k in periodicidades.variaveis"
+              :key="k"
+              :value="p.valor"
+            >
+              {{ p.nome }}
+            </option>
+          </Field>
+          <input
+            v-else
+            id="periodicidade"
+            readonly
+            aria-disabled="true"
+            :value="values?.periodicidade"
+            class="inputtext light mb1"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="periodicidade"
+          />
+        </div>
+
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="atraso_meses"
+            :schema="schema"
+          />
+          <Field
+            name="atraso_meses"
+            type="number"
+            min="0"
+            step="1"
+            class="inputtext light mb1"
+            :class="{ error: errors.atraso_meses }"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="atraso_meses"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="orgao_id"
+            :schema="schema"
+          />
+          <Field
+            name="orgao_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.orgao_id }"
+            :aria-busy="organs.loading"
+          >
+            <option
+              v-for="orgao in órgãosComoLista"
+              :key="orgao.id"
+              :value="orgao.id"
+              :title="orgao.descricao?.length > 36 ? orgao.descricao : null"
+            >
+              {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="orgao_id"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb15em mb1">
+          <label class="block">
+            <Field
+              name="acumulativa"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="acumulativa"
+              as="span"
+              :schema="schema"
+              :class="{ error: errors.acumulativa }"
+            />
+          </label>
+          <ErrorMessage
+            class="error-msg"
+            name="acumulativa"
+          />
+        </div>
+        <div class="f1 fb15em mb1">
+          <label class="block">
+            <Field
+              name="dado_aberto"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="dado_aberto"
+              as="span"
+              :schema="schema"
+              :class="{ error: errors.dado_aberto }"
+            />
+          </label>
+          <ErrorMessage
+            class="error-msg"
+            name="dado_aberto"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap spacebetween g2 mb1">
+        <LabelFromYup
+          name="periodos"
+          :schema="schema"
+          as="legend"
+          class="label tc300 fb100"
+        />
+        <div class="f1 fb20em flex flexwrap g2 mb1">
+          <div class="f1 fb10em">
+            <LabelFromYup
+              name="periodos.preenchimento_inicio"
+              :schema="schema"
+            />
+            <Field
+              name="periodos.preenchimento_inicio"
+              type="number"
+              min="1"
+              max="31"
+              class="inputtext light mb1"
+              :class="{ error: errors['periodos.preenchimento_inicio'] }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="periodos.preenchimento_inicio"
+            />
+          </div>
+          <div class="f1 fb10em">
+            <LabelFromYup
+              name="periodos.preenchimento_fim"
+              :schema="schema"
+            />
+            <Field
+              name="periodos.preenchimento_fim"
+              type="number"
+              :min="values.periodos?.preenchimento_inicio || 1"
+              max="31"
+              class="inputtext light mb1"
+              :class="{ error: errors['periodos.preenchimento_fim'] }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="periodos.preenchimento_fim"
+            />
+          </div>
+        </div>
+
+        <div class="f1 fb20em flex flexwrap g2 mb1">
+          <div class="f1 fb10em">
+            <LabelFromYup
+              name="periodos.validacao_inicio"
+              :schema="schema"
+            />
+            <Field
+              name="periodos.validacao_inicio"
+              type="number"
+              :min="values.periodos?.preenchimento_inicio || 1"
+              max="31"
+              class="inputtext light mb1"
+              :class="{ error: errors['periodos.validacao_inicio'] }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="periodos.validacao_inicio"
+            />
+          </div>
+          <div class="f1 fb10em">
+            <LabelFromYup
+              name="periodos.validacao_fim"
+              :schema="schema"
+            />
+            <Field
+              name="periodos.validacao_fim"
+              type="number"
+              :min="values.periodos?.validacao_inicio || 1"
+              max="31"
+              class="inputtext light mb1"
+              :class="{ error: errors['periodos.validacao_fim'] }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="periodos.validacao_fim"
+            />
+          </div>
+        </div>
+
+        <div class="f1 fb20em flex flexwrap g2 mb1">
+          <div class="f1 fb10em">
+            <LabelFromYup
+              name="periodos.liberacao_inicio"
+              :schema="schema"
+            />
+            <Field
+              name="periodos.liberacao_inicio"
+              type="number"
+              :min="values.periodos?.validacao_inicio || 1"
+              max="31"
+              class="inputtext light mb1"
+              :class="{ error: errors['periodos.liberacao_inicio'] }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="periodos.liberacao_inicio"
+            />
+          </div>
+          <div class="f1 fb10em">
+            <LabelFromYup
+              name="periodos.liberacao_fim"
+              :schema="schema"
+            />
+            <Field
+              name="periodos.liberacao_fim"
+              type="number"
+              :min="values.periodos?.liberacao_inicio || 1"
+              max="31"
+              class="inputtext light mb1"
+              :class="{ error: errors['periodos.liberacao_fim'] }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="periodos.liberacao_fim"
+            />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset
+      v-if="!variavelId"
+    >
+      <label class="block mb2 mt2">
+        <input
+          v-model="gerarMultiplasVariaveis"
+          type="checkbox"
+          class="interruptor"
+          aria-labelledby="gerar-multiplas-variáveis"
+        >
+        <span
+          id="gerar-multiplas-variáveis"
+        >
+          Gerar variáveis regionalizadas
+        </span>
+      </label>
+
+      <fieldset v-if="gerarMultiplasVariaveis">
+        <div class="flex spacebetween g2 mb1">
+          <div
+            class="f1 fb15em"
+          >
+            <LabelFromYup
+              name="codigo"
+              :schema="schema"
+            />
+            <Field
+              id="codigo"
+              name="codigo"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ error: errors.codigo }"
+              :value="emFoco?.codigo"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="codigo"
+            />
+          </div>
+          <div class="f1 fb15em mb1 mt2">
+            <label class="block">
+              <Field
+                name="criar_formula_composta"
+                type="checkbox"
+                :value="true"
+                :unchecked-value="false"
+              />
+              <LabelFromYup
+                name="criar_formula_composta"
+                as="span"
+                :schema="schema"
+                :class="{ error: errors.criar_formula_composta }"
+              />
+            </label>
+            <ErrorMessage
+              class="error-msg"
+              name="criar_formula_composta"
+            />
+          </div>
+        </div>
+
+        <div
+          class="flex flexwrap g2 mb1"
+        >
+          <div class="fb20em">
+            <LabelFromYup
+              name="nivel_regionalizacao"
+              :schema="schema"
+              class="tc300"
+            />
+            <Field
+              id="nivel_regionalizacao"
+              name="nivel_regionalizacao"
+              as="select"
+              class="inputtext light mb1"
+              :class="{ error: errors.nivel_regionalizacao }"
+              @change="resetField('regioes', { value: [] })"
+            >
+              <option
+                :value="null"
+              />
+              <option
+                v-for="nível in níveisRegionalização"
+                :key="nível.id"
+                :value="nível.id"
+                :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
+              >
+                {{ nível.nome }}
+              </option>
+            </Field>
+            <ErrorMessage
+              class="error-msg"
+              name="nivel_regionalizacao"
+            />
+          </div>
+
+          <hr class="f1 mt3">
+          <label class="mt2">
+            <input
+              v-model="estãoTodasAsRegiõesSelecionadas"
+              type="checkbox"
+              :disabled="!regiõesPorNívelOrdenadas?.[values.nivel_regionalizacao]?.length"
+              class="interruptor"
+              aria-labelledby="selecionar-todas-as-regiões"
+            >
+            <span
+              v-if="estãoTodasAsRegiõesSelecionadas"
+              id="selecionar-todas-as-regiões"
+            >
+              Limpar seleção
+            </span>
+            <span
+              v-else
+              id="selecionar-todas-as-regiões"
+            >
+              Selecionar todas
+            </span>
+          </label>
+        </div>
+        <div class="flex flexwrap g2 mb1">
+          <div
+            v-if="Array.isArray(regiõesPorNívelOrdenadas?.[values.nivel_regionalizacao])"
+            class="flex flexwrap g1 lista-de-opções"
+          >
+            <LabelFromYup
+              class="label fb100"
+              as="legend"
+              :schema="schema"
+              name="regioes"
+            />
+            <label
+              v-for="r in regiõesPorNívelOrdenadas?.[values.nivel_regionalizacao]"
+              :key="r.id"
+              class="tc600 lista-de-opções__item"
+              :for="`região__${r.id}`"
+            >
+              <Field
+                :id="`região__${r.id}`"
+                :key="`região__${r.id}`"
+                name="regioes"
+                :value="r.id"
+                type="checkbox"
+                :class="{ 'error': errors['parametros.tipo'] }"
+              />
+              <span>
+                {{ r.descricao }}
+              </span>
+            </label>
+          </div>
+          <div
+            v-else-if="values.nivel_regionalizacao"
+            class="error-msg"
+          >
+            Não há regiões disponíveis para o
+            <router-link to="#nivel_regionalizacao">
+              nível
+            </router-link>
+            escolhido.
+          </div>
+
+          <ErrorMessage
+            class="fb100 error-msg"
+            name="regioes"
+          />
+        </div>
+
+        <div class="flex flexwrap g2 mb1">
+          <div class="mb2 mt2">
+            <label class="block">
+              <Field
+                name="supraregional"
+                type="checkbox"
+                :value="true"
+              /><LabelFromYup
+                name="supraregional"
+                :schema="schema"
+                as="span"
+                :class="{ error: errors.supraregional }"
+              />
+            </label>
+            <ErrorMessage
+              class="error-msg"
+              name="supraregional"
+            />
+          </div>
+        </div>
+      </fieldset>
+    </fieldset>
+
+    <FormErrorsList :errors="errors" />
+
+    <div class="flex spacebetween center mb2">
+      <hr class="mr2 f1">
+      <button
+        class="btn big"
+        :aria-busy="chamadasPendentes.emFoco"
+      >
+        <template v-if="gerarMultiplasVariaveis">
+          Gerar
+        </template>
+        <template v-else>
+          Salvar
+        </template>
+      </button>
+      <hr class="ml2 f1">
+    </div>
+  </form>
+
+  <ErrorComponent
+    v-if="erros.emFoco"
+    class="mb1"
+  >
+    {{ erros.emFoco }}
+  </ErrorComponent>
+</template>
