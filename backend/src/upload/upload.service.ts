@@ -83,6 +83,7 @@ export class UploadService {
             originalname = file.originalname;
             // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
             // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
+            // eslint-disable-next-line no-control-regex
             if (!/[^\u0000-\u00ff]/.test(originalname)) {
                 originalname = Buffer.from(originalname, 'latin1').toString('utf8');
             }
@@ -126,7 +127,6 @@ export class UploadService {
                 nome_original: originalname,
                 mime_type: ct,
                 tamanho_bytes: 'size' in file ? file.size : file.buffer.length,
-                descricao: createUploadDto.descricao,
                 tipo: String(createUploadDto.tipo),
                 tipo_documento_id: createUploadDto.tipo_documento_id,
             },
@@ -278,7 +278,7 @@ export class UploadService {
             user ? String(user.id) : 'sistema',
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, ''),
+            originalname.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
         ].join('/');
 
         await this.storage.putBlob(key, buffer, {
@@ -298,7 +298,6 @@ export class UploadService {
                 nome_original: originalname,
                 mime_type: mimetype || 'application/octet-stream',
                 tamanho_bytes: buffer.length,
-                descricao: '',
                 tipo: 'reports',
             },
             select: { id: true },
