@@ -13,7 +13,7 @@ import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
-import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
+import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
@@ -21,7 +21,8 @@ import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
-import { PdmDocument } from './entities/pdm-document.entity';
+import { PdmItemDocumentDto } from './entities/pdm-document.entity';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, ListaDePrivilegios[]> = {
     ADMIN: ['PS.admin_cp'],
@@ -858,7 +859,7 @@ export class PdmService {
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
-        const arquivo = await this.prisma.arquivoDocumento.create({
+        const arquivo = await this.prisma.pdmDocumento.create({
             data: {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
@@ -873,14 +874,15 @@ export class PdmService {
         return { id: arquivo.id };
     }
 
-    async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt): Promise<PdmDocument[]> {
+    async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt): Promise<PdmItemDocumentDto[]> {
         const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        const documentosDB = await this.prisma.arquivoDocumento.findMany({
+        const documentosDB = await this.prisma.pdmDocumento.findMany({
             where: { pdm_id: pdm_id, removido_em: null },
             select: {
                 id: true,
+                descricao: true,
                 arquivo: {
                     select: {
                         id: true,
@@ -892,9 +894,10 @@ export class PdmService {
             },
         });
 
-        const documentosRet: PdmDocument[] = documentosDB.map((d) => {
+        const documentosRet: PdmItemDocumentDto[] = documentosDB.map((d) => {
             return {
                 id: d.id,
+                descricao: d.descricao,
                 arquivo: {
                     id: d.arquivo.id,
                     tamanho_bytes: d.arquivo.tamanho_bytes,
@@ -903,17 +906,48 @@ export class PdmService {
                     diretorio_caminho: d.arquivo.diretorio_caminho,
                     download_token: this.uploadService.getDownloadToken(d.arquivo.id, '1d').download_token,
                 } satisfies ArquivoBaseDto,
-            };
+            } satisfies PdmItemDocumentDto;
         });
 
         return documentosRet;
+    }
+    async updateDocumento(
+        tipo: TipoPdm,
+        pdm_id: number,
+        documentoId: number,
+        dto: UpdatePdmDocumentDto,
+        user: PessoaFromJwt
+    ) {
+        this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+        if (dto.diretorio_caminho)
+            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
+
+        const documento = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                return await prismaTx.pdmDocumento.update({
+                    where: {
+                        id: documentoId,
+                        pdm: { tipo, id: pdm_id },
+                        pdm_id: pdm_id,
+                    },
+                    data: {
+                        descricao: dto.descricao,
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                    select: { id: true },
+                });
+            }
+        );
+
+        return { id: documento.id };
     }
 
     async remove_document(tipo: TipoPdm, pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
         const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        await this.prisma.arquivoDocumento.updateMany({
+        await this.prisma.pdmDocumento.updateMany({
             where: { pdm_id: pdm_id, removido_em: null, id: pdmDocId },
             data: {
                 removido_por: user.id,
