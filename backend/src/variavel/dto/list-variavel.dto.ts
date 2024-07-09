@@ -4,6 +4,7 @@ import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
+import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -19,7 +20,7 @@ export class VariavelDetailDto extends VariavelItemDto {
 }
 
 export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['responsaveis']) {
-    orgao_proprietario_id: number | null;
+    orgao_proprietario: OrgaoResumo | null;
     medicao_grupo_ids: number[] | null;
     validacao_grupo_ids: number[] | null;
     liberacao_grupo_ids: number[] | null;
