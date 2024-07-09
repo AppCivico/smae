@@ -2454,6 +2454,10 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
         };
 
         if (tipo == 'Global') {
+            // retirando, pois o ... do selfItem[0] adiciona isso que não queremos
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (detailDto as any).responsaveis;
+
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
                 orgao_proprietario_id: detalhes.orgao_proprietario_id,
