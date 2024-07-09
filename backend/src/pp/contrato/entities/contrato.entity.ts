@@ -25,6 +25,7 @@ export class ContratoDetailDto {
     observacoes: string | null;
     data_assinatura: Date | null;
     data_inicio: Date | null;
+    data_termino: Date | null;
     prazo_numero: number | null;
     prazo_unidade: string | null;
     data_base_mes: number | null;
