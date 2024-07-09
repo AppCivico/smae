@@ -54,7 +54,10 @@ const {
 });
 // PRA-FAZER: simplificar o gerenciamento de valores
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const carga = { ...valoresControlados };
+  const carga = {
+    ...valoresControlados,
+    upload_token: arquivoParaEdição?.value.upload_token,
+  };
   try {
     curfile.loading = true;
 
