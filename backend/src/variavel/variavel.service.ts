@@ -138,9 +138,14 @@ export class VariavelService {
         if (dto.supraregional === null) delete dto.supraregional;
 
         let indicador: IndicadorInfo | undefined = undefined;
+        let codigo: string;
         if (tipo == 'PDM') {
             if (!('indicador_id' in dto) || !dto.indicador_id)
                 throw new BadRequestException('Indicador é obrigatório para variáveis do PDM');
+            if (!('codigo' in dto) || !dto.codigo)
+                throw new BadRequestException('Código é obrigatório para variáveis do PDM');
+
+            codigo = dto.codigo;
 
             indicador = await this.buscaIndicadorParaVariavel(dto.indicador_id);
 
@@ -159,6 +164,11 @@ export class VariavelService {
 
         this.checkOrgaoProprietario(tipo, dto, user);
         const responsaveis = 'responsaveis' in dto ? dto.responsaveis : [];
+
+        // depois dos checks, pois pode deixar buracos na sequencia
+        if (tipo == 'Global') {
+            codigo = await this.geraCodigoVariavelGlobal(dto);
+        }
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -183,7 +193,15 @@ export class VariavelService {
                         throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
                 }
 
-                const ret = await this.performVariavelSave(tipo, prismaTx, dto, indicador, responsaveis, logger);
+                const ret = await this.performVariavelSave(
+                    tipo,
+                    prismaTx,
+                    dto,
+                    indicador,
+                    responsaveis,
+                    logger,
+                    codigo
+                );
                 await logger.saveLogs(prismaTx, user.getLogData());
                 return ret;
             },
@@ -195,6 +213,10 @@ export class VariavelService {
         );
 
         return { id: created.id };
+    }
+
+    async geraCodigoVariavelGlobal(_dto: CreateVariavelBaseDto | CreateVariavelPDMDto): Promise<string> {
+        throw new Error('Method not implemented.');
     }
 
     async create_region_generated(
@@ -255,12 +277,12 @@ export class VariavelService {
                         {
                             ...dto, // aqui eu passo tudo, pq no performVariavelSave eu deixo só o que é necessário
                             titulo: dto.titulo + ' ' + regiao.descricao,
-                            codigo: prefixo + regiao.pdm_codigo_sufixo,
                             regiao_id: regiao.id,
                         },
                         indicador,
                         responsaveis,
-                        logger
+                        logger,
+                        prefixo + regiao.pdm_codigo_sufixo
                     );
                     ids.push(variavel.id);
                 }
@@ -273,11 +295,11 @@ export class VariavelService {
                         {
                             ...dto, // aqui eu deixo tudo tbm, só pra não duplicar 100%
                             titulo: dto.titulo,
-                            codigo: prefixo,
                         },
                         indicador,
                         responsaveis,
-                        logger
+                        logger,
+                        prefixo
                     );
                 }
 
@@ -300,7 +322,8 @@ export class VariavelService {
         dto: CreateVariavelBaseDto,
         indicador: IndicadorInfo | undefined,
         responsaveis: number[],
-        logger: LoggerWithLog | undefined
+        logger: LoggerWithLog | undefined,
+        codigo: string
     ) {
         logger = logger ?? LoggerWithLog('Criação de variável');
 
@@ -308,7 +331,7 @@ export class VariavelService {
         const jaEmUso = await prismaTxn.variavel.count({
             where: {
                 removido_em: null,
-                codigo: dto.codigo,
+                codigo: codigo,
 
                 OR: [
                     indicador_id
@@ -328,9 +351,9 @@ export class VariavelService {
             },
         });
         if (jaEmUso > 0 && tipo == 'PDM')
-            throw new BadRequestException(`Código ${dto.codigo} já está em uso no indicador.`);
+            throw new BadRequestException(`Código ${codigo} já está em uso no indicador.`);
         if (jaEmUso > 0 && tipo == 'Global')
-            throw new BadRequestException(`Código ${dto.codigo} já está em uso no sistema.`);
+            throw new BadRequestException(`Código ${codigo} já está em uso no sistema.`);
 
         // TODO verificar quem pode usar o orgao_proprietario_id
         // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo_ids
@@ -341,13 +364,14 @@ export class VariavelService {
             data: {
                 tipo,
                 titulo: dto.titulo,
-                codigo: dto.codigo,
+                codigo: codigo,
                 acumulativa: dto.acumulativa,
                 mostrar_monitoramento: dto.mostrar_monitoramento,
                 unidade_medida_id: dto.unidade_medida_id,
                 ano_base: dto.ano_base,
                 valor_base: dto.valor_base,
                 periodicidade: dto.periodicidade,
+                polaridade: dto.polaridade,
                 orgao_id: dto.orgao_id,
                 regiao_id: dto.regiao_id,
                 variavel_categorica_id: dto.variavel_categorica_id,
@@ -672,6 +696,7 @@ export class VariavelService {
                 atraso_meses: true,
                 suspendida_em: true,
                 mostrar_monitoramento: true,
+                polaridade: true,
                 unidade_medida: {
                     select: {
                         id: true,
@@ -822,6 +847,7 @@ export class VariavelService {
                 ano_base: row.ano_base,
                 valor_base: row.valor_base,
                 periodicidade: row.periodicidade,
+                polaridade: row.polaridade,
                 orgao: row.orgao,
                 regiao: row.regiao,
                 variavel_categorica_id: row.variavel_categorica_id,
@@ -1098,13 +1124,13 @@ export class VariavelService {
                 periodicidade: true,
                 supraregional: true,
                 variavel_categorica_id: true,
-                orgao_proprietario_id: true,
+                orgao_id: true,
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
 
-        await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_proprietario_id ?? MIN_DTO_SAFE_NUM);
+        await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_id ?? MIN_DTO_SAFE_NUM);
 
         let indicador_id: number | undefined = undefined;
         if (tipo == 'PDM') {
@@ -1439,8 +1465,8 @@ export class VariavelService {
         }
     }
 
-    private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_proprietario_id: number | undefined) {
-        const orgao_id = dto.orgao_proprietario_id ?? current_orgao_proprietario_id;
+    private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_id: number | undefined) {
+        const orgao_id = dto.orgao_id ?? current_orgao_id;
 
         const grupoPrefetch = await this.prisma.grupoResponsavelVariavel.findMany({
             where: {
@@ -2326,6 +2352,7 @@ export class VariavelService {
 
     async criarVariavelCronograma(
         dto: CreatePeloIndicadorDto,
+        codigo: string,
         user: PessoaFromJwt,
         prismaTxn: Prisma.TransactionClient,
         now: Date
@@ -2336,7 +2363,7 @@ export class VariavelService {
         const jaEmUso = await prismaTxn.variavel.count({
             where: {
                 removido_em: null,
-                codigo: dto.codigo,
+                codigo: codigo,
                 indicador_variavel: {
                     some: {
                         indicador_id: indicador.id,
@@ -2344,11 +2371,11 @@ export class VariavelService {
                 },
             },
         });
-        if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
+        if (jaEmUso > 0) throw new HttpException(`Código ${codigo} já está em uso no indicador.`, 400);
 
         const variavel = await prismaTxn.variavel.create({
             data: {
-                codigo: dto.codigo,
+                codigo: codigo,
                 titulo: dto.titulo,
                 orgao_id: dto.orgao_id,
                 casas_decimais: 0,
@@ -2376,24 +2403,7 @@ export class VariavelService {
 
         return { id: variavel.id };
     }
-    /*
-export class VariavelDetailDto extends VariavelItemDto {
-    assuntos: IdNomeDto[];
-    periodos: VariaveisPeriodosDto;
-    dado_aberto: boolean;
-    metodologia: string | null;
-    descricao: string | null;
-    fonte_id: number | null;
-}
 
-export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['responsaveis']) {
-    orgao_proprietario_id: number | null;
-    medicao_grupo_ids: number[] | null;
-    validacao_grupo_ids: number[] | null;
-    liberacao_grupo_ids: number[] | null;
-}
-
-*/
     async findOne(
         tipo: TipoVariavel,
         id: number,
