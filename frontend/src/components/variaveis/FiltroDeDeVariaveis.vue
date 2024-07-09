@@ -84,7 +84,7 @@
           class="label"
           for="plano-setorial-id"
         >
-          {{ schema.fields.plano_setorial_id?.spec.label || 'Campo faltando no schema' }}
+          Plano setorial
         </label>
         <select
           id="plano-setorial-id"
