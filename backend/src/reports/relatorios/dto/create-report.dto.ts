@@ -11,6 +11,7 @@ import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/
 import { PdmCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
+import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
 
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
@@ -36,6 +37,7 @@ export class CreateReportDto {
             CreateRelProjetosDto,
             CreateRelProjetoStatusDto,
             CreateRelObraStatusDto,
+            CreateRelObrasDto,
             CreateRelProjetoPrevisaoCustoDto
         ),
     })

@@ -14,6 +14,7 @@ import { ReportsService } from './reports.service';
 import { PPStatusModule } from '../pp-status/pp-status.module';
 import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
 import { TransferenciasModule } from '../transferencias/transferencias.module';
+import { PPObrasModule } from '../pp-obras/pp-obras.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { TransferenciasModule } from '../transferencias/transferencias.module';
         forwardRef(() => PPProjetoModule),
         forwardRef(() => PPProjetosModule),
         forwardRef(() => PPStatusModule),
+        forwardRef(() => PPObrasModule),
         forwardRef(() => ParlamentaresModule),
         forwardRef(() => TransferenciasModule),
         JwtModule.register({

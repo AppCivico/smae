@@ -3182,6 +3182,7 @@ enum FonteRelatorio {
     Parlamentares
     Transferencias
     ObraStatus
+    Obras
 }
 
 model Relatorio {

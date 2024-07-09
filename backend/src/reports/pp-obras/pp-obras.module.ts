@@ -11,4 +11,4 @@ import { PPObrasController } from './pp-obras.controller';
     providers: [PPObrasService],
     exports: [PPObrasService],
 })
-export class PPProjetosModule {}
+export class PPObrasModule {}
