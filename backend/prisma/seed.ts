@@ -91,7 +91,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
-    ModalidadeContratacao: ['Modalidade de Contratação', 'MDO'],
+    ModalidadeContratacao: ['Modalidade de Contratação', 'SMAE'],
 
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
@@ -463,6 +463,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode participar de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
+    ],
+    CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar Grupos de Variáveis'],
         ['CadastroGrupoVariavel.administrador_no_orgao', 'Gerenciar Grupos de Variáveis do órgão ao qual pertence'],
     ],
@@ -601,14 +603,8 @@ const PerfilAcessoConfig: {
     {
         // o TipoAditivo vai ficar fora do "todos os privilégios"
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
-        descricao:
-            'Administrador Geral - Todas as permissões do sistema, exceto ciclo de monitoramento, gerência de projeto, tipo de aditivo, modalidade de contratação e grupo de variáveis.',
-        privilegios: [
-            'SMAE.superadmin',
-            ...todosPrivilegios.filter(
-                (e) => /^(PDM|SMAE|PS|MDO|TipoAditivo|CadastroGrupoVariavel|ModalidadeContratacao)\./.test(e) === false
-            ),
-        ],
+        descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negócio específicas.',
+        privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
     },
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
