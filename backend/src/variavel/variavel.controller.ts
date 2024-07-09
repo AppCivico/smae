@@ -10,7 +10,7 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
-import { CreateGeradorVariaveBaselDto, CreateVariavelBaseDto, CreateVariavelPDMDto } from './dto/create-variavel.dto';
+import { CreateGeradorVariaveBaselDto, CreateGeradorVariavelPDMDto, CreateVariavelBaseDto, CreateVariavelPDMDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import {
     ListSeriesAgrupadas,
@@ -94,7 +94,7 @@ export class IndicadorVariavelPDMController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroIndicador.inserir'])
     async create_generated(
-        @Body() dto: CreateGeradorVariaveBaselDto,
+        @Body() dto: CreateGeradorVariavelPDMDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<BatchRecordWithId> {
         return { ids: await this.variavelService.create_region_generated(this.tipo, dto, user) };
