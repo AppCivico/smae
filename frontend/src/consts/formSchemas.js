@@ -22,6 +22,7 @@ import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
 import periodicidades from '@/consts/periodicidades';
+import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import statusObras from '@/consts/statusObras';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
@@ -3128,6 +3129,7 @@ export const variavelGlobal = object({
   acumulativa: boolean()
     .required(),
   ano_base: number()
+    .label('Ano base')
     .positive()
     .integer()
     .nullable(),
@@ -3149,13 +3151,8 @@ export const variavelGlobal = object({
     .min(0)
     .max(12)
     .required(),
-  codigo: string()
-    .label('Código')
-    .min(1)
-    .max(60)
-    .required(),
   dado_aberto: boolean()
-    .label('Dado aberto')
+    .label('Disponível como dado aberto')
     .nullable(),
   descricao: string()
     .label('Descrição')
@@ -3195,80 +3192,68 @@ export const variavelGlobal = object({
   mostrar_monitoramento: boolean()
     .label('Utilizar esta variável composta no ciclo de monitoramento')
     .required(),
-  nivel_regionalizacao: number()
-    .label('Nível de regionalização')
-    .min(1)
-    .max(4)
-    .nullable(),
   orgao_id: number()
     .label('Órgão responsável')
     .positive()
     .required(),
   orgao_proprietario_id: number()
     .label('Órgão proprietário')
-    .nullable()
+    .required()
     .positive(),
   periodicidade: mixed()
     .label('Periodicidade')
     .oneOf(Object.keys(periodicidades.variaveis))
     .required(),
   periodos: object({
-    preenchimento_inicio: number()
-      .label('Preenchimento início')
-      .max(31)
-      .positive()
-      .required(),
-    preenchimento_fim: number()
-      .label('Preenchimento início')
-      .max(31)
-      .positive()
-      .required(),
-    validacao_inicio: number()
-      .label('Preenchimento início')
-      .max(31)
-      .positive()
-      .required(),
-    validacao_fim: number()
-      .label('Preenchimento início')
-      .max(31)
-      .positive()
-      .required(),
-    validacao_grupo_ids: array()
-      .label('Grupos de validação')
-      .nullable()
-      .of(
-        number()
-          .positive()
-          .required(),
-      ),
     liberacao_inicio: number()
-      .label('Preenchimento início')
+      .label('Início da liberação')
       .max(31)
+      .min(ref('periodos.validacao_inicio'), 'Precisa ser posterior a validação')
       .positive()
-      .required(),
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     liberacao_fim: number()
-      .label('Preenchimento início')
+      .label('Fim da liberação')
       .max(31)
+      .min(ref('periodos.liberacao_inicio'), 'Precisa ser posterior ao dia de início')
       .positive()
-      .required(),
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
+    preenchimento_inicio: number()
+      .label('Início do preenchimento')
+      .max(31)
+      .min(1)
+      .positive()
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
+    preenchimento_fim: number()
+      .label('Fim do preenchimento')
+      .max(31)
+      .min(ref('periodos.preenchimento_inicio'), 'Precisa ser posterior ao dia de início')
+      .positive()
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
+    validacao_inicio: number()
+      .label('Início da validação')
+      .max(31)
+      .min(ref('periodos.preenchimento_inicio'), 'Precisa ser posterior ao preenchimento')
+      .positive()
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
+    validacao_fim: number()
+      .label('Fim da validação')
+      .max(31)
+      .min(ref('periodos.validacao_inicio'), 'Precisa ser posterior ao dia de início')
+      .positive()
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
   })
+    .label('Intervalos de interação')
     .required(),
-  regiao_id: number()
-    .label('Região')
-    .positive()
-    .nullable(),
-  responsaveis: array()
-    .label('Responsáveis')
-    .min(1)
-    .of(
-      number()
-        .required()
-        .positive(),
-    )
+  polaridade: mixed()
+    .label('Polaridade')
+    .oneOf(Object.keys(polaridadeDeVariaveis))
     .required(),
-  supraregional: boolean()
-    .label('Incluir variável supra regional')
-    .nullable(),
   titulo: string()
     .label('Nome')
     .max(256)
@@ -3289,10 +3274,40 @@ export const variavelGlobal = object({
     .min(0)
     .required('Preencha o valor base'),
   variavel_categorica_id: number()
-    .label('Variável categórica')
+    .label('Tipo de variável')
     .positive()
     .nullable(),
 });
+
+export const variavelGlobalParaGeracao = variavelGlobal.concat(
+  object({
+    codigo: string()
+      .label('Prefixo')
+      .min(1)
+      .max(60)
+      .required(),
+    criar_formula_composta: boolean()
+      .label('Criar fórmulas compostas')
+      .required(),
+    nivel_regionalizacao: number()
+      .label('Nível de regionalização')
+      .min(1)
+      .max(4)
+      .required(),
+    regioes: array()
+      .label('Regiões abrangidas')
+      .of(
+        number()
+          .integer()
+          .positive()
+          .required(),
+      )
+      .required(),
+    supraregional: boolean()
+      .label('Incluir variável supra regional')
+      .required(),
+  }),
+);
 
 export const valoresRealizadoEmLote = object()
   .shape({

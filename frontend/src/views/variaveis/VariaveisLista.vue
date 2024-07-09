@@ -61,6 +61,13 @@ watchEffect(() => {
     <TítuloDePágina id="titulo-da-pagina" />
 
     <hr class="f1">
+
+    <router-link
+      :to="{ name: 'variaveisCriar' }"
+      class="btn big ml1"
+    >
+      Nova variável
+    </router-link>
   </header>
 
   <FiltroDeDeVariaveis :aria-busy="chamadasPendentes.lista" />
@@ -148,16 +155,30 @@ watchEffect(() => {
             </ul>
           </td>
           <td>
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
+            <router-link
+              v-if="item.pode_editar"
+              :to="{ name: 'variaveisEditar', params: { variavelId: item.id } }"
+              class="tprimary"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </router-link>
           </td>
           <td>
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            <button
+              v-if="item.pode_excluir"
+              class="like-a__text"
+              arial-label="excluir"
+              title="excluir"
+              @click="excluirVariavel(item.id, item.titulo)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
           </td>
         </tr>
         <tr v-if="item.metodologia">
