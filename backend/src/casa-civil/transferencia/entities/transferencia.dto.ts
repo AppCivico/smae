@@ -4,7 +4,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
-import { TipoDocumentoDto } from 'src/tipo-documento/entities/tipo-documento.entity';
+import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 
 export class TransferenciaDto {
     id: number;
@@ -87,16 +87,7 @@ export class TransferenciaDetailDto {
 }
 
 export class TransferenciaAnexoDto {
-    arquivo: {
-        id: number;
-        descricao: string | null;
-        tamanho_bytes: number;
-        nome_original: string;
-        download_token?: string;
-        diretorio_caminho: string | null;
-        data: Date | null;
-        TipoDocumento: TipoDocumentoDto | null;
-    };
+    arquivo: ArquivoBaseDto;
     id: number;
     descricao: string | null;
     data: Date | null;

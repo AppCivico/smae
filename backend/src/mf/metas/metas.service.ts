@@ -43,6 +43,7 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -1806,8 +1807,9 @@ export class MetasService {
                           criado_em: r.criado_em,
                           arquivo: {
                               ...r.arquivo,
+                              descricao: null,
                               ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-                          },
+                          } satisfies ArquivoBaseDto,
                       };
                   })
                 : [],
@@ -1867,7 +1869,6 @@ export class MetasService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
                     },
@@ -2150,7 +2151,6 @@ export class MetasService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
                     },
@@ -2178,8 +2178,9 @@ export class MetasService {
                     criado_em: r.criado_em,
                     arquivo: {
                         ...r.arquivo,
+                        descricao: null,
                         ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-                    },
+                    } satisfies ArquivoBaseDto,
                 };
             }),
         };

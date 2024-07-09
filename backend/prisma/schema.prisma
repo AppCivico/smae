@@ -1081,7 +1081,7 @@ model Arquivo {
     nome_original                   String
     mime_type                       String?
     tamanho_bytes                   Int
-    descricao                       String?
+    descricao                       String? @ignore
     tipo_documento_id               Int?
     diretorio_caminho               String?
     TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])

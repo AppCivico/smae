@@ -32,16 +32,17 @@ import {
     ProjetoPermissoesDto,
 } from './entities/projeto.entity';
 
+import { JwtService } from '@nestjs/jwt';
 import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { Object2Hash } from '../../common/object2hash';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
-import { JwtService } from '@nestjs/jwt';
-import { Object2Hash } from '../../common/object2hash';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -112,7 +113,6 @@ type ProjetoResumoPermisao = {
     responsavel_id: number | null;
     tipo: TipoProjeto;
 };
-
 
 @Injectable()
 export class ProjetoService {
@@ -2818,18 +2818,13 @@ export class ProjetoService {
         const now = new Date(Date.now());
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const arquivo = await prismaTx.arquivo.findFirstOrThrow({
-                    where: { id: arquivoId },
-                    select: { descricao: true },
-                });
-
                 return await prismaTx.projetoDocumento.create({
                     data: {
                         criado_em: now,
                         criado_por: user.id,
                         arquivo_id: arquivoId,
                         projeto_id: projetoId,
-                        descricao: dto.descricao ?? arquivo.descricao,
+                        descricao: dto.descricao,
                         data: dto.data,
                     },
                     select: {
@@ -2861,7 +2856,6 @@ export class ProjetoService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
                     },
@@ -2876,13 +2870,11 @@ export class ProjetoService {
                 arquivo: {
                     id: d.arquivo.id,
                     tamanho_bytes: d.arquivo.tamanho_bytes,
-                    descricao: d.arquivo.descricao,
+                    descricao: null,
                     nome_original: d.arquivo.nome_original,
                     diretorio_caminho: d.arquivo.diretorio_caminho,
                     download_token: this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token,
-                    // prop extra deprecada, copia do nivel acima
-                    data: d.data,
-                },
+                } satisfies ArquivoBaseDto,
             };
         });
 

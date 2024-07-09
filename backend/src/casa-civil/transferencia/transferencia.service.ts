@@ -4,10 +4,15 @@ import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prism
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { DistribuicaoRecursoService } from 'src/distribuicao-recurso/distribuicao-recurso.service';
+import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { UploadService } from 'src/upload/upload.service';
+import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
 import {
@@ -16,10 +21,6 @@ import {
     UpdateTransferenciaDto,
 } from './dto/update-transferencia.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
-import { DistribuicaoRecursoService } from 'src/distribuicao-recurso/distribuicao-recurso.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -956,18 +957,13 @@ export class TransferenciaService {
 
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const arquivo = await prismaTx.arquivo.findFirstOrThrow({
-                    where: { id: arquivoId },
-                    select: { descricao: true },
-                });
-
                 return await prismaTx.transferenciaAnexo.create({
                     data: {
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                         arquivo_id: arquivoId,
                         transferencia_id: transferenciaId,
-                        descricao: dto.descricao || arquivo.descricao,
+                        descricao: dto.descricao,
                         data: dto.data,
                     },
                     select: {
@@ -982,9 +978,6 @@ export class TransferenciaService {
 
     async list_document(transferenciaId: number, user: PessoaFromJwt) {
         const arquivos: TransferenciaAnexoDto[] = await this.findAllDocumentos(transferenciaId);
-        for (const item of arquivos) {
-            item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
-        }
 
         return arquivos;
     }
@@ -1001,8 +994,6 @@ export class TransferenciaService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        TipoDocumento: true,
-                        descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
                     },
@@ -1011,19 +1002,19 @@ export class TransferenciaService {
         });
 
         const documentosRet: TransferenciaAnexoDto[] = documentosDB.map((d) => {
+            const link = this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token;
             return {
                 id: d.id,
                 data: d.data,
                 descricao: d.descricao,
                 arquivo: {
+                    descricao: null,
                     id: d.arquivo.id,
                     tamanho_bytes: d.arquivo.tamanho_bytes,
-                    descricao: d.arquivo.descricao,
                     nome_original: d.arquivo.nome_original,
                     diretorio_caminho: d.arquivo.diretorio_caminho,
-                    data: d.data,
-                    TipoDocumento: d.arquivo.TipoDocumento,
-                },
+                    download_token: link,
+                } satisfies ArquivoBaseDto,
             };
         });
 
