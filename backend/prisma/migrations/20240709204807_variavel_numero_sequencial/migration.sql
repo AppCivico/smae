@@ -19,3 +19,6 @@ SET polaridade = COALESCE(
     limit 1 --, nao é necessário limitar ainda (pdm), mas é bom para garantir que só vai pegar da crash em prod
     ),
  polaridade);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "variavel_numero_sequencial_ano_referencia_key" ON "variavel_numero_sequencial"("ano_referencia");

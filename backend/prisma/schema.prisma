@@ -1465,7 +1465,8 @@ enum TipoVariavel {
 
 model VariavelNumeroSequencial {
     id Int @id @default(autoincrement())
-    ano_referencia Int
+
+    ano_referencia Int @unique
     sequencial     Int
 
     @@map("variavel_numero_sequencial")
