@@ -108,6 +108,11 @@ export class CreateContratoDto {
     data_inicio?: Date;
 
     @IsOptional()
+    @Transform(DateTransform)
+    @IsOnlyDate()
+    data_termino?: Date;
+
+    @IsOptional()
     @IsInt()
     prazo_numero?: number;
 

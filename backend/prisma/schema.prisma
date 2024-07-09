@@ -760,10 +760,10 @@ model Pdm {
 
     considerar_atraso_apos DateTime? @db.Date()
 
-    atualizador         Pessoa?            @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador             Pessoa?            @relation("Criador", fields: [criado_por], references: [id])
-    desativador         Pessoa?            @relation("Desativador", fields: [desativado_por], references: [id])
-    removedor           Pessoa?            @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador         Pessoa?        @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador             Pessoa?        @relation("Criador", fields: [criado_por], references: [id])
+    desativador         Pessoa?        @relation("Desativador", fields: [desativado_por], references: [id])
+    removedor           Pessoa?        @relation("Removedor", fields: [removido_por], references: [id])
     Eixo                MacroTema[]
     Tag                 Tag[]
     ObjetivoEstrategico Tema[]
@@ -1081,7 +1081,7 @@ model Arquivo {
     nome_original                   String
     mime_type                       String?
     tamanho_bytes                   Int
-    descricao                       String? @ignore
+    descricao                       String?                           @ignore
     tipo_documento_id               Int?
     diretorio_caminho               String?
     TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
@@ -6481,6 +6481,7 @@ model Contrato {
     observacoes        String?
     data_assinatura    DateTime?             @db.Date()
     data_inicio        DateTime?             @db.Date()
+    data_termino       DateTime?             @db.Date()
     prazo_numero       Int?
     prazo_unidade      ContratoPrazoUnidade?
     data_base_mes      Int?
