@@ -54,7 +54,11 @@ const {
 });
 // PRA-FAZER: simplificar o gerenciamento de valores
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const carga = { ...valoresControlados };
+  const carga = {
+    ...valoresControlados,
+    upload_token: arquivoParaEdição?.value.upload_token,
+    arquivo_id: Number(arquivoParaEdição?.value.arquivo_id),
+  };
   try {
     curfile.loading = true;
 
@@ -208,7 +212,6 @@ watch(arquivoParaEdição, (novosValores) => {
             class="inputtext light mb1"
             maxlength="10"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('data', $v || null); }"
           />
           <ErrorMessage
             class="error-msg mb1"
