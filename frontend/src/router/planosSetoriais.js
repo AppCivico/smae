@@ -12,7 +12,6 @@ export default {
     rotaPrescindeDeChave: true,
     limitarÀsPermissões: [
       'CadastroPS.',
-      'CadastroSubTema.inserir',
     ],
   },
   children: [
