@@ -456,7 +456,7 @@ function abreEdicaoOrcamento(id) {
                           <a
                             :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
                             download
-                          >{{ subitem?.arquivo?.descricao ?? '-' }}</a>
+                          >{{ subitem?.descricao ?? '-' }}</a>
                         </td>
                         <td style="white-space: nowrap; text-align: right;">
                           <a
