@@ -3,13 +3,13 @@ import { Periodicidade, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
+import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
-import { IdNomeDto } from '../../common/dto/IdNome.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -41,7 +41,6 @@ export class VariavelItemDto {
     regiao: Regiao | null;
     indicador_variavel: IndicadorVariavel[];
     responsaveis?: IdNomeExibicaoDto[];
-    assunto_variavel?: IdNomeDto[];
     ano_base?: number | null;
     codigo: string;
     atraso_meses: number;

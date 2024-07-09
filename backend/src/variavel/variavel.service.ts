@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
     Periodicidade,
@@ -33,7 +33,7 @@ import {
     VariaveisPeriodosDto,
 } from './dto/create-variavel.dto';
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
-import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
+import { ListSeriesAgrupadas, VariavelDetailDto, VariavelGlobalDetailDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
     SerieValorNomimal,
@@ -699,9 +699,6 @@ export class VariavelService {
                         pdm_codigo_sufixo: true,
                     },
                 },
-                VariavelAssuntoVariavel: {
-                    select: { assunto_variavel: { select: { id: true, nome: true } } },
-                },
                 indicador_variavel: {
                     select: {
                         desativado: true,
@@ -828,7 +825,6 @@ export class VariavelService {
                 orgao: row.orgao,
                 regiao: row.regiao,
                 variavel_categorica_id: row.variavel_categorica_id,
-                assunto_variavel: row.VariavelAssuntoVariavel.map((v) => v.assunto_variavel),
                 etapa: row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? mapEtapa[row.id] : null,
                 inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
                 fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),
@@ -1043,7 +1039,7 @@ export class VariavelService {
                 in: ids != undefined ? ids : undefined,
             },
             planos: filters.plano_setorial_id ? { has: filters.plano_setorial_id } : undefined,
-            tipo: { in: ['Composta', 'Global'] },
+            tipo: { in: ['Calculada', 'Global'] },
 
             variavel: {
                 AND: this.getVariavelWhereSet(filters),
@@ -2379,5 +2375,101 @@ export class VariavelService {
         });
 
         return { id: variavel.id };
+    }
+    /*
+export class VariavelDetailDto extends VariavelItemDto {
+    assuntos: IdNomeDto[];
+    periodos: VariaveisPeriodosDto;
+    dado_aberto: boolean;
+    metodologia: string | null;
+    descricao: string | null;
+    fonte_id: number | null;
+}
+
+export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['responsaveis']) {
+    orgao_proprietario_id: number | null;
+    medicao_grupo_ids: number[] | null;
+    validacao_grupo_ids: number[] | null;
+    liberacao_grupo_ids: number[] | null;
+}
+
+*/
+    async findOne(
+        tipo: TipoVariavel,
+        id: number,
+        user: PessoaFromJwt
+    ): Promise<VariavelGlobalDetailDto | VariavelDetailDto> {
+        const selfItem = await this.findAll(tipo, { id: id });
+        if (selfItem.length === 0) {
+            throw new NotFoundException('Variável não encontrada');
+        }
+
+        const detalhes = await this.prisma.variavel.findFirstOrThrow({
+            where: { id: id },
+            select: {
+                VariavelAssuntoVariavel: {
+                    select: { assunto_variavel: { select: { id: true, nome: true } } },
+                },
+                periodo_liberacao: true,
+                periodo_validacao: true,
+                periodo_preenchimento: true,
+                fonte: { select: { id: true, nome: true } },
+                metodologia: true,
+                dado_aberto: true,
+                descricao: true,
+                orgao_proprietario_id: true,
+                VariavelGrupoResponsavelVariavel: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        grupo_responsavel_variavel: {
+                            select: {
+                                id: true,
+                                perfil: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const detailDto: VariavelDetailDto = {
+            ...selfItem[0],
+            assuntos: detalhes.VariavelAssuntoVariavel.map((e) => {
+                return { id: e.assunto_variavel.id, nome: e.assunto_variavel.nome };
+            }),
+            periodos: {
+                liberacao_inicio: detalhes.periodo_liberacao[0],
+                liberacao_fim: detalhes.periodo_liberacao[1],
+                validacao_inicio: detalhes.periodo_validacao[0],
+                validacao_fim: detalhes.periodo_validacao[1],
+                preenchimento_inicio: detalhes.periodo_preenchimento[0],
+                preenchimento_fim: detalhes.periodo_preenchimento[1],
+            },
+            fonte: detalhes.fonte,
+            metodologia: detalhes.metodologia,
+            descricao: detalhes.descricao,
+            dado_aberto: detalhes.dado_aberto,
+        };
+
+        if (tipo == 'Global') {
+            const globalDetailDto: VariavelGlobalDetailDto = {
+                ...detailDto,
+                orgao_proprietario_id: detalhes.orgao_proprietario_id,
+                medicao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
+                    (e) => e.grupo_responsavel_variavel.perfil === 'Medicao'
+                ).map((e) => e.grupo_responsavel_variavel.id),
+                validacao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
+                    (e) => e.grupo_responsavel_variavel.perfil === 'Validacao'
+                ).map((e) => e.grupo_responsavel_variavel.id),
+                liberacao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
+                    (e) => e.grupo_responsavel_variavel.perfil === 'Liberacao'
+                ).map((e) => e.grupo_responsavel_variavel.id),
+            };
+            return globalDetailDto;
+        }
+
+        return detailDto;
     }
 }
