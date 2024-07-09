@@ -167,7 +167,7 @@ export class VariavelService {
 
         // depois dos checks, pois pode deixar buracos na sequencia
         if (tipo == 'Global') {
-            codigo = await this.geraCodigoVariavelGlobal(dto);
+            codigo = await this.geraCodigoVariavel(tipo, dto);
         }
 
         const created = await this.prisma.$transaction(
@@ -215,8 +215,68 @@ export class VariavelService {
         return { id: created.id };
     }
 
-    async geraCodigoVariavelGlobal(_dto: CreateVariavelBaseDto | CreateVariavelPDMDto): Promise<string> {
-        throw new Error('Method not implemented.');
+    async geraCodigoVariavel(
+        tipo: TipoVariavel,
+        dto: Pick<CreateVariavelBaseDto, 'periodicidade' | 'inicio_medicao' | 'variavel_categorica_id'>
+    ): Promise<string> {
+        const deparaTipoCategorica: Record<TipoVariavelCategorica, string> = {
+            Binaria: 'BIN',
+            Cronograma: 'CRONO',
+            Qualitativa: 'QUALI',
+        };
+
+        const deparaAmbienteVariavel: Record<TipoVariavel, string> = {
+            Global: '',
+            Calculada: 'CALC',
+            PDM: 'PDM',
+        };
+
+        const deparaPeriodicidade: Record<Periodicidade, string> = {
+            Mensal: 'MEN',
+            Bimestral: 'BIM',
+            Trimestral: 'TRI',
+            Quadrimestral: 'QDR',
+            Semestral: 'SEM',
+            Anual: 'ANU',
+            Quinquenal: 'QUI',
+            Secular: 'SEC',
+        };
+
+        if (!dto.inicio_medicao) throw new BadRequestException('Inicio de medição é obrigatório para gerar código');
+        const ano = +dto.inicio_medicao.getFullYear().toString();
+
+        let contador: number = -1;
+
+        for (let i = 0; i < 100; i++ && contador == -1) {
+            try {
+                const tryUpdate = await this.prisma.variavelNumeroSequencial.upsert({
+                    where: { ano_referencia: ano },
+                    update: { sequencial: { increment: 1 } },
+                    create: {
+                        ano_referencia: ano,
+                        sequencial: 1,
+                    },
+                    select: { sequencial: true },
+                });
+                contador = tryUpdate.sequencial;
+            } catch (error) {
+                this.logger.error(`Erro ao tentar criar sequencial para ano ${ano}: ${error}`);
+            }
+        }
+        const contadorStr = String(contador).padStart(5, '0');
+
+        let categorica: string = '';
+
+        if (dto.variavel_categorica_id) {
+            const variavelCategorica = await this.prisma.variavelCategorica.findFirst({
+                where: { id: dto.variavel_categorica_id },
+                select: { tipo: true },
+            });
+            if (!variavelCategorica) throw new BadRequestException('Variável categórica não encontrada');
+            categorica = deparaTipoCategorica[variavelCategorica.tipo] + '.';
+        }
+
+        return `${categorica}${deparaAmbienteVariavel[tipo]}.${deparaPeriodicidade[dto.periodicidade]}.${contadorStr}/${ano}`;
     }
 
     async create_region_generated(
@@ -260,7 +320,7 @@ export class VariavelService {
 
         let codigo: string;
         if (tipo == 'Global') {
-            codigo = await this.geraCodigoVariavelGlobal(dto);
+            codigo = await this.geraCodigoVariavel(tipo, dto);
         } else {
             if (!('codigo' in dto) || !dto.codigo)
                 throw new BadRequestException('Código é obrigatório para variáveis do PDM');
