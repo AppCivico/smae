@@ -15,6 +15,7 @@ import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { CreateRelParlamentaresDto } from '../parlamentares/dto/create-parlamentares.dto';
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
 import { WriteStream } from 'fs';
+import { CreateRelObrasDto } from '../pp-obras/dto/create-obras.dto';
 
 @Injectable()
 export class UtilsService {
@@ -126,6 +127,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'ObraStatus':
             theClass = CreateRelObraStatusDto;
+            break;
+        case 'Obras':
+            theClass = CreateRelObrasDto;
             break;
         default:
             fonte satisfies never;

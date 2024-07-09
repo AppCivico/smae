@@ -32,6 +32,7 @@ import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } 
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
+import { PPObrasService } from '../pp-obras/pp-obras.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -65,6 +66,7 @@ export class ReportsService {
         @Inject(forwardRef(() => PPProjetoService)) private readonly ppProjetoService: PPProjetoService,
         @Inject(forwardRef(() => PPProjetosService)) private readonly ppProjetosService: PPProjetosService,
         @Inject(forwardRef(() => PPStatusService)) private readonly ppStatusService: PPStatusService,
+        @Inject(forwardRef(() => PPObrasService)) private readonly ppObrasService: PPObrasService,
         @Inject(forwardRef(() => ParlamentaresService)) private readonly parlamentaresService: ParlamentaresService,
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService
     ) {}
@@ -226,6 +228,9 @@ export class ReportsService {
             case 'ProjetoStatus':
             case 'ObraStatus':
                 service = this.ppStatusService;
+                break;
+            case 'Obras':
+                service = this.ppObrasService;
                 break;
             case 'Parlamentares':
                 service = this.parlamentaresService;
