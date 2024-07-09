@@ -11,6 +11,7 @@ import { ReadOnlyBooleanType } from '../common/TypeReadOnly';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
+import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
@@ -793,6 +794,7 @@ export class PdmService {
         }
 
         // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
+        // eslint-disable-next-line no-constant-condition
         while (1) {
             const keepGoing = await this.verificaCiclosPendentes(Date2YMD.toString(now));
             if (!keepGoing) break;
@@ -883,7 +885,6 @@ export class PdmService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
                     },
@@ -897,11 +898,11 @@ export class PdmService {
                 arquivo: {
                     id: d.arquivo.id,
                     tamanho_bytes: d.arquivo.tamanho_bytes,
-                    descricao: d.arquivo.descricao,
+                    descricao: null,
                     nome_original: d.arquivo.nome_original,
                     diretorio_caminho: d.arquivo.diretorio_caminho,
                     download_token: this.uploadService.getDownloadToken(d.arquivo.id, '1d').download_token,
-                },
+                } satisfies ArquivoBaseDto,
             };
         });
 
@@ -923,7 +924,7 @@ export class PdmService {
 
     @Cron('0 * * * *')
     async handleCron() {
-        if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
+        if (process.env['DISABLE_PDM_CRONTAB']) return;
 
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
@@ -941,6 +942,7 @@ export class PdmService {
                 }
 
                 // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
+                // eslint-disable-next-line no-constant-condition
                 while (1) {
                     const keepGoing = await this.verificaCiclosPendentes(locked[0].now_ymd);
                     if (!keepGoing) break;
