@@ -631,13 +631,13 @@ export class EtapaService {
             const variavel = await this.variavelService.criarVariavelCronograma(
                 {
                     titulo: dto.variavel.titulo,
-                    codigo: dto.variavel.codigo,
                     orgao_id: orgao_id,
                     indicador_id: indicadorInfo.indicador_id,
                 },
+                dto.variavel.codigo,
                 user,
                 prismaTx,
-                now
+                now,
             );
 
             for (const r of etapaAtualizada.responsaveis) {
