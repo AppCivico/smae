@@ -118,7 +118,7 @@ export class CreateVariavelBaseDto {
      */
     @IsOptional()
     @ApiProperty({ enum: Polaridade, enumName: 'Polaridade' })
-    @IsEnum(Periodicidade, {
+    @IsEnum(Polaridade, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
     })
     polaridade?: Polaridade;
