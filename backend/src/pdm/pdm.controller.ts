@@ -269,12 +269,14 @@ export class PlanoSetorialController {
 
     @Patch(':id/documento/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar'])
+    @Roles(PermsPS)
     async updateDocumento(
         @Param() params: FindTwoParams,
         @Body() dto: UpdatePdmDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadWrite');
+
         return await this.pdmService.updateDocumento(this.tipoPdm, params.id, params.id2, dto, user);
     }
 
