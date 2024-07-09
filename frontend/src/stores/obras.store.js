@@ -248,6 +248,7 @@ export const useObrasStore = defineStore('obrasStore', {
           ...cur,
           arquivo: {
             ...cur.arquivo,
+            data: dateTimeToDate(cur.data),
             descricao: cur.descricao,
             id: cur.id,
           },
