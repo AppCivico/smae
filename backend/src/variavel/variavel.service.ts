@@ -276,7 +276,11 @@ export class VariavelService {
             categorica = deparaTipoCategorica[variavelCategorica.tipo] + '.';
         }
 
-        return `${categorica}${deparaAmbienteVariavel[tipo]}.${deparaPeriodicidade[dto.periodicidade]}.${contadorStr}/${ano}`;
+        const dotParts = [categorica, deparaAmbienteVariavel[tipo], deparaPeriodicidade[dto.periodicidade], contadorStr]
+            .filter((e) => e)
+            .join('.');
+
+        return `${dotParts}/${ano}`;
     }
 
     async create_region_generated(
