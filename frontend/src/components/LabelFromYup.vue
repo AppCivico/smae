@@ -63,7 +63,11 @@ const caminhoNoSchema = computed(() => {
         <template v-if="schema">
           {{ caminhoNoSchema?.spec?.label || `Campo: ${name}` }}
         </template>&nbsp;<span
-          v-if="required || caminhoNoSchema?.spec?.presence === 'required'"
+          v-if="required ||
+            (
+              caminhoNoSchema?.spec?.presence === 'required'
+              && caminhoNoSchema?.type !== 'boolean'
+            )"
           class="tvermelho"
         >*</span>
       </template>
