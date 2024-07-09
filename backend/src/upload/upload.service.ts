@@ -456,5 +456,16 @@ export class UploadService {
                 transferencia_id: transferenciaDoc.transferencia_id,
             });
         }
+
+        const pdmDoc = await this.prisma.pdmDocumento.findFirst({
+            where: { arquivo_id: arquivo.id },
+            select: { pdm_id: true },
+        });
+        if (pdmDoc && pdmDoc.pdm_id) {
+            await this.uploadDiretorio.create({
+                caminho: dto.caminho,
+                pdm_id: pdmDoc.pdm_id,
+            });
+        }
     }
 }
