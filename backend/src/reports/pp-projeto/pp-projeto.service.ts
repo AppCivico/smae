@@ -338,7 +338,7 @@ export class PPProjetoService implements ReportableService {
             },
             include: {
                 arquivo: {
-                    select: { id: true, nome_original: true, caminho: true, descricao: true },
+                    select: { id: true, nome_original: true, caminho: true },
                 },
                 criador: {
                     select: { id: true, nome_exibicao: true },
@@ -362,7 +362,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'criador.id', label: 'Criador (ID)' },
                     { value: 'criador.nome_exibicao', label: 'Criador (Nome de Exibição)' },
                     { value: 'arquivo.caminho', label: 'Caminho no Object Storage' },
-                    { value: 'arquivo.descricao', label: 'descricao do Arquivo' },
+                    { value: 'descricao', label: 'descricao do Documento' },
                     { value: 'arquivo.id', label: 'ID do arquivo' },
                 ],
             });
