@@ -32,9 +32,15 @@ const caminhoNoSchema = computed(() => {
     return props.schema.fields[props.name];
   }
 
-  return props.name.split('.').reduce((acc, key, i, array) => (array[i + 1]
-    ? acc[key]?.fields
-    : acc[key]), (props.schema.fields || {})) || null;
+  return props.name.split('.').reduce((acc, key, i, array) => (!array[i + 1]
+    ? acc[key]
+    : (
+      acc?.[key]?.fields
+      || acc?.[key]?.innerType?.fields
+      || acc?.[key]
+      || acc
+    )
+  ), (props.schema?.fields || {})) || null;
 });
 </script>
 <template>
