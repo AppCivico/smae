@@ -111,8 +111,7 @@ export class ContratoService {
                 id: true,
                 numero: true,
                 status: true,
-                data_base_ano: true,
-                data_base_mes: true,
+                data_inicio: true,
                 valor: true,
                 aditivos: {
                     orderBy: { numero: 'asc' },
@@ -120,6 +119,7 @@ export class ContratoService {
                         id: true,
                         data: true,
                         data_termino_atualizada: true,
+                        valor: true,
                     },
                 },
                 processosSei: {
@@ -131,17 +131,22 @@ export class ContratoService {
         });
 
         return linhasContrato.map((contrato) => {
+            const valorMaisAtual = contrato.aditivos.find((aditivo) => aditivo.valor != null)?.valor || contrato.valor;
+
+            const linhaComDatas = contrato.aditivos.find(
+                (aditivo) => aditivo.data_termino_atualizada != null || aditivo.data != null
+            );
+            const dataMaisAtual = linhaComDatas?.data_termino_atualizada || linhaComDatas?.data || contrato.data_inicio;
+
             return {
                 id: contrato.id,
                 numero: contrato.numero,
                 status: contrato.status,
-                data_base_ano: contrato.data_base_ano,
-                data_base_mes: contrato.data_base_mes,
-                valor: contrato.valor,
+                valor: valorMaisAtual,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
                 quantidade_aditivos: contrato.aditivos.length,
                 data_termino_atual: contrato.aditivos.length > 0 ? contrato.aditivos[-1].data_termino_atualizada : null,
-                data_termino_inicial: contrato.aditivos.length > 0 ? contrato.aditivos[0].data : null,
+                data_termino_inicial: dataMaisAtual,
             };
         });
     }
