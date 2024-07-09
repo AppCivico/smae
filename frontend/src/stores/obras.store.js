@@ -241,8 +241,21 @@ export const useObrasStore = defineStore('obrasStore', {
       }, {})
       : {}),
 
-    arquivosPorId: ({ arquivos }) => arquivos
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    arquivosPorId(estado) {
+      const { arquivos } = estado;
+      const result = arquivos.reduce((acc, cur) => {
+        acc[cur.id] = {
+          ...cur,
+          arquivo: {
+            ...cur.arquivo,
+            descricao: cur.descricao,
+            id: cur.id,
+          },
+        };
+        return acc;
+      }, {});
+      return result;
+    },
 
     pdmsPorId: ({ pdmsSimplificados }) => pdmsSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
