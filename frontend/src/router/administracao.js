@@ -738,7 +738,7 @@ export default [
     path: '/tipo-de-aditivos',
     component: () => import('@/views/tipoDeAditivo/AditivosRaiz.vue'),
     meta: {
-      limitarÀsPermissões: '',
+      limitarÀsPermissões: 'TipoAditivo.',
       título: 'Tipo de aditivos',
       rotasParaMenuSecundário,
     },
