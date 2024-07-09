@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsString, MaxLength, ValidateNested } from 'class-validator';
-import { CreateGeradorVariaveBaselDto } from '../../variavel/dto/create-variavel.dto';
+import { CreateGeradorVariavelPDMDto } from '../../variavel/dto/create-variavel.dto';
 import { CreateIndicadorDto } from './create-indicador.dto';
 import { FormulaVariaveis } from './update-indicador.dto';
 
@@ -64,7 +64,7 @@ export class GeneratorFormulaCompostaFormDto extends IntersectionType(
     PickType(CreateIndicadorFormulaCompostaDto, ['titulo'] as const),
     PickType(CreateIndicadorFormulaCompostaDto, ['nivel_regionalizacao'] as const),
     PickType(CreateIndicadorFormulaCompostaDto, ['mostrar_monitoramento'] as const),
-    PickType(CreateGeradorVariaveBaselDto, ['regioes', 'codigo'] as const),
+    PickType(CreateGeradorVariavelPDMDto, ['regioes', 'codigo'] as const),
     PickType(FormulaVariaveis, ['janela', 'usar_serie_acumulada'] as const)
 ) {
     @IsEnum(OperacaoPadraoDto)
