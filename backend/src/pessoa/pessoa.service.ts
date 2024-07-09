@@ -1377,7 +1377,41 @@ export class PessoaService {
         return ret;
     }
 
+    /**
+     * Filtra os privilégios com base no sistema fornecido.
+     *
+     * No contexto dos sistemas de gerenciamento, as permissões (ou privilégios) determinam o que os usuários
+     * podem ou não podem fazer. No caso específico dos sistemas marcados como `SMAE`, há uma regra de negócios
+     * que define quais privilégios devem estar disponíveis dependendo do sistema em uso.
+     *
+     * A função `filtraPrivilegiosSMAE` é utilizada para garantir que apenas os privilégios relevantes para o
+     * sistema atual sejam mantidos. Isso é necessário para evitar que os usuários vejam ou tentem acessar
+     * funcionalidades que não são aplicáveis ao sistema que estão utilizando, o que poderia causar confusão
+     * ou possíveis erros.
+     *
+     * Especificamente:
+     *
+     * 1. **MDO e Projetos**:
+     *    - Se o sistema atual não for `MDO` ou `Projetos`, remove os privilégios que começam com `TipoAditivo.` e `ModalidadeContratacao.`.
+     *      Estes privilégios são específicos para `MDO` e `Projetos`, portanto, não devem aparecer em outros sistemas.
+     *
+     * 2. **PDM e PlanoSetorial**:
+     *    - Se o sistema atual não for `PDM` ou `PlanoSetorial`, remove os privilégios que começam com `CadastroGrupoVariavel.`.
+     *      Este privilégio é específico para `PDM` e `PlanoSetorial`, então, não deve aparecer em outros sistemas.
+     *
+     * Ao realizar esta filtragem, a função assegura que os privilégios apresentados aos usuários são relevantes
+     * e específicos ao contexto do sistema que eles estão utilizando, melhorando assim a usabilidade e a segurança
+     * do sistema.
+     *
+     * @param sistema - O sistema para filtrar os privilégios.
+     * @param ret - A lista de privilégios e módulos.
+     */
     private filtraPrivilegiosSMAE(sistema: ModuloSistema, ret: ListaPrivilegiosModulos) {
+        /**
+         * Remove os privilégios que começam com o prefixo fornecido.
+         *
+         * @param privilege - O prefixo dos privilégios a serem removidos.
+         */
         const removePrivilegios = (privilege: string) => {
             ret.privilegios = ret.privilegios.filter((value) => !value.toString().startsWith(privilege));
         };
