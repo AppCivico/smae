@@ -1,4 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, reactive, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import SmallModal from '@/components/SmallModal.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -8,14 +16,6 @@ import {
   useDocumentTypesStore,
 } from '@/stores';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed, reactive, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -160,7 +160,7 @@ watch(arquivoParaEdição, (novosValores) => {
             as="select"
             :disabled="!!values.arquivo_id"
             class="inputtext light mb1"
-            :class="{ 'error': errors.tipo_documento_id }"
+            :class="{ error: errors.tipo_documento_id }"
           >
             <option value="">
               Selecione
