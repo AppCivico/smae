@@ -1,38 +1,26 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    NotFoundException,
-    Param,
-    Patch,
-    Post,
-    Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoVariavel } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ApiPaginatedWithPagesResponse } from '../auth/decorators/paginated.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { FindOneParams } from '../common/decorators/find-params';
+import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
 import { CreateGeradorVariaveBaselDto, CreateVariavelBaseDto, CreateVariavelPDMDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
-import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
-import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
-    SerieIndicadorValorNominal,
-    SerieValorNomimal,
-    VariavelGlobalItemDto,
-    VariavelItemDto,
-} from './entities/variavel.entity';
+    ListSeriesAgrupadas,
+    ListVariavelDto,
+    VariavelDetailDto,
+    VariavelGlobalDetailDto,
+} from './dto/list-variavel.dto';
+import { UpdateVariavelDto } from './dto/update-variavel.dto';
+import { SerieIndicadorValorNominal, SerieValorNomimal, VariavelGlobalItemDto } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
-import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
-import { TipoVariavel } from '@prisma/client';
-import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
-import { ApiPaginatedWithPagesResponse } from '../auth/decorators/paginated.decorator';
 
 export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [
     'CadastroIndicador.inserir',
@@ -59,6 +47,13 @@ export class IndicadorVariavelPDMController {
     @Roles([...ROLES_ACESSO_VARIAVEL_PDM])
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
         return { linhas: await this.variavelService.findAll(this.tipo, filters) };
+    }
+
+    @Get('indicador-variavel/:id')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PDM])
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<VariavelDetailDto> {
+        return await this.variavelService.findOne(this.tipo, params.id, user);
     }
 
     @Patch('indicador-variavel/:id')
@@ -153,10 +148,11 @@ export class VariavelGlobalController {
     @ApiBearerAuth('access-token')
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
     @ApiPaginatedWithPagesResponse(VariavelGlobalItemDto)
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<VariavelItemDto> {
-        const variavel = await this.variavelService.findAll('Global', { id: params.id });
-        if (!variavel[0]) throw new NotFoundException('Registro não encontrado');
-        return variavel[0];
+    async findOne(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelGlobalDetailDto> {
+        return (await this.variavelService.findOne(this.tipo, params.id, user)) as VariavelGlobalDetailDto;
     }
 
     @Patch('variavel/:id')

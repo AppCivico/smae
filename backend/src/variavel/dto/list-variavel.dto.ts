@@ -1,10 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
+import { VariaveisPeriodosDto } from './create-variavel.dto';
+import { IdNomeDto } from '../../common/dto/IdNome.dto';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
+}
+
+export class VariavelDetailDto extends VariavelItemDto {
+    assuntos: IdNomeDto[];
+    periodos: VariaveisPeriodosDto;
+    dado_aberto: boolean;
+    metodologia: string | null;
+    descricao: string | null;
+    fonte: IdNomeDto | null;
+}
+
+export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['responsaveis']) {
+    orgao_proprietario_id: number | null;
+    medicao_grupo_ids: number[] | null;
+    validacao_grupo_ids: number[] | null;
+    liberacao_grupo_ids: number[] | null;
 }
 
 export class VariavelResumo {
