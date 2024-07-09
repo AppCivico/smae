@@ -112,8 +112,10 @@ export class ContratoService {
                 numero: true,
                 status: true,
                 data_inicio: true,
+                data_termino: true,
                 valor: true,
                 aditivos: {
+                    where: { removido_em: null },
                     orderBy: { numero: 'asc' },
                     select: {
                         id: true,
@@ -136,7 +138,8 @@ export class ContratoService {
             const linhaComDatas = contrato.aditivos.find(
                 (aditivo) => aditivo.data_termino_atualizada != null || aditivo.data != null
             );
-            const dataMaisAtual = linhaComDatas?.data_termino_atualizada || linhaComDatas?.data || contrato.data_inicio;
+            const dataMaisAtual =
+                linhaComDatas?.data_termino_atualizada || linhaComDatas?.data || contrato.data_termino;
 
             return {
                 id: contrato.id,
@@ -145,8 +148,8 @@ export class ContratoService {
                 valor: valorMaisAtual,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
                 quantidade_aditivos: contrato.aditivos.length,
-                data_termino_atual: contrato.aditivos.length > 0 ? contrato.aditivos[-1].data_termino_atualizada : null,
-                data_termino_inicial: dataMaisAtual,
+                data_termino_atual: dataMaisAtual,
+                data_termino_inicial: contrato.data_termino,
             };
         });
     }
@@ -171,6 +174,7 @@ export class ContratoService {
                 observacoes: true,
                 data_assinatura: true,
                 data_inicio: true,
+                data_termino: true,
                 prazo_numero: true,
                 prazo_unidade: true,
                 data_base_mes: true,
@@ -245,6 +249,7 @@ export class ContratoService {
             observacoes: contrato.observacoes,
             data_assinatura: contrato.data_assinatura,
             data_inicio: contrato.data_inicio,
+            data_termino: contrato.data_termino,
             prazo_numero: contrato.prazo_numero,
             prazo_unidade: contrato.prazo_unidade,
             data_base_mes: contrato.data_base_mes,
