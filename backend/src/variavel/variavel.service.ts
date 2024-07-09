@@ -2427,7 +2427,13 @@ export class VariavelService {
                 metodologia: true,
                 dado_aberto: true,
                 descricao: true,
-                orgao_proprietario_id: true,
+                orgao_proprietario: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
                 VariavelGrupoResponsavelVariavel: {
                     where: {
                         removido_em: null,
@@ -2470,7 +2476,7 @@ export class VariavelService {
 
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
-                orgao_proprietario_id: detalhes.orgao_proprietario_id,
+                orgao_proprietario: detalhes.orgao_proprietario,
                 medicao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
                     (e) => e.grupo_responsavel_variavel.perfil === 'Medicao'
                 ).map((e) => e.grupo_responsavel_variavel.id),
