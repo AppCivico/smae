@@ -2511,6 +2511,31 @@ export const relatórioDePortfolio = object({
   salvar_arquivo: boolean(),
 });
 
+export const relatórioDePortfolioObras = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    orgao_responsavel_id: number()
+      .min(0)
+      .label('Órgão responsável')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable(),
+    portfolio_id: number()
+      .label('Portfolio')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .required(),
+    grupo_tematico_id: number()
+      .label('Grupo temático')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable(),
+    regiao_id: number()
+      .label('Subprefeitura')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable(),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioDeTransferênciasVoluntárias = object({
   fonte: string()
     .required(),
