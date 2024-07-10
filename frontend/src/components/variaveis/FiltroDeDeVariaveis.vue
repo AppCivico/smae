@@ -165,7 +165,7 @@
           class="label"
           for="regiao-ids"
         >
-          {{ schema.fields.regiao_id?.spec.label }}
+          Região
         </label>
         <select
           id="regiao-ids"
@@ -344,7 +344,7 @@
 <script setup>
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { variavelGlobal as schema } from '@/consts/formSchemas';
+import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import truncate from '@/helpers/truncate';
