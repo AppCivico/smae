@@ -18,8 +18,8 @@ const router = useRouter();
 const initialValues = {
   fonte: 'ObraStatus',
   parametros: {
-      tipo: 'MDO',
-      portfolio_id: null,
+    tipo: 'MDO',
+    portfolio_id: null,
     projeto_id: null,
     periodo_inicio: null,
     periodo_fim: null,
