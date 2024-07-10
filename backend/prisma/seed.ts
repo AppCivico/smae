@@ -466,7 +466,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar Grupos de Variáveis'],
-        ['CadastroGrupoVariavel.administrador_no_orgao', 'Gerenciar Grupos de Variáveis do órgão ao qual pertence'],
+        ['CadastroGrupoVariavel.colaborador_responsavel', 'Gerenciar Grupos de Variáveis onde é responsável'],
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
@@ -803,18 +803,16 @@ const PerfilAcessoConfig: {
             // ...
         ],
     },
-
     {
         nome: 'Administrador de Grupo de Variáveis',
         descricao: 'Gerenciar todos os Grupos de Variáveis',
         privilegios: ['CadastroGrupoVariavel.administrador'],
     },
     {
-        nome: 'Administrador de Grupo de Variáveis no Órgão',
-        descricao: 'Gerenciar todos os Grupos de Variáveis no órgão em qual faz parte',
-        privilegios: ['CadastroGrupoVariavel.administrador_no_orgao'],
+        nome: 'Colaborador de Grupo de Variáveis',
+        descricao: 'Gerenciar os Grupos de Variáveis onde é responsável',
+        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel'],
     },
-
     {
         nome: 'Gestor de Projetos no Órgão',
         descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
