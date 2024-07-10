@@ -9,6 +9,7 @@ import {
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
+import dateToDate from '@/helpers/dateToDate';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -33,9 +34,11 @@ import {
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const textInputOptions = {
-  format: 'MM/yyyy',
+const opcoesFormatacaoCampoData = {
+  format: 'MMM/yyyy',
 };
+
+const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
 const alertStore = useAlertStore();
 
@@ -623,7 +626,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               :model-value="value"
               cancel-text="Cancelar"
               select-text="Selecionar"
-              :text-input="textInputOptions"
+              :text-input="opcoesFormatacaoCampoData"
               hide-input-icon
               month-picker
               auto-apply
@@ -649,7 +652,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             v-else
             readonly
             aria-disabled="true"
-            :value="emFoco?.inicio_medicao"
+            :value="formatarData(emFoco?.inicio_medicao)"
             class="inputtext light mb1"
           >
 
@@ -673,7 +676,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               :model-value="value"
               cancel-text="Cancelar"
               select-text="Selecionar"
-              :text-input="textInputOptions"
+              :text-input="opcoesFormatacaoCampoData"
               hide-input-icon
               month-picker
               auto-apply
