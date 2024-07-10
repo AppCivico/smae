@@ -445,12 +445,13 @@ model Pessoa {
     AditivosQAtualizei ContratoAditivo[] @relation("Atualizador")
     AditivosQRemovi    ContratoAditivo[] @relation("Removedor")
 
-    AssuntoVariavelQCriei          AssuntoVariavel[]                @relation("Criador")
-    AssuntoVariavelQAtualizei      AssuntoVariavel[]                @relation("Atualizador")
-    AssuntoVariavelQRemovi         AssuntoVariavel[]                @relation("Removedor")
-    GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
-    VariavelQCriei                 Variavel[]                       @relation("Criador")
-    VariavelQAtualizei             Variavel[]                       @relation("Atualizador")
+    AssuntoVariavelQCriei               AssuntoVariavel[]                     @relation("Criador")
+    AssuntoVariavelQAtualizei           AssuntoVariavel[]                     @relation("Atualizador")
+    AssuntoVariavelQRemovi              AssuntoVariavel[]                     @relation("Removedor")
+    GrupoResponsavelVariavelPessoa      GrupoResponsavelVariavelPessoa[]
+    VariavelQCriei                      Variavel[]                            @relation("Criador")
+    VariavelQAtualizei                  Variavel[]                            @relation("Atualizador")
+    GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
 
     @@index([email])
     @@map("pessoa")
@@ -521,36 +522,37 @@ model Orgao {
     PlanoAcao              PlanoAcao[]
     projetos_participando  ProjetoOrgaoParticipante[]
 
-    PortifolioOrgao                PortfolioOrgao[]
-    orgao_responsavel              Projeto[]                        @relation("orgao_responsavel")
-    orgao_origem                   Projeto[]                        @relation("orgao_origem")
-    orgao_executor                 Projeto[]                        @relation("orgao_executor")
-    projetos_geridos               Projeto[]                        @relation("orgao_gestor")
-    projeto_colaborados            Projeto[]                        @relation("orgao_colaborador")
-    GrupoPortfolio                 GrupoPortfolio[]
-    GrupoPortfolioPessoa           GrupoPortfolioPessoa[]
-    ProjetoEquipe                  ProjetoEquipe[]
-    GrupoPainelExterno             GrupoPainelExterno[]
-    GrupoPainelExternoPessoa       GrupoPainelExternoPessoa[]
-    TransferenciasOrgao            Transferencia[]                  @relation("orgao_concedente")
-    TransferenciasSecretaria       Transferencia[]                  @relation("secretaria_concedente")
-    distribuicao_recursos          DistribuicaoRecurso[]
-    Nota                           Nota[]
-    NotaEnderecamento              NotaEnderecamento[]
-    transferenciaAndamento         TransferenciaAndamento[]
-    transferenciaAndamentoTarefa   TransferenciaAndamentoTarefa[]
-    PdmOrcamentoRealizadoConfig    PdmOrcamentoRealizadoConfig[]
-    ViewNotaComOrdem               ViewNotas[]
-    PdmPerfil                      PdmPerfil[]
-    Pdm                            Pdm[]
-    statusDistribuicaoRecusro      DistribuicaoRecursoStatus[]
-    ViewProjetoMDO                 ViewProjetoMDO[]
-    VariavelProprietario           Variavel[]                       @relation("proprietario")
-    GrupoResponsavelVariavel       GrupoResponsavelVariavel[]
-    GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
-    contratos                      Contrato[]
-    ViewVariavelGlobalQSouResp     ViewVariavelGlobal[]             @relation("resp")
-    ViewVariavelGlobalQSouProp     ViewVariavelGlobal[]             @relation("prop")
+    PortifolioOrgao                     PortfolioOrgao[]
+    orgao_responsavel                   Projeto[]                             @relation("orgao_responsavel")
+    orgao_origem                        Projeto[]                             @relation("orgao_origem")
+    orgao_executor                      Projeto[]                             @relation("orgao_executor")
+    projetos_geridos                    Projeto[]                             @relation("orgao_gestor")
+    projeto_colaborados                 Projeto[]                             @relation("orgao_colaborador")
+    GrupoPortfolio                      GrupoPortfolio[]
+    GrupoPortfolioPessoa                GrupoPortfolioPessoa[]
+    ProjetoEquipe                       ProjetoEquipe[]
+    GrupoPainelExterno                  GrupoPainelExterno[]
+    GrupoPainelExternoPessoa            GrupoPainelExternoPessoa[]
+    TransferenciasOrgao                 Transferencia[]                       @relation("orgao_concedente")
+    TransferenciasSecretaria            Transferencia[]                       @relation("secretaria_concedente")
+    distribuicao_recursos               DistribuicaoRecurso[]
+    Nota                                Nota[]
+    NotaEnderecamento                   NotaEnderecamento[]
+    transferenciaAndamento              TransferenciaAndamento[]
+    transferenciaAndamentoTarefa        TransferenciaAndamentoTarefa[]
+    PdmOrcamentoRealizadoConfig         PdmOrcamentoRealizadoConfig[]
+    ViewNotaComOrdem                    ViewNotas[]
+    PdmPerfil                           PdmPerfil[]
+    Pdm                                 Pdm[]
+    statusDistribuicaoRecusro           DistribuicaoRecursoStatus[]
+    ViewProjetoMDO                      ViewProjetoMDO[]
+    VariavelProprietario                Variavel[]                            @relation("proprietario")
+    GrupoResponsavelVariavel            GrupoResponsavelVariavel[]
+    GrupoResponsavelVariavelPessoa      GrupoResponsavelVariavelPessoa[]
+    contratos                           Contrato[]
+    ViewVariavelGlobalQSouResp          ViewVariavelGlobal[]                  @relation("resp")
+    ViewVariavelGlobalQSouProp          ViewVariavelGlobal[]                  @relation("prop")
+    GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
 
     @@map("orgao")
 }
@@ -1602,13 +1604,32 @@ model GrupoResponsavelVariavel {
 
     perfil PerfilResponsavelVariavel
 
-    criado_em                        DateTime                           @default(now()) @db.Timestamptz(6)
-    atualizado_em                    DateTime?                          @db.Timestamptz(6)
-    removido_em                      DateTime?                          @db.Timestamptz(6)
-    GrupoResponsavelVariavelPessoa   GrupoResponsavelVariavelPessoa[]
-    VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
+    criado_em                           DateTime                              @default(now()) @db.Timestamptz(6)
+    atualizado_em                       DateTime?                             @db.Timestamptz(6)
+    removido_em                         DateTime?                             @db.Timestamptz(6)
+    GrupoResponsavelVariavelPessoa      GrupoResponsavelVariavelPessoa[]
+    VariavelGrupoResponsavelVariavel    VariavelGrupoResponsavelVariavel[]
+    GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
 
     @@map("grupo_responsavel_variavel")
+}
+
+model GrupoResponsavelVariavelColaborador {
+    id Int @id @default(autoincrement())
+
+    grupo_responsavel_variavel_id Int
+    grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+
+    orgao_id Int
+    orgao    Orgao @relation(fields: [orgao_id], references: [id])
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    criado_em   DateTime  @default(now()) @db.Timestamptz(6)
+    removido_em DateTime? @db.Timestamptz(6)
+
+    @@map("grupo_responsavel_variavel_colaborador")
 }
 
 model GrupoResponsavelVariavelPessoa {

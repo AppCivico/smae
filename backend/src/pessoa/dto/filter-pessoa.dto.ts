@@ -15,6 +15,7 @@ export const FilterPermsPessoa2Priv: Record<keyof FilterPermsPessoaDto, ListaDeP
     mdo_colaborador_de_projeto: 'MDO.colaborador_de_projeto',
     mdo_espectador_de_projeto: 'MDO.espectador_de_projeto',
     colaborador_grupo_variavel: 'SMAE.GrupoVariavel.colaborador',
+    participante_grupo_variavel: 'SMAE.GrupoVariavel.participante',
 } as const;
 
 export class FilterPermsPessoaDto {
@@ -28,6 +29,17 @@ export class FilterPermsPessoaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     colaborador_grupo_variavel?: boolean;
+
+    /**
+     * Filtrar pessoa com privilegio `SMAE.GrupoVariavel.participante` ?
+     *
+     *  true filtra quem tem a `SMAE.GrupoVariavel.participante`; false filtra quem não tem
+     * @example ""
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    participante_grupo_variavel?: boolean;
 
     /**
      * Filtrar pessoa com privilegio `PDM.coordenador_responsavel_cp` ?

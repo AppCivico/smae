@@ -461,7 +461,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
-        ['SMAE.GrupoVariavel.colaborador', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
     ],
     CadastroGrupoVariavel: [
@@ -811,7 +811,10 @@ const PerfilAcessoConfig: {
     {
         nome: 'Colaborador de Grupo de Variáveis',
         descricao: 'Gerenciar os Grupos de Variáveis onde é responsável',
-        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel'],
+        privilegios: [
+            'CadastroGrupoVariavel.colaborador_responsavel',
+            'SMAE.GrupoVariavel.colaborador'
+        ],
     },
     {
         nome: 'Gestor de Projetos no Órgão',
