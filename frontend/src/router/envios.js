@@ -28,6 +28,7 @@ export default {
     limitarÀsPermissões: [
       'CadastroMeta.orcamento',
       'Projeto.orcamento',
+      'ProjetoMDO.orcamento',
     ],
   },
   children: [
@@ -63,6 +64,35 @@ export default {
               component: EnviarArquivo,
               meta: {
                 rotaDeEscape: 'EnviosOrçamentosMetas',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: 'orcamentos/obras',
+      component: () => import('@/views/envios/EnviosObras.vue'),
+      meta: {
+        título: 'Envio de orçamento para obras',
+        títuloParaMenu: 'Obras',
+        entidadeMãe: 'mdo',
+        limitarÀsPermissões: [
+          'ProjetoMDO.orcamento',
+        ],
+      },
+      children: [
+        {
+          path: '',
+          name: 'EnviosOrçamentosObras',
+          component: EnviosLista,
+          children: [
+            {
+              path: 'enviar',
+              name: 'EnviosOrçamentosObrasNovo',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrçamentosObras',
               },
             },
           ],
