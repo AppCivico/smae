@@ -1,7 +1,7 @@
 <script setup>
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { storeToRefs } from 'pinia';
-import { onUnmounted } from 'vue';
+import { onUnmounted, watch } from 'vue';
 
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 
@@ -22,7 +22,9 @@ function iniciar() {
   }
 }
 
-iniciar();
+watch(() => props.planoSetorialId, () => {
+  iniciar();
+}, { immediate: true });
 
 onUnmounted(() => {
   planosSetoriaisStore.$reset();
