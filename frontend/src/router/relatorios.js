@@ -82,6 +82,14 @@ const RelatóriosDePortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/RelatoriosDePortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
+const NovoRelatórioDeStatusObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDeStatusObras.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDeStatusObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDeStatusObras.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/relatorios',
@@ -117,6 +125,7 @@ export default {
 
       // MDO
       'RelatóriosDePortfolioObras',
+      'RelatóriosDeStatusObras',
     ],
   },
 
@@ -418,6 +427,31 @@ export default {
           meta: {
             título: 'Novo relatório de portfolio',
             rotaDeEscape: 'RelatóriosDePortfolioObras',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'obra-e-status',
+      meta: {
+        título: 'Relatórios de status',
+        títuloParaMenu: 'Relatório de status',
+        limitarÀsPermissões: 'Reports.executar.MDO',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDeStatusObras',
+          component: RelatóriosDeStatusObras,
+        },
+        {
+          component: NovoRelatórioDeStatusObras,
+          path: 'novo',
+          name: 'NovoRelatórioDeStatusObras',
+          meta: {
+            título: 'Novo relatório de status',
+            rotaDeEscape: 'RelatóriosDeStatusObras',
           },
         },
       ],
