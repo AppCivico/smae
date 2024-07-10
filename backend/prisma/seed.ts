@@ -462,6 +462,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
     ],
     CadastroGrupoVariavel: [
