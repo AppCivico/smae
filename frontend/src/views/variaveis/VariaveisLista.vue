@@ -78,6 +78,7 @@ watchEffect(() => {
     tabindex="0"
   >
     <table class="tablemain tbody-zebra">
+      <col class="col--minimum">
       <col>
       <col>
       <col class="col--minimum">
@@ -87,6 +88,9 @@ watchEffect(() => {
       <col class="col--botão-de-ação">
       <thead>
         <tr>
+          <th>
+            Código
+          </th>
           <th>
             {{ schema.fields.titulo?.spec.label }}
           </th>
@@ -111,6 +115,9 @@ watchEffect(() => {
         :key="item.id"
       >
         <tr>
+          <td class="cell--nowrap">
+            {{ item.codigo }}
+          </td>
           <th>
             {{ item.titulo }}
           </th>
@@ -183,7 +190,7 @@ watchEffect(() => {
         </tr>
         <tr v-if="item.metodologia">
           <td
-            colspan="7"
+            colspan="8"
             aria-label="schema.fields.metodologia?.spec.label || 'Campo faltando no schema'"
           >
             {{ item.metodologia }}
@@ -193,17 +200,17 @@ watchEffect(() => {
 
       <tbody>
         <tr v-if="chamadasPendentes.lista">
-          <td colspan="7">
+          <td colspan="8">
             Carregando
           </td>
         </tr>
         <tr v-else-if="erros.lista">
-          <td colspan="7">
+          <td colspan="8">
             Erro: {{ erros.lista }}
           </td>
         </tr>
         <tr v-else-if="!lista.length">
-          <td colspan="7">
+          <td colspan="8">
             Nenhum resultado encontrado.
           </td>
         </tr>
