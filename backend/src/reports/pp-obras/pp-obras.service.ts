@@ -271,6 +271,54 @@ export class PPObrasService implements ReportableService {
             });
         }
 
+        if (dados.regioes.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.regioes);
+            out.push({
+                name: 'regioes.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.fontes_recurso.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.fontes_recurso);
+            out.push({
+                name: 'fontes_recurso.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.contratos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.contratos);
+            out.push({
+                name: 'contratos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.aditivos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.aditivos);
+            out.push({
+                name: 'aditivos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
         return [
             {
                 name: 'info.json',
