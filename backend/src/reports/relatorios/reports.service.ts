@@ -1,7 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { FonteRelatorio, Prisma } from '@prisma/client';
 import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -184,7 +184,11 @@ export class ReportsService {
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
-        const tipo = parametros.tipo;
+        let tipo = parametros.tipo;
+        // TODO: bolar solução melhor, por motivo de tempo faremos assim.
+        if ((dto.fonte = FonteRelatorio.ProjetoStatus)) {
+            tipo = null;
+        }
 
         const result = await this.prisma.relatorio.create({
             data: {
