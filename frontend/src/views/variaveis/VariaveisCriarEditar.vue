@@ -141,7 +141,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   let resposta;
 
   if (gerarMultiplasVariaveis.value) {
-    msg = `Variáveis com o prefixo "${cargaManipulada.codigo}" geradas!`;
+    msg = 'Múltiplas variáveis geradas!';
     resposta = await variaveisGlobaisStore.gerarItens(cargaManipulada);
   } else {
     resposta = await variaveisGlobaisStore.salvarItem(cargaManipulada, props.variavelId);
@@ -943,26 +943,6 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
 
       <fieldset v-if="gerarMultiplasVariaveis">
         <div class="flex spacebetween g2 mb1">
-          <div
-            class="f1 fb15em"
-          >
-            <LabelFromYup
-              name="sufixo"
-              :schema="schema"
-            />
-            <Field
-              id="sufixo"
-              name="sufixo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ error: errors.sufixo }"
-              :value="emFoco?.sufixo"
-            />
-            <ErrorMessage
-              class="error-msg"
-              name="sufixo"
-            />
-          </div>
           <div class="f1 fb15em mb1 mt2">
             <label class="block">
               <Field
