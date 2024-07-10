@@ -77,7 +77,7 @@ export class VariavelService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService
-    ) {}
+    ) { }
 
     async loadVariaveisComCategorica(
         prismaTxn: Prisma.TransactionClient,
@@ -232,14 +232,14 @@ export class VariavelService {
         };
 
         const deparaPeriodicidade: Record<Periodicidade, string> = {
-            Mensal: 'MENSAL',
-            Anual: 'ANUAL',
-            Bimestral: 'BIMEST',
-            Trimestral: 'TRIMEST',
-            Quadrimestral: 'QUADRIM',
-            Semestral: 'SEMEST',
-            Quinquenal: 'QUINQUE',
-            Secular: 'SECULAR', // tao raro que poderia sair do padrão?
+            Mensal: '01',
+            Anual: '12',
+            Bimestral: '02',
+            Trimestral: '03',
+            Quadrimestral: '04',
+            Semestral: '06',
+            Quinquenal: '60',
+            Secular: '120', // tao raro que poderia sair do padrão?
         };
 
         if (!dto.inicio_medicao) throw new BadRequestException('Inicio de medição é obrigatório para gerar código');
@@ -264,6 +264,7 @@ export class VariavelService {
         }
         const contadorStr = String(contador).padStart(5, '0');
 
+
         let categorica: string = '';
 
         if (dto.variavel_categorica_id) {
@@ -275,7 +276,7 @@ export class VariavelService {
             categorica = deparaTipoCategorica[variavelCategorica.tipo];
         }
 
-        const dotParts = [categorica, deparaAmbienteVariavel[tipo], deparaPeriodicidade[dto.periodicidade], contadorStr]
+        const dotParts = [categorica, deparaPeriodicidade[dto.periodicidade], deparaAmbienteVariavel[tipo], contadorStr]
             .filter((e) => e && e.length > 0)
             .join('.');
 
@@ -409,13 +410,13 @@ export class VariavelService {
                 OR: [
                     indicador_id
                         ? {
-                              tipo: 'PDM',
-                              indicador_variavel: {
-                                  some: {
-                                      indicador_id: indicador_id,
-                                  },
-                              },
-                          }
+                            tipo: 'PDM',
+                            indicador_variavel: {
+                                some: {
+                                    indicador_id: indicador_id,
+                                },
+                            },
+                        }
                         : {},
                     {
                         tipo: 'Global',
@@ -540,7 +541,7 @@ export class VariavelService {
         const periodo_liberacao: number[] = [];
 
         // se caiu nessa função é pq quer atualizar
-        if (!p || !Array.isArray(p)) return { periodo_preenchimento, periodo_validacao, periodo_liberacao };
+        if (!p) return { periodo_preenchimento, periodo_validacao, periodo_liberacao };
 
         if (p.preenchimento_inicio >= p.preenchimento_fim) {
             throw new Error('Preenchimento: Início deve ser menor que fim');
@@ -1243,9 +1244,9 @@ export class VariavelService {
                         },
                         indicador_id
                             ? {
-                                  tipo: 'PDM',
-                                  indicador_variavel: { some: { indicador_id: indicador_id } },
-                              }
+                                tipo: 'PDM',
+                                indicador_variavel: { some: { indicador_id: indicador_id } },
+                            }
                             : {},
                     ],
                 },
@@ -1478,10 +1479,10 @@ export class VariavelService {
                     if (!catValor)
                         throw new BadRequestException(
                             'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis. Valores encontrados: ' +
-                                serieValores
-                                    .slice(0, 10)
-                                    .map((v) => v.valor_nominal)
-                                    .join(', ')
+                            serieValores
+                                .slice(0, 10)
+                                .map((v) => v.valor_nominal)
+                                .join(', ')
                         );
 
                     promises.push(
