@@ -1,5 +1,5 @@
 <script setup>
-import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
+import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
 import truncate from '@/helpers/truncate';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
@@ -7,12 +7,12 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useRegionsStore } from '@/stores/regions.store.js';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
-
-const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
 const portfolioObrasStore = usePortfolioObraStore();
@@ -20,8 +20,14 @@ const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
+const gruposTematicosStore = useGruposTematicosStore();
+const regionsStore = useRegionsStore();
 const route = useRoute();
 const router = useRouter();
+
+const {
+  regions, regiõesPorNível,
+} = storeToRefs(regionsStore);
 
 const initialValues = {
   fonte: 'Obras',
@@ -59,6 +65,8 @@ async function onSubmit(values) {
 function iniciar() {
   portfolioObrasStore.buscarTudo();
   ÓrgãosStore.getAll();
+  gruposTematicosStore.buscarTudo();
+  regionsStore.getAll();
 }
 
 iniciar();
@@ -70,7 +78,6 @@ iniciar();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
@@ -146,38 +153,74 @@ iniciar();
           {{ errors['parametros.orgao_responsavel_id'] }}
         </div>
       </div>
-
-      <div
-        class="f05 mb1"
-      >
+      <div class="f1 mb1">
         <LabelFromYup
-          name="status"
+          name="grupo_tematico_id"
           :schema="schema.fields.parametros"
         />
         <Field
-          name="parametros.status"
+          name="parametros.grupo_tematico_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.status }"
+          :class="{
+            error: errors['parametros.grupo_tematico_id'],
+            loading: gruposTematicosStore.chamadasPendentes.lista
+          }"
+          :disabled="gruposTematicosStore.chamadasPendentes.lista"
         >
-          <option
-            :value="null"
-          >
+          <option :value="null">
             Selecionar
           </option>
           <option
-            v-for="item in listaDeStatuses"
-            :key="item.valor"
-            :value="item.valor"
+            v-for="item in gruposTematicosStore.lista"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
           >
-            {{ item.etiqueta }}
+            {{ item.nome }}
           </option>
         </Field>
+
         <div
-          v-if="errors['parametros.status']"
+          v-if="errors['parametros.grupo_tematico_id']"
           class="error-msg"
         >
-          {{ errors['parametros.status'] }}
+          {{ errors['parametros.grupo_tematico_id'] }}
+        </div>
+      </div>
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="regiao_id"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.regiao_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['parametros.regiao_id'],
+            loading: regionsStore.chamadasPendentes.lista
+          }"
+          :disabled="regionsStore.chamadasPendentes.lista"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option
+            v-for="item in regiõesPorNível[3]"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.descricao }}
+          </option>
+        </Field>
+
+        <div
+          v-if="errors['parametros.regiao_id']"
+          class="error-msg"
+        >
+          {{ errors['parametros.regiao_id'] }}
         </div>
       </div>
     </div>
