@@ -674,7 +674,6 @@ export class PPObrasService implements ReportableService {
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-          LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
           JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
           JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
         ${whereCond.whereString}
