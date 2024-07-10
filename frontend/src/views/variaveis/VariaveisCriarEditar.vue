@@ -14,6 +14,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useFontesStore } from '@/stores/fontesPs.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useResourcesStore } from '@/stores/resources.store';
@@ -47,6 +48,12 @@ const {
 
 const authStore = useAuthStore();
 const { temPermissãoPara, user } = storeToRefs(authStore);
+
+const fontesStore = useFontesStore();
+const {
+  lista: listaDeFontes,
+  chamadasPendentes: chamadasPendentesDeFontes,
+} = storeToRefs(fontesStore);
 
 const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -168,6 +175,7 @@ async function iniciar() {
   const requisições = [
     ÓrgãosStore.getAll(),
     assuntosStore.buscarTudo(),
+    fontesStore.buscarTudo(),
     usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true }),
     variaveisCategoricasStore.buscarTudo(),
   ];
@@ -264,6 +272,37 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           <ErrorMessage
             class="error-msg"
             name="orgao_proprietario_id"
+          />
+        </div>
+
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="fonte_id"
+            :schema="schema"
+          />
+          <Field
+            name="fonte_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.fonte_id }"
+            :aria-busy="chamadasPendentesDeFontes.lista"
+          >
+            <option :value="null">
+              Selecionar
+            </option>
+
+            <option
+              v-for="item in listaDeFontes"
+              :key="item"
+              :value="item.id"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.nome }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="fonte_id"
           />
         </div>
 
