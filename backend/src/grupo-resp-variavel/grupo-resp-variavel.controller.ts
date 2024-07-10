@@ -13,7 +13,7 @@ import { FindOneParams } from '../common/decorators/find-params';
 
 const roles: ListaDePrivilegios[] = [
     'CadastroGrupoVariavel.administrador',
-    'CadastroGrupoVariavel.administrador_no_orgao',
+    'CadastroGrupoVariavel.colaborador_responsavel',
 ];
 
 @ApiTags('Grupo Responsável de Variaveis')
