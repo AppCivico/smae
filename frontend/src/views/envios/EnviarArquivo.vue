@@ -98,6 +98,7 @@ switch (route.meta.entidadeMãe) {
     break;
 
   case 'portfolio':
+  case 'mdo':
     schema = schema.shape({
       portfolio_id: number()
         .label('Portfólio')
@@ -173,7 +174,7 @@ switch (route.meta.entidadeMãe) {
         </div>
 
         <div
-          v-if="$route.meta.entidadeMãe === 'portfolio'"
+          v-if="['portfolio', 'mdo'].indexOf($route.meta.entidadeMãe) > -1"
           class="flex g2"
         >
           <div class="f1">
@@ -209,6 +210,14 @@ switch (route.meta.entidadeMãe) {
               name="portfolio_id"
             />
           </div>
+
+          <Field
+            name="tipo_projeto"
+            type="hidden"
+            :value="$route.meta.entidadeMãe === 'mdo'
+              ? 'MDO'
+              : 'PP'"
+          />
         </div>
 
         <div class="flex g2 mb2">
