@@ -10,6 +10,7 @@ export class GrupoRespVariavelItemDto {
     titulo: string;
     perfil: PerfilResponsavelVariavel;
     participantes: IdNomeExibicaoDto[];
+    colaboradores: IdNomeExibicaoDto[];
     criado_em: Date;
     variaveis: IdCodTituloDto[];
 }
