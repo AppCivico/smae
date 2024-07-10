@@ -20,9 +20,10 @@ export class RolesGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const { user } = request;
         const requestUrl = request.originalUrl || request.url;
+        const debug = `requestUrl = ${requestUrl}, x-sistema = ${request.headers['x-sistema'] ?? '-'}`;
         if (!user)
             throw new UnauthorizedException(
-                `Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}, requestUrl = ${requestUrl}`
+                `Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}, ${debug}`
             );
 
         const JwtUser = user as PessoaFromJwt;
@@ -31,7 +32,7 @@ export class RolesGuard implements CanActivate {
         }
 
         throw new UnauthorizedException(
-            `Pelo menos os seguintes privilégios são necessários para o acesso: ${requiredRoles.join(', ')}, requestUrl = ${requestUrl}`
+            `Ao menos um dos seguintes privilégios são necessários para o acesso: ${requiredRoles.join(', ')}, ${debug}`
         );
     }
 }
