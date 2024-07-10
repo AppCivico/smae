@@ -1,15 +1,49 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoOrigemTipo, ProjetoStatus, StatusContrato } from '@prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from 'src/pp/projeto/entities/projeto.entity';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
-
+/* 
+obra_id
+portfolio (id e nome)
+codigo da obra
+nome da obra
+status (nome)
+grupo_tematico (id  e nome)
+tipo_obra (id e nome)
+equipamento (id e nome)
+orgao de origem (sigla e nome)
+orgao executor (sigla e nome)
+detalhamento
+subprefeitura (siglas concatenadas e separadas  por “|”)
+origem
+programa de metas (id e nome)
+meta (id e nome)
+descrição
+previsao de inicio
+previsao de termino
+data de inauguracao planejada
+custo previsto
+data de inicio planejado
+data de término planejado
+etapa da obra (nome)
+custo planejado
+orgao gestor portfolio  (sigla e nome)
+secretario gestor
+assessores (nomes concatenados e separados por “|”)
+orgao responsavel  (sigla e nome)
+secretario responsavel
+ponto focal responsavel (nomes )
+orgao colaborador  (sigla e nome)
+secretario colaborador
+pontos focais colaboradores (nomes concatenados e separados por “|”) */
 export class RelObrasDto {
     id: number;
+    pdm_id: number | null;
+    pdm_nome: string | null;
     meta_id: number | null;
-    iniciativa_id: number | null;
-    atividade_id: number | null;
+    meta_nome: string | null;
     nome: string;
     /**
      * @example "EmAcompanhamento"
@@ -18,34 +52,38 @@ export class RelObrasDto {
     status: ProjetoStatus;
     portfolio_id: number;
     portfolio_titulo: string;
+    grupo_tematico_id: number | null;
+    grupo_tematico_nome: string | null;
+    tipo_obra_id: number | null;
+    tipo_obra_nome: string | null;
+    equipamento_id: number | null;
+    equipamento_nome: string | null;
     codigo: string | null;
-    objeto: string;
-    objetivo: string;
+    detalhamento: string | null;
+    subprefeituras: string | null;
+    @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
+    origem_tipo: ProjetoOrigemTipo;
+    descricao: string | null;
+    //objeto: string;
+    //objetivo: string;
     publico_alvo: string | null;
     previsao_inicio: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;
     previsao_termino: string | null;
-    escopo: string | null;
-    nao_escopo: string | null;
     secretario_responsavel: string | undefined;
     secretario_executivo: string | undefined;
-    coordenador_ue: string | undefined;
-    data_aprovacao: Date | undefined;
-    data_revisao: Date | undefined;
-    gestores: string;
-
-    orgao_participante: IdSiglaDescricao;
+    secretario_colaborador: string | undefined;
+    data_inauguracao_planejada: string | null;
+    assessores: string | null;
+    orgao_origem: IdSiglaDescricao | null;
+    orgao_executor: IdSiglaDescricao | null;
     orgao_gestor: IdSiglaDescricao;
     orgao_responsavel: IdSiglaDescricao | null;
     responsavel: IdNomeExibicaoDto | null;
-    premissa: ProjetoPremissa | null;
-    restricao: ProjetoRestricoes | null;
-    fonte_recurso: ProjetoRecursos | null;
+    pontos_focais_colaboradores: string | null;
 
-    versao: string | null;
-
-    projeto_etapa: string | null;
+    etapa: string | null;
 }
 
 export class RelObrasCronogramaDto {
