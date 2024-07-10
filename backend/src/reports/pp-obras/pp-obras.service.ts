@@ -616,7 +616,7 @@ export class PPObrasService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne('PP', db.projeto_id, undefined, 'ReadOnly');
+            await this.projetoService.findOne('MDO', db.projeto_id, undefined, 'ReadOnly');
 
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {
