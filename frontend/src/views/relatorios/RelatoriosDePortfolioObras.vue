@@ -6,11 +6,11 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { prepararEtiquetas, prepararPortfolios, prepararÓrgãos } from './helpers/preparadorDeColunaParametros';
+import { prepararEtiquetas, prepararPortfoliosObras, prepararÓrgãos } from './helpers/preparadorDeColunaParametros';
 
 const relatóriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
-const fonte = 'Projetos';
+const fonte = 'Obras';
 
 const etiquetasParaValoresDeParâmetros = ref({
   portfolio_id: {},
@@ -23,7 +23,7 @@ async function iniciar() {
   relatóriosStore.$reset();
   relatóriosStore.getAll({ fonte });
 
-  etiquetasParaValoresDeParâmetros.value.portfolio_id = await prepararPortfolios();
+  etiquetasParaValoresDeParâmetros.value.portfolio_id = await prepararPortfoliosObras();
   etiquetasParaValoresDeParâmetros.value.orgao_responsavel_id = await prepararÓrgãos();
 }
 
