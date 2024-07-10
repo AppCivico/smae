@@ -600,7 +600,6 @@ export class PPObrasService implements ReportableService {
             LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
             JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id
             ${whereCond.whereString}
         `;
 
