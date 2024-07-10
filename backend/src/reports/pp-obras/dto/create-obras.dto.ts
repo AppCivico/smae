@@ -34,6 +34,7 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     orgao_responsavel_id?: number;
 
     @IsOptional()
-    @Transform(NumberArrayTransformOrUndef)
-    projeto_regioes?: number[];
+    @IsNumber()
+    @Transform(NumberTransform)
+    projeto_regiao_id?: number;
 }
