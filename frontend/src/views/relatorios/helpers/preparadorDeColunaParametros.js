@@ -5,6 +5,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
 
@@ -12,6 +13,7 @@ const ÓrgãosStore = useOrgansStore();
 const partidosStore = usePartidosStore();
 const PdMStore = usePdMStore();
 const portfolioStore = usePortfolioStore();
+const portfolioObrasStore = usePortfolioObraStore();
 const projetosStore = useProjetosStore();
 const TagsStore = useTagsStore();
 
@@ -65,6 +67,14 @@ export const prepararPartidos = async () => {
 };
 
 export const prepararPortfolios = () => portfolioStore.buscarTudo()
+  .then(() => portfolioStore.lista.reduce((acc, cur) => ({
+    ...acc,
+    [cur.id]: cur.titulo,
+  }), {}))
+  .catch((error) => {
+    throw new Error(error);
+  });
+export const prepararPortfoliosObras = () => portfolioObrasStore.buscarTudo()
   .then(() => portfolioStore.lista.reduce((acc, cur) => ({
     ...acc,
     [cur.id]: cur.titulo,

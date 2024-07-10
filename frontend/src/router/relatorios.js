@@ -1,6 +1,6 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const NovoMensal = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoMensal.vue'),
@@ -74,6 +74,14 @@ const RelatoriosSemestraisOuAnuais = defineAsyncComponent({
   loader: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'),
   loadingComponent: LoadingComponent,
 });
+const NovoRelatórioDePortfolioObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDePortfolioObras.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDePortfolioObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDePortfolioObras.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/relatorios',
@@ -106,6 +114,9 @@ export default {
       /// CasaCivil
       'RelatóriosDeParlamentares',
       'RelatóriosDeTransferênciasVoluntárias',
+
+      // MDO
+      'RelatóriosDePortfolioObras',
     ],
   },
 
@@ -382,6 +393,31 @@ export default {
           meta: {
             título: 'Novo relatório de status',
             rotaDeEscape: 'RelatóriosDeStatus',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'portfolio-obras',
+      meta: {
+        título: 'Relatórios de portfolio de Obras',
+        títuloParaMenu: 'Relatório de portfolio',
+        limitarÀsPermissões: 'Reports.executar.MDO',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDePortfolioObras',
+          component: RelatóriosDePortfolioObras,
+        },
+        {
+          component: NovoRelatórioDePortfolioObras,
+          path: 'novo',
+          name: 'novoRelatórioDePortfolioObras',
+          meta: {
+            título: 'Novo relatório de portfolio',
+            rotaDeEscape: 'RelatóriosDePortfolioObras',
           },
         },
       ],
