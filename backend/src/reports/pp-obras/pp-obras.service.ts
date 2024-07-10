@@ -3,7 +3,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoOrigemTipo, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
@@ -37,49 +37,47 @@ class RetornoDbProjeto {
     portfolio_id: number;
     portfolio_titulo: string;
     meta_id?: number;
-    iniciativa_id?: number;
-    atividade_id?: number;
+    meta_nome?: string;
+    pdm_id?: number;
+    pdm_nome?: string;
+    grupo_tematico_id?: number;
+    grupo_tematico_nome?: string;
+    tipo_intervencao_id?: number;
+    tipo_intervencao_nome?: string;
+    equipamento_id?: number;
+    equipamento_nome?: string;
+    origem_tipo: ProjetoOrigemTipo;
+    origem_outro?: string;
     nome: string;
     codigo?: string;
-    objeto: string;
-    objetivo: string;
+    detalhamento?: string;
+    secretario_colaborador?: string;
     publico_alvo: string;
     previsao_inicio?: Date;
     previsao_termino?: Date;
+    data_inauguracao_planejada?: Date;
     previsao_duracao?: number;
     previsao_custo?: number;
-    escopo?: string;
-    nao_escopo?: string;
     secretario_responsavel?: string;
     secretario_executivo?: string;
-    coordenador_ue?: string;
-    data_aprovacao?: Date;
-    data_revisao?: Date;
-    versao?: string;
     status: ProjetoStatus;
-
+    subprefeituras: string;
     orgao_responsavel_id: number;
     orgao_responsavel_sigla: string;
     orgao_responsavel_descricao: string;
     orgao_gestor_id: number;
     orgao_gestor_sigla: string;
     orgao_gestor_descricao: string;
-    gestores: string;
+    orgao_executor_id: number;
+    orgao_executor_sigla: string;
+    orgao_executor_descricao: string;
+    orgao_origem_id: number;
+    orgao_origem_sigla: string;
+    orgao_origem_descricao: string;
+    assessores: string;
+    pontos_focais_colaboradores: string;
     responsavel_id: number;
     responsavel_nome_exibicao: string;
-
-    fonte_recurso_id: number;
-    fonte_recurso_nome: string;
-    fonte_recurso_cod_sof: string;
-    fonte_recurso_ano: number;
-    fonte_recurso_valor_pct: number;
-    fonte_recurso_valor_nominal: number;
-
-    premisa_id: number;
-    premissa: string;
-
-    restricao_id: number;
-    restricao: string;
 
     orgao_id: number;
     orgao_sigla: string;
@@ -388,8 +386,9 @@ export class PPObrasService implements ReportableService {
             projeto.portfolio_id,
             portfolio.titulo as portfolio_titulo,
             projeto.meta_id,
-            projeto.iniciativa_id,
-            projeto.atividade_id,
+            meta.titulo as meta_nome,
+            pdm.id as pdm_id,
+            pdm.nome as pdm_nome,
             projeto.nome,
             projeto.codigo,
             projeto.objeto,
@@ -418,114 +417,71 @@ export class PPObrasService implements ReportableService {
             orgao_gestor.descricao as orgao_gestor_descricao,
             (
                 SELECT
-                    string_agg(nome_exibicao, '/')
+                    string_agg(nome_exibicao, '|')
                 FROM pessoa
                 WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-            ) as gestores,
+            ) as assessores,
+            (
+                SELECT
+                    string_agg(nome_exibicao, '|')
+                FROM pessoa
+                WHERE id = ANY(projeto.colaboradores_no_orgao)
+            ) as pontos_focais_colaboradores,
             r.id AS fonte_recurso_id,
             sof.descricao AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
             r.fonte_recurso_ano AS fonte_recurso_ano,
             r.valor_percentual AS fonte_recurso_valor_pct,
             r.valor_nominal AS fonte_recurso_valor_nominal,
-            pp.id AS premisa_id,
-            pp.premissa,
-            pr.id AS restricao_id,
-            pr.restricao,
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao,
-            pe.descricao AS projeto_etapa
+            orgao_executor.id AS orgao_executor_id,
+            orgao_executor.sigla AS orgao_executor_sigla,
+            orgao_executor.descricao AS orgao_executor_descricao,
+            orgao_origem.id AS orgao_executor_id,
+            orgao_origem.sigla AS orgao_executor_sigla,
+            orgao_origem.descricao AS orgao_executor_descricao,
+            pe.descricao AS projeto_etapa,
+            grupo_tematico.id AS grupo_tematico_id,
+            grupo_tematico.nome AS grupo_tematico_nome,
+            tipo_intervencao.id AS tipo_intervencao_id,
+            tipo_intervencao.nome AS tipo_intervencao_nome,
+            equipamento.id AS equipamento_id,
+            equipamento.nome AS equipamento_nome,
+            mdo_detalhamento AS detalhamento,
+            origem_tipo,
+            origem_outro as descricao,
+            secretario_colaborador,
+            mdo_previsao_inauguracao as data_inauguracao_planejada,
+            (
+                SELECT
+                    string_agg(regiao.sigla, '|')
+                FROM projeto_regiao
+                JOIN regiao ON regiao.id = projeto_regiao.regiao_id
+                WHERE projeto_regiao.projeto_id = projeto.id
+            ) AS subprefeituras
         FROM projeto
+          LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
+          LEFT JOIN pdm ON pdm.id = meta.pdm_id
+          LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
+          LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
+          LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
             AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
             AND sof.col = 'fonte_recursos'
-          LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
-          LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
+          LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
+          LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-        ${whereCond.whereString}
-
-        UNION
-
-        SELECT
-            projeto.id,
-            portfolio.id as portfolio_id,
-            portfolio.titulo as portfolio_titulo,
-            projeto.meta_id,
-            projeto.iniciativa_id,
-            projeto.atividade_id,
-            projeto.nome,
-            projeto.codigo,
-            projeto.objeto,
-            projeto.objetivo,
-            projeto.publico_alvo,
-            coalesce(tc.previsao_inicio, projeto.previsao_inicio) AS previsao_inicio,
-            coalesce(tc.previsao_termino, projeto.previsao_termino) AS previsao_termino,
-            coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
-            coalesce(tc.previsao_custo, projeto.previsao_custo) AS previsao_custo,
-            projeto.escopo,
-            projeto.nao_escopo,
-            projeto.secretario_responsavel,
-            projeto.secretario_executivo,
-            projeto.coordenador_ue,
-            projeto.data_aprovacao,
-            projeto.data_revisao,
-            projeto.versao,
-            projeto.status,
-            orgao_responsavel.id AS orgao_responsavel_id,
-            orgao_responsavel.sigla AS orgao_responsavel_sigla,
-            orgao_responsavel.descricao AS orgao_responsavel_descricao,
-            resp.id AS responsavel_id,
-            resp.nome_exibicao AS responsavel_nome_exibicao,
-            orgao_gestor.id as orgao_gestor_id,
-            orgao_gestor.sigla as orgao_gestor_sigla,
-            orgao_gestor.descricao as orgao_gestor_descricao,
-            (
-                SELECT
-                    string_agg(nome_exibicao, '/')
-                FROM pessoa
-                WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-            ) as gestores,
-            r.id AS fonte_recurso_id,
-            sof.descricao AS fonte_recurso_nome,
-            r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
-            r.fonte_recurso_ano AS fonte_recurso_ano,
-            r.valor_percentual AS fonte_recurso_valor_pct,
-            r.valor_nominal AS fonte_recurso_valor_nominal,
-            pp.id AS premisa_id,
-            pp.premissa,
-            pr.id AS restricao_id,
-            pr.restricao,
-            o.id AS orgao_id,
-            o.sigla AS orgao_sigla,
-            o.descricao AS orgao_descricao,
-            pe.descricao AS projeto_etapa
-        FROM projeto
-        LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-          JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
-          LEFT JOIN portfolio ON portfolio.id = ppc.portfolio_id
-          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
-            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
-            AND sof.col = 'fonte_recursos'
-          LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
-          LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
-          LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
-          LEFT JOIN orgao o ON po.orgao_id = o.id
-          LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
-          LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
-          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = $${portfolioParamIdx}
-        `;
+        ${whereCond.whereString} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -538,33 +494,46 @@ export class PPObrasService implements ReportableService {
                 id: db.id,
                 portfolio_id: db.portfolio_id,
                 portfolio_titulo: db.portfolio_titulo,
+                pdm_id: db.pdm_id ? db.pdm_id : null,
+                pdm_nome: db.pdm_nome ? db.pdm_nome : null,
                 meta_id: db.meta_id ? db.meta_id : null,
-                iniciativa_id: db.iniciativa_id ? db.iniciativa_id : null,
-                atividade_id: db.atividade_id ? db.atividade_id : null,
+                meta_nome: db.meta_nome ? db.meta_nome : null,
+                grupo_tematico_id: db.grupo_tematico_id ? db.grupo_tematico_id : null,
+                grupo_tematico_nome: db.grupo_tematico_nome ? db.grupo_tematico_nome : null,
+                tipo_obra_id: db.tipo_intervencao_id ? db.tipo_intervencao_id : null,
+                tipo_obra_nome: db.tipo_intervencao_nome ? db.tipo_intervencao_nome : null,
+                equipamento_id: db.equipamento_id ? db.equipamento_id : null,
+                equipamento_nome: db.equipamento_nome ? db.equipamento_nome : null,
                 nome: db.nome,
                 codigo: db.codigo ? db.codigo : null,
-                objeto: db.objeto,
-                objetivo: db.objetivo,
+                detalhamento: db.detalhamento ?? null,
+                origem_tipo: db.origem_tipo,
+                descricao: db.origem_outro ?? null,
+                secretario_colaborador: db.secretario_colaborador,
                 publico_alvo: db.publico_alvo,
                 previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
                 previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
                 previsao_duracao: db.previsao_duracao ? db.previsao_duracao : null,
                 previsao_custo: db.previsao_custo ? db.previsao_custo : null,
-                escopo: db.escopo ? db.escopo : null,
-                nao_escopo: db.nao_escopo ? db.nao_escopo : null,
+                data_inauguracao_planejada: db.data_inauguracao_planejada
+                    ? Date2YMD.toString(db.data_inauguracao_planejada)
+                    : null,
                 secretario_responsavel: db.secretario_responsavel,
                 secretario_executivo: db.secretario_executivo,
-                coordenador_ue: db.coordenador_ue,
-                data_aprovacao: db.data_aprovacao,
-                data_revisao: db.data_revisao,
-                versao: db.versao ? db.versao : null,
                 status: db.status,
-                projeto_etapa: db.projeto_etapa ? db.projeto_etapa : null,
-                orgao_participante: {
-                    id: db.orgao_id,
-                    sigla: db.orgao_sigla,
-                    descricao: db.orgao_descricao,
-                },
+                subprefeituras: db.subprefeituras,
+                etapa: db.projeto_etapa ? db.projeto_etapa : null,
+                pontos_focais_colaboradores: db.pontos_focais_colaboradores,
+                orgao_executor: db.orgao_executor_id
+                    ? {
+                          id: db.orgao_executor_id,
+                          sigla: db.orgao_executor_sigla,
+                          descricao: db.orgao_executor_descricao,
+                      }
+                    : null,
+                orgao_origem: db.orgao_origem_id
+                    ? { id: db.orgao_origem_id, sigla: db.orgao_origem_sigla, descricao: db.orgao_origem_descricao }
+                    : null,
 
                 orgao_responsavel: db.orgao_responsavel_id
                     ? {
@@ -579,37 +548,12 @@ export class PPObrasService implements ReportableService {
                     sigla: db.orgao_gestor_sigla,
                     descricao: db.orgao_gestor_descricao,
                 },
-                gestores: db.gestores,
+                assessores: db.assessores,
 
                 responsavel: db.responsavel_id
                     ? {
                           id: db.responsavel_id,
                           nome_exibicao: db.responsavel_nome_exibicao,
-                      }
-                    : null,
-
-                premissa: db.premisa_id
-                    ? {
-                          id: db.premisa_id,
-                          premissa: db.premissa,
-                      }
-                    : null,
-
-                restricao: db.restricao_id
-                    ? {
-                          id: db.restricao_id,
-                          restricao: db.restricao,
-                      }
-                    : null,
-
-                fonte_recurso: db.fonte_recurso_id
-                    ? {
-                          id: db.fonte_recurso_id,
-                          nome: db.fonte_recurso_nome,
-                          fonte_recurso_cod_sof: db.fonte_recurso_cod_sof,
-                          fonte_recurso_ano: db.fonte_recurso_ano,
-                          valor_percentual: db.fonte_recurso_valor_pct,
-                          valor_nominal: db.fonte_recurso_valor_nominal,
                       }
                     : null,
             });
