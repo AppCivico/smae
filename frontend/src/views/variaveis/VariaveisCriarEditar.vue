@@ -138,12 +138,14 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   let msg = props.variavelId
     ? `Variável "${cargaManipulada.titulo}" salva!`
     : `Variável "${cargaManipulada.titulo}" adicionada!`;
+  let resposta;
 
   if (gerarMultiplasVariaveis.value) {
     msg = `Variáveis com o prefixo "${cargaManipulada.codigo}" geradas!`;
+    resposta = await variaveisGlobaisStore.gerarItens(cargaManipulada);
+  } else {
+    resposta = await variaveisGlobaisStore.salvarItem(cargaManipulada, props.variavelId);
   }
-
-  const resposta = await variaveisGlobaisStore.salvarItem(cargaManipulada, props.variavelId);
 
   try {
     if (resposta) {
