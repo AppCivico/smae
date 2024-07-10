@@ -81,7 +81,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
       if (route.meta.rotaDeEscape) {
         router.push({
-          name: route.meta.rotaDeEscape,
+          name: 'planosSetoriaisResumo',
           params: { planoSetorialId: resposta.id },
         });
       }
