@@ -153,7 +153,7 @@ export class VariavelService {
 
             await this.checkPermissionsPDM(dto, user);
         } else if (tipo == 'Global') {
-            this.checkPeriodoVariavelGlobal(dto);
+            this.checkPeriodoVariavelGlobal(dto, 'create');
 
             // Verificar: todo mundo pode criar pra qualquer órgão (responsavel, além do orgao_proprietario_id que é usado no grupo)
         } else {
@@ -1273,7 +1273,7 @@ export class VariavelService {
                 });
             }
         } else if (tipo == 'Global') {
-            this.checkPeriodoVariavelGlobal(dto);
+            this.checkPeriodoVariavelGlobal(dto, 'update');
         }
 
         // Quando a variável é supraregional, está sendo enviado regiao_id = 0
@@ -1424,10 +1424,14 @@ export class VariavelService {
         return { id: variavelId };
     }
 
-    private checkPeriodoVariavelGlobal(dto: UpdateVariavelDto) {
-        if (!dto.inicio_medicao)
+    private checkPeriodoVariavelGlobal(dto: UpdateVariavelDto, op: 'create' | 'update') {
+        if (!dto.inicio_medicao && op == 'create')
             throw new HttpException('inicio_medicao| Início da medição é obrigatório para variáveis globais', 400);
-        if (dto.fim_medicao && dto.fim_medicao < dto.inicio_medicao)
+
+        if (op == 'update')
+            delete dto.inicio_medicao
+
+        if (dto.fim_medicao && dto.inicio_medicao && dto.fim_medicao < dto.inicio_medicao)
             throw new HttpException('fim_medicao| Fim da medição deve ser maior que o início', 400);
     }
 
