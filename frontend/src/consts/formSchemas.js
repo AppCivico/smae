@@ -3125,8 +3125,10 @@ export const variávelComposta = object()
       .required(),
   });
 
+// criação ou geração
 export const variavelGlobal = object({
   acumulativa: boolean()
+    .label('Variável acumulativa')
     .required(),
   ano_base: number()
     .label('Ano base')
