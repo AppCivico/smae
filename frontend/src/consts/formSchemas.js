@@ -1060,10 +1060,6 @@ export const obras = object({
     .max(dataMax)
     .min(dataMin)
     .nullable(),
-  mdo_programa_habitacional: string()
-    .label('Programa Habitacional')
-    .max(1024)
-    .nullable(),
   meta_codigo: string()
     .label('Código da Meta')
     .nullable(),
@@ -1133,6 +1129,11 @@ export const obras = object({
     .label('Previsão de término')
     .max(dataMax)
     .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
+    .nullable(),
+  programa_id: number()
+    .label('Programa Habitacional')
+    .positive()
+    .integer()
     .nullable(),
   regiao_ids: array()
     .label('Subprefeitura')
