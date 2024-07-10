@@ -413,13 +413,13 @@ export class PessoaService {
             async (prismaTx: Prisma.TransactionClient) => {
                 const emailExists = updatePessoaDto.email
                     ? await prismaTx.pessoa.count({
-                          where: {
-                              email: updatePessoaDto.email,
-                              NOT: {
-                                  id: pessoaId,
-                              },
-                          },
-                      })
+                        where: {
+                            email: updatePessoaDto.email,
+                            NOT: {
+                                id: pessoaId,
+                            },
+                        },
+                    })
                     : 0;
                 if (emailExists > 0) {
                     throw new HttpException('email| E-mail está em uso em outra conta', 400);
@@ -1296,11 +1296,11 @@ export class PessoaService {
                 removido_em: null,
                 modulos_sistemas: filter.sistemas
                     ? {
-                          hasSome: filter.sistemas,
-                      }
+                        hasSome: filter.sistemas,
+                    }
                     : ehAdmin
-                      ? undefined
-                      : {
+                        ? undefined
+                        : {
                             hasSome: ['SMAE', ...user.modulo_sistema],
                         },
             },
@@ -1427,6 +1427,13 @@ export class PessoaService {
             removePrivilegios('CadastroUnidadeMedida.');
             removePrivilegios('CadastroVariavelCategorica.');
         }
+
+        if (sistema == 'CasaCivil') {
+            removePrivilegios('CadastroPainelExterno.');
+            removePrivilegios('CadastroGrupoPainelExterno.');
+            removePrivilegios('SMAE.espectador_de_painel_externo');
+        }
+
     }
 
     async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {
