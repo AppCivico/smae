@@ -21,7 +21,7 @@ export class CreateGrupoRespVariavelDto {
 
     /**
      * lista dos participantes do grupo? pode ficar vazio
-     * cada pessoa precisa ter o privilégio "SMAE.espectador_de_projeto"
+     * cada pessoa precisa ter o privilégio `SMAE.GrupoVariavel.colaborador`
      * @example "[4, 5, 6]"
      */
     @IsArray({ message: '$property| precisa ser um array' })
