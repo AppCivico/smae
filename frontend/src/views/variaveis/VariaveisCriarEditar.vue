@@ -193,7 +193,7 @@ watch(itemParaEdição, (novoValor) => {
 
 watch(gerarMultiplasVariaveis, (novoValor) => {
   if (!novoValor) {
-    resetField('codigo', { value: null });
+    resetField('sufixo', { value: null });
     resetField('criar_formula_composta', { value: null });
     resetField('nivel_regionalizacao', { value: null });
     resetField('regioes', { value: null });
@@ -947,20 +947,20 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             class="f1 fb15em"
           >
             <LabelFromYup
-              name="codigo"
+              name="sufixo"
               :schema="schema"
             />
             <Field
-              id="codigo"
-              name="codigo"
+              id="sufixo"
+              name="sufixo"
               type="text"
               class="inputtext light mb1"
-              :class="{ error: errors.codigo }"
-              :value="emFoco?.codigo"
+              :class="{ error: errors.sufixo }"
+              :value="emFoco?.sufixo"
             />
             <ErrorMessage
               class="error-msg"
-              name="codigo"
+              name="sufixo"
             />
           </div>
           <div class="f1 fb15em mb1 mt2">
