@@ -3283,11 +3283,6 @@ export const variavelGlobal = object({
 
 export const variavelGlobalParaGeracao = variavelGlobal.concat(
   object({
-    sufixo: string()
-      .label('Sufixo')
-      .min(1)
-      .max(60)
-      .required(),
     criar_formula_composta: boolean()
       .label('Criar fórmulas compostas')
       .required(),
