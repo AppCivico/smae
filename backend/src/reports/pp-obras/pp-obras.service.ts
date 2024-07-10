@@ -356,9 +356,9 @@ export class PPObrasService implements ReportableService {
             paramIndex++;
         }
 
-        if (filters.projeto_regioes) {
-            whereConditions.push(`projeto_regioes.id IN ($${paramIndex})`);
-            queryParams.push(filters.projeto_regioes.join(','));
+        if (filters.projeto_regiao_id) {
+            whereConditions.push(`projeto_regioes.regiao_id = $${paramIndex}`);
+            queryParams.push(filters.projeto_regiao_id);
             paramIndex++;
         }
 
