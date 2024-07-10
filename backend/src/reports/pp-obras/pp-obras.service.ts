@@ -456,7 +456,7 @@ export class PPObrasService implements ReportableService {
             mdo_previsao_inauguracao as data_inauguracao_planejada,
             (
                 SELECT
-                    string_agg(regiao.sigla, '|')
+                    string_agg(regiao.descricao, '|')
                 FROM projeto_regiao
                 JOIN regiao ON regiao.id = projeto_regiao.regiao_id
                 WHERE projeto_regiao.projeto_id = projeto.id
