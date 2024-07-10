@@ -1,12 +1,16 @@
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import { range } from 'lodash';
-import { defineStore } from 'pinia';
+import dateTimeToDate from "@/helpers/dateTimeToDate";
+import { range } from "lodash";
+import { defineStore } from "pinia";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPortfolioDto, PortfolioDto, PortfolioOneDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
+import {
+  ListPortfolioDto,
+  PortfolioDto,
+  PortfolioOneDto,
+} from "@/../../backend/src/pp/portfolio/entities/portfolio.entity";
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = ListPortfolioDto['linhas'];
+type Lista = ListPortfolioDto["linhas"];
 
 interface ChamadasPendentes {
   lista: boolean;
@@ -20,7 +24,7 @@ interface Estado {
   erro: null | unknown;
 }
 
-export const usePortfolioStore = defineStore('portfolios', {
+export const usePortfolioStore = defineStore("portfolios", {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -37,7 +41,10 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/portfolio/${id}`, params);
+        const resposta = await this.requestS.get(
+          `${baseUrl}/portfolio/${id}`,
+          params
+        );
         this.emFoco = {
           ...resposta,
         };
@@ -52,11 +59,14 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.erro = null;
 
       const rotaNaApi = paraProjetos
-        ? '/portfolio/para-projetos'
-        : '/portfolio';
+        ? "/portfolio/para-projetos"
+        : "/portfolio";
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}${rotaNaApi}`, params);
+        const { linhas } = await this.requestS.get(
+          `${baseUrl}${rotaNaApi}`,
+          params
+        );
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -106,14 +116,19 @@ export const usePortfolioStore = defineStore('portfolios', {
       ...emFoco,
       nivel_maximo_tarefa: emFoco?.nivel_maximo_tarefa || 5,
       nivel_regionalizacao: emFoco?.nivel_regionalizacao || 1,
-      data_criacao: emFoco?.data_criacao ? dateTimeToDate(emFoco?.data_criacao) : null,
-      orcamento_execucao_disponivel_meses: emFoco?.orcamento_execucao_disponivel_meses
-        && Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
-        ? emFoco.orcamento_execucao_disponivel_meses
-        : range(1, 13),
+      data_criacao: emFoco?.data_criacao
+        ? dateTimeToDate(emFoco?.data_criacao)
+        : null,
+      orcamento_execucao_disponivel_meses:
+        emFoco?.orcamento_execucao_disponivel_meses &&
+        Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
+          ? emFoco.orcamento_execucao_disponivel_meses
+          : range(1, 13),
     }),
 
-    portfoliosPorId: ({ lista }: Estado): { [k: number | string]: PortfolioDto } => lista
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    portfoliosPorId: ({
+      lista,
+    }: Estado): { [k: number | string]: PortfolioDto } =>
+      lista.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
