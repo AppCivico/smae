@@ -1,6 +1,7 @@
 import obrasAcompanhamentos from './obras.acompanhamentos';
 import obrasOrcamentos from './obras.orcamentos';
 import obrasProcessos from './obras.processos';
+import obrasContratos from './obras.contratos';
 
 export default {
   path: '/obras',
@@ -76,6 +77,7 @@ export default {
               'acompanhamentosDeObrasListar',
               'obrasDocumentos',
               'processosDaObraListar',
+              'contratosDaObraListar',
             ],
           },
           {
@@ -245,6 +247,7 @@ export default {
 
         obrasAcompanhamentos,
         obrasProcessos,
+        obrasContratos,
         obrasOrcamentos,
       ],
     },
