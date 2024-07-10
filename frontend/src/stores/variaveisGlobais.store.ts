@@ -157,6 +157,7 @@ export const useVariaveisGlobaisStore = defineStore('variareisGlobais', {
       casas_decimais: emFoco?.casas_decimais || 0,
       dado_aberto: emFoco?.dado_aberto || true,
       fim_medicao: emFoco?.fim_medicao || null,
+      fonte_id: emFoco?.fonte?.id || null,
       inicio_medicao: emFoco?.inicio_medicao || null,
       liberacao_grupo_ids: Array.isArray(emFoco?.liberacao_grupo_ids)
         ? emFoco.liberacao_grupo_ids
@@ -166,8 +167,7 @@ export const useVariaveisGlobaisStore = defineStore('variareisGlobais', {
         : [],
       mostrar_monitoramento: emFoco?.mostrar_monitoramento || false,
       orgao_id: emFoco?.orgao?.id || null,
-      orgao_proprietario_id: emFoco?.orgao_proprietario_id
-        || emFoco?.orgao_proprietario?.id
+      orgao_proprietario_id: emFoco?.orgao_proprietario?.id
         || null,
       periodicidade: emFoco?.periodicidade || '',
       periodos: typeof emFoco?.periodos === 'object'
