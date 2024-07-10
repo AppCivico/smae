@@ -432,7 +432,7 @@ export class VariavelService {
         // TODO verificar quem pode usar o orgao_proprietario_id
         // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo_ids
 
-        const periodos = this.getPeriodTuples(dto.periodos);
+        const periodos = dto.periodos ? this.getPeriodTuples(dto.periodos) : {};
 
         const variavel = await prismaTxn.variavel.create({
             data: {
@@ -563,7 +563,7 @@ export class VariavelService {
         //        }
 
         return {
-            periodo_preenchimento: [p.preenchimento_inicio, p.preenchimento_inicio],
+            periodo_preenchimento: [p.preenchimento_inicio, p.preenchimento_fim],
             periodo_liberacao: [p.liberacao_inicio, p.liberacao_fim],
             periodo_validacao: [p.validacao_inicio, p.validacao_fim],
         };
