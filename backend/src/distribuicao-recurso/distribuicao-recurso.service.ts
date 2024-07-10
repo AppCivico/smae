@@ -632,245 +632,260 @@ export class DistribuicaoRecursoService {
         }
         const now = new Date(Date.now());
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            if (dto.registros_sei != undefined) {
-                const currRegistrosSei = self.registros_sei ?? [];
-                await this.checkDiffSei(id, dto.registros_sei, currRegistrosSei, prismaTx, user);
-            } else {
-                // Front não envia o param quando tiver vazio.
-                await prismaTx.distribuicaoRecursoSei.updateMany({
-                    where: {
-                        distribuicao_recurso_id: id,
-                        removido_em: null,
-                    },
-                    data: {
-                        removido_em: now,
-                        removido_por: user.id,
-                    },
-                });
-            }
-            delete dto.registros_sei;
-
-            if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
-                throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
-
-            if (dto.nome && dto.nome != self.nome) {
-                const similarExists = await prismaTx.distribuicaoRecurso.count({
-                    where: {
-                        nome: { endsWith: dto.nome, mode: 'insensitive' },
-                        transferencia_id: self.transferencia_id,
-                        removido_em: null,
-                        id: { not: id },
-                    },
-                });
-                if (similarExists > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
-            }
-
-            if (dto.vigencia && self.vigencia != null && dto.vigencia.toISOString() != self.vigencia.toISOString()) {
-                await this.registerAditamento(prismaTx, id, dto, user, now);
-            }
-
-            if (
-                dto.custeio != undefined ||
-                dto.investimento != undefined ||
-                dto.valor_contrapartida != undefined ||
-                dto.valor_total
-            ) {
-                const transferencia = await prismaTx.transferencia.findFirst({
-                    where: {
-                        id: self.transferencia_id,
-                        removido_em: null,
-                    },
-                    select: {
-                        id: true,
-                        custeio: true,
-                        investimento: true,
-                        valor_contrapartida: true,
-                        valor_total: true,
-                    },
-                });
-                if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
-
-                const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
-                    where: {
-                        id: { not: id },
-                        transferencia_id: transferencia.id,
-                        removido_em: null,
-                    },
-                    select: {
-                        custeio: true,
-                        investimento: true,
-                        valor_contrapartida: true,
-                        valor_total: true,
-                        status: {
-                            orderBy: { data_troca: 'desc' },
-                            take: 1,
-                            select: {
-                                status_base: {
-                                    select: {
-                                        tipo: true,
-                                    },
-                                },
-                                status: {
-                                    select: {
-                                        tipo: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                });
-
-                const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                    console.log(distribuicao.status);
-                    const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
-
-                    if (statusAtual) {
-                        const statusConfig = statusAtual.status_base ?? statusAtual.status;
-
-                        return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
-                    }
-                    return true;
-                });
-
-                let sumCusteio: number = dto.custeio ?? 0;
-                let sumInvestimento: number = dto.investimento ?? 0;
-                let sumContrapartida: number = dto.valor_contrapartida ?? 0;
-                let sumTotal: number = dto.valor_total ?? 0;
-
-                for (const distRow of outrasDistribuicoesFiltradas) {
-                    sumCusteio += +distRow.custeio.toNumber();
-                    sumContrapartida += +distRow.valor_contrapartida.toNumber();
-                    sumInvestimento += +distRow.investimento.toNumber();
-                    sumTotal += +distRow.valor_total.toNumber();
-                }
-
-                if (dto.custeio != self.custeio.toNumber()) {
-                    if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
-                        throw new HttpException(
-                            'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
-                            400
-                        );
-                }
-
-                if (dto.investimento != self.investimento.toNumber()) {
-                    if (
-                        transferencia.investimento &&
-                        sumInvestimento &&
-                        sumInvestimento > transferencia.investimento.toNumber()
-                    )
-                        throw new HttpException(
-                            'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
-                            400
-                        );
-                }
-
-                if (dto.valor_contrapartida != self.valor_contrapartida.toNumber()) {
-                    if (
-                        transferencia.valor_contrapartida &&
-                        sumContrapartida &&
-                        sumContrapartida > transferencia.valor_contrapartida.toNumber()
-                    )
-                        throw new HttpException(
-                            'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
-                            400
-                        );
-                }
-
-                if (dto.valor_total != self.valor_total.toNumber()) {
-                    if (transferencia.valor_total && sumTotal && sumTotal > transferencia.valor_total.toNumber())
-                        throw new HttpException(
-                            'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
-                            400
-                        );
-                }
-            }
-
-            const updated = await prismaTx.distribuicaoRecurso.update({
-                where: { id },
-                data: {
-                    orgao_gestor_id: dto.orgao_gestor_id,
-                    nome: dto.nome,
-                    objeto: dto.objeto,
-                    valor: dto.valor,
-                    valor_total: dto.valor_total,
-                    valor_contrapartida: dto.valor_contrapartida,
-                    custeio: dto.custeio,
-                    investimento: dto.investimento,
-                    empenho: dto.empenho,
-                    data_empenho: dto.data_empenho,
-                    programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
-                    programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                    dotacao: dto.dotacao,
-                    proposta: dto.proposta,
-                    contrato: dto.contrato,
-                    convenio: dto.convenio,
-                    assinatura_termo_aceite: dto.assinatura_termo_aceite,
-                    assinatura_municipio: dto.assinatura_municipio,
-                    assinatura_estado: dto.assinatura_estado,
-                    vigencia: dto.vigencia,
-                    conclusao_suspensiva: dto.conclusao_suspensiva,
-                    atualizado_em: new Date(Date.now()),
-                    atualizado_por: user.id,
-                },
-                select: {
-                    id: true,
-                    orgao_gestor: {
-                        select: {
-                            id: true,
-                            sigla: true,
-                        },
-                    },
-                    tarefas: {
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.registros_sei != undefined) {
+                    const currRegistrosSei = self.registros_sei ?? [];
+                    await this.checkDiffSei(id, dto.registros_sei, currRegistrosSei, prismaTx, user);
+                } else {
+                    // Front não envia o param quando tiver vazio.
+                    await prismaTx.distribuicaoRecursoSei.updateMany({
                         where: {
+                            distribuicao_recurso_id: id,
+                            removido_em: null,
+                        },
+                        data: {
+                            removido_em: now,
+                            removido_por: user.id,
+                        },
+                    });
+                }
+                delete dto.registros_sei;
+
+                if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
+                    throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
+
+                if (dto.nome && dto.nome != self.nome) {
+                    const similarExists = await prismaTx.distribuicaoRecurso.count({
+                        where: {
+                            nome: { endsWith: dto.nome, mode: 'insensitive' },
+                            transferencia_id: self.transferencia_id,
+                            removido_em: null,
+                            id: { not: id },
+                        },
+                    });
+                    if (similarExists > 0)
+                        throw new HttpException(
+                            'nome| Nome igual ou semelhante já existe em outro registro ativo',
+                            400
+                        );
+                }
+
+                if (
+                    dto.vigencia &&
+                    self.vigencia != null &&
+                    dto.vigencia.toISOString() != self.vigencia.toISOString()
+                ) {
+                    await this.registerAditamento(prismaTx, id, dto, user, now);
+                }
+
+                if (
+                    dto.custeio != undefined ||
+                    dto.investimento != undefined ||
+                    dto.valor_contrapartida != undefined ||
+                    dto.valor_total
+                ) {
+                    const transferencia = await prismaTx.transferencia.findFirst({
+                        where: {
+                            id: self.transferencia_id,
                             removido_em: null,
                         },
                         select: {
                             id: true,
+                            custeio: true,
+                            investimento: true,
+                            valor_contrapartida: true,
+                            valor_total: true,
                         },
-                    },
-                    valor: true,
-                    custeio: true,
-                    valor_contrapartida: true,
-                    investimento: true,
-                    valor_total: true,
-                },
-            });
+                    });
+                    if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
 
-            if (self.orgao_gestor.id != dto.orgao_gestor_id) {
-                if (updated.tarefas.length > 0) {
-                    await prismaTx.$executeRaw`
+                    const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+                        where: {
+                            id: { not: id },
+                            transferencia_id: transferencia.id,
+                            removido_em: null,
+                        },
+                        select: {
+                            custeio: true,
+                            investimento: true,
+                            valor_contrapartida: true,
+                            valor_total: true,
+                            status: {
+                                orderBy: { data_troca: 'desc' },
+                                take: 1,
+                                select: {
+                                    status_base: {
+                                        select: {
+                                            tipo: true,
+                                        },
+                                    },
+                                    status: {
+                                        select: {
+                                            tipo: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    });
+
+                    const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
+                        console.log(distribuicao.status);
+                        const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
+
+                        if (statusAtual) {
+                            const statusConfig = statusAtual.status_base ?? statusAtual.status;
+
+                            return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
+                        }
+                        return true;
+                    });
+
+                    let sumCusteio: number = dto.custeio ?? 0;
+                    let sumInvestimento: number = dto.investimento ?? 0;
+                    let sumContrapartida: number = dto.valor_contrapartida ?? 0;
+                    let sumTotal: number = dto.valor_total ?? 0;
+
+                    for (const distRow of outrasDistribuicoesFiltradas) {
+                        sumCusteio += +distRow.custeio.toNumber();
+                        sumContrapartida += +distRow.valor_contrapartida.toNumber();
+                        sumInvestimento += +distRow.investimento.toNumber();
+                        sumTotal += +distRow.valor_total.toNumber();
+                    }
+
+                    if (dto.custeio != self.custeio.toNumber()) {
+                        if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                            throw new HttpException(
+                                'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                                400
+                            );
+                    }
+
+                    if (dto.investimento != self.investimento.toNumber()) {
+                        if (
+                            transferencia.investimento &&
+                            sumInvestimento &&
+                            sumInvestimento > transferencia.investimento.toNumber()
+                        )
+                            throw new HttpException(
+                                'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                                400
+                            );
+                    }
+
+                    if (dto.valor_contrapartida != self.valor_contrapartida.toNumber()) {
+                        if (
+                            transferencia.valor_contrapartida &&
+                            sumContrapartida &&
+                            sumContrapartida > transferencia.valor_contrapartida.toNumber()
+                        )
+                            throw new HttpException(
+                                'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                                400
+                            );
+                    }
+
+                    if (dto.valor_total != self.valor_total.toNumber()) {
+                        if (transferencia.valor_total && sumTotal && sumTotal > transferencia.valor_total.toNumber())
+                            throw new HttpException(
+                                'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                                400
+                            );
+                    }
+                }
+
+                const updated = await prismaTx.distribuicaoRecurso.update({
+                    where: { id },
+                    data: {
+                        orgao_gestor_id: dto.orgao_gestor_id,
+                        nome: dto.nome,
+                        objeto: dto.objeto,
+                        valor: dto.valor,
+                        valor_total: dto.valor_total,
+                        valor_contrapartida: dto.valor_contrapartida,
+                        custeio: dto.custeio,
+                        investimento: dto.investimento,
+                        empenho: dto.empenho,
+                        data_empenho: dto.data_empenho,
+                        programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
+                        programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
+                        dotacao: dto.dotacao,
+                        proposta: dto.proposta,
+                        contrato: dto.contrato,
+                        convenio: dto.convenio,
+                        assinatura_termo_aceite: dto.assinatura_termo_aceite,
+                        assinatura_municipio: dto.assinatura_municipio,
+                        assinatura_estado: dto.assinatura_estado,
+                        vigencia: dto.vigencia,
+                        conclusao_suspensiva: dto.conclusao_suspensiva,
+                        atualizado_em: new Date(Date.now()),
+                        atualizado_por: user.id,
+                    },
+                    select: {
+                        id: true,
+                        orgao_gestor: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        tarefas: {
+                            where: {
+                                removido_em: null,
+                            },
+                            select: {
+                                id: true,
+                            },
+                        },
+                        valor: true,
+                        custeio: true,
+                        valor_contrapartida: true,
+                        investimento: true,
+                        valor_total: true,
+                    },
+                });
+
+                if (self.orgao_gestor.id != dto.orgao_gestor_id) {
+                    if (updated.tarefas.length > 0) {
+                        console.log('======================================');
+                        console.log('Atualizando tarefas');
+                        await prismaTx.$executeRaw`
                         UPDATE tarefa SET
                             tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.orgao_gestor.sigla}),
                             orgao_id = ${updated.orgao_gestor.id}
                         WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
                     `;
-                } else {
-                    await this._createTarefasOutroOrgao(prismaTx, id, user);
+                        console.log('======================================');
+                    } else {
+                        await this._createTarefasOutroOrgao(prismaTx, id, user);
+                    }
                 }
+
+                // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+                if (Number(updated.valor).toFixed(2) != (+updated.custeio + +updated.investimento).toFixed(2))
+                    throw new HttpException(
+                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                        400
+                    );
+
+                // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+                if (
+                    Number(updated.valor_total).toFixed(2) != (+updated.valor + +updated.valor_contrapartida).toFixed(2)
+                )
+                    throw new HttpException(
+                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                        400
+                    );
+
+                return { id };
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
             }
-
-            console.log('==================');
-            console.log(Number(updated.valor).toFixed(2));
-            console.log((+updated.custeio + +updated.investimento).toFixed(2));
-            console.log('==================');
-            // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
-            if (Number(updated.valor).toFixed(2) != (+updated.custeio + +updated.investimento).toFixed(2))
-                throw new HttpException(
-                    'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
-                    400
-                );
-
-            // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
-            if (Number(updated.valor_total).toFixed(2) != (+updated.valor + +updated.valor_contrapartida).toFixed(2))
-                throw new HttpException(
-                    'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
-                    400
-                );
-
-            return { id };
-        });
+        );
 
         return { id };
     }
