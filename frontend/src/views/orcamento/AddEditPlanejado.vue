@@ -8,7 +8,7 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { defineOptions, ref } from 'vue';
+import { defineOptions, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
 
@@ -112,10 +112,18 @@ const schema = Yup.object().shape({
 });
 
 const {
-  errors, handleSubmit, isSubmitting, values, validateField,
+  errors, handleSubmit, isSubmitting, values, validateField, setValues
 } = useForm({
   initialValues: currentEdit.value,
   validationSchema: schema,
+});
+
+watch(currentEdit, (newValue) => {
+  if (newValue.id) {
+    setValues({
+      valor_planejado: newValue.valor_planejado,
+    });
+  }
 });
 
 const onSubmit = handleSubmit(async () => {
@@ -128,7 +136,6 @@ const onSubmit = handleSubmit(async () => {
     if (isNaN(values.valor_planejado)) values.valor_planejado = toFloat(values.valor_planejado);
 
     values.dotacao = values.dotacao.split('.').map((x) => (x.indexOf('*') != -1 ? '*' : x)).join('.');
-
     if (values.location) {
       values.atividade_id = null;
       values.iniciativa_id = null;
@@ -271,7 +278,6 @@ export default {
   <div class="flex spacebetween center">
     <h1>Adicionar dotação</h1>
     <hr class="ml2 f1">
-
     <CheckClose />
   </div>
   <h3 class="mb2">
