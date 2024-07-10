@@ -41,7 +41,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroTema: ['Temas', 'PDM'],
     CadastroMeta: ['Metas', 'PDM'],
     CadastroIndicador: ['Indicadores', 'PDM'],
-    CadastroVariavelCategorica: ['Variável Categórica', 'PDM'],
+    CadastroVariavelCategorica: ['Variável Categórica', 'SMAE'],
     CadastroIniciativa: ['Iniciativas', 'PDM'],
     CadastroAtividade: ['Atividades', 'PDM'],
     CadastroCronograma: ['Cronogramas', 'PDM'],
@@ -59,7 +59,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroTemaPS: ['Temas', 'PlanoSetorial'],
     CadastroMetaPS: ['Metas', 'PlanoSetorial'],
     CadastroIndicadorPS: ['Indicadores', 'PlanoSetorial'],
-    CadastroVariavelCategoricaPS: ['Variável Categórica', 'PlanoSetorial'],
+    CadastroVariavelCategoricaPS: ['', null],
 
     CadastroIniciativaPS: ['Iniciativas', 'PlanoSetorial'],
     CadastroAtividadePS: ['Atividades', 'PlanoSetorial'],
@@ -337,7 +337,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
     ],
     CadastroVariavelCategoricaPS: [
-        ['CadastroVariavelCategoricaPS.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
+        ['CadastroVariavelCategoricaPS.administrador', false],
     ],
     CadastroIniciativa: [
         ['CadastroIniciativa.inserir', 'Inserir Iniciativas pelas quais for responsável'],

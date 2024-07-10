@@ -1424,6 +1424,7 @@ export class PessoaService {
         if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
             removePrivilegios('CadastroGrupoVariavel.');
             removePrivilegios('CadastroUnidadeMedida.');
+            removePrivilegios('CadastroVariavelCategorica.');
         }
     }
 
