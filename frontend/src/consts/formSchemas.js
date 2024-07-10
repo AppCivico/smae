@@ -309,6 +309,94 @@ export const auxiliarDePreenchimentoDeEvoluçãoDeMeta = object()
       .label('Envio ao CP'),
   });
 
+export const contrato = object()
+  .shape({
+    comentarios: string()
+      .label('Comentários')
+      .max(1024)
+      .nullable(),
+    descricao: string()
+      .label('Descrição')
+      .max(2000)
+      .nullable(),
+    link: string()
+      .label('Link')
+      .nullable()
+      .max(2000)
+      .url(),
+    observacoes: string()
+      .label('Observações')
+      .max(1024)
+      .nullable(),
+    numero: string()
+      .label('Número do Contrato')
+      .max(19)
+      .min(19, '${label} está fora do formato')
+      .matches(regEx.sei)
+      .required(),
+    processos_sei: array()
+      .label('Processos SEI')
+      .required(),
+    status: string()
+      .label('Status')
+      .required(),
+    valor: string()
+      .label('Valor')
+      .required(),
+    quantidade_aditivos: number()
+      .label('Quantidade de Aditivos')
+      .required(),
+  });
+
+export const contratoDeObras = object()
+  .shape({
+    numero: string()
+      .label('Número do contrato')
+      .max(1024)
+      .required(),
+    contrato_exclusivo: boolean()
+      .nullable()
+      .label('Contrato exclusivo dessa obra'),
+    status: string()
+      .label('Status')
+      .required(),
+    processos_sei: string()
+      .label('Processos SEI')
+      .required(),
+    modalidade_contratacao_id: number()
+      .label('Modalidade da Contratação'),
+    fontes_recurso_ids: string()
+      .label('Fontes de recurso'),
+    orgao_id: number()
+      .label('Área gestora'),
+    objeto_resumo: string()
+      .label('Objeto do contrato - resumido'),
+    objeto_detalhado: string()
+      .label('Objeto do contrato - detalhado'),
+    contratante: string()
+      .label('Contratante'),
+    empresa_contratada: string()
+      .label('Empresa contratada'),
+    cnpj_contratada: string()
+      .label('CNPJ contratada'),
+    data_assinatura: string()
+      .label('Data de assinatura'),
+    prazo_numero: number()
+      .label('Prazo'),
+    prazo_unidade: string()
+      .label(),
+    data_base_mes: number()
+      .label('Data base'),
+    data_base_ano: number()
+      .label(),
+    data_inicio: string()
+      .label('Data de início'),
+    valor: string()
+      .label('Valor do contrato'),
+    observacoes: string()
+      .label('Observações'),
+  });
+
 export const custeio = object()
   .shape({
     custo_previsto: string()
