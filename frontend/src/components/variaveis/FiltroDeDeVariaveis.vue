@@ -67,7 +67,7 @@
         <label
           class="label"
           for="codigo"
-        >{{ schema.fields.codigo?.spec.label || 'Campo faltando no schema' }}</label>
+        >Código</label>
         <input
           id="codigo"
           class="inputtext light"
