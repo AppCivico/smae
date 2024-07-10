@@ -3281,8 +3281,8 @@ export const variavelGlobal = object({
 
 export const variavelGlobalParaGeracao = variavelGlobal.concat(
   object({
-    codigo: string()
-      .label('Prefixo')
+    sufixo: string()
+      .label('Sufixo')
       .min(1)
       .max(60)
       .required(),
