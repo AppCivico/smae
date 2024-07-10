@@ -379,7 +379,7 @@ const colunasParaOrdenacao = {
   },
   assunto_variavel: {
     valor: 'assunto_variavel',
-    nome: schema.fields.assunto_id?.spec.label || 'campo faltando no schema',
+    nome: schema.fields.assuntos?.spec.label || 'campo faltando no schema',
   },
   orgao_nome: {
     valor: 'orgao_nome',
@@ -395,7 +395,7 @@ const colunasParaOrdenacao = {
   },
   regiao: {
     valor: 'regiao',
-    nome: schema.fields.regiao_id?.spec.label,
+    nome: 'Região',
   },
   criado_em: {
     valor: 'criado_em',
