@@ -44,7 +44,7 @@ export class PainelExternoService {
 
                 if (Array.isArray(dto.grupos) && dto.grupos.length > 0) {
                     for (const grupoPortId of dto.grupos) {
-                        const pe = await prismaTx.painelExterno.findFirstOrThrow({
+                        const pe = await prismaTx.grupoPainelExterno.findFirstOrThrow({
                             where: {
                                 removido_em: null,
                                 modulo_sistema: sistema,
