@@ -1392,7 +1392,8 @@ export class PessoaService {
      * Especificamente:
      *
      * 1. **MDO e Projetos**:
-     *    - Se o sistema atual não for `MDO` ou `Projetos`, remove os privilégios que começam com `TipoAditivo.` e `ModalidadeContratacao.`.
+     *    - Se o sistema atual não for `MDO` ou `Projetos`, remove os privilégios que começam com `TipoAditivo.`,
+ *          `ModalidadeContratacao.`, etc...
      *      Estes privilégios são específicos para `MDO` e `Projetos`, portanto, não devem aparecer em outros sistemas.
      *
      * 2. **PDM e PlanoSetorial**:

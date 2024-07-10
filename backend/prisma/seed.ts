@@ -673,7 +673,6 @@ const PerfilAcessoConfig: {
         privilegios: [
             'PS.admin_cp',
 
-            'CadastroVariavelCategoricaPS.administrador',
             'CadastroMetaPS.administrador_orcamento',
             'CadastroMacroTemaPS.inserir',
             'CadastroMacroTemaPS.editar',
