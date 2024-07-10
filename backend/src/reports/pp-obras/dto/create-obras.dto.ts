@@ -14,20 +14,14 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     'status',
     'portfolio_id',
 ]) {
-    @IsOptional()
-    @IsString()
-    codigo?: string;
-
-    @IsOptional()
-    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
-    @IsEnum(ProjetoStatus, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
-    })
-    status?: ProjetoStatus;
-
-    @IsNumber() // n pode ser opcional enquanto n remover o exception do join do port compartilhado
+    @IsNumber()
     @Transform(NumberTransform)
     portfolio_id: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Transform(NumberTransform)
+    grupo_tematico_id?: number;
 
     @IsOptional()
     @IsOnlyDate()
@@ -41,5 +35,5 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
 
     @IsOptional()
     @Transform(NumberArrayTransformOrUndef)
-    regioes?: number[];
+    projeto_regioes?: number[];
 }
