@@ -18,6 +18,7 @@ import { useObrasStore } from '@/stores/obras.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
+import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { storeToRefs } from 'pinia';
 import {
@@ -39,6 +40,7 @@ const DotaçãoStore = useDotaçãoStore();
 const alertStore = useAlertStore();
 const observadoresStore = useObservadoresStore();
 const portfolioMdoStore = usePortfolioObraStore();
+const programaHabitacionalStore = useProgramaHabitacionalStore();
 const obrasStore = useObrasStore();
 const equipamentosStore = useEquipamentosStore();
 const etiquetasStore = useEtiquetasStore();
@@ -61,6 +63,12 @@ const {
   erro: erroDeGrupoTemático,
   gruposTemáticosPorId,
 } = storeToRefs(gruposTematicosStore);
+
+const {
+  lista: listaDeProgramasHabitacionais,
+  chamadasPendentes: chamadasPendentesDeProgramasHabitacionais,
+  erro: erroDeProgramasHabitacional,
+} = storeToRefs(programaHabitacionalStore);
 
 const {
   lista: listaDeTiposDeIntervenção,
@@ -290,6 +298,7 @@ function iniciar() {
   equipamentosStore.buscarTudo();
   etiquetasStore.buscarTudo();
   gruposTematicosStore.buscarTudo();
+  programaHabitacionalStore.buscarTudo();
   tiposDeIntervencaoStore.buscarTudo();
 
   if (emFoco.value?.portfolio_id) {
@@ -542,7 +551,7 @@ watch(itemParaEdição, (novoValor) => {
           :aria-busy="chamadasPendentesDeGruposTemáticos.lista"
           :class="{ 'error': errors.grupo_tematico_id }"
           @change="() => {
-            resetField('mdo_programa_habitacional', { value: null });
+            resetField('programa_id', { value: null });
             resetField('mdo_n_unidades_habitacionais', { value: null });
             resetField('mdo_n_familias_beneficiadas', { value: null });
           }"
@@ -720,16 +729,30 @@ watch(itemParaEdição, (novoValor) => {
         class="f1 mb1"
       >
         <LabelFromYup
-          name="mdo_programa_habitacional"
+          name="programa_id"
           :schema="schema"
         />
         <Field
-          name="mdo_programa_habitacional"
+          name="programa_id"
+          as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.mdo_programa_habitacional }"
-        />
+          :class="{ 'error': errors.programa_id }"
+          :aria-busy="chamadasPendentesDeProgramasHabitacionais.lista"
+        >
+          <option value="">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeProgramasHabitacionais"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+
         <ErrorMessage
-          name="mdo_programa_habitacional"
+          name="programa_id"
           class="error-msg"
         />
       </div>
