@@ -24,8 +24,14 @@ switch (sistemaEscolhido.value) {
     });
     break;
 
-  default:
+  case 'MDO':
+    router.replace({
+      name: 'EnviosOrçamentosObras',
+    });
     break;
+
+  default:
+    throw new Error(`Sistema não tratado: ${sistemaEscolhido.value}`);
 }
 </script>
 <template>

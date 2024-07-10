@@ -42,16 +42,14 @@ const colunas = [
 const listaFiltradaPorTermoDeBusca = ref([]);
 
 function carregar(parâmetros) {
-  if (!parâmetros.portfolio_id && !parâmetros.pdm_id) {
-    if (route.meta.entidadeMãe === 'portfolio') {
-      importaçõesStore.buscarTudo({ ...parâmetros, apenas_com_portfolio: true });
-    }
+  if (!parâmetros.portfolio_id && !parâmetros.pdm_id && ['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1) {
+    importaçõesStore.buscarTudo({ ...parâmetros, apenas_com_portfolio: true });
   } else {
     importaçõesStore.buscarTudo(parâmetros);
   }
 }
 
-if (route.meta.entidadeMãe === 'portfolio' && !route.query.portfolio_id) {
+if (['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1 && !route.query.portfolio_id) {
   colunas
     .splice(2, 0, {
       nome: 'nome_do_portfolio',
