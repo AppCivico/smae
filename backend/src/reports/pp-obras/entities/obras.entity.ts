@@ -1,43 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ContratoPrazoUnidade, ProjetoOrigemTipo, ProjetoStatus, StatusContrato } from '@prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
-import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from 'src/pp/projeto/entities/projeto.entity';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
-/* 
-obra_id
-portfolio (id e nome)
-codigo da obra
-nome da obra
-status (nome)
-grupo_tematico (id  e nome)
-tipo_obra (id e nome)
-equipamento (id e nome)
-orgao de origem (sigla e nome)
-orgao executor (sigla e nome)
-detalhamento
-subprefeitura (siglas concatenadas e separadas  por “|”)
-origem
-programa de metas (id e nome)
-meta (id e nome)
-descrição
-previsao de inicio
-previsao de termino
-data de inauguracao planejada
-custo previsto
-data de inicio planejado
-data de término planejado
-etapa da obra (nome)
-custo planejado
-orgao gestor portfolio  (sigla e nome)
-secretario gestor
-assessores (nomes concatenados e separados por “|”)
-orgao responsavel  (sigla e nome)
-secretario responsavel
-ponto focal responsavel (nomes )
-orgao colaborador  (sigla e nome)
-secretario colaborador
-pontos focais colaboradores (nomes concatenados e separados por “|”) */
+
 export class RelObrasDto {
     id: number;
     pdm_id: number | null;
