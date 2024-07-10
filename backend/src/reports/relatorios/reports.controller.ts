@@ -25,7 +25,13 @@ export class ReportsController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos', 'Reports.remover.MDO'])
+    @Roles([
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PDM',
+        'Reports.executar.Projetos',
+        'Reports.remover.MDO',
+        'Reports.executar.MDO',
+    ])
     @ApiOkResponse({
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
         type: '',
