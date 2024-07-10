@@ -27,6 +27,7 @@ import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import statusObras from '@/consts/statusObras';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import tipoDePerfil from '@/consts/tipoDePerfil';
 import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
@@ -805,6 +806,27 @@ export const gruposTematicos = object({
   familias_beneficiadas: boolean()
     .label('Número de famílias beneficiadas')
     .nullable(),
+});
+
+export const grupoDeVariaveis = object({
+  colaboradores: array()
+    .label('Responsáveis pelo grupo')
+    .required('Colaboradores inválidos'),
+  orgao_id: number()
+    .label('Órgão responsável')
+    .nullable(),
+  participantes: array()
+    .label('Alocados ao grupo')
+    .required('Participantes inválidos'),
+  perfil: mixed()
+    .label('Pessoas responsáveis pelo grupo')
+    .oneOf(Object.keys(tipoDePerfil))
+    .required('Responsaveis inválidos'),
+  titulo: string()
+    .label('Nome')
+    .min(3)
+    .max(120)
+    .required('Nome inválido'),
 });
 
 export const liçãoAprendida = object()
