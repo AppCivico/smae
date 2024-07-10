@@ -287,6 +287,7 @@ export class VariavelService {
         dto: CreateGeradorVariaveBaselDto | CreateGeradorVariavelPDMDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId[]> {
+        if (dto.criar_formula_composta) throw new BadRequestException('criar_formula_composta TODO, não implementado');
         const logger = LoggerWithLog('Geração de variáveis regionais');
         logger.verbose(`Dados recebidos: ${JSON.stringify(dto)}`);
 

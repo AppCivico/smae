@@ -262,6 +262,10 @@ export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
     @ArrayMaxSize(1000, { message: '$property| tag(s): precisa ter no máximo 1000 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     regioes: number[];
+
+    @IsBoolean()
+    @IsOptional()
+    criar_formula_composta?: boolean;
 }
 
 export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {
