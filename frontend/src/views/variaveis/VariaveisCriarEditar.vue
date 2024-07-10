@@ -135,9 +135,13 @@ const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroIndic
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
-  const msg = props.variavelId
+  let msg = props.variavelId
     ? `Variável "${cargaManipulada.titulo}" salva!`
     : `Variável "${cargaManipulada.titulo}" adicionada!`;
+
+  if (gerarMultiplasVariaveis.value) {
+    msg = `Variáveis com o prefixo "${cargaManipulada.codigo}" geradas!`;
+  }
 
   const resposta = await variaveisGlobaisStore.salvarItem(cargaManipulada, props.variavelId);
 
