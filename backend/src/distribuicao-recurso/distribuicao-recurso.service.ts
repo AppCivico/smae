@@ -1221,7 +1221,7 @@ export class DistribuicaoRecursoService {
         }
 
         await Promise.all(operations);
-        //await this._validarTopologia(prismaTx, distribuicao_id, user);
+        await this._validarTopologia(prismaTx, distribuicao_id, user);
     }
 
     private async _validarTopologia(prismaTxn: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {
@@ -1274,7 +1274,8 @@ export class DistribuicaoRecursoService {
                     { transferencia_id: distribuicaoRecurso.transferencia_id },
                     tarefa.id,
                     dto,
-                    user
+                    user,
+                    prismaTxn
                 );
             }
         }
