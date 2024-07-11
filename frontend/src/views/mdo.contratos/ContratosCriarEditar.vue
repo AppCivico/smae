@@ -1,22 +1,23 @@
 <script setup>
-// eslint-disable-next-line import/no-extraneous-dependencies
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { contratoDeObras as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import truncate from '@/helpers/truncate';
 import {
   ErrorMessage,
   Field,
-  useForm,
   FieldArray,
+  useForm,
   useIsFormDirty,
 } from 'vee-validate';
 import {
-  watch, onMounted, ref,
+  onMounted, ref,
+  watch,
 } from 'vue';
 
 import { useRoute, useRouter } from 'vue-router';
@@ -27,7 +28,7 @@ const tarefasStore = useTarefasStore();
 const DotaçãoStore = useDotaçãoStore();
 const router = useRouter();
 const route = useRoute();
-const processosSei = ref({ participantes: [], busca: '' });
+
 const fontesRecurso = ref({ participantes: [], busca: '' });
 
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
@@ -63,7 +64,7 @@ const props = defineProps({
 });
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, values: carga,
+  errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values: carga,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -170,7 +171,6 @@ onMounted(async () => {
             error: errors.numero,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="numero"
@@ -212,10 +212,9 @@ onMounted(async () => {
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           name="processos_sei"
-          :controlador="processosSei"
+          :controlador="{ participantes: carga?.processos_sei || [], busca: '' }"
           :grupo="listaDeDependencias?.processos_sei"
           label="processo_sei"
-          @change="(valor) => { }"
         />
         <ErrorMessage
           name="processos_sei"
@@ -295,7 +294,7 @@ onMounted(async () => {
         <div
           v-for="(field, idx) in fields"
           :key="`fonteRecursos--${field.key}`"
-          class="flex flexwrap g2 mb2"
+          class="flex flexwrap g2 mb1"
         >
           <Field
             :name="`fontes_recurso[${idx}].id`"
@@ -436,7 +435,6 @@ onMounted(async () => {
             error: errors.objeto_resumo,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="objeto_resumo"
@@ -460,7 +458,6 @@ onMounted(async () => {
             error: errors.objeto_detalhado,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="objeto_detalhado"
@@ -483,7 +480,6 @@ onMounted(async () => {
             error: errors.contratante,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="contratante"
@@ -506,7 +502,6 @@ onMounted(async () => {
             error: errors.empresa_contratada,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="empresa_contratada"
@@ -529,7 +524,6 @@ onMounted(async () => {
             error: errors.cnpj_contratada,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="cnpj_contratada"
@@ -546,13 +540,12 @@ onMounted(async () => {
         />
         <Field
           name="data_assinatura"
-          type="text"
+          type="date"
           class="inputtext light mb1"
           :class="{
             error: errors.data_assinatura,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="data_assinatura"
@@ -574,6 +567,7 @@ onMounted(async () => {
               error: errors.prazo_numero,
               loading: chamadasPendentes.validaçãoDeDependências
             }"
+            @update:model-value="($v) => { setFieldValue('prazo_numero', Number($v) || null); }"
           />
           <Field
             name="prazo_unidade"
@@ -610,23 +604,28 @@ onMounted(async () => {
         <div class="flex g2">
           <Field
             name="data_base_mes"
-            type="text"
+            type="number"
             class="inputtext light mb1"
+            min="1"
+            max="12"
             placeholder="Mês"
             :class="{
               error: errors.data_base_mes,
               loading: chamadasPendentes.validaçãoDeDependências
             }"
+            @update:model-value="($v) => { setFieldValue('data_base_mes', Number($v) || null); }"
           />
           <Field
             name="data_base_ano"
-            type="text"
+            type="number"
+            min="2003"
             class="inputtext light mb1"
             :class="{
               error: errors.data_base_ano,
               loading: chamadasPendentes.validaçãoDeDependências
             }"
             placeholder="Ano"
+            @update:model-value="($v) => { setFieldValue('data_base_ano', Number($v) || null); }"
           />
         </div>
         <ErrorMessage
@@ -641,13 +640,12 @@ onMounted(async () => {
         />
         <Field
           name="data_inicio"
-          type="text"
+          type="date"
           class="inputtext light mb1"
           :class="{
             error: errors.data_inicio,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="data_inicio"
@@ -658,24 +656,40 @@ onMounted(async () => {
 
     <div
       class="flex g2 mb1"
-      style="width: 49.2%"
     >
-      <div
-        class="f1 mb1"
-      >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="data_termino"
+          :schema="schema"
+        />
+        <Field
+          name="data_termino"
+          type="date"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.data_termino,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
+        />
+        <ErrorMessage
+          name="data_termino"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
         <LabelFromYup
           name="valor"
           :schema="schema"
         />
-        <Field
+        <MaskedFloatInput
           name="valor"
-          type="text"
-          class="inputtext light mb1"
+          :value="carga.valor"
           :class="{
             error: errors.valor,
-            loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
+          class="inputtext light mb1"
+          converter-para="string"
         />
         <ErrorMessage
           name="valor"
@@ -699,7 +713,6 @@ onMounted(async () => {
             error: errors.observacoes,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
         />
         <ErrorMessage
           name="observacoes"
@@ -734,7 +747,7 @@ onMounted(async () => {
 
   <button
     v-if="emFoco?.id"
-    class="btn amarelo big"
+    class="btn amarelo big mb1"
     @click="excluirProcesso(emFoco.id)"
   >
     Remover item
