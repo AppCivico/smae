@@ -50,9 +50,10 @@ export class ContratoService {
                         valor: dto.valor,
                         fontesRecurso: {
                             createMany: {
-                                data: dto.fontes_recurso.map((cod_sof) => {
+                                data: dto.fontes_recurso.map((fonte_recurso) => {
                                     return {
-                                        cod_sof: cod_sof,
+                                        cod_sof: fonte_recurso.fonte_recurso_cod_sof,
+                                        ano: fonte_recurso.fonte_recurso_ano,
                                     };
                                 }),
                             },
@@ -176,6 +177,7 @@ export class ContratoService {
                 fontesRecurso: {
                     select: {
                         cod_sof: true,
+                        ano: true,
                     },
                 },
                 processosSei: {
@@ -230,7 +232,12 @@ export class ContratoService {
             modalidade_contratacao: contrato.modalidade_contratacao
                 ? { id: contrato.modalidade_contratacao.id, nome: contrato.modalidade_contratacao.nome }
                 : null,
-            fontes_recurso: contrato.fontesRecurso.map((fonte) => fonte.cod_sof),
+            fontes_recurso: contrato.fontesRecurso.map((fonte) => {
+                return {
+                    fonte_recurso_cod_sof: fonte.cod_sof,
+                    fonte_recurso_ano: fonte.ano,
+                };
+            }),
             processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
             aditivos: contrato.aditivos.map((aditivo) => {
                 return {
@@ -293,10 +300,11 @@ export class ContratoService {
                     });
 
                     await prismaTx.contratoFonteRecurso.createMany({
-                        data: dto.fontes_recurso.map((cod_sof) => {
+                        data: dto.fontes_recurso.map((fonte_recurso) => {
                             return {
                                 contrato_id: id,
-                                cod_sof: cod_sof,
+                                cod_sof: fonte_recurso.fonte_recurso_cod_sof,
+                                ano: fonte_recurso.fonte_recurso_ano,
                             };
                         }),
                     });

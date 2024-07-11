@@ -6557,6 +6557,7 @@ model ContratoFonteRecurso {
     contrato    Contrato @relation(fields: [contrato_id], references: [id])
 
     cod_sof String
+    ano     Int
 
     @@map("contrato_fonte_recurso")
 }

@@ -10,7 +10,7 @@ export class ContratoDetailDto {
     id: number;
     modalidade_contratacao: IdNomeDto | null;
     orgao: IdSiglaDescricao | null;
-    fontes_recurso: string[];
+    fontes_recurso: ContratoFonteRecursoDto[];
     aditivos: ContratoAditivoItemDto[];
     numero: string;
     contrato_exclusivo: boolean;
@@ -47,4 +47,9 @@ export class ContratoItemDto {
 
 export class ListContratoDto {
     linhas: ContratoItemDto[];
+}
+
+export class ContratoFonteRecursoDto {
+    fonte_recurso_cod_sof: string;
+    fonte_recurso_ano: number;
 }
