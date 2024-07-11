@@ -119,9 +119,8 @@ iniciar();
 
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
-});
+}, { immediate: true });
 
-resetForm();
 onMounted(async () => {
   await contratosStore.buscarDependencias();
   if (props.processoId) {
