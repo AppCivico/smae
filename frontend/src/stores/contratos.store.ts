@@ -14,7 +14,15 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
-  emFoco: ProjetoDetailDto | null;
+  emFoco: any | null;
+  listaDeDependencias: {
+    orgaos: any[];
+    modalidades_de_contratacao: any[];
+    status_de_contrato: any[];
+    unidades_de_prazo: any[];
+    processos_sei: any[];
+    fontes_recurso: any[];
+  };
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
@@ -42,6 +50,14 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
 export const useContratosStore = defineStore('contratos', {
   state: (): Estado => ({
     lista: [],
+    listaDeDependencias: {
+      orgaos: [],
+      modalidades_de_contratacao: [],
+      status_de_contrato: [],
+      unidades_de_prazo: [],
+      processos_sei: [],
+      fontes_recurso: [],
+    },
     emFoco: null,
 
     chamadasPendentes: {
@@ -51,10 +67,48 @@ export const useContratosStore = defineStore('contratos', {
     erro: null,
   }),
   actions: {
+    criaTodosOsStatusDeContratoDisponiveis() {
+      return [
+        { id: 'Assinado', nome: 'Assinado' },
+        { id: 'Vigente', nome: 'Vigente' },
+        { id: 'Suspenso', nome: 'Suspenso' },
+        { id: 'Rescindido', nome: 'Rescindido' },
+        { id: 'ConcluidoTermoRecebimentoProvisorio', nome: 'Concluído Termo de Recebimento Provisório' },
+        { id: 'ConcluidoTermoRecebimentoDefinitivo', nome: 'Concluído Termo de Recebimento Definitivo' },
+      ];
+    },
+    criaTodasAsUnidadesDePrazo() {
+      return [
+        { id: 'Dias', nome: 'Dias' },
+        { id: 'Meses', nome: 'Meses' },
+      ];
+    },
+    async buscarDependencias() {
+      const obra = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}`);
+      const processosSei = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/sei`);
+      const orgaos = await this.requestS.get(`${baseUrl}/orgao`);
+      const modalidadesContratacao = await this.requestS.get(`${baseUrl}/modalidade-contratacao-mdo`);
+      this.listaDeDependencias.processos_sei = processosSei.linhas.map((processoSei: any) => {
+        const processoSeiLocal = processoSei;
+        processoSeiLocal.id = processoSei.id.toString();
+        return processoSeiLocal;
+      });
+      this.listaDeDependencias.fontes_recurso = obra.fonte_recursos;
+      this.listaDeDependencias.orgaos = orgaos.linhas;
+      this.listaDeDependencias.modalidades_de_contratacao = modalidadesContratacao.linhas;
+      this.listaDeDependencias.status_de_contrato = this.criaTodosOsStatusDeContratoDisponiveis();
+      this.listaDeDependencias.unidades_de_prazo = this.criaTodasAsUnidadesDePrazo();
+    },
+
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
+      console.log(mãeComId);
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
+        if (resposta.orgao) {
+          resposta.orgao_id = resposta.orgao.id;
+        }
+        console.log('RESPONSE', resposta);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -78,10 +132,11 @@ export const useContratosStore = defineStore('contratos', {
     },
 
     async excluirItem(id: number, mãeComId: MãeComId = undefined): Promise<boolean> {
+      console.log(mãeComId);
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei/${id}`);
+        await this.requestS.delete(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -98,18 +153,12 @@ export const useContratosStore = defineStore('contratos', {
 
       try {
         let resposta;
-        const paramsCopy = { ...params };
-        paramsCopy.processos_sei = [paramsCopy.processos_sei];
-        paramsCopy.fontes_recurso_ids = [Number(paramsCopy.fontes_recurso_ids)];
-        console.log(paramsCopy);
-
+        console.log('PAYLOAD', params);
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, paramsCopy);
+          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, paramsCopy);
+          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, params);
         }
-
-        console.log(resposta);
 
         this.chamadasPendentes.emFoco = false;
         this.erro = null;
@@ -124,7 +173,6 @@ export const useContratosStore = defineStore('contratos', {
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
-      processo_sei: formatProcesso(emFoco?.processo_sei) || '',
     }),
   },
 });

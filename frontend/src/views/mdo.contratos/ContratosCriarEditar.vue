@@ -1,5 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { contratoDeObras as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
@@ -11,7 +12,9 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { watch } from 'vue';
+import {
+  watch, onMounted, ref,
+} from 'vue';
 
 import { useRoute, useRouter } from 'vue-router';
 
@@ -20,12 +23,15 @@ const contratosStore = useContratosStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 const route = useRoute();
+const processosSei = ref({ participantes: [], busca: '' });
+const fontesRecurso = ref({ participantes: [], busca: '' });
 
 const {
   chamadasPendentes,
   emFoco,
   erro,
   itemParaEdição,
+  listaDeDependencias,
 } = storeToRefs(contratosStore);
 
 const {
@@ -103,6 +109,18 @@ watch(itemParaEdição, (novosValores) => {
 });
 
 resetForm();
+onMounted(async () => {
+  await contratosStore.buscarDependencias();
+  if (props.processoId) {
+    fontesRecurso.value.participantes = carga.fontes_recurso.map((fonteRecurso) => fonteRecurso.id);
+  }
+  if (!carga.contrato_exclusivo) {
+    carga.contrato_exclusivo = false;
+  }
+  if (!carga.prazo_unidade) {
+    carga.prazo_unidade = 'Dias';
+  }
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -113,7 +131,7 @@ resetForm();
       >
         {{ 'Editar contrato' }}
       </div>
-      {{ emFoco?.descricao || (processoId ? 'Contrato' : 'Cadastro de Contrato') }}
+      {{ emFoco?.descricao || (processoId ? 'Edição de Contrato' : 'Cadastro de Contrato') }}
     </h1>
 
     <hr class="ml2 f1">
@@ -173,15 +191,19 @@ resetForm();
           name="processos_sei"
           :schema="schema"
         />
-        <Field
-          name="processos_sei"
-          type="text"
+        <AutocompleteField
+          id="processos_sei"
+          :disabled="false"
           class="inputtext light mb1"
           :class="{
             error: errors.processos_sei,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
+          name="processos_sei"
+          :controlador="processosSei"
+          :grupo="listaDeDependencias?.processos_sei"
+          label="processo_sei"
+          @change="(valor) => { }"
         />
         <ErrorMessage
           name="processos_sei"
@@ -198,14 +220,22 @@ resetForm();
         />
         <Field
           name="status"
-          type="text"
+          as="select"
           class="inputtext light mb1"
-          :class="{
-            error: errors.status,
-            loading: chamadasPendentes.validaçãoDeDependências
-          }"
-          placeholder=""
-        />
+          :class="{ 'error': errors.status }"
+          :aria-busy="chamadasPendentes.validaçãoDeDependências"
+        >
+          <option value="">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeDependencias?.status_de_contrato"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
         <ErrorMessage
           name="status"
           class="error-msg"
@@ -218,14 +248,22 @@ resetForm();
         />
         <Field
           name="modalidade_contratacao_id"
-          type="text"
+          as="select"
           class="inputtext light mb1"
-          :class="{
-            error: errors.modalidade_contratacao_id,
-            loading: chamadasPendentes.validaçãoDeDependências
-          }"
-          placeholder=""
-        />
+          :class="{ 'error': errors.modalidade_contratacao_id }"
+          :aria-busy="chamadasPendentes.validaçãoDeDependências"
+        >
+          <option value="">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeDependencias?.modalidades_de_contratacao"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
         <ErrorMessage
           name="modalidade_contratacao_id"
           class="error-msg"
@@ -239,15 +277,19 @@ resetForm();
           name="fontes_recurso_ids"
           :schema="schema"
         />
-        <Field
-          name="fontes_recurso_ids"
-          type="text"
+        <AutocompleteField
+          id="fontes_recurso_ids"
+          :disabled="false"
           class="inputtext light mb1"
           :class="{
             error: errors.fontes_recurso_ids,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
-          placeholder=""
+          name="fontes_recurso_ids"
+          :controlador="fontesRecurso"
+          :grupo="listaDeDependencias?.fontes_recurso"
+          label="fonte_recurso_cod_sof"
+          @change="(valor) => { }"
         />
         <ErrorMessage
           name="fontes_recurso_ids"
@@ -261,14 +303,22 @@ resetForm();
         />
         <Field
           name="orgao_id"
-          type="text"
+          as="select"
           class="inputtext light mb1"
-          :class="{
-            error: errors.orgao_id,
-            loading: chamadasPendentes.validaçãoDeDependências
-          }"
-          placeholder=""
-        />
+          :class="{ 'error': errors.orgao_id }"
+          :aria-busy="chamadasPendentes.validaçãoDeDependências"
+        >
+          <option value="">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeDependencias?.orgaos"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.descricao }}
+          </option>
+        </Field>
         <ErrorMessage
           name="orgao_id"
           class="error-msg"
@@ -422,7 +472,7 @@ resetForm();
         <div class="flex g2">
           <Field
             name="prazo_numero"
-            type="text"
+            type="number"
             class="inputtext light mb1"
             placeholder="Número"
             :class="{
@@ -432,14 +482,22 @@ resetForm();
           />
           <Field
             name="prazo_unidade"
-            type="text"
+            as="select"
             class="inputtext light mb1"
-            :class="{
-              error: errors.prazo_unidade,
-              loading: chamadasPendentes.validaçãoDeDependências
-            }"
-            placeholder="Unidade"
-          />
+            :class="{ 'error': errors.prazo_unidade }"
+            :aria-busy="chamadasPendentes.validaçãoDeDependências"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="item in listaDeDependencias?.unidades_de_prazo"
+              :key="item.id"
+              :value="item.id"
+            >
+              {{ item.nome }}
+            </option>
+          </Field>
         </div>
         <ErrorMessage
           name="prazo_unidade"

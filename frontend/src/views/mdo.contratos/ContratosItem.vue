@@ -1,7 +1,7 @@
 <script setup>
-import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useContratosStore } from '@/stores/contratos.store.ts';
 
-const processosStore = useProcessosStore();
+const contratosStore = useContratosStore();
 const props = defineProps({
   processoId: {
     type: Number,
@@ -9,10 +9,10 @@ const props = defineProps({
   },
 });
 
-if (processosStore.emFoco?.id !== Number(props.processoId)) {
-  processosStore.$reset();
+if (contratosStore.emFoco?.id !== Number(props.processoId)) {
+  contratosStore.$reset();
 
-  processosStore.buscarItem(props.processoId);
+  contratosStore.buscarItem(props.processoId);
 }
 </script>
 <template>

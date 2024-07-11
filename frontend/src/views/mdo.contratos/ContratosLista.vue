@@ -170,7 +170,6 @@ iniciar();
           class="center"
         >
           <router-link
-            v-if="linha.categoria === 'Manual'"
             :to="{
               name: 'contratosDaObraEditar',
               params: {

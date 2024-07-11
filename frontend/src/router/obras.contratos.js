@@ -56,14 +56,9 @@ export default {
           props: true,
 
           meta: {
-            título: () => {
-              const daApi = useProcessosStore()?.emFoco?.processo_sei;
-
-              return daApi ? `Editar processo SEI ${formatProcesso(daApi)}` : 'Editar processo';
-            },
             títuloParaMenu: 'Editar processo',
 
-            rotaDeEscape: 'processosDaObraListar',
+            rotaDeEscape: 'contratosDaObraListar',
 
             rotasParaMigalhasDePão: [
               'obrasListar',
