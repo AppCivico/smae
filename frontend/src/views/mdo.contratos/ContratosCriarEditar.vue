@@ -318,6 +318,9 @@ onMounted(async () => {
               max="3000"
               step="1"
               @change="BuscarDotaçãoParaAno"
+              @update:model-value="($v) => {
+                setFieldValue(`fontes_recurso[${idx}].fonte_recurso_ano`, Number($v) || null);
+              }"
             />
             <ErrorMessage
               class="error-msg mb1"
