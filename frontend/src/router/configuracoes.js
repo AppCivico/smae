@@ -97,6 +97,7 @@ const rotasParaMenuPrincipal = [
   'parlamentaresListar',
   'paineisExternosListar',
   'planosSetoriaisListar',
+  'grupoDeVariaveisListar',
   'Workflow',
 ];
 
@@ -275,6 +276,56 @@ export default [
 
             meta: {
               título: 'Editar painel externo',
+            },
+          },
+        ],
+      },
+      {
+        path: '/grupo-de-variaveis',
+        component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisRaiz.vue'),
+        meta: {
+          título: 'Grupos de Variáveis',
+          rotaPrescindeDeChave: true,
+          // limitarÀsPermissões: '',
+          // rotasParaMenuSecundário: [
+          // ],
+
+        },
+        children: [
+          {
+            name: 'grupoDeVariaveisListar',
+            path: '',
+            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisLista.vue'),
+            meta: {
+              título: 'Grupo de Variáveis',
+            },
+          },
+          {
+            name: 'grupoDeVariaveisCriar',
+            path: 'novo',
+            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
+            meta: {
+              título: 'Novo Grupo de Variáveis',
+              rotaDeEscape: 'grupoDeVariaveisListar',
+              rotasParaMigalhasDePão: [
+                'grupoDeVariaveisListar',
+              ],
+            },
+          },
+          {
+            path: ':grupoDeVariaveisId',
+            name: 'grupoDeVariaveisEditar',
+            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{ grupoDeVariaveisId: Number.parseInt(params.grupoDeVariaveisId, 10) || undefined },
+            }),
+            meta: {
+              título: 'Editar Grupo de Variáveis',
+              rotaDeEscape: 'grupoDeVariaveisListar',
+              rotasParaMigalhasDePão: [
+                'grupoDeVariaveisListar',
+              ],
             },
           },
         ],
