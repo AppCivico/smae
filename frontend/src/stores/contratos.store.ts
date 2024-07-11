@@ -1,5 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { ListProjetoSeiDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity.ts';
+import type { ContratoDetailDto } from '@/../../backend/src/pp/contrato/entities/contrato.entity';
+import type { ListProjetoSeiDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import formatProcesso from '@/helpers/formatProcesso';
 import { defineStore } from 'pinia';
@@ -15,7 +15,7 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
-  emFoco: any | null;
+  emFoco: ContratoDetailDto | null;
   listaDeDependencias: {
     orgaos: any[];
     modalidades_de_contratacao: any[];
