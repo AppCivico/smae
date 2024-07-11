@@ -1,6 +1,6 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
-import { contrato as schema } from '@/consts/formSchemas';
+import { contratoDeObras as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
@@ -149,7 +149,7 @@ iniciar();
           {{ schema.fields.processos_sei.spec.label }}
         </th>
         <th class="cell--number">
-          {{ schema.fields.quantidade_aditivos.spec.label }}
+          Quantidade de Aditivos
         </th>
         <th
           v-if="exibirColunasDeAção"
