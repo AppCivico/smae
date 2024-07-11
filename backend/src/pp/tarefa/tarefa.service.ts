@@ -367,7 +367,6 @@ export class TarefaService {
             // a tela do realizado não tem esse campo, portanto ainda não terminaram de configurar o cronograma
             // que pode ter sido clonado ou puxado de um workflow
 
-
             if (
                 user.hasSomeRoles([
                     // tudo igual para quem é de projetos, fica sempre true, e segue a regra do frontend
@@ -949,410 +948,403 @@ export class TarefaService {
         tarefaCronoInput: TarefaCronogramaInput,
         id: number,
         dto: UpdateTarefaDto | UpdateTarefaRealizadoDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
-        const tarefa = await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const now = new Date(Date.now());
+        const update = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const now = new Date(Date.now());
 
-                await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
-                const tarefa = await prismaTx.tarefa.findFirst({
-                    where: {
-                        removido_em: null,
-                        tarefa_cronograma_id: tarefaCronoId,
-                        id: id,
-                    },
-                    select: {
-                        id: true,
-                        tarefa_pai_id: true,
-                        nivel: true,
-                        numero: true,
-                        n_filhos_imediatos: true,
-                        inicio_planejado: true,
-                        termino_planejado: true,
-                        duracao_planejado: true,
+            await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
 
-                        inicio_real: true,
-                        termino_real: true,
-                        orgao: { select: { id: true } },
-                    },
+            const tarefa = await prismaTx.tarefa.findFirst({
+                where: {
+                    removido_em: null,
+                    tarefa_cronograma_id: tarefaCronoId,
+                    id: id,
+                },
+                select: {
+                    id: true,
+                    tarefa_pai_id: true,
+                    nivel: true,
+                    numero: true,
+                    n_filhos_imediatos: true,
+                    inicio_planejado: true,
+                    termino_planejado: true,
+                    duracao_planejado: true,
+
+                    inicio_real: true,
+                    termino_real: true,
+                    orgao: { select: { id: true } },
+                },
+            });
+            if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
+
+            if (
+                'duracao_planejado' in dto &&
+                !isNaN(dto.duracao_planejado!) &&
+                !('inicio_planejado' in dto) &&
+                !('termino_planejado' in dto)
+            ) {
+                dto.inicio_planejado = tarefa.inicio_planejado;
+                dto.termino_planejado = tarefa.termino_planejado;
+            }
+
+            if (
+                'duracao_real' in dto &&
+                !isNaN(dto.duracao_real!) &&
+                !('inicio_real' in dto) &&
+                !('termino_real' in dto)
+            ) {
+                dto.inicio_real = tarefa.inicio_real;
+                dto.termino_real = tarefa.termino_real;
+            }
+
+            this.checkIntervalosPlanejado(dto);
+            this.checkIntervalosRealizado(dto);
+
+            const permissoes = this.calcPodeEditar(tarefa, user);
+
+            if (!permissoes.pode_editar && dto instanceof UpdateTarefaDto)
+                throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
+
+            if (!permissoes.pode_editar_realizado && dto instanceof UpdateTarefaRealizadoDto)
+                throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
+
+            if ('dependencias' in dto && dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
+                const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
+                    tarefa_corrente_id: tarefa.id,
+                    dependencias: dto.dependencias,
                 });
-                if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
+                const dataDependencias = calcDependencias!.dependencias_datas;
 
-                if (
-                    'duracao_planejado' in dto &&
-                    !isNaN(dto.duracao_planejado!) &&
-                    !('inicio_planejado' in dto) &&
-                    !('termino_planejado' in dto)
-                ) {
-                    dto.inicio_planejado = tarefa.inicio_planejado;
-                    dto.termino_planejado = tarefa.termino_planejado;
+                let duracao_planejado_calculado = false;
+                let inicio_planejado_calculado = false;
+                let termino_planejado_calculado = false;
+
+                if (dataDependencias != null) {
+                    duracao_planejado_calculado = dataDependencias.duracao_planejado_calculado;
+                    inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
+                    termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
+
+                    // aqui talvez seja melhor mudar pra undefined, pro front só deixar disabled
+                    // mas ai no create ficaria diferente, ou tbm teria que deixar opcional e criar mais checks
+                    if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
+                        //throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
+                        dto.duracao_planejado = dataDependencias.duracao_planejado;
+                    } else if (duracao_planejado_calculado) {
+                        dto.duracao_planejado = dataDependencias.duracao_planejado;
+                    }
+
+                    if (inicio_planejado_calculado && dto.inicio_planejado !== null) {
+                        //throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                        dto.inicio_planejado = dataDependencias.inicio_planejado;
+                    } else if (inicio_planejado_calculado) {
+                        dto.inicio_planejado = dataDependencias.inicio_planejado;
+                    }
+
+                    if (termino_planejado_calculado && dto.termino_planejado !== null) {
+                        //throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                        dto.termino_planejado = dataDependencias.termino_planejado;
+                    } else if (termino_planejado_calculado) {
+                        dto.termino_planejado = dataDependencias.termino_planejado;
+                    }
+
+                    // achei melhor do que colocar os campos lá no DTO e botar pra esconder no swagger
+                    (dto as any).duracao_planejado_calculado = duracao_planejado_calculado;
+                    (dto as any).inicio_planejado_calculado = inicio_planejado_calculado;
+                    (dto as any).termino_planejado_calculado = termino_planejado_calculado;
+                    (dto as any).ordem_topologica_inicio_planejado = calcDependencias.ordem_topologica_inicio_planejado;
+                    (dto as any).ordem_topologica_termino_planejado =
+                        calcDependencias.ordem_topologica_termino_planejado;
+
+                    // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
+                    const patched = await this.calcInfereDataPeloPeriodo(
+                        prismaTx,
+                        {
+                            inicio_planejado:
+                                dto.inicio_planejado === undefined ? tarefa.inicio_planejado : dto.inicio_planejado,
+                            termino_planejado:
+                                dto.termino_planejado === undefined ? tarefa.termino_planejado : dto.termino_planejado,
+                            duracao_planejado:
+                                dto.duracao_planejado === undefined ? tarefa.duracao_planejado : dto.duracao_planejado,
+                        },
+                        dataDependencias
+                    );
+                    dto.inicio_planejado = patched.inicio_planejado;
+                    dto.termino_planejado = patched.termino_planejado;
+                    dto.duracao_planejado = patched.duracao_planejado;
                 }
 
-                if (
-                    'duracao_real' in dto &&
-                    !isNaN(dto.duracao_real!) &&
-                    !('inicio_real' in dto) &&
-                    !('termino_real' in dto)
-                ) {
-                    dto.inicio_real = tarefa.inicio_real;
-                    dto.termino_real = tarefa.termino_real;
-                }
+                await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: tarefa.id } });
 
-                this.checkIntervalosPlanejado(dto);
-                this.checkIntervalosRealizado(dto);
-
-                const permissoes = this.calcPodeEditar(tarefa, user);
-
-                if (!permissoes.pode_editar && dto instanceof UpdateTarefaDto)
-                    throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
-
-                if (!permissoes.pode_editar_realizado && dto instanceof UpdateTarefaRealizadoDto)
-                    throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
-
-                if ('dependencias' in dto && dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
-                    const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
-                        tarefa_corrente_id: tarefa.id,
-                        dependencias: dto.dependencias,
+                if (dto.dependencias && dto.dependencias.length) {
+                    await prismaTx.tarefaDependente.createMany({
+                        data: dto.dependencias.map((d) => {
+                            return {
+                                tarefa_id: tarefa.id,
+                                dependencia_tarefa_id: d.dependencia_tarefa_id,
+                                latencia: d.latencia,
+                                tipo: d.tipo,
+                            };
+                        }),
                     });
-                    const dataDependencias = calcDependencias!.dependencias_datas;
-
-                    let duracao_planejado_calculado = false;
-                    let inicio_planejado_calculado = false;
-                    let termino_planejado_calculado = false;
-
-                    if (dataDependencias != null) {
-                        duracao_planejado_calculado = dataDependencias.duracao_planejado_calculado;
-                        inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
-                        termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
-
-                        // aqui talvez seja melhor mudar pra undefined, pro front só deixar disabled
-                        // mas ai no create ficaria diferente, ou tbm teria que deixar opcional e criar mais checks
-                        if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
-                            //throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
-                            dto.duracao_planejado = dataDependencias.duracao_planejado;
-                        } else if (duracao_planejado_calculado) {
-                            dto.duracao_planejado = dataDependencias.duracao_planejado;
-                        }
-
-                        if (inicio_planejado_calculado && dto.inicio_planejado !== null) {
-                            //throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
-                            dto.inicio_planejado = dataDependencias.inicio_planejado;
-                        } else if (inicio_planejado_calculado) {
-                            dto.inicio_planejado = dataDependencias.inicio_planejado;
-                        }
-
-                        if (termino_planejado_calculado && dto.termino_planejado !== null) {
-                            //throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
-                            dto.termino_planejado = dataDependencias.termino_planejado;
-                        } else if (termino_planejado_calculado) {
-                            dto.termino_planejado = dataDependencias.termino_planejado;
-                        }
-
-                        // achei melhor do que colocar os campos lá no DTO e botar pra esconder no swagger
-                        (dto as any).duracao_planejado_calculado = duracao_planejado_calculado;
-                        (dto as any).inicio_planejado_calculado = inicio_planejado_calculado;
-                        (dto as any).termino_planejado_calculado = termino_planejado_calculado;
-                        (dto as any).ordem_topologica_inicio_planejado =
-                            calcDependencias.ordem_topologica_inicio_planejado;
-                        (dto as any).ordem_topologica_termino_planejado =
-                            calcDependencias.ordem_topologica_termino_planejado;
-
-                        // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
-                        const patched = await this.calcInfereDataPeloPeriodo(
-                            prismaTx,
-                            {
-                                inicio_planejado:
-                                    dto.inicio_planejado === undefined ? tarefa.inicio_planejado : dto.inicio_planejado,
-                                termino_planejado:
-                                    dto.termino_planejado === undefined
-                                        ? tarefa.termino_planejado
-                                        : dto.termino_planejado,
-                                duracao_planejado:
-                                    dto.duracao_planejado === undefined
-                                        ? tarefa.duracao_planejado
-                                        : dto.duracao_planejado,
-                            },
-                            dataDependencias
-                        );
-                        dto.inicio_planejado = patched.inicio_planejado;
-                        dto.termino_planejado = patched.termino_planejado;
-                        dto.duracao_planejado = patched.duracao_planejado;
-                    }
-
-                    await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: tarefa.id } });
-
-                    if (dto.dependencias && dto.dependencias.length) {
-                        await prismaTx.tarefaDependente.createMany({
-                            data: dto.dependencias.map((d) => {
-                                return {
-                                    tarefa_id: tarefa.id,
-                                    dependencia_tarefa_id: d.dependencia_tarefa_id,
-                                    latencia: d.latencia,
-                                    tipo: d.tipo,
-                                };
-                            }),
-                        });
-                    }
                 }
+            }
 
-                if (tarefa.n_filhos_imediatos !== 0) {
-                    if (dto.percentual_concluido !== undefined)
+            if (tarefa.n_filhos_imediatos !== 0) {
+                if (dto.percentual_concluido !== undefined)
+                    throw new HttpException(
+                        'Percentual Concluído não pode ser alterado diretamente nesta tarefa.',
+                        400
+                    );
+                if (dto.inicio_real !== undefined)
+                    throw new HttpException('Início Real não pode ser alterado diretamente nesta tarefa.', 400);
+                if (dto.termino_real !== undefined)
+                    throw new HttpException('Término Real não pode ser alterado diretamente nesta tarefa.', 400);
+                if (dto.duracao_real !== undefined)
+                    throw new HttpException('Duração Real não pode ser alterada diretamente nesta tarefa.', 400);
+
+                if ('dependencias' in dto) {
+                    if (dto.inicio_planejado !== undefined)
                         throw new HttpException(
-                            'Percentual Concluído não pode ser alterado diretamente nesta tarefa.',
+                            'Início Planejado não pode ser alterado diretamente nesta tarefa.',
                             400
                         );
-                    if (dto.inicio_real !== undefined)
-                        throw new HttpException('Início Real não pode ser alterado diretamente nesta tarefa.', 400);
-                    if (dto.termino_real !== undefined)
-                        throw new HttpException('Término Real não pode ser alterado diretamente nesta tarefa.', 400);
-                    if (dto.duracao_real !== undefined)
-                        throw new HttpException('Duração Real não pode ser alterada diretamente nesta tarefa.', 400);
-
-                    if ('dependencias' in dto) {
-                        if (dto.inicio_planejado !== undefined)
-                            throw new HttpException(
-                                'Início Planejado não pode ser alterado diretamente nesta tarefa.',
-                                400
-                            );
-                        if (dto.termino_planejado !== undefined)
-                            throw new HttpException(
-                                'Término Planejado não pode ser alterado diretamente nesta tarefa.',
-                                400
-                            );
-                        if (dto.duracao_planejado !== undefined)
-                            throw new HttpException(
-                                'Duração Planejada não pode ser alterada diretamente nesta tarefa.',
-                                400
-                            );
-                        if (dto.custo_estimado !== undefined)
-                            throw new HttpException(
-                                'Custo Estimado não pode ser alterado diretamente nesta tarefa.',
-                                400
-                            );
-                        if (dto.custo_real !== undefined)
-                            throw new HttpException('Custo Real não pode ser alterado diretamente nesta tarefa.', 400);
-                        if (
-                            dto.dependencias !== undefined &&
-                            Array.isArray(dto.dependencias) &&
-                            dto.dependencias.length > 0
-                        )
-                            throw new HttpException(
-                                'Não podem existir dependencias nesta tarefa, pois há filhos.',
-                                400
-                            );
-                    }
+                    if (dto.termino_planejado !== undefined)
+                        throw new HttpException(
+                            'Término Planejado não pode ser alterado diretamente nesta tarefa.',
+                            400
+                        );
+                    if (dto.duracao_planejado !== undefined)
+                        throw new HttpException(
+                            'Duração Planejada não pode ser alterada diretamente nesta tarefa.',
+                            400
+                        );
+                    if (dto.custo_estimado !== undefined)
+                        throw new HttpException('Custo Estimado não pode ser alterado diretamente nesta tarefa.', 400);
+                    if (dto.custo_real !== undefined)
+                        throw new HttpException('Custo Real não pode ser alterado diretamente nesta tarefa.', 400);
+                    if (
+                        dto.dependencias !== undefined &&
+                        Array.isArray(dto.dependencias) &&
+                        dto.dependencias.length > 0
+                    )
+                        throw new HttpException('Não podem existir dependencias nesta tarefa, pois há filhos.', 400);
                 }
+            }
 
-                if (
-                    'dependencias' in dto &&
-                    ((dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id) ||
-                        (dto.numero !== undefined && dto.numero !== tarefa.numero))
-                ) {
-                    if (dto.tarefa_pai_id === undefined) dto.tarefa_pai_id = tarefa.tarefa_pai_id;
-                    if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
-                    if (dto.numero === undefined) dto.numero = tarefa.numero;
+            if (
+                'dependencias' in dto &&
+                ((dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id) ||
+                    (dto.numero !== undefined && dto.numero !== tarefa.numero))
+            ) {
+                if (dto.tarefa_pai_id === undefined) dto.tarefa_pai_id = tarefa.tarefa_pai_id;
+                if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
+                if (dto.numero === undefined) dto.numero = tarefa.numero;
 
-                    if (dto.tarefa_pai_id !== tarefa.tarefa_pai_id) {
-                        this.logger.debug(
-                            `Mudança da tarefa pai detectada: ${JSON.stringify({
-                                novoPaiDesejado: dto.tarefa_pai_id,
-                                antigoPai: tarefa.tarefa_pai_id,
-                            })}`
+                if (dto.tarefa_pai_id !== tarefa.tarefa_pai_id) {
+                    this.logger.debug(
+                        `Mudança da tarefa pai detectada: ${JSON.stringify({
+                            novoPaiDesejado: dto.tarefa_pai_id,
+                            antigoPai: tarefa.tarefa_pai_id,
+                        })}`
+                    );
+
+                    if (dto.tarefa_pai_id === null && dto.nivel > 1)
+                        throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+
+                    const novoPai = dto.tarefa_pai_id
+                        ? await this.prisma.tarefa.findFirst({
+                              where: {
+                                  removido_em: null,
+                                  id: dto.tarefa_pai_id,
+                                  tarefa_cronograma_id: tarefaCronoId,
+                              },
+                              select: { nivel: true, id: true, numero: true, tarefa: true },
+                          })
+                        : null;
+
+                    if (novoPai) await this.verificaPaiTemDependencias(novoPai);
+
+                    if (dto.tarefa_pai_id && novoPai == null)
+                        throw new HttpException(
+                            `Tarefa pai (${dto.tarefa_pai_id}) não foi encontrada no projeto.`,
+                            400
                         );
 
-                        if (dto.tarefa_pai_id === null && dto.nivel > 1)
-                            throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
-
-                        const novoPai = dto.tarefa_pai_id
-                            ? await this.prisma.tarefa.findFirst({
-                                  where: {
-                                      removido_em: null,
-                                      id: dto.tarefa_pai_id,
-                                      tarefa_cronograma_id: tarefaCronoId,
-                                  },
-                                  select: { nivel: true, id: true, numero: true, tarefa: true },
-                              })
-                            : null;
-
-                        if (novoPai) await this.verificaPaiTemDependencias(novoPai);
-
-                        if (dto.tarefa_pai_id && novoPai == null)
-                            throw new HttpException(
-                                `Tarefa pai (${dto.tarefa_pai_id}) não foi encontrada no projeto.`,
-                                400
-                            );
-
-                        if (novoPai && novoPai.nivel != dto.nivel - 1)
-                            throw new HttpException(
-                                `Nível (${dto.nivel}) inválido para ser filho imediato da tarefa pai enviada (nível ${novoPai.nivel}).`,
-                                400
-                            );
-
-                        if (novoPai && tarefaCronoInput.projeto_id) {
-                            await this.verifica_nivel_maximo_e_filhos_portfolio(
-                                tarefa,
-                                prismaTx,
-                                tarefaCronoInput.projeto_id,
-                                novoPai
-                            );
-                        }
-                        // abaixa o numero de onde era
-                        await this.utils.decrementaNumero(
-                            {
-                                numero: tarefa.numero,
-                                tarefa_pai_id: tarefa.tarefa_pai_id,
-                            },
-                            prismaTx,
-                            tarefaCronoId
+                    if (novoPai && novoPai.nivel != dto.nivel - 1)
+                        throw new HttpException(
+                            `Nível (${dto.nivel}) inválido para ser filho imediato da tarefa pai enviada (nível ${novoPai.nivel}).`,
+                            400
                         );
 
-                        // aumenta o numero de onde vai entrar
-                        dto.numero = await this.utils.incrementaNumero(
-                            {
-                                numero: dto.numero,
-                                tarefa_pai_id: dto.tarefa_pai_id,
-                            },
+                    if (novoPai && tarefaCronoInput.projeto_id) {
+                        await this.verifica_nivel_maximo_e_filhos_portfolio(
+                            tarefa,
                             prismaTx,
-                            tarefaCronoId
-                        );
-                    } else {
-                        // mudou apenas o numero
-                        this.logger.debug('Apenas mudança de número foi detectada');
-
-                        // abaixa o numero de onde era
-                        await this.utils.decrementaNumero(
-                            {
-                                numero: tarefa.numero,
-                                tarefa_pai_id: tarefa.tarefa_pai_id,
-                            },
-                            prismaTx,
-                            tarefaCronoId
-                        );
-
-                        // aumenta o numero de onde vai entrar
-                        dto.numero = await this.utils.incrementaNumero(
-                            {
-                                numero: dto.numero,
-                                tarefa_pai_id: tarefa.tarefa_pai_id,
-                            },
-                            prismaTx,
-                            tarefaCronoId
+                            tarefaCronoInput.projeto_id,
+                            novoPai
                         );
                     }
-                } else if ('dependencias' in dto) {
-                    // nao deixar nem o nivel sem passar o pai
-                    // pq as validações estão apenas acima
-                    this.logger.warn('removendo campos numero, nivel e tarefa_pai_id da atualização');
-
-                    delete dto.numero;
-                    delete dto.nivel;
-                    delete dto.tarefa_pai_id;
-                }
-
-                const updatedSelf = await prismaTx.tarefa.update({
-                    where: {
-                        id: tarefa.id,
-                    },
-                    data: {
-                        ...dto,
-                        dependencias: undefined,
-                        atualizado_em: now,
-                    },
-                    select: {
-                        transferencia_fase_id: true,
-                        transferencia_tarefa_id: true,
-                        orgao_id: true,
-                        tarefa_cronograma: {
-                            select: {
-                                transferencia_id: true,
-                            },
+                    // abaixa o numero de onde era
+                    await this.utils.decrementaNumero(
+                        {
+                            numero: tarefa.numero,
+                            tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
+                        prismaTx,
+                        tarefaCronoId
+                    );
+
+                    // aumenta o numero de onde vai entrar
+                    dto.numero = await this.utils.incrementaNumero(
+                        {
+                            numero: dto.numero,
+                            tarefa_pai_id: dto.tarefa_pai_id,
+                        },
+                        prismaTx,
+                        tarefaCronoId
+                    );
+                } else {
+                    // mudou apenas o numero
+                    this.logger.debug('Apenas mudança de número foi detectada');
+
+                    // abaixa o numero de onde era
+                    await this.utils.decrementaNumero(
+                        {
+                            numero: tarefa.numero,
+                            tarefa_pai_id: tarefa.tarefa_pai_id,
+                        },
+                        prismaTx,
+                        tarefaCronoId
+                    );
+
+                    // aumenta o numero de onde vai entrar
+                    dto.numero = await this.utils.incrementaNumero(
+                        {
+                            numero: dto.numero,
+                            tarefa_pai_id: tarefa.tarefa_pai_id,
+                        },
+                        prismaTx,
+                        tarefaCronoId
+                    );
+                }
+            } else if ('dependencias' in dto) {
+                // nao deixar nem o nivel sem passar o pai
+                // pq as validações estão apenas acima
+                this.logger.warn('removendo campos numero, nivel e tarefa_pai_id da atualização');
+
+                delete dto.numero;
+                delete dto.nivel;
+                delete dto.tarefa_pai_id;
+            }
+
+            const updatedSelf = await prismaTx.tarefa.update({
+                where: {
+                    id: tarefa.id,
+                },
+                data: {
+                    ...dto,
+                    dependencias: undefined,
+                    atualizado_em: now,
+                },
+                select: {
+                    transferencia_fase_id: true,
+                    transferencia_tarefa_id: true,
+                    orgao_id: true,
+                    tarefa_cronograma: {
+                        select: {
+                            transferencia_id: true,
+                        },
+                    },
+                },
+            });
+
+            // Caso seja uma tarefa que vem do Workflow.
+            // E o termino_real for definido.
+            // As mudanças devem refletir no workflow.
+            if (dto.termino_real != undefined && updatedSelf.tarefa_cronograma.transferencia_id) {
+                if (updatedSelf.transferencia_fase_id) {
+                    // TODO? tratar casos de data_inicio null em transferencia_andamento
+                    await prismaTx.transferenciaAndamento.update({
+                        where: { id: updatedSelf.transferencia_fase_id },
+                        data: {
+                            data_termino: dto.termino_real ?? null,
+                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
+                        },
+                    });
+                } else if (updatedSelf.transferencia_tarefa_id) {
+                    await prismaTx.transferenciaAndamentoTarefa.update({
+                        where: { id: updatedSelf.transferencia_tarefa_id },
+                        data: {
+                            feito: dto.termino_real != null ? true : false,
+                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
+                        },
+                    });
+                }
+            }
+
+            if (updatedSelf.transferencia_tarefa_id != null) {
+                const tarefaWorkflow = await prismaTx.transferenciaAndamentoTarefa.findFirstOrThrow({
+                    where: { id: updatedSelf.transferencia_tarefa_id },
+                    select: {
+                        orgao_responsavel_id: true,
                     },
                 });
 
-                // Caso seja uma tarefa que vem do Workflow.
-                // E o termino_real for definido.
-                // As mudanças devem refletir no workflow.
-                if (dto.termino_real != undefined && updatedSelf.tarefa_cronograma.transferencia_id) {
-                    if (updatedSelf.transferencia_fase_id) {
-                        // TODO? tratar casos de data_inicio null em transferencia_andamento
-                        await prismaTx.transferenciaAndamento.update({
-                            where: { id: updatedSelf.transferencia_fase_id },
-                            data: {
-                                data_termino: dto.termino_real ?? null,
-                                atualizado_em: new Date(Date.now()),
-                                atualizado_por: user.id,
-                            },
-                        });
-                    } else if (updatedSelf.transferencia_tarefa_id) {
-                        await prismaTx.transferenciaAndamentoTarefa.update({
-                            where: { id: updatedSelf.transferencia_tarefa_id },
-                            data: {
-                                feito: dto.termino_real != null ? true : false,
-                                atualizado_em: new Date(Date.now()),
-                                atualizado_por: user.id,
-                            },
-                        });
-                    }
-                }
-
-                if (updatedSelf.transferencia_tarefa_id != null) {
-                    const tarefaWorkflow = await prismaTx.transferenciaAndamentoTarefa.findFirstOrThrow({
+                if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
+                    await prismaTx.transferenciaAndamentoTarefa.update({
                         where: { id: updatedSelf.transferencia_tarefa_id },
-                        select: {
-                            orgao_responsavel_id: true,
+                        data: {
+                            orgao_responsavel_id:
+                                updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
+                                    ? updatedSelf.orgao_id
+                                    : undefined,
+                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
                         },
                     });
-
-                    if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
-                        await prismaTx.transferenciaAndamentoTarefa.update({
-                            where: { id: updatedSelf.transferencia_tarefa_id },
-                            data: {
-                                orgao_responsavel_id:
-                                    updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
-                                        ? updatedSelf.orgao_id
-                                        : undefined,
-                                atualizado_em: new Date(Date.now()),
-                                atualizado_por: user.id,
-                            },
-                        });
-                    }
                 }
+            }
 
-                if (updatedSelf.transferencia_fase_id != null) {
-                    const tarefaWorkflow = await prismaTx.transferenciaAndamento.findFirstOrThrow({
+            if (updatedSelf.transferencia_fase_id != null) {
+                const tarefaWorkflow = await prismaTx.transferenciaAndamento.findFirstOrThrow({
+                    where: { id: updatedSelf.transferencia_fase_id },
+                    select: {
+                        orgao_responsavel_id: true,
+                    },
+                });
+                console.log(tarefaWorkflow);
+
+                if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
+                    await prismaTx.transferenciaAndamento.update({
                         where: { id: updatedSelf.transferencia_fase_id },
-                        select: {
-                            orgao_responsavel_id: true,
+                        data: {
+                            orgao_responsavel_id: updatedSelf.orgao_id,
+                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
                         },
                     });
-                    console.log(tarefaWorkflow);
-
-                    if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
-                        await prismaTx.transferenciaAndamento.update({
-                            where: { id: updatedSelf.transferencia_fase_id },
-                            data: {
-                                orgao_responsavel_id: updatedSelf.orgao_id,
-                                atualizado_em: new Date(Date.now()),
-                                atualizado_por: user.id,
-                            },
-                        });
-                    }
                 }
+            }
 
-                return { id: tarefa.id };
-            },
-            {
+            return { id: tarefa.id };
+        };
+
+        if (prismaTx) {
+            console.log('tem tx');
+            return update(prismaTx);
+        } else {
+            return this.prisma.$transaction(update, {
                 isolationLevel: 'Serializable',
                 maxWait: 20000,
                 timeout: 50000,
-            }
-        );
-
-        return { id: tarefa.id };
+            });
+        }
     }
 
     private checkIntervalosPlanejado(dto: UpdateTarefaDto) {
