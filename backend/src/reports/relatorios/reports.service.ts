@@ -184,7 +184,7 @@ export class ReportsService {
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
-        const tipo = parametros.tipo === 'MDO' ? null : parametros.tipo;
+        const tipo = parametros.tipo === 'MDO' ? FonteRelatorio.ObraStatus : parametros.tipo;
 
         const result = await this.prisma.relatorio.create({
             data: {
