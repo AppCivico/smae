@@ -327,20 +327,4 @@ iniciar();
       </tr>
     </tfoot>
   </table>
-
-  <div
-    v-if="chamadasPendentes?.lista"
-    class="spinner"
-  >
-    Carregando
-  </div>
-
-  <div
-    v-if="erro"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
-  </div>
 </template>
