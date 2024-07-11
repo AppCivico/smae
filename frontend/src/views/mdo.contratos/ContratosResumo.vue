@@ -1,14 +1,14 @@
 <script setup>
-import { processo as schema } from '@/consts/formSchemas';
+import { contratoDeObras as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useObrasStore } from '@/stores/obras.store';
-import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useContratosStore } from '@/stores/contratos.store.ts';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
-const processosStore = useProcessosStore();
+const processosStore = useContratosStore();
 const {
   chamadasPendentes,
   emFoco,
@@ -33,10 +33,10 @@ const {
         && (!permissõesDaObraEmFoco.apenas_leitura
           || permissõesDaObraEmFoco.sou_responsavel)"
       :to="{
-        name: 'processosDaObraEditar',
+        name: 'contratosDaObraEditar',
         params: $route.params
       }"
-      title="Editar processo"
+      title="Editar contrato"
       class="btn big ml2"
     >
       Editar
@@ -47,69 +47,93 @@ const {
     v-if="emFoco"
     class="boards"
   >
-    <div class="flex g2 mb1">
-      <div class="f2 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.processo_sei.spec.label }}
-        </dt>
-        <dd class="t13">
-          <a
-            :href="emFoco?.link"
-            target="_blank"
-          >
-            {{ emFoco?.processo_sei ? formatProcesso(emFoco?.processo_sei) : '-' }}
-          </a>
-        </dd>
+    <div class="flex">
+      <div class="flex g2 f1">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.numero.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.numero || '-' }}
+          </dd>
+        </div>
+      </div>
+      <div class="flex g2 f1">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.contrato_exclusivo.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.contrato_exclusivo ? 'Sim' : 'Não' }}
+          </dd>
+        </div>
+      </div>
+      <div class="flex g2 f1">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.numero.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.status || '-' }}
+          </dd>
+        </div>
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.descricao.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.descricao || '-' }}
-        </dd>
+    <div class="flex">
+      <div class="flex g2 f1">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.processos_sei.spec.label }}
+          </dt>
+          <dd class="t13">
+            <div
+              v-for="processoSei in emFoco?.processos_sei"
+              :key="processoSei"
+            >
+              {{ processoSei }}
+            </div>
+          </dd>
+        </div>
+      </div>
+      <div class="flex g2 f1">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.modalidade_contratacao_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.modalidade_contratacao_id }}
+          </dd>
+        </div>
+      </div>
+      <div class="flex g2 f1">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.fontes_recurso_ids.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.fontes_recurso_ids }}
+          </dd>
+        </div>
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.comentarios.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.comentarios || '-' }}
-        </dd>
-      </div>
+    <div><h2>IMPLEMENTAR ADITIVOS!!</h2></div>
+
+    <div
+      v-if="chamadasPendentes?.emFoco"
+      class="spinner"
+    >
+      Carregando
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.observacoes.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.observacoes || '-' }}
-        </dd>
+    <div
+      v-if="erro"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erro }}
       </div>
-    </div>
-  </div>
-
-  <div
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >
-    Carregando
-  </div>
-
-  <div
-    v-if="erro"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erro }}
     </div>
   </div>
 </template>
