@@ -241,24 +241,6 @@ iniciar();
         </td>
       </tr>
 
-      <tr v-if="!listaFiltrada.length">
-        <td
-          colspan="8"
-          class="center"
-        >
-          Nenhum contrato encontrado.
-        </td>
-
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
-      </tr>
-
       <tr v-if="chamadasPendentes.lista">
         <td :colspan="exibirColunasDeAção ? 10 : 8">
           Carregando
