@@ -50,7 +50,9 @@ emit('update:modelValue', props.lista);
     >
       &times;
     </button>
-    <small class="tc200 t13 nowrap">ocorre nos dados já baixados</small>
+    <small class="tc200 t13">
+      ocorre <strong>apenas</strong> nos dados já visiveis na tela
+    </small>
   </form>
 </template>
 <style lang="less">
