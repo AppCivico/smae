@@ -46,6 +46,7 @@ export class RelObrasDto {
     orgao_executor: IdSiglaDescricao | null;
     orgao_gestor: IdSiglaDescricao;
     orgao_responsavel: IdSiglaDescricao | null;
+    orgao_colaborador: IdSiglaDescricao | null;
     responsavel: IdNomeExibicaoDto | null;
     pontos_focais_colaboradores: string | null;
 

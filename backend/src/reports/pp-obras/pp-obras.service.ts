@@ -4,7 +4,6 @@ import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/proj
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { ContratoPrazoUnidade, ProjetoOrigemTipo, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
-import { DateTime } from 'luxon';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
@@ -47,7 +46,7 @@ class RetornoDbProjeto {
     equipamento_id?: number;
     equipamento_nome?: string;
     origem_tipo: ProjetoOrigemTipo;
-    origem_outro?: string;
+    descricao?: string;
     nome: string;
     codigo?: string;
     detalhamento?: string;
@@ -74,6 +73,9 @@ class RetornoDbProjeto {
     orgao_origem_id: number;
     orgao_origem_sigla: string;
     orgao_origem_descricao: string;
+    orgao_colaborador_sigla: string;
+    orgao_colaborador_id: number;
+    orgao_colaborador_descricao: string;
     assessores: string;
     pontos_focais_colaboradores: string;
     responsavel_id: number;
@@ -441,9 +443,12 @@ export class PPObrasService implements ReportableService {
             orgao_executor.id AS orgao_executor_id,
             orgao_executor.sigla AS orgao_executor_sigla,
             orgao_executor.descricao AS orgao_executor_descricao,
-            orgao_origem.id AS orgao_executor_id,
-            orgao_origem.sigla AS orgao_executor_sigla,
-            orgao_origem.descricao AS orgao_executor_descricao,
+            orgao_origem.id AS orgao_origem_id,
+            orgao_origem.sigla AS orgao_origem_sigla,
+            orgao_origem.descricao AS orgao_origem_descricao,
+            orgao_colaborador.id AS orgao_colaborador_id,
+            orgao_colaborador.sigla AS orgao_colaborador_sigla,
+            orgao_colaborador.descricao AS orgao_colaborador_descricao,
             pe.descricao AS projeto_etapa,
             grupo_tematico.id AS grupo_tematico_id,
             grupo_tematico.nome AS grupo_tematico_nome,
@@ -480,6 +485,7 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
           LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
+          LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
         ${whereCond.whereString} `;
@@ -509,7 +515,7 @@ export class PPObrasService implements ReportableService {
                 codigo: db.codigo ? db.codigo : null,
                 detalhamento: db.detalhamento ?? null,
                 origem_tipo: db.origem_tipo,
-                descricao: db.origem_outro ?? null,
+                descricao: db.descricao ?? null,
                 secretario_colaborador: db.secretario_colaborador,
                 publico_alvo: db.publico_alvo,
                 previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
@@ -549,6 +555,14 @@ export class PPObrasService implements ReportableService {
                     sigla: db.orgao_gestor_sigla,
                     descricao: db.orgao_gestor_descricao,
                 },
+
+                orgao_colaborador: db.orgao_colaborador_id
+                    ? {
+                          id: db.orgao_colaborador_id,
+                          sigla: db.orgao_colaborador_sigla,
+                          descricao: db.orgao_colaborador_descricao,
+                      }
+                    : null,
                 assessores: db.assessores,
 
                 responsavel: db.responsavel_id
@@ -705,7 +719,7 @@ export class PPObrasService implements ReportableService {
 
     private async queryDataFontesRecurso(whereCond: WhereCond, out: RelObrasFontesRecursoDto[]) {
         const sql = `SELECT
-            projeto.id AS obra_id,
+            projeto.id AS projeto_id,
             projeto_fonte_recurso.valor_percentual,
             projeto_fonte_recurso.valor_nominal,
             projeto_fonte_recurso.fonte_recurso_ano,
