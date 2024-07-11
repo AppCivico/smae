@@ -6,8 +6,12 @@
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-
-  <!-- carga: <pre>{{ carga }}</pre> -->
+  <!-- <pre>
+    participantes: {{ participantes }}
+  </pre>
+  <pre>
+    colaboradores: {{ colaboradores }}
+  </pre> -->
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
@@ -36,6 +40,7 @@
           :schema="schema"
         />
         <Field
+          v-model="orgao"
           name="orgao_id"
           as="select"
           class="inputtext light mb1"
@@ -43,9 +48,9 @@
             error: errors.orgao_id,
             loading: ÓrgãosStore.chamadasPendentes?.lista,
           }"
-          :disabled="!órgãosComoLista?.length"
+          :disabled="!órgãosComoLista?.length || !temPermissãoPara('CadastroGrupoVariavel.administrador') "
         >
-          <option :value="0">
+          <option>
             Selecionar
           </option>
 
@@ -72,10 +77,10 @@
           name="perfil"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.status }"
+          :class="{ error: errors.perfil }"
         >
           <option
-            :value="null"
+            value=""
           >
             Selecionar
           </option>
@@ -90,7 +95,7 @@
         </Field>
         <ErrorMessage
           class="error-msg mb1"
-          name="titulo"
+          name="perfil"
         />
       </div>
     </div>
@@ -103,12 +108,12 @@
         <AutocompleteField
           name="colaboradores"
           :controlador="{ busca: '', participantes: carga.colaboradores || [] }"
-          :grupo="órgãosComoLista"
-          label="sigla"
+          :grupo="colaboradores[orgao]"
+          label="nome_exibicao"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="titulo"
+          name="colaboradores"
         />
       </div>
 
@@ -119,13 +124,13 @@
         />
         <AutocompleteField
           name="participantes"
-          :controlador="{ busca: '', participantes: carga.participantes || [] }"
-          :grupo="órgãosComoLista"
-          label="sigla"
+          :controlador="{ busca: '', participantes: carga?.participantes || [] }"
+          :grupo="participantes[orgao]"
+          label="nome_exibicao"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="titulo"
+          name="participantes"
         />
       </div>
     </div>
@@ -173,7 +178,9 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth.store';
+import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
@@ -184,6 +191,8 @@ import { useAlertStore } from '@/stores/alert.store';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 import { grupoDeVariaveis as schema } from '@/consts/formSchemas';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
@@ -192,6 +201,11 @@ const props = defineProps({
     default: 0,
   },
 });
+
+const colaboradores = ref({});
+const participantes = ref({});
+
+const orgao = ref(0);
 
 const titulo = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
@@ -211,6 +225,10 @@ const {
   initialValues: itemParaEdição,
   validationSchema: schema,
 });
+
+const authStore = useAuthStore();
+const { user, temPermissãoPara } = storeToRefs(authStore);
+
 async function onSubmit(values) {
   try {
     let response;
@@ -238,15 +256,55 @@ async function onSubmit(values) {
   }
 }
 
+async function buscarPessoasSimplificadas() {
+  // if (colaboradores.value[orgao.value]?.length) {
+  //   return;
+  // }
+  console.log('entrou no buscarPessoasSimplificadas');
+
+  if (!participantes.value[orgao.value]) {
+    const { linhas: linhasParticipantes } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
+      colaborador_grupo_variavel: true,
+      orgao_id: orgao.value,
+    });
+    if (Array.isArray(linhasParticipantes)) {
+      console.log('linhasParticipantes', linhasParticipantes);
+      participantes.value[orgao.value] = linhasParticipantes;
+    } else {
+      throw new Error('Erro ao buscar pessoas simplificadas');
+    }
+  }
+  if (!colaboradores.value[orgao.value]) {
+    const { linhas: linhasColaboradores } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
+      participante_grupo_variavel: true,
+      orgao_id: orgao.value,
+    });
+
+    if (Array.isArray(linhasColaboradores)) {
+      console.log('linhasColaboradores', linhasColaboradores);
+      colaboradores.value[orgao.value] = linhasColaboradores;
+    } else {
+      throw new Error('Erro ao buscar pessoas simplificadas');
+    }
+    console.log('linhasColaboradores', linhasColaboradores);
+  }
+}
+
 async function iniciar() {
   usersStore.buscarPessoasSimplificadas();
-
+  orgao.value = user.value.orgao_id;
   ÓrgãosStore.getAll().finally(() => {
     chamadasPendentes.value.emFoco = false;
   });
 
   resetForm();
 }
+
+watch(orgao, () => {
+  if (orgao.value) {
+    buscarPessoasSimplificadas();
+  }
+});
 
 iniciar();
 
