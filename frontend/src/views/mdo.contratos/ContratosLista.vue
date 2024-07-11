@@ -7,6 +7,7 @@ import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
+import Big from 'big.js';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -49,18 +50,18 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 
 const totalDeContratos = computed(() => lista.value
   .reduce(
-    (acc, x) => ({
-      aditivos: acc.aditivos + (x.quantidade_aditivos || 0),
-      valor: acc.valor + (x.valor || 0),
+    (acc, cur) => ({
+      aditivos: new Big(Number(cur.quantidade_aditivos) || 0).plus(acc.aditivos),
+      valor: new Big(Number(cur.valor) || 0).plus(acc.valor),
     }),
     { aditivos: 0, valor: 0 },
   ));
 
 const totalDeContratosFiltrados = computed(() => listaFiltrada.value
   .reduce(
-    (acc, x) => ({
-      aditivos: acc.aditivos + (x.quantidade_aditivos || 0),
-      valor: acc.valor + (x.valor || 0),
+    (acc, cur) => ({
+      aditivos: new Big(Number(cur.quantidade_aditivos) || 0).plus(acc.aditivos),
+      valor: new Big(Number(cur.valor) || 0).plus(acc.valor),
     }),
     { aditivos: 0, valor: 0 },
   ));
