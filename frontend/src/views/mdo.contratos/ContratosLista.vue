@@ -4,6 +4,7 @@ import { contratoDeObras as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
@@ -109,7 +110,7 @@ iniciar();
   </div>
 
   <table
-    class="tablemain"
+    class="tablemain tbody-zebra"
   >
     <colgroup>
       <col>
@@ -161,11 +162,11 @@ iniciar();
       </tr>
     </thead>
 
-    <tbody>
-      <tr
-        v-for="linha in listaFiltrada"
-        :key="linha.id"
-      >
+    <tbody
+      v-for="linha in listaFiltrada"
+      :key="linha.id"
+    >
+      <tr>
         <td class="">
           <router-link
             :to="{
@@ -241,23 +242,27 @@ iniciar();
           </button>
         </td>
       </tr>
-
-      <tr v-if="chamadasPendentes.lista">
+      <tr>
         <td :colspan="exibirColunasDeAção ? 10 : 8">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td :colspan="exibirColunasDeAção ? 10 : 8">
-          Erro: {{ erro }}
-        </td>
-      </tr>
-      <tr v-else-if="!lista.length">
-        <td :colspan="exibirColunasDeAção ? 10 : 8">
-          Nenhum resultado encontrado.
+          {{ linha.objeto_resumo ? truncate(linha.objeto_resumo, 100) : '-' }}
         </td>
       </tr>
     </tbody>
+    <tr v-if="chamadasPendentes.lista">
+      <td :colspan="exibirColunasDeAção ? 10 : 8">
+        Carregando
+      </td>
+    </tr>
+    <tr v-else-if="erro">
+      <td :colspan="exibirColunasDeAção ? 10 : 8">
+        Erro: {{ erro }}
+      </td>
+    </tr>
+    <tr v-else-if="!lista.length">
+      <td :colspan="exibirColunasDeAção ? 10 : 8">
+        Nenhum resultado encontrado.
+      </td>
+    </tr>
     <tfoot>
       <tr v-if="lista.length && lista.length > listaFiltrada.length">
         <th>Total dos contratos visiveis</th>
