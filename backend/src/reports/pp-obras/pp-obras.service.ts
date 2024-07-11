@@ -357,10 +357,18 @@ export class PPObrasService implements ReportableService {
         }
 
         if (filters.projeto_regiao_id) {
-            whereConditions.push(`projeto_regioes.regiao_id = $${paramIndex}`);
+            whereConditions.push(
+                `EXISTS (SELECT 1 FROM projeto_regioes WHERE projeto_id = projeto.id AND regiao_id = $${paramIndex})`
+            );
             queryParams.push(filters.projeto_regiao_id);
             paramIndex++;
         }
+
+        //if (filters.data_termino) {
+        //    whereConditions.push(`projeto. = $${paramIndex}`);
+        //    queryParams.push(filters.grupo_tematico_id);
+        //    paramIndex++;
+        //}
 
         whereConditions.push(`projeto.removido_em IS NULL`);
         whereConditions.push(`projeto.tipo::varchar = 'MDO'`);
@@ -371,8 +379,6 @@ export class PPObrasService implements ReportableService {
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[]) {
-        const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
-
         let portfolioParamIdx;
         if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
             const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
@@ -427,10 +433,6 @@ export class PPObrasService implements ReportableService {
                 FROM pessoa
                 WHERE id = ANY(projeto.colaboradores_no_orgao)
             ) as pontos_focais_colaboradores,
-            r.id AS fonte_recurso_id,
-            sof.descricao AS fonte_recurso_nome,
-            r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
-            r.fonte_recurso_ano AS fonte_recurso_ano,
             r.valor_percentual AS fonte_recurso_valor_pct,
             r.valor_nominal AS fonte_recurso_valor_nominal,
             o.id AS orgao_id,
@@ -460,6 +462,8 @@ export class PPObrasService implements ReportableService {
                 FROM projeto_regiao
                 JOIN regiao ON regiao.id = projeto_regiao.regiao_id
                 WHERE projeto_regiao.projeto_id = projeto.id
+                AND projeto_regiao.removido_em IS NULL
+                AND regiao.removido_em IS NULL
             ) AS subprefeituras
         FROM projeto
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
@@ -470,9 +474,6 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
-            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
-            AND sof.col = 'fonte_recursos'
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
@@ -481,7 +482,6 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
         ${whereCond.whereString} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -590,7 +590,6 @@ export class PPObrasService implements ReportableService {
             ) as dependencias
             FROM projeto
             LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-            LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
             JOIN portfolio ON projeto.portfolio_id = portfolio.id
             LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
@@ -674,7 +673,6 @@ export class PPObrasService implements ReportableService {
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-          JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
           JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
         ${whereCond.whereString}
         `;
@@ -716,7 +714,6 @@ export class PPObrasService implements ReportableService {
         FROM projeto
            JOIN portfolio ON projeto.portfolio_id = portfolio.id
            LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-           LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
            JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id
         ${whereCond.whereString}
         `;
@@ -784,7 +781,6 @@ export class PPObrasService implements ReportableService {
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-          LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
@@ -843,7 +839,6 @@ export class PPObrasService implements ReportableService {
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-          LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
           JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
@@ -894,7 +889,6 @@ export class PPObrasService implements ReportableService {
         FROM projeto
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-          LEFT JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
           JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
