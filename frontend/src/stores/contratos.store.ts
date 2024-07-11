@@ -85,6 +85,7 @@ export const useContratosStore = defineStore('contratos', {
       ];
     },
     async buscarDependencias() {
+      this.chamadasPendentes.emFoco = true;
       const obra = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}`);
       const processosSei = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/sei`);
       const orgaos = await this.requestS.get(`${baseUrl}/orgao`);
@@ -100,6 +101,7 @@ export const useContratosStore = defineStore('contratos', {
       this.listaDeDependencias.modalidades_de_contratacao = modalidadesContratacao.linhas;
       this.listaDeDependencias.status_de_contrato = this.criaTodosOsStatusDeContratoDisponiveis();
       this.listaDeDependencias.unidades_de_prazo = this.criaTodasAsUnidadesDePrazo();
+      this.chamadasPendentes.emFoco = false;
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
@@ -184,7 +186,7 @@ export const useContratosStore = defineStore('contratos', {
       data_termino: emFoco?.data_termino
         ? dateTimeToDate(emFoco?.data_termino)
         : null,
-      fontes_recurso_ids: emFoco?.fontes_recurso?.map((fonteRecurso) => fonteRecurso.id),
+      fontes_recurso_ids: emFoco?.fontes_recurso?.map((fonteRecurso) => fonteRecurso.id) || [],
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
     }),
