@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { StatusContrato } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoModalidadeContratacaoDto } from 'src/pp/_mdo/modalidade-contratacao/dto/mod-contratacao.dto';
 import { ContratoAditivoItemDto } from 'src/pp/contrato-aditivo/entities/contrato-aditivo.entity';
-import { ProjetoRecursos } from 'src/pp/projeto/entities/projeto.entity';
 
 export class ContratoDetailDto {
     id: number;
-    modalidade_contratacao: ProjetoModalidadeContratacaoDto | null;
+    modalidade_contratacao: IdNomeDto | null;
     orgao: IdSiglaDescricao | null;
     fontes_recurso: string[];
     aditivos: ContratoAditivoItemDto[];
