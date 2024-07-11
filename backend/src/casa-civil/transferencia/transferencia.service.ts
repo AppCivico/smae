@@ -187,7 +187,7 @@ export class TransferenciaService {
                         }),
                     };
 
-                    await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
+                    await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user, prismaTxn);
                 }
             }
 
@@ -227,8 +227,6 @@ export class TransferenciaService {
                             db_projecao_termino: true,
                         },
                     });
-                    console.log('tarefa filha');
-                    console.log(tarefaFilha);
 
                     if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
 
