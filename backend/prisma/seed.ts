@@ -336,9 +336,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroVariavelCategorica: [
         ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
     ],
-    CadastroVariavelCategoricaPS: [
-        ['CadastroVariavelCategoricaPS.administrador', false],
-    ],
+    CadastroVariavelCategoricaPS: [['CadastroVariavelCategoricaPS.administrador', false]],
     CadastroIniciativa: [
         ['CadastroIniciativa.inserir', 'Inserir Iniciativas pelas quais for responsável'],
         ['CadastroIniciativa.editar', 'Editar Iniciativas pelas quais for responsável'],
@@ -812,11 +810,16 @@ const PerfilAcessoConfig: {
     {
         nome: 'Colaborador de Grupo de Variáveis',
         descricao: 'Gerenciar os Grupos de Variáveis onde é responsável',
-        privilegios: [
-            'CadastroGrupoVariavel.colaborador_responsavel',
-            'SMAE.GrupoVariavel.colaborador'
-        ],
+        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
     },
+
+    {
+        nome: 'Participante de Grupo de Variáveis',
+        descricao:
+            'Pode ser participante de grupos de variáveis, podendo ter qualquer perfil (Medição, Validação, Liberação)',
+        privilegios: ['SMAE.GrupoVariavel.participante'],
+    },
+
     {
         nome: 'Gestor de Projetos no Órgão',
         descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
