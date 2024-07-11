@@ -12,10 +12,11 @@ import {
     ValidateIf,
     IsArray,
     ArrayMaxSize,
+    ValidateNested,
 } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreateContratoDto {
     @IsString()
@@ -48,8 +49,9 @@ export class CreateContratoDto {
     @ArrayMaxSize(100, {
         message: '$property| Fontes de recurso: precisa ter no máximo 100 items',
     })
-    @IsString({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    fontes_recurso: string[];
+    @ValidateNested({ each: true })
+    @Type(() => CreateContratoFonteRecursoDto)
+    fontes_recurso: CreateContratoFonteRecursoDto[];
 
     @IsArray({
         message: '$property| Processos SEI: precisa ser uma array de strings',
@@ -142,4 +144,12 @@ export class CreateContratoDto {
     )
     @ValidateIf((object, value) => value !== null)
     valor?: string;
+}
+
+export class CreateContratoFonteRecursoDto {
+    @IsString()
+    fonte_recurso_cod_sof: string;
+
+    @IsInt()
+    fonte_recurso_ano: number;
 }
