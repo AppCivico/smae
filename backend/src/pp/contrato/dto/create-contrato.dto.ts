@@ -118,6 +118,7 @@ export class CreateContratoDto {
     @IsInt()
     prazo_numero?: number;
 
+    @IsOptional()
     @ApiProperty({
         description: 'Unidade do valor do prazo',
         enum: ContratoPrazoUnidade,
