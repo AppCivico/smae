@@ -43,13 +43,13 @@ export class CreateContratoDto {
     orgao_id?: number;
 
     @IsArray({
-        message: '$property| Fontes de recurso: precisa ser uma array de números inteiros',
+        message: '$property| Fontes de recurso: precisa ser uma array de strings',
     })
     @ArrayMaxSize(100, {
         message: '$property| Fontes de recurso: precisa ter no máximo 100 items',
     })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    fontes_recurso_ids: number[];
+    @IsString({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    fontes_recurso: string[];
 
     @IsArray({
         message: '$property| Processos SEI: precisa ser uma array de strings',
