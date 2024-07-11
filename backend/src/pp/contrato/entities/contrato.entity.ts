@@ -10,7 +10,7 @@ export class ContratoDetailDto {
     id: number;
     modalidade_contratacao: ProjetoModalidadeContratacaoDto | null;
     orgao: IdSiglaDescricao | null;
-    fontes_recurso: ProjetoRecursos[];
+    fontes_recurso: string[];
     aditivos: ContratoAditivoItemDto[];
     numero: string;
     contrato_exclusivo: boolean;
