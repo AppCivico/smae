@@ -65,6 +65,9 @@ const totalDeContratosFiltrados = computed(() => listaFiltrada.value
     { aditivos: 0, valor: 0 },
   ));
 
+const exibirColunasDeAção = computed(() => !permissõesDaObraEmFoco.value.apenas_leitura
+  || permissõesDaObraEmFoco.value.sou_responsavel);
+
 function excluirProcesso(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover "${formatProcesso(nome)}"?`, async () => {
     if (await useContratosStore().excluirItem(id)) {
@@ -87,8 +90,7 @@ iniciar();
 
     <div class="ml2">
       <router-link
-        v-if="!permissõesDaObraEmFoco.apenas_leitura
-          || permissõesDaObraEmFoco.sou_responsavel"
+        v-if="exibirColunasDeAção"
         :to="{ name: 'contratosDaObraCriar' }"
         class="btn"
       >
@@ -117,13 +119,11 @@ iniciar();
       <col>
       <col class="col--minimum">
       <col
-        v-if="!permissõesDaObraEmFoco.apenas_leitura
-          || permissõesDaObraEmFoco.sou_responsavel"
+        v-if="exibirColunasDeAção"
         class="col--botão-de-ação"
       >
       <col
-        v-if="!permissõesDaObraEmFoco.apenas_leitura
-          || permissõesDaObraEmFoco.sou_responsavel"
+        v-if="exibirColunasDeAção"
         class="col--botão-de-ação"
       >
     </colgroup>
@@ -152,12 +152,10 @@ iniciar();
           {{ schema.fields.quantidade_aditivos.spec.label }}
         </th>
         <th
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
         />
         <th
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
         />
       </tr>
     </thead>
@@ -206,8 +204,7 @@ iniciar();
           {{ linha.quantidade_aditivos }}
         </td>
         <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
           class="center"
         >
           <router-link
@@ -227,8 +224,7 @@ iniciar();
           </router-link>
         </td>
         <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
           class="center"
         >
           <button
@@ -264,43 +260,19 @@ iniciar();
       </tr>
 
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="8">
+        <td :colspan="exibirColunasDeAção ? 10 : 8">
           Carregando
         </td>
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
       </tr>
       <tr v-else-if="erro">
-        <td colspan="8">
+        <td :colspan="exibirColunasDeAção ? 10 : 8">
           Erro: {{ erro }}
         </td>
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="8">
+        <td :colspan="exibirColunasDeAção ? 10 : 8">
           Nenhum resultado encontrado.
         </td>
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
-        <td
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
-        />
       </tr>
     </tbody>
     <tfoot>
@@ -317,12 +289,10 @@ iniciar();
           {{ totalDeContratosFiltrados.aditivos }}
         </td>
         <th
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
         />
         <th
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
         />
       </tr>
       <tr>
@@ -338,12 +308,10 @@ iniciar();
           {{ totalDeContratos.aditivos }}
         </td>
         <th
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
         />
         <th
-          v-if="!permissõesDaObraEmFoco.apenas_leitura
-            || permissõesDaObraEmFoco.sou_responsavel"
+          v-if="exibirColunasDeAção"
         />
       </tr>
     </tfoot>
