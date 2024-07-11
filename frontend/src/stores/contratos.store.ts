@@ -90,7 +90,8 @@ export const useContratosStore = defineStore('contratos', {
       const modalidadesContratacao = await this.requestS.get(`${baseUrl}/modalidade-contratacao-mdo`);
       this.listaDeDependencias.processos_sei = processosSei.linhas.map((processoSei: any) => {
         const processoSeiLocal = processoSei;
-        processoSeiLocal.id = processoSei.id.toString();
+        processoSeiLocal.id = processoSei.processo_sei;
+        processoSeiLocal.processo_sei = formatProcesso(processoSei.processo_sei);
         return processoSeiLocal;
       });
       this.listaDeDependencias.fontes_recurso = obra.fonte_recursos;
