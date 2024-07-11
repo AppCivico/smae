@@ -92,6 +92,7 @@ export class ContratoService {
                 id: true,
                 numero: true,
                 status: true,
+                objeto_resumo: true,
                 data_inicio: true,
                 data_termino: true,
                 valor: true,
@@ -124,6 +125,7 @@ export class ContratoService {
 
             return {
                 id: contrato.id,
+                objeto_resumo: contrato.objeto_resumo,
                 numero: contrato.numero,
                 status: contrato.status,
                 valor: valorMaisAtual,
