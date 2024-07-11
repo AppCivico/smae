@@ -1,14 +1,14 @@
 export default {
   Medicao: {
-    nome: 'Medicao',
-    valor: 'Mediçao',
+    valor: 'Medicao',
+    nome: 'Mediçao',
   },
   Validacao: {
-    nome: 'Validacao',
-    valor: 'Validação',
+    valor: 'Validacao',
+    nome: 'Validação',
   },
   Liberacao: {
-    nome: 'Liberacao',
-    valor: 'Liberação',
+    valor: 'Liberacao',
+    nome: 'Liberação',
   },
 };
