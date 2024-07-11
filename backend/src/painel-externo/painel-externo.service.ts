@@ -11,7 +11,7 @@ import { PainelExternoDto } from './entities/painel-externo.entity';
 
 @Injectable()
 export class PainelExternoService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(dto: CreatePainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('criar', 'painel externo');
@@ -55,10 +55,10 @@ export class PainelExternoService {
 
                         await prismaTx.painelExternoGrupoPainelExterno.create({
                             data: {
-                                painel_externo_id: pe.id,
+                                painel_externo_id: painel.id,
                                 criado_em: now,
                                 criado_por: user.id,
-                                grupo_painel_externo_id: painel.id,
+                                grupo_painel_externo_id: pe.id,
                             },
                         });
                     }
