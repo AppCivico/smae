@@ -417,9 +417,10 @@ export const contratoDeObras = object()
     cnpj_contratada: string()
       .nullable()
       .label('CNPJ contratada'),
-    data_assinatura: string()
+    data_assinatura: date()
       .nullable()
-      .label('Data de assinatura'),
+      .label('Data de assinatura')
+      .transform((v) => (v === '' ? null : v)),
     prazo_numero: number()
       .nullable()
       .label('Prazo'),
@@ -432,9 +433,15 @@ export const contratoDeObras = object()
     data_base_ano: number()
       .nullable()
       .label(),
-    data_inicio: string()
+    data_inicio: date()
       .nullable()
-      .label('Data de início'),
+      .label('Data de início')
+      .transform((v) => (v === '' ? null : v)),
+    data_termino: date()
+      .nullable()
+      .min(ref('data_inicio'), 'Data de término deve ser posterior à data de início')
+      .label('Data de término previsto')
+      .transform((v) => (v === '' ? null : v)),
     valor: string()
       .nullable()
       .label('Valor do contrato'),

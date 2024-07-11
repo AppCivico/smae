@@ -186,7 +186,7 @@ export const useContratosStore = defineStore('contratos', {
       data_termino: emFoco?.data_termino
         ? dateTimeToDate(emFoco?.data_termino)
         : null,
-      fontes_recurso_ids: emFoco?.fontes_recurso?.map((fonteRecurso) => fonteRecurso.id) || [],
+      fontes_recurso: emFoco?.fontes_recurso || [],
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
     }),
