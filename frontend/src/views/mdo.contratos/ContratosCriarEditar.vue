@@ -155,6 +155,7 @@ onMounted(async () => {
   <form
     v-if="!processoId || emFoco"
     :disabled="chamadasPendentes.emFoco"
+    :aria-busy="chamadasPendentes.emFoco"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
