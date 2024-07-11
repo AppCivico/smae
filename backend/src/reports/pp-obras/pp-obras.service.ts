@@ -771,10 +771,9 @@ export class PPObrasService implements ReportableService {
                 WHERE contrato_sei.contrato_id = contrato.id
             ) AS processos_SEI,
             (
-                SELECT string_agg(projeto_fonte_recurso.fonte_recurso_cod_sof::text, '|')
-                FROM "ContratoFonteRecurso"
-                JOIN projeto_fonte_recurso ON "ContratoFonteRecurso"."projeto_fonte_recurso_id" = projeto_fonte_recurso.id
-                WHERE "ContratoFonteRecurso"."contrato_id" = contrato.id
+                SELECT string_agg(cod_sof::text, '|')
+                FROM contrato_fonte_recurso
+                WHERE contrato_id = contrato.id
             ) AS fontes_recurso
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
