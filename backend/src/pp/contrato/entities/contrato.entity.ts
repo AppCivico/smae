@@ -38,6 +38,7 @@ export class ContratoItemDto {
     numero: string;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
+    objeto_resumo: string | null;
     data_termino_inicial: Date | null;
     data_termino_atual: Date | null;
     valor: Decimal | null;
