@@ -77,7 +77,7 @@ export class VariavelService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService
-    ) { }
+    ) {}
 
     async loadVariaveisComCategorica(
         prismaTxn: Prisma.TransactionClient,
@@ -264,7 +264,6 @@ export class VariavelService {
         }
         const contadorStr = String(contador).padStart(5, '0');
 
-
         let categorica: string = '';
 
         if (dto.variavel_categorica_id) {
@@ -288,7 +287,6 @@ export class VariavelService {
         dto: CreateGeradorVariaveBaselDto | CreateGeradorVariavelPDMDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId[]> {
-        if (dto.criar_formula_composta) throw new BadRequestException('criar_formula_composta TODO, não implementado');
         const logger = LoggerWithLog('Geração de variáveis regionais');
         logger.verbose(`Dados recebidos: ${JSON.stringify(dto)}`);
 
@@ -323,8 +321,15 @@ export class VariavelService {
         if (indicador) this.fixIndicadorInicioFim(dto, indicador);
         // TODO para Global: aqui precisa calcular o inicio/fim da variavel de alguma forma, ou obrigar a passar
 
+        const nivel_regionalizacao = regioesDb[0].nivel;
+
+        if (nivel_regionalizacao == 1 && dto.criar_formula_composta) {
+            throw new BadRequestException('Não é possível criar fórmula composta para regiões de nível de municipio');
+        }
+
         let codigo: string;
         if (tipo == 'Global') {
+            if (dto.regiao_id) throw new BadRequestException('Região não pode ser enviada para geração de variaveis.');
             codigo = await this.geraCodigoVariavel(tipo, dto);
         } else {
             if (!('codigo' in dto) || !dto.codigo)
@@ -337,7 +342,11 @@ export class VariavelService {
                 const ids: number[] = [];
 
                 const regions = await this.prisma.regiao.findMany({
-                    where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
+                    where: {
+                        id: { in: dto.regioes },
+                        pdm_codigo_sufixo: { not: null },
+                        removido_em: null,
+                    },
                     select: { pdm_codigo_sufixo: true, descricao: true, id: true },
                 });
 
@@ -363,7 +372,7 @@ export class VariavelService {
 
                 if (dto.supraregional) {
                     logger.log('Criando variável supraregional');
-                    await this.performVariavelSave(
+                    const supra = await this.performVariavelSave(
                         tipo,
                         prismaTxn,
                         {
@@ -374,6 +383,21 @@ export class VariavelService {
                         responsaveis,
                         logger,
                         prefixo
+                    );
+                    ids.push(supra.id);
+                }
+
+                if (dto.criar_formula_composta) {
+                    const regioes_ids = regions.map((r) => r.id);
+
+                    await this.geraFormulaComposta(
+                        logger,
+                        ids,
+                        codigo,
+                        regioes_ids,
+                        nivel_regionalizacao,
+                        dto.acumulativa, // usar_serie_acumulada
+                        prismaTxn
                     );
                 }
 
@@ -388,6 +412,60 @@ export class VariavelService {
         );
 
         return created;
+    }
+
+    private async geraFormulaComposta(
+        logger: LoggerWithLog,
+        todasVariaveis: number[],
+        codigo: string,
+        regionIDs: number[],
+        nivel_regionalizacao: number,
+        usar_serie_acumulada: boolean,
+        prismaTxn: Prisma.TransactionClient
+    ) {
+        // SQL que retorna por nível as regiões pai e os filhos que estão dentro dela, agrupando por nivel.
+        const fc_tasks: {
+            nivel: number;
+            parent: number | null;
+            id: number;
+            output_ids: number[];
+            pdm_codigo_sufixo: string;
+        }[] = await prismaTxn.$queryRaw`SELECT *
+        FROM f_regiao_pai_por_filhos_por_nivel(${regionIDs}::bigint[]::int[], ${nivel_regionalizacao}::int);`;
+        logger.debug(`GeraFormulaComposta: ${JSON.stringify(fc_tasks)}`);
+
+        const varDb = await prismaTxn.variavel.findMany({
+            where: { id: { in: todasVariaveis }, regiao_id: { not: null } },
+            select: {
+                regiao_id: true,
+                id: true,
+            },
+        });
+
+        for (const fc of fc_tasks) {
+            // busca apenas as variáveis que estão na região
+            const varEscopo = varDb.filter((v) => fc.output_ids.includes(v.regiao_id!)).map((v) => v.id);
+
+            const formula = varEscopo.map((r) => '$_' + r.toString()).join(' + ');
+
+            const fc_id = await prismaTxn.formulaComposta.create({
+                data: {
+                    titulo: `${codigo}.${fc.pdm_codigo_sufixo}`,
+                    formula: formula,
+                    formula_compilada: formula,
+                    FormulaCompostaVariavel: {
+                        create: varEscopo.map((vid) => ({
+                            variavel_id: vid,
+                            janela: 1,
+                            referencia: '_' + vid.toString(),
+                            usar_serie_acumulada: usar_serie_acumulada,
+                        })),
+                    },
+                },
+                select: { id: true },
+            });
+            logger.log(`Formula composta criada: ${fc_id.id}`);
+        }
     }
 
     private async performVariavelSave(
@@ -410,13 +488,13 @@ export class VariavelService {
                 OR: [
                     indicador_id
                         ? {
-                            tipo: 'PDM',
-                            indicador_variavel: {
-                                some: {
-                                    indicador_id: indicador_id,
-                                },
-                            },
-                        }
+                              tipo: 'PDM',
+                              indicador_variavel: {
+                                  some: {
+                                      indicador_id: indicador_id,
+                                  },
+                              },
+                          }
                         : {},
                     {
                         tipo: 'Global',
@@ -467,7 +545,11 @@ export class VariavelService {
                 VariavelAssuntoVariavel: {
                     createMany:
                         Array.isArray(dto.assuntos) && dto.assuntos.length > 0
-                            ? { data: dto.assuntos.map((assunto_id) => ({ assunto_variavel_id: assunto_id })) }
+                            ? {
+                                  data: dto.assuntos.map((assunto_id) => ({
+                                      assunto_variavel_id: assunto_id,
+                                  })),
+                              }
                             : undefined,
                 },
             },
@@ -1021,7 +1103,11 @@ export class VariavelService {
                     codigo: r.codigo,
                     titulo: r.titulo,
                     planos: r.planos.map(planoById).sort((a, b) => a.nome.localeCompare(b.nome)),
-                    orgao: r.orgao ?? { descricao: 'Sem órgão', id: MIN_DTO_SAFE_NUM, sigla: 'SEM' },
+                    orgao: r.orgao ?? {
+                        descricao: 'Sem órgão',
+                        id: MIN_DTO_SAFE_NUM,
+                        sigla: 'SEM',
+                    },
                     orgao_proprietario: r.orgao_proprietario ?? {
                         descricao: 'Sem órgão',
                         id: MIN_DTO_SAFE_NUM,
@@ -1245,9 +1331,11 @@ export class VariavelService {
                         },
                         indicador_id
                             ? {
-                                tipo: 'PDM',
-                                indicador_variavel: { some: { indicador_id: indicador_id } },
-                            }
+                                  tipo: 'PDM',
+                                  indicador_variavel: {
+                                      some: { indicador_id: indicador_id },
+                                  },
+                              }
                             : {},
                     ],
                 },
@@ -1456,7 +1544,10 @@ export class VariavelService {
 
             if (dto.variavel_categorica_id) {
                 const existentes = await prismaTxn.serieVariavel.count({
-                    where: { variavel_id: variavelId, variavel_categorica_id: dto.variavel_categorica_id },
+                    where: {
+                        variavel_id: variavelId,
+                        variavel_categorica_id: dto.variavel_categorica_id,
+                    },
                 });
                 if (existentes > 0)
                     throw new BadRequestException(
@@ -1481,10 +1572,10 @@ export class VariavelService {
                     if (!catValor)
                         throw new BadRequestException(
                             'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis. Valores encontrados: ' +
-                            serieValores
-                                .slice(0, 10)
-                                .map((v) => v.valor_nominal)
-                                .join(', ')
+                                serieValores
+                                    .slice(0, 10)
+                                    .map((v) => v.valor_nominal)
+                                    .join(', ')
                         );
 
                     promises.push(
@@ -2192,7 +2283,12 @@ export class VariavelService {
                         }
                     } // else "não há valor" e não tem ID, ou seja, n precisa acontecer nada no banco
                 }
-                console.log({ idsToBeRemoved, anySerieIsToBeCreatedOnVariable, updatePromises, createList });
+                console.log({
+                    idsToBeRemoved,
+                    anySerieIsToBeCreatedOnVariable,
+                    updatePromises,
+                    createList,
+                });
                 // apenas um select pra forçar o banco fazer o serialize na variavel
                 // ja que o prisma não suporta 'select for update'
                 if (anySerieIsToBeCreatedOnVariable)
