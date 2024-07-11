@@ -228,7 +228,7 @@ export class ContratoService {
             data_base_ano: contrato.data_base_ano,
             valor: contrato.valor,
             modalidade_contratacao: contrato.modalidade_contratacao
-                ? { nome: contrato.modalidade_contratacao.nome }
+                ? { id: contrato.modalidade_contratacao.id, nome: contrato.modalidade_contratacao.nome }
                 : null,
             fontes_recurso: contrato.fontesRecurso.map((fonte) => fonte.cod_sof),
             processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
