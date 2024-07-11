@@ -1,6 +1,7 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import { contrato as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
@@ -110,6 +111,8 @@ iniciar();
     <colgroup>
       <col>
       <col class="col--minimum">
+      <col class="col--data">
+      <col class="col--data">
       <col class="col--minimum">
       <col>
       <col class="col--minimum">
@@ -132,6 +135,12 @@ iniciar();
         </th>
         <th>
           {{ schema.fields.status.spec.label }}
+        </th>
+        <th class="cell--data">
+          Término planejado
+        </th>
+        <th class="cell--data">
+          Término atual
         </th>
         <th class="cell--number">
           {{ schema.fields.valor.spec.label }}
@@ -172,6 +181,14 @@ iniciar();
           </router-link>
         </td>
         <td>{{ linha.status }}</td>
+
+        <td class="cell--data">
+          {{ dateToShortDate(linha.data_termino_atual) }}
+        </td>
+        <td class="cell--data">
+          {{ dateToShortDate(linha.data_termino_inicial) }}
+        </td>
+
         <td class="cell--number">
           R$ {{ dinheiro(linha.valor) }}
         </td>
@@ -230,7 +247,7 @@ iniciar();
 
       <tr v-if="!listaFiltrada.length">
         <td
-          colspan="6"
+          colspan="8"
           class="center"
         >
           Nenhum contrato encontrado.
@@ -247,7 +264,7 @@ iniciar();
       </tr>
 
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="6">
+        <td colspan="8">
           Carregando
         </td>
         <td
@@ -260,7 +277,7 @@ iniciar();
         />
       </tr>
       <tr v-else-if="erro">
-        <td colspan="6">
+        <td colspan="8">
           Erro: {{ erro }}
         </td>
         <td
@@ -273,7 +290,7 @@ iniciar();
         />
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="6">
+        <td colspan="8">
           Nenhum resultado encontrado.
         </td>
         <td
@@ -289,6 +306,8 @@ iniciar();
     <tfoot>
       <tr v-if="lista.length && lista.length > listaFiltrada.length">
         <th>Total dos contratos visiveis</th>
+        <td />
+        <td />
         <td />
         <td class="cell--number">
           {{ `R$ ${dinheiro(totalDeContratosFiltrados.valor)}` }}
@@ -308,6 +327,8 @@ iniciar();
       </tr>
       <tr>
         <th>Total dos contratos</th>
+        <td />
+        <td />
         <td />
         <td class="cell--number">
           {{ `R$ ${dinheiro(totalDeContratos.valor)}` }}
