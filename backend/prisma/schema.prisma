@@ -3836,8 +3836,6 @@ model ProjetoFonteRecurso {
     criado_em          DateTime @default(now())
     atualizado_em      DateTime @default(now())
 
-    contratos ContratoFonteRecurso[]
-
     @@index([projeto_id])
     @@map("projeto_fonte_recurso")
 }
@@ -6553,13 +6551,14 @@ model ContratoSei {
 }
 
 model ContratoFonteRecurso {
+    id Int @id @default(autoincrement())
+
     contrato_id Int
     contrato    Contrato @relation(fields: [contrato_id], references: [id])
 
-    projeto_fonte_recurso_id Int
-    projeto_fonte_recurso    ProjetoFonteRecurso @relation(fields: [projeto_fonte_recurso_id], references: [id])
+    cod_sof String
 
-    @@id([contrato_id, projeto_fonte_recurso_id])
+    @@map("contrato_fonte_recurso")
 }
 
 model ContratoAditivo {

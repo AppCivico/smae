@@ -17,26 +17,6 @@ export class ContratoService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Caso enviem fonte de recurso, verificar se a fonte de recurso pertence ao projeto.
-                if (dto.fontes_recurso_ids != undefined && dto.fontes_recurso_ids.length) {
-                    const fontesRecurso = await prismaTx.projetoFonteRecurso.findMany({
-                        where: {
-                            projeto_id: projeto_id,
-                            id: {
-                                in: dto.fontes_recurso_ids,
-                            },
-                        },
-                        select: { id: true },
-                    });
-
-                    if (fontesRecurso.length != dto.fontes_recurso_ids.length) {
-                        throw new HttpException(
-                            'Fontes de recurso inválidas. Todas as fontes devem pertencer ao projeto.',
-                            400
-                        );
-                    }
-                }
-
                 const similarExiste = await prismaTx.contrato.count({
                     where: {
                         numero: { equals: dto.numero, mode: 'insensitive' },
@@ -70,9 +50,9 @@ export class ContratoService {
                         valor: dto.valor,
                         fontesRecurso: {
                             createMany: {
-                                data: dto.fontes_recurso_ids.map((fonte_recurso_id) => {
+                                data: dto.fontes_recurso.map((cod_sof) => {
                                     return {
-                                        projeto_fonte_recurso_id: fonte_recurso_id,
+                                        cod_sof: cod_sof,
                                     };
                                 }),
                             },
@@ -195,15 +175,7 @@ export class ContratoService {
                 },
                 fontesRecurso: {
                     select: {
-                        projeto_fonte_recurso: {
-                            select: {
-                                id: true,
-                                fonte_recurso_cod_sof: true,
-                                fonte_recurso_ano: true,
-                                valor_percentual: true,
-                                valor_nominal: true,
-                            },
-                        },
+                        cod_sof: true,
                     },
                 },
                 processosSei: {
@@ -258,15 +230,7 @@ export class ContratoService {
             modalidade_contratacao: contrato.modalidade_contratacao
                 ? { nome: contrato.modalidade_contratacao.nome }
                 : null,
-            fontes_recurso: contrato.fontesRecurso.map((fonte) => {
-                return {
-                    id: fonte.projeto_fonte_recurso.id,
-                    fonte_recurso_cod_sof: fonte.projeto_fonte_recurso.fonte_recurso_cod_sof,
-                    fonte_recurso_ano: fonte.projeto_fonte_recurso.fonte_recurso_ano,
-                    valor_percentual: fonte.projeto_fonte_recurso.valor_percentual,
-                    valor_nominal: fonte.projeto_fonte_recurso.valor_nominal,
-                };
-            }),
+            fontes_recurso: contrato.fontesRecurso.map((fonte) => fonte.cod_sof),
             processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
             aditivos: contrato.aditivos.map((aditivo) => {
                 return {
@@ -321,16 +285,18 @@ export class ContratoService {
                     });
                 }
 
-                if (dto.fontes_recurso_ids != undefined) {
+                if (dto.fontes_recurso != undefined) {
                     await prismaTx.contratoFonteRecurso.deleteMany({
-                        where: { contrato_id: id },
+                        where: {
+                            contrato_id: id,
+                        },
                     });
 
                     await prismaTx.contratoFonteRecurso.createMany({
-                        data: dto.fontes_recurso_ids.map((fonte_recurso_id) => {
+                        data: dto.fontes_recurso.map((cod_sof) => {
                             return {
                                 contrato_id: id,
-                                projeto_fonte_recurso_id: fonte_recurso_id,
+                                cod_sof: cod_sof,
                             };
                         }),
                     });
@@ -355,6 +321,7 @@ export class ContratoService {
                         observacoes: dto.observacoes,
                         data_assinatura: dto.data_assinatura,
                         data_inicio: dto.data_inicio,
+                        data_termino: dto.data_termino,
                         prazo_numero: dto.prazo_numero,
                         prazo_unidade: dto.prazo_unidade,
                         data_base_mes: dto.data_base_mes,
