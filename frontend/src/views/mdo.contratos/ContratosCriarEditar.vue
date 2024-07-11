@@ -6,10 +6,13 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import truncate from '@/helpers/truncate';
 import {
   ErrorMessage,
   Field,
   useForm,
+  FieldArray,
   useIsFormDirty,
 } from 'vee-validate';
 import {
@@ -21,10 +24,20 @@ import { useRoute, useRouter } from 'vue-router';
 const alertStore = useAlertStore();
 const contratosStore = useContratosStore();
 const tarefasStore = useTarefasStore();
+const DotaçãoStore = useDotaçãoStore();
 const router = useRouter();
 const route = useRoute();
 const processosSei = ref({ participantes: [], busca: '' });
 const fontesRecurso = ref({ participantes: [], busca: '' });
+
+const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
+
+function BuscarDotaçãoParaAno(valorOuEvento) {
+  const ano = valorOuEvento.target?.value || valorOuEvento;
+  if (!DotaçãoSegmentos?.value?.[ano]) {
+    DotaçãoStore.getDotaçãoSegmentos(ano);
+  }
+}
 
 const {
   chamadasPendentes,
@@ -271,31 +284,114 @@ onMounted(async () => {
       </div>
     </div>
 
+    <div class="mb2">
+      <legend class="label mt2 mb1">
+        {{ schema.fields.fontes_recurso.spec.label }}
+      </legend>
+
+      <FieldArray
+        v-slot="{ fields, push, remove }"
+        name="fontes_recurso"
+      >
+        <div
+          v-for="(field, idx) in fields"
+          :key="`fonteRecursos--${field.key}`"
+          class="flex flexwrap g2 mb2"
+        >
+          <Field
+            :name="`fontes_recurso[${idx}].id`"
+            type="hidden"
+          />
+
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="fonte_recurso_ano"
+              :for="`fontes_recurso[${idx}].fonte_recurso_ano`"
+              class="tc300"
+              :schema="schema.fields.fontes_recurso.innerType"
+            />
+
+            <Field
+              :name="`fontes_recurso[${idx}].fonte_recurso_ano`"
+              type="number"
+              class="inputtext light mb1"
+              min="2003"
+              max="3000"
+              step="1"
+              @change="BuscarDotaçãoParaAno"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fontes_recurso[${idx}].fonte_recurso_ano`"
+            />
+          </div>
+
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="fonte_recurso_cod_sof"
+              :for="`fontes_recurso[${idx}].fonte_recurso_cod_sof`"
+              class="tc300"
+              :schema="schema.fields.fontes_recurso.innerType"
+            />
+
+            <Field
+              :name="`fontes_recurso[${idx}].fonte_recurso_cod_sof`"
+              maxlength="2"
+              class="inputtext light mb1"
+              as="select"
+            >
+              <option value="">
+                Selecionar
+              </option>
+              <option
+                v-for="item in
+                  DotaçãoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.fonte_recursos || []"
+                :key="item.codigo"
+                :value="item.codigo"
+                :title="item.descricao?.length > 36 ? item.descricao : null"
+              >
+                {{ item.codigo }} - {{ truncate(item.descricao, 36) }}
+              </option>
+            </Field>
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fontes_recurso[${idx}].fonte_recurso_cod_sof`"
+            />
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            arial-label="excluir"
+            title="excluir"
+            type="button"
+            @click="remove(idx)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </div>
+
+        <button
+          class="like-a__text addlink"
+          type="button"
+          @click="push({
+            fonte_recurso_cod_sof: '',
+            fonte_recurso_ano: null,
+            valor_nominal: null,
+            valor_percentual: null,
+          })"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
+        </button>
+      </FieldArray>
+    </div>
+
     <div class="flex g2 mb1">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="fontes_recurso_ids"
-          :schema="schema"
-        />
-        <AutocompleteField
-          id="fontes_recurso_ids"
-          :disabled="false"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.fontes_recurso_ids,
-            loading: chamadasPendentes.validaçãoDeDependências
-          }"
-          name="fontes_recurso_ids"
-          :controlador="fontesRecurso"
-          :grupo="listaDeDependencias?.fontes_recurso"
-          label="fonte_recurso_cod_sof"
-          @change="(valor) => { }"
-        />
-        <ErrorMessage
-          name="fontes_recurso_ids"
-          class="error-msg"
-        />
-      </div>
       <div class="f1 mb1">
         <LabelFromYup
           name="orgao_id"

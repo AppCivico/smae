@@ -368,9 +368,34 @@ export const contratoDeObras = object()
     modalidade_contratacao_id: number()
       .nullable()
       .label('Modalidade da Contratação'),
-    fontes_recurso_ids: array()
-      .label('Fontes de recurso')
-      .nullable(),
+    fontes_recurso: array()
+      .label('Fontes de recursos')
+      .nullable()
+      .of(
+        object()
+          .shape({
+            fonte_recurso_cod_sof: string()
+              .label('Código SOF')
+              .matches(/\d\d/)
+              .required('A fonte é obrigatória'),
+            fonte_recurso_ano: number()
+              .label('Ano')
+              .min(2003, 'A partir de 2003')
+              .max(3000, 'Até o ano 3000')
+              .required('Escolha um ano válido'),
+            id: number()
+              .nullable(),
+            valor_percentual: mixed()
+              .label('Valor percentual')
+              .when('valor_nominal', {
+                is: (valorNominal) => !valorNominal,
+                then: number()
+                  .nullable(),
+                otherwise: mixed()
+                  .nullable(),
+              }),
+          }, [['valor_percentual', 'valor_nominal']]),
+      ),
     orgao_id: number()
       .nullable()
       .label('Área gestora'),
