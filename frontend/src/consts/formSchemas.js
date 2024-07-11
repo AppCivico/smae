@@ -362,40 +362,56 @@ export const contratoDeObras = object()
     status: string()
       .label('Status')
       .required(),
-    processos_sei: string()
+    processos_sei: array()
       .label('Processos SEI')
-      .required(),
+      .nullable(),
     modalidade_contratacao_id: number()
+      .nullable()
       .label('Modalidade da Contratação'),
-    fontes_recurso_ids: string()
-      .label('Fontes de recurso'),
+    fontes_recurso_ids: array()
+      .label('Fontes de recurso')
+      .nullable(),
     orgao_id: number()
+      .nullable()
       .label('Área gestora'),
     objeto_resumo: string()
+      .nullable()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
+      .nullable()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
+      .nullable()
       .label('Contratante'),
     empresa_contratada: string()
+      .nullable()
       .label('Empresa contratada'),
     cnpj_contratada: string()
+      .nullable()
       .label('CNPJ contratada'),
     data_assinatura: string()
+      .nullable()
       .label('Data de assinatura'),
     prazo_numero: number()
+      .nullable()
       .label('Prazo'),
     prazo_unidade: string()
+      .nullable()
       .label(),
     data_base_mes: number()
+      .nullable()
       .label('Data base'),
     data_base_ano: number()
+      .nullable()
       .label(),
     data_inicio: string()
+      .nullable()
       .label('Data de início'),
     valor: string()
+      .nullable()
       .label('Valor do contrato'),
     observacoes: string()
+      .nullable()
       .label('Observações'),
   });
 
