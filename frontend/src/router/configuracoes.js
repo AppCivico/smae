@@ -297,7 +297,7 @@ export default [
             path: '',
             component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisLista.vue'),
             meta: {
-              título: 'Grupo de Variáveis',
+              título: 'Grupos de Variáveis',
             },
           },
           {
