@@ -109,10 +109,10 @@ iniciar();
   >
     <colgroup>
       <col>
+      <col class="col--minimum">
+      <col class="col--minimum">
       <col>
-      <col>
-      <col>
-      <col>
+      <col class="col--minimum">
       <col
         v-if="!permissõesDaObraEmFoco.apenas_leitura
           || permissõesDaObraEmFoco.sou_responsavel"
