@@ -366,8 +366,11 @@ export const contratoDeObras = object()
       .label('Processos SEI')
       .nullable(),
     modalidade_contratacao_id: number()
+      .integer()
+      .label('Modalidade da Contratação')
       .nullable()
-      .label('Modalidade da Contratação'),
+      .positive()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     fontes_recurso: array()
       .label('Fontes de recursos')
       .nullable()
