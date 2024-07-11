@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ListProjetoSeiDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity.ts';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import formatProcesso from '@/helpers/formatProcesso';
 import { defineStore } from 'pinia';
 
@@ -174,6 +175,18 @@ export const useContratosStore = defineStore('contratos', {
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
+      data_assinatura: emFoco?.data_assinatura
+        ? dateTimeToDate(emFoco?.data_assinatura)
+        : null,
+      data_inicio: emFoco?.data_inicio
+        ? dateTimeToDate(emFoco?.data_inicio)
+        : null,
+      data_termino: emFoco?.data_termino
+        ? dateTimeToDate(emFoco?.data_termino)
+        : null,
+      fontes_recurso_ids: emFoco?.fontes_recurso?.map((fonteRecurso) => fonteRecurso.id),
+      modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
+      orgao_id: emFoco?.orgao?.id,
     }),
   },
 });
