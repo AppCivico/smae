@@ -9,13 +9,18 @@
       Novo {{ titulo }}
     </router-link>
   </div>
-  <!--  <table class="tablemain">
+  lista: <pre>{{ lista }}</pre>
+  nome grupo |  orgao |  tipo de grupo | pessoas
+  <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th> {{ titulo }} </th>
+        <th> Nome </th>
+        <th> Órgão</th>
+        <th> Tipo de grupo </th>
+        <th> Pessoas </th>
         <th />
         <th />
       </tr>
@@ -25,10 +30,13 @@
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.descricao }}</td>
+        <td>{{ item.titulo }}</td>
+        <td>{{ item.orgao_id }}</td>
+        <td>{{ item.perfil }}</td>
+        <td>{{ item.participantes }}</td>
         <td>
           <router-link
-            :to="{ name: 'planosSetoriaisEditarMacrotema', params: { macrotemaId: item.id } }"
+            :to="{ name: 'grupoDeVariaveisEditar', params: { grupoDeVariaveisId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -42,7 +50,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirMacrotema(item.id, item.descricao)"
+            @click="excluirGrupo(item.id, item.titulo)"
           >
             <svg
               width="20"
@@ -67,41 +75,42 @@
         </td>
       </tr>
     </tbody>
-  </table> -->
+  </table>
 </template>
 
 <script setup>
-// import { useAlertStore } from '@/stores/alert.store';
-// import { storeToRefs } from 'pinia';
-// import { useRoute } from 'vue-router';
-// import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+import { useAlertStore } from '@/stores/alert.store';
 
-// import { useMacrotemasStore } from '@/stores/macrotemasPs.store';
+import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
 
-// const route = useRoute();
-// const titulo = typeof route?.meta?.título === 'function'
-//   ? computed(() => route.meta.título())
-//   : route?.meta?.título;
-// const alertStore = useAlertStore();
-// const macrotemasStore = useMacrotemasStore();
-// const { lista, chamadasPendentes, erro } = storeToRefs(macrotemasStore);
+const route = useRoute();
+const titulo = typeof route?.meta?.título === 'function'
+  ? computed(() => route.meta.título())
+  : route?.meta?.título;
+const alertStore = useAlertStore();
+const grupoDeVariaveisStore = useGrupoDeVariaveisStore();
 
-// async function excluirMacrotema(id, descricao) {
-//   alertStore.confirmAction(
-//     `Deseja mesmo remover "${descricao}"?`,
-//     async () => {
-//       if (await macrotemasStore.excluirItem(id)) {
-//         macrotemasStore.$reset();
-//         macrotemasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-//         alertStore.success(`"${descricao}" removido.`);
-//       }
-//     },
-//     'Remover',
-//   );
-// }
+const { lista, chamadasPendentes, erro } = storeToRefs(grupoDeVariaveisStore);
 
-// macrotemasStore.$reset();
-// macrotemasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+async function excluirGrupo(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await grupoDeVariaveisStore.excluirItem(id)) {
+        grupoDeVariaveisStore.$reset();
+        grupoDeVariaveisStore.buscarTudo({});
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+grupoDeVariaveisStore.$reset();
+grupoDeVariaveisStore.buscarTudo({ });
 </script>
 
 <style></style>
