@@ -236,7 +236,7 @@ async function onSubmit(values) {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
+    const dataToSend = { ...values };
 
     if (route.params?.grupoId) {
       response = await grupoDeVariaveisStore.salvarItem(
@@ -249,7 +249,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       grupoDeVariaveisStore.$reset();
-      router.push({ name: 'planosSetoriaisMacrotemas' });
+      router.push({ name: 'grupoDeVariaveisListar' });
     }
   } catch (error) {
     alertStore.error(error);
