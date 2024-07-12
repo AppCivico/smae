@@ -44,7 +44,7 @@ export default {
     },
 
     {
-      path: ':processoId',
+      path: ':contratoId',
       component: () => import('@/views/mdo.contratos/ContratosItem.vue'),
       props: true,
 
