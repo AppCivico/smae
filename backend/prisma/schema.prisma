@@ -6571,7 +6571,7 @@ model ContratoAditivo {
     tipo_aditivo_id Int
     tipo_aditivo    TipoAditivo @relation(fields: [tipo_aditivo_id], references: [id])
 
-    numero                  Int
+    numero                  String
     data                    DateTime? @db.Date()
     data_termino_atualizada DateTime? @db.Date()
     valor                   Decimal?  @db.Decimal(15, 2)

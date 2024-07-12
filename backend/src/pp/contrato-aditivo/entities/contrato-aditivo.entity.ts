@@ -3,7 +3,7 @@ import { ProjetoTipoAditivoDto } from 'src/tipo-aditivo/dto/tipo-aditivo.dto';
 
 export class ContratoAditivoItemDto {
     id: number;
-    numero: number;
+    numero: string;
     tipo: ProjetoTipoAditivoDto;
     data: Date | null;
     data_termino_atualizada: Date | null;
