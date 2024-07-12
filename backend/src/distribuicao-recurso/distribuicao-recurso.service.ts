@@ -1237,6 +1237,7 @@ export class DistribuicaoRecursoService {
         // Cuja responsabilidade é da casa civil (SERI).
         const tarefaFasePendenteMudanca = await prismaTx.tarefa.findMany({
             where: {
+                removido_em: null,
                 nivel: 2,
                 tarefa_cronograma: { transferencia_id: distribuicaoRecurso.transferencia_id },
                 dependencias: {
@@ -1250,6 +1251,8 @@ export class DistribuicaoRecursoService {
             },
             select: {
                 id: true,
+                numero: true,
+                tarefa_pai_id: true,
                 dependencias: {
                     select: {
                         id: true,
@@ -1275,11 +1278,13 @@ export class DistribuicaoRecursoService {
             const novaTarefaDependente = await prismaTx.tarefa.findFirst({
                 orderBy: { numero: 'desc' },
                 where: {
-                    // Em teoria só pode ter uma dependência pois é um cronograma de paridade com o workflow.
-                    // Por isso dependencia[0]
-                    tarefa_pai_id: tarefaFase.dependencias[0].tarefas_dependente.tarefa_pai_id,
-
+                    tarefa_pai: {
+                        tarefa_pai_id: tarefaFase.tarefa_pai_id,
+                        numero: tarefaFase.numero - 1,
+                    },
+                    nivel: 3,
                     orgao_id: orgaoCasaCivil.id,
+                    removido_em: null,
                 },
                 select: {
                     id: true,
