@@ -143,7 +143,7 @@ const {
           {{ schema.fields.objeto_resumo.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.objeto_resumo }}
+          {{ emFoco?.objeto_resumo || '-' }}
         </dd>
       </div>
       <div class="f1 fb100 mb1">
@@ -161,7 +161,7 @@ const {
           {{ schema.fields.contratante.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.contratante }}
+          {{ emFoco?.contratante || '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
@@ -169,7 +169,7 @@ const {
           {{ schema.fields.empresa_contratada.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.empresa_contratada }}
+          {{ emFoco?.empresa_contratada || '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
@@ -177,7 +177,7 @@ const {
           {{ schema.fields.cnpj_contratada.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.cnpj_contratada }}
+          {{ emFoco?.cnpj_contratada || '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
@@ -185,7 +185,9 @@ const {
           {{ schema.fields.data_assinatura.spec.label }}
         </dt>
         <dd class="t13">
-          {{ dateToShortDate(emFoco?.data_assinatura) }}
+          {{ emFoco?.data_assinatura
+            ? dateToShortDate(emFoco.data_assinatura)
+            : '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
@@ -201,7 +203,7 @@ const {
           {{ schema.fields.data_base_mes.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.data_base_mes }}/{{ emFoco?.data_base_ano }}
+          {{ emFoco?.data_base_mes || '-' }}/{{ emFoco?.data_base_ano || '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
@@ -209,7 +211,7 @@ const {
           {{ schema.fields.data_inicio.spec.label }}
         </dt>
         <dd class="t13">
-          {{ dateToShortDate(emFoco?.data_inicio) }}
+          {{ emFoco?.data_inicio ? dateToShortDate(emFoco.data_inicio) : '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
