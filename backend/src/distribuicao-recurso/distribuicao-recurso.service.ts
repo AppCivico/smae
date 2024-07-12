@@ -1240,7 +1240,7 @@ export class DistribuicaoRecursoService {
                 nivel: 2,
                 tarefa_cronograma: { transferencia_id: distribuicaoRecurso.transferencia_id },
                 dependencias: {
-                    every: {
+                    some: {
                         tarefas_dependente: {
                             nivel: 2,
                             n_filhos_imediatos: { gt: 0 },
@@ -1266,7 +1266,11 @@ export class DistribuicaoRecursoService {
         });
 
         for (const tarefaFase of tarefaFasePendenteMudanca) {
-            if (tarefaFase.dependencias[0].tarefas_dependente.n_filhos_imediatos == 0) continue;
+            console.log('\n==================================\n');
+            console.log(tarefaFase.dependencias);
+            console.log(tarefaFase.dependencias[0].tarefas_dependente);
+            console.log('\n==================================\n');
+            if (tarefaFase.dependencias[0].tarefas_dependente?.n_filhos_imediatos == 0) continue;
 
             // Buscando tarefa que seja da SERI e tenha o maior número.
             const novaTarefaDependente = await prismaTx.tarefa.findFirst({
