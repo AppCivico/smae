@@ -7,11 +7,10 @@
     <CheckClose />
   </div>
 
-  <!-- itemParaEdição: <pre>{{ itemParaEdição }}</pre> -->
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição?.linhas[0]"
+    :initial-values="itemParaEdição?.linhas?.[0]"
     @submit="onSubmit"
   >
     <div class="f1">
