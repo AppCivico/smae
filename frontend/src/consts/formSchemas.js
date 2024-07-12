@@ -2877,10 +2877,6 @@ export const etapasFluxo = object({
   fase_id: number()
     .label('Tipo de fase')
     .required(),
-  responsabilidade: mixed()
-    .label('Responsabilidade')
-    .oneOf(Object.keys(responsabilidadeEtapaFluxo))
-    .required(),
   situacao: array()
     .label('Situação')
     .nullable(),
