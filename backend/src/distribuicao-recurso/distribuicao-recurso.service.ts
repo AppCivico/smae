@@ -1220,6 +1220,70 @@ export class DistribuicaoRecursoService {
             }
         }
 
+        // Verificando se existe tarefa de nível de fase
+        // que possui dependencia de tarefa de nível de fase, mas cuja fase, tem tarefas.
+        // Caso exista, esta dependência deve ser modificada para apontar para a tarefa de maior número,
+        // Cuja responsabilidade é da casa civil (SERI).
+        const tarefaFasePendenteMudanca = await prismaTx.tarefa.findMany({
+            where: {
+                nivel: 2,
+                tarefa_cronograma: { transferencia_id: distribuicaoRecurso.transferencia_id },
+                dependencias: {
+                    some: {
+                        tarefas_dependente: {
+                            nivel: 2,
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                dependencias: {
+                    select: {
+                        id: true,
+                        tarefas_dependente: {
+                            select: {
+                                tarefa_pai_id: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const orgaoCasaCivil = await prismaTx.orgao.findFirst({
+            where: {
+                removido_em: null,
+                sigla: 'SERI',
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
+
+        for (const tarefaFase of tarefaFasePendenteMudanca) {
+            // Buscando tarefa que seja da SERI e tenha o maior número.
+            const novaTarefaDependente = await prismaTx.tarefa.findFirst({
+                orderBy: { numero: 'desc' },
+                where: {
+                    // Em teoria só pode ter uma dependência pois é um cronograma de paridade com o workflow.
+                    // Por isso dependencia[0]
+                    tarefa_pai_id: tarefaFase.dependencias[0].tarefas_dependente.tarefa_pai_id,
+
+                    orgao_id: orgaoCasaCivil.id,
+                },
+            });
+            if (!novaTarefaDependente) throw new Error('Erro ao encontrar nova tarefa dependente.');
+
+            operations.push(
+                prismaTx.tarefaDependente.update({
+                    where: { id: tarefaFase.dependencias[0].id },
+                    data: { dependencia_tarefa_id: novaTarefaDependente.id },
+                })
+            );
+        }
+
         await Promise.all(operations);
         await this._validarTopologia(prismaTx, distribuicao_id, user);
     }
