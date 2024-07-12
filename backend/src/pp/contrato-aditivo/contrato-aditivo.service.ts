@@ -40,8 +40,8 @@ export class ContratoAditivoService {
                 if (tipoAditivo.habilita_valor && dto.valor === null)
                     throw new HttpException('Valor é obrigatório para este tipo de aditivo', 400);
 
-                if (tipoAditivo.habilita_valor_data_termino && dto.data === null)
-                    throw new HttpException('Data é obrigatória para este tipo de aditivo', 400);
+                if (tipoAditivo.habilita_valor_data_termino && dto.data_termino_atualizada === null)
+                    throw new HttpException('Data de termino atualizada é obrigatória para este tipo de aditivo', 400);
 
                 const aditivo = await prismaTx.contratoAditivo.create({
                     data: {
