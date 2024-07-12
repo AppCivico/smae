@@ -1,5 +1,6 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import ContratosAditivos from '@/components/obras/ContratosAditivos.vue';
 import { contratoDeObras as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -222,7 +223,14 @@ const {
           {{ emFoco?.valor ? `R$ ${dinheiro(emFoco?.valor)}` : '-' }}
         </dd>
       </div>
-
+      <div class="f1 fb100 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Aditivos
+        </dt>
+        <dd>
+          <ContratosAditivos @salvo="contratosStore.buscarItem(emFoco.id)" />
+        </dd>
+      </div>
       <div class="f1 fb100 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.observacoes.spec.label }}

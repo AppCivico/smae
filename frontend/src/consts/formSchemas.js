@@ -186,6 +186,41 @@ export const acompanhamento = object()
       ),
   });
 
+export const aditivoDeContrato = object({
+  contrato_id: number()
+    .label('Contrato')
+    .integer()
+    .positive()
+    .required(),
+  data: date()
+    .label('Data')
+    .required(),
+  data_termino_atualizada: date()
+    .label('Data de término atualizada')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  numero: string()
+    .label('Número do aditivo')
+    .min(1)
+    .max(500)
+    .required(),
+  percentual_medido: number()
+    .label('Percentual medido')
+    .min(0)
+    .max(100)
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+  tipo_aditivo_id: number()
+    .label('Tipo')
+    .integer()
+    .positive()
+    .required(),
+  valor: number()
+    .label('Valor')
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+});
+
 export const andamentoDaFase = (órgãoRequerido = false, pessoaRequerida = false) => object({
   fase_id: number()
     .label('Fase')

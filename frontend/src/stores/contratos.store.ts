@@ -1,3 +1,4 @@
+import type { ContratoAditivoItemDto } from '@/../../backend/src/pp/contrato-aditivo/entities/contrato-aditivo.entity';
 import type { ContratoDetailDto } from '@/../../backend/src/pp/contrato/entities/contrato.entity';
 import type { ListProjetoSeiDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -11,6 +12,7 @@ type Lista = ListProjetoSeiDto['linhas'];
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
+  aditivo: boolean;
 }
 
 interface Estado {
@@ -64,6 +66,7 @@ export const useContratosStore = defineStore('contratos', {
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      aditivo: false,
     },
     erro: null,
   }),
@@ -173,6 +176,26 @@ export const useContratosStore = defineStore('contratos', {
         return false;
       }
     },
+
+    async salvarAditivo(carga:any = {}, idDoAditivo = 0, idDoContrato = 0): Promise<boolean> {
+      this.chamadasPendentes.aditivo = true;
+      this.erro = null;
+
+      try {
+        if (idDoAditivo) {
+          await this.requestS.patch(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`, carga);
+        } else {
+          await this.requestS.post(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo`, carga);
+        }
+
+        this.chamadasPendentes.aditivo = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.aditivo = false;
+        return false;
+      }
+    },
   },
   getters: {
     itemParaEdição: ({ emFoco }) => ({
@@ -190,5 +213,9 @@ export const useContratosStore = defineStore('contratos', {
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
     }),
+    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce((acc, cur:ContratoAditivoItemDto) => {
+      acc[cur.id] = cur;
+      return acc;
+    }, {}),
   },
 });
