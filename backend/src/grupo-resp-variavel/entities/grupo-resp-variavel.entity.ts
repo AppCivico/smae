@@ -3,10 +3,12 @@ import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
+import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 
 export class GrupoRespVariavelItemDto {
     id: number;
     orgao_id: number;
+    orgao: OrgaoResumo;
     titulo: string;
     perfil: PerfilResponsavelVariavel;
     participantes: IdNomeExibicaoDto[];
