@@ -183,10 +183,10 @@ iniciar();
         <td>{{ linha.status }}</td>
 
         <td class="cell--data">
-          {{ dateToShortDate(linha.data_termino_atual) }}
+          {{ dateToShortDate(linha.data_termino_inicial) }}
         </td>
         <td class="cell--data">
-          {{ dateToShortDate(linha.data_termino_inicial) }}
+          {{ dateToShortDate(linha.data_termino_atual) }}
         </td>
 
         <td class="cell--number">
