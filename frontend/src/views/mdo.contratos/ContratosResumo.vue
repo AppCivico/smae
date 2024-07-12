@@ -11,12 +11,12 @@ import { defineOptions } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
-const processosStore = useContratosStore();
+const contratosStore = useContratosStore();
 const {
   chamadasPendentes,
   emFoco,
   erro,
-} = storeToRefs(processosStore);
+} = storeToRefs(contratosStore);
 
 const obrasStore = useObrasStore();
 const {
