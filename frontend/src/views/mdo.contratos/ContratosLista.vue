@@ -167,7 +167,7 @@ iniciar();
       :key="linha.id"
     >
       <tr>
-        <td class="">
+        <th class="">
           <router-link
             :to="{
               name: 'contratosDaObraResumo',
@@ -179,7 +179,7 @@ iniciar();
           >
             {{ linha.numero }}
           </router-link>
-        </td>
+        </th>
         <td>{{ linha.status }}</td>
 
         <td class="cell--data">
