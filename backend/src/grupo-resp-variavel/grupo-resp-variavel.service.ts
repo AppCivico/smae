@@ -14,7 +14,7 @@ export class GrupoRespVariavelService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly pessoaPrivService: PessoaPrivilegioService
-    ) { }
+    ) {}
 
     async create(dto: CreateGrupoRespVariavelDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const logger = LoggerWithLog('Grupo Repensável de Variáveis: Criação');
@@ -52,7 +52,9 @@ export class GrupoRespVariavelService {
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser participante do grupo.`);
 
                     if (pessoa.orgao_id != orgao_id)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser participante do grupo em outro órgão.`);
+                        throw new BadRequestException(
+                            `Pessoa ID ${pessoaId} não pode ser participante do grupo em outro órgão.`
+                        );
                 }
 
                 const pComPriv2 = await this.pessoaPrivService.pessoasComPriv(
@@ -64,7 +66,9 @@ export class GrupoRespVariavelService {
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
                     if (pessoa.orgao_id != orgao_id)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo em outro órgão.`);
+                        throw new BadRequestException(
+                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo em outro órgão.`
+                        );
                 }
 
                 const gp = await prismaTx.grupoResponsavelVariavel.create({
@@ -118,6 +122,7 @@ export class GrupoRespVariavelService {
                 removido_em: null,
             },
             include: {
+                orgao: { select: { id: true, sigla: true, descricao: true } },
                 GrupoResponsavelVariavelPessoa: {
                     where: {
                         removido_em: null,
@@ -160,19 +165,19 @@ export class GrupoRespVariavelService {
                 },
                 VariavelGrupoResponsavelVariavel: filter.retornar_uso
                     ? {
-                        where: {
-                            removido_em: null,
-                        },
-                        include: {
-                            variavel: {
-                                select: {
-                                    id: true,
-                                    titulo: true,
-                                    codigo: true,
-                                },
-                            },
-                        },
-                    }
+                          where: {
+                              removido_em: null,
+                          },
+                          include: {
+                              variavel: {
+                                  select: {
+                                      id: true,
+                                      titulo: true,
+                                      codigo: true,
+                                  },
+                              },
+                          },
+                      }
                     : undefined,
             },
             orderBy: { titulo: 'asc' },
@@ -185,6 +190,7 @@ export class GrupoRespVariavelService {
                 titulo: r.titulo,
                 perfil: r.perfil,
                 criado_em: r.criado_em,
+                orgao: r.orgao,
                 orgao_id: r.orgao_id,
                 variaveis: filter.retornar_uso ? r.VariavelGrupoResponsavelVariavel.map((p: any) => p.variavel) : [],
                 participantes: r.GrupoResponsavelVariavelPessoa.map((p) => p.pessoa),
@@ -207,8 +213,8 @@ export class GrupoRespVariavelService {
                     where: { removido_em: null },
                     select: {
                         pessoa_id: true,
-                    }
-                }
+                    },
+                },
             },
         });
 
@@ -221,7 +227,7 @@ export class GrupoRespVariavelService {
                 );
 
             // user.id  must be in gp.GrupoResponsavelVariavelColaborador
-            if (!gp.GrupoResponsavelVariavelColaborador.map(r => r.pessoa_id).includes(user.id))
+            if (!gp.GrupoResponsavelVariavelColaborador.map((r) => r.pessoa_id).includes(user.id))
                 throw new BadRequestException(
                     'Você só tem permissão para editar Grupo de Responsavel de Variável se for um colaborador do grupo.'
                 );
@@ -242,7 +248,6 @@ export class GrupoRespVariavelService {
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
             }
-
 
             if (dto.participantes) {
                 const prevVersion = await prismaTx.grupoResponsavelVariavel.findFirst({
@@ -290,7 +295,9 @@ export class GrupoRespVariavelService {
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser participante do grupo.`);
                     if (pessoa.orgao_id != orgao_id)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser participante do grupo em outro órgão.`);
+                        throw new BadRequestException(
+                            `Pessoa ID ${pessoaId} não pode ser participante do grupo em outro órgão.`
+                        );
 
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
@@ -307,7 +314,6 @@ export class GrupoRespVariavelService {
                     }
                 }
             }
-
 
             if (dto.colaboradores) {
                 const prevVersion = await prismaTx.grupoResponsavelVariavel.findFirst({
@@ -331,7 +337,8 @@ export class GrupoRespVariavelService {
                     dto.colaboradores
                 );
 
-                const keptRecord: number[] = prevVersion?.GrupoResponsavelVariavelColaborador.map((r) => r.pessoa_id) ?? [];
+                const keptRecord: number[] =
+                    prevVersion?.GrupoResponsavelVariavelColaborador.map((r) => r.pessoa_id) ?? [];
 
                 for (const pessoaId of keptRecord) {
                     if (!dto.colaboradores.includes(pessoaId)) {
@@ -355,7 +362,9 @@ export class GrupoRespVariavelService {
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
                     if (pessoa.orgao_id != orgao_id)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo em outro órgão.`);
+                        throw new BadRequestException(
+                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo em outro órgão.`
+                        );
 
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
