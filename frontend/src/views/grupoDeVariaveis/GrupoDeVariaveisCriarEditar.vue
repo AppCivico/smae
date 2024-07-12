@@ -179,7 +179,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
 import { useUsersStore } from '@/stores/users.store';
@@ -211,7 +210,6 @@ const alertStore = useAlertStore();
 const usersStore = useUsersStore();
 const ÓrgãosStore = useOrgansStore();
 const grupoDeVariaveisStore = useGrupoDeVariaveisStore();
-const { pessoasSimplificadasPorÓrgão } = storeToRefs(usersStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(grupoDeVariaveisStore);
 
