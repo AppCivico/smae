@@ -862,17 +862,17 @@ export const gruposTematicos = object({
 export const grupoDeVariaveis = object({
   colaboradores: array()
     .label('Responsáveis pelo grupo')
-    .required('Colaboradores inválidos'),
+    .nullable('Responsáveis inválidos'),
   orgao_id: number()
     .label('Órgão responsável')
     .nullable(),
   participantes: array()
-    .label('Alocados ao grupo')
+    .label('Participantes alocados ao grupo')
     .required('Participantes inválidos'),
   perfil: mixed()
-    .label('Pessoas responsáveis pelo grupo')
+    .label('Tipo de grupo')
     .oneOf(Object.keys(tipoDePerfil))
-    .required('Responsaveis inválidos'),
+    .required('Tipo de grupo inválido'),
   titulo: string()
     .label('Nome')
     .min(3)
