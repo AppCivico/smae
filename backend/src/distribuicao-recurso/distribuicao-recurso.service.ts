@@ -1232,6 +1232,7 @@ export class DistribuicaoRecursoService {
                     some: {
                         tarefas_dependente: {
                             nivel: 2,
+                            n_filhos_imediatos: { gt: 0 },
                         },
                     },
                 },
