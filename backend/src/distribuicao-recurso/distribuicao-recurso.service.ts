@@ -1267,7 +1267,7 @@ export class DistribuicaoRecursoService {
 
         for (const tarefaFase of tarefaFasePendenteMudanca) {
             console.log('\n==================================\n');
-            console.log(tarefaFase.dependencias);
+            console.log(tarefaFase);
             console.log(tarefaFase.dependencias[0].tarefas_dependente);
             if (tarefaFase.dependencias[0].tarefas_dependente?.n_filhos_imediatos == 0) continue;
 
