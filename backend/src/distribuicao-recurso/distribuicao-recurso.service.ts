@@ -1220,6 +1220,17 @@ export class DistribuicaoRecursoService {
             }
         }
 
+        const orgaoCasaCivil = await prismaTx.orgao.findFirst({
+            where: {
+                removido_em: null,
+                sigla: 'SERI',
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
+
         // Verificando se existe tarefa de nível de fase
         // que possui dependencia de tarefa de nível de fase, mas cuja fase, tem tarefas.
         // Caso exista, esta dependência deve ser modificada para apontar para a tarefa de maior número,
@@ -1229,7 +1240,7 @@ export class DistribuicaoRecursoService {
                 nivel: 2,
                 tarefa_cronograma: { transferencia_id: distribuicaoRecurso.transferencia_id },
                 dependencias: {
-                    some: {
+                    every: {
                         tarefas_dependente: {
                             nivel: 2,
                             n_filhos_imediatos: { gt: 0 },
@@ -1245,6 +1256,8 @@ export class DistribuicaoRecursoService {
                         tarefas_dependente: {
                             select: {
                                 tarefa_pai_id: true,
+                                nivel: true,
+                                n_filhos_imediatos: true,
                             },
                         },
                     },
@@ -1252,18 +1265,9 @@ export class DistribuicaoRecursoService {
             },
         });
 
-        const orgaoCasaCivil = await prismaTx.orgao.findFirst({
-            where: {
-                removido_em: null,
-                sigla: 'SERI',
-            },
-            select: {
-                id: true,
-            },
-        });
-        if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
-
         for (const tarefaFase of tarefaFasePendenteMudanca) {
+            if (tarefaFase.dependencias[0].tarefas_dependente.n_filhos_imediatos == 0) continue;
+
             // Buscando tarefa que seja da SERI e tenha o maior número.
             const novaTarefaDependente = await prismaTx.tarefa.findFirst({
                 orderBy: { numero: 'desc' },
