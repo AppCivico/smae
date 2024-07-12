@@ -1269,7 +1269,6 @@ export class DistribuicaoRecursoService {
             console.log('\n==================================\n');
             console.log(tarefaFase.dependencias);
             console.log(tarefaFase.dependencias[0].tarefas_dependente);
-            console.log('\n==================================\n');
             if (tarefaFase.dependencias[0].tarefas_dependente?.n_filhos_imediatos == 0) continue;
 
             // Buscando tarefa que seja da SERI e tenha o maior número.
@@ -1282,8 +1281,15 @@ export class DistribuicaoRecursoService {
 
                     orgao_id: orgaoCasaCivil.id,
                 },
+                select: {
+                    id: true,
+                    nivel: true,
+                    tarefa_pai_id: true,
+                },
             });
             if (!novaTarefaDependente) throw new Error('Erro ao encontrar nova tarefa dependente.');
+            console.log(novaTarefaDependente);
+            console.log('\n==================================\n');
 
             operations.push(
                 prismaTx.tarefaDependente.update({
