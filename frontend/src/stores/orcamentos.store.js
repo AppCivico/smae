@@ -241,7 +241,7 @@ export const useOrcamentosStore = defineStore({
       return false;
     },
     async deleteOrcamentoRealizado(id, parametrosDeModulo = this.route.params) {
-      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}/orcamento-realizado/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/${id}`)) return true;
       return false;
     },
     async deleteOrcamentosRealizadosEmLote(ids, parametrosDeModulo = this.route.params) {
