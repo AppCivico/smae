@@ -346,25 +346,6 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
           class="error-msg"
         />
       </div>
-      <div class="f1">
-        <LabelFromYup
-          name="termino"
-          :schema="schema"
-        />
-        <Field
-          name="termino"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ errors: errors.termino }"
-          maxlength="10"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('termino', $v || null); }"
-        />
-        <ErrorMessage
-          name="termino"
-          class="error-msg"
-        />
-      </div>
       <div
         v-if="props.fluxoId"
         class="f1 flex"
