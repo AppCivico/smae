@@ -9,8 +9,7 @@
       Novo {{ titulo }}
     </router-link>
   </div>
-  lista: <pre>{{ lista }}</pre>
-  nome grupo |  orgao |  tipo de grupo | pessoas
+
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
