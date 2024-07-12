@@ -30,7 +30,7 @@
         :key="item.id"
       >
         <td>{{ item.titulo }}</td>
-        <td>{{ item.orgao_id }}</td>
+        <td>{{ item.orgao.sigla }}</td>
         <td>{{ item.perfil }}</td>
         <td>{{ item.participantes }}</td>
         <td>
