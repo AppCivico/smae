@@ -173,7 +173,7 @@ iniciar();
               name: 'contratosDaObraResumo',
               params: {
                 obraId: obraId,
-                processoId: linha.id,
+                contratoId: linha.id,
               }
             }"
           >
@@ -214,7 +214,7 @@ iniciar();
               name: 'contratosDaObraEditar',
               params: {
                 obraId: obraId,
-                processoId: linha.id,
+                contratoId: linha.id,
               }
             }"
             title="Editar contrato"
