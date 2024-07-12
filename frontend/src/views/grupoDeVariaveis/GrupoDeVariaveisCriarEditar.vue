@@ -6,16 +6,12 @@
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-  <!-- <pre>
-    participantes: {{ participantes }}
-  </pre>
-  <pre>
-    colaboradores: {{ colaboradores }}
-  </pre> -->
+
+  <!-- itemParaEdição: <pre>{{ itemParaEdição }}</pre> -->
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdição?.linhas[0]"
     @submit="onSubmit"
   >
     <div class="f1">
@@ -238,10 +234,10 @@ async function onSubmit(values) {
 
     const dataToSend = { ...values };
 
-    if (route.params?.grupoId) {
+    if (route.params?.grupoDeVariaveisId) {
       response = await grupoDeVariaveisStore.salvarItem(
         dataToSend,
-        route.params.grupoId,
+        route.params.grupoDeVariaveisId,
       );
     } else {
       response = await grupoDeVariaveisStore.salvarItem(dataToSend);
@@ -303,9 +299,9 @@ watch(orgao, () => {
 iniciar();
 
 grupoDeVariaveisStore.$reset();
-// não foi usada a prop.grupoId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.grupoId) {
-  grupoDeVariaveisStore.buscarItem(route.params?.grupoId);
+// não foi usada a prop.grupoDeVariaveisId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.grupoDeVariaveisId) {
+  grupoDeVariaveisStore.buscarItem({ id: route.params.grupoDeVariaveisId });
 }
 </script>
 

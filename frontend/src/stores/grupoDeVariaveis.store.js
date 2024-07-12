@@ -14,12 +14,12 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
     erro: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}) {
+    async buscarItem(params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel/`, params);
         this.emFoco = {
           ...resposta,
         };
