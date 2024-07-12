@@ -69,7 +69,7 @@ const {
       </div>
       <div class="f1 fb10em mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.numero.spec.label }}
+          {{ schema.fields.status.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.status || '-' }}
@@ -119,7 +119,7 @@ const {
           {{ schema.fields.modalidade_contratacao_id.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.modalidade_contratacao || '-' }}
+          {{ emFoco?.modalidade_contratacao?.nome || emFoco?.modalidade_contratacao || '-' }}
         </dd>
       </div>
       <div class="f1 fb25em mb1">
@@ -228,7 +228,7 @@ const {
           {{ schema.fields.observacoes.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.observacoes }}
+          {{ emFoco?.observacoes || '-' }}
         </dd>
       </div>
     </dl>
