@@ -17,10 +17,6 @@ import { Transform, Type } from 'class-transformer';
 export class CreateContratoAditivoDto {
     @IsInt()
     @Type(() => Number)
-    contrato_id: number;
-
-    @IsInt()
-    @Type(() => Number)
     tipo_aditivo_id: number;
 
     @IsString()
