@@ -257,36 +257,30 @@ async function onSubmit(values) {
 }
 
 async function buscarPessoasSimplificadas() {
-  // if (colaboradores.value[orgao.value]?.length) {
-  //   return;
-  // }
-  console.log('entrou no buscarPessoasSimplificadas');
-
   if (!participantes.value[orgao.value]) {
     const { linhas: linhasParticipantes } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
-      colaborador_grupo_variavel: true,
+      participante_grupo_variavel: true,
       orgao_id: orgao.value,
     });
+
     if (Array.isArray(linhasParticipantes)) {
-      console.log('linhasParticipantes', linhasParticipantes);
       participantes.value[orgao.value] = linhasParticipantes;
     } else {
       throw new Error('Erro ao buscar pessoas simplificadas');
     }
   }
+
   if (!colaboradores.value[orgao.value]) {
     const { linhas: linhasColaboradores } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
-      participante_grupo_variavel: true,
+      colaborador_grupo_variavel: true,
       orgao_id: orgao.value,
     });
 
     if (Array.isArray(linhasColaboradores)) {
-      console.log('linhasColaboradores', linhasColaboradores);
       colaboradores.value[orgao.value] = linhasColaboradores;
     } else {
       throw new Error('Erro ao buscar pessoas simplificadas');
     }
-    console.log('linhasColaboradores', linhasColaboradores);
   }
 }
 
