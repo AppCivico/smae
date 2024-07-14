@@ -30,4 +30,32 @@ export class PrismaHelpers {
             return { ...p, [c.codigo.toLowerCase()]: c.id };
         }, {});
     }
+
+    static async buscaIdsPalavraChave(
+        prisma: PrismaClient,
+        tableName: string,
+        input: string | undefined
+    ): Promise<number[] | undefined> {
+        let palavrasChave: number[] | undefined = undefined;
+        if (input) {
+            const trimmedInput = input.trim();
+            if (trimmedInput.length === 0) return [];
+
+            const escapeSpecialChars = (text: string) => {
+                return text.replace(/[&|!@()\\[\]{}:*?\-\\]/g, '\\$&');
+            };
+
+            const words = trimmedInput
+                .split(' ')
+                .map((word) => `${escapeSpecialChars(word)}:*`)
+                .join(' & ');
+
+            const rows: { id: number }[] = await prisma.$queryRawUnsafe(
+                `SELECT id FROM ${tableName} WHERE vetores_busca @@ to_tsquery('simple', $1)`,
+                words
+            );
+            palavrasChave = rows.map((row) => row.id);
+        }
+        return palavrasChave;
+    }
 }

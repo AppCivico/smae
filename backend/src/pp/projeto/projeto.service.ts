@@ -43,6 +43,7 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
+import { PrismaHelpers } from '../../common/PrismaHelpers';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -3162,12 +3163,6 @@ export class ProjetoService {
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        let palavrasChave: number[] | undefined = undefined;
-        if (input) {
-            const rows: { id: number }[] = await this.prisma
-                .$queryRaw`SELECT id FROM projeto WHERE vetores_busca @@ plainto_tsquery('simple', ${input})`;
-            palavrasChave = rows.map((row) => row.id);
-        }
-        return palavrasChave;
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'projeto', input);
     }
 }

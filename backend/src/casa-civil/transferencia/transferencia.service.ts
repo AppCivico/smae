@@ -21,6 +21,7 @@ import {
     UpdateTransferenciaDto,
 } from './dto/update-transferencia.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
+import { PrismaHelpers } from '../../common/PrismaHelpers';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -848,13 +849,7 @@ export class TransferenciaService {
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        let palavrasChave: number[] | undefined = undefined;
-        if (input) {
-            const rows: { id: number }[] = await this.prisma
-                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ plainto_tsquery('simple', ${input})`;
-            palavrasChave = rows.map((row) => row.id);
-        }
-        return palavrasChave;
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'transferencia', input);
     }
 
     async findOneTransferencia(id: number, user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
