@@ -42,6 +42,7 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
+import { PrismaHelpers } from '../common/PrismaHelpers';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -1263,14 +1264,9 @@ export class VariavelService {
             body,
         };
     }
+
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        let palavrasChave: number[] | undefined = undefined;
-        if (input) {
-            const rows: { id: number }[] = await this.prisma
-                .$queryRaw`SELECT id FROM variavel WHERE vetores_busca @@ plainto_tsquery('simple', ${input})`;
-            palavrasChave = rows.map((row) => row.id);
-        }
-        return palavrasChave;
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'variavel', input);
     }
 
     async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
