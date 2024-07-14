@@ -1,7 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { FonteRelatorio, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -22,6 +22,7 @@ import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { ParlamentaresService } from '../parlamentares/parlamentares.service';
+import { PPObrasService } from '../pp-obras/pp-obras.service';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
@@ -32,7 +33,6 @@ import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } 
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
-import { PPObrasService } from '../pp-obras/pp-obras.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -42,9 +42,6 @@ export const GetTempFileName = function (prefix?: string, suffix?: string) {
 };
 
 const AdmZip = require('adm-zip');
-const XLSX = require('xlsx');
-const { parse } = require('csv-parse');
-const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -94,7 +91,7 @@ export class ReportsService {
             },
         };
 
-        return await service.toFileOutput(dto.parametros, mockContext);
+        return await service.toFileOutput(parametros, mockContext);
     }
 
     async zipFiles(files: FileOutput[]) {
@@ -327,7 +324,7 @@ export class ReportsService {
 
     @Cron('0 * * * *')
     async handleCron() {
-        if (Boolean(process.env['DISABLE_REPORT_CRONTAB'])) return;
+        if (process.env['DISABLE_REPORT_CRONTAB']) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
