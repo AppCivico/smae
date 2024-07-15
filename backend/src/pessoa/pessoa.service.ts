@@ -1428,6 +1428,11 @@ export class PessoaService {
             removePrivilegios('CadastroVariavelCategorica.');
         }
 
+        if (!(sistema == 'PlanoSetorial')) {
+            removePrivilegios('FonteVariavel.');
+            removePrivilegios('AssuntoVariavel.');
+        }
+
         if (sistema == 'CasaCivil') {
             removePrivilegios('CadastroPainelExterno.');
             removePrivilegios('CadastroGrupoPainelExterno.');
