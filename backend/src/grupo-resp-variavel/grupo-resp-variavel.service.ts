@@ -87,7 +87,6 @@ export class GrupoRespVariavelService {
 
                         return {
                             grupo_responsavel_variavel_id: gp.id,
-                            criado_por: user.id,
                             orgao_id: pessoa.orgao_id,
                             pessoa_id: pessoa.pessoa_id,
                         };
@@ -99,7 +98,6 @@ export class GrupoRespVariavelService {
 
                         return {
                             grupo_responsavel_variavel_id: gp.id,
-                            criado_por: user.id,
                             orgao_id: pessoa.orgao_id,
                             pessoa_id: pessoa.pessoa_id,
                         };
