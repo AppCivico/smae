@@ -20,7 +20,7 @@ export class RolesGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const { user } = request;
         const requestUrl = request.originalUrl || request.url;
-        const debug = `requestUrl = ${requestUrl}, x-sistema = ${request.headers['x-sistema'] ?? '-'}`;
+        const debug = `requestUrl = ${requestUrl}, smae-sistemas = ${request.headers['smae-sistemas'] ?? '-'}`;
         if (!user)
             throw new UnauthorizedException(
                 `Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}, ${debug}`
