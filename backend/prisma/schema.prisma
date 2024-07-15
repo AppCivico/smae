@@ -1432,6 +1432,11 @@ model FormulaComposta {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
+    criar_variavel     Boolean   @default(false)
+    variavel_calc_erro String?
+    variavel_calc_id   Int?
+    variavel_calc      Variavel? @relation(fields: [variavel_calc_id], references: [id])
+
     atualizador                           Pessoa?                                 @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador                               Pessoa?                                 @relation("Criador", fields: [criado_por], references: [id])
     removedor                             Pessoa?                                 @relation("Removedor", fields: [removido_por], references: [id])
@@ -1542,6 +1547,11 @@ model Variavel {
     periodo_liberacao     Int[]   @default([]) @db.SmallInt
     dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
 
+    // para variaveis calculadas, há um atraso no preenchimento assim como no indicador
+    recalculando Boolean @default(false)
+    recalculo_erro  String?
+    recalculo_tempo Decimal?
+
     nivel_regionalizacao Int? @ignore // não vamos usar por enquanto
 
     serie_variavel             SerieVariavel[]
@@ -1569,6 +1579,7 @@ model Variavel {
     VariavelAssuntoVariavel          VariavelAssuntoVariavel[]
     VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
     ViewVariavelGlobal               ViewVariavelGlobal[]
+    FormulaComposta                  FormulaComposta[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -4552,6 +4563,7 @@ enum task_type {
     aviso_email_nota
     refresh_transferencia
     refresh_indicador
+    refresh_variavel
     importacao_parlamentar
 }
 

@@ -9,6 +9,7 @@ import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
 import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
 import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
 import { CreateImportacaoParlamentarDto } from './importacao_parlamentar/dto/create-parlamentar.dto';
+import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -27,6 +28,9 @@ export function ParseParams(taskType: task_type, value: any): any {
             break;
         case 'refresh_indicador':
             theClass = CreateRefreshIndicadorDto;
+            break;
+        case 'refresh_variavel':
+            theClass = CreateRefreshVariavelDto;
             break;
         case 'aviso_email':
             theClass = CreateAvisoEmailJobDto;

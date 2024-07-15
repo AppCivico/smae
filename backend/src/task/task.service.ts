@@ -21,6 +21,7 @@ import { AeNotaTaskService } from './aviso_email_nota/ae_nota.service';
 import { RefreshTransferenciaService } from './refresh_transferencia/refresh-transferencia.service';
 import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.service';
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
+import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.service';
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -63,6 +64,9 @@ export class TaskService {
         //
         @Inject(forwardRef(() => RefreshMetaService))
         private readonly refreshMetaService: RefreshMetaService,
+        //
+        @Inject(forwardRef(() => RefreshVariavelService))
+        private readonly refreshVariavel: RefreshVariavelService,
         //
         @Inject(forwardRef(() => RefreshTransferenciaService))
         private readonly refreshTransferenciaService: RefreshTransferenciaService,
@@ -476,6 +480,9 @@ export class TaskService {
                 break;
             case 'importacao_parlamentar':
                 service = this.importacaoParlamentarService;
+                break;
+            case 'refresh_variavel':
+                service = this.refreshVariavel;
                 break;
             default:
                 task_type satisfies never;

@@ -25,3 +25,16 @@ CREATE OR REPLACE FUNCTION periodicidade_intervalo (p "Periodicidade")
 $$;
 
 create index idx_serie_variavel_variavel_id_data_valor on serie_variavel( serie, variavel_id , data_valor);
+
+CREATE OR REPLACE FUNCTION ultimo_periodo_valido(pPeriodicidade "Periodicidade", pAtrasoMeses INT)
+RETURNS DATE
+AS $$
+DECLARE
+    vUltimoPeriodo DATE;
+BEGIN
+    vUltimoPeriodo := date_trunc('month', now() AT TIME ZONE 'America/Sao_Paulo') - (pAtrasoMeses || ' months')::interval;
+    vUltimoPeriodo := vUltimoPeriodo - ((EXTRACT(MONTH FROM vUltimoPeriodo)::integer - 1) % (EXTRACT(MONTH FROM periodicidade_intervalo(pPeriodicidade))::integer)) * '1 month'::interval;
+
+    RETURN vUltimoPeriodo;
+END;
+$$ LANGUAGE plpgsql;

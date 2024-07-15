@@ -453,6 +453,7 @@ export class VariavelService {
                     titulo: `${codigo}.${fc.pdm_codigo_sufixo}`,
                     formula: formula,
                     formula_compilada: formula,
+                    criar_variavel: true,
                     FormulaCompostaVariavel: {
                         create: varEscopo.map((vid) => ({
                             variavel_id: vid,
