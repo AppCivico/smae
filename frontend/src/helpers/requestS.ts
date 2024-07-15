@@ -64,7 +64,7 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
 function userToken(url: RequestInfo | URL): HeadersInit {
   const authStore = useAuthStore();
   const isLoggedIn = !!authStore.token;
-  const isApiUrl = String(url).startsWithimport.meta._API_URL);
+  const isApiUrl = String(url).startsWith(import.meta.env.VITE_API_URL);
   if (isLoggedIn && isApiUrl) {
     const headers: HeadersInit = {
       Authorization: `Bearer ${authStore.token}`,
@@ -74,8 +74,6 @@ function userToken(url: RequestInfo | URL): HeadersInit {
     }
     return headers;
   }
-
-  return {};
   return {};
 }
 
