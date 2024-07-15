@@ -413,13 +413,13 @@ export class PessoaService {
             async (prismaTx: Prisma.TransactionClient) => {
                 const emailExists = updatePessoaDto.email
                     ? await prismaTx.pessoa.count({
-                        where: {
-                            email: updatePessoaDto.email,
-                            NOT: {
-                                id: pessoaId,
-                            },
-                        },
-                    })
+                          where: {
+                              email: updatePessoaDto.email,
+                              NOT: {
+                                  id: pessoaId,
+                              },
+                          },
+                      })
                     : 0;
                 if (emailExists > 0) {
                     throw new HttpException('email| E-mail está em uso em outra conta', 400);
@@ -1296,11 +1296,11 @@ export class PessoaService {
                 removido_em: null,
                 modulos_sistemas: filter.sistemas
                     ? {
-                        hasSome: filter.sistemas,
-                    }
+                          hasSome: filter.sistemas,
+                      }
                     : ehAdmin
-                        ? undefined
-                        : {
+                      ? undefined
+                      : {
                             hasSome: ['SMAE', ...user.modulo_sistema],
                         },
             },
@@ -1393,7 +1393,7 @@ export class PessoaService {
      *
      * 1. **MDO e Projetos**:
      *    - Se o sistema atual não for `MDO` ou `Projetos`, remove os privilégios que começam com `TipoAditivo.`,
- *          `ModalidadeContratacao.`, etc...
+     *          `ModalidadeContratacao.`, etc...
      *      Estes privilégios são específicos para `MDO` e `Projetos`, portanto, não devem aparecer em outros sistemas.
      *
      * 2. **PDM e PlanoSetorial**:
@@ -1433,7 +1433,6 @@ export class PessoaService {
             removePrivilegios('CadastroGrupoPainelExterno.');
             removePrivilegios('SMAE.espectador_de_painel_externo');
         }
-
     }
 
     async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {
