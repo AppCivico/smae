@@ -1441,8 +1441,6 @@ watch(itemParaEdição, (novoValor) => {
       </div>
     </fieldset>
 
-    <!-- PRA-FAZER: inserir campo de etiquetas -->
-
     <div class="mb2">
       <legend class="label mt2 mb1">
         {{ schema.fields.fonte_recursos.spec.label }}
