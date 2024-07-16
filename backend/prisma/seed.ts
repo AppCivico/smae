@@ -16,7 +16,7 @@ import {
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
 
-const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
+const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
     CadastroTipoOrgao: ['Tipos de Órgãos', 'SMAE'],
     CadastroPessoa: ['Pessoas', 'SMAE'],
@@ -91,12 +91,12 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
-    ModalidadeContratacao: ['Modalidade de Contratação', 'SMAE'],
+    ModalidadeContratacao: ['Modalidade de Contratação', ['MDO', 'Projetos']],
 
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
-    TipoAditivo: ['Tipo Aditivo', 'SMAE'],
-    CadastroGrupoVariavel: ['Grupos de Variáveis', 'SMAE'],
+    TipoAditivo: ['Tipo Aditivo', ['MDO', 'Projetos']],
+    CadastroGrupoVariavel: ['Grupos de Variáveis', ['PlanoSetorial']], // depois vai ter o PDM
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -829,6 +829,7 @@ const PerfilAcessoConfig: {
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
+
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
@@ -1172,12 +1173,12 @@ async function atualizar_modulos_e_privilegios() {
                 where: { codigo: codModulo },
                 update: {
                     descricao: modConfig[0],
-                    modulo_sistema: modConfig[1],
+                    modulo_sistema: Array.isArray(modConfig[1]) ? modConfig[1] : [modConfig[1]],
                 },
                 create: {
                     codigo: codModulo,
                     descricao: modConfig[0],
-                    modulo_sistema: modConfig[1],
+                    modulo_sistema: Array.isArray(modConfig[1]) ? modConfig[1] : [modConfig[1]],
                 },
             });
         }
