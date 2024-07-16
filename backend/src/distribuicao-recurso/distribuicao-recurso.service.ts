@@ -824,6 +824,7 @@ export class DistribuicaoRecursoService {
                     },
                     select: {
                         id: true,
+                        nome: true,
                         orgao_gestor: {
                             select: {
                                 id: true,
@@ -848,15 +849,12 @@ export class DistribuicaoRecursoService {
 
                 if (self.orgao_gestor.id != dto.orgao_gestor_id) {
                     if (updated.tarefas.length > 0) {
-                        console.log('======================================');
-                        console.log('Atualizando tarefas');
                         await prismaTx.$executeRaw`
                         UPDATE tarefa SET
-                            tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.orgao_gestor.sigla}),
+                            tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.nome}),
                             orgao_id = ${updated.orgao_gestor.id}
                         WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
                     `;
-                        console.log('======================================');
                     } else {
                         await this._createTarefasOutroOrgao(prismaTx, id, user);
                     }
@@ -1121,6 +1119,7 @@ export class DistribuicaoRecursoService {
             select: {
                 id: true,
                 transferencia_id: true,
+                nome: true,
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -1223,12 +1222,8 @@ export class DistribuicaoRecursoService {
                             tarefa_pai_id: tarefa_pai_id,
                             nivel: 3,
                             numero: numero,
-                            tarefa:
-                                andamentoTarefa.workflow_tarefa.tarefa_fluxo +
-                                ` - ${distribuicaoRecurso.orgao_gestor.sigla}`,
-                            descricao:
-                                andamentoTarefa.workflow_tarefa.tarefa_fluxo +
-                                ` - ${distribuicaoRecurso.orgao_gestor.sigla}`,
+                            tarefa: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
+                            descricao: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
                             distribuicao_recurso_id: distribuicaoRecurso.id,
                             recursos: distribuicaoRecurso.orgao_gestor.sigla,
                             orgao_id: distribuicaoRecurso.orgao_gestor.id,
@@ -1263,79 +1258,6 @@ export class DistribuicaoRecursoService {
             },
         });
         if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
-
-        // Verificando se existe tarefa de nível de fase
-        // que possui dependencia de tarefa de nível de fase, mas cuja fase, tem tarefas.
-        // Caso exista, esta dependência deve ser modificada para apontar para a tarefa de maior número,
-        // Cuja responsabilidade é da casa civil (SERI).
-        const tarefaFasePendenteMudanca = await prismaTx.tarefa.findMany({
-            where: {
-                removido_em: null,
-                nivel: 2,
-                tarefa_cronograma: { transferencia_id: distribuicaoRecurso.transferencia_id },
-                dependencias: {
-                    some: {
-                        tarefas_dependente: {
-                            nivel: 2,
-                            n_filhos_imediatos: { gt: 0 },
-                        },
-                    },
-                },
-            },
-            select: {
-                id: true,
-                numero: true,
-                tarefa_pai_id: true,
-                dependencias: {
-                    select: {
-                        id: true,
-                        tarefas_dependente: {
-                            select: {
-                                tarefa_pai_id: true,
-                                nivel: true,
-                                n_filhos_imediatos: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        for (const tarefaFase of tarefaFasePendenteMudanca) {
-            console.log('\n==================================\n');
-            console.log(tarefaFase);
-            console.log(tarefaFase.dependencias[0].tarefas_dependente);
-            if (tarefaFase.dependencias[0].tarefas_dependente?.n_filhos_imediatos == 0) continue;
-
-            // Buscando tarefa que seja da SERI e tenha o maior número.
-            const novaTarefaDependente = await prismaTx.tarefa.findFirst({
-                orderBy: { numero: 'desc' },
-                where: {
-                    tarefa_pai: {
-                        tarefa_pai_id: tarefaFase.tarefa_pai_id,
-                        numero: tarefaFase.numero - 1,
-                    },
-                    nivel: 3,
-                    orgao_id: orgaoCasaCivil.id,
-                    removido_em: null,
-                },
-                select: {
-                    id: true,
-                    nivel: true,
-                    tarefa_pai_id: true,
-                },
-            });
-            if (!novaTarefaDependente) throw new Error('Erro ao encontrar nova tarefa dependente.');
-            console.log(novaTarefaDependente);
-            console.log('\n==================================\n');
-
-            operations.push(
-                prismaTx.tarefaDependente.update({
-                    where: { id: tarefaFase.dependencias[0].id },
-                    data: { dependencia_tarefa_id: novaTarefaDependente.id },
-                })
-            );
-        }
 
         await Promise.all(operations);
         await this._validarTopologia(prismaTx, distribuicao_id, user);
