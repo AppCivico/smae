@@ -288,9 +288,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['ProjetoTag.remover', 'Remover Tag'],
     ],
     ProjetoTagMDO: [
-        ['ProjetoTagMDO.inserir', 'Inserir Tag'],
-        ['ProjetoTagMDO.editar', 'Editar Tag'],
-        ['ProjetoTagMDO.remover', 'Remover Tag'],
+        ['ProjetoTagMDO.inserir', 'Inserir Tag de MdO'],
+        ['ProjetoTagMDO.editar', 'Editar Tag de MdO'],
+        ['ProjetoTagMDO.remover', 'Remover Tag de MdO'],
     ],
     CadastroMeta: [
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
