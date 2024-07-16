@@ -22,6 +22,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+/* removido
 CREATE OR REPLACE FUNCTION update_modulos_sistemas_priv_updated()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -44,8 +45,35 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;*/
 
+
+CREATE OR REPLACE FUNCTION f_update_modulos_sistemas()
+    RETURNS varchar
+    AS $$
+
+BEGIN
+    WITH updated_modulos AS (
+        SELECT
+            pp.perfil_acesso_id,
+            ARRAY_AGG(DISTINCT ms ORDER BY ms) AS new_modulos_sistemas_array
+        FROM Perfil_Privilegio pp
+        JOIN Privilegio p ON p.id = pp.privilegio_id
+        JOIN Privilegio_Modulo pm ON pm.id = p.modulo_id
+        CROSS JOIN LATERAL unnest(pm.modulo_sistema) AS ms
+        GROUP BY pp.perfil_acesso_id
+    )
+    UPDATE Perfil_Acesso pa
+    SET modulos_sistemas = um.new_modulos_sistemas_array
+    FROM updated_modulos um
+    WHERE pa.id = um.perfil_acesso_id
+    AND pa.modulos_sistemas IS DISTINCT FROM um.new_modulos_sistemas_array;
+
+    --
+    RETURN '';
+END
+$$
+LANGUAGE plpgsql;
 
 
 CREATE TRIGGER perfil_privilegio_trigger
@@ -62,3 +90,6 @@ WHEN (
     (OLD.modulo_id IS DISTINCT FROM NEW.modulo_id)
 )
 EXECUTE FUNCTION update_modulos_sistemas_priv_updated();
+
+drop trigger if exists privilegio_trigger_update on privilegio;
+drop FUNCTION if exists update_modulos_sistemas_priv_updated();
