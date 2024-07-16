@@ -1349,31 +1349,28 @@ export class PessoaService {
 
         const filterModulosJson = JSON.stringify(filterModulos);
 
-        const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`with filter_modulos as (
-                select array_agg(value::text)::"ModuloSistema"[] as modulos
+        const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
+            WITH filter_modulos AS (
+                SELECT array_agg(value::text)::"ModuloSistema"[] AS modulos
                 from jsonb_array_elements_text(${filterModulosJson}::jsonb)
             ),
-            perms as (
-                select p.codigo as cod_priv, m.codigo as cod_modulos, m.modulo_sistema
-                from pessoa_perfil pp
-                join perfil_acesso pa on pp.perfil_acesso_id = pa.id
-                join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
-                join privilegio p on p.id = priv.privilegio_id
-                join privilegio_modulo m on p.modulo_id = m.id
-                join pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
-                join filter_modulos fm on m.modulo_sistema && fm.modulos
-                where pp.pessoa_id = ${pessoaId}
-                AND pa.removido_em IS null
-            ),
-            sistemas_exploded as (
-                select unnest(array_agg(distinct modulo_sistema)) as modulo_sistema
-                from perms
+            perms AS (
+                SELECT p.codigo AS cod_priv, m.codigo AS cod_modulos, unnest(m.modulo_sistema) AS modulo_sistema
+                FROM pessoa_perfil pp
+                JOIN perfil_acesso pa ON pp.perfil_acesso_id = pa.id
+                JOIN perfil_privilegio priv ON priv.perfil_acesso_id = pa.id
+                JOIN privilegio p ON p.id = priv.privilegio_id
+                JOIN privilegio_modulo m ON p.modulo_id = m.id
+                JOIN pessoa pessoa ON pessoa.id = pp.pessoa_id AND pessoa.desativado = false
+                JOIN filter_modulos fm ON m.modulo_sistema && fm.modulos
+                WHERE pp.pessoa_id = ${pessoaId}
+                AND pa.removido_em IS NULL
             )
-            select
-                array_agg(distinct cod_priv) as privilegios,
-                array_agg(distinct cod_modulos) as modulos,
-                array_agg(distinct sistemas_exploded.modulo_sistema) as sistemas
-            from perms, sistemas_exploded;
+            SELECT
+                array_agg(DISTINCT cod_priv) AS privilegios,
+                array_agg(DISTINCT cod_modulos) AS modulos,
+                array_agg(DISTINCT modulo_sistema) AS sistemas
+            FROM perms;
         `;
         if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
