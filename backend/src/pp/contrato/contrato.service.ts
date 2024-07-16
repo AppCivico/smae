@@ -43,6 +43,7 @@ export class ContratoService {
                         observacoes: dto.observacoes,
                         data_assinatura: dto.data_assinatura,
                         data_inicio: dto.data_inicio,
+                        data_termino: dto.data_termino,
                         prazo_numero: dto.prazo_numero,
                         prazo_unidade: dto.prazo_unidade,
                         data_base_mes: dto.data_base_mes,
