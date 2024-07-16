@@ -32,7 +32,22 @@
         <td>{{ item.titulo }}</td>
         <td>{{ item.orgao.sigla }}</td>
         <td>{{ item.perfil }}</td>
-        <td>{{ item.participantes }}</td>
+        <td
+          v-if="item.participantes.length"
+        >
+          <span
+            v-for="(participante, index) in item.participantes"
+            :key="index"
+          >
+            {{ participante?.nome_exibicao }}
+          </span>
+        </td>
+        <td
+          v-else
+          class="tc"
+        >
+          -
+        </td>
         <td>
           <router-link
             :to="{ name: 'grupoDeVariaveisEditar', params: { grupoDeVariaveisId: item.id } }"
