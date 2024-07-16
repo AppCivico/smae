@@ -1,4 +1,6 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
@@ -8,8 +10,6 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
@@ -130,9 +130,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </div>
 
     <hr class="mb1 f1">
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
+    <dl
+      dl
+      class="flex g2 flexwrap"
+    >
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.grupo_tematico.spec.label }}
         </dt>
@@ -140,10 +142,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           class="t13"
           v-html="emFoco?.grupo_tematico?.nome || '-'"
         />
-      </dl>
-    </div>
-    <div class="flex g2">
-      <dl class="f1 mb1">
+      </div>
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.tipo_intervencao.spec.label }}
         </dt>
@@ -151,10 +151,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           class="t13"
           v-html="emFoco?.tipo_intervencao?.nome || '-'"
         />
-      </dl>
-    </div>
-    <div class="flex g2">
-      <dl class="f1 mb1">
+      </div>
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.equipamento.spec.label }}
         </dt>
@@ -162,20 +160,9 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           class="t13"
           v-html="emFoco?.equipamento?.nome || '-'"
         />
-      </dl>
-    </div>
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.projeto_etapa.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.projeto_etapa?.nome || '-'"
-        />
-      </dl>
-    </div>
+      </div>
+    </dl>
+    <hr class="mb1 f1">
 
     <div class="flex g2">
       <dl class="f1 mb1">
