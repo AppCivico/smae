@@ -170,6 +170,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
             <td style="white-space: nowrap; text-align: right;">
               <template
                 v-if="temPermissãoPara('CadastroPessoa.administrador') ||
+                  temPermissãoPara('CadastroPessoa.administrador.MDO') ||
                   (perm?.CadastroPessoa?.editar && user.orgao_id
                     == authStore.user.orgao_id)"
               >
