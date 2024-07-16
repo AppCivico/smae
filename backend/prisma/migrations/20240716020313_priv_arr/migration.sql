@@ -1,3 +1,8 @@
+
+ALTER TABLE "privilegio_modulo" DROP COLUMN "modulo_sistema";
+
+ALTER TABLE "privilegio_modulo" ADD COLUMN "modulo_sistema" "ModuloSistema"[] DEFAULT ARRAY['SMAE']::"ModuloSistema"[];
+
 CREATE OR REPLACE FUNCTION update_modulos_sistemas()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -41,19 +46,3 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-
-CREATE TRIGGER perfil_privilegio_trigger
-AFTER INSERT OR UPDATE
-ON Perfil_Privilegio
-FOR EACH ROW
-EXECUTE FUNCTION update_modulos_sistemas();
-
-CREATE TRIGGER privilegio_trigger_update
-AFTER UPDATE
-ON privilegio
-FOR EACH ROW
-WHEN (
-    (OLD.modulo_id IS DISTINCT FROM NEW.modulo_id)
-)
-EXECUTE FUNCTION update_modulos_sistemas_priv_updated();
