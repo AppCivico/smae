@@ -767,7 +767,7 @@ const PerfilAcessoConfig: {
     },
     {
         nome: 'Orçamento - MdO',
-        descricao: 'Pode criar orçamento para os projetos de obra que tem acesso.',
+        descricao: 'Pode criar orçamento para as obras que tem acesso.',
         privilegios: ['ProjetoMDO.orcamento'],
     },
     {
@@ -893,7 +893,7 @@ const PerfilAcessoConfig: {
     {
         nome: 'Colaborador de obra no órgão',
         descricao:
-            'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+            'Pode ser escolhido como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
             'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
             'MDO.colaborador_de_projeto',
@@ -921,7 +921,7 @@ const PerfilAcessoConfig: {
     // TODO Observador de obras
     {
         nome: atualizarNomePerfil('Observador de obra', []),
-        descricao: 'Pode participar como leitor em portfólio e projetos',
+        descricao: 'Pode participar como leitor em portfólio e obras',
         privilegios: ['MDO.espectador_de_projeto'],
     },
     {

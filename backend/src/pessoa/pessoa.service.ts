@@ -1328,7 +1328,7 @@ export class PessoaService {
         });
         if (ehAdmin) return dadosRetorno;
 
-        const sistema = user.assertOneModuloSistema('buscar', 'pérfil de acesso');
+        const sistema = user.assertOneModuloSistema('buscar', 'perfil de acesso');
 
         // exceto a linha de administrador, que não pode ser editada se você não for administrador
         for (const r of dadosRetorno) {
