@@ -250,18 +250,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </dl>
     </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.tags.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.tags?.map((r) => r.descricao).join(', ') || '-'"
-        />
-      </dl>
-    </div>
-
     <hr
       v-if="emFoco?.geolocalizacao?.length"
       class="mb1 f1"
