@@ -20,9 +20,7 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel/`, params);
-        this.emFoco = {
-          ...resposta,
-        };
+        this.emFoco = resposta?.linhas?.[0] || null;
       } catch (erro) {
         this.erro = erro;
       }
@@ -82,6 +80,8 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+        participantes: emFoco?.participantes?.map((participante) => participante.id) || [],
+        colaboradores: emFoco?.colaboradores?.map((colaborador) => colaborador.id) || [],
       };
     },
   },

@@ -4,14 +4,12 @@
   <div class="flex spacebetween center mb2">
     <h1> {{ titulo || "Grupo de variáveis" }}</h1>
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
 
-  <Form
-    v-slot="{ errors, isSubmitting }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição?.linhas?.[0]"
-    @submit="onSubmit"
+  <form
+    @submit.prevent="onSubmit"
   >
     <div class="f1">
       <LabelFromYup
@@ -101,9 +99,10 @@
           :schema="schema"
         />
         <AutocompleteField
+          id="colaboradores"
           name="colaboradores"
-          :controlador="{ busca: '', participantes: carga.colaboradores || [] }"
-          :grupo="colaboradores[orgao]"
+          :controlador="{ busca: '', participantes: carga?.colaboradores || [] }"
+          :grupo="colaboradores[orgao] || []"
           label="nome_exibicao"
         />
         <ErrorMessage
@@ -169,7 +168,6 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage,
   Field,
-  Form,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
@@ -221,23 +219,22 @@ const {
 
 const authStore = useAuthStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
+const formulárioSujo = useIsFormDirty();
 
-async function onSubmit(values) {
+const onSubmit = handleSubmit.withControlled(async () => {
   try {
     let response;
     const msg = props.grupoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const dataToSend = { ...values };
-
     if (route.params?.grupoDeVariaveisId) {
       response = await grupoDeVariaveisStore.salvarItem(
-        dataToSend,
+        carga,
         route.params.grupoDeVariaveisId,
       );
     } else {
-      response = await grupoDeVariaveisStore.salvarItem(dataToSend);
+      response = await grupoDeVariaveisStore.salvarItem(carga);
     }
     if (response) {
       alertStore.success(msg);
@@ -247,7 +244,7 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function buscarPessoasSimplificadas() {
   if (!participantes.value[orgao.value]) {
