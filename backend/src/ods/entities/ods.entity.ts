@@ -1,4 +1,4 @@
-export class Ods {
+export class OdsDto {
     descricao: string;
     titulo: string;
     id: number;
