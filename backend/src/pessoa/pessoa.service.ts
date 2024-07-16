@@ -25,7 +25,7 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
 const BCRYPT_ROUNDS = 10;
-
+const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['CadastroPessoa.administrador', 'CadastroPessoa.administrador.MDO'];
 @Injectable()
 export class PessoaService {
     private readonly logger = new Logger(PessoaService.name);
@@ -165,7 +165,7 @@ export class PessoaService {
 
     private async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
         if (createPessoaDto.orgao_id === undefined) {
-            if (user.hasSomeRoles(['CadastroPessoa.administrador']) === false) {
+            if (user.hasSomeRoles(LISTA_PRIV_ADMIN) === false) {
                 throw new ForbiddenException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
             }
         }
@@ -173,7 +173,7 @@ export class PessoaService {
         if (
             createPessoaDto.orgao_id &&
             user.orgao_id &&
-            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
+            user.hasSomeRoles(LISTA_PRIV_ADMIN) === false &&
             Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
@@ -185,7 +185,7 @@ export class PessoaService {
     }
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
-        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
         if (user.hasSomeRoles(['SMAE.superadmin']) == false && updatePessoaDto.perfil_acesso_ids) {
             const oldPessoaPerfis = (
                 await this.prisma.pessoaPerfil.findMany({
@@ -1055,7 +1055,7 @@ export class PessoaService {
     }
 
     private async buscaPerfisVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
-        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
         if (ehAdmin) {
             return await this.listaPerfilAcessoIds();
@@ -1283,7 +1283,7 @@ export class PessoaService {
     }
 
     async listaPerfilAcessoParaPessoas(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
-        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
         if (filter.sistemas && !ehAdmin)
             throw new BadRequestException(
@@ -1334,7 +1334,7 @@ export class PessoaService {
         for (const r of dadosRetorno) {
             r.modulos_sistemas = [sistema];
 
-            if (r.perfil_privilegio.some((v) => v.privilegio.codigo == 'CadastroPessoa.administrador'))
+            if (r.perfil_privilegio.some((v) => LISTA_PRIV_ADMIN.includes(v.privilegio.codigo as ListaDePrivilegios)))
                 r.pode_editar = false;
         }
 

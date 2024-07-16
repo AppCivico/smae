@@ -212,6 +212,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
             'CadastroPessoa.administrador',
             'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
         ],
+        [
+            'CadastroPessoa.administrador.MDO',
+            'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
+        ],
     ],
     CadastroUnidadeMedida: [
         ['CadastroUnidadeMedida.inserir', 'Inserir Unidade de Medida'],
@@ -831,7 +835,7 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador do Módulo de Obras',
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
-        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador'],
+        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador.MDO'],
     },
     {
         nome: 'Gestor de Obras no Órgão',
