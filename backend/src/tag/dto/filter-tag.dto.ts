@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
+import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 
 export class FilterTagDto {
     /**
@@ -8,8 +9,8 @@ export class FilterTagDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| id' })
-    @Type(() => Number)
-    id?: number;
+    @Transform(NumberArrayTransformOrUndef)
+    id?: number[];
 
     /**
      * Filtrar por pdm_id?

@@ -52,7 +52,7 @@ export class TagService {
     async findAll(tipo: TipoPdm, filters: FilterTagDto): Promise<TagDto[]> {
         const listActive = await this.prisma.tag.findMany({
             where: {
-                id: filters.id,
+                id: filters.id ? { in: filters.id } : undefined,
                 pdm_id: filters.pdm_id,
                 pdm: { id: filters.pdm_id, tipo: tipo },
                 removido_em: null,
