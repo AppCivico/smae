@@ -212,10 +212,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
             'CadastroPessoa.administrador',
             'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
         ],
-        [
-            'CadastroPessoa.administrador.MDO',
-            'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
-        ],
     ],
     CadastroUnidadeMedida: [
         ['CadastroUnidadeMedida.inserir', 'Inserir Unidade de Medida'],
@@ -499,6 +495,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['MDO.espectador_de_projeto', 'Participante de Grupos de Portfólio de MdO'],
         ['MDO.gestor_de_projeto', 'Gestor de Projeto de MdO'],
         ['MDO.colaborador_de_projeto', 'Colaborador de projeto de MdO'],
+        [
+            'CadastroPessoa.administrador.MDO',
+            'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
+        ],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', 'Pode ser designado como Coordenador Responsável na CP'],
