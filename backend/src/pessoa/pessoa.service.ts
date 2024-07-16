@@ -1376,10 +1376,11 @@ export class PessoaService {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
-        if (filterModulos.length == 2) {
-            const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
-            this.filtraPrivilegiosSMAE(sistema, ret);
-        }
+        //if (filterModulos.length == 2) {
+        //const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
+        //this.filtraPrivilegiosSMAE(sistema, ret);
+        //}
+        if (!ret.modulos.includes('SMAE')) ret.modulos.push('SMAE');
         return ret;
     }
 
