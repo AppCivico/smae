@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsArray, IsInt, IsOptional } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 
 export class FilterTagDto {
@@ -8,7 +8,8 @@ export class FilterTagDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsArray()
+    @IsInt({ message: '$property| id' , each: true })
     @Transform(NumberArrayTransformOrUndef)
     id?: number[];
 
