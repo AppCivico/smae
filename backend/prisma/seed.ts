@@ -1010,6 +1010,8 @@ async function main() {
 
         await populateEleicao();
         await populateDistribuicaoStatusBase();
+
+        await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
     });
 }
 
