@@ -1222,7 +1222,7 @@ async function upsert_privilegios(
     if (!priv || priv.nome !== nome || priv.modulo_id !== moduloId) {
         return prisma.privilegio.upsert({
             where: { codigo: codigo },
-            update: { nome: nome },
+            update: { nome: nome, modulo_id: moduloId },
             create: {
                 nome: nome,
                 modulo_id: moduloId,
