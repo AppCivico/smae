@@ -286,7 +286,7 @@ export default [
         meta: {
           título: 'Grupos de Variáveis',
           rotaPrescindeDeChave: true,
-          // limitarÀsPermissões: '',
+          limitarÀsPermissões: 'CadastroGrupoVariavel.',
           // rotasParaMenuSecundário: [
           // ],
 
