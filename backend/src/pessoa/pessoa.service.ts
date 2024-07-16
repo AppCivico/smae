@@ -1357,7 +1357,7 @@ export class PessoaService {
                 join privilegio_modulo m on p.modulo_id = m.id
                 join pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
                 where pp.pessoa_id = ${pessoaId}
-                AND m.modulo_sistema = ANY(${filterModulos}::"ModuloSistema"[])
+                AND m.modulo_sistema && ${filterModulos}::"ModuloSistema"[]
                 AND pa.removido_em IS null
             )
             select

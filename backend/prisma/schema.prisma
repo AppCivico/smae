@@ -477,7 +477,7 @@ model PrivilegioModulo {
     codigo         String        @unique
     descricao      String
     privilegio     Privilegio[]
-    modulo_sistema ModuloSistema @default(SMAE)
+    modulo_sistema ModuloSistema[] @default([SMAE])
 
     @@map("privilegio_modulo")
 }
