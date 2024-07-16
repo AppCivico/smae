@@ -773,34 +773,12 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador de Portfólio',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: [
-            'Projeto.administrar_portfolios',
-            'CadastroGrupoPortfolio.administrador',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-        ],
+        privilegios: ['Projeto.administrar_portfolios', 'CadastroGrupoPortfolio.administrador'],
     },
     {
         nome: 'Administrador de Portfólio do MdO',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: [
-            'ProjetoMDO.administrar_portfolios',
-            'CadastroGrupoPortfolioMDO.administrador',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-            // ...
-        ],
+        privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
     },
     {
         nome: 'Administrador de Grupo de Variáveis',
@@ -829,7 +807,14 @@ const PerfilAcessoConfig: {
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
+        ],
+    },
 
+    {
+        nome: 'Gestor de Cadastros Básicos de Projetos e Obras',
+        descricao:
+            'Responsável por gerenciar os cadastros básicos de projetos e obras, incluindo a criação, edição e remoção de etapas, modalidades de contratação e tipos de aditivo. Este perfil garante a consistência e organização das informações essenciais para o gerenciamento de projetos e obras.',
+        privilegios: [
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
@@ -846,18 +831,7 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador do Módulo de Obras',
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
-        privilegios: [
-            'ProjetoMDO.administrador',
-            'CadastroPessoa.administrador',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-        ],
+        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador'],
     },
     {
         nome: 'Gestor de Obras no Órgão',
@@ -876,16 +850,10 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
+
             'ProjetoProgramaMDO.inserir',
             'ProjetoProgramaMDO.editar',
             'ProjetoProgramaMDO.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
         ],
     },
     {
@@ -895,16 +863,6 @@ const PerfilAcessoConfig: {
             'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
-            'CadastroProjetoEtapa.inserir',
-            'CadastroProjetoEtapa.editar',
-            'CadastroProjetoEtapa.remover',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
         ],
     },
     {
@@ -920,14 +878,6 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
         ],
     },
     {
@@ -938,9 +888,6 @@ const PerfilAcessoConfig: {
             'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
-            'CadastroProjetoEtapa.inserir',
-            'CadastroProjetoEtapa.editar',
-            'CadastroProjetoEtapa.remover',
         ],
     },
     {
