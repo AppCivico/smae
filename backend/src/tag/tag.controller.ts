@@ -47,7 +47,7 @@ export class TagController {
     @ApiBearerAuth('access-token')
     @Get(':id')
     async findOne(@Param() params: FindOneParams): Promise<TagDto> {
-        const linhas = await this.tagService.findAll(this.tipoPdm, { id: +params.id });
+        const linhas = await this.tagService.findAll(this.tipoPdm, { id: [+params.id] });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
     }
@@ -96,7 +96,7 @@ export class TagPSController {
     @ApiBearerAuth('access-token')
     @Get(':id')
     async findOne(@Param() params: FindOneParams): Promise<TagDto> {
-        const linhas = await this.tagService.findAll(this.tipoPdm, { id: +params.id });
+        const linhas = await this.tagService.findAll(this.tipoPdm, { id: [+params.id] });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
     }
