@@ -143,9 +143,10 @@ const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaborador
     return acc;
   }, {}));
 
-const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioMdoStore
-  .portfoliosPorId?.[idDoPortfólio]?.orgaos
-  .filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
+const orgaosDisponiveisPorPortolio = computed(() => portfolioMdoStore.lista.reduce((acc, cur) => {
+  acc[cur.id] = cur.orgaos.filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
+  return acc;
+}, {}));
 
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
@@ -430,10 +431,10 @@ watch(itemParaEdição, (novoValor) => {
             v-for="item in portfolioMdoStore.lista"
             :key="item.id"
             :value="item.id"
-            :disabled="!órgãosDisponíveisNessePortfolio(item.id)?.length"
+            :disabled="!orgaosDisponiveisPorPortolio[item.id]?.length"
           >
             {{ item.titulo }}
-            <template v-if="!órgãosDisponíveisNessePortfolio(item.id)?.length">
+            <template v-if="!orgaosDisponiveisPorPortolio[item.id]?.length">
               (órgão sem responsáveis cadastrados)
             </template>
           </option>
@@ -1201,15 +1202,14 @@ watch(itemParaEdição, (novoValor) => {
             :class="{
               error: errors.orgao_gestor_id,
             }"
-            :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
+            :disabled="!orgaosDisponiveisPorPortolio[values.portfolio_id]?.length"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
               Selecionar
             </option>
             <option
-              v-for="item in
-                órgãosDisponíveisNessePortfolio(values.portfolio_id) || []"
+              v-for="item in orgaosDisponiveisPorPortolio[values.portfolio_id] || []"
               :key="item.id"
               :value="item.id"
               :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
