@@ -55,7 +55,6 @@ export class TagService {
                 id: filters.id,
                 pdm_id: filters.pdm_id,
                 pdm: { id: filters.pdm_id, tipo: tipo },
-
                 removido_em: null,
             },
             select: {
@@ -65,6 +64,9 @@ export class TagService {
                 ods_id: true,
                 icone: true,
                 arquivo_icone_id: true,
+                ods: {
+                    select: { id: true, titulo: true },
+                },
             },
             orderBy: { descricao: 'asc' },
         });
