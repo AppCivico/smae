@@ -115,6 +115,14 @@ const {
           {{ emFoco?.modalidade_contratacao?.nome || emFoco?.modalidade_contratacao || '-' }}
         </dd>
       </div>
+      <div class="f1 fb25em mbi">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_termino.spec.label }}
+        </dt>
+        <dd>
+          {{ emFoco?.data_termino ? dateToShortDate(emFoco.data_termino) : '-' }}
+        </dd>
+      </div>
       <div class="f1 fb25em mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.fontes_recurso.spec.label }}
