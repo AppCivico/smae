@@ -91,14 +91,6 @@ const {
           </ul>
         </dd>
       </div>
-      <div class="f1 fb15em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.status.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.status || '-' }}
-        </dd>
-      </div>
       <div class="f1 fb10em mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.orgao_id.spec.label }}
