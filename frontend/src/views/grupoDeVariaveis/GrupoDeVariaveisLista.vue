@@ -19,7 +19,7 @@
         <th> Nome </th>
         <th> Órgão</th>
         <th> Tipo de grupo </th>
-        <th> Pessoas </th>
+        <th> Participantes </th>
         <th />
         <th />
       </tr>
