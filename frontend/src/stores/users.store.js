@@ -151,6 +151,17 @@ export const useUsersStore = defineStore({
     },
   },
   getters: {
+    // evitando o Endpoint simplificado para manter o máximo do comportamento legado
+    pessoasPorOrgao: ({ users }) => (Array.isArray(users)
+      ? users.reduce((acc, cur) => {
+        if (!acc[cur.orgao_id]) {
+          acc[cur.orgao_id] = [];
+        }
+        acc[cur.orgao_id].push(cur);
+
+        return acc;
+      }, {})
+      : {}),
     perfisPorId: (({ accessProfiles }) => (Array
       .isArray(accessProfiles)
       ? accessProfiles.reduce((acc, cur) => {
