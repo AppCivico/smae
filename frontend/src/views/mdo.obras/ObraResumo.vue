@@ -46,6 +46,11 @@ const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizaca
   }, {})
   : {}));
 
+const exibeBloco = computed(() => emFoco?.mdo_n_familias_beneficiadas
+         || emFoco?.mdo_n_unidades_habitacionais
+         || emFoco?.programa?.nome
+         || emFoco?.programa);
+
 defineProps({
   obraId: {
     type: Number,
@@ -131,7 +136,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <hr class="mb1 f1">
     <dl
-      dl
       class="flex g2 flexwrap"
     >
       <div class="f1 mb1">
@@ -176,41 +180,43 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </dl>
     </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.mdo_n_familias_beneficiadas.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.mdo_n_familias_beneficiadas || '-'"
-        />
-      </dl>
-    </div>
+    <div v-if=" exibeBloco">
+      <hr class="mb1 f1">
+      <dl
+        class="flex g2 flexwrap"
+      >
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.mdo_n_familias_beneficiadas.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+            v-html="emFoco?.mdo_n_familias_beneficiadas || '-'"
+          />
+        </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.mdo_n_unidades_habitacionais.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.mdo_n_unidades_habitacionais || '-'"
-        />
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.mdo_n_unidades_habitacionais.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+            v-html="emFoco?.mdo_n_unidades_habitacionais || '-'"
+          />
+        </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.programa_id.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+          >
+            {{ emFoco?.programa?.nome || emFoco?.programa || '-' }}
+          </dd>
+        </div>
       </dl>
-    </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.programa_id.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-        >
-          {{ emFoco?.programa?.nome || emFoco?.programa || '-' }}
-        </dd>
-      </dl>
+      <hr class="mb1 f1">
     </div>
 
     <div class="flex g2">
