@@ -305,6 +305,8 @@ function iniciar() {
   if (emFoco.value?.portfolio_id) {
     observadoresStore.buscarTudo();
   }
+  // Aqui por causa de alguma falha de reatividade apenas nesse store
+  ÓrgãosStore.$reset();
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
