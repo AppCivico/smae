@@ -459,8 +459,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
-        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
-        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
     ],
     CadastroGrupoVariavel: [
@@ -514,6 +512,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PS.tecnico_cp', 'Plano Setorial - Técnico CP'],
         ['PS.admin_cp', 'Plano Setorial - Administrador CP'],
         ['PS.ponto_focal', 'Plano Setorial - Ponto Focal'],
+        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
 };
 
