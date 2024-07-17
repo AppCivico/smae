@@ -171,6 +171,18 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.projeto_etapa.spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.projeto_etapa.descricao || '-'"
+        />
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.mdo_detalhamento.spec.label }}
         </dt>
         <dd
