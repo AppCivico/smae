@@ -1,7 +1,8 @@
+import { TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
-import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 
 export class IdDesc {
     id: number;
@@ -56,10 +57,12 @@ export class MetaPdmDto {
     atividade_id?: number;
     atividade_codigo?: string;
     atividade_descricao?: string;
+    tipo: TipoPdm;
 }
 
 export class RelacionadosDTO {
-    metas: MetaPdmDto[];
+    pdm_metas: MetaPdmDto[];
+    ps_metas: MetaPdmDto[];
     obras: IdCodNomeDto[];
     projetos: IdCodNomeDto[];
 }

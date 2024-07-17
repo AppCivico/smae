@@ -223,6 +223,7 @@ export class CronogramaEtapaService {
                 },
             },
             orderBy: [{ ordem: 'asc' }],
+            relationLoadStrategy: 'query',
         });
 
         const ret: CECronogramaEtapaDto[] = [];

@@ -44,7 +44,7 @@ export class ProjetoProxyPdmMetasController {
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
-        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
+        return { linhas: await this.metaService.buscaMetasIniciativaAtividades('PDM', ids) };
     }
 }
 
@@ -86,6 +86,6 @@ export class ProjetoMDOProxyPdmMetasController {
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
-        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
+        return { linhas: await this.metaService.buscaMetasIniciativaAtividades('PDM', ids) };
     }
 }

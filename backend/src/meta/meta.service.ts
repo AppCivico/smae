@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -38,7 +38,7 @@ export class MetaService {
         private readonly geolocService: GeoLocService
     ) {}
 
-    async create(dto: CreateMetaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdm, dto: CreateMetaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
@@ -214,7 +214,7 @@ export class MetaService {
         return arr;
     }
 
-    private async getMetasPermissionSet(user: PessoaFromJwt | undefined, isBi: boolean) {
+    private async getMetasPermissionSet(tipo: TipoPdm, user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
@@ -231,11 +231,11 @@ export class MetaService {
         // depois o busca a serie do painel-conteúdo correspondente
 
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            if (user.hasSomeRoles(['PDM.tecnico_cp'])) {
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
+            if (user.hasSomeRoles([tipo == 'PDM' ? 'PDM.tecnico_cp' : 'PS.tecnico_cp'])) {
                 // logo, é um tecnico_cp
                 filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            } else if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+            } else if (user.hasSomeRoles([tipo == 'PDM' ? 'PDM.ponto_focal' : 'PS.ponto_focal'])) {
                 filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
             }
         }
@@ -251,10 +251,11 @@ export class MetaService {
     }
 
     async findAllIds(
+        tipo: TipoPdm,
         user: PessoaFromJwt | undefined,
         pdm_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet = await this.getMetasPermissionSet(user, true);
+        const permissionsSet = await this.getMetasPermissionSet(tipo, user, true);
 
         return await this.prisma.meta.findMany({
             where: {
@@ -272,8 +273,8 @@ export class MetaService {
         });
     }
 
-    async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
-        const permissionsSet = await this.getMetasPermissionSet(user, false);
+    async findAll(tipo: TipoPdm, filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
+        const permissionsSet = await this.getMetasPermissionSet(tipo, user, false);
 
         const listActive = await this.prisma.meta.findMany({
             where: {
@@ -286,6 +287,7 @@ export class MetaService {
                           ]
                         : undefined,
                 pdm_id: filters?.pdm_id,
+                pdm: { tipo, id: filters?.pdm_id },
                 id: filters?.id,
             },
             orderBy: [{ codigo: 'asc' }],
@@ -396,6 +398,9 @@ export class MetaService {
                 });
             }
 
+            // TODO: revisar isso aqui pra virar uma trigger, fazer um findAll no cronograma durante
+            // a listagem de metas é muito custoso, por isso foi desligado, mas mesmo em findById é custoso
+            // pois a parte de cronograma é muito grande, cheia de join's
             let metaCronograma: CronogramaAtrasoGrau | null = null;
             if (dbMeta.cronograma && filters?.id !== undefined) {
                 const cronograma = dbMeta.cronograma[0];
@@ -436,15 +441,13 @@ export class MetaService {
         return ret;
     }
 
-    async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+    async update(tipo: TipoPdm, id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
+        if (!user.hasSomeRoles([tipo ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
+            // TODO: ver comentário no método remove
             await user.assertHasMetaRespAccessNaCp(id, this.prisma);
         }
 
-        const loadMeta = await this.prisma.meta.findFirstOrThrow({
-            where: { id, removido_em: null },
-            select: { pdm_id: true },
-        });
+        const loadMeta = await this.loadMetaOrThrow(id, tipo);
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
@@ -546,6 +549,13 @@ export class MetaService {
         return { id };
     }
 
+    private async loadMetaOrThrow(id: number, tipo: TipoPdm) {
+        return await this.prisma.meta.findFirstOrThrow({
+            where: { id, removido_em: null, pdm: { tipo } },
+            select: { pdm_id: true, id: true },
+        });
+    }
+
     private async checkHasOrgaosParticipantesChildren(meta_id: number, orgaos_participantes: MetaOrgaoParticipante[]) {
         const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
 
@@ -637,32 +647,36 @@ export class MetaService {
         }
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             // logo, só pode editar se for responsável
+            // TODO: no Plano Setorial, isso aqui provavelmente ta erradíssimo ou faltando algo
             await user.assertHasMetaRespAccessNaCp(id, this.prisma);
         }
 
+        const meta = await this.loadMetaOrThrow(id, tipo);
+
+        const now = new Date(Date.now());
         return await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
-                const removed = await prisma.meta.updateMany({
-                    where: { id: id, removido_em: null },
+            async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+                const removed = await prismaTx.meta.updateMany({
+                    where: { id: meta.id, removido_em: null },
                     data: {
                         removido_por: user.id,
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                     },
                 });
 
                 // Caso a Meta seja removida, é necessário remover relacionamentos com Painel
                 // public.painel_conteudo e public.painel_conteudo_detalhe
-                await prisma.painelConteudo.deleteMany({ where: { meta_id: id } });
+                await prismaTx.painelConteudo.deleteMany({ where: { meta_id: id } });
 
                 return removed;
             }
         );
     }
 
-    async buscaMetasIniciativaAtividades(metas: number[]): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividades(tipo: TipoPdm, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
         const list: DadosCodTituloMetaDto[] = [];
 
         for (const meta_id of metas) {
@@ -670,24 +684,30 @@ export class MetaService {
             (
                 select 'meta' as tipo, m.id as meta_id, null::int as iniciativa_id, null::int as atividade_id, m.codigo, m.titulo
                 from meta m
+                join pdm p on p.id = m.pdm_id and p.removido_em is null and p.tipo = ${tipo}::"TipoPdm"
                 where m.id = ${meta_id}
+                and m.removido_em is null
                 order by m.codigo
             )
             union all
             (
                 select 'iniciativa' as tipo, m.id as meta_id, i.id , null, i.codigo, i.titulo
                 from meta m
+                join pdm p on p.id = m.pdm_id and p.removido_em is null and p.tipo = ${tipo}::"TipoPdm"
                 join iniciativa i on i.meta_id = m.id and i.removido_em is null
                 where m.id = ${meta_id}
+                and m.removido_em is null
                 order by i.codigo
             )
             union all
             (
                 select 'atividade' as tipo, m.id as meta_id, i.id as iniciativa_id, a.id as atividade_id, a.codigo, a.titulo
                 from meta m
+                join pdm p on p.id = m.pdm_id and p.removido_em is null and p.tipo = ${tipo}::"TipoPdm"
                 join iniciativa i on i.meta_id = m.id and i.removido_em is null
                 join atividade a on a.iniciativa_id = i.id and a.removido_em is null
                 where m.id = ${meta_id}
+                and m.removido_em is null
                 order by a.codigo
             )
             `;
@@ -728,7 +748,7 @@ export class MetaService {
         return list;
     }
 
-    async buscaRelacionados(dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
+    async buscaRelacionados(tipo: TipoPdm, dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
         if (!dto.meta_id && !dto.iniciativa_id && !dto.atividade_id) {
             throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
         }
@@ -768,7 +788,7 @@ export class MetaService {
         });
 
         if (!meta) throw new HttpException('Meta não encontrada.', 404);
-        const r = await this.findAll({ id: meta.id }, user); // check permissão
+        const r = await this.findAll(tipo, { id: meta.id }, user); // check permissão
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
 
         const pdm = await this.prisma.pdm.findMany({
@@ -806,6 +826,7 @@ export class MetaService {
             select: {
                 id: true,
                 nome: true,
+                tipo: true,
                 Meta: {
                     select: {
                         id: true,
@@ -834,6 +855,7 @@ export class MetaService {
         for (const p of pdm) {
             for (const m of p.Meta) {
                 const metaPdm: MetaPdmDto = {
+                    tipo: p.tipo,
                     meta_id: m.id,
                     meta_codigo: m.codigo,
                     meta_titulo: m.titulo,
@@ -881,7 +903,8 @@ export class MetaService {
         });
 
         return {
-            metas: MetaPdmDto,
+            pdm_metas: MetaPdmDto.filter((p) => p.tipo === 'PDM'),
+            ps_metas: MetaPdmDto.filter((p) => p.tipo === 'PS'),
             obras: projetos.filter((p) => p.tipo === 'MDO'),
             projetos: projetos.filter((p) => p.tipo === 'PP'),
         };

@@ -132,7 +132,11 @@ export class DashboardService {
     ) {
         if (config && config['params'] && config['params']['metas_ids']) {
             if (memory['metas_ids'] === undefined) {
-                memory['metas_ids'] = (await this.metaService.findAllIds(user)).map((p) => p.id);
+                if (!config['params']['tipo_pdm']) config['params']['tipo_pdm'] = 'PDM';
+
+                memory['metas_ids'] = (
+                    await this.metaService.findAllIds(config['params']['tipo_pdm'] == 'PDM' ? 'PDM' : 'PS', user)
+                ).map((p) => p.id);
                 if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
             }
 
