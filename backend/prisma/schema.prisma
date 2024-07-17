@@ -3435,6 +3435,8 @@ model Projeto {
     tipo_intervencao             TipoIntervencao? @relation(fields: [tipo_intervencao_id], references: [id])
     equipamento_id               Int?
     equipamento                  Equipamento?     @relation(fields: [equipamento_id], references: [id])
+    empreendimento_id            Int?
+    empreendimento               Empreendimento?  @relation(fields: [empreendimento_id], references: [id])
 
     tipo_aditivo           TipoAditivo?           @relation(fields: [tipo_aditivo_id], references: [id])
     modalidade_contratacao ModalidadeContratacao? @relation(fields: [modalidade_contratacao_id], references: [id])
@@ -3601,6 +3603,10 @@ view ViewProjetoMDO {
 
     equipamento_id   Int?
     equipamento_nome String?
+
+    empreendimento_id            Int?
+    empreendimento_nome          String?
+    empreendimento_identificador String?
 
     orgao_origem_id Int
     orgao_origem    Orgao @relation(fields: [orgao_origem_id], references: [id])
@@ -6615,6 +6621,8 @@ model Empreendimento {
     criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    projetos Projeto[]
 
     @@map("empreendimento")
 }

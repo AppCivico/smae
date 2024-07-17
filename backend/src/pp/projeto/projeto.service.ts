@@ -437,6 +437,7 @@ export class ProjetoService {
                         grupo_tematico_id: dto.grupo_tematico_id,
                         tipo_intervencao_id: dto.tipo_intervencao_id,
                         equipamento_id: dto.equipamento_id,
+                        empreendimento_id: dto.empreendimento_id,
                         orgao_origem_id: dto.orgao_origem_id,
                         orgao_executor_id: dto.orgao_executor_id,
                         mdo_detalhamento: dto.mdo_detalhamento,
@@ -930,6 +931,13 @@ export class ProjetoService {
                     orgao_origem: r.orgao_origem,
                     grupo_tematico: { id: r.grupo_tematico_id, nome: r.grupo_tematico_nome },
                     equipamento: r.equipamento_id ? { id: r.equipamento_id, nome: r.equipamento_nome! } : null,
+                    empreendimento: r.empreendimento_id
+                        ? {
+                              id: r.empreendimento_id,
+                              nome: r.empreendimento_nome!,
+                              identificador: r.empreendimento_identificador!,
+                          }
+                        : null,
                     tipo_intervencao: r.tipo_intervencao_id
                         ? { id: r.tipo_intervencao_id, nome: r.tipo_intervencao_nome! }
                         : null,
@@ -1413,6 +1421,7 @@ export class ProjetoService {
                 grupo_tematico: { select: { id: true, nome: true } },
                 tipo_intervencao: { select: { id: true, nome: true } },
                 equipamento: { select: { id: true, nome: true } },
+                empreendimento: { select: { id: true, nome: true, identificador: true } },
                 tags: true,
                 mdo_detalhamento: true,
                 orgao_executor: { select: { id: true, sigla: true, descricao: true } },
@@ -1612,6 +1621,7 @@ export class ProjetoService {
         if (tipo == 'MDO') {
             const retMdo: ProjetoDetailBaseMdo = {
                 equipamento: projeto.equipamento,
+                empreendimento: projeto.empreendimento,
                 tipo_intervencao: projeto.tipo_intervencao,
                 grupo_tematico: projeto.grupo_tematico || { id: 0, nome: '' },
 
@@ -2228,6 +2238,7 @@ export class ProjetoService {
                     grupo_tematico_id: dto.grupo_tematico_id,
                     tipo_intervencao_id: dto.tipo_intervencao_id,
                     equipamento_id: dto.equipamento_id,
+                    empreendimento_id: dto.empreendimento_id,
                     orgao_executor_id: dto.orgao_executor_id,
                     mdo_detalhamento: dto.mdo_detalhamento,
                     mdo_programa_habitacional: dto.mdo_programa_habitacional,
