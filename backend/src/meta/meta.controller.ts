@@ -75,10 +75,10 @@ export class MetaController {
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
     @Roles(['CadastroMeta.listar'])
     async buscaRelacionados(
-        @Param() params: FilterRelacionadosDTO,
+        @Query() dto: FilterRelacionadosDTO,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RelacionadosDTO> {
-        return await this.metaService.buscaRelacionados(params, user);
+        return await this.metaService.buscaRelacionados(dto, user);
     }
 
     // Precisa ficar depois do método buscaMetasIniciativaAtividades, a ordem da definição afeta como será dado os matching
