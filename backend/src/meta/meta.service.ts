@@ -749,14 +749,16 @@ export class MetaService {
                         id: dto.meta_id,
                     },
                     {
-                        iniciativa: { some: { id: dto.iniciativa_id } },
+                        iniciativa: dto.iniciativa_id ? { some: { id: dto.iniciativa_id } } : undefined,
                     },
                     {
-                        iniciativa: {
-                            some: {
-                                atividade: { some: { id: dto.atividade_id } },
-                            },
-                        },
+                        iniciativa: dto.atividade_id
+                            ? {
+                                  some: {
+                                      atividade: { some: { id: dto.atividade_id } },
+                                  },
+                              }
+                            : undefined,
                     },
                 ],
             },
@@ -778,22 +780,26 @@ export class MetaService {
                         Meta: { some: { id: dto.meta_id } },
                     },
                     {
-                        Meta: {
-                            some: {
-                                iniciativa: { some: { id: dto.iniciativa_id } },
-                            },
-                        },
+                        Meta: dto.iniciativa_id
+                            ? {
+                                  some: {
+                                      iniciativa: { some: { id: dto.iniciativa_id } },
+                                  },
+                              }
+                            : undefined,
                     },
                     {
-                        Meta: {
-                            some: {
-                                iniciativa: {
-                                    some: {
-                                        atividade: { some: { id: dto.atividade_id } },
-                                    },
-                                },
-                            },
-                        },
+                        Meta: dto.atividade_id
+                            ? {
+                                  some: {
+                                      iniciativa: {
+                                          some: {
+                                              atividade: { some: { id: dto.atividade_id } },
+                                          },
+                                      },
+                                  },
+                              }
+                            : undefined,
                     },
                 ],
             },
