@@ -346,6 +346,7 @@ export const auxiliarDePreenchimentoDeEvoluçãoDeMeta = object()
       .label('Envio ao CP'),
   });
 
+// PRÁ-FAZER: Provavelmente não é necessário. Deve ter sido criado por engano
 export const contrato = object()
   .shape({
     comentarios: string()
