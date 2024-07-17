@@ -728,13 +728,13 @@ export class MetaService {
         return list;
     }
 
-    async buscaRelacionados(params: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
-        if (!params.meta_id || !params.iniciativa_id || !params.atividade_id) {
+    async buscaRelacionados(dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
+        if (!dto.meta_id && !dto.iniciativa_id && !dto.atividade_id) {
             throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
         }
 
-        const pdm_id = params.pdm_id
-            ? params.pdm_id
+        const pdm_id = dto.pdm_id
+            ? dto.pdm_id
             : (
                   await this.prisma.pdm.findFirstOrThrow({
                       where: { ativo: true, tipo: 'PDM', removido_em: null },
@@ -746,15 +746,15 @@ export class MetaService {
                 pdm_id: pdm_id,
                 OR: [
                     {
-                        id: params.meta_id,
+                        id: dto.meta_id,
                     },
                     {
-                        iniciativa: { some: { id: params.iniciativa_id } },
+                        iniciativa: { some: { id: dto.iniciativa_id } },
                     },
                     {
                         iniciativa: {
                             some: {
-                                atividade: { some: { id: params.atividade_id } },
+                                atividade: { some: { id: dto.atividade_id } },
                             },
                         },
                     },
@@ -775,12 +775,12 @@ export class MetaService {
                 NOT: { id: pdm_id },
                 OR: [
                     {
-                        Meta: { some: { id: params.meta_id } },
+                        Meta: { some: { id: dto.meta_id } },
                     },
                     {
                         Meta: {
                             some: {
-                                iniciativa: { some: { id: params.iniciativa_id } },
+                                iniciativa: { some: { id: dto.iniciativa_id } },
                             },
                         },
                     },
@@ -789,7 +789,7 @@ export class MetaService {
                             some: {
                                 iniciativa: {
                                     some: {
-                                        atividade: { some: { id: params.atividade_id } },
+                                        atividade: { some: { id: dto.atividade_id } },
                                     },
                                 },
                             },
@@ -856,13 +856,13 @@ export class MetaService {
                 removido_em: null,
                 OR: [
                     {
-                        meta_id: params.meta_id,
+                        meta_id: dto.meta_id,
                     },
                     {
-                        iniciativa_id: params.iniciativa_id,
+                        iniciativa_id: dto.iniciativa_id,
                     },
                     {
-                        atividade_id: params.atividade_id,
+                        atividade_id: dto.atividade_id,
                     },
                 ],
             },
