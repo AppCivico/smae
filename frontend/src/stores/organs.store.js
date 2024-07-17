@@ -79,7 +79,6 @@ export const useOrgansStore = defineStore({
       } catch (error) {
         this.tempOrgans = { error };
       }
-
     },
     async getAllTypes() {
       this.organTypes = { loading: true };
@@ -143,15 +142,20 @@ export const useOrgansStore = defineStore({
 
         if (!this.organs.length) await this.getAll();
         if (!usersStore.users.length) await usersStore.getAll();
+
+        // mantendo o máximo possível do código legado, mas sem os seus resultados involuntários
         this.organResponsibles = this.organs.length
-          ? this.organs.map((o) => {
-            o.responsible = usersStore.users.length
-              ? usersStore.users
-                .filter((u) => u.orgao_id == o.id)
-              : null;
-            return o;
-          })
-            .filter((a) => a.responsible.length)
+          ? this.organs.reduce((acc, cur) => {
+            const pessoas = usersStore.pessoasPorOrgao[cur.id];
+
+            if (pessoas?.length) {
+              acc.push({
+                ...cur,
+                responsible: pessoas,
+              });
+            }
+            return acc;
+          }, [])
           : this.organs;
       } catch (error) {
         this.organResponsibles = { error };
@@ -166,9 +170,9 @@ export const useOrgansStore = defineStore({
     órgãosPorId: ({ organs }) => (Array.isArray(organs)
       ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
       : {}),
-    órgãosQueTemResponsáveis() {
-      return this.órgãosComoLista.filter((x) => x.responsible?.length);
-    },
+    órgãosQueTemResponsáveis: ({ organResponsibles }) => (Array.isArray(organResponsibles)
+      ? organResponsibles
+      : []),
     órgãosQueTemResponsáveisEPorId() {
       return this.órgãosQueTemResponsáveis
         .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
