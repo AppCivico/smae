@@ -729,13 +729,50 @@ export class MetaService {
     }
 
     async buscaRelacionados(params: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
-        if (!params.meta_id && !params.iniciativa_id && !params.atividade_id) {
+        if (!params.meta_id || !params.iniciativa_id || !params.atividade_id) {
             throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
         }
+
+        const pdm_id = params.pdm_id
+            ? params.pdm_id
+            : (
+                  await this.prisma.pdm.findFirstOrThrow({
+                      where: { ativo: true, tipo: 'PDM', removido_em: null },
+                      select: { id: true },
+                  })
+              ).id;
+        const meta = await this.prisma.meta.findFirst({
+            where: {
+                pdm_id: pdm_id,
+                OR: [
+                    {
+                        id: params.meta_id,
+                    },
+                    {
+                        iniciativa: { some: { id: params.iniciativa_id } },
+                    },
+                    {
+                        iniciativa: {
+                            some: {
+                                atividade: { some: { id: params.atividade_id } },
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!meta) throw new HttpException('Meta não encontrada.', 404);
+        const r = await this.findAll({ id: meta.id }, user); // check permissão
+        if (!r.length) throw new HttpException('Meta não encontrada.', 404);
 
         const pdm = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
+                NOT: { id: pdm_id },
                 OR: [
                     {
                         Meta: { some: { id: params.meta_id } },

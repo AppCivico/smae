@@ -23,6 +23,15 @@ export class FilterMetaDto {
 }
 
 export class FilterRelacionadosDTO {
+    /**
+     * Informar o PDM da busca, se não informar, será usado o PDM ativo
+     * @example ""
+     */
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pdm_id?: number;
+
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)
