@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
+import { NumberTransform } from '../../auth/transforms/number.transform';
 
 export class FilterMetaDto {
     /**
@@ -19,4 +20,21 @@ export class FilterMetaDto {
     @IsInt({ message: '$property| id' })
     @Type(() => Number)
     id?: number;
+}
+
+export class FilterRelacionadosDTO {
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    meta_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    iniciativa_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    atividade_id?: number;
 }
