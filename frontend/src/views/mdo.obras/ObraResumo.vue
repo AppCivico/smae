@@ -175,7 +175,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.projeto_etapa.descricao || '-'"
+          v-html="emFoco?.projeto_etapa?.descricao || '-'"
         />
       </dl>
     </div>
