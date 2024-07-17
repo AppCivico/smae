@@ -573,12 +573,16 @@ SELECT
   ), '') AS regioes,
   p.status,
   port.titulo AS portfolio_titulo,
-  p.registrado_em
+  p.registrado_em,
+  p.empreendimento_id,
+  emp.nome AS empreendimento_nome,
+  emp.identificador AS empreendimento_identificador
 FROM projeto AS p
 JOIN portfolio port ON p.portfolio_id = port.id
 LEFT JOIN grupo_tematico AS gt ON p.grupo_tematico_id = gt.id
 LEFT JOIN tipo_intervencao AS ti ON p.tipo_intervencao_id = ti.id
 LEFT JOIN equipamento AS e ON p.equipamento_id = e.id
+LEFT JOIN empreendimento AS emp ON p.empreendimento_id = emp.id
 LEFT JOIN ProjetoRegioes pr ON p.id = pr.projeto_id
 WHERE p.removido_em IS NULL;
 

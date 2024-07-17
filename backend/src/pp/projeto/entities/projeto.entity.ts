@@ -9,6 +9,7 @@ import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { IdNomeDto } from '../../../common/dto/IdNome.dto';
+import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
 
 export class ProjetoDto {
     id: number;
@@ -38,6 +39,7 @@ export class ProjetoMdoDto {
     grupo_tematico: IdNomeDto;
     tipo_intervencao: IdNomeDto | null;
     equipamento: IdNomeDto | null;
+    empreendimento: IdNomeIdentificadorDto | null;
     regioes: string;
 
     @ApiProperty({
@@ -276,6 +278,7 @@ export class ProjetoDetailBaseMdo {
     grupo_tematico: IdNomeDto;
     tipo_intervencao: IdNomeDto | null;
     equipamento: IdNomeDto | null;
+    empreendimento: IdNomeIdentificadorDto | null;
 
     orgao_executor: IdSiglaDescricao | null;
     mdo_detalhamento: string | null;

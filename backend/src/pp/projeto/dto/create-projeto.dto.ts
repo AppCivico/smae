@@ -136,6 +136,14 @@ export class CreateProjetoDto {
     @IsInt({ message: '$property| equipamento_id precisa ser inteiro' })
     equipamento_id?: number;
 
+    /**
+     * empreendimento, apenas MDO
+     * @example "0"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| empreendimento_id precisa ser inteiro' })
+    empreendimento_id?: number;
+
     @IsOptional()
     @IsString()
     @MaxLength(50000)
