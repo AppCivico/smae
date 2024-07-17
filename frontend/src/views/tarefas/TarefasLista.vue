@@ -193,11 +193,11 @@ export default {
     Salvando
   </LoadingComponent>
   <div
-    v-if="$route.meta.entidadeMãe === 'projeto' && projetoEmFoco.projeto_etapa"
+    v-if="$route.meta.entidadeMãe === 'projeto' || $route.meta.entidadeMãe === 'obras' && projetoEmFoco.projeto_etapa"
     class="etapa mb2"
   >
     <span>
-      Etapa atual: {{ projetoEmFoco.projeto_etapa.descricao }}
+      Etapa atual: {{ projetoEmFoco?.projeto_etapa?.descricao }}
     </span>
   </div>
   <CabecalhoResumo
