@@ -394,6 +394,10 @@ model Pessoa {
     TipoIntervencaoQueRemovi    TipoIntervencao[] @relation("Removedor")
     TipoIntervencaoQueAtualizei TipoIntervencao[] @relation("Atualizador")
 
+    EmpreendimentosQueCriei     Empreendimento[] @relation("Criador")
+    EmpreendimentosQueDesativei Empreendimento[] @relation("Removedor")
+    EmpreendimentosQueAtualizei Empreendimento[] @relation("Atualizador")
+
     EquipamentosQueCriei     Equipamento[] @relation("Criador")
     EquipamentosQueRemovi    Equipamento[] @relation("Removedor")
     EquipamentosQueAtualizei Equipamento[] @relation("Atualizador")
@@ -473,8 +477,8 @@ model LogGenerico {
 }
 
 model PrivilegioModulo {
-    id             Int           @id @default(autoincrement())
-    codigo         String        @unique
+    id             Int             @id @default(autoincrement())
+    codigo         String          @unique
     descricao      String
     privilegio     Privilegio[]
     modulo_sistema ModuloSistema[] @default([SMAE])
@@ -6591,4 +6595,26 @@ model ContratoAditivo {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("contrato_aditivo")
+}
+
+model Empreendimento {
+    id Int @id @default(autoincrement())
+
+    nome          String
+    identificador String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("empreendimento")
 }
