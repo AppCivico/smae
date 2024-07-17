@@ -1684,6 +1684,7 @@ export class OrcamentoRealizadoService {
                 meta_id: meta.id,
                 responsavel: true,
             },
+            select: { orgao_id: true },
         });
         for (const o of orgoes) {
             const lastRecord = await prismaTxn.pdmOrcamentoRealizadoConfig.findUnique({
@@ -1691,7 +1692,7 @@ export class OrcamentoRealizadoService {
                     meta_id_ano_referencia_orgao_id_ultima_revisao: {
                         ano_referencia: ano_referencia,
                         meta_id: meta.id,
-                        orgao_id: o.id,
+                        orgao_id: o.orgao_id,
                         ultima_revisao: true,
                     },
                 },
