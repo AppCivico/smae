@@ -26,10 +26,10 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateMetaDto, ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
-import { FilterMetaDto } from './dto/filter-meta.dto';
+import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { Meta } from './entities/meta.entity';
+import { Meta, RelacionadosDTO } from './entities/meta.entity';
 import { MetaService } from './meta.service';
 
 @ApiTags('Meta')
@@ -67,6 +67,18 @@ export class MetaController {
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
         return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get('relacionados')
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
+    @Roles(['CadastroMeta.listar'])
+    async buscaRelacionados(
+        @Param() params: FilterRelacionadosDTO,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RelacionadosDTO> {
+        return await this.metaService.buscaRelacionados(params, user);
     }
 
     // Precisa ficar depois do método buscaMetasIniciativaAtividades, a ordem da definição afeta como será dado os matching

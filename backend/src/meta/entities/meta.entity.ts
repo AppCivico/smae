@@ -1,6 +1,7 @@
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
+import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
 
 export class IdDesc {
     id: number;
@@ -41,4 +42,24 @@ export class Meta {
     tags: MetaTag[];
     cronograma: CronogramaAtrasoGrau | null;
     geolocalizacao: GeolocalizacaoDto[];
+}
+
+export class MetaPdmDto {
+    meta_id: number;
+    meta_codigo: string;
+    meta_titulo: string;
+    pdm_id: number;
+    pdm_descricao: string;
+    iniciativa_id?: number;
+    iniciativa_codigo?: string;
+    iniciativa_descricao?: string;
+    atividade_id?: number;
+    atividade_codigo?: string;
+    atividade_descricao?: string;
+}
+
+export class RelacionadosDTO {
+    metas: MetaPdmDto[];
+    obras: IdCodNomeDto[];
+    projetos: IdCodNomeDto[];
 }

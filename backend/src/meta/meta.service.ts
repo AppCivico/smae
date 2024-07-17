@@ -5,6 +5,8 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateMetaDto,
@@ -12,11 +14,9 @@ import {
     DadosCodTituloMetaDto,
     MetaOrgaoParticipante,
 } from './dto/create-meta.dto';
-import { FilterMetaDto } from './dto/filter-meta.dto';
+import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { IdNomeExibicao, Meta, MetaOrgao, MetaPdmDto, MetaTag, RelacionadosDTO } from './entities/meta.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -726,5 +726,121 @@ export class MetaService {
         }
 
         return list;
+    }
+
+    async buscaRelacionados(params: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
+        if (!params.meta_id && !params.iniciativa_id && !params.atividade_id) {
+            throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
+        }
+
+        const pdm = await this.prisma.pdm.findMany({
+            where: {
+                removido_em: null,
+                OR: [
+                    {
+                        Meta: { some: { id: params.meta_id } },
+                    },
+                    {
+                        Meta: {
+                            some: {
+                                iniciativa: { some: { id: params.iniciativa_id } },
+                            },
+                        },
+                    },
+                    {
+                        Meta: {
+                            some: {
+                                iniciativa: {
+                                    some: {
+                                        atividade: { some: { id: params.atividade_id } },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                nome: true,
+                Meta: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        iniciativa: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        titulo: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const MetaPdmDto: MetaPdmDto[] = [];
+        for (const p of pdm) {
+            for (const m of p.Meta) {
+                const metaPdm: MetaPdmDto = {
+                    meta_id: m.id,
+                    meta_codigo: m.codigo,
+                    meta_titulo: m.titulo,
+                    pdm_id: p.id,
+                    pdm_descricao: p.nome,
+                };
+
+                if (m.iniciativa && m.iniciativa.length > 0) {
+                    metaPdm.iniciativa_id = m.iniciativa[0].id;
+                    metaPdm.iniciativa_codigo = m.iniciativa[0].codigo;
+                    metaPdm.iniciativa_descricao = m.iniciativa[0].titulo;
+
+                    if (m.iniciativa[0].atividade && m.iniciativa[0].atividade.length > 0) {
+                        metaPdm.atividade_id = m.iniciativa[0].atividade[0].id;
+                        metaPdm.atividade_codigo = m.iniciativa[0].atividade[0].codigo;
+                        metaPdm.atividade_descricao = m.iniciativa[0].atividade[0].titulo;
+                    }
+                }
+
+                MetaPdmDto.push(metaPdm);
+            }
+        }
+
+        const projetos = await this.prisma.projeto.findMany({
+            where: {
+                removido_em: null,
+                OR: [
+                    {
+                        meta_id: params.meta_id,
+                    },
+                    {
+                        iniciativa_id: params.iniciativa_id,
+                    },
+                    {
+                        atividade_id: params.atividade_id,
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                tipo: true,
+                codigo: true,
+                nome: true,
+            },
+        });
+
+        return {
+            metas: MetaPdmDto,
+            obras: projetos.filter((p) => p.tipo === 'MDO'),
+            projetos: projetos.filter((p) => p.tipo === 'PP'),
+        };
     }
 }
