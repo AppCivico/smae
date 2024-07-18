@@ -80,7 +80,6 @@ function start() {
 }
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
-
 </script>
 <template>
   <Dashboard>
@@ -134,7 +133,7 @@ onUpdated(() => { start(); });
                   </h2>
                 </div>
                 <div class="f0 ml2">
-                  <!-- <select class="inputtext">
+                <!-- <select class="inputtext">
                       <option>Até mês corrente</option>
                       <option>Mês corrente</option>
                       <option>Todo período</option>
@@ -305,7 +304,7 @@ onUpdated(() => { start(); });
                         ><use xlink:href="#i_i" /></svg><div>Indicador calculado pelo média móvel das variáveis</div>
                       </div>
                     </div>
-                    <!-- <div>
+                  <!-- <div>
                         <a class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Adicionar período</span></a>
                     </div> -->
                   </div>
@@ -349,7 +348,7 @@ onUpdated(() => { start(); });
         </template>
       </template>
       <div
-        v-if="!tempIndicadores.length&&!tempIndicadores.loading"
+        v-if="!tempIndicadores.length && !tempIndicadores.loading"
         style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;"
       >
         <div class="p1">

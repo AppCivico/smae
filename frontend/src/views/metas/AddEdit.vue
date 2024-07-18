@@ -204,7 +204,7 @@ function filterResponsible(orgao_id) {
       <Form
         v-slot="{ errors, isSubmitting, values }"
         :validation-schema="schema"
-        :initial-values="meta_id?singleMeta:virtualParent"
+        :initial-values="meta_id ? singleMeta : virtualParent"
         @submit="onSubmit"
       >
         <div class="flex g2">
@@ -218,7 +218,7 @@ function filterResponsible(orgao_id) {
             >
           </div>
           <div
-            v-if="activePdm.possui_macro_tema&&tempMacrotemas.length"
+            v-if="activePdm.possui_macro_tema && tempMacrotemas.length"
             class="f1"
           >
             <label class="label">
@@ -249,7 +249,7 @@ function filterResponsible(orgao_id) {
         </div>
         <div class="flex g2">
           <div
-            v-if="activePdm.possui_tema&&tempTemas.length"
+            v-if="activePdm.possui_tema && tempTemas.length"
             class="f1"
           >
             <label class="label">
@@ -278,7 +278,7 @@ function filterResponsible(orgao_id) {
             </div>
           </div>
           <div
-            v-if="activePdm.possui_sub_tema&&tempSubtemas.length"
+            v-if="activePdm.possui_sub_tema && tempSubtemas.length"
             class="f1"
           >
             <label class="label">
@@ -408,10 +408,11 @@ function filterResponsible(orgao_id) {
                 v-if="OrgansStore.organResponsibles.length"
                 v-model="item.orgao_id"
                 class="inputtext"
-                @change="item.participantes=[]"
+                @change="item.participantes = []"
               >
                 <option
-                  v-for="(o,k) in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))"
+                  v-for="(o, k) in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id
+                    || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
                   :key="k"
                   :value="o.id"
                   :title="o.descricao?.length > 36 ? o.descricao : null"
@@ -430,7 +431,7 @@ function filterResponsible(orgao_id) {
             <div style="flex-basis: 30px;">
               <a
                 class="addlink mt1"
-                @click="removeOrgao(orgaos_participantes,index)"
+                @click="removeOrgao(orgaos_participantes, index)"
               ><svg
                 width="20"
                 height="20"
@@ -440,7 +441,7 @@ function filterResponsible(orgao_id) {
         </template>
         <a
           class="addlink"
-          @click="addOrgao(orgaos_participantes,true)"
+          @click="addOrgao(orgaos_participantes, true)"
         ><svg
           width="20"
           height="20"
@@ -467,10 +468,10 @@ function filterResponsible(orgao_id) {
                 v-if="OrgansStore.organResponsibles.length"
                 v-model="item.orgao_id"
                 class="inputtext"
-                @change="item.participantes=[]"
+                @change="item.participantes = []"
               >
                 <option
-                  v-for="o in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))"
+                  v-for="o in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
                   :key="o.id"
                   :value="o.id"
                   :title="o.descricao?.length > 36 ? o.descricao : null"
@@ -489,7 +490,7 @@ function filterResponsible(orgao_id) {
             <div style="flex-basis: 30px;">
               <a
                 class="addlink mt1"
-                @click="removeOrgao(orgaos_participantes,index)"
+                @click="removeOrgao(orgaos_participantes, index)"
               ><svg
                 width="20"
                 height="20"
@@ -499,7 +500,7 @@ function filterResponsible(orgao_id) {
         </template>
         <a
           class="addlink"
-          @click="addOrgao(orgaos_participantes,false)"
+          @click="addOrgao(orgaos_participantes, false)"
         ><svg
           width="20"
           height="20"
@@ -539,7 +540,7 @@ function filterResponsible(orgao_id) {
       </Form>
     </template>
 
-    <template v-if="singleMeta?.loading||!oktogo">
+    <template v-if="singleMeta?.loading || !oktogo">
       <span class="spinner">Carregando</span>
     </template>
     <template v-if="singleMeta?.error">

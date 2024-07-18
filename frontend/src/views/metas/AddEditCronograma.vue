@@ -1,6 +1,6 @@
 <script setup>
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { Dashboard } from '@/components';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { router } from '@/router';
 import {
   useAlertStore,

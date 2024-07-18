@@ -1,10 +1,10 @@
 <script setup>
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
-import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);

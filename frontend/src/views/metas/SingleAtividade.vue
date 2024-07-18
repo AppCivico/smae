@@ -30,7 +30,6 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/ini
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade, órgãosResponsáveisNaAtividadeEmFoco } = storeToRefs(AtividadesStore);
 if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
-
 </script>
 <template>
   <Dashboard>
