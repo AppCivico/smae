@@ -108,9 +108,21 @@ router.afterEach((to) => {
 });
 
 router.beforeEach((to, from, next) => {
+  const { meta } = to;
+
   if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
     $eventHub.emit('recebimentoIniciado', to); // Start progress bar
   }
+
+  Object.keys(meta).forEach((key) => {
+    // Limitar à propriedade `prefixoDosCaminhos` para manter a
+    // retrocompatibilidade com a propriedade `título`,
+    // que precisa ser usada numa `computed()`
+    if (typeof meta[key] === 'function' && key === 'prefixoDosCaminhos') {
+      meta[key] = meta[key](to);
+    }
+  });
+
   next();
 });
 
