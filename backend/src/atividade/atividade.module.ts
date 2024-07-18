@@ -6,9 +6,10 @@ import { AtividadeService } from './atividade.service';
 import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.module';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { GeoLocModule } from '../geo-loc/geo-loc.module';
+import { MetaModule } from '../meta/meta.module';
 
 @Module({
-    imports: [PrismaModule, VariavelModule, CronogramaEtapaModule, GeoLocModule],
+    imports: [PrismaModule, MetaModule, VariavelModule, CronogramaEtapaModule, GeoLocModule],
     controllers: [AtividadeController],
     providers: [AtividadeService, CronogramaEtapaService],
 })

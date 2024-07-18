@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
@@ -14,24 +14,32 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { MetaService } from '../meta/meta.service';
 
 @Injectable()
 export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
     constructor(
         private readonly prisma: PrismaService,
+        private readonly metaService: MetaService,
         private readonly variavelService: VariavelService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly geolocService: GeoLocService
     ) {}
 
-    async create(dto: CreateAtividadeDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdm, dto: CreateAtividadeDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        const iniciativa = await this.prisma.iniciativa.findFirstOrThrow({
+            where: { id: dto.iniciativa_id, removido_em: null },
+            select: { meta_id: true },
+        });
+        await this.loadMetaOrThrow(tipo, iniciativa.meta_id, user);
+
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             const filterIdIn = (
                 await this.prisma.iniciativa.findMany({
@@ -215,13 +223,13 @@ export class AtividadeService {
         return arr;
     }
 
-    async findAll(filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
         const iniciativa_id = filters?.iniciativa_id;
 
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             let metas: number[];
-            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+            if (user.hasSomeRoles([tipo == 'PDM' ? 'PDM.ponto_focal' : 'PS.ponto_focal'])) {
                 metas = await user.getMetaIdsFromAnyModel(this.prisma.view_atividade_pessoa_responsavel);
             } else {
                 metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
@@ -239,6 +247,7 @@ export class AtividadeService {
         const listActive = await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
+                iniciativa: { meta: { pdm: { tipo } } },
                 AND: [{ iniciativa_id: iniciativa_id }, { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }],
             },
             orderBy: [{ codigo: 'asc' }],
@@ -334,10 +343,18 @@ export class AtividadeService {
         return ret;
     }
 
-    async update(id: number, dto: UpdateAtividadeDto, user: PessoaFromJwt) {
-        const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
+    async update(tipo: TipoPdm, id: number, dto: UpdateAtividadeDto, user: PessoaFromJwt) {
+        const self = await this.prisma.atividade.findFirstOrThrow({
+            where: {
+                id,
+                iniciativa: { meta: { pdm: { tipo } } },
+                removido_em: null,
+            },
+            select: { iniciativa_id: true, iniciativa: { select: { meta_id: true } } },
+        });
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        await this.loadMetaOrThrow(tipo, self.iniciativa.meta_id, user);
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             const filterIdIn = (
                 await this.prisma.iniciativa.findMany({
@@ -470,11 +487,16 @@ export class AtividadeService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.atividade.findFirstOrThrow({
-            where: { id },
+            where: { id, iniciativa: { meta: { pdm: { tipo } } }, removido_em: null },
             select: {
                 iniciativa_id: true,
+                iniciativa: {
+                    select: {
+                        meta_id: true,
+                    },
+                },
                 compoe_indicador_iniciativa: true,
                 Indicador: {
                     select: {
@@ -487,7 +509,9 @@ export class AtividadeService {
             },
         });
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        await this.loadMetaOrThrow(tipo, self.iniciativa.meta_id, user);
+
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             const filterIdIn = (
                 await this.prisma.iniciativa.findMany({
@@ -516,22 +540,31 @@ export class AtividadeService {
             }
         }
 
+        const now = new Date(Date.now());
         return await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
-                const removed = await prisma.atividade.updateMany({
+            async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+                const removed = await prismaTx.atividade.updateMany({
                     where: { id: id },
                     data: {
                         removido_por: user.id,
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                     },
                 });
 
                 // Caso a Atividade seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
                 // public.painel_conteudo_detalhe
-                await prisma.painelConteudoDetalhe.deleteMany({ where: { atividade_id: id } });
+                await prismaTx.painelConteudoDetalhe.deleteMany({ where: { atividade_id: id } });
 
                 return removed;
             }
         );
+    }
+
+    private async loadMetaOrThrow(tipo: TipoPdm, meta_id: number, user: PessoaFromJwt) {
+        const meta = await this.metaService.findAll(tipo, { id: meta_id }, user);
+        if (!meta) {
+            throw new HttpException('meta_id| Meta não encontrada', 400);
+        }
+        return meta;
     }
 }
