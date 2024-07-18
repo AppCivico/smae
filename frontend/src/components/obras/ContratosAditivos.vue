@@ -115,12 +115,18 @@ function abrirDialogo(id = 0) {
   exibirDialogo.value = true;
 }
 
-function excluirAditivo(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await useContratosStore().excluirItem(id)) {
-      alertStore.success('Processo removido.');
-    }
-  }, 'Remover');
+async function excluirAditivo(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await contratosStore.excluirAditivo(id)) {
+        contratosStore.$reset();
+        contratosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
 }
 
 watch(itemParaEdição, (novoValor) => {
@@ -213,7 +219,7 @@ watch(exibirDialogo, (novoValor) => {
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirAditivo(item.id, item.nome)"
+            @click="excluirAditivo(aditivo.id, aditivo.numero)"
           >
             <svg
               width="20"
