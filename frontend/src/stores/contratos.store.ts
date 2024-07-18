@@ -196,6 +196,19 @@ export const useContratosStore = defineStore('contratos', {
         return false;
       }
     },
+    async excluirAditivo( idDoAditivo: number , idDoContrato = 0): Promise<boolean> {
+      this.chamadasPendentes.aditivo = true;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`);
+        this.chamadasPendentes.aditivo = false;
+        return true;
+      }catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.aditivo = false;
+        return false;
+      }
+    },
   },
   getters: {
     itemParaEdição: ({ emFoco }) => ({
