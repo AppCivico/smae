@@ -119,7 +119,7 @@ export class MetaSetorialController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.administrador_orcamento'])
+    @Roles(['CadastroMetaPS.inserir'])
     async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.metaService.create(this.tipoPdm, createMetaDto, user);
     }
