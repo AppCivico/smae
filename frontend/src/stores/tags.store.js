@@ -4,6 +4,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'meta') {
+    return 'tag';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-tag';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useTagsStore = defineStore({
   id: 'Tags',
   state: () => ({
@@ -19,7 +29,7 @@ export const useTagsStore = defineStore({
       try {
         if (this.Tags.loading) return;
         this.Tags = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/tag`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           const ODSStore = useODSStore();
@@ -44,7 +54,7 @@ export const useTagsStore = defineStore({
     async getAllSimple() {
       this.Tags = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/tag`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const ODSStore = useODSStore();
           await ODSStore.getAll();
@@ -72,15 +82,15 @@ export const useTagsStore = defineStore({
       }
     },
     async insert(params) {
-      if (await this.requestS.post(`${baseUrl}/tag`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params)) return true;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/tag/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/tag/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
       return false;
     },
     async filterTags(f) {

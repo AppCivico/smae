@@ -3,6 +3,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'meta') {
+    return 'meta';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'meta-setorial';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useMetasStore = defineStore({
   id: 'Metas',
   state: () => ({
@@ -41,7 +51,7 @@ export const useMetasStore = defineStore({
         if (!pdmId) {
           throw new Error('ID do PdM não fornecido.');
         }
-        const response = await this.requestS.get(`${baseUrl}/meta?pdm_id=${pdmId}`);
+        const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?pdm_id=${pdmId}`);
         this.Metas = response.linhas;
         return true;
       } catch (error) {
@@ -56,7 +66,7 @@ export const useMetasStore = defineStore({
           await new Promise(this.waitFor);
         } else {
           this.Metas = { loading: true };
-          const r = await this.requestS.get(`${baseUrl}/meta?pdm_id=${this.activePdm.id}`);
+          const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?pdm_id=${this.activePdm.id || this.route.params.planoSetorialId}`);
           this.Metas = r.linhas;
         }
         return true;
@@ -68,7 +78,7 @@ export const useMetasStore = defineStore({
     async getById(id) {
       try {
         this.singleMeta = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/meta/${id}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`);
         this.singleMeta = r.id ? r : false;
         if (!this.singleMeta) throw 'Meta não encontrada';
         return true;
@@ -83,7 +93,7 @@ export const useMetasStore = defineStore({
           await this.getById(id);
         }
         this.singleMeta.children = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/meta/iniciativas-atividades/?meta_ids="${id}"`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/iniciativas-atividades/?meta_ids="${id}"`);
         this.singleMeta.children = r.linhas ? r.linhas : [];
         return true;
       } catch (error) {
@@ -92,15 +102,15 @@ export const useMetasStore = defineStore({
       }
     },
     async insert(params) {
-      if (await this.requestS.post(`${baseUrl}/meta`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params)) return true;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/meta/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/meta/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
       return false;
     },
     async filterMetas(f) {

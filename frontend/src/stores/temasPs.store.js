@@ -2,6 +2,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'meta') {
+    return 'tema';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-tema';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useTemasPsStore = defineStore('temasPsStore', {
   state: () => ({
     lista: [],
@@ -19,7 +29,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-tema/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +44,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-tema`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +57,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/plano-setorial-tema/${id}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +73,9 @@ export const useTemasPsStore = defineStore('temasPsStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/plano-setorial-tema/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/plano-setorial-tema`, params);
+          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

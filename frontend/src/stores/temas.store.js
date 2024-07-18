@@ -3,6 +3,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'meta') {
+    return 'tema';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-tema';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useTemasStore = defineStore({
   id: 'Temas',
   state: () => ({
@@ -18,7 +28,7 @@ export const useTemasStore = defineStore({
       try {
         if (this.Temas.loading) return;
         this.Temas = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/tema`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           if (!PdMStore.PdM.length) await PdMStore.getAll();
@@ -36,7 +46,7 @@ export const useTemasStore = defineStore({
     async getAllSimple() {
       this.Temas = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/tema`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         this.Temas = r.linhas;
       } catch (error) {
         this.Temas = { error };
@@ -55,7 +65,7 @@ export const useTemasStore = defineStore({
       }
     },
     async insert(params) {
-      if (await this.requestS.post(`${baseUrl}/tema`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params)) return true;
       return false;
     },
     async update(id, params) {
@@ -63,11 +73,11 @@ export const useTemasStore = defineStore({
         pdm_id: params.pdm_id,
         descricao: params.descricao,
       };
-      if (await this.requestS.patch(`${baseUrl}/tema/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/tema/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
       return false;
     },
     async filterTemas(f) {

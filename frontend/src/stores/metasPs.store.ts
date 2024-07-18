@@ -1,6 +1,7 @@
 import type { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
 import type { Meta } from '@/../../backend/src/meta/entities/meta.entity';
 import { defineStore } from 'pinia';
+import type { RouteMeta } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -32,6 +33,16 @@ interface Estado {
   };
 }
 
+function caminhoParaApi(rotaMeta: RouteMeta) {
+  if (rotaMeta.entidadeMãe === 'meta') {
+    return 'meta';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'meta-setorial';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const usePsMetasStore = defineStore('psMetas', {
   state: (): Estado => ({
     lista: [],
@@ -57,7 +68,7 @@ export const usePsMetasStore = defineStore('psMetas', {
     async buscarItem(metaId: number, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/meta-setorial/${metaId || this.route.params.metaId}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`, params);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
@@ -77,7 +88,7 @@ export const usePsMetasStore = defineStore('psMetas', {
           pagina_corrente: paginaCorrente,
           tem_mais: temMais,
           total_registros: totalRegistros,
-        } = await this.requestS.get(`${baseUrl}/meta-setorial`, params);
+        } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
 
         this.lista = linhas;
 
@@ -97,7 +108,7 @@ export const usePsMetasStore = defineStore('psMetas', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/meta-setorial/${metaId || this.route.params.metaId}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -115,9 +126,9 @@ export const usePsMetasStore = defineStore('psMetas', {
         let resposta;
 
         if (metaId) {
-          resposta = await this.requestS.patch(`${baseUrl}/meta-setorial/${metaId || this.route.params.metaId}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/meta-setorial`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
