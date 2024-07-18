@@ -57,10 +57,10 @@ export const usePsMetasStore = defineStore('psMetas', {
     },
   }),
   actions: {
-    async buscarItem(variavelId: number, params = {}): Promise<void> {
+    async buscarItem(metaId: number, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/meta-setorial/${variavelId || this.route.params.variavelId}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/meta-setorial/${metaId || this.route.params.metaId}`, params);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
@@ -96,11 +96,11 @@ export const usePsMetasStore = defineStore('psMetas', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async excluirItem(variavelId: number): Promise<boolean> {
+    async excluirItem(metaId: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/meta-setorial/${variavelId || this.route.params.variavelId}`);
+        await this.requestS.delete(`${baseUrl}/meta-setorial/${metaId || this.route.params.metaId}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -111,14 +111,14 @@ export const usePsMetasStore = defineStore('psMetas', {
       }
     },
 
-    async salvarItem(params = {}, variavelId = 0): Promise<boolean> {
+    async salvarItem(params = {}, metaId = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 
       try {
         let resposta;
 
-        if (variavelId) {
-          resposta = await this.requestS.patch(`${baseUrl}/meta-setorial/${variavelId || this.route.params.variavelId}`, params);
+        if (metaId) {
+          resposta = await this.requestS.patch(`${baseUrl}/meta-setorial/${metaId || this.route.params.metaId}`, params);
         } else {
           resposta = await this.requestS.post(`${baseUrl}/meta-setorial`, params);
         }
@@ -138,7 +138,7 @@ export const usePsMetasStore = defineStore('psMetas', {
       ...emFoco,
     }),
 
-    variaveisPorId: ({ lista }: Estado) => lista
+    metasPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
