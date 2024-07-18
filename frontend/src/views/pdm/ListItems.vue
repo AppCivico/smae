@@ -360,8 +360,11 @@ function abreEdicaoOrcamento(id) {
                 <table class="tablemain mb1">
                   <thead>
                     <tr>
-                      <th style="width: 60%">
+                      <th style="width: 40%">
                         Tag
+                      </th>
+                      <th style="width: 30%">
+                        Categoria
                       </th>
                       <th style="width: 30%">
                         Icone
@@ -376,6 +379,7 @@ function abreEdicaoOrcamento(id) {
                     >
                       <tr>
                         <td>{{ subitem.descricao }}</td>
+                        <td>{{ subitem.ods.titulo }}</td>
                         <td>
                           <a
                             v-if="subitem.icone"
