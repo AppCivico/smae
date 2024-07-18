@@ -14,8 +14,6 @@ const perm = permissions.value;
 const route = useRoute();
 const { meta_id } = route.params;
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
-
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 if (meta_id && singleMeta.value.id != meta_id) MetasStore.getById(meta_id);

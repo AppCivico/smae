@@ -41,8 +41,7 @@ const {
 } = route.params;
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
-const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
-const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
+
 const props = defineProps(['group']);
 
 const MetasStore = useMetasStore();
