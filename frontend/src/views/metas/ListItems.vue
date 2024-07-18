@@ -13,7 +13,7 @@ import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { storeToRefs } from 'pinia';
 import {
-  onMounted, onUpdated, reactive, ref,
+  onMounted, reactive, ref, watch,
 } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -48,14 +48,8 @@ filterItems();
 function start() {
   ÓrgãosStore.getAll();
   TagsStore.getAll();
-
-  if (props.group == 'macrotemas') editModalStore.modal(AddEditMacrotemas, props);
-  if (props.group == 'subtemas') editModalStore.modal(AddEditSubtemas, props);
-  if (props.group == 'temas') editModalStore.modal(AddEditTemas, props);
-  if (props.group == 'tags') editModalStore.modal(AddEditTags, props);
 }
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
+
 function groupSlug(s) {
   let r;
   switch (s) {
@@ -66,6 +60,15 @@ function groupSlug(s) {
   }
   return r;
 }
+
+onMounted(() => { start(); });
+
+watch(() => props.group, (novoValor) => {
+  if (novoValor === 'macrotemas') editModalStore.modal(AddEditMacrotemas, props);
+  if (novoValor === 'subtemas') editModalStore.modal(AddEditSubtemas, props);
+  if (novoValor === 'temas') editModalStore.modal(AddEditTemas, props);
+  if (novoValor === 'tags') editModalStore.modal(AddEditTags, props);
+});
 </script>
 <template>
   <Dashboard>
