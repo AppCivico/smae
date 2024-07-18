@@ -228,7 +228,10 @@ const {
           Aditivos
         </dt>
         <dd>
-          <ContratosAditivos @salvo="contratosStore.buscarItem(emFoco.id)" />
+          <ContratosAditivos
+            @salvo="contratosStore.buscarItem(emFoco.id)"
+            @excluido="contratosStore.buscarItem(emFoco.id)"
+          />
         </dd>
       </div>
       <div class="f1 fb100 mb1">
