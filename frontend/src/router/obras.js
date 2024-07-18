@@ -13,7 +13,7 @@ export default {
 </svg>`,
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
-    pesoNoMenu: 4,
+    pesoNoMenu: 1,
     entidadeMãe: 'obras',
     limitarÀsPermissões: [
       'MDO.',
