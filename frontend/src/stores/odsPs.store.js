@@ -19,7 +19,7 @@ export const useOdsStore = defineStore('odsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/ods/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-ods/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -33,7 +33,7 @@ export const useOdsStore = defineStore('odsStore', {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/ods`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-ods`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -46,7 +46,7 @@ export const useOdsStore = defineStore('odsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/ods/${id}`);
+        await this.requestS.delete(`${baseUrl}/plano-setorial-ods/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -62,9 +62,9 @@ export const useOdsStore = defineStore('odsStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/ods/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/plano-setorial-ods/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/ods`, params);
+          await this.requestS.post(`${baseUrl}/plano-setorial-ods`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
