@@ -17,9 +17,9 @@ import {
     ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiProduces,
-    ApiTags,
-    ApiUnauthorizedResponse,
+    ApiTags
 } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -31,7 +31,6 @@ import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { Meta, RelacionadosDTO } from './entities/meta.entity';
 import { MetaService } from './meta.service';
-import { TipoPdm } from '@prisma/client';
 
 @ApiTags('Meta')
 @Controller('meta')

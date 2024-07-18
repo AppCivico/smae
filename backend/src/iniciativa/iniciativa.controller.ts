@@ -10,10 +10,12 @@ import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { ListIniciativaDto } from './dto/list-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IniciativaService } from './iniciativa.service';
+import { TipoPdm } from '@prisma/client';
 
 @ApiTags('Iniciativa')
 @Controller('iniciativa')
 export class IniciativaController {
+    private tipoPdm: TipoPdm = 'PDM';
     constructor(private readonly iniciativaService: IniciativaService) {}
 
     @Post()
@@ -23,7 +25,7 @@ export class IniciativaController {
         @Body() createIniciativaDto: CreateIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.iniciativaService.create(createIniciativaDto, user);
+        return await this.iniciativaService.create(this.tipoPdm, createIniciativaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -33,7 +35,7 @@ export class IniciativaController {
         @Query() filters: FilterIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIniciativaDto> {
-        return { linhas: await this.iniciativaService.findAll(filters, user) };
+        return { linhas: await this.iniciativaService.findAll(this.tipoPdm, filters, user) };
     }
 
     @Patch(':id')
@@ -44,7 +46,7 @@ export class IniciativaController {
         @Body() updateIniciativaDto: UpdateIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.iniciativaService.update(+params.id, updateIniciativaDto, user);
+        return await this.iniciativaService.update(this.tipoPdm, +params.id, updateIniciativaDto, user);
     }
 
     @Delete(':id')
@@ -53,7 +55,55 @@ export class IniciativaController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.iniciativaService.remove(+params.id, user);
+        await this.iniciativaService.remove(this.tipoPdm, +params.id, user);
+        return '';
+    }
+}
+
+@ApiTags('Iniciativa')
+@Controller('iniciativa-setorial')
+export class IniciativaSetorialController {
+    private tipoPdm: TipoPdm = 'PS';
+    constructor(private readonly iniciativaService: IniciativaService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIniciativaPS.inserir', 'CadastroMetaPS.inserir'])
+    async create(
+        @Body() createIniciativaDto: CreateIniciativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.iniciativaService.create(this.tipoPdm, createIniciativaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles(['CadastroMetaPS.listar'])
+    async findAll(
+        @Query() filters: FilterIniciativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListIniciativaDto> {
+        return { linhas: await this.iniciativaService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIniciativaPS.editar', 'CadastroMetaPS.inserir'])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateIniciativaDto: UpdateIniciativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.iniciativaService.update(this.tipoPdm, +params.id, updateIniciativaDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIniciativaPS.remover', 'CadastroMetaPS.inserir'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.iniciativaService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 }
