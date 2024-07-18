@@ -31,7 +31,6 @@ const MetasStore = useMetasStore();
 const ÓrgãosStore = useOrgansStore();
 const TagsStore = useTagsStore();
 const { activePdm, groupedMetas } = storeToRefs(MetasStore);
-MetasStore.getPdM();
 
 const filters = reactive({
   groupBy: localStorage.getItem('groupBy') ?? 'macro_tema',
