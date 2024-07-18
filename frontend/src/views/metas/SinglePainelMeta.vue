@@ -103,13 +103,13 @@ const mouseUpHandler = function (e) {
         <h1>{{ singleMeta.titulo }}</h1>
       </div>
       <hr class="ml2 f1">
-      <router-link
+      <SmaeLink
         v-if="perm?.CadastroMeta?.editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
       >
         Editar
-      </router-link>
+      </SmaeLink>
     </div>
 
     <div class="boards">

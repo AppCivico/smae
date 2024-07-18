@@ -57,7 +57,7 @@ function permitirEdição(indicadorVariavel) {
         v-if="indicadorId"
         class="mr1"
       >
-        <router-link
+        <SmaeLink
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/novo`,
             query: $route.query,
@@ -71,10 +71,10 @@ function permitirEdição(indicadorVariavel) {
           >
             <use xlink:href="#i_+" />
           </svg>
-        </router-link>
+        </SmaeLink>
       </li>
       <li class="mr1">
-        <router-link
+        <SmaeLink
           v-if="indicadorRegionalizavel"
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/gerar`,
@@ -89,7 +89,7 @@ function permitirEdição(indicadorVariavel) {
           >
             <use xlink:href="#i_+" />
           </svg>
-        </router-link>
+        </SmaeLink>
       </li>
     </ul>
   </nav>
@@ -134,7 +134,7 @@ function permitirEdição(indicadorVariavel) {
           </svg>
           <div>Apagar</div>
         </button>
-        <router-link
+        <SmaeLink
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`,
             query: $route.query,
@@ -148,8 +148,8 @@ function permitirEdição(indicadorVariavel) {
             <use xlink:href="#i_edit" />
           </svg>
           <div>Editar</div>
-        </router-link>
-        <router-link
+        </SmaeLink>
+        <SmaeLink
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/valores`,
             query: $route.query,
@@ -160,8 +160,8 @@ function permitirEdição(indicadorVariavel) {
             width="20"
             height="20"
           ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-        </router-link>
-        <router-link
+        </SmaeLink>
+        <SmaeLink
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/retroativos`,
             query: $route.query,
@@ -172,7 +172,7 @@ function permitirEdição(indicadorVariavel) {
             width="20"
             height="20"
           ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-        </router-link>
+        </SmaeLink>
       </td>
     </tr>
   </table>

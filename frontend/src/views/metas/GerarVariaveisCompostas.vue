@@ -282,9 +282,9 @@ export default {
         class="error-msg"
       >
         Não há regiões para o
-        <router-link to="#nivel_regionalizacao">
+        <SmaeLink to="#nivel_regionalizacao">
           nível
-        </router-link>
+        </SmaeLink>
         escolhido.
       </div>
     </div>

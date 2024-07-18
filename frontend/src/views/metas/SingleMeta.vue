@@ -69,13 +69,13 @@ iniciar();
         </h1>
       </div>
       <hr class="ml2 f1">
-      <router-link
+      <SmaeLink
         v-if="perm?.CadastroMeta?.editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
       >
         Editar
-      </router-link>
+      </SmaeLink>
     </div>
 
     <div class="boards">
@@ -210,13 +210,13 @@ iniciar();
               {{ activePdm.rotulo_iniciativa }}
             </h2>
             <hr class="ml2 f1">
-            <router-link
+            <SmaeLink
               v-if="perm?.CadastroIniciativa?.inserir && activePdm.possui_iniciativa"
               :to="`${parentlink}/iniciativas/novo`"
               class="btn ml2"
             >
               Adicionar {{ activePdm.rotulo_iniciativa }}
-            </router-link>
+            </SmaeLink>
           </div>
 
           <div
@@ -227,7 +227,7 @@ iniciar();
           >
             <header class="p1">
               <div class="flex center g2 mb1">
-                <router-link
+                <SmaeLink
                   :to="`${parentlink}/iniciativas/${ini.id}`"
                   class="f0"
                   style="flex-basis: 2rem;"
@@ -239,20 +239,20 @@ iniciar();
                     color="#8EC122"
                     xmlns="http://www.w3.org/2000/svg"
                   ><use xlink:href="#i_iniciativa" /></svg>
-                </router-link>
-                <router-link
+                </SmaeLink>
+                <SmaeLink
                   :to="`${parentlink}/iniciativas/${ini.id}`"
                   class="f1 mt1"
                 >
                   <h2 class="mb1">
                     {{ ini.titulo }}
                   </h2>
-                </router-link>
+                </SmaeLink>
                 <div
                   v-if="temPermissãoPara('CadastroIniciativa.editar')"
                   class="f0"
                 >
-                  <router-link
+                  <SmaeLink
                     :to="`${parentlink}/iniciativas/editar/${ini.id}`"
                     class="tprimary"
                   >
@@ -260,7 +260,7 @@ iniciar();
                       width="20"
                       height="20"
                     ><use xlink:href="#i_edit" /></svg>
-                  </router-link>
+                  </SmaeLink>
                 </div>
               </div>
               <div class="f1 ml2">

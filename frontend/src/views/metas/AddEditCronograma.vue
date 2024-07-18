@@ -325,12 +325,12 @@ async function checkClose() {
         </div>
       </div>
       <div class="tc">
-        <router-link
+        <SmaeLink
           :to="`${parentlink}`"
           class="btn big mt1 mb1"
         >
           <span>Voltar</span>
-        </router-link>
+        </SmaeLink>
       </div>
     </template>
 
