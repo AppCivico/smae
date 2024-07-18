@@ -21,8 +21,7 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
-const emit = defineEmits(['salvo']);
+const emit = defineEmits(['salvo', 'excluido']);
 
 const aditivosStore = useTipoDeAditivosStore();
 const alertStore = useAlertStore();
@@ -120,9 +119,8 @@ async function excluirAditivo(id, descricao) {
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await contratosStore.excluirAditivo(id)) {
-        contratosStore.$reset();
-        contratosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
         alertStore.success(`"${descricao}" removido.`);
+        emit('excluido');
       }
     },
     'Remover',
