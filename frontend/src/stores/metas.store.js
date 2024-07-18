@@ -19,20 +19,29 @@ export const useMetasStore = defineStore({
     Metas: {},
     tempMetas: {},
     singleMeta: {},
-    activePdm: {},
     groupedMetas: {},
   }),
+  getters: {
+    activePdm() {
+      switch (this.route.meta.entidadeMãe) {
+        case 'meta':
+          return usePdMStore().activePdm;
+        case 'planoSetorial':
+          return usePlanosSetoriaisStore().emFoco;
+        default:
+          throw new Error('Erro ao buscar PdM ativo');
+      }
+    },
+  },
   actions: {
     clear() {
       this.Metas = {};
       this.tempMetas = {};
       this.groupedMetas = {};
       this.singleMeta = {};
-      this.activePdm = {};
     },
     clearEdit() {
       this.singleMeta = {};
-      this.activePdm = {};
     },
     waitFor(resolve, reject) {
       if (!this.Metas.loading) resolve(1);
@@ -43,7 +52,6 @@ export const useMetasStore = defineStore({
       if (!PdMStore.activePdm.id) {
         await PdMStore.getActive();
       }
-      this.activePdm = PdMStore.activePdm;
       return this.activePdm;
     },
     async getfilteredMetasByPdM(pdmId) {
@@ -61,7 +69,6 @@ export const useMetasStore = defineStore({
     },
     async getAll() {
       try {
-        if (!this.activePdm.id) await this.getPdM();
         if (this.Metas.loading) {
           await new Promise(this.waitFor);
         } else {
