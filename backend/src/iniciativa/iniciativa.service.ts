@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
@@ -13,30 +13,34 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { MetaService } from '../meta/meta.service';
 
 @Injectable()
 export class IniciativaService {
     private readonly logger = new Logger(IniciativaService.name);
     constructor(
         private readonly prisma: PrismaService,
+        private readonly metaService: MetaService,
         private readonly variavelService: VariavelService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly geolocService: GeoLocService
     ) {}
 
-    async create(dto: CreateIniciativaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdm, dto: CreateIniciativaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             // logo, é um tecnico_cp
             const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             if (!filterIdIn.includes(dto.meta_id)) {
                 throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400);
             }
         }
+
+        await this.loadMetaOrThrow(tipo, dto.meta_id, user);
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -105,6 +109,14 @@ export class IniciativaService {
         );
 
         return created;
+    }
+
+    private async loadMetaOrThrow(tipo: TipoPdm, meta_id: number, user: PessoaFromJwt) {
+        const meta = await this.metaService.findAll(tipo, { id: meta_id }, user);
+        if (!meta) {
+            throw new HttpException('meta_id| Meta não encontrada', 400);
+        }
+        return meta;
     }
 
     async buildIniciativaTags(iniciativaId: number, tags: number[]): Promise<Prisma.IniciativaTagCreateManyInput[]> {
@@ -203,12 +215,12 @@ export class IniciativaService {
         return arr;
     }
 
-    async findAll(filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
         const meta_id = filters?.meta_id;
 
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
+            if (user.hasSomeRoles([tipo == 'PDM' ? 'PDM.ponto_focal' : 'PS.ponto_focal'])) {
                 filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_iniciativa_pessoa_responsavel);
             } else {
                 filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
@@ -222,6 +234,7 @@ export class IniciativaService {
             where: {
                 removido_em: null,
                 meta_id: meta_id ? meta_id : undefined,
+                meta: { pdm: { tipo } },
                 AND: [{ meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
             },
             orderBy: [{ codigo: 'asc' }],
@@ -317,10 +330,15 @@ export class IniciativaService {
         return ret;
     }
 
-    async update(id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
-        const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
+    async update(tipo: TipoPdm, id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
+        const self = await this.prisma.iniciativa.findFirstOrThrow({
+            where: { id, meta: { pdm: { tipo } }, removido_em: null },
+            select: { meta_id: true },
+        });
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        await this.loadMetaOrThrow(tipo, self.meta_id, user);
+
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             if (!filterIdIn.includes(self.meta_id))
                 throw new HttpException('Sem permissão para editar iniciativa', 400);
@@ -430,9 +448,9 @@ export class IniciativaService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({
-            where: { id },
+            where: { id, meta: { pdm: { tipo } }, removido_em: null },
             select: {
                 meta_id: true,
                 compoe_indicador_meta: true,
@@ -446,15 +464,17 @@ export class IniciativaService {
                 },
             },
         });
+        await this.loadMetaOrThrow(tipo, self.meta_id, user);
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
             const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
             if (!filterIdIn.includes(self.meta_id))
                 throw new HttpException('Sem permissão para remover iniciativa', 400);
         }
 
+        const now = new Date(Date.now());
         return await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+            async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
                 // Antes de remover a Iniciativa, deve ser verificada a Meta para garantir de que não há variaveis em uso
                 if (self.compoe_indicador_meta) {
                     let has_vars_in_use = false;
@@ -474,13 +494,13 @@ export class IniciativaService {
                     where: { id: id },
                     data: {
                         removido_por: user.id,
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                     },
                 });
 
                 // Caso a Iniciativa seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
                 // public.painel_conteudo_detalhe
-                await prisma.painelConteudoDetalhe.deleteMany({ where: { iniciativa_id: id } });
+                await prismaTx.painelConteudoDetalhe.deleteMany({ where: { iniciativa_id: id } });
 
                 return removed;
             }
