@@ -343,6 +343,7 @@ watch(exibirDialogo, (novoValor) => {
           />
         </div>
         <div
+          v-if="tipoDeAditivoPorId[carga.tipo_aditivo_id]?.habilita_valor"
           class="f1 fb20em mb1"
         >
           <LabelFromYup
