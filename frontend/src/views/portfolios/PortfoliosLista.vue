@@ -37,7 +37,7 @@ if (!organs.length) {
     <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{name: 'portfoliosCriar'}"
+      :to="{ name: 'portfoliosCriar' }"
       class="btn big ml1"
     >
       Novo portfólio

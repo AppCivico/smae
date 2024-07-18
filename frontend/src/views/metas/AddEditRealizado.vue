@@ -144,9 +144,7 @@ function limparFormulário() {
     }
   });
 }
-
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h2>Editar valores</h2>

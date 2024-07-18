@@ -219,8 +219,8 @@ function groupSlug(s) {
             :key="item.id"
             class="board"
           >
-            <router-link
-              v-if="filters.groupBy!='todas'&&item?.id"
+            <SmaeLink
+              v-if="filters.groupBy != 'todas' && item?.id"
               :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"
             >
               <h2>{{ item.descricao }}</h2>
@@ -260,8 +260,8 @@ function groupSlug(s) {
               </li>
             </ul>
             <hr class="mt1 mb1">
-            <router-link
-              v-if="perm?.CadastroMeta?.inserir&&filters.groupBy!='todas'"
+            <SmaeLink
+              v-if="perm?.CadastroMeta?.inserir && filters.groupBy != 'todas'"
               :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`"
               class="addlink"
             >

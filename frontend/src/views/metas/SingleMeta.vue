@@ -2,20 +2,19 @@
 import { Dashboard } from '@/components';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
-import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const { temPermissãoPara } = useAuthStore();
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
+const { permissions, temPermissãoPara } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const route = useRoute();
@@ -119,21 +118,19 @@ iniciar();
         <hr class="mt2 mb2">
         <div class="flex g2">
           <div
-            v-if="singleMeta.orgaos_participantes.filter(x=>x.responsavel)"
+            v-if="singleMeta.orgaos_participantes.filter(x => x.responsavel)"
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
               Órgão responsável
             </div>
             <div class="t13">
-              {{
-                singleMeta.orgaos_participantes
-                  .filter(x=>x.responsavel).map(x=>x.orgao.descricao).join(', ')
-              }}
+              {{ singleMeta.orgaos_participantes.filter((x) =>
+                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
             </div>
           </div>
           <div
-            v-if="singleMeta.orgaos_participantes.filter(x=>!x.responsavel).length"
+            v-if="singleMeta.orgaos_participantes.filter(x => !x.responsavel).length"
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
@@ -142,7 +139,7 @@ iniciar();
             <div class="t13">
               {{
                 singleMeta.orgaos_participantes
-                  .filter(x=>!x.responsavel).map(x=>x.orgao.descricao).join(', ')
+                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
               }}
             </div>
           </div>
@@ -154,7 +151,7 @@ iniciar();
               Responsável na coordenadoria de planejamento
             </div>
             <div class="t13">
-              {{ singleMeta.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
+              {{ singleMeta.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
             </div>
           </div>
         </div>
@@ -194,7 +191,7 @@ iniciar();
           <hr class="mt2 mb2">
         </div>
         <div
-          v-if="activePdm.possui_complementacao_meta&&singleMeta.complemento"
+          v-if="activePdm.possui_complementacao_meta && singleMeta.complemento"
           class=""
         >
           <h4>{{ activePdm.rotulo_complementacao_meta }}</h4>
@@ -214,7 +211,7 @@ iniciar();
             </h2>
             <hr class="ml2 f1">
             <router-link
-              v-if="perm?.CadastroIniciativa?.inserir&&activePdm.possui_iniciativa"
+              v-if="perm?.CadastroIniciativa?.inserir && activePdm.possui_iniciativa"
               :to="`${parentlink}/iniciativas/novo`"
               class="btn ml2"
             >
@@ -281,7 +278,7 @@ iniciar();
                       Órgão participante
                     </div>
                     <div class="t13">
-                      {{ ini?.orgaos_participantes?.map(x=>x.orgao.descricao).join(', ') }}
+                      {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
                     </div>
                   </div>
                   <div class="f1">
@@ -289,7 +286,7 @@ iniciar();
                       Responsável na coordenadoria de planejamento
                     </div>
                     <div class="t13">
-                      {{ ini?.coordenadores_cp?.map(x=>x.nome_exibicao).join(', ') }}
+                      {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
                     </div>
                   </div>
                 </div>
