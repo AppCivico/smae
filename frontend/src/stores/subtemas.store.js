@@ -3,6 +3,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'meta') {
+    return 'subtema';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-subtema';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useSubtemasStore = defineStore({
   id: 'Subtemas',
   state: () => ({
@@ -18,7 +28,7 @@ export const useSubtemasStore = defineStore({
       try {
         if (this.Subtemas.loading) return;
         this.Subtemas = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/subtema`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           if (!PdMStore.PdM.length) await PdMStore.getAll();
@@ -36,7 +46,7 @@ export const useSubtemasStore = defineStore({
     async getAllSimple() {
       this.Subtemas = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/subtema`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         this.Subtemas = r.linhas;
       } catch (error) {
         this.Subtemas = { error };
@@ -59,7 +69,7 @@ export const useSubtemasStore = defineStore({
         pdm_id: Number(params.pdm_id),
         descricao: params.descricao,
       };
-      if (await this.requestS.post(`${baseUrl}/subtema`, m)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, m)) return true;
       return false;
     },
     async update(id, params) {
@@ -67,11 +77,11 @@ export const useSubtemasStore = defineStore({
         pdm_id: Number(params.pdm_id),
         descricao: params.descricao,
       };
-      if (await this.requestS.patch(`${baseUrl}/subtema/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/subtema/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
       return false;
     },
     async filterSubtemas(f) {
