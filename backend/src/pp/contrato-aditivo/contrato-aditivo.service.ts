@@ -170,6 +170,7 @@ export class ContratoAditivoService {
                         data_termino_atualizada: dto.data_termino_atualizada,
                         valor: dto.valor,
                         percentual_medido: dto.percentual_medido,
+                        numero: dto.numero,
 
                         atualizado_em: now,
                         atualizado_por: user.id,
