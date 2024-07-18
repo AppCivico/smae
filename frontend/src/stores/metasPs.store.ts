@@ -1,8 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { Meta } from '@/../../backend/src/meta/entities/meta.entity';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
-
+import type { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
+import type { Meta } from '@/../../backend/src/meta/entities/meta.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
