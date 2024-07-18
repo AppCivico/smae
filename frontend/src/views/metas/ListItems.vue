@@ -7,10 +7,10 @@ import { useEditModalStore } from '@/stores/editModal.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTagsStore } from '@/stores/tags.store';
-import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
-import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
-import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
-import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
+import AddEditMacrotemas from '@/views/pdm/AddEditMacrotemas.vue';
+import AddEditSubtemas from '@/views/pdm/AddEditSubtemas.vue';
+import AddEditTags from '@/views/pdm/AddEditTags.vue';
+import AddEditTemas from '@/views/pdm/AddEditTemas.vue';
 import { storeToRefs } from 'pinia';
 import {
   onMounted, reactive, ref, watch,
