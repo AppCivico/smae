@@ -87,7 +87,7 @@ function permitirEdição(indicadorVariavel) {
           </svg>
           <div>Apagar</div>
         </button>
-        <router-link
+        <SmaeLink
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.formula_composta_id}`,
             query: $route.query,
@@ -101,7 +101,7 @@ function permitirEdição(indicadorVariavel) {
             <use xlink:href="#i_edit" />
           </svg>
           <div>Editar</div>
-        </router-link>
+        </SmaeLink>
       </td>
     </tr>
   </table>

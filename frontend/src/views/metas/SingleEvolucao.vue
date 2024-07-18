@@ -140,7 +140,7 @@ onUpdated(() => { start(); });
                       <option>Meses futuros</option>
                   </select> -->
                 </div>
-                <router-link
+                <SmaeLink
                   v-if="perm.CadastroIndicador?.editar"
                   :to="`${parentlink}/indicadores/${ind.id}`"
                   class="tprimary"
@@ -149,7 +149,7 @@ onUpdated(() => { start(); });
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </router-link>
+                </SmaeLink>
               </div>
               <EvolucaoGraph
                 :dataserie="ValoresInd[ind.id]"
@@ -261,29 +261,29 @@ onUpdated(() => { start(); });
                     ><use xlink:href="#i_more" /></svg></span>
                     <ul>
                       <li>
-                        <router-link
+                        <SmaeLink
                           :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}`"
                           class="tprimary"
                         >
                           Editar variável
-                        </router-link>
+                        </SmaeLink>
                       </li>
                       <li>
-                        <router-link
+                        <SmaeLink
                           :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/valores`"
                           class="tprimary"
                         >
                           Valores previstos
-                        </router-link>
+                        </SmaeLink>
                       </li>
                       <li>
-                        <router-link
+                        <SmaeLink
                           v-if="perm.CadastroPessoa?.administrador"
                           :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
                           class="tprimary"
                         >
                           Valores realizados retroativos
-                        </router-link>
+                        </SmaeLink>
                       </li>
                     </ul>
                   </div>
@@ -361,12 +361,12 @@ onUpdated(() => { start(); });
           class="bgc50"
         >
           <div class="tc">
-            <router-link
+            <SmaeLink
               :to="`${parentlink}/indicadores/novo`"
               class="btn mt1 mb1"
             >
               <span>Adicionar indicador</span>
-            </router-link>
+            </SmaeLink>
           </div>
         </div>
       </div>

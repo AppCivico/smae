@@ -49,13 +49,13 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
         </h1>
       </div>
       <hr class="ml2 f1">
-      <router-link
+      <SmaeLink
         v-if="perm?.CadastroAtividade?.editar"
         :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
         class="btn big ml2"
       >
         Editar
-      </router-link>
+      </SmaeLink>
     </div>
 
     <div class="boards">

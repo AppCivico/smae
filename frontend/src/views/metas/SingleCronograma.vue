@@ -154,7 +154,7 @@ onUpdated(() => { start(); });
         </h1>
       </div>
       <hr class="ml2 f1">
-      <router-link
+      <SmaeLink
         v-if="perm?.CadastroCronograma?.editar
           && !singleCronograma?.loading
           && singleCronograma?.id"
@@ -162,7 +162,7 @@ onUpdated(() => { start(); });
         class="btn ml2"
       >
         Editar Cronograma
-      </router-link>
+      </SmaeLink>
       <div
         v-if="perm?.CadastroCronograma?.inserir
           && !singleCronograma?.loading && singleCronograma?.id
@@ -172,30 +172,30 @@ onUpdated(() => { start(); });
         <span class="btn">Nova etapa</span>
         <ul>
           <li>
-            <router-link
+            <SmaeLink
               v-if="perm?.CadastroCronograma?.inserir"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
             >
               Etapa da {{ parentLabel }}
-            </router-link>
+            </SmaeLink>
           </li>
           <li>
-            <router-link
+            <SmaeLink
               v-if="perm?.CadastroCronograma?.inserir
                 && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
             >
               A partir de {{ activePdm.rotulo_iniciativa }}
-            </router-link>
+            </SmaeLink>
           </li>
           <li>
-            <router-link
+            <SmaeLink
               v-if="perm?.CadastroCronograma?.inserir
                 && activePdm.possui_atividade && meta_id && !atividade_id"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
             >
               A partir de {{ activePdm.rotulo_atividade }}
-            </router-link>
+            </SmaeLink>
           </li>
         </ul>
       </div>
@@ -458,22 +458,22 @@ onUpdated(() => { start(); });
                 ><use xlink:href="#i_more" /></svg></span>
                 <ul>
                   <li>
-                    <router-link
+                    <SmaeLink
                       v-if="!r.cronograma_origem_etapa
                         || r.cronograma_origem_etapa.id == singleCronograma?.id"
                       :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
                     >
                       Editar Etapa
-                    </router-link>
+                    </SmaeLink>
                   </li>
                   <li>
-                    <router-link
+                    <SmaeLink
                       v-if="r.cronograma_origem_etapa
                         && r.cronograma_origem_etapa?.id != singleCronograma?.id"
                       :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`"
                     >
                       Editar Monitoramento
-                    </router-link>
+                    </SmaeLink>
                   </li>
 
                   <li
@@ -499,7 +499,7 @@ onUpdated(() => { start(); });
               && r.cronograma_origem_etapa?.id != singleCronograma?.id"
             class="pl3 flex center t11 w700 tc600"
           >
-            <router-link
+            <SmaeLink
               v-if="r.cronograma_origem_etapa.atividade"
               :to="`/metas/${r.cronograma_origem_etapa.atividade.iniciativa.meta.id}/iniciativas/${r.cronograma_origem_etapa.atividade.iniciativa.id}/atividades/${r.cronograma_origem_etapa.atividade.id}/cronograma`"
             >
@@ -511,8 +511,8 @@ onUpdated(() => { start(); });
                 xmlns="http://www.w3.org/2000/svg"
               ><use xlink:href="#i_atividade" /></svg>
               <span>Etapa via atividade {{ r.cronograma_origem_etapa.atividade.codigo }} {{ r.cronograma_origem_etapa.atividade.titulo }}</span>
-            </router-link>
-            <router-link
+            </SmaeLink>
+            <SmaeLink
               v-else-if="r.cronograma_origem_etapa.iniciativa"
               :to="`/metas/${r.cronograma_origem_etapa.iniciativa.meta.id}/iniciativas/${r.cronograma_origem_etapa.iniciativa.id}/cronograma`"
             >
@@ -528,7 +528,7 @@ onUpdated(() => { start(); });
                 {{ r.cronograma_origem_etapa.iniciativa.codigo }}
                 {{ r.cronograma_origem_etapa.iniciativa.titulo }}
               </span>
-            </router-link>
+            </SmaeLink>
           </div>
 
           <div
@@ -683,7 +683,7 @@ onUpdated(() => { start(); });
                 class="ml1 f0 flex center mr05"
                 style="flex-basis:20px; height: calc(20px + 1rem);"
               >
-                <router-link
+                <SmaeLink
                   v-if="!r.cronograma_origem_etapa
                     || r.cronograma_origem_etapa.id == singleCronograma?.id"
                   :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
@@ -692,7 +692,7 @@ onUpdated(() => { start(); });
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </router-link>
+                </SmaeLink>
               </div>
             </div>
 
@@ -854,7 +854,7 @@ onUpdated(() => { start(); });
                     class="ml1 f0 flex center mr05"
                     style="flex-basis:20px; height: calc(20px + 1rem);"
                   >
-                    <router-link
+                    <SmaeLink
                       v-if="!r.cronograma_origem_etapa
                         || r.cronograma_origem_etapa.id == singleCronograma?.id"
                       :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
@@ -863,7 +863,7 @@ onUpdated(() => { start(); });
                         width="20"
                         height="20"
                       ><use xlink:href="#i_edit" /></svg>
-                    </router-link>
+                    </SmaeLink>
                   </div>
                 </div>
                 <hr>
@@ -873,7 +873,7 @@ onUpdated(() => { start(); });
               v-if="temPermissãoPara('CadastroCronograma.inserir')"
               class="pl3"
             >
-              <router-link
+              <SmaeLink
                 v-if="!r.cronograma_origem_etapa
                   || r.cronograma_origem_etapa.id == singleCronograma?.id"
                 :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
@@ -883,7 +883,7 @@ onUpdated(() => { start(); });
                   width="20"
                   height="20"
                 ><use xlink:href="#i_+" /></svg> <span>Adicionar Subfase</span>
-              </router-link>
+              </SmaeLink>
             </div>
             <hr class="mb1">
           </div>
@@ -891,7 +891,7 @@ onUpdated(() => { start(); });
             v-if="temPermissãoPara('CadastroCronograma.inserir')"
             class="pl1"
           >
-            <router-link
+            <SmaeLink
               v-if="!r.cronograma_origem_etapa
                 || r.cronograma_origem_etapa.id == singleCronograma?.id"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
@@ -901,7 +901,7 @@ onUpdated(() => { start(); });
                 width="20"
                 height="20"
               ><use xlink:href="#i_+" /></svg> <span>Adicionar Fase</span>
-            </router-link>
+            </SmaeLink>
           </div>
         </div>
       </div>
@@ -919,12 +919,12 @@ onUpdated(() => { start(); });
         class="p1 bgc50"
       >
         <div class="tc">
-          <router-link
+          <SmaeLink
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
             class="btn mt1 mb1"
           >
             <span>Adicionar Etapa</span>
-          </router-link>
+          </SmaeLink>
         </div>
       </div>
     </template>
@@ -942,12 +942,12 @@ onUpdated(() => { start(); });
       class="p1 bgc50 mb2"
     >
       <div class="tc">
-        <router-link
+        <SmaeLink
           :to="`${parentlink}/cronograma/novo`"
           class="btn mt1 mb1"
         >
           <span>Adicionar Cronograma</span>
-        </router-link>
+        </SmaeLink>
       </div>
     </div>
   </Dashboard>

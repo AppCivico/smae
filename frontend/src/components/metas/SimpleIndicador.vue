@@ -43,7 +43,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
     >
       <div class="p1">
         <div class="flex center g2">
-          <router-link
+          <SmaeLink
             :to="`${parentlink}/evolucao`"
             class="flex center f1 g2"
           >
@@ -59,8 +59,8 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
             <h2 class="mt1 mb1">
               {{ ind.titulo }}
             </h2>
-          </router-link>
-          <router-link
+          </SmaeLink>
+          <SmaeLink
             v-if="perm?.CadastroIndicador?.editar"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
@@ -69,16 +69,16 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </div>
         <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
         <div class="tc">
-          <router-link
+          <SmaeLink
             :to="`${parentlink}/evolucao`"
             class="btn big mt1 mb1"
           >
             <span>Acompanhar evolução</span>
-          </router-link>
+          </SmaeLink>
         </div>
       </div>
     </div>
@@ -97,12 +97,12 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
       class="bgc50"
     >
       <div class="tc">
-        <router-link
+        <SmaeLink
           :to="`${parentlink}/indicadores/novo`"
           class="btn mt1 mb1"
         >
           <span>Adicionar indicador</span>
-        </router-link>
+        </SmaeLink>
       </div>
     </div>
   </div>

@@ -38,12 +38,12 @@ const groupBy = localStorage.getItem('groupBy') ?? 'todas';
         v-if="activePdm.id"
         class="migalhas-de-pão__item"
       >
-        <router-link
+        <SmaeLink
           class="migalhas-de-pão__link"
           to="/metas"
         >
           {{ activePdm.nome }}
-        </router-link>
+        </SmaeLink>
       </li>
       <template v-if="meta_id && activePdm.id">
         <template
@@ -57,12 +57,12 @@ const groupBy = localStorage.getItem('groupBy') ?? 'todas';
             "
             class="migalhas-de-pão__item"
           >
-            <router-link
+            <SmaeLink
               :to="`/metas/${item.segmento}/${singleMeta[item.nível]?.id}`"
               class="migalhas-de-pão__link"
             >
               {{ activePdm['rotulo_' + item.nível] }} {{ singleMeta[item.nível]?.descricao }}
-            </router-link>
+            </SmaeLink>
           </li>
         </template>
       </template>
@@ -70,40 +70,40 @@ const groupBy = localStorage.getItem('groupBy') ?? 'todas';
         v-if="meta_id && singleMeta.id"
         class="migalhas-de-pão__item"
       >
-        <router-link
+        <SmaeLink
           :to="`/metas/${meta_id}`"
           class="migalhas-de-pão__link"
         >
           Meta {{ singleMeta?.codigo }} {{ singleMeta?.titulo }}
-        </router-link>
+        </SmaeLink>
       </li>
 
       <li
         v-if="iniciativa_id && activePdm.possui_iniciativa && singleIniciativa.id"
         class="migalhas-de-pão__item"
       >
-        <router-link
+        <SmaeLink
           :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}`"
           class="migalhas-de-pão__link"
         >
           {{ activePdm.rotulo_iniciativa }}
           {{ singleIniciativa?.codigo }}
           {{ singleIniciativa?.titulo }}
-        </router-link>
+        </SmaeLink>
       </li>
 
       <li
         v-if="atividade_id && activePdm.possui_atividade && singleAtividade.id"
         class="migalhas-de-pão__item"
       >
-        <router-link
+        <SmaeLink
           :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${atividade_id}`"
           class="migalhas-de-pão__link"
         >
           {{ activePdm.rotulo_atividade }}
           {{ singleAtividade?.codigo }}
           {{ singleAtividade?.titulo }}
-        </router-link>
+        </SmaeLink>
       </li>
     </ul>
   </nav>

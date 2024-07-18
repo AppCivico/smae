@@ -95,39 +95,39 @@ function groupSlug(s) {
         <span class="btn">Adicionar</span>
         <ul>
           <li v-if="perm?.CadastroMeta?.inserir">
-            <router-link
+            <SmaeLink
               to="/metas/novo"
             >
               Nova Meta
-            </router-link>
+            </SmaeLink>
           </li>
           <li v-if="perm?.CadastroMacroTema?.inserir && activePdm.possui_macro_tema">
-            <router-link
+            <SmaeLink
               to="/metas/macrotemas/novo"
             >
               {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
-            </router-link>
+            </SmaeLink>
           </li>
           <li v-if="perm?.CadastroTema?.inserir && activePdm.possui_tema">
-            <router-link
+            <SmaeLink
               to="/metas/temas/novo"
             >
               {{ activePdm.rotulo_tema ?? 'Tema' }}
-            </router-link>
+            </SmaeLink>
           </li>
           <li v-if="perm?.CadastroSubTema?.inserir && activePdm.possui_sub_tema">
-            <router-link
+            <SmaeLink
               to="/metas/subtemas/novo"
             >
               {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
-            </router-link>
+            </SmaeLink>
           </li>
           <li v-if="perm?.CadastroTag?.inserir">
-            <router-link
+            <SmaeLink
               to="/metas/tags/novo"
             >
               Tag
-            </router-link>
+            </SmaeLink>
           </li>
         </ul>
       </div>
@@ -224,7 +224,7 @@ function groupSlug(s) {
               :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"
             >
               <h2>{{ item.descricao }}</h2>
-            </router-link>
+            </SmaeLink>
             <h2 v-else>
               {{ item.descricao }}
             </h2>
@@ -238,7 +238,7 @@ function groupSlug(s) {
                 :key="m.id"
                 class="meta flex center mb1"
               >
-                <router-link
+                <SmaeLink
                   :to="`/metas/${m.id}`"
                   class="flex center f1"
                 >
@@ -246,8 +246,8 @@ function groupSlug(s) {
                   <div class="t13">
                     Meta {{ m.codigo }} - {{ m.titulo }}
                   </div>
-                </router-link>
-                <router-link
+                </SmaeLink>
+                <SmaeLink
                   v-if="perm?.CadastroMeta?.editar"
                   :to="`/metas/editar/${m.id}`"
                   class="ml1 tprimary"
@@ -256,7 +256,7 @@ function groupSlug(s) {
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </router-link>
+                </SmaeLink>
               </li>
             </ul>
             <hr class="mt1 mb1">
@@ -269,8 +269,8 @@ function groupSlug(s) {
                 width="20"
                 height="20"
               ><use xlink:href="#i_+" /></svg> <span>Adicionar meta</span>
-            </router-link>
-            <router-link
+            </SmaeLink>
+            <SmaeLink
               v-else-if="perm?.CadastroMeta?.inserir"
               :to="`/metas/novo`"
               class="addlink"
@@ -279,7 +279,7 @@ function groupSlug(s) {
                 width="20"
                 height="20"
               ><use xlink:href="#i_+" /></svg> <span>Adicionar meta</span>
-            </router-link>
+            </SmaeLink>
           </div>
         </div>
       </template>
