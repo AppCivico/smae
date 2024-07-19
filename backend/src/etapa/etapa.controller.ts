@@ -6,6 +6,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { EtapaService } from './etapa.service';
+import { MetaController } from '../meta/meta.controller';
 
 @ApiTags('Etapa')
 @Controller('etapa')
@@ -14,7 +15,7 @@ export class EtapaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateEtapaDto: UpdateEtapaDto,
@@ -26,7 +27,7 @@ export class EtapaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiNoContentResponse()
-    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.etapaService.remove(+params.id, user);

@@ -1781,7 +1781,7 @@ export class TarefaService {
 
     @Cron('15 * * * *')
     async handleCron() {
-        if (Boolean(process.env['DISABLE_TAREFA_CRONTAB'])) return;
+        if (process.env['DISABLE_TAREFA_CRONTAB']) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

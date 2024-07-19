@@ -1,11 +1,5 @@
 import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiExtraModels,
-    ApiOkResponse,
-    ApiTags,
-    refs
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -50,7 +44,7 @@ export class MetasCronogramaController {
         filters.cronograma_etapa_ids = config.cronogramas_etapas;
 
         return {
-            linhas: await this.cronogramaService.findAll(filters),
+            linhas: await this.cronogramaService.findAll(filters, user),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -72,7 +66,7 @@ export class MetasCronogramaController {
         filters.cronograma_etapa_ids = config.cronogramas_etapas;
 
         return {
-            linhas: await this.cronogramaEtapaService.findAll(filters),
+            linhas: await this.cronogramaEtapaService.findAll(filters, user, true),
             requestInfo: { queryTook: Date.now() - start },
         };
     }

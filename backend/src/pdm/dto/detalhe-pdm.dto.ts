@@ -1,5 +1,5 @@
 import { MacroTemaDto } from '../../macro-tema/entities/macro-tema.entity';
-import { Meta } from '../../meta/entities/meta.entity';
+import { MetaItemDto } from '../../meta/entities/meta.entity';
 import { ObjetivoEstrategicoDto } from '../../tema/entities/objetivo-estrategico.entity';
 import { SubTemaDto } from '../../subtema/entities/subtema.entity';
 import { TagDto } from '../../tag/entities/tag.entity';
@@ -35,7 +35,7 @@ export class DetalhePdmDto {
      * Lista de objetos de
      * @example Meta[]
      */
-    meta?: Meta[];
+    meta?: MetaItemDto[];
 
     /**
      * Lista de objetos de

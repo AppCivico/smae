@@ -39,14 +39,14 @@ export class PainelController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPainel.inserir', 'CadastroMeta.inserir'])
+    @Roles(['CadastroPainel.inserir', 'CadastroMeta.administrador_no_pdm'])
     async create(@Body() createPainelDto: CreatePainelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.painelService.create(createPainelDto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPainel.inserir', 'CadastroMeta.inserir', 'Reports.executar.PDM'])
+    @Roles(['CadastroPainel.inserir', 'CadastroMeta.administrador_no_pdm', 'Reports.executar.PDM'])
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         // Este boolean indica que não é para realizar restrição por Grupo de Paineis
         // Neste endpoint será retornado todos os paineis, independente do grupo do painel e do usuário.
@@ -86,7 +86,7 @@ export class PainelController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPainel.editar', 'CadastroMeta.inserir'])
+    @Roles(['CadastroPainel.editar', 'CadastroMeta.administrador_no_pdm'])
     async update(
         @Param() params: FindOneParams,
         @Body() updatePainelDto: UpdatePainelDto,
@@ -97,7 +97,7 @@ export class PainelController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPainel.remover', 'CadastroMeta.inserir'])
+    @Roles(['CadastroPainel.remover', 'CadastroMeta.administrador_no_pdm'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -107,7 +107,7 @@ export class PainelController {
 
     @Patch(':id/conteudo')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPainel.inserir', 'CadastroMeta.inserir'])
+    @Roles(['CadastroPainel.inserir', 'CadastroMeta.administrador_no_pdm'])
     async createConteudo(
         @Param() params: FindOneParams,
         @Body() createConteudoDto: CreateParamsPainelConteudoDto,
@@ -125,7 +125,7 @@ export class PainelController {
 
     @ApiBearerAuth('access-token')
     @Patch(':id/conteudo/:id2/visualizacao')
-    @Roles(['CadastroPainel.editar', 'CadastroMeta.inserir'])
+    @Roles(['CadastroPainel.editar', 'CadastroMeta.administrador_no_pdm'])
     async updateConteudoVisualizacao(
         @Param() params: FindTwoParams,
         @Body() updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto
@@ -139,7 +139,7 @@ export class PainelController {
 
     @ApiBearerAuth('access-token')
     @Patch(':id/conteudo/:id2/detalhes')
-    @Roles(['CadastroPainel.editar', 'CadastroMeta.inserir'])
+    @Roles(['CadastroPainel.editar', 'CadastroMeta.administrador_no_pdm'])
     async updateConteudoDetalhe(
         @Param() params: FindTwoParams,
         @Body() updatePainelConteudoDetalhesDto: UpdatePainelConteudoDetalheDto

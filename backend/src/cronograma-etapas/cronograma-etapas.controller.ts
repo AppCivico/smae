@@ -4,6 +4,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
+import { MetaController } from '../meta/meta.controller';
 import { CronogramaEtapaService } from './cronograma-etapas.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { ListCronogramaEtapaDto } from './dto/list-cronograma-etapa.dto';
@@ -16,27 +17,24 @@ export class CronogramaEtapaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles([
-        'CadastroCronograma.editar',
-        'CadastroMeta.inserir',
-        'PDM.admin_cp',
-        'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal',
-    ])
-    async findAll(@Query() filters: FilterCronogramaEtapaDto): Promise<ListCronogramaEtapaDto> {
-        return { linhas: await this.cronogramaEtapaService.findAll(filters) };
+    @Roles([...MetaController.ReadPerm])
+    async findAll(
+        @Query() filters: FilterCronogramaEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListCronogramaEtapaDto> {
+        return { linhas: await this.cronogramaEtapaService.findAll(filters, user, false) };
     }
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(@Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.cronogramaEtapaService.update(updateCronogramaEtapaDto, user);
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.remover', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

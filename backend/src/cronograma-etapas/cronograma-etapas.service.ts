@@ -1,10 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
@@ -19,11 +20,22 @@ export class CronogramaEtapaService {
     private readonly logger = new Logger(CronogramaEtapaService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        @Inject(forwardRef(() => MetaService))
+        private readonly metaService: MetaService
     ) {}
 
-    async findAll(filters: FilterCronogramaEtapaDto): Promise<CECronogramaEtapaDto[]> {
+    async findAll(
+        filters: FilterCronogramaEtapaDto,
+        user: PessoaFromJwt,
+        desligaAssertMeta: boolean
+    ): Promise<CECronogramaEtapaDto[]> {
+        // ainda bem que só da pra filtrar uma cronograma/meta por vez, assim reduz a complexidade da validação
+
         const cronogramaId = filters.cronograma_id;
+        if (desligaAssertMeta) {
+            await this.assertMetaForCronograma(cronogramaId, user, 'readonly');
+        }
 
         const etapaId = filters.etapa_id;
         const inativo = filters.inativo;
@@ -447,10 +459,7 @@ export class CronogramaEtapaService {
     }
 
     async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
-        if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            // TODO buscar o ID da meta pelo cronograma, pra verificar
-        }
+        await this.assertMetaForCronograma(dto.cronograma_id, user);
 
         if (dto.ordem && dto.ordem <= 0) dto.ordem = 1;
 
@@ -490,16 +499,16 @@ export class CronogramaEtapaService {
             });
             const maxOrdem: number = rowMaxOrdem ? rowMaxOrdem.ordem : nivelOrdemForUpsert.ordem;
             const ordemUtilizada = dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem;
-            this.logger.debug('===========================');
-            this.logger.debug('dto.ordem = ' + dto.ordem);
-            this.logger.debug('maxOrdem = ' + maxOrdem);
-            this.logger.debug('self : ');
-            this.logger.debug(self);
-            this.logger.debug('selfExiste = ' + selfExiste);
-            this.logger.debug('nivelOrdemForUpsert : ');
-            this.logger.debug(nivelOrdemForUpsert);
-            this.logger.debug('ordemUtilizada = ' + ordemUtilizada);
-            this.logger.debug('===========================');
+            //this.logger.debug('===========================');
+            //this.logger.debug('dto.ordem = ' + dto.ordem);
+            //this.logger.debug('maxOrdem = ' + maxOrdem);
+            //this.logger.debug('self : ');
+            //this.logger.debug(self);
+            //this.logger.debug('selfExiste = ' + selfExiste);
+            //this.logger.debug('nivelOrdemForUpsert : ');
+            //this.logger.debug(nivelOrdemForUpsert);
+            //this.logger.debug('ordemUtilizada = ' + ordemUtilizada);
+            //this.logger.debug('===========================');
 
             const cronogramaEtapa = await prismaTx.cronogramaEtapa.upsert({
                 where: {
@@ -548,22 +557,22 @@ export class CronogramaEtapaService {
                 for (const row of rows) {
                     if (row.ordem >= startOrdem && row.ordem <= endOrdem) {
                         let newOrdem;
-                        this.logger.debug('=======================');
-                        this.logger.debug('rowOrdem = ' + row.ordem);
+                        //this.logger.debug('=======================');
+                        //this.logger.debug('rowOrdem = ' + row.ordem);
 
                         if (
                             (self && ordemUtilizada < self.ordem) ||
                             (!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) ||
                             (self && self.ordem - ordemUtilizada != -1 && self.ordem - ordemUtilizada > -2)
                         ) {
-                            this.logger.debug('ordem irá subir');
+                            //this.logger.debug('ordem irá subir');
                             newOrdem = row.ordem + 1;
                         } else {
-                            this.logger.debug('ordem irá descer');
+                            //this.logger.debug('ordem irá descer');
                             newOrdem = row.ordem - 1;
                             if (newOrdem <= 0) break;
                         }
-                        this.logger.debug('=======================');
+                        //this.logger.debug('=======================');
 
                         updates.push(
                             prismaTx.cronogramaEtapa.update({
@@ -591,6 +600,18 @@ export class CronogramaEtapaService {
         }
 
         return { id };
+    }
+
+    private async assertMetaForCronograma(
+        cronograma_id: number,
+        user: PessoaFromJwt,
+        readwrite: 'readonly' | 'readwrite' = 'readwrite'
+    ) {
+        const r = await this.prisma.view_meta_cronograma.findFirstOrThrow({
+            where: { cronograma_id },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PDM', r.meta_id, user, 'cronograma', readwrite);
     }
 
     async getNivelOrdemForUpsert(
@@ -650,10 +671,7 @@ export class CronogramaEtapaService {
     }
 
     async delete(id: number, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            // TODO buscar o ID da meta pelo cronograma, pra verificar
-        }
+        await this.assertMetaForCronograma(id, user);
 
         const deleted = await this.prisma.cronogramaEtapa.findUnique({
             where: { id: id },

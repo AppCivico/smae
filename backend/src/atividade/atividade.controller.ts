@@ -1,16 +1,17 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { AtividadeService } from './atividade.service';
 import { CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { ListAtividadeDto } from './dto/list-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
-import { TipoPdm } from '@prisma/client';
 
 @ApiTags('Atividade')
 @Controller('atividade')
@@ -20,7 +21,7 @@ export class AtividadeController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroAtividade.inserir', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async create(
         @Body() createAtividadeDto: CreateAtividadeDto,
         @CurrentUser() user: PessoaFromJwt
@@ -30,14 +31,14 @@ export class AtividadeController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(this.tipoPdm, filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroAtividade.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateAtividadeDto: UpdateAtividadeDto,
@@ -48,7 +49,7 @@ export class AtividadeController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroAtividade.remover', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -65,7 +66,7 @@ export class AtividadeSetorialController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroAtividadePS.inserir', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     async create(
         @Body() createAtividadeDto: CreateAtividadeDto,
         @CurrentUser() user: PessoaFromJwt
@@ -75,14 +76,14 @@ export class AtividadeSetorialController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMetaPS.listar'])
+    @Roles(MetaSetorialController.ReadPerm)
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(this.tipoPdm, filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroAtividadePS.editar', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateAtividadeDto: UpdateAtividadeDto,
@@ -93,7 +94,7 @@ export class AtividadeSetorialController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroAtividadePS.remover', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

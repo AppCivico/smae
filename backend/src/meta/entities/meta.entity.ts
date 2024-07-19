@@ -26,7 +26,7 @@ export class MetaTag {
     download_token: string | null;
 }
 
-export class Meta {
+export class MetaItemDto {
     id: number;
     status: string;
     pdm_id: number;
@@ -43,6 +43,7 @@ export class Meta {
     tags: MetaTag[];
     cronograma: CronogramaAtrasoGrau | null;
     geolocalizacao: GeolocalizacaoDto[];
+    pode_editar: boolean;
 }
 
 export class MetaPdmDto {

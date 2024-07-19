@@ -5,6 +5,7 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { FilterPeriodoFormulaCompostaDto, ListaPeriodoFormulaCompostaDto } from './dto/variavel.formula-composta.dto';
 import { VariavelFormulaCompostaService } from './variavel.formula-composta.service';
+import { MetaController } from '../meta/meta.controller';
 
 @ApiTags('Indicador')
 @Controller('')
@@ -13,7 +14,7 @@ export class VariavelFormulaCompostaController {
 
     @Get('formula-variavel/:id/periodos')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async getFormulaCompostaPeriodos(@Param() params: FindOneParams): Promise<ListaPeriodoFormulaCompostaDto> {
         return {
             linhas: await this.variavelFCService.getFormulaCompostaPeriodos(params.id),
@@ -22,7 +23,7 @@ export class VariavelFormulaCompostaController {
 
     @Get('formula-variavel/:id/series')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async getFormulaCompostaSeries(
         @Param() params: FindOneParams,
         @Query() filter: FilterPeriodoFormulaCompostaDto

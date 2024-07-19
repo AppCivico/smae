@@ -1,4 +1,4 @@
-import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
+import { Controller, Get, Inject, ParseArrayPipe, Query, forwardRef } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { ListDadosMetaIniciativaAtividadesDto } from '../../meta/dto/create-meta.dto';
@@ -11,6 +11,7 @@ import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 export class ProjetoProxyPdmMetasController {
     constructor(
         private readonly svc: ProjetoProxyPdmMetasService,
+        @Inject(forwardRef(() => MetaService))
         private readonly metaService: MetaService
     ) {}
 
@@ -53,6 +54,7 @@ export class ProjetoProxyPdmMetasController {
 export class ProjetoMDOProxyPdmMetasController {
     constructor(
         private readonly svc: ProjetoProxyPdmMetasService,
+        @Inject(forwardRef(() => MetaService))
         private readonly metaService: MetaService
     ) {}
 
