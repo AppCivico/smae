@@ -288,6 +288,7 @@ export default {
         {
           path: 'metas',
           props: true,
+          component: () => import('@/views/planosSetoriais/PlanoSetoriaisMetas.vue'),
 
           meta: {
             // possível apenas porque os valores to tipo `function` são

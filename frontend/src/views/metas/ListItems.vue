@@ -72,17 +72,15 @@ watch(() => props.group, (novoValor) => {
 <template>
   <MigalhasDeMetas class="mb1" />
 
-  <div class="flex spacebetween center mb2">
-    <img
-      v-if="activePdm.logo"
-      :src="`${baseUrl}/download/${activePdm.logo}?inline=true`"
-      width="100"
-      class="ib mr1"
-    >
-    <h1 v-else>
-      {{ activePdm.nome }}
-    </h1>
-    <hr class="ml2 f1">
+  <header class="flex spacebetween center mb2 g2">
+    <slot name="icone" />
+
+    <TítuloDePágina
+      :ícone="$props.icone"
+      :título="activePdm.nome"
+    />
+
+    <hr class="f1">
     <div
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
@@ -91,7 +89,7 @@ watch(() => props.group, (novoValor) => {
         'CadastroSubTema.inserir',
         'CadastroTag.inserir'
       ])"
-      class="ml2 dropbtn"
+      class="dropbtn"
     >
       <span class="btn">Adicionar</span>
       <ul>
@@ -132,7 +130,8 @@ watch(() => props.group, (novoValor) => {
         </li>
       </ul>
     </div>
-  </div>
+  </header>
+
   <div class="flex center mb2">
     <div class="f1 mr1">
       <label class="label tc300">Agrupar por</label>
