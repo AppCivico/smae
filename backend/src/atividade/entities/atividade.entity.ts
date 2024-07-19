@@ -2,6 +2,7 @@ import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
+import { MetaIniAtvTag } from '../../meta/entities/meta.entity';
 
 export class IdDesc {
     id: number;
@@ -16,6 +17,7 @@ export class AtividadeOrgao {
 
 export class Atividade {
     id: number;
+    tags: MetaIniAtvTag[];
     status: string | null;
     iniciativa_id: number;
     codigo: string;

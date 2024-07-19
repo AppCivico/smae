@@ -20,7 +20,7 @@ export class MetaOrgao {
     participantes: IdNomeExibicao[];
 }
 
-export class MetaTag {
+export class MetaIniAtvTag {
     id: number;
     descricao: string;
     download_token: string | null;
@@ -40,7 +40,7 @@ export class MetaItemDto {
     ativo: boolean;
     orgaos_participantes: MetaOrgao[];
     coordenadores_cp: IdNomeExibicao[];
-    tags: MetaTag[];
+    tags: MetaIniAtvTag[];
     cronograma: CronogramaAtrasoGrau | null;
     geolocalizacao: GeolocalizacaoDto[];
     pode_editar: boolean;
