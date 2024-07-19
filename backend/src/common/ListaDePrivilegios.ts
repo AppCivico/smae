@@ -1,5 +1,6 @@
 export type ListaDePrivilegios =
     | 'SMAE.superadmin'
+    | 'SMAE.login_suspenso'
     | 'CadastroFonteRecurso.inserir'
     | 'CadastroFonteRecurso.editar'
     | 'CadastroFonteRecurso.remover'
@@ -65,22 +66,17 @@ export type ListaDePrivilegios =
     | 'CadastroProjetoEtapa.inserir'
     | 'CadastroProjetoEtapa.editar'
     | 'CadastroProjetoEtapa.remover'
-
     | 'CadastroMeta.listar'
     | 'CadastroMeta.administrador_no_pdm'
     | 'CadastroMetaPS.listar'
     | 'CadastroMetaPS.administrador_no_pdm'
-
     | 'CadastroMeta.orcamento'
     | 'CadastroMeta.administrador_orcamento'
     | 'CadastroMetaPS.orcamento'
     | 'CadastroMetaPS.administrador_orcamento'
-
     | 'CadastroVariavelCategorica.administrador'
     | 'CadastroVariavelCategoricaPS.administrador'
-
     | 'CadastroVariavelGlobal.administrador_no_orgao'
-
     | 'CadastroPainel.inserir'
     | 'CadastroPainel.editar'
     | 'CadastroPainel.remover'
