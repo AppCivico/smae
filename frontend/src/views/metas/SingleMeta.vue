@@ -159,7 +159,7 @@ iniciar();
           </div>
         </div>
         <hr class="mt2 mb2">
-        <div>
+        <div v-if="singleMeta?.tags.length">
           <h4>Tags</h4>
           <div class="flex">
             <div
@@ -183,8 +183,8 @@ iniciar();
               </strong>
             </div>
           </div>
+          <hr class="mt2 mb2">
         </div>
-        <hr class="mt2 mb2">
         <div
           v-if="activePdm.possui_contexto_meta"
           class="mr2 f2"
