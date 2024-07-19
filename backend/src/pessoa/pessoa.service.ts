@@ -990,8 +990,11 @@ export class PessoaService {
                         prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } })
                     );
                 }
-                promises.push(this.enviaPrimeiraSenha(created, newPass, prismaTx));
                 await Promise.all(promises);
+
+                // se a pessoa não está suspensa, envia a senha
+                const estaSuspenso = await this.carregaPrivPessoa(prismaTx, ['SMAE.login_suspenso'], created.id);
+                if (!estaSuspenso.length) await this.enviaPrimeiraSenha(created, newPass, prismaTx);
 
                 this.logger.log(`calculando pessoa_acesso_pdm...`);
                 await prismaTx.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
