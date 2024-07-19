@@ -1,19 +1,18 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
+import { MetaIniAtvTag } from '../meta/entities/meta.entity';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
-import { MetaService } from '../meta/meta.service';
 
 @Injectable()
 export class IniciativaService {
@@ -21,9 +20,7 @@ export class IniciativaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly metaService: MetaService,
-        private readonly variavelService: VariavelService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly geolocService: GeoLocService
+        private readonly variavelService: VariavelService
     ) {}
 
     async create(tipo: TipoPdm, dto: CreateIniciativaDto, user: PessoaFromJwt) {
@@ -88,7 +85,7 @@ export class IniciativaService {
                     geoDto.tokens = geolocalizacao;
                     geoDto.tipo = 'Endereco';
 
-                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                    await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
                 }
 
                 return iniciativa;
@@ -243,13 +240,28 @@ export class IniciativaService {
                         id: true,
                     },
                 },
+                iniciativa_tag: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                descricao: true,
+                                arquivo_icone_id: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        tag: { descricao: 'asc' },
+                    },
+                },
             },
         });
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.iniciativa_id = listActive.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
+        const tags: MetaIniAtvTag[] = [];
         const ret: Iniciativa[] = [];
         for (const dbIniciativa of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
@@ -279,18 +291,29 @@ export class IniciativaService {
             if (dbIniciativa.Cronograma && dbIniciativa.Cronograma.length > 0) {
                 const cronogramaId: number = dbIniciativa.Cronograma[0].id;
 
-                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                const cronogramaEtapaRet = await this.metaService.cronogramaEtapaService.findAll(
                     { cronograma_id: cronogramaId },
                     user,
                     true
                 );
                 cronogramaAtraso = {
                     id: cronogramaId,
-                    atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
+                    atraso_grau: await this.metaService.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
                 };
             }
 
+            for (const metaTag of dbIniciativa.iniciativa_tag) {
+                tags.push({
+                    id: metaTag.tag.id,
+                    descricao: metaTag.tag.descricao,
+                    download_token: this.metaService.uploadService.getPersistentDownloadToken(
+                        metaTag.tag.arquivo_icone_id
+                    ),
+                });
+            }
+
             ret.push({
+                tags,
                 id: dbIniciativa.id,
                 titulo: dbIniciativa.titulo,
                 codigo: dbIniciativa.codigo,
@@ -413,7 +436,7 @@ export class IniciativaService {
                 geoDto.tokens = geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
             }
 
             return iniciativa;

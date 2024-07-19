@@ -1,20 +1,19 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
-import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
-import { MetaService } from '../meta/meta.service';
+import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 
 @Injectable()
 export class AtividadeService {
@@ -22,9 +21,7 @@ export class AtividadeService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly metaService: MetaService,
-        private readonly variavelService: VariavelService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly geolocService: GeoLocService
+        private readonly variavelService: VariavelService
     ) {}
 
     async create(tipo: TipoPdm, dto: CreateAtividadeDto, user: PessoaFromJwt) {
@@ -108,7 +105,7 @@ export class AtividadeService {
                 geoDto.tokens = dto.geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
                 return atividade;
             }
@@ -245,13 +242,25 @@ export class AtividadeService {
                         id: true,
                     },
                 },
+                atividade_tag: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                descricao: true,
+                                arquivo_icone_id: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.iniciativa_id = listActive.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
+        const tags: MetaIniAtvTag[] = [];
         const ret: Atividade[] = [];
         for (const dbAtividade of listActive) {
             const coordenadores_cp: IdNomeExibicaoDto[] = [];
@@ -281,18 +290,29 @@ export class AtividadeService {
             if (dbAtividade.Cronograma && dbAtividade.Cronograma.length > 0) {
                 const cronogramaId = dbAtividade.Cronograma[0].id;
 
-                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                const cronogramaEtapaRet = await this.metaService.cronogramaEtapaService.findAll(
                     { cronograma_id: cronogramaId },
                     user,
                     true // já ta validado que tem acesso se chegou aqui
                 );
                 cronogramaAtraso = {
                     id: cronogramaId,
-                    atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
+                    atraso_grau: await this.metaService.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
                 };
             }
 
+            for (const metaTag of dbAtividade.atividade_tag) {
+                tags.push({
+                    id: metaTag.tag.id,
+                    descricao: metaTag.tag.descricao,
+                    download_token: this.metaService.uploadService.getPersistentDownloadToken(
+                        metaTag.tag.arquivo_icone_id
+                    ),
+                });
+            }
+
             ret.push({
+                tags,
                 id: dbAtividade.id,
                 titulo: dbAtividade.titulo,
                 codigo: dbAtividade.codigo,
@@ -435,7 +455,7 @@ export class AtividadeService {
                 geoDto.tokens = dto.geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
             }
 
             return atividade;

@@ -16,7 +16,14 @@ import {
 } from './dto/create-meta.dto';
 import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { IdNomeExibicao, MetaItemDto, MetaOrgao, MetaPdmDto, MetaTag, RelacionadosDTO } from './entities/meta.entity';
+import {
+    IdNomeExibicao,
+    MetaItemDto,
+    MetaOrgao,
+    MetaPdmDto,
+    MetaIniAtvTag,
+    RelacionadosDTO,
+} from './entities/meta.entity';
 import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
 
 type DadosMetaIniciativaAtividadesDto = {
@@ -34,9 +41,9 @@ export class MetaService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly uploadService: UploadService,
-        private readonly geolocService: GeoLocService
+        public readonly cronogramaEtapaService: CronogramaEtapaService,
+        public readonly uploadService: UploadService,
+        public readonly geolocService: GeoLocService
     ) {}
 
     async create(tipo: TipoPdm, dto: CreateMetaDto, user: PessoaFromJwt) {
@@ -410,7 +417,11 @@ export class MetaService {
         return meta;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(
+        tipo: TipoPdm,
+        filters: FilterMetaDto | undefined = undefined,
+        user: PessoaFromJwt
+    ): Promise<MetaItemDto[]> {
         const permissionsSet = await this.getMetasPermissionSet(tipo, user, false);
 
         const listActive = await this.prisma.meta.findMany({
@@ -495,7 +506,7 @@ export class MetaService {
         for (const dbMeta of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, MetaOrgao> = {};
-            const tags: MetaTag[] = [];
+            const tags: MetaIniAtvTag[] = [];
 
             for (const orgao of dbMeta.meta_orgao) {
                 orgaos[orgao.orgao.id] = {
