@@ -11,6 +11,8 @@ import { useRoute } from 'vue-router';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 const { temPermissãoPara } = useAuthStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -157,7 +159,32 @@ iniciar();
           </div>
         </div>
         <hr class="mt2 mb2">
-
+        <div>
+          <h4>Tags</h4>
+          <div class="flex">
+            <div
+              v-for="tag in singleMeta.tags"
+              :key="tag.id"
+              class="flex center mr1"
+            >
+              <a
+                v-if="tag.download_token"
+                :href="baseUrl + '/download/' + tag.download_token"
+                download
+              >
+                <img
+                  :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
+                  width="15"
+                  class="ib mr1"
+                >
+              </a>
+              <strong v-else>
+                {{ tag.descricao }}
+              </strong>
+            </div>
+          </div>
+        </div>
+        <hr class="mt2 mb2">
         <div
           v-if="activePdm.possui_contexto_meta"
           class="mr2 f2"
