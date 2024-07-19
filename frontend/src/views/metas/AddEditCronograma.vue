@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { router } from '@/router';
 import {
@@ -128,7 +127,6 @@ async function checkClose() {
 </script>
 
 <template>
-  <Dashboard>
     <MigalhasDeMetas class="mb1" />
 
     <div class="flex spacebetween center">
@@ -343,5 +341,4 @@ async function checkClose() {
         Remover item
       </button>
     </template>
-  </Dashboard>
 </template>
