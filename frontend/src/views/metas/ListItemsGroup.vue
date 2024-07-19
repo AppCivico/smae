@@ -82,7 +82,7 @@ function groupSlug(s) {
       <ul>
         <li>
           <SmaeLink
-            v-if="perm?.CadastroMeta?.inserir"
+            v-if="perm?.CadastroMeta?.administrador_no_pdm"
             to="/metas/novo"
           >
             Nova Meta
@@ -151,7 +151,7 @@ function groupSlug(s) {
               </div>
             </SmaeLink>
             <SmaeLink
-              v-if="perm?.CadastroMeta?.editar"
+              v-if="perm?.CadastroMeta?.administrador_no_pdm"
               :to="`/metas/editar/${m.id}`"
               class="f0 tprimary ml1"
             >
@@ -164,7 +164,7 @@ function groupSlug(s) {
         </ul>
         <hr class="mt2 mb2">
         <div
-          v-if="perm?.CadastroMeta?.inserir"
+          v-if="perm?.CadastroMeta?.administrador_no_pdm"
           class="tc bgc50 p1"
         >
           <SmaeLink

@@ -68,7 +68,7 @@ iniciar();
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="perm?.CadastroMeta?.editar"
+      v-if="perm?.CadastroMeta?.administrador_no_pdm"
       :to="`/metas/editar/${singleMeta.id}`"
       class="btn big ml2"
     >
@@ -209,7 +209,7 @@ iniciar();
           </h2>
           <hr class="ml2 f1">
           <SmaeLink
-            v-if="perm?.CadastroIniciativa?.inserir && activePdm.possui_iniciativa"
+            v-if="perm?.CadastroMeta?.administrador_no_pdm && activePdm.possui_iniciativa"
             :to="`${parentlink}/iniciativas/novo`"
             class="btn ml2"
           >
@@ -247,7 +247,7 @@ iniciar();
                 </h2>
               </SmaeLink>
               <div
-                v-if="temPermissãoPara('CadastroIniciativa.editar')"
+                v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
                 class="f0"
               >
                 <SmaeLink

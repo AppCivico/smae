@@ -139,7 +139,7 @@ onUpdated(() => { start(); });
                   </select> -->
               </div>
               <SmaeLink
-                v-if="perm.CadastroIndicador?.editar"
+                v-if="perm.CadastroMeta?.administrador_no_pdm"
                 :to="`${parentlink}/indicadores/${ind.id}`"
                 class="tprimary"
               >
@@ -250,7 +250,7 @@ onUpdated(() => { start(); });
                 </div>
 
                 <div
-                  v-if="!v.etapa && perm?.CadastroIndicador?.editar"
+                  v-if="!v.etapa && perm?.CadastroMeta?.administrador_no_pdm"
                   class="f0 dropbtn right"
                 >
                   <span class="tamarelo"><svg
@@ -274,7 +274,7 @@ onUpdated(() => { start(); });
                         Valores previstos
                       </SmaeLink>
                     </li>
-                    <li>
+                    <li> <!-- a perm de admin ta errada, provavelmente precisa colocar algo novo na api ou buscar admin/tec cp, ou meta.pode-editar -->
                       <SmaeLink
                         v-if="perm.CadastroPessoa?.administrador"
                         :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
@@ -355,7 +355,7 @@ onUpdated(() => { start(); });
         </h2>
       </div>
       <div
-        v-if="perm?.CadastroIndicador?.inserir"
+        v-if="perm?.CadastroMeta?.administrador_no_pdm"
         class="bgc50"
       >
         <div class="tc">

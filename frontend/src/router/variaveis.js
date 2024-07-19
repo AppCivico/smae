@@ -22,8 +22,10 @@ export default {
     presenteNoMenu: true,
     pesoNoMenu: 3,
     limitarÀsPermissões: [
-      'CadastroIndicadorPS.editar',
-      'CadastroIndicadorPS.inserir',
+      'CadastroPS.administrador',
+      'CadastroPS.administrador_no_orgao',
+      'CadastroMetaPS.administrador_no_pdm',
+      'CadastroVariavelGlobal.administrador_no_orgao',
       'CadastroMetaPS.listar',
     ],
   },
@@ -39,7 +41,7 @@ export default {
       name: 'variaveisCriar',
       meta: {
         limitarÀsPermissões: [
-          'CadastroIndicadorPS.inserir',
+          'CadastroVariavelGlobal.administrador_no_orgao',
         ],
         rotaDeEscape: 'variaveisListar',
         rotasParaMigalhasDePão: [
@@ -74,7 +76,7 @@ export default {
           }),
           meta: {
             limitarÀsPermissões: [
-              'CadastroIndicadorPS.inserir',
+              'CadastroVariavelGlobal.administrador_no_orgao',
             ],
             rotaDeEscape: 'variaveisListar',
             título: 'Editar Variável',

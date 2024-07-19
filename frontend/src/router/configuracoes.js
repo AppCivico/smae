@@ -930,7 +930,7 @@ export default [
     meta: {
       limitarÀsPermissões: [
         'CadastroPainel.inserir',
-        'CadastroMeta.inserir',
+        'CadastroMeta.administrador_no_pdm',
       ],
       título: 'Painéis de metas',
       rotasParaMenuSecundário,

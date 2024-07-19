@@ -138,7 +138,7 @@ const estãoTodasAsRegiõesSelecionadas = computed({
   },
 });
 
-const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroIndicadorPS.administrador')
+const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVariavelGlobal.administrador')
   ? órgãosComoLista.value
   : órgãosComoLista.value.filter((orgao) => orgao.id === user.value.orgao_id)));
 
