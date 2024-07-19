@@ -85,7 +85,7 @@ watch(() => props.group, (novoValor) => {
     <hr class="ml2 f1">
     <div
       v-if="temPermissãoPara([
-        'CadastroMeta.inserir',
+        'CadastroMeta.administrador_no_pdm',
         'CadastroMacroTema.inserir',
         'CadastroTema.inserir',
         'CadastroSubTema.inserir',
@@ -95,7 +95,7 @@ watch(() => props.group, (novoValor) => {
     >
       <span class="btn">Adicionar</span>
       <ul>
-        <li v-if="perm?.CadastroMeta?.inserir">
+        <li v-if="perm?.CadastroMeta?.administrador_no_pdm">
           <SmaeLink
             to="/metas/novo"
           >
@@ -249,7 +249,7 @@ watch(() => props.group, (novoValor) => {
                 </div>
               </SmaeLink>
               <SmaeLink
-                v-if="perm?.CadastroMeta?.editar"
+                v-if="perm?.CadastroMeta?.administrador_no_pdm"
                 :to="`/metas/editar/${m.id}`"
                 class="ml1 tprimary"
               >
@@ -262,7 +262,7 @@ watch(() => props.group, (novoValor) => {
           </ul>
           <hr class="mt1 mb1">
           <SmaeLink
-            v-if="perm?.CadastroMeta?.inserir && filters.groupBy != 'todas'"
+            v-if="perm?.CadastroMeta?.administrador_no_pdm && filters.groupBy != 'todas'"
             :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`"
             class="addlink"
           >
@@ -272,7 +272,7 @@ watch(() => props.group, (novoValor) => {
             ><use xlink:href="#i_+" /></svg> <span>Adicionar meta</span>
           </SmaeLink>
           <SmaeLink
-            v-else-if="perm?.CadastroMeta?.inserir"
+            v-else-if="perm?.CadastroMeta?.administrador_no_pdm"
             :to="`/metas/novo`"
             class="addlink"
           >

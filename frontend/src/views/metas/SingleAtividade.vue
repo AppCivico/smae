@@ -48,7 +48,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="perm?.CadastroAtividade?.editar"
+      v-if="perm?.CadastroMeta?.administrador_no_pdm"
       :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
       class="btn big ml2"
     >

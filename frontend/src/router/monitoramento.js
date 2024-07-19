@@ -249,7 +249,7 @@ export default {
         limitarÀsPermissões: [
           'CadastroCicloFisico',
           'PDM.admin_cp',
-          'CadastroIndicador.inserir',
+          'CadastroMeta.administrador_no_pdm',
           'PDM.tecnico_cp',
         ],
       },
@@ -265,7 +265,7 @@ export default {
         limitarÀsPermissões: [
           'CadastroCicloFisico',
           'PDM.admin_cp',
-          'CadastroIndicador.inserir',
+          'CadastroMeta.administrador_no_pdm',
           'PDM.tecnico_cp',
         ],
       },

@@ -61,7 +61,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
             </h2>
           </SmaeLink>
           <SmaeLink
-            v-if="perm?.CadastroIndicador?.editar"
+            v-if="perm?.CadastroMeta?.administrador_no_pdm"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
           >
@@ -93,7 +93,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
       </h2>
     </div>
     <div
-      v-if="perm?.CadastroIndicador?.inserir"
+      v-if="perm?.CadastroMeta?.administrador_no_pdm"
       class="bgc50"
     >
       <div class="tc">
