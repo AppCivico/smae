@@ -30,10 +30,12 @@ export class CronogramaEtapaService {
         user: PessoaFromJwt,
         desligaAssertMeta: boolean
     ): Promise<CECronogramaEtapaDto[]> {
+        this.logger.debug('findAll');
         // ainda bem que só da pra filtrar uma cronograma/meta por vez, assim reduz a complexidade da validação
 
         const cronogramaId = filters.cronograma_id;
-        if (desligaAssertMeta) {
+        if (!desligaAssertMeta) {
+            this.logger.debug('assertMetaForCronograma');
             await this.assertMetaForCronograma(cronogramaId, user, 'readonly');
         }
 

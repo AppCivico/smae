@@ -216,6 +216,7 @@ export class MetaService {
     }
 
     private async getMetasPermissionSet(tipo: TipoPdm, user: PessoaFromJwt | undefined, isBi: boolean) {
+        console.trace(`meta-service: getMetasPermissionSet ${tipo} ${isBi}`);
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
@@ -391,6 +392,7 @@ export class MetaService {
         context?: string,
         readonly: 'readonly' | 'readwrite' = 'readwrite'
     ) {
+        console.trace(`meta-service: assertMetaWriteOrThrow ${meta_id} ${context} ${readonly}`);
         const meta = await this.findAll(tipo, { id: meta_id }, user);
         if (!meta || meta.length == 0) {
             throw new HttpException(
