@@ -96,6 +96,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
     TipoAditivo: ['Tipo Aditivo', ['MDO', 'Projetos']],
+    CadastroVariavelGlobal: ['Variáveis Globais', 'PlanoSetorial'], // depois vai ter o PDM
     CadastroGrupoVariavel: ['Grupos de Variáveis', ['PlanoSetorial']], // depois vai ter o PDM
 
     ModalidadeContratacaoMDO: ['', null],
@@ -123,6 +124,14 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroGrupoPaineisExternas: false,
     TipoAditivoMDO: false,
     ModalidadeContratacaoMDO: false,
+    CadastroIndicador: false,
+    CadastroIniciativa: false,
+    CadastroIniciativaPS: false,
+    CadastroAtividade: false,
+    CadastroAtividadePS: false,
+    CadastroIndicadorPS: false,
+    CadastroCronograma: false,
+    CadastroCronogramaPS: false,
 
     ModalidadeContratacao: [
         ['ModalidadeContratacao.inserir', 'Inserir Modalidade de Contratação'],
@@ -296,11 +305,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
         // quando tem essa permissão, é liberado vários outros itens
         [
-            'CadastroMeta.inserir',
-            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.',
+            'CadastroMeta.administrador_no_pdm',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis do PDM.',
         ],
-        ['CadastroMeta.editar', 'Editar Metas pelas quais for responsável'],
-        ['CadastroMeta.remover', 'Remover Metas pelas quais for responsável'],
         [
             'CadastroMeta.administrador_orcamento',
             'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
@@ -310,11 +317,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroMetaPS: [
         [
-            'CadastroMetaPS.inserir',
-            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.',
+            'CadastroMetaPS.administrador_no_pdm',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis nos planos setoriais, de acordo com o seu perfil.',
         ],
-        ['CadastroMetaPS.editar', 'Editar Metas pelas quais for responsável'],
-        ['CadastroMetaPS.remover', 'Remover Metas pelas quais for responsável'],
         [
             'CadastroMetaPS.administrador_orcamento',
             'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
@@ -322,51 +327,15 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMetaPS.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMetaPS.listar', 'Listar metas, iniciativas e atividades'],
     ],
-    CadastroIndicador: [
-        ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicador.editar', 'Editar Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicador.remover', 'Remover Indicadores e variáveis quando for responsável'],
-    ],
-    CadastroIndicadorPS: [
-        ['CadastroIndicadorPS.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
-        ['CadastroIndicadorPS.inserir', 'Inserir Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicadorPS.editar', 'Editar Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicadorPS.remover', 'Remover Indicadores e variáveis quando for responsável'],
+    CadastroVariavelGlobal: [
+        ['CadastroVariavelGlobal.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
+        ['CadastroVariavelGlobal.administrador_no_orgao', 'Inserir Indicadores e variáveis quando for responsável'],
     ],
     CadastroVariavelCategorica: [
         ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
     ],
     CadastroVariavelCategoricaPS: [['CadastroVariavelCategoricaPS.administrador', false]],
-    CadastroIniciativa: [
-        ['CadastroIniciativa.inserir', 'Inserir Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativa.editar', 'Editar Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativa.remover', 'Remover Iniciativas pelas quais for responsável'],
-    ],
-    CadastroIniciativaPS: [
-        ['CadastroIniciativaPS.inserir', 'Inserir Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativaPS.editar', 'Editar Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativaPS.remover', 'Remover Iniciativas pelas quais for responsável'],
-    ],
-    CadastroAtividade: [
-        ['CadastroAtividade.inserir', 'Inserir Atividades pelas quais for responsável'],
-        ['CadastroAtividade.editar', 'Editar Atividades pelas quais for responsável'],
-        ['CadastroAtividade.remover', 'Remover Atividades pelas quais for responsável'],
-    ],
-    CadastroAtividadePS: [
-        ['CadastroAtividadePS.inserir', 'Inserir Atividades pelas quais for responsável'],
-        ['CadastroAtividadePS.editar', 'Editar Atividades pelas quais for responsável'],
-        ['CadastroAtividadePS.remover', 'Remover Atividades pelas quais for responsável'],
-    ],
-    CadastroCronograma: [
-        ['CadastroCronograma.inserir', 'Inserir Cronogramas pelos quais for responsável'],
-        ['CadastroCronograma.editar', 'Editar Cronogramas pelos quais for responsável'],
-        ['CadastroCronograma.remover', 'Remover Cronogramas pelos quais for responsável'],
-    ],
-    CadastroCronogramaPS: [
-        ['CadastroCronogramaPS.inserir', 'Inserir Cronogramas pelos quais for responsável'],
-        ['CadastroCronogramaPS.editar', 'Editar Cronogramas pelos quais for responsável'],
-        ['CadastroCronogramaPS.remover', 'Remover Cronogramas pelos quais for responsável'],
-    ],
+
     CadastroPainel: [
         ['CadastroPainel.visualizar', 'Visualizar Painéis e detalhes do conteúdo'],
         ['CadastroPainel.inserir', 'Inserir Painéis pelos quais for responsável'],
@@ -533,20 +502,7 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
     'PDM.coordenador_responsavel_cp',
     'PDM.tecnico_cp',
     'CadastroMeta.listar',
-    'CadastroMeta.editar',
-    'CadastroMeta.remover',
-    'CadastroIndicador.inserir',
-    'CadastroIndicador.editar',
-    'CadastroIndicador.remover',
-    'CadastroIniciativa.inserir',
-    'CadastroIniciativa.editar',
-    'CadastroIniciativa.remover',
-    'CadastroAtividade.inserir',
-    'CadastroAtividade.editar',
-    'CadastroAtividade.remover',
-    'CadastroCronograma.inserir',
-    'CadastroCronograma.editar',
-    'CadastroCronograma.remover',
+    'CadastroMeta.administrador_no_pdm',
     'CadastroPainel.inserir',
     'CadastroPainel.editar',
     'CadastroPainel.remover',
@@ -556,24 +512,41 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
 const PrivRespNaCpPS: ListaDePrivilegios[] = [
     'PS.tecnico_cp',
     'CadastroMetaPS.listar',
-    'CadastroMetaPS.editar',
-    'CadastroMetaPS.remover',
-    'CadastroIndicadorPS.inserir',
-    'CadastroIndicadorPS.editar',
-    'CadastroIndicadorPS.remover',
-    'CadastroIniciativaPS.inserir',
-    'CadastroIniciativaPS.editar',
-    'CadastroIniciativaPS.remover',
-    'CadastroAtividadePS.inserir',
-    'CadastroAtividadePS.editar',
-    'CadastroAtividadePS.remover',
-    'CadastroCronogramaPS.inserir',
-    'CadastroCronogramaPS.editar',
-    'CadastroCronogramaPS.remover',
+    'CadastroMetaPS.administrador_no_pdm',
+    'CadastroVariavelGlobal.administrador_no_orgao',
+
     'CadastroPainelPS.inserir',
     'CadastroPainelPS.editar',
     'CadastroPainelPS.remover',
     'CadastroPainelPS.visualizar',
+];
+
+const PSCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroMacroTemaPS.inserir',
+    'CadastroMacroTemaPS.editar',
+    'CadastroMacroTemaPS.remover',
+    'CadastroTemaPS.inserir',
+    'CadastroTemaPS.editar',
+    'CadastroTemaPS.remover',
+    'CadastroSubTemaPS.inserir',
+    'CadastroSubTemaPS.editar',
+    'CadastroSubTemaPS.remover',
+    'CadastroTagPS.inserir',
+    'CadastroTagPS.editar',
+    'CadastroTagPS.remover',
+];
+const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
+    'CadastroMetaPS.administrador_no_pdm',
+    'CadastroMetaPS.administrador_orcamento',
+
+    'CadastroPainelPS.inserir',
+    'CadastroPainelPS.editar',
+    'CadastroPainelPS.remover',
+    'CadastroPainelPS.visualizar',
+
+    'Reports.executar.PlanoSetorial',
+    'Reports.remover.PlanoSetorial',
+    'Reports.dashboard_ps',
 ];
 const removerNomePerfil = (nome: string) => {
     return {
@@ -630,22 +603,8 @@ const PerfilAcessoConfig: {
             'CadastroTag.inserir',
             'CadastroTag.editar',
             'CadastroTag.remover',
-            'CadastroMeta.inserir', // pq ele é admin_cp, vai poder editar varias coisas
+            'CadastroMeta.administrador_no_pdm', // pq ele é admin_cp, vai poder editar varias coisas
             'CadastroMeta.listar',
-            'CadastroMeta.editar',
-            'CadastroMeta.remover',
-            'CadastroIndicador.inserir',
-            'CadastroIndicador.editar',
-            'CadastroIndicador.remover',
-            'CadastroIniciativa.inserir',
-            'CadastroIniciativa.editar',
-            'CadastroIniciativa.remover',
-            'CadastroAtividade.inserir',
-            'CadastroAtividade.editar',
-            'CadastroAtividade.remover',
-            'CadastroCronograma.inserir',
-            'CadastroCronograma.editar',
-            'CadastroCronograma.remover',
             'CadastroPainel.inserir',
             'CadastroPainel.editar',
             'CadastroPainel.remover',
@@ -660,61 +619,34 @@ const PerfilAcessoConfig: {
 
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
-        descricao: 'Pode editar qualquer plano setorial.',
-        privilegios: ['CadastroPS.administrador'],
+        descricao:
+            'Pode editar qualquer plano setorial, administrar variaveis globais. Não pode participar como responsável.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroPS.administrador',
+            'CadastroVariavelGlobal.administrador',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
     },
 
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Pode editar qualquer plano setorial do órgão ao qual pertence.',
-        privilegios: ['CadastroPS.administrador_no_orgao'],
+        descricao:
+            'Pode editar qualquer plano setorial do órgão ao qual pertence, assim como suas variáveis globais. Não pode participar como responsável.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
     },
 
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),
-        descricao: 'Pode editar metas e dados do plano setorial que for administrador. Criar novos planos setoriais.',
-        privilegios: [
-            'PS.admin_cp',
-
-            'CadastroMetaPS.administrador_orcamento',
-            'CadastroMacroTemaPS.inserir',
-            'CadastroMacroTemaPS.editar',
-            'CadastroMacroTemaPS.remover',
-            'CadastroTemaPS.inserir',
-            'CadastroTemaPS.editar',
-            'CadastroTemaPS.remover',
-            'CadastroSubTemaPS.inserir',
-            'CadastroSubTemaPS.editar',
-            'CadastroSubTemaPS.remover',
-            'CadastroTagPS.inserir',
-            'CadastroTagPS.editar',
-            'CadastroTagPS.remover',
-            'CadastroMetaPS.inserir', // pq ele é admin_cp, vai poder editar varias coisas
-            'CadastroMetaPS.listar',
-            'CadastroMetaPS.editar',
-            'CadastroMetaPS.remover',
-            'CadastroIndicadorPS.inserir',
-            'CadastroIndicadorPS.editar',
-            'CadastroIndicadorPS.remover',
-            'CadastroIniciativaPS.inserir',
-            'CadastroIniciativaPS.editar',
-            'CadastroIniciativaPS.remover',
-            'CadastroAtividadePS.inserir',
-            'CadastroAtividadePS.editar',
-            'CadastroAtividadePS.remover',
-            'CadastroCronogramaPS.inserir',
-            'CadastroCronogramaPS.editar',
-            'CadastroCronogramaPS.remover',
-            'CadastroPainelPS.inserir',
-            'CadastroPainelPS.editar',
-            'CadastroPainelPS.remover',
-            'CadastroPainelPS.visualizar',
-
-            'Reports.executar.PlanoSetorial',
-            'Reports.remover.PlanoSetorial',
-
-            'Reports.dashboard_ps',
-        ],
+        descricao: '',
+        privilegios: false,
     },
 
     {

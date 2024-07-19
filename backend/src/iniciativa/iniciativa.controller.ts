@@ -1,16 +1,17 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { CreateIniciativaDto } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { ListIniciativaDto } from './dto/list-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IniciativaService } from './iniciativa.service';
-import { TipoPdm } from '@prisma/client';
 
 @ApiTags('Iniciativa')
 @Controller('iniciativa')
@@ -20,7 +21,7 @@ export class IniciativaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIniciativa.inserir', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async create(
         @Body() createIniciativaDto: CreateIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -30,7 +31,7 @@ export class IniciativaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async findAll(
         @Query() filters: FilterIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -40,7 +41,7 @@ export class IniciativaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIniciativa.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateIniciativaDto: UpdateIniciativaDto,
@@ -51,7 +52,7 @@ export class IniciativaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIniciativa.remover', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -68,7 +69,7 @@ export class IniciativaSetorialController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIniciativaPS.inserir', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     async create(
         @Body() createIniciativaDto: CreateIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -78,7 +79,7 @@ export class IniciativaSetorialController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMetaPS.listar'])
+    @Roles(MetaController.ReadPerm)
     async findAll(
         @Query() filters: FilterIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -88,7 +89,7 @@ export class IniciativaSetorialController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIniciativaPS.editar', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateIniciativaDto: UpdateIniciativaDto,
@@ -99,7 +100,7 @@ export class IniciativaSetorialController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIniciativaPS.remover', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

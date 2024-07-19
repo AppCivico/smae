@@ -14,6 +14,7 @@ import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from './dto/list-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
+import { MetaController } from '../meta/meta.controller';
 
 @ApiTags('Cronograma')
 @Controller('cronograma')
@@ -25,7 +26,7 @@ export class CronogramaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.inserir', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async create(
         @Body() createCronogramaDto: CreateCronogramaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -35,20 +36,17 @@ export class CronogramaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles([
-        'CadastroCronograma.editar',
-        'CadastroMeta.inserir',
-        'PDM.admin_cp',
-        'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal',
-    ])
-    async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
-        return { linhas: await this.cronogramaService.findAll(filters) };
+    @Roles(MetaController.ReadPerm)
+    async findAll(
+        @Query() filters: FilterCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListCronogramaDto> {
+        return { linhas: await this.cronogramaService.findAll(filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateCronogramaDto: UpdateCronogramaDto,
@@ -59,7 +57,7 @@ export class CronogramaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.remover', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -69,7 +67,7 @@ export class CronogramaController {
 
     @Post(':id/etapa')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.inserir', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async createEtapa(
         @Body() createEtapaDto: CreateEtapaDto,
         @Param() params: FindOneParams,
@@ -80,13 +78,7 @@ export class CronogramaController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/etapa')
-    @Roles([
-        'CadastroCronograma.editar',
-        'CadastroMeta.inserir',
-        'PDM.admin_cp',
-        'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal',
-    ])
+    @Roles(MetaController.ReadPerm)
     @ApiOperation({ deprecated: true, description: 'Use o endpoint /api/cronograma-etapa' })
     async findAllEtapas(
         @Query() filters: FilterEtapaSemCronoIdDto,

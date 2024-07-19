@@ -12,55 +12,52 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiNoContentResponse,
-    ApiNotFoundResponse,
-    ApiProduces,
-    ApiTags
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateMetaDto, ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
 import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { Meta, RelacionadosDTO } from './entities/meta.entity';
+import { MetaItemDto, RelacionadosDTO } from './entities/meta.entity';
 import { MetaService } from './meta.service';
 
 @ApiTags('Meta')
 @Controller('meta')
 export class MetaController {
+    public static WritePerm: ListaDePrivilegios[] = ['CadastroMeta.administrador_no_pdm'];
+    public static ReadPerm: ListaDePrivilegios[] = [
+        ...MetaController.WritePerm,
+        'CadastroMeta.listar',
+        'PDM.admin_cp',
+        'PDM.coordenador_responsavel_cp',
+        'PDM.ponto_focal',
+    ];
     private tipoPdm: TipoPdm = 'PDM';
     constructor(private readonly metaService: MetaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.metaService.create(this.tipoPdm, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiProduces(
-        'application/json',
-        'text/csv',
-        'text/csv; unwind-all',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    @Roles(['CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
         return { linhas: await this.metaService.findAll(this.tipoPdm, filters, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
-    @Roles(['CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
@@ -70,7 +67,7 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get('relacionados')
-    @Roles(['CadastroMeta.listar'])
+    @Roles(MetaController.ReadPerm)
     async buscaRelacionados(
         @Query() dto: FilterRelacionadosDTO,
         @CurrentUser() user: PessoaFromJwt
@@ -78,12 +75,11 @@ export class MetaController {
         return await this.metaService.buscaRelacionados(this.tipoPdm, dto, user);
     }
 
-    // Precisa ficar depois do método buscaMetasIniciativaAtividades, a ordem da definição afeta como será dado os matching
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
-    @Roles(['CadastroMeta.listar'])
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Meta> {
+    @Roles(MetaController.ReadPerm)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<MetaItemDto> {
         const r = await this.metaService.findAll(this.tipoPdm, { id: params.id }, user);
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
         return r[0];
@@ -91,7 +87,7 @@ export class MetaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateMetaDto: UpdateMetaDto,
@@ -102,7 +98,7 @@ export class MetaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.remover', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -114,32 +110,38 @@ export class MetaController {
 @ApiTags('Meta Para Plano Setorial')
 @Controller('meta-setorial')
 export class MetaSetorialController {
+    public static WritePerm: ListaDePrivilegios[] = [
+        'CadastroMetaPS.administrador_no_pdm', // sṍ pode editar de acordo com o perfil
+        'CadastroPS.administrador', // edita qualquer item
+        'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel?
+    ];
+    public static ReadPerm: ListaDePrivilegios[] = [
+        ...MetaSetorialController.WritePerm,
+        'CadastroMetaPS.listar',
+        'PS.admin_cp',
+        'PS.tecnico_cp',
+        'PS.ponto_focal',
+    ];
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly metaService: MetaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.metaService.create(this.tipoPdm, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiProduces(
-        'application/json',
-        'text/csv',
-        'text/csv; unwind-all',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    @Roles(['CadastroMetaPS.listar'])
+    @Roles(MetaSetorialController.ReadPerm)
     async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
         return { linhas: await this.metaService.findAll(this.tipoPdm, filters, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
-    @Roles(['CadastroMeta.listar'])
+    @Roles(MetaSetorialController.ReadPerm)
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
@@ -149,7 +151,7 @@ export class MetaSetorialController {
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get('relacionados')
-    @Roles(['CadastroMetaPS.listar'])
+    @Roles(MetaSetorialController.ReadPerm)
     async buscaRelacionados(
         @Query() dto: FilterRelacionadosDTO,
         @CurrentUser() user: PessoaFromJwt
@@ -157,12 +159,11 @@ export class MetaSetorialController {
         return await this.metaService.buscaRelacionados(this.tipoPdm, dto, user);
     }
 
-    // Precisa ficar depois do método buscaMetasIniciativaAtividades, a ordem da definição afeta como será dado os matching
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
-    @Roles(['CadastroMetaPS.listar'])
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Meta> {
+    @Roles(MetaSetorialController.ReadPerm)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<MetaItemDto> {
         const r = await this.metaService.findAll(this.tipoPdm, { id: params.id }, user);
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
         return r[0];
@@ -170,7 +171,7 @@ export class MetaSetorialController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.editar', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateMetaDto: UpdateMetaDto,
@@ -181,7 +182,7 @@ export class MetaSetorialController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.remover', 'CadastroMetaPS.inserir'])
+    @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

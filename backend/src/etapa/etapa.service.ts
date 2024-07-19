@@ -13,6 +13,7 @@ import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { EtapaItemDto } from './entities/etapa.entity';
 import { VariavelService } from '../variavel/variavel.service';
 import { MfPessoaAcessoPdm } from '../mf/mf.service';
+import { MetaService } from '../meta/meta.service';
 
 const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser posterior à data de término previsto.';
 const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
@@ -56,16 +57,19 @@ export class EtapaService {
 
     constructor(
         private readonly prisma: PrismaService,
+        private readonly metaService: MetaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly geolocService: GeoLocService,
         private readonly variavelService: VariavelService
     ) {}
 
     async create(cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            // logo, é um tecnico_cp
-            // TODO buscar o ID da meta pelo cronograma, pra verificar
-        }
+        const metaRow = await this.prisma.view_meta_cronograma.findFirstOrThrow({
+            where: { cronograma_id: cronogramaId },
+            select: { meta_id: true },
+        });
+
+        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'etapa do cronograma');
 
         if (dto.inicio_previsto && dto.termino_previsto && dto.inicio_previsto > dto.termino_previsto)
             throw new BadRequestException(MSG_INI_POSTERIOR_TERM_PREV);
@@ -151,6 +155,9 @@ export class EtapaService {
      * Esse endpoint não está sendo usado no frontend, e pelo retorno, está com os filtros errados
      **/
     async findAllDeprecated(filters: FilterEtapaDto | undefined = undefined): Promise<EtapaItemDto[]> {
+        throw new Error(
+            'Teste para verificar se esse endpoint realmente não está sendo usado no frontend, e pelo retorno, está com os filtros errados'
+        );
         const ret: EtapaItemDto[] = [];
 
         const etapaPaiId = filters?.etapa_pai_id;
@@ -256,6 +263,12 @@ export class EtapaService {
         config?: MfPessoaAcessoPdm
     ) {
         const prisma = prismaCtx || this.prisma;
+
+        const metaRow = await this.prisma.view_etapa_rel_meta.findFirstOrThrow({
+            where: { etapa_id: id },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'etapa do cronograma');
 
         const basicSelf = await prisma.etapa.findFirstOrThrow({
             where: { id, removido_em: null },
@@ -637,7 +650,7 @@ export class EtapaService {
                 dto.variavel.codigo,
                 user,
                 prismaTx,
-                now,
+                now
             );
 
             for (const r of etapaAtualizada.responsaveis) {
@@ -999,6 +1012,12 @@ export class EtapaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const metaRow = await this.prisma.view_etapa_rel_meta.findFirstOrThrow({
+            where: { etapa_id: id },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'etapa do cronograma');
+
         const etapa_has_children = await this.prisma.etapa.count({ where: { etapa_pai_id: id, removido_em: null } });
         if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
 
@@ -1022,7 +1041,7 @@ export class EtapaService {
         });
     }
 
-    async buildEtapaResponsaveis(
+    private async buildEtapaResponsaveis(
         etapaId: number,
         responsaveis: number[]
     ): Promise<Prisma.EtapaResponsavelCreateManyInput[]> {

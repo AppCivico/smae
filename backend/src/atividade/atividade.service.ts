@@ -28,30 +28,11 @@ export class AtividadeService {
     ) {}
 
     async create(tipo: TipoPdm, dto: CreateAtividadeDto, user: PessoaFromJwt) {
-        // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
-        // e se tem o privilegios de CP
-        // e se os *tema_id são do mesmo PDM
-        // se existe pelo menos 1 responsável=true no op
-
         const iniciativa = await this.prisma.iniciativa.findFirstOrThrow({
             where: { id: dto.iniciativa_id, removido_em: null },
             select: { meta_id: true },
         });
-        await this.loadMetaOrThrow(tipo, iniciativa.meta_id, user);
-
-        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            const filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-            if (filterIdIn.includes(dto.iniciativa_id) === false)
-                throw new HttpException(
-                    'Sem permissão para criar atividade nesta iniciativa (por não ter também permissão da meta)',
-                    400
-                );
-        }
+        await this.metaService.assertMetaWriteOrThrow(tipo, iniciativa.meta_id, user, 'atividade');
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -226,29 +207,13 @@ export class AtividadeService {
     async findAll(tipo: TipoPdm, filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
         const iniciativa_id = filters?.iniciativa_id;
 
-        let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
-            let metas: number[];
-            if (user.hasSomeRoles([tipo == 'PDM' ? 'PDM.ponto_focal' : 'PS.ponto_focal'])) {
-                metas = await user.getMetaIdsFromAnyModel(this.prisma.view_atividade_pessoa_responsavel);
-            } else {
-                metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-                // Maybe TODO: assim como na atividade, conferir se não era melhor verificar era responsavel na iniciativa
-                // aqui em teoria são os acessos dos técnicos
-            }
-
-            filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-        }
+        const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
-                iniciativa: { meta: { pdm: { tipo } } },
-                AND: [{ iniciativa_id: iniciativa_id }, { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }],
+                iniciativa_id: iniciativa_id,
+                iniciativa: { meta: { AND: metaFilterSet } },
             },
             orderBy: [{ codigo: 'asc' }],
             select: {
@@ -316,7 +281,11 @@ export class AtividadeService {
             if (dbAtividade.Cronograma && dbAtividade.Cronograma.length > 0) {
                 const cronogramaId = dbAtividade.Cronograma[0].id;
 
-                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: cronogramaId });
+                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                    { cronograma_id: cronogramaId },
+                    user,
+                    true // já ta validado que tem acesso se chegou aqui
+                );
                 cronogramaAtraso = {
                     id: cronogramaId,
                     atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
@@ -353,20 +322,8 @@ export class AtividadeService {
             select: { iniciativa_id: true, iniciativa: { select: { meta_id: true } } },
         });
 
-        await this.loadMetaOrThrow(tipo, self.iniciativa.meta_id, user);
-        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            const filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-            if (filterIdIn.includes(self.iniciativa_id) === false)
-                throw new HttpException(
-                    'Sem permissão para editar atividade nesta iniciativa (por não ter também permissão da meta)',
-                    400
-                );
-        }
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.iniciativa.meta_id, user, 'atividade');
+
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -509,21 +466,7 @@ export class AtividadeService {
             },
         });
 
-        await this.loadMetaOrThrow(tipo, self.iniciativa.meta_id, user);
-
-        if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            const filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-            if (filterIdIn.includes(self.iniciativa_id) === false)
-                throw new HttpException(
-                    'Sem permissão para remover atividade nesta iniciativa (por não ter também permissão da meta)',
-                    400
-                );
-        }
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.iniciativa.meta_id, user, 'atividade');
 
         // Antes de remover a Atividade, deve ser verificada a Iniciativa para garantir de que não há variaveis em uso
         if (self.compoe_indicador_iniciativa) {
@@ -558,13 +501,5 @@ export class AtividadeService {
                 return removed;
             }
         );
-    }
-
-    private async loadMetaOrThrow(tipo: TipoPdm, meta_id: number, user: PessoaFromJwt) {
-        const meta = await this.metaService.findAll(tipo, { id: meta_id }, user);
-        if (!meta) {
-            throw new HttpException('meta_id| Meta não encontrada', 400);
-        }
-        return meta;
     }
 }

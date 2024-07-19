@@ -807,8 +807,9 @@ model Pdm {
 
     // index continua existindo para quem é PDM
     // create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true and tipo='PDM';
-    PdmPerfil PdmPerfil[]
-    Diretorio Diretorio[]
+    PdmPerfil                          PdmPerfil[]
+    Diretorio                          Diretorio[]
+    view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
 
     @@index([ativo])
     @@map("pdm")
@@ -1217,10 +1218,12 @@ model Meta {
     PdmOrcamentoRealizadoConfig            PdmOrcamentoRealizadoConfig[]
     MetaStatusConsolidadoCf                MetaStatusConsolidadoCf[]
     ViewMetaPessoaResponsavelNaCp          view_meta_pessoa_responsavel_na_cp[]
+    ViewMetaPessoaResponsavel              view_meta_pessoa_responsavel[]
     MetaStatusAtrasoConsolidadoMes         MetaStatusAtrasoConsolidadoMes[]
     MetaStatusAtrasoVariavel               MetaStatusAtrasoVariavel[]
     GeoEnderecoReferencia                  GeoLocalizacaoReferencia[]
     PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
+    view_pdm_meta_iniciativa_atividade     view_pdm_meta_iniciativa_atividade[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1920,19 +1923,20 @@ model Iniciativa {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    iniciativa_orgao         IniciativaOrgao[]
-    iniciativa_responsavel   IniciativaResponsavel[]
-    iniciativa_tag           IniciativaTag[]
-    Indicador                Indicador[]
-    atividade                Atividade[]
-    Cronograma               Cronograma[]
-    PainelConteudoDetalhe    PainelConteudoDetalhe[]
-    OrcamentoPlanejado       OrcamentoPlanejado[]
-    OrcamentoRealizado       OrcamentoRealizado[]
-    MetaOrcamento            OrcamentoPrevisto[]
-    projetos                 Projeto[]
-    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
-    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
+    iniciativa_orgao                   IniciativaOrgao[]
+    iniciativa_responsavel             IniciativaResponsavel[]
+    iniciativa_tag                     IniciativaTag[]
+    Indicador                          Indicador[]
+    atividade                          Atividade[]
+    Cronograma                         Cronograma[]
+    PainelConteudoDetalhe              PainelConteudoDetalhe[]
+    OrcamentoPlanejado                 OrcamentoPlanejado[]
+    OrcamentoRealizado                 OrcamentoRealizado[]
+    MetaOrcamento                      OrcamentoPrevisto[]
+    projetos                           Projeto[]
+    OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
+    GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
+    view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2005,18 +2009,19 @@ model Atividade {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    atividade_orgao          AtividadeOrgao[]
-    atividade_responsavel    AtividadeResponsavel[]
-    atividade_tag            AtividadeTag[]
-    Indicador                Indicador[]
-    Cronograma               Cronograma[]
-    PainelConteudoDetalhe    PainelConteudoDetalhe[]
-    OrcamentoPlanejado       OrcamentoPlanejado[]
-    OrcamentoRealizado       OrcamentoRealizado[]
-    MetaOrcamento            OrcamentoPrevisto[]
-    projetos                 Projeto[]
-    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
-    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
+    atividade_orgao                    AtividadeOrgao[]
+    atividade_responsavel              AtividadeResponsavel[]
+    atividade_tag                      AtividadeTag[]
+    Indicador                          Indicador[]
+    Cronograma                         Cronograma[]
+    PainelConteudoDetalhe              PainelConteudoDetalhe[]
+    OrcamentoPlanejado                 OrcamentoPlanejado[]
+    OrcamentoRealizado                 OrcamentoRealizado[]
+    MetaOrcamento                      OrcamentoPrevisto[]
+    projetos                           Projeto[]
+    OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
+    GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
+    view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -4383,6 +4388,7 @@ view view_meta_pessoa_responsavel {
     meta_id   Int
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    meta      Meta   @relation(fields: [meta_id], references: [id])
     orgao_id  Int
 }
 
@@ -4667,6 +4673,27 @@ model MetaStatusAtrasoVariavel {
     @@map("meta_status_atraso_variavel")
 }
 
+model view_pdm_meta_iniciativa_atividade {
+    meta_id       Int  @id
+    pdm_id        Int
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    pdm        Pdm         @relation(fields: [pdm_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    @@map("view_pdm_meta_iniciativa_atividade")
+}
+
+// helper para subir atividade/iniciativa -> meta_id
+model view_meta_cronograma {
+    cronograma_id Int @id
+    meta_id       Int
+}
+
+// helper para subir etapa com atividade/iniciativa -> meta_id
 view view_etapa_rel_meta {
     etapa_id      Int  @id
     meta_id       Int
