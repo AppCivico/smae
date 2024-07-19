@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
@@ -6,12 +9,11 @@ import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 IniciativaAtiva();
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -117,7 +119,32 @@ iniciar();
           </div>
         </div>
       </div>
-
+      <div v-if="singleIniciativa?.tags.length">
+        <hr class="mt2 mb2">
+        <h4>Tags</h4>
+        <div class="flex">
+          <div
+            v-for="tag in singleIniciativa.tags"
+            :key="tag.id"
+            class="flex center mr1"
+          >
+            <a
+              v-if="tag.download_token"
+              :href="baseUrl + '/download/' + tag.download_token"
+              download
+            >
+              <img
+                :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
+                width="15"
+                class="ib mr1"
+              >
+            </a>
+            <strong v-else>
+              {{ tag.descricao }}
+            </strong>
+          </div>
+        </div>
+      </div>
       <template v-if="singleIniciativa.contexto">
         <hr class="mt2 mb2">
         <div>
