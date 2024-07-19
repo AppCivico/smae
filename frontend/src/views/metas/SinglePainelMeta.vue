@@ -100,7 +100,7 @@ const mouseUpHandler = function (e) {
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="perm?.CadastroMeta?.editar"
+      v-if="perm?.CadastroMeta.administrador_no_pdm"
       :to="`/metas/editar/${singleMeta.id}`"
       class="btn big ml2"
     >
