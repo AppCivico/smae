@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva';
@@ -32,118 +31,116 @@ const { singleAtividade, órgãosResponsáveisNaAtividadeEmFoco } = storeToRefs(
 if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
 </script>
 <template>
-  <Dashboard>
-    <MigalhasDeMetas class="mb1" />
+  <MigalhasDeMetas class="mb1" />
 
-    <div class="flex spacebetween center mb2">
-      <div>
-        <div class="t12 uc w700 tamarelo">
-          {{ activePdm.rotulo_atividade }}
-        </div>
-        <h1
-          :class="classeParaFarolDeAtraso(singleAtividade?.cronograma?.atraso_grau)"
-          :title="textoParaFarolDeAtraso(singleAtividade?.cronograma?.atraso_grau)"
-          style="padding-right: 4px;"
-        >
-          {{ singleAtividade.codigo }} - {{ singleAtividade.titulo }}
-        </h1>
+  <div class="flex spacebetween center mb2">
+    <div>
+      <div class="t12 uc w700 tamarelo">
+        {{ activePdm.rotulo_atividade }}
       </div>
-      <hr class="ml2 f1">
-      <SmaeLink
-        v-if="perm?.CadastroAtividade?.editar"
-        :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
-        class="btn big ml2"
+      <h1
+        :class="classeParaFarolDeAtraso(singleAtividade?.cronograma?.atraso_grau)"
+        :title="textoParaFarolDeAtraso(singleAtividade?.cronograma?.atraso_grau)"
+        style="padding-right: 4px;"
       >
-        Editar
-      </SmaeLink>
+        {{ singleAtividade.codigo }} - {{ singleAtividade.titulo }}
+      </h1>
     </div>
+    <hr class="ml2 f1">
+    <SmaeLink
+      v-if="perm?.CadastroAtividade?.editar"
+      :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
+      class="btn big ml2"
+    >
+      Editar
+    </SmaeLink>
+  </div>
 
-    <div class="boards">
-      <template v-if="singleAtividade.id">
-        <div class="flex g2">
-          <div class="mr2">
-            <div class="t12 uc w700 mb05 tamarelo">
-              Código
-            </div>
-            <div class="t13">
-              {{ singleAtividade.codigo }}
-            </div>
+  <div class="boards">
+    <template v-if="singleAtividade.id">
+      <div class="flex g2">
+        <div class="mr2">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Código
           </div>
-          <div class="mr2">
-            <div class="t12 uc w700 mb05 tamarelo">
-              Órgão responsável
-            </div>
-            <div class="t13">
-              {{ órgãosResponsáveisNaAtividadeEmFoco.map(x => x.orgao.descricao).join(', ') }}
-            </div>
-          </div>
-          <div class="mr2">
-            <div class="t12 uc w700 mb05 tamarelo">
-              Órgão participante
-            </div>
-            <div class="t13">
-              {{ singleAtividade.orgaos_participantes.map(x=>x.orgao.descricao).join(', ') }}
-            </div>
-          </div>
-          <div class="mr2">
-            <div class="t12 uc w700 mb05 tamarelo">
-              Responsável na coordenadoria de planejamento
-            </div>
-            <div class="t13">
-              {{ singleAtividade.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
-            </div>
+          <div class="t13">
+            {{ singleAtividade.codigo }}
           </div>
         </div>
-
-        <template v-if="singleAtividade.contexto">
-          <hr class="mt2 mb2">
-          <div>
-            <h4>Contexto</h4>
-            <div>{{ singleAtividade.contexto }}</div>
+        <div class="mr2">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgão responsável
           </div>
-        </template>
-
-        <template v-if="singleAtividade.complemento">
-          <hr class="mt2 mb2">
-          <div>
-            <h4>
-              {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
-            </h4>
-            <div>{{ singleAtividade.complemento }}</div>
+          <div class="t13">
+            {{ órgãosResponsáveisNaAtividadeEmFoco.map(x => x.orgao.descricao).join(', ') }}
           </div>
-        </template>
+        </div>
+        <div class="mr2">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgão participante
+          </div>
+          <div class="t13">
+            {{ singleAtividade.orgaos_participantes.map(x => x.orgao.descricao).join(', ') }}
+          </div>
+        </div>
+        <div class="mr2">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Responsável na coordenadoria de planejamento
+          </div>
+          <div class="t13">
+            {{ singleAtividade.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+          </div>
+        </div>
+      </div>
 
+      <template v-if="singleAtividade.contexto">
         <hr class="mt2 mb2">
+        <div>
+          <h4>Contexto</h4>
+          <div>{{ singleAtividade.contexto }}</div>
+        </div>
+      </template>
 
-        <SimpleIndicador
-          :parentlink="parentlink"
-          :parent_id="atividade_id"
-          parent_field="atividade_id"
-        />
-      </template>
-      <template v-else-if="singleAtividade.loading">
-        <div class="p1">
-          <span>Carregando</span> <svg
-            class="ml1 ib"
-            width="20"
-            height="20"
-          ><use xlink:href="#i_spin" /></svg>
+      <template v-if="singleAtividade.complemento">
+        <hr class="mt2 mb2">
+        <div>
+          <h4>
+            {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
+          </h4>
+          <div>{{ singleAtividade.complemento }}</div>
         </div>
       </template>
-      <template v-else-if="singleAtividade.error">
-        <div class="error p1">
-          <p class="error-msg">
-            Error: {{ singleAtividade.error }}
-          </p>
-        </div>
-      </template>
-      <template v-else>
-        <div class="error p1">
-          <p class="error-msg">
-            Nenhum item encontrado.
-          </p>
-        </div>
-      </template>
-    </div>
-  </Dashboard>
+
+      <hr class="mt2 mb2">
+
+      <SimpleIndicador
+        :parentlink="parentlink"
+        :parent_id="atividade_id"
+        parent_field="atividade_id"
+      />
+    </template>
+    <template v-else-if="singleAtividade.loading">
+      <div class="p1">
+        <span>Carregando</span> <svg
+          class="ml1 ib"
+          width="20"
+          height="20"
+        ><use xlink:href="#i_spin" /></svg>
+      </div>
+    </template>
+    <template v-else-if="singleAtividade.error">
+      <div class="error p1">
+        <p class="error-msg">
+          Error: {{ singleAtividade.error }}
+        </p>
+      </div>
+    </template>
+    <template v-else>
+      <div class="error p1">
+        <p class="error-msg">
+          Nenhum item encontrado.
+        </p>
+      </div>
+    </template>
+  </div>
 </template>
