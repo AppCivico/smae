@@ -1023,7 +1023,11 @@ export class PessoaService {
                         prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } })
                     );
                 }
-                promises.push(this.enviaPrimeiraSenha(created, newPass, prismaTx));
+
+                // se a pessoa não está suspensa, envia a senha
+                const estaSuspenso = await this.carregaPrivPessoa(prismaTx, ['SMAE.login_suspenso'], created.id);
+                if (!estaSuspenso.length) promises.push(this.enviaPrimeiraSenha(created, newPass, prismaTx));
+
                 await Promise.all(promises);
 
                 this.logger.log(`calculando pessoa_acesso_pdm...`);
@@ -1381,6 +1385,10 @@ export class PessoaService {
         //this.filtraPrivilegiosSMAE(sistema, ret);
         //}
         if (!ret.modulos.includes('SMAE')) ret.modulos.push('SMAE');
+
+        if (ret.privilegios.includes('SMAE.login_suspenso'))
+            throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
+
         return ret;
     }
 
