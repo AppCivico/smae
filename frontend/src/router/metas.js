@@ -86,6 +86,7 @@ const rotasParaMenuSecundário = (nível) => {
 
 export default {
   path: '/metas',
+  component: () => import('@/views/metas/MetasRaiz.vue'),
   meta: {
     limitarÀsPermissões: [
       'PDM.admin_cp',
