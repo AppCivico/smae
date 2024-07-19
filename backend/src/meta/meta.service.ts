@@ -1,9 +1,10 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
@@ -18,13 +19,12 @@ import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import {
     IdNomeExibicao,
+    MetaIniAtvTag,
     MetaItemDto,
     MetaOrgao,
     MetaPdmDto,
-    MetaIniAtvTag,
     RelacionadosDTO,
 } from './entities/meta.entity';
-import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -41,6 +41,7 @@ export class MetaService {
 
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => CronogramaEtapaService))
         public readonly cronogramaEtapaService: CronogramaEtapaService,
         public readonly uploadService: UploadService,
         public readonly geolocService: GeoLocService
