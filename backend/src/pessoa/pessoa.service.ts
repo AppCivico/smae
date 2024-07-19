@@ -1348,6 +1348,9 @@ export class PessoaService {
             );
         }
 
+        if (dados[0].privilegios.includes('SMAE.login_suspenso'))
+            throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
+
         return dados[0];
     }
 
