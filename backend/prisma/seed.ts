@@ -611,6 +611,11 @@ const PerfilAcessoConfig: {
         privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
     },
     {
+        nome: 'Suspensão de Login',
+        descricao: 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável',
+        privilegios: ['SMAE.login_suspenso'],
+    },
+    {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
         descricao:
             'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
