@@ -3119,6 +3119,19 @@ export const emailTransferencia = object()
       .required(),
   });
 
+const empreendimento = object({
+  identificador: string()
+    .label('Identificador')
+    .max(250)
+    .min(3)
+    .required(),
+  nome: string()
+    .label('Nome')
+    .max(250)
+    .min(3)
+    .required(),
+});
+
 export const tag = object()
   .shape({
     descricao: string()
