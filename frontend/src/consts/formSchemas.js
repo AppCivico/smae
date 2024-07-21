@@ -3119,7 +3119,7 @@ export const emailTransferencia = object()
       .required(),
   });
 
-const empreendimento = object({
+export const empreendimento = object({
   identificador: string()
     .label('Identificador')
     .max(250)
