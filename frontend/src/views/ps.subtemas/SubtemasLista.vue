@@ -72,11 +72,14 @@
 
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-import { computed } from 'vue';
-
 import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const route = useRoute();
 const titulo = typeof route?.meta?.título === 'function'

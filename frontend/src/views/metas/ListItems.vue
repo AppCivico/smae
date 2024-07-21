@@ -12,10 +12,14 @@ import AddEditTags from '@/views/pdm/AddEditTags.vue';
 import AddEditTemas from '@/views/pdm/AddEditTemas.vue';
 import { storeToRefs } from 'pinia';
 import {
+  defineOptions,
   onMounted, reactive, ref, watch,
 } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+defineOptions({
+  inheritAttrs: false,
+});
 
 const editModalStore = useEditModalStore();
 
