@@ -14,8 +14,14 @@ import { useTemasStore } from '@/stores/temas.store';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { computed, ref, unref } from 'vue';
+import {
+  computed, defineOptions, ref, unref,
+} from 'vue';
 import { useRoute } from 'vue-router';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const alertStore = useAlertStore();
 const route = useRoute();

@@ -6,9 +6,13 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
+import { defineOptions, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

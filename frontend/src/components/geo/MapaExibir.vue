@@ -2,6 +2,7 @@
   <KeepAlive>
     <div
       v-once
+      v-bind="$attrs"
       ref="elementoMapa"
       class="mapa br8"
       @ready="mapReady"
@@ -20,11 +21,14 @@ import 'leaflet/dist/leaflet.css';
 import { storeToRefs } from 'pinia';
 import {
   defineEmits,
+  defineOptions,
   defineProps,
   onMounted,
   ref,
   watch,
 } from 'vue';
+
+defineOptions({ inheritAttrs: false });
 
 const RegionsStore = useRegionsStore();
 
