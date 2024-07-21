@@ -12,8 +12,7 @@ import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxil
 AtividadeAtiva();
 
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -48,7 +47,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="perm?.CadastroMeta?.administrador_no_pdm"
+      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
       :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
       class="btn big ml2"
     >

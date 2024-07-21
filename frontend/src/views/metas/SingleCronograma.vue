@@ -20,9 +20,7 @@ import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxil
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const EtapasStore = useEtapasStore();
-const { temPermissãoPara } = authStore;
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const props = defineProps(['group', 'recorte']);
 const route = useRoute();
@@ -153,7 +151,7 @@ onUpdated(() => { start(); });
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="perm?.CadastroMeta?.administrador_no_pdm
+      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
         && !singleCronograma?.loading
         && singleCronograma?.id"
       :to="`${parentlink}/cronograma/${singleCronograma?.id}`"
@@ -162,7 +160,7 @@ onUpdated(() => { start(); });
       Editar Cronograma
     </SmaeLink>
     <div
-      v-if="perm?.CadastroMeta?.administrador_no_pdm
+      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
         && !singleCronograma?.loading && singleCronograma?.id
       "
       class="ml1 dropbtn"
@@ -171,7 +169,7 @@ onUpdated(() => { start(); });
       <ul>
         <li>
           <SmaeLink
-            v-if="perm?.CadastroMeta?.administrador_no_pdm"
+            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >
             Etapa da {{ parentLabel }}
@@ -179,7 +177,7 @@ onUpdated(() => { start(); });
         </li>
         <li>
           <SmaeLink
-            v-if="perm?.CadastroMeta?.administrador_no_pdm
+            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
               && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
           >
@@ -188,7 +186,7 @@ onUpdated(() => { start(); });
         </li>
         <li>
           <SmaeLink
-            v-if="perm?.CadastroMeta?.administrador_no_pdm
+            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
               && activePdm.possui_atividade && meta_id && !atividade_id"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
           >
@@ -447,7 +445,7 @@ onUpdated(() => { start(); });
             style="flex-basis:20px; height: calc(20px + 1rem);"
           >
             <div
-              v-if="perm?.CadastroMeta?.administrador_no_pdm"
+              v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
               class="dropbtn right"
             >
               <span class=""><svg
