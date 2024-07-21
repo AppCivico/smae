@@ -78,7 +78,7 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import { empreendtimentos as schema } from '@/consts/formSchemas';
+import { empreendimento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 
@@ -115,7 +115,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       empreendimentosStore.$reset();
-      router.push({ name: 'empreendimentosListar' });
+      router.push({ name: 'mdoEmpreendimentosListar' });
     }
   } catch (error) {
     alertStore.error(error);

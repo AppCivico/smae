@@ -6,16 +6,18 @@
       :to="{ name: 'mdoEmpreendimentosCriar' }"
       class="btn big ml1"
     >
-      Nova empreendimento
+      Novo empreendimento
     </router-link>
   </div>
   <table class="tablemain">
+    <col>
     <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>empreendimento</th>
+        <th>identificador</th>
+        <th>nome</th>
         <th />
         <th />
       </tr>
@@ -25,7 +27,8 @@
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.descricao }}</td>
+        <td>{{ item.identificador }}</td>
+        <td>{{ item.nome }}</td>
         <td>
           <router-link
             :to="{ name: 'mdoEmpreendimentosEditar', params: { empreendimentoId: item.id } }"
