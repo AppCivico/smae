@@ -45,7 +45,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirEmpreendimento(item.id, item.descricao)"
+            @click="excluirEmpreendimento(item.id, item.identificador)"
           >
             <svg
               width="20"
