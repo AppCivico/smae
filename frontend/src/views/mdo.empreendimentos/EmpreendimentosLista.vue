@@ -91,7 +91,7 @@ async function excluirEmpreendimento(id, descricao) {
       if (await empreendimentosStore.excluirItem(id)) {
         empreendimentosStore.$reset();
         empreendimentosStore.buscarTudo();
-        alertStore.success(`"${descricao}" removida.`);
+        alertStore.success(`"${descricao}" removido.`);
       }
     },
     'Remover',
