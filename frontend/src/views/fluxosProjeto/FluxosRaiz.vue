@@ -1,6 +1,7 @@
 <script setup>
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import { onUnmounted} from 'vue';
+import { onUnmounted } from 'vue';
+
 const fluxosProjetoStore = useFluxosProjetosStore();
 
 fluxosProjetoStore.buscarTudo();
