@@ -1,4 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
@@ -20,19 +30,11 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+const empreendimentosStore = useEmpreendimentosStore();
 const gruposTematicosStore = useGruposTematicosStore();
 const ÓrgãosStore = useOrgansStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
@@ -44,6 +46,12 @@ const programaHabitacionalStore = useProgramaHabitacionalStore();
 const obrasStore = useObrasStore();
 const equipamentosStore = useEquipamentosStore();
 const etiquetasStore = useEtiquetasStore();
+
+const {
+  lista: listaDeEmpreendimentos,
+  chamadasPendentes: chamadasPendentesDeEmpreendimentos,
+  erro: erroDeEmpreendimentos,
+} = storeToRefs(empreendimentosStore);
 
 const {
   lista: listaDeEquipamentos,
@@ -295,6 +303,7 @@ function iniciar() {
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
 
+  empreendimentosStore.buscarTudo();
   portfolioMdoStore.buscarTudo();
   equipamentosStore.buscarTudo();
   etiquetasStore.buscarTudo();
@@ -359,7 +368,7 @@ watch(itemParaEdição, (novoValor) => {
     </h1>
 
     <hr class="f1">
-<!--
+    <!--
   <MenuDeMudançaDeStatusDeProjeto
     v-if="obraId"
   />
@@ -663,6 +672,37 @@ watch(itemParaEdição, (novoValor) => {
         </Field>
         <ErrorMessage
           name="orgao_origem_id"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="empreendimento_id"
+          :schema="schema"
+        />
+        <Field
+          name="empreendimento_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.empreendimento_id,
+          }"
+          :disabled="!listaDeEmpreendimentos.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeEmpreendimentos || []"
+            :key="item.id"
+            :value="item.id"
+            :title="item.nome"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="empreendimento_id"
           class="error-msg"
         />
       </div>
