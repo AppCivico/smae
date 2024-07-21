@@ -7,8 +7,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -100,7 +99,7 @@ const mouseUpHandler = function (e) {
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="perm?.CadastroMeta.administrador_no_pdm"
+      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
       :to="`/metas/editar/${singleMeta.id}`"
       class="btn big ml2"
     >
