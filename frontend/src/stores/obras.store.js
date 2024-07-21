@@ -232,6 +232,7 @@ export const useObrasStore = defineStore('obrasStore', {
           : [],
         tipo_intervencao_id: emFoco?.tipo_intervencao?.id || null,
         regiao_ids: Array.isArray(emFoco?.regioes) ? emFoco.regioes.map((x) => x.id) : [],
+        empreendimento_id: emFoco?.empreendimento?.id || null,
       };
     },
 
