@@ -94,6 +94,7 @@ const rotasParaMenuPrincipal = [
   'gerenciarPainéisDeMetas',
   'mdoEtiquetasListar',
   'mdoProgramaHabitacionalListar',
+  'mdoEmpreendimentosListar',
   'parlamentaresListar',
   'paineisExternosListar',
   'planosSetoriaisListar',
@@ -378,6 +379,55 @@ export default [
               título: 'Editar etiqueta',
               rotasParaMigalhasDePão: [
                 'mdoEtiquetasListar',
+              ],
+            },
+          },
+        ],
+      },
+      {
+        path: 'empreendimento',
+        component: () => import('@/views/mdo.empreendimentos/EmpreendimentosRaiz.vue'),
+        meta: {
+          título: 'Empreendimentos',
+          entidadeMãe: 'mdo',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: [
+            'ProjetoMDO.administrador',
+          ],
+          rotasParaMenuSecundário: [
+            'mdoEmpreendimentosListar',
+          ],
+          presenteNoMenu: true,
+        },
+        children: [
+          {
+            name: 'mdoEmpreendimentosListar',
+            path: '',
+            component: () => import('@/views/mdo.empreendimentos/EmpreendimentosLista.vue'),
+          },
+          {
+            name: 'mdoEmpreendimentosCriar',
+            path: 'novo',
+            component: () => import('@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'),
+            meta: {
+              título: 'Novo empreendimento',
+              rotasParaMigalhasDePão: [
+                'mdoEmpreendimentosListar',
+              ],
+            },
+          },
+          {
+            path: ':empreendimentoId',
+            name: 'mdoEmpreendimentosEditar',
+            component: () => import('@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{ empreendimentoId: Number.parseInt(params.empreendimentoId, 10) || undefined },
+            }),
+            meta: {
+              título: 'Editar empreendimento',
+              rotasParaMigalhasDePão: [
+                'mdoEmpreendimentosListar',
               ],
             },
           },
