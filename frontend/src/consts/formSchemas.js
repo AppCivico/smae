@@ -1087,6 +1087,10 @@ export const obras = object({
         .min(1),
     )
     .nullable(),
+  empreendimento_id: number()
+    .label('Identificador do empreendimento')
+    .min(1, 'Empreendimento inválido')
+    .nullable(),
   equipamento_id: number()
     .label('Equipamento/Estrutura pública')
     .min(1, 'Equipamento/Estrutura pública inválida')
