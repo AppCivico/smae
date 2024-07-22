@@ -62,7 +62,7 @@ export class IniciativaController {
 }
 
 @ApiTags('Iniciativa')
-@Controller('iniciativa-setorial')
+@Controller('plano-setorial-iniciativa')
 export class IniciativaSetorialController {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly iniciativaService: IniciativaService) {}
