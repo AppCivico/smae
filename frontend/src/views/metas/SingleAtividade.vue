@@ -1,16 +1,17 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 AtividadeAtiva();
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
@@ -90,6 +91,38 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
             {{ singleAtividade.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
           </div>
         </div>
+      </div>
+
+      <div v-if="singleAtividade?.tags.length">
+        <hr class="mt2 mb2">
+        <h4>Tags</h4>
+        <ul class="flex flexwrap center g2">
+          <li
+            v-for="tag in singleAtividade.tags"
+            :key="tag.id"
+            class="fb10em"
+          >
+            <a
+              v-if="tag.download_token"
+              class="block"
+              :href="baseUrl + '/download/' + tag.download_token"
+              download
+            >
+              <img
+                :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
+                width="140"
+                height="140"
+                class="icone-de-tag"
+              >
+            </a>
+            <strong
+              v-else
+              class="block"
+            >
+              {{ tag.descricao }}
+            </strong>
+          </li>
+        </ul>
       </div>
 
       <template v-if="singleAtividade.contexto">
