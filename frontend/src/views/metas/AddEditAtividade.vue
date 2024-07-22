@@ -127,7 +127,19 @@ async function onSubmit(values) {
     }
     if (r) {
       AtividadesStore.clear();
-      await router.push(rota);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: {
+            atividade_id: route.params.atividade_id || r,
+          },
+        });
+      } else if (route.meta.entidadeMãe === 'metas') {
+        await router.push(rota);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
     }
   } catch (error) {
@@ -140,7 +152,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await AtividadesStore.delete(meta_id, id)) {
           AtividadesStore.clear();
-          await router.push(`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push(`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Iniciativa removida.');
         }
       }, 'Remover');

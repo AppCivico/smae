@@ -150,7 +150,14 @@ async function onSubmit(values) {
     }
     if (r == true) {
       MetasStore.clear();
-      await router.push('/metas');
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        await router.push('/metas');
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
     }
   } catch (error) {
@@ -163,7 +170,15 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await MetasStore.delete(id)) {
           MetasStore.clear();
-          await router.push('/metas');
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push('/metas');
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
+
           alertStore.success('Meta removida.');
         }
       }, 'Remover');

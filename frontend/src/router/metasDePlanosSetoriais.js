@@ -87,7 +87,7 @@ const rotasParaMenuSecundário = (nível) => {
 export default [
   {
     path: '',
-    name: 'planosSetoriaisMetas',
+    name: 'planoSetorial:listaDeMetas',
     component: ListMetas,
   },
   {
@@ -95,18 +95,49 @@ export default [
     name: 'planoSetorial:novaMeta',
     component: AddEditMetas,
     props: { type: 'novo', parentPage: 'metas' },
+    meta: {
+      rotaDeEscape: 'planoSetorial:listaDeMetas',
+    },
   },
-  { path: 'editar/:meta_id', component: AddEditMetas, props: { type: 'editar', parentPage: 'metas' } },
+  {
+    path: 'editar/:meta_id',
+    component: AddEditMetas,
+    props: { type: 'editar', parentPage: 'metas' },
+    meta: {
+      rotaDeEscape: 'planoSetorial:listaDeMetas',
+    },
+  },
   { path: 'macrotemas/novo', component: ListMetas, props: { type: 'novo', group: 'macrotemas', parentPage: 'metas' } },
   { path: 'subtemas/novo', component: ListMetas, props: { type: 'novo', group: 'subtemas', parentPage: 'metas' } },
   { path: 'temas/novo', component: ListMetas, props: { type: 'novo', group: 'temas', parentPage: 'metas' } },
   { path: 'tags/novo', component: ListMetas, props: { type: 'novo', group: 'tags', parentPage: 'metas' } },
   { path: 'macrotemas/:id', component: ListMetasGroup, props: { type: 'list', group: 'macro_tema', parentPage: 'metas' } },
-  { path: 'macrotemas/:macro_tema_id/novo', component: AddEditMetas, props: { type: 'novo', group: 'macro_tema', parentPage: 'metas' } },
+  {
+    path: 'macrotemas/:macro_tema_id/novo',
+    component: AddEditMetas,
+    props: { type: 'novo', group: 'macro_tema', parentPage: 'metas' },
+    meta: {
+      rotaDeEscape: 'planoSetorial:listaDeMetas',
+    },
+  },
   { path: 'subtemas/:id', component: ListMetasGroup, props: { type: 'list', group: 'sub_tema', parentPage: 'metas' } },
-  { path: 'subtemas/:sub_tema_id/novo', component: AddEditMetas, props: { type: 'novo', group: 'sub_tema', parentPage: 'metas' } },
+  {
+    path: 'subtemas/:sub_tema_id/novo',
+    component: AddEditMetas,
+    props: { type: 'novo', group: 'sub_tema', parentPage: 'metas' },
+    meta: {
+      rotaDeEscape: 'planoSetorial:listaDeMetas',
+    },
+  },
   { path: 'temas/:id', component: ListMetasGroup, props: { type: 'list', group: 'tema', parentPage: 'metas' } },
-  { path: 'temas/:tema_id/novo', component: AddEditMetas, props: { type: 'novo', group: 'tema', parentPage: 'metas' } },
+  {
+    path: 'temas/:tema_id/novo',
+    component: AddEditMetas,
+    props: { type: 'novo', group: 'tema', parentPage: 'metas' },
+    meta: {
+      rotaDeEscape: 'planoSetorial:listaDeMetas',
+    },
+  },
   { path: 'tags/:id', component: ListMetasGroup, props: { type: 'list', group: 'tags', parentPage: 'metas' } },
   {
     path: ':meta_id',
@@ -121,6 +152,7 @@ export default [
     path: ':meta_id/indicadores/novo',
     component: AddEditIndicador,
     meta: {
+      rotaDeEscape: 'planoSetorial:meta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -129,6 +161,7 @@ export default [
     component: AddEditIndicador,
     name: 'planoSetorial:indicadorDaMeta',
     meta: {
+      rotaDeEscape: 'planoSetorial:meta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -138,6 +171,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'variaveis' },
     meta: {
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -148,7 +182,7 @@ export default [
     props: { group: 'variaveis' },
     meta: {
       funçãoDaTela: 'gerar',
-      rotaDeEscape: 'indicadorDaMeta',
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -158,6 +192,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'variaveis' },
     meta: {
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -166,6 +201,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'variaveis' },
     meta: {
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -174,6 +210,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'valores' },
     meta: {
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -182,6 +219,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'retroativos' },
     meta: {
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -194,7 +232,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'criar-ou-editar-variaveis-compostas' },
     meta: {
-      rotaDeEscape: 'indicadorDaMeta',
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Nova variável composta',
       rotaPrescindeDeChave: true,
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
@@ -206,7 +244,7 @@ export default [
     props: { group: 'gerar-compostas' },
     meta: {
       funçãoDaTela: 'gerar',
-      rotaDeEscape: 'indicadorDaMeta',
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Auxiliar de variável composta',
       rotaPrescindeDeChave: true,
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
@@ -217,7 +255,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'criar-ou-editar-variaveis-compostas' },
     meta: {
-      rotaDeEscape: 'indicadorDaMeta',
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Editar variável composta',
       rotaPrescindeDeChave: true,
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
@@ -229,7 +267,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'compostas-valores' },
     meta: {
-      rotaDeEscape: 'indicadorDaMeta',
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Editar valores previstos',
       tipoDeValor: 'previsto',
       rotaPrescindeDeChave: true,
@@ -241,7 +279,7 @@ export default [
     component: AddEditIndicador,
     props: { group: 'compostas-retroativos' },
     meta: {
-      rotaDeEscape: 'indicadorDaMeta',
+      rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Editar valores realizados',
       tipoDeValor: 'realizado',
       rotaPrescindeDeChave: true,
@@ -329,6 +367,7 @@ export default [
     path: ':meta_id/cronograma/novo',
     component: AddEditCronograma,
     meta: {
+      rotaDeEscape: 'planoSetorial:cronogramaDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -336,6 +375,7 @@ export default [
     path: ':meta_id/cronograma/:cronograma_id',
     component: AddEditCronograma,
     meta: {
+      rotaDeEscape: 'planoSetorial:cronogramaDaMeta',
       rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
     },
   },
@@ -436,7 +476,7 @@ export default [
         path: 'custo/:ano',
         component: AddEditCusteio,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoCusto',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoCusto',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -444,7 +484,7 @@ export default [
         path: 'custo/:ano/:id',
         component: AddEditCusteio,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoCusto',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoCusto',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -463,7 +503,7 @@ export default [
         path: 'planejado/:ano',
         component: AddEditPlanejado,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoPlanejado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoPlanejado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -471,7 +511,7 @@ export default [
         path: 'planejado/:ano/:id',
         component: AddEditPlanejado,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoPlanejado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoPlanejado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -491,7 +531,7 @@ export default [
         path: 'realizado/:ano/dotacao',
         component: AddRealizado,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoRealizado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -499,7 +539,7 @@ export default [
         path: 'realizado/:ano/processo',
         component: AddRealizadoProcesso,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoRealizado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -507,7 +547,7 @@ export default [
         path: 'realizado/:ano/nota',
         component: AddRealizadoNota,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoRealizado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -515,7 +555,7 @@ export default [
         path: 'realizado/:ano/:id',
         component: EditRealizado,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoRealizado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -523,7 +563,7 @@ export default [
         path: 'realizado/:ano/dotacao/:id',
         component: EditRealizado,
         meta: {
-          rotaDeEscape: 'MetaOrcamentoRealizado',
+          rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
       },
@@ -536,6 +576,7 @@ export default [
       {
         path: '',
         component: SingleMeta,
+        name: 'planoSetorial:listaDeIniciativas',
         meta: {
           rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
         },
@@ -552,6 +593,7 @@ export default [
         path: 'editar/:iniciativa_id',
         component: AddEditIniciativa,
         meta: {
+          rotaDeEscape: 'planoSetorial:listaDeIniciativas',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -568,6 +610,7 @@ export default [
         path: ':iniciativa_id/indicadores/novo',
         component: AddEditIndicador,
         meta: {
+          rotaDeEscape: 'planoSetorial:resumoDeIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -576,6 +619,7 @@ export default [
         name: 'planoSetorial:indicadorDaIniciativa',
         component: AddEditIndicador,
         meta: {
+          rotaDeEscape: 'planoSetorial:resumoDeIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -584,6 +628,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'variaveis' },
         meta: {
+          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -592,6 +637,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'variaveis' },
         meta: {
+          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -602,7 +648,7 @@ export default [
         props: { group: 'variaveis' },
         meta: {
           funçãoDaTela: 'gerar',
-          rotaDeEscape: 'indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -612,6 +658,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'variaveis' },
         meta: {
+          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -620,6 +667,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'valores' },
         meta: {
+          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -628,6 +676,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'retroativos' },
         meta: {
+          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -640,7 +689,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'criar-ou-editar-variaveis-compostas' },
         meta: {
-          rotaDeEscape: 'indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           título: 'Nova variável composta',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -652,7 +701,7 @@ export default [
         props: { group: 'gerar-compostas' },
         meta: {
           funçãoDaTela: 'gerar',
-          rotaDeEscape: 'indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           título: 'Auxiliar de variável composta',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -663,7 +712,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'criar-ou-editar-variaveis-compostas' },
         meta: {
-          rotaDeEscape: 'indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           título: 'Editar variável composta',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -675,7 +724,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'compostas-valores' },
         meta: {
-          rotaDeEscape: 'indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           título: 'Editar valores previstos',
           tipoDeValor: 'previsto',
           rotaPrescindeDeChave: true,
@@ -687,7 +736,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'compostas-retroativos' },
         meta: {
-          rotaDeEscape: 'indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           título: 'Editar valores realizados',
           tipoDeValor: 'realizado',
           rotaPrescindeDeChave: true,
@@ -767,6 +816,7 @@ export default [
         component: AddEditCronograma,
         meta: {
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          rotaDeEscape: 'planoSetorial:cronogramaDaIniciativa',
         },
       },
       {
@@ -774,6 +824,7 @@ export default [
         component: AddEditCronograma,
         meta: {
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          rotaDeEscape: 'planoSetorial:cronogramaDaIniciativa',
         },
       },
       {
@@ -855,6 +906,7 @@ export default [
             component: AddEditAtividade,
             meta: {
               rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              rotaDeEscape: 'planoSetorial:resumoDeAtividade',
             },
           },
           {
@@ -862,6 +914,7 @@ export default [
             component: AddEditAtividade,
             meta: {
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              rotaDeEscape: 'planoSetorial:resumoDeAtividade',
             },
           },
           {
@@ -877,6 +930,7 @@ export default [
             path: ':atividade_id/indicadores/novo',
             component: AddEditIndicador,
             meta: {
+              rotaDeEscape: 'planoSetorial:resumoDeAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
           },
@@ -884,6 +938,7 @@ export default [
             path: ':atividade_id/indicadores/:indicador_id',
             component: AddEditIndicador,
             meta: {
+              rotaDeEscape: 'planoSetorial:resumoDeAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
             name: 'planoSetorial:indicadorDaAtividade',
@@ -903,7 +958,7 @@ export default [
             props: { group: 'variaveis' },
             meta: {
               funçãoDaTela: 'gerar',
-              rotaDeEscape: 'indicadorDaAtividade',
+              rotaDeEscape: 'planoSetorial:indicadorDaAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
           },
@@ -950,7 +1005,7 @@ export default [
             component: AddEditIndicador,
             props: { group: 'criar-ou-editar-variaveis-compostas' },
             meta: {
-              rotaDeEscape: 'indicadorDaAtividade',
+              rotaDeEscape: 'planoSetorial:indicadorDaAtividade',
               título: 'Nova variável composta',
               rotaPrescindeDeChave: true,
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
@@ -962,7 +1017,7 @@ export default [
             props: { group: 'gerar-compostas' },
             meta: {
               funçãoDaTela: 'gerar',
-              rotaDeEscape: 'indicadorDaAtividade',
+              rotaDeEscape: 'planoSetorial:indicadorDaAtividade',
               título: 'Auxiliar de variável composta',
               rotaPrescindeDeChave: true,
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
@@ -973,7 +1028,7 @@ export default [
             component: AddEditIndicador,
             props: { group: 'criar-ou-editar-variaveis-compostas' },
             meta: {
-              rotaDeEscape: 'indicadorDaAtividade',
+              rotaDeEscape: 'planoSetorial:indicadorDaAtividade',
               título: 'Editar variável composta',
               rotaPrescindeDeChave: true,
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
@@ -985,7 +1040,7 @@ export default [
             component: AddEditIndicador,
             props: { group: 'compostas-valores' },
             meta: {
-              rotaDeEscape: 'indicadorDaAtividade',
+              rotaDeEscape: 'planoSetorial:indicadorDaAtividade',
               título: 'Editar valores previstos',
               tipoDeValor: 'previsto',
               rotaPrescindeDeChave: true,
@@ -997,7 +1052,7 @@ export default [
             component: AddEditIndicador,
             props: { group: 'compostas-retroativos' },
             meta: {
-              rotaDeEscape: 'indicadorDaAtividade',
+              rotaDeEscape: 'planoSetorial:indicadorDaAtividade',
               título: 'Editar valores realizados',
               tipoDeValor: 'realizado',
               rotaPrescindeDeChave: true,
@@ -1076,6 +1131,7 @@ export default [
             path: ':atividade_id/cronograma/novo',
             component: AddEditCronograma,
             meta: {
+              rotaDeEscape: 'planoSetorial:cronogramaDaAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
           },
@@ -1083,6 +1139,7 @@ export default [
             path: ':atividade_id/cronograma/:cronograma_id',
             component: AddEditCronograma,
             meta: {
+              rotaDeEscape: 'planoSetorial:cronogramaDaAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
           },

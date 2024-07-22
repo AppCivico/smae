@@ -59,7 +59,14 @@ async function onSubmit(el) {
         VariaveisStore.getValores(var_id);
         alertStore.success(msg);
         editModalStore.clear();
-        router.push(`${currentEdit}`);
+
+        if (route.meta.rotaDeEscape) {
+          router.push({ name: route.meta.rotaDeEscape });
+        } else if (route.meta.entidadeMãe === 'pdm') {
+          router.push(`${currentEdit}`);
+        } else {
+          throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+        }
       }
     }
   } catch (error) {

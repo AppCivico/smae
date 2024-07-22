@@ -48,7 +48,7 @@ export default {
         rotasParaMenuSecundário: () => {
           const rotas = [
             'planosSetoriaisResumo',
-            'planosSetoriaisMetas',
+            'planoSetorial:listaDeMetas',
             'planosSetoriaisDocumentos',
           ];
 

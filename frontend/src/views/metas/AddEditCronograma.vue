@@ -100,7 +100,13 @@ async function onSubmit(values) {
       msg = 'Item adicionado com sucesso!';
     }
     if (r) {
-      router.push(`${parentlink}/cronograma`);
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        router.push(`${parentlink}/cronograma`);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
       return;
     }
@@ -114,7 +120,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await CronogramasStore.delete(id)) {
           CronogramasStore.clear();
-          await router.push(`${parentlink}/cronograma`);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push(`${parentlink}/cronograma`);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Cronograma removido.');
         }
       }, 'Remover');

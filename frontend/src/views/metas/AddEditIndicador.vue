@@ -201,7 +201,14 @@ async function onSubmit(values) {
     if (r == true) {
       MetasStore.clear();
       alertStore.success(msg);
-      router.push(parentlink);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe) {
+        router.push(parentlink);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -213,7 +220,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await IndicadoresStore.delete(id)) {
           IndicadoresStore.clear();
-          await router.push(parentlink);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe) {
+            await router.push(parentlink);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Indicador removido.');
         }
       }, 'Remover');
