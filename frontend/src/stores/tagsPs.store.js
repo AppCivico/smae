@@ -94,5 +94,14 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
         upload_icone: emFoco?.icone,
       };
     },
+    tagsPorPlano: ({ Tags }) => (Array.isArray(Tags)
+      ? Tags.reduce((acc, tag) => {
+        if (!acc[tag.pdm_id]) {
+          acc[tag.pdm_id] = [];
+        }
+        acc[tag.pdm_id].push(tag);
+        return acc;
+      })
+      : {}),
   },
 });

@@ -193,9 +193,9 @@ watch(() => props.group, (novoValor) => {
         @change="filterItems"
       >
         <option :value="0" />
-        <template v-if="Array.isArray(TagsStore.Tags)">
+        <template v-if="Array.isArray(TagsStore.tagsPorPlano?.[activePdm.id])">
           <option
-            v-for="item in TagsStore.Tags"
+            v-for="item in TagsStore.tagsPorPlano[activePdm.id]"
             :key="item.id"
             :value="item.id"
             :title="item.descricao?.length > 36 ? item.descricao : null"
