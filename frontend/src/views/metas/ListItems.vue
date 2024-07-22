@@ -91,7 +91,7 @@ watch(() => props.group, (novoValor) => {
     >
       <span class="btn">Adicionar</span>
       <ul>
-        <li v-if="temPermissãoPara('CadastroMeta?.administrador_no_pdm')">
+        <li v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])">
           <SmaeLink
             to="/metas/novo"
           >
