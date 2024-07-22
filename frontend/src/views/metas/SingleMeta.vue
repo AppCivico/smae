@@ -155,28 +155,33 @@ iniciar();
       <hr class="mt2 mb2">
       <div v-if="singleMeta?.tags.length">
         <h4>Tags</h4>
-        <div class="flex">
-          <div
+        <ul class="flex flexwrap center g2">
+          <li
             v-for="tag in singleMeta.tags"
             :key="tag.id"
-            class="flex center mr1"
+            class="fb10em"
           >
             <a
               v-if="tag.download_token"
+              class="block"
               :href="baseUrl + '/download/' + tag.download_token"
               download
             >
               <img
                 :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
-                width="15"
-                class="ib mr1"
+                width="140"
+                height="140"
+                class="icone-de-tag"
               >
             </a>
-            <strong v-else>
+            <strong
+              v-else
+              class="block"
+            >
               {{ tag.descricao }}
             </strong>
-          </div>
-        </div>
+          </li>
+        </ul>
         <hr class="mt2 mb2">
       </div>
       <div
@@ -333,3 +338,10 @@ iniciar();
     </template>
   </div>
 </template>
+<style lang="less" scoped>
+.icone-de-tag {
+  max-width: 140px;
+  max-height: 140px;
+  object-fit: cover;
+}
+</style>
