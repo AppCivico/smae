@@ -91,7 +91,7 @@ router.beforeEach(async (r) => {
   }
 });
 
-router.afterEach((to) => {
+router.afterEach((to, from, failure) => {
   const { título } = to.meta;
 
   if (título) {
@@ -104,6 +104,11 @@ router.afterEach((to) => {
     }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
+  }
+
+  if (failure) {
+    console.error('to:', to, 'from:', from, 'failure:', failure);
+    throw new Error(`to: "${to}", from: "${from}", failure: "${failure}"`);
   }
 });
 
