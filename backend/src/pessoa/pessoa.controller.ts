@@ -42,6 +42,8 @@ export class PessoaController {
         'SMAE.gestor_de_projeto',
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
     ])
     async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters, user) };
@@ -65,6 +67,8 @@ export class PessoaController {
         'CadastroGrupoPortfolio.administrador_no_orgao',
         'CadastroPessoa.editar_responsabilidade',
         'CadastroTransferencia.listar',
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
     ])
     async findAllReduced(
         @Query() filters: FilterPessoaDto,
