@@ -86,10 +86,10 @@ async function excluirEquipamento(id, descricao) {
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await equipamentosStore.excluirItem(id)) {
-        equipamentosStore.$reset();
-        equipamentosStore.buscarTudo();
         alertStore.success(`"${descricao}" removido.`);
       }
+      equipamentosStore.$reset();
+      equipamentosStore.buscarTudo();
     },
     'Remover',
   );

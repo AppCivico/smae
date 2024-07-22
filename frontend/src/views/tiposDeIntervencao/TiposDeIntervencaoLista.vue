@@ -86,10 +86,10 @@ async function excluirTipo(id, descricao) {
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await tiposDeIntervencaoStore.excluirItem(id)) {
-        tiposDeIntervencaoStore.$reset();
-        tiposDeIntervencaoStore.buscarTudo();
         alertStore.success(`"${descricao}" removido.`);
       }
+      tiposDeIntervencaoStore.$reset();
+      tiposDeIntervencaoStore.buscarTudo();
     },
     'Remover',
   );
