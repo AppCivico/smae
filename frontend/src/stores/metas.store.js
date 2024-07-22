@@ -9,7 +9,7 @@ function caminhoParaApi(rotaMeta) {
     return 'meta';
   }
   if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'meta-setorial';
+    return 'plano-setorial-meta';
   }
   throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }

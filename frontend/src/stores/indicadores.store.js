@@ -2,6 +2,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return 'indicador';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-indicador';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useIndicadoresStore = defineStore({
   id: 'Indicadores',
   state: () => ({
@@ -34,7 +44,7 @@ export const useIndicadoresStore = defineStore({
       try {
         if (this.Indicadores.loading) return;
         this.Indicadores = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/indicador?${parent_field}=${m}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?${parent_field}=${m}`);
         if (r.linhas.length) {
           this.Indicadores = r.linhas.map((x) => {
             x.inicio_medicao = this.dateToField(x.inicio_medicao);
@@ -53,13 +63,13 @@ export const useIndicadoresStore = defineStore({
       try {
         this.singleIndicadores = { loading: true };
 
-        const r = await this.requestS.get(`${baseUrl}/indicador?id=${id}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?id=${id}`);
         if (r.linhas.length) {
           const x = r.linhas[0];
 
           x.inicio_medicao = this.dateToField(x.inicio_medicao);
           x.fim_medicao = this.dateToField(x.fim_medicao);
-          if (x.acumulado_valor_base !== null){
+          if (x.acumulado_valor_base !== null) {
             x.acumulado_valor_base = Number.parseFloat(x.acumulado_valor_base, 10);
           }
           x.agregador_id = x.agregador ? x.agregador.id : null;
@@ -73,15 +83,15 @@ export const useIndicadoresStore = defineStore({
       }
     },
     async insert(params) {
-      if (await this.requestS.post(`${baseUrl}/indicador`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params)) return true;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/indicador/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/indicador/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
       return false;
     },
     async filterIndicadores(p_id, parent_field, f) {
@@ -105,7 +115,7 @@ export const useIndicadoresStore = defineStore({
       try {
         if (!id) throw 'Inidicador inválida';
         this.ValoresInd[id] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/indicador/${id}/serie`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}/serie`);
         this.ValoresInd[id] = r;
       } catch (error) {
         this.ValoresInd[id] = { error };
