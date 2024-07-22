@@ -1,5 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
+import Dashboard from '@/components/DashboardLayout.vue';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 
 const portfolioStore = usePortfolioStore();
