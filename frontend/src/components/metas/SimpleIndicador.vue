@@ -7,8 +7,7 @@ import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const props = defineProps(['group', 'parentlink', 'parent_id', 'parent_field']);
 
@@ -61,7 +60,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
             </h2>
           </SmaeLink>
           <SmaeLink
-            v-if="perm?.CadastroMeta?.administrador_no_pdm"
+            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
           >
@@ -93,7 +92,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
       </h2>
     </div>
     <div
-      v-if="perm?.CadastroMeta?.administrador_no_pdm"
+      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
       class="bgc50"
     >
       <div class="tc">
