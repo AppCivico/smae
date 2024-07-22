@@ -677,37 +677,6 @@ watch(itemParaEdição, (novoValor) => {
       </div>
       <div class="f1 mb1">
         <LabelFromYup
-          name="empreendimento_id"
-          :schema="schema"
-        />
-        <Field
-          name="empreendimento_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.empreendimento_id,
-          }"
-          :disabled="!listaDeEmpreendimentos.length"
-        >
-          <option :value="0">
-            Selecionar
-          </option>
-          <option
-            v-for="item in listaDeEmpreendimentos || []"
-            :key="item.id"
-            :value="item.id"
-            :title="item.nome"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="empreendimento_id"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1 mb1">
-        <LabelFromYup
           name="orgao_executor_id"
           :schema="schema"
         />
@@ -735,6 +704,37 @@ watch(itemParaEdição, (novoValor) => {
         </Field>
         <ErrorMessage
           name="orgao_executor_id"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="empreendimento_id"
+          :schema="schema"
+        />
+        <Field
+          name="empreendimento_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.empreendimento_id,
+          }"
+          :disabled="!listaDeEmpreendimentos.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeEmpreendimentos || []"
+            :key="item.id"
+            :value="item.id"
+            :title="item.nome"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="empreendimento_id"
           class="error-msg"
         />
       </div>
