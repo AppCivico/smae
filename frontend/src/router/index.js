@@ -108,7 +108,7 @@ router.afterEach((to, from, failure) => {
 
   if (failure) {
     console.error('to:', to, 'from:', from, 'failure:', failure);
-    throw new Error(`to: "${to}", from: "${from}", failure: "${failure}"`);
+    throw new Error(failure);
   }
 });
 
