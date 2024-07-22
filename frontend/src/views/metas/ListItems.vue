@@ -63,7 +63,7 @@ watch(() => props.group, (novoValor) => {
   if (novoValor === 'subtemas') editModalStore.modal(AddEditSubtemas, props);
   if (novoValor === 'temas') editModalStore.modal(AddEditTemas, props);
   if (novoValor === 'tags') editModalStore.modal(AddEditTags, props);
-});
+}, { immediate: true });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
