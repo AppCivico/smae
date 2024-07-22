@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { ref, unref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 import { Dashboard } from '@/components';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
@@ -9,11 +14,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref, unref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 AtividadeAtiva();
 
@@ -165,222 +165,220 @@ function filterResponsible(orgao_id) {
 </script>
 
 <template>
-  <Dashboard>
-    <MigalhasDeMetas class="mb1" />
+  <MigalhasDeMetas class="mb1" />
 
-    <div class="flex spacebetween center mb2">
-      <div>
-        <h1>{{ title }} {{ activePdm.rotulo_atividade }}</h1>
-        <div class="t24">
-          {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.titulo }}
+  <div class="flex spacebetween center mb2">
+    <div>
+      <h1>{{ title }} {{ activePdm.rotulo_atividade }}</h1>
+      <div class="t24">
+        {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.titulo }}
+      </div>
+    </div>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <template v-if="oktogo&&!(singleAtividade?.loading || singleAtividade?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="atividade_id?singleAtividade:virtualParent"
+      @submit="onSubmit"
+    >
+      <hr class="mt2 mb2">
+      <div class="flex g2">
+        <div
+          class="f0"
+          style="flex-basis: 100px;"
+        >
+          <label class="label">Código <span class="tvermelho">*</span></label>
+          <Field
+            name="codigo"
+            type="text"
+            class="inputtext light mb1"
+            maxlength="30"
+            :class="{ 'error': errors.codigo }"
+          />
+          <div class="error-msg">
+            {{ errors.codigo }}
+          </div>
+        </div>
+        <div class="f2">
+          <label class="label">Título <span class="tvermelho">*</span></label>
+          <Field
+            name="titulo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.titulo }"
+          />
+          <div class="error-msg">
+            {{ errors.titulo }}
+          </div>
         </div>
       </div>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <template v-if="oktogo&&!(singleAtividade?.loading || singleAtividade?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="atividade_id?singleAtividade:virtualParent"
-        @submit="onSubmit"
-      >
-        <hr class="mt2 mb2">
-        <div class="flex g2">
-          <div
-            class="f0"
-            style="flex-basis: 100px;"
-          >
-            <label class="label">Código <span class="tvermelho">*</span></label>
-            <Field
-              name="codigo"
-              type="text"
-              class="inputtext light mb1"
-              maxlength="30"
-              :class="{ 'error': errors.codigo }"
-            />
-            <div class="error-msg">
-              {{ errors.codigo }}
-            </div>
-          </div>
-          <div class="f2">
-            <label class="label">Título <span class="tvermelho">*</span></label>
-            <Field
-              name="titulo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.titulo }"
-            />
-            <div class="error-msg">
-              {{ errors.titulo }}
-            </div>
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Contexto</label>
-            <Field
-              name="contexto"
-              as="textarea"
-              rows="3"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.contexto }"
-            />
-            <div class="error-msg">
-              {{ errors.contexto }}
-            </div>
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">
-              {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
-            </label>
-            <Field
-              name="complemento"
-              as="textarea"
-              rows="3"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.complemento }"
-            />
-            <div class="error-msg">
-              {{ errors.complemento }}
-            </div>
-          </div>
-        </div>
-
-        <div class="mb1 mt1">
-          <label class="block">
-            <Field
-              v-model="compoe_indicador_iniciativa"
-              name="compoe_indicador_iniciativa"
-              type="checkbox"
-              value="1"
-              class="inputcheckbox"
-            /><span :class="{ 'error': errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
-          </label>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Contexto</label>
+          <Field
+            name="contexto"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.contexto }"
+          />
           <div class="error-msg">
-            {{ errors.compoe_indicador_iniciativa }}
+            {{ errors.contexto }}
           </div>
         </div>
-
-        <hr class="mt2 mb2">
-
-        <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
-        <div class="flex center g2">
-          <label class="f1 label tc300">Órgão</label>
-          <label class="f1 label tc300">Responsável</label>
-          <div style="flex-basis: 30px;" />
-        </div>
-        <template
-          v-for="(item, index) in orgaos_participantes"
-          :key="index"
-        >
-          <div class="flex mb1 g2">
-            <div class="f1">
-              <select
-                v-if="organsAvailable.length"
-                v-model="item.orgao_id"
-                class="inputtext"
-                @change="item.participantes=[]"
-              >
-                <option
-                  v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
-                  :key="o.orgao_id"
-                  :value="o.orgao_id"
-                  :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
-                >
-                  {{ o.orgao.sigla }} - {{ truncate(o.orgao.descricao, 36) }}
-                </option>
-              </select>
-            </div>
-            <div class="f1">
-              <AutocompleteField
-                :controlador="item"
-                :grupo="filterResponsible(item.orgao_id)"
-                label="nome_exibicao"
-              />
-            </div>
-            <div style="flex-basis: 30px;">
-              <a
-                v-if="index"
-                class="addlink mt1"
-                @click="removeOrgao(orgaos_participantes,index)"
-              ><svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg></a>
-            </div>
+      </div>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">
+            {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
+          </label>
+          <Field
+            name="complemento"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.complemento }"
+          />
+          <div class="error-msg">
+            {{ errors.complemento }}
           </div>
-        </template>
-        <a
-          class="addlink"
-          @click="addOrgao(orgaos_participantes,true)"
-        ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+        </div>
+      </div>
 
-        <hr class="mt2 mb2">
-
-        <label class="label">
-          Responsável na coordenadoria de planejamento&nbsp;<span
-            class="tvermelho"
-          >*</span>
+      <div class="mb1 mt1">
+        <label class="block">
+          <Field
+            v-model="compoe_indicador_iniciativa"
+            name="compoe_indicador_iniciativa"
+            type="checkbox"
+            value="1"
+            class="inputcheckbox"
+          /><span :class="{ 'error': errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
         </label>
-        <div class="flex">
-          <div
-            v-if="coordsAvailable.length"
-            class="f1"
-          >
+        <div class="error-msg">
+          {{ errors.compoe_indicador_iniciativa }}
+        </div>
+      </div>
+
+      <hr class="mt2 mb2">
+
+      <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
+      <div class="flex center g2">
+        <label class="f1 label tc300">Órgão</label>
+        <label class="f1 label tc300">Responsável</label>
+        <div style="flex-basis: 30px;" />
+      </div>
+      <template
+        v-for="(item, index) in orgaos_participantes"
+        :key="index"
+      >
+        <div class="flex mb1 g2">
+          <div class="f1">
+            <select
+              v-if="organsAvailable.length"
+              v-model="item.orgao_id"
+              class="inputtext"
+              @change="item.participantes=[]"
+            >
+              <option
+                v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
+                :key="o.orgao_id"
+                :value="o.orgao_id"
+                :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
+              >
+                {{ o.orgao.sigla }} - {{ truncate(o.orgao.descricao, 36) }}
+              </option>
+            </select>
+          </div>
+          <div class="f1">
             <AutocompleteField
-              :controlador="coordenadores_cp"
-              :grupo="coordsAvailable"
+              :controlador="item"
+              :grupo="filterResponsible(item.orgao_id)"
               label="nome_exibicao"
             />
           </div>
+          <div style="flex-basis: 30px;">
+            <a
+              v-if="index"
+              class="addlink mt1"
+              @click="removeOrgao(orgaos_participantes,index)"
+            ><svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg></a>
+          </div>
         </div>
+      </template>
+      <a
+        class="addlink"
+        @click="addOrgao(orgaos_participantes,true)"
+      ><svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
 
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
+      <hr class="mt2 mb2">
 
-    <template v-if="singleAtividade?.loading||!oktogo">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="singleAtividade?.error||error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ singleAtividade.error??error }}
+      <label class="label">
+        Responsável na coordenadoria de planejamento&nbsp;<span
+          class="tvermelho"
+        >*</span>
+      </label>
+      <div class="flex">
+        <div
+          v-if="coordsAvailable.length"
+          class="f1"
+        >
+          <AutocompleteField
+            :controlador="coordenadores_cp"
+            :grupo="coordsAvailable"
+            label="nome_exibicao"
+          />
         </div>
       </div>
-    </template>
 
-    <template v-if="atividade_id&&singleAtividade.id&&atividade_id==singleAtividade.id">
-      <hr class="mt2 mb2">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(singleAtividade.id)"
-      >
-        Remover item
-      </button>
-    </template>
-  </Dashboard>
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+
+  <template v-if="singleAtividade?.loading||!oktogo">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="singleAtividade?.error||error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ singleAtividade.error??error }}
+      </div>
+    </div>
+  </template>
+
+  <template v-if="atividade_id&&singleAtividade.id&&atividade_id==singleAtividade.id">
+    <hr class="mt2 mb2">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(singleAtividade.id)"
+    >
+      Remover item
+    </button>
+  </template>
 </template>
