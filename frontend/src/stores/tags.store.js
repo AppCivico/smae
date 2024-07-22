@@ -122,8 +122,18 @@ export const useTagsStore = defineStore({
   },
 
   getters: {
+    // melhor filtrar na busca do que usar essa função, que não tem cache
     filtradasPorPdM: ({ Tags }) => (pdmId) => (Tags.length
       ? Tags.filter((x) => x.pdm_id == pdmId)
       : []),
+    tagsPorPlano: ({ Tags }) => (Array.isArray(Tags)
+      ? Tags.reduce((acc, tag) => {
+        if (!acc[tag.pdm_id]) {
+          acc[tag.pdm_id] = [];
+        }
+        acc[tag.pdm_id].push(tag);
+        return acc;
+      }, {})
+      : {}),
   },
 });
