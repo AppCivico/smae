@@ -1,4 +1,12 @@
-import { BadRequestException, HttpException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+    forwardRef,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
     Periodicidade,
@@ -36,6 +44,8 @@ import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variave
 import { ListSeriesAgrupadas, VariavelDetailDto, VariavelGlobalDetailDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
+    FilterSVNPeriodoDto,
+    SACicloFisicoDto,
     SerieValorNomimal,
     SerieValorPorPeriodo,
     ValorSerieExistente,
@@ -71,6 +81,12 @@ export type VariavelComCategorica = {
         tipo: TipoVariavelCategorica;
         valores: VariavelCategoricaValor[];
     } | null;
+};
+
+type FiltroData = {
+    data_inicio?: Date;
+    data_fim?: Date;
+    data_valor?: Date;
 };
 
 @Injectable()
@@ -1976,7 +1992,7 @@ export class VariavelService {
     async getValorSerieExistente(
         variavelId: number,
         series: Serie[],
-        data_valor: Date | undefined
+        filters: FiltroData
     ): Promise<ValorSerieExistente[]> {
         return await this.prisma.serieVariavel.findMany({
             where: {
@@ -1984,7 +2000,11 @@ export class VariavelService {
                 serie: {
                     in: series,
                 },
-                data_valor: data_valor,
+                AND: [
+                    { data_valor: filters.data_inicio ? { gte: filters.data_inicio } : undefined },
+                    { data_valor: filters.data_fim ? { lte: filters.data_fim } : undefined },
+                    { data_valor: filters.data_valor }, // filtro fixo
+                ],
             },
             select: {
                 valor_nominal: true,
@@ -2022,14 +2042,18 @@ export class VariavelService {
         return porPeriodo;
     }
 
-    async getSeriePrevistoRealizado(tipo: TipoVariavel, variavelId: number) {
+    async getSeriePrevistoRealizado(
+        tipo: TipoVariavel,
+        filters: FilterSVNPeriodoDto,
+        variavelId: number
+    ): Promise<ListSeriesAgrupadas> {
         const indicador = await this.getIndicadorViaVariavel(variavelId);
         const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
             return v.variavel.id === variavelId;
         });
         const variavel = indicadorVariavelRelList[0].variavel;
 
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, undefined);
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
         const result: ListSeriesAgrupadas = {
@@ -2046,10 +2070,44 @@ export class VariavelService {
             ordem_series: ORDEM_SERIES_RETORNO,
         };
 
+        const [analisesCiclo, documentoCiclo] = await Promise.all([
+            this.prisma.variavelCicloFisicoQualitativo.findMany({
+                where: {
+                    variavel_id: variavelId,
+                    referencia_data: { in: valoresExistentes.map((v) => v.data_valor) },
+                    removido_em: null,
+                },
+                distinct: ['referencia_data'],
+                select: {
+                    id: true,
+                    referencia_data: true,
+                    analise_qualitativa: true,
+                },
+            }),
+            this.prisma.variavelCicloFisicoDocumento.groupBy({
+                where: {
+                    variavel_id: variavelId,
+                    removido_em: null,
+                    referencia_data: { in: valoresExistentes.map((v) => v.data_valor) },
+                },
+                by: ['referencia_data'],
+                _count: true,
+            }),
+        ]);
+
+        const mapAnalisesCiclo: Record<string, (typeof analisesCiclo)[0]> = {};
+        for (const analise of analisesCiclo) {
+            mapAnalisesCiclo[Date2YMD.toString(analise.referencia_data)] = analise;
+        }
+        const mapDocumentoCiclo: Record<string, (typeof documentoCiclo)[0]> = {};
+        for (const doc of documentoCiclo) {
+            mapDocumentoCiclo[Date2YMD.toString(doc.referencia_data)] = doc;
+        }
+
         // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir (e agora com o plano setorial)
         // isso mudou mais uma vez
 
-        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id);
+        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id, filters);
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieValorNomimal[] = this.populaSeriesExistentes(
                 porPeriodo,
@@ -2058,10 +2116,23 @@ export class VariavelService {
                 variavel
             );
 
+            let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
+
+            const analiseCiclo = mapAnalisesCiclo[periodoYMD];
+            const docCiclo = mapDocumentoCiclo[periodoYMD];
+            if (analiseCiclo) {
+                ciclo_fisico = {
+                    id: analiseCiclo.id,
+                    analise: analiseCiclo.analise_qualitativa || '',
+                    tem_documentos: (docCiclo?._count || 0) > 0,
+                };
+            }
+
             result.linhas.push({
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
+                ciclo_fisico: ciclo_fisico,
             });
         }
 
@@ -2157,12 +2228,18 @@ export class VariavelService {
         } as NonExistingSerieJwt);
     }
 
-    private async gerarPeriodoVariavelEntreDatas(variavelId: number): Promise<DateYMD[]> {
-        const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+    private async gerarPeriodoVariavelEntreDatas(variavelId: number, filtros?: FiltroData): Promise<DateYMD[]> {
+        if (isNaN(variavelId)) throw new BadRequestException('Variável inválida');
+
+        const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
             select to_char(p.p, 'yyyy-mm-dd') as dt
             from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim),
             generate_series(inicio, fim, p) p
-        `;
+            where true
+            ${filtros && filtros.data_inicio ? `and p.p >= '${filtros.data_inicio.toISOString()}'::date` : ''}
+            ${filtros && filtros.data_fim ? `and p.p <= '${filtros.data_fim.toISOString()}'::date` : ''}
+            ${filtros && filtros.data_valor ? `and p.p = '${filtros.data_valor.toISOString()}'::date` : ''}
+        `);
 
         return dados.map((e) => e.dt);
     }

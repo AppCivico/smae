@@ -85,7 +85,7 @@ export class VariavelFormulaCompostaService {
             const valoresExistentes = await this.variavelService.getValorSerieExistente(
                 variavelId,
                 ORDEM_SERIES_RETORNO,
-                filter.periodo
+                { data_valor: filter.periodo }
             );
             const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
             const seriesExistentes: SerieValorNomimal[] = this.variavelService.populaSeriesExistentes(

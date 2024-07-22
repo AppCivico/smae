@@ -25,7 +25,12 @@ import {
     VariavelGlobalDetailDto,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
-import { SerieIndicadorValorNominal, SerieValorNomimal, VariavelGlobalItemDto } from './entities/variavel.entity';
+import {
+    FilterSVNPeriodoDto,
+    SerieIndicadorValorNominal,
+    SerieValorNomimal,
+    VariavelGlobalItemDto,
+} from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 
 export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [...MetaController.ReadPerm, 'CadastroMeta.listar'];
@@ -108,9 +113,10 @@ export class IndicadorVariavelPDMController {
     @Roles(MetaController.WritePerm)
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
+        @Query() filters: FilterSVNPeriodoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, params.id);
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id);
     }
 }
 
@@ -210,8 +216,9 @@ export class VariavelGlobalController {
     @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
+        @Query() filters: FilterSVNPeriodoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, params.id);
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id);
     }
 }
