@@ -62,7 +62,7 @@ const caret = ref(0);
       await OrcamentosStore.buscarOrçamentosPrevistosParaAno();
       break;
 
-    case 'meta':
+    case 'pdm':
       await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
       break;
 
@@ -474,7 +474,7 @@ function montaDotacao(a) {
         </div>
       </template>
 
-      <div v-if="$route.meta.entidadeMãe === 'meta'">
+      <div v-if="$route.meta.entidadeMãe === 'pdm'">
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação <span class="tvermelho">*</span></label>
 

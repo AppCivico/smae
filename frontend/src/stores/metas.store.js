@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'meta') {
+  if (rotaMeta.entidadeMãe === 'pdm') {
     return 'meta';
   }
   if (rotaMeta.entidadeMãe === 'planoSetorial') {
@@ -24,7 +24,7 @@ export const useMetasStore = defineStore({
   getters: {
     activePdm() {
       switch (this.route.meta.entidadeMãe) {
-        case 'meta':
+        case 'pdm':
           return usePdMStore().activePdm;
         case 'planoSetorial':
           return usePlanosSetoriaisStore().emFoco;

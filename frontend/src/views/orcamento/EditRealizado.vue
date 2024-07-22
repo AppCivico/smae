@@ -76,7 +76,7 @@ const complemento = computed(() => {
         await OrcamentosStore.buscarOrçamentosRealizadosParaAno();
         break;
 
-      case 'meta':
+      case 'pdm':
         await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
         break;
 
@@ -460,7 +460,7 @@ export default {
       </template>
 
       <ListaDeCompartilhamentos
-        v-if="$route.meta.entidadeMãe === 'meta'"
+        v-if="$route.meta.entidadeMãe === 'pdm'"
         :ano="ano"
         :id-do-item="id"
         :pdm="activePdm.id"
@@ -502,7 +502,7 @@ export default {
         </tbody>
       </table>
 
-      <div v-if="$route.meta.entidadeMãe === 'meta'">
+      <div v-if="$route.meta.entidadeMãe === 'pdm'">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <pre v-ScrollLockDebug>activePdm.nivel_orcamento: {{ activePdm.nivel_orcamento }}</pre>

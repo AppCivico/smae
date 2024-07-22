@@ -63,7 +63,7 @@ const d_fonte = ref('');
         await OrcamentosStore.buscarOrçamentosPlanejadosParaAno();
         break;
 
-      case 'meta':
+      case 'pdm':
         await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
         break;
 
@@ -574,7 +574,7 @@ export default {
         </tbody>
       </table>
 
-      <div v-if="$route.meta.entidadeMãe === 'meta'">
+      <div v-if="$route.meta.entidadeMãe === 'pdm'">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <div
