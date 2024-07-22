@@ -44,6 +44,9 @@ export const router = createRouter({
       name: 'panorama',
       component: Panorama,
       props: { submenu: false },
+      meta: {
+        entidadeMãe: 'meta',
+      },
     },
 
     { path: '/login', component: Login },
