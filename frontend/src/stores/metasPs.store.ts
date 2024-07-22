@@ -34,7 +34,7 @@ interface Estado {
 }
 
 function caminhoParaApi(rotaMeta: RouteMeta) {
-  if (rotaMeta.entidadeMãe === 'meta') {
+  if (rotaMeta.entidadeMãe === 'pdm') {
     return 'meta';
   }
   if (rotaMeta.entidadeMãe === 'planoSetorial') {

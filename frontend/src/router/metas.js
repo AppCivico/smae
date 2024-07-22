@@ -94,7 +94,7 @@ export default {
       'PDM.ponto_focal',
       'CadastroMeta.orcamento',
     ],
-    entidadeMãe: 'meta',
+    entidadeMãe: 'pdm',
     presenteNoMenu: true,
     título: 'Metas',
     íconeParaMenu: `<svg width="19" height="22" viewBox="0 0 19 22" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

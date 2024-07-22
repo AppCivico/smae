@@ -176,7 +176,7 @@ export default {
       />
 
       <ListaDeCompartilhamentos
-        v-if="$route.meta.entidadeMãe === 'meta' && Object.keys(respostasof).length
+        v-if="$route.meta.entidadeMãe === 'pdm' && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
         :ano="ano"
@@ -186,7 +186,7 @@ export default {
       />
 
       <div
-        v-if="$route.meta.entidadeMãe === 'meta' && Object.keys(respostasof).length
+        v-if="$route.meta.entidadeMãe === 'pdm' && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
       >

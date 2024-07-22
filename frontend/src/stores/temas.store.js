@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'meta') {
+  if (rotaMeta.entidadeMãe === 'pdm') {
     return 'tema';
   }
   if (rotaMeta.entidadeMãe === 'planoSetorial') {
