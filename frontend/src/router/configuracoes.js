@@ -865,6 +865,7 @@ export default [
     meta: {
       limitarÀsPermissões: 'CadastroPdm.',
       título: 'Programa de metas',
+      entidadeMãe: 'pdm',
       rotasParaMenuPrincipal,
     },
     children: [
