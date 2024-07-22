@@ -59,6 +59,8 @@ export const PROJETO_READONLY_ROLES_MDO: ListaDePrivilegios[] = [
     'MDO.gestor_de_projeto',
     'MDO.colaborador_de_projeto',
     'MDO.espectador_de_projeto',
+    'ProjetoMDO.administrador',
+    'ProjetoMDO.administrador_no_orgao',
 ];
 
 const rolesMDO: ListaDePrivilegios[] = [
