@@ -81,7 +81,10 @@ function groupSlug(s) {
       <ul>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])"
             to="/metas/novo"
           >
             Nova Meta
@@ -89,7 +92,10 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMacroTema.inserir']) && activePdm.possui_macro_tema"
+            v-if="temPermissãoPara([
+              'CadastroMacroTema.inserir',
+              'CadastroMacroTemaPS.inserir'
+            ]) && activePdm.possui_macro_tema"
             to="/metas/macrotemas/novo"
           >
             {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
@@ -97,7 +103,10 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroTema.inserir']) && activePdm.possui_tema"
+            v-if="temPermissãoPara([
+              'CadastroTema.inserir',
+              'CadastroTemaPS.inserir'
+            ]) && activePdm.possui_tema"
             to="/metas/temas/novo"
           >
             {{ activePdm.rotulo_tema ?? 'Tema' }}
@@ -105,7 +114,10 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroSubTema.inserir']) && activePdm.possui_sub_tema"
+            v-if="temPermissãoPara([
+              'CadastroSubTema.inserir',
+              'CadastroSubTemaPS.inserir'
+            ]) && activePdm.possui_sub_tema"
             to="/metas/subtemas/novo"
           >
             {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
@@ -113,7 +125,10 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroTag.inserir'])"
+            v-if="temPermissãoPara([
+              'CadastroTag.inserir',
+              'CadastroTagPS.inserir'
+            ])"
             to="/metas/tags/novo"
           >
             Tag
@@ -150,7 +165,10 @@ function groupSlug(s) {
               </div>
             </SmaeLink>
             <SmaeLink
-              v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               :to="`/metas/editar/${m.id}`"
               class="f0 tprimary ml1"
             >
@@ -163,7 +181,10 @@ function groupSlug(s) {
         </ul>
         <hr class="mt2 mb2">
         <div
-          v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm'
+          ])"
           class="tc bgc50 p1"
         >
           <SmaeLink

@@ -84,7 +84,10 @@ iniciar();
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm'
+      ])"
       :to="`/metas/${meta_id}/iniciativas/editar/${iniciativa_id}`"
       class="btn big ml2"
     >
@@ -189,7 +192,10 @@ iniciar();
           </h2>
           <hr class="ml2 f1">
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])"
             :to="`${parentlink}/atividades/novo`"
             class="btn ml2"
           >

@@ -138,7 +138,10 @@ onUpdated(() => { start(); });
                   </select> -->
               </div>
               <SmaeLink
-                v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+                v-if="temPermissãoPara([
+                  'CadastroMeta.administrador_no_pdm',
+                  'CadastroMetaPS.administrador_no_pdm'
+                ])"
                 :to="`${parentlink}/indicadores/${ind.id}`"
                 class="tprimary"
               >
@@ -249,7 +252,10 @@ onUpdated(() => { start(); });
                 </div>
 
                 <div
-                  v-if="!v.etapa && temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+                  v-if="!v.etapa && temPermissãoPara([
+                    'CadastroMeta.administrador_no_pdm',
+                    'CadastroMetaPS.administrador_no_pdm'
+                  ])"
                   class="f0 dropbtn right"
                 >
                   <span class="tamarelo"><svg
@@ -358,7 +364,10 @@ onUpdated(() => { start(); });
         </h2>
       </div>
       <div
-        v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+        v-if="temPermissãoPara([
+          'CadastroMeta.administrador_no_pdm',
+          'CadastroMetaPS.administrador_no_pdm'
+        ])"
         class="bgc50"
       >
         <div class="tc">

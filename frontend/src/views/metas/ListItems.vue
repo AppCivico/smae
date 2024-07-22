@@ -81,47 +81,76 @@ watch(() => props.group, (novoValor) => {
     />
 
     <hr class="f1">
+
+    <SmaeLink
+      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm')"
+      class="btn big"
+      to="/metas/novo"
+    >
+      Nova Meta
+    </SmaeLink>
+
     <div
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
         'CadastroMacroTema.inserir',
         'CadastroTema.inserir',
         'CadastroSubTema.inserir',
-        'CadastroTag.inserir'
+        'CadastroTag.inserir',
       ])"
       class="dropbtn"
     >
       <span class="btn">Adicionar</span>
       <ul>
-        <li v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])">
+        <li
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+          ])"
+        >
           <SmaeLink
             to="/metas/novo"
           >
             Nova Meta
           </SmaeLink>
         </li>
-        <li v-if="temPermissãoPara('CadastroMacroTema.inserir') && activePdm.possui_macro_tema">
+        <li
+          v-if="temPermissãoPara([
+            'CadastroMacroTema.inserir',
+          ]) && activePdm.possui_macro_tema"
+        >
           <SmaeLink
             to="/metas/macrotemas/novo"
           >
             {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
           </SmaeLink>
         </li>
-        <li v-if="temPermissãoPara('CadastroTema.inserir') && activePdm.possui_tema">
+        <li
+          v-if="temPermissãoPara([
+            'CadastroTema.inserir',
+          ]) && activePdm.possui_tema"
+        >
           <SmaeLink
             to="/metas/temas/novo"
           >
             {{ activePdm.rotulo_tema ?? 'Tema' }}
           </SmaeLink>
         </li>
-        <li v-if="temPermissãoPara('CadastroSubTema.inserir') && activePdm.possui_sub_tema">
+        <li
+          v-if="temPermissãoPara([
+            'CadastroSubTema.inserir',
+          ]) && activePdm.possui_sub_tema"
+        >
           <SmaeLink
             to="/metas/subtemas/novo"
           >
             {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
           </SmaeLink>
         </li>
-        <li v-if="temPermissãoPara('CadastroTag.inserir')">
+        <li
+          v-if="temPermissãoPara([
+            'CadastroTag.inserir',
+          ])"
+        >
           <SmaeLink
             to="/metas/tags/novo"
           >
@@ -248,7 +277,10 @@ watch(() => props.group, (novoValor) => {
                 </div>
               </SmaeLink>
               <SmaeLink
-                v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+                v-if="temPermissãoPara([
+                  'CadastroMeta.administrador_no_pdm',
+                  'CadastroMetaPs.administrador_no_pdm'
+                ])"
                 :to="`/metas/editar/${m.id}`"
                 class="ml1 tprimary"
               >
@@ -261,7 +293,10 @@ watch(() => props.group, (novoValor) => {
           </ul>
           <hr class="mt1 mb1">
           <SmaeLink
-            v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPs.administrador_no_pdm'
+            ])
               && filters.groupBy != 'todas'"
             :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`"
             class="addlink"
@@ -272,7 +307,10 @@ watch(() => props.group, (novoValor) => {
             ><use xlink:href="#i_+" /></svg> <span>Adicionar meta</span>
           </SmaeLink>
           <SmaeLink
-            v-else-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+            v-else-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPs.administrador_no_pdm'
+            ])"
             :to="`/metas/novo`"
             class="addlink"
           >
