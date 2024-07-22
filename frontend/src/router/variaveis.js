@@ -79,7 +79,7 @@ export default {
               'CadastroVariavelGlobal.administrador_no_orgao',
             ],
             rotaDeEscape: 'variaveisListar',
-            título: 'Editar Variável',
+            título: () => useVariaveisGlobaisStore()?.emFoco?.nome || 'Editar Variável',
           },
         },
       ],
