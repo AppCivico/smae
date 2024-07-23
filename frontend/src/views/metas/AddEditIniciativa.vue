@@ -1,18 +1,22 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref, unref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { defineOptions, ref, unref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
 import {
   useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,
 } from '@/stores';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 IniciativaAtiva();
 
@@ -169,7 +173,6 @@ function filterResponsible(orgao_id) {
   return r.length ? r : [];
 }
 </script>
-
 <template>
   <MigalhasDeMetas class="mb1" />
 
