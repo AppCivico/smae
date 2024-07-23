@@ -171,8 +171,7 @@ export class IndicadorController {
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorPSController {
-    private tipoPdm: TipoPdm = 'PDM';
-
+    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly indicadorService: IndicadorService) {}
 
     @Post('plano-setorial-indicador')
