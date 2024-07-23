@@ -558,7 +558,7 @@ export default {
           path: 'novo',
           component: AddEditIniciativa,
           meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
         {
@@ -867,7 +867,7 @@ export default {
               path: 'novo',
               component: AddEditAtividade,
               meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
               },
             },
             {
