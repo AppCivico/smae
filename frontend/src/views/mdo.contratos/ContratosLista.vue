@@ -71,7 +71,7 @@ const exibirColunasDeAção = computed(() => !permissõesDaObraEmFoco.value.apen
   || permissõesDaObraEmFoco.value.sou_responsavel);
 
 function excluirProcesso(id, nome) {
-  alertStore.confirmAction(`Deseja mesmo remover "${formatProcesso(nome)}"?`, async () => {
+  alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
     if (await useContratosStore().excluirItem(id)) {
       alertStore.success('Processo removido.');
 
