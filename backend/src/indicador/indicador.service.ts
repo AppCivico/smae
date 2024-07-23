@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Periodicidade, Prisma, Serie } from '@prisma/client';
+import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -31,7 +31,7 @@ export class IndicadorService {
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdm, createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
             throw new HttpException(
                 'Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade',
@@ -46,7 +46,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'indicador');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
 
         const countExistente = await this.prisma.indicador.count({
             where: {
@@ -371,13 +371,13 @@ export class IndicadorService {
         return formula_compilada;
     }
 
-    async findOne(indicador_id: number, user: PessoaFromJwt): Promise<Indicador | null> {
-        const list = await this.findAll({ id: indicador_id }, user);
+    async findOne(tipo: TipoPdm, indicador_id: number, user: PessoaFromJwt): Promise<Indicador | null> {
+        const list = await this.findAll(tipo, { id: indicador_id }, user);
 
         return list.length ? list[0] : null;
     }
 
-    async findAll(filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<Indicador[]> {
+    async findAll(tipo: TipoPdm, filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<Indicador[]> {
         if (!filters.meta_id && !filters.iniciativa_id && !filters.atividade_id)
             throw new HttpException(
                 'Para buscar os indicadores deve ser informado no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade',
@@ -392,7 +392,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'indicador', 'readonly');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador', 'readonly');
 
         const listActive = await this.prisma.indicador.findMany({
             where: {
@@ -439,7 +439,7 @@ export class IndicadorService {
         return listActive;
     }
 
-    async update(id: number, dto: UpdateIndicadorDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdm, id: number, dto: UpdateIndicadorDto, user: PessoaFromJwt) {
         const indicadorSelectData: Prisma.IndicadorSelect = {
             id: true,
             formula_compilada: true,
@@ -474,7 +474,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'indicador');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
 
         console.log('updateIndicadorDto', dto);
 
@@ -587,7 +587,7 @@ export class IndicadorService {
         await prismaTx.$queryRaw`select refresh_serie_indicador(${indicador_id}::int, null)`;
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const indicador = await this.prisma.indicador.findFirstOrThrow({
             where: { id: id, removido_em: null },
             select: { meta_id: true, atividade_id: true, iniciativa_id: true },
@@ -600,7 +600,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'indicador');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
 
         const removed = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Verificando se as variáveis deste indicador estão em uso.
@@ -732,6 +732,7 @@ export class IndicadorService {
     }
 
     async getSeriesIndicador(
+        tipo: TipoPdm,
         id: number,
         user: PessoaFromJwt,
         filters: FilterIndicadorSerieDto

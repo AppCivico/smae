@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -25,8 +25,8 @@ export class IndicadorFormulaCompostaService {
         private readonly indicadorService: IndicadorService
     ) {}
 
-    async create(indicador_id: number, dto: CreateIndicadorFormulaCompostaDto, user: PessoaFromJwt) {
-        const indicador = await this.indicadorService.findOne(indicador_id, user);
+    async create(tipo: TipoPdm, indicador_id: number, dto: CreateIndicadorFormulaCompostaDto, user: PessoaFromJwt) {
+        const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
         this.checkFormulaCompostaRecursion(dto);
@@ -116,8 +116,8 @@ export class IndicadorFormulaCompostaService {
             throw new HttpException('Fórmula Composta não pode conter outra Fórmula Composta', 400);
     }
 
-    async findAll(indicador_id: number, user: PessoaFromJwt): Promise<IndicadorFormulaCompostaDto[]> {
-        const indicador = await this.indicadorService.findOne(indicador_id, user);
+    async findAll(tipo: TipoPdm, indicador_id: number, user: PessoaFromJwt): Promise<IndicadorFormulaCompostaDto[]> {
+        const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
         const rows = await this.prisma.formulaComposta.findMany({
@@ -179,12 +179,13 @@ export class IndicadorFormulaCompostaService {
     }
 
     async update(
+        tipo: TipoPdm,
         indicador_id: number,
         id: number,
         dto: UpdateIndicadorFormulaCompostaDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
         this.checkFormulaCompostaRecursion(dto);
@@ -289,8 +290,8 @@ export class IndicadorFormulaCompostaService {
         );
     }
 
-    async remove(indicador_id: number, id: number, user: PessoaFromJwt): Promise<void> {
-        const indicador = await this.indicadorService.findOne(indicador_id, user);
+    async remove(tipo: TipoPdm, indicador_id: number, id: number, user: PessoaFromJwt): Promise<void> {
+        const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
@@ -494,11 +495,12 @@ export class IndicadorFormulaCompostaService {
     }
 
     async geradorFormula(
+        tipo: TipoPdm,
         indicador_id: number,
         dto: GeneratorFormulaCompostaFormDto,
         user: PessoaFromJwt
     ): Promise<BatchRecordWithId> {
-        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
         const variaveis = await this.extractVariables(dto, indicador_id, null);
@@ -655,11 +657,12 @@ export class IndicadorFormulaCompostaService {
     }
 
     async contaVariavelPrefixo(
+        tipo: TipoPdm,
         indicador_id: number,
         dto: FilterFormulaCompostaFormDto,
         user: PessoaFromJwt
     ): Promise<FilterFormulaCompostaReturnDto> {
-        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
         const rows = await this.extractVariables(dto, indicador_id, null);

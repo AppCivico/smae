@@ -23,10 +23,12 @@ import { ListIndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formu
 import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 import { IndicadorService } from './indicador.service';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
+import { TipoPdm } from '@prisma/client';
 
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorController {
+    private tipoPdm: TipoPdm = 'PDM';
     constructor(
         private readonly indicadorService: IndicadorService,
         private readonly indicadorFormulaCompostaService: IndicadorFormulaCompostaService
@@ -39,14 +41,14 @@ export class IndicadorController {
         @Body() createIndicadorDto: CreateIndicadorDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.indicadorService.create(createIndicadorDto, user);
+        return await this.indicadorService.create(this.tipoPdm, createIndicadorDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('indicador')
     @Roles(MetaController.ReadPerm)
     async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
-        return { linhas: await this.indicadorService.findAll(filters, user) };
+        return { linhas: await this.indicadorService.findAll(this.tipoPdm, filters, user) };
     }
 
     @Patch('indicador/:id')
@@ -57,7 +59,7 @@ export class IndicadorController {
         @Body() updateIndicadorDto: UpdateIndicadorDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.indicadorService.update(+params.id, updateIndicadorDto, user);
+        return await this.indicadorService.update(this.tipoPdm, +params.id, updateIndicadorDto, user);
     }
 
     @Delete('indicador/:id')
@@ -66,7 +68,7 @@ export class IndicadorController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.indicadorService.remove(+params.id, user);
+        await this.indicadorService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 
@@ -85,7 +87,7 @@ export class IndicadorController {
         @CurrentUser() user: PessoaFromJwt,
         @Query() filters: FilterIndicadorSerieDto
     ): Promise<ListSeriesAgrupadas> {
-        return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
+        return await this.indicadorService.getSeriesIndicador(this.tipoPdm, params.id, user, filters || {});
     }
 
     @Post('indicador/:id/formula-composta')
@@ -97,7 +99,7 @@ export class IndicadorController {
 
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.indicadorFormulaCompostaService.create(params.id, createIndicadorDto, user);
+        return await this.indicadorFormulaCompostaService.create(this.tipoPdm, params.id, createIndicadorDto, user);
     }
 
     @Get('indicador/:id/formula-composta')
@@ -107,7 +109,7 @@ export class IndicadorController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIndicadorFormulaCompostaItemDto> {
-        return { rows: await this.indicadorFormulaCompostaService.findAll(params.id, user) };
+        return { rows: await this.indicadorFormulaCompostaService.findAll(this.tipoPdm, params.id, user) };
     }
 
     @Get('indicador/:id/formula-composta-em-uso')
@@ -130,7 +132,7 @@ export class IndicadorController {
         @Body() dto: UpdateIndicadorFormulaCompostaDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.indicadorFormulaCompostaService.update(params.id, params.id2, dto, user);
+        return await this.indicadorFormulaCompostaService.update(this.tipoPdm, params.id, params.id2, dto, user);
     }
 
     @Delete('indicador/:id/formula-composta/:id2')
@@ -139,7 +141,7 @@ export class IndicadorController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async delete_fc(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.indicadorFormulaCompostaService.remove(params.id, params.id2, user);
+        await this.indicadorFormulaCompostaService.remove(this.tipoPdm, params.id, params.id2, user);
         return '';
     }
 
@@ -151,7 +153,7 @@ export class IndicadorController {
         @Query() dto: FilterFormulaCompostaFormDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<FilterFormulaCompostaReturnDto> {
-        return await this.indicadorFormulaCompostaService.contaVariavelPrefixo(params.id, dto, user);
+        return await this.indicadorFormulaCompostaService.contaVariavelPrefixo(this.tipoPdm, params.id, dto, user);
     }
 
     @Post('indicador/:id/gerador-formula-composta')
@@ -162,13 +164,15 @@ export class IndicadorController {
         @Body() dto: GeneratorFormulaCompostaFormDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<BatchRecordWithId> {
-        return await this.indicadorFormulaCompostaService.geradorFormula(params.id, dto, user);
+        return await this.indicadorFormulaCompostaService.geradorFormula(this.tipoPdm, params.id, dto, user);
     }
 }
 
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorPSController {
+    private tipoPdm: TipoPdm = 'PDM';
+
     constructor(private readonly indicadorService: IndicadorService) {}
 
     @Post('plano-setorial-indicador')
@@ -178,14 +182,14 @@ export class IndicadorPSController {
         @Body() createIndicadorDto: CreateIndicadorDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.indicadorService.create(createIndicadorDto, user);
+        return await this.indicadorService.create(this.tipoPdm, createIndicadorDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('plano-setorial-indicador')
     @Roles(MetaSetorialController.ReadPerm)
     async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
-        return { linhas: await this.indicadorService.findAll(filters, user) };
+        return { linhas: await this.indicadorService.findAll(this.tipoPdm, filters, user) };
     }
 
     @Patch('plano-setorial-indicador/:id')
@@ -196,7 +200,7 @@ export class IndicadorPSController {
         @Body() updateIndicadorDto: UpdateIndicadorDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.indicadorService.update(+params.id, updateIndicadorDto, user);
+        return await this.indicadorService.update(this.tipoPdm, +params.id, updateIndicadorDto, user);
     }
 
     @Delete('plano-setorial-indicador/:id')
@@ -205,7 +209,7 @@ export class IndicadorPSController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.indicadorService.remove(+params.id, user);
+        await this.indicadorService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 
@@ -224,6 +228,6 @@ export class IndicadorPSController {
         @CurrentUser() user: PessoaFromJwt,
         @Query() filters: FilterIndicadorSerieDto
     ): Promise<ListSeriesAgrupadas> {
-        return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
+        return await this.indicadorService.getSeriesIndicador(this.tipoPdm, params.id, user, filters || {});
     }
 }
