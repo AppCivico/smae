@@ -135,7 +135,6 @@ export default {
               'obrasListar',
               'obrasResumo',
               'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
-              'obrasTarefasListar',
             ],
           },
           children: [
