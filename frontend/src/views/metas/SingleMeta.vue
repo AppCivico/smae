@@ -240,83 +240,87 @@ iniciar();
           </SmaeLink>
         </div>
 
-        <div
-          v-for="ini in Iniciativas[meta_id]"
-          :id="`iniciativa__${ini.id}`"
-          :key="ini.id"
-          class="board_variavel mb2"
+        <template
+          v-if="Array.isArray(Iniciativas[meta_id])"
         >
-          <header class="p1">
-            <div class="flex center g2 mb1">
-              <SmaeLink
-                :to="`${parentlink}/iniciativas/${ini.id}`"
-                class="f0"
-                style="flex-basis: 2rem;"
-              >
-                <svg
-                  width="28"
-                  height="33"
-                  viewBox="0 0 32 38"
-                  color="#8EC122"
-                  xmlns="http://www.w3.org/2000/svg"
-                ><use xlink:href="#i_iniciativa" /></svg>
-              </SmaeLink>
-              <SmaeLink
-                :to="`${parentlink}/iniciativas/${ini.id}`"
-                class="f1 mt1"
-              >
-                <h2 class="mb1">
-                  {{ ini.titulo }}
-                </h2>
-              </SmaeLink>
-              <div
-                v-if="temPermissãoPara([
-                  'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
-                ])"
-                class="f0"
-              >
+          <div
+            v-for="ini in Iniciativas[meta_id]"
+            :id="`iniciativa__${ini.id}`"
+            :key="ini.id"
+            class="board_variavel mb2"
+          >
+            <header class="p1">
+              <div class="flex center g2 mb1">
                 <SmaeLink
-                  :to="`${parentlink}/iniciativas/editar/${ini.id}`"
-                  class="tprimary"
+                  :to="`${parentlink}/iniciativas/${ini.id}`"
+                  class="f0"
+                  style="flex-basis: 2rem;"
                 >
                   <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_edit" /></svg>
+                    width="28"
+                    height="33"
+                    viewBox="0 0 32 38"
+                    color="#8EC122"
+                    xmlns="http://www.w3.org/2000/svg"
+                  ><use xlink:href="#i_iniciativa" /></svg>
                 </SmaeLink>
-              </div>
-            </div>
-            <div class="f1 ml2">
-              <div class="flex g2 ml2">
-                <div class="mr1 f0">
-                  <div class="t12 uc w700 mb05 tc300">
-                    ID
-                  </div>
-                  <div class="t13">
-                    {{ ini.codigo }}
-                  </div>
-                </div>
-                <div class="mr1 f1">
-                  <div class="t12 uc w700 mb05 tc300">
-                    Órgão participante
-                  </div>
-                  <div class="t13">
-                    {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
-                  </div>
-                </div>
-                <div class="f1">
-                  <div class="t12 uc w700 mb05 tc300">
-                    Responsável na coordenadoria de planejamento
-                  </div>
-                  <div class="t13">
-                    {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
-                  </div>
+                <SmaeLink
+                  :to="`${parentlink}/iniciativas/${ini.id}`"
+                  class="f1 mt1"
+                >
+                  <h2 class="mb1">
+                    {{ ini.titulo }}
+                  </h2>
+                </SmaeLink>
+                <div
+                  v-if="temPermissãoPara([
+                    'CadastroMeta.administrador_no_pdm',
+                    'CadastroMetaPS.administrador_no_pdm'
+                  ])"
+                  class="f0"
+                >
+                  <SmaeLink
+                    :to="`${parentlink}/iniciativas/editar/${ini.id}`"
+                    class="tprimary"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_edit" /></svg>
+                  </SmaeLink>
                 </div>
               </div>
-            </div>
-          </header>
-        </div>
+              <div class="f1 ml2">
+                <div class="flex g2 ml2">
+                  <div class="mr1 f0">
+                    <div class="t12 uc w700 mb05 tc300">
+                      ID
+                    </div>
+                    <div class="t13">
+                      {{ ini.codigo }}
+                    </div>
+                  </div>
+                  <div class="mr1 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Órgão participante
+                    </div>
+                    <div class="t13">
+                      {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
+                    </div>
+                  </div>
+                  <div class="f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Responsável na coordenadoria de planejamento
+                    </div>
+                    <div class="t13">
+                      {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </header>
+          </div>
+        </template>
 
         <div
           v-if="Iniciativas[meta_id].loading"
@@ -332,6 +336,12 @@ iniciar();
             </div>
           </div>
         </div>
+        <ErrorComponent
+          v-else-if="Iniciativas[meta_id].error"
+          class="board_vazio"
+        >
+          {{ Iniciativas[meta_id].error }}
+        </ErrorComponent>
 
         <div
           v-if="relacionadosMeta?.projetos?.length"
