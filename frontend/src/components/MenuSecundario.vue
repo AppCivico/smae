@@ -14,25 +14,43 @@ const router = useRouter();
 const itensFechados = ref([]);
 const menuAberto = ref(true);
 
-const limparRotas = (listaDeRotas) => (Array.isArray(listaDeRotas)
-  ? listaDeRotas
-  : [listaDeRotas])
-  .map((x) => {
-    let rotaParaResolver = x;
+const limparRotas = (listaDeRotas) => {
+  const rotasLimpas = [];
 
-    if (typeof x === 'string') {
-      if (x.indexOf('/') > -1) {
-        rotaParaResolver = { path: x };
+  let i = 0;
+  while (i < listaDeRotas.length) {
+    let rotaParaResolver = listaDeRotas[i];
+
+    if (typeof rotaParaResolver === 'string') {
+      if (rotaParaResolver.indexOf('/') > -1) {
+        rotaParaResolver = { path: rotaParaResolver };
       } else {
-        rotaParaResolver = { name: x };
+        rotaParaResolver = { name: rotaParaResolver };
       }
     }
 
-    return router.resolve({ ...rotaParaResolver, params: route.params });
-  })
-  // eslint-disable-next-line max-len
-  .filter((y) => (!y.meta?.limitarÀsPermissões || temPermissãoPara.value(y.meta.limitarÀsPermissões)))
-  || [];
+    try {
+      const resolvedRoute = router.resolve({ ...rotaParaResolver, params: route.params });
+      if (
+        resolvedRoute
+        && (
+          !resolvedRoute.meta?.limitarÀsPermissões
+          || temPermissãoPara.value(resolvedRoute.meta.limitarÀsPermissões)
+        )
+      ) {
+        rotasLimpas.push(resolvedRoute);
+      }
+    } catch (erro) {
+      console.error(erro);
+      console.error('Erro ao resolver rota', rotaParaResolver);
+      console.error('Params', route.params);
+    }
+
+    i += 1;
+  }
+
+  return rotasLimpas;
+};
 
 const rotasParaMenu = computed(() => {
   const listaDeRotas = typeof route.meta?.rotasParaMenuSecundário === 'function'
