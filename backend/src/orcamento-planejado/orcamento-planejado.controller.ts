@@ -61,3 +61,52 @@ export class OrcamentoPlanejadoController {
         return '';
     }
 }
+
+@ApiTags('Orçamento - Planejado')
+@Controller('plano-setorial-orcamento-planejado')
+export class OrcamentoPlanejadoPSController {
+    constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    async create(
+        @Body() createMetaDto: CreateOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.orcamentoPlanejadoService.create(createMetaDto, user);
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() createMetaDto: UpdateOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.orcamentoPlanejadoService.update(+params.id, createMetaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    async findAll(
+        @Query() filters: FilterOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListOrcamentoPlanejadoDto> {
+        return {
+            linhas: await this.orcamentoPlanejadoService.findAll(filters, user),
+        };
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.orcamentoPlanejadoService.remove(+params.id, user);
+        return '';
+    }
+}
