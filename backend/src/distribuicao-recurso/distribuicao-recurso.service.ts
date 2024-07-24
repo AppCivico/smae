@@ -1327,6 +1327,7 @@ export class DistribuicaoRecursoService {
                                 id: true,
                                 inicio_planejado: true,
                                 termino_planejado: true,
+                                duracao_planejado: true,
                                 dependencias: {
                                     select: {
                                         dependencia_tarefa_id: true,
@@ -1398,6 +1399,8 @@ export class DistribuicaoRecursoService {
                                 andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].inicio_planejado,
                             termino_planejado:
                                 andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].termino_planejado,
+                            duracao_planejado:
+                                andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].duracao_planejado,
                             dependencias: {
                                 createMany: {
                                     // As tarefas criadas devem ter a mesma regra de dependência da tarefa de acompanhamento.
