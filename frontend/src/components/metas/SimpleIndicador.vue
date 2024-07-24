@@ -60,7 +60,10 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
             </h2>
           </SmaeLink>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm',
+            ])"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
           >
@@ -92,7 +95,10 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
       </h2>
     </div>
     <div
-      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm',
+      ])"
       class="bgc50"
     >
       <div class="tc">
