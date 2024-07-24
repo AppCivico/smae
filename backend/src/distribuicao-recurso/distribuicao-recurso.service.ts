@@ -829,10 +829,10 @@ export class DistribuicaoRecursoService {
                     let sumTotal: number = dto.valor_total ?? 0;
 
                     for (const distRow of outrasDistribuicoesFiltradas) {
-                        sumCusteio = sumCusteio + +distRow.custeio.toNumber();
-                        sumContrapartida += sumContrapartida + +distRow.valor_contrapartida.toNumber();
-                        sumInvestimento += sumInvestimento + +distRow.investimento.toNumber();
-                        sumTotal += sumTotal + +distRow.valor_total.toNumber();
+                        sumCusteio = +sumCusteio + +distRow.custeio.toNumber();
+                        sumContrapartida = +sumContrapartida + +distRow.valor_contrapartida.toNumber();
+                        sumInvestimento = +sumInvestimento + +distRow.investimento.toNumber();
+                        sumTotal = +sumTotal + +distRow.valor_total.toNumber();
                     }
 
                     if (dto.custeio != self.custeio.toNumber()) {
