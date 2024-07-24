@@ -1153,13 +1153,6 @@ export class DistribuicaoRecursoService {
                                 inicio_planejado: true,
                                 termino_planejado: true,
                                 duracao_planejado: true,
-                                dependencias: {
-                                    select: {
-                                        dependencia_tarefa_id: true,
-                                        tipo: true,
-                                        latencia: true,
-                                    },
-                                },
                             },
                         },
                     },
@@ -1167,6 +1160,21 @@ export class DistribuicaoRecursoService {
                 workflow_tarefa: {
                     select: {
                         tarefa_fluxo: true,
+                    },
+                },
+                tarefaEspelhada: {
+                    select: {
+                        id: true,
+                        inicio_planejado: true,
+                        termino_planejado: true,
+                        duracao_planejado: true,
+                        dependencias: {
+                            select: {
+                                dependencia_tarefa_id: true,
+                                tipo: true,
+                                latencia: true,
+                            },
+                        },
                     },
                 },
             },
@@ -1224,24 +1232,19 @@ export class DistribuicaoRecursoService {
                             distribuicao_recurso_id: distribuicaoRecurso.id,
                             recursos: distribuicaoRecurso.orgao_gestor.sigla,
                             orgao_id: distribuicaoRecurso.orgao_gestor.id,
-                            inicio_planejado:
-                                andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].inicio_planejado,
-                            termino_planejado:
-                                andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].termino_planejado,
-                            duracao_planejado:
-                                andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].duracao_planejado,
+                            inicio_planejado: andamentoTarefa.tarefaEspelhada[0].inicio_planejado,
+                            termino_planejado: andamentoTarefa.tarefaEspelhada[0].termino_planejado,
+                            duracao_planejado: andamentoTarefa.tarefaEspelhada[0].duracao_planejado,
                             dependencias: {
                                 createMany: {
                                     // As tarefas criadas devem ter a mesma regra de dependência da tarefa de acompanhamento.
-                                    data: andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].dependencias.map(
-                                        (d) => {
-                                            return {
-                                                dependencia_tarefa_id: d.dependencia_tarefa_id,
-                                                tipo: d.tipo,
-                                                latencia: d.latencia,
-                                            };
-                                        }
-                                    ),
+                                    data: andamentoTarefa.tarefaEspelhada[0].dependencias.map((d) => {
+                                        return {
+                                            dependencia_tarefa_id: d.dependencia_tarefa_id,
+                                            tipo: d.tipo,
+                                            latencia: d.latencia,
+                                        };
+                                    }),
                                 },
                             },
                         },
