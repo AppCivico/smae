@@ -297,6 +297,7 @@ export default {
 
             título: () => `Metas de ${usePlanosSetoriaisStore()?.emFoco?.nome || 'Plano Setorial'}`,
             títuloParaMenu: 'Metas',
+            desabilitarMigalhasDePãoPadrão: true,
           },
 
           children: metas,
