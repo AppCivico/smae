@@ -145,6 +145,16 @@ export class VariavelGlobalController {
         return await this.variavelService.create(this.tipo, dto, user);
     }
 
+    @Get('plano-setorial-indicador-variavel')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
+    async indicador_listAll(
+        @Query() filters: FilterVariavelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListVariavelDto> {
+        return { linhas: await this.variavelService.findAll(this.tipo, filters) };
+    }
+
     @Get('variavel')
     @ApiBearerAuth('access-token')
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
