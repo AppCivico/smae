@@ -126,7 +126,6 @@ export class DistribuicaoRecursoService {
                 });
 
                 const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                    console.log(distribuicao.status);
                     const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                     if (statusAtual) {
@@ -814,7 +813,6 @@ export class DistribuicaoRecursoService {
                     });
 
                     const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                        console.log(distribuicao.status);
                         const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                         if (statusAtual) {
@@ -1383,6 +1381,11 @@ export class DistribuicaoRecursoService {
                     numero++;
                 }
 
+                console.log('\n=========deps========\n');
+                console.log(andamentoTarefa.transferencia_andamento.tarefaEspelhada[0]);
+                console.log(andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].dependencias);
+                console.log('\n==================\n');
+
                 operations.push(
                     prismaTx.tarefa.create({
                         data: {
@@ -1515,7 +1518,6 @@ export class DistribuicaoRecursoService {
 
         const updates = [];
         for (const row of tarefaEtapasAcompanhamentos) {
-            console.log(row);
             if (row.nivel == 1 && row.tarefa_pai_id == null) {
                 // Tarefa referente à própia etapa.
                 // Buscando tarefa filha de maior número.
