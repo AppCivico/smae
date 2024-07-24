@@ -1,13 +1,13 @@
 <script setup>
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { defineOptions, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
@@ -25,7 +25,7 @@ const { meta_id } = route.params;
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 
 const MetasStore = useMetasStore();
-const { activePdm, singleMeta } = storeToRefs(MetasStore);
+const { activePdm, singleMeta, relacionadosMeta } = storeToRefs(MetasStore);
 const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
 
@@ -44,6 +44,12 @@ async function iniciar() {
 
   if (promessas.length) {
     await Promise.allSettled(promessas);
+  }
+
+  if (meta_id && activePdm.value.id) {
+    MetasStore.getRelacionados({
+      meta_id, pdm_id: activePdm.value.id,
+    });
   }
 
   nextTick().then(() => {
@@ -314,6 +320,57 @@ iniciar();
               ><use xlink:href="#i_spin" /></svg>
             </div>
           </div>
+        </div>
+
+        <div
+          v-if="relacionadosMeta?.projetos?.length"
+          class="mt2 mb2"
+        >
+          <h2 class="m2">
+            Projetos associados
+          </h2>
+          <table class="tablemain">
+            <col>
+            <thead>
+              <th>Nome</th>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(projeto, index) in relacionadosMeta.projetos"
+                :key="index"
+              >
+                <td>
+                  {{ projeto.nome }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          v-if="relacionadosMeta?.obras?.length"
+          class="mt2 mb2"
+        >
+          <h2 class="">
+            Obras associados
+          </h2>
+
+          <table class="tablemain">
+            <col>
+            <thead>
+              <th>Nome</th>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(obra, index) in relacionadosMeta.obras"
+                :key="index"
+              >
+                <td>
+                  {{ obra.nome }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </template>
     </template>

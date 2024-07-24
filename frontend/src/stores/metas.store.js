@@ -1,5 +1,5 @@
-import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
+import { usePdMStore } from '@/stores/pdm.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -20,6 +20,7 @@ export const useMetasStore = defineStore({
     tempMetas: {},
     singleMeta: {},
     groupedMetas: {},
+    relacionadosMeta: {},
   }),
   getters: {
     activePdm() {
@@ -79,6 +80,19 @@ export const useMetasStore = defineStore({
         return true;
       } catch (error) {
         this.Metas = { error };
+        return false;
+      }
+    },
+    async getRelacionados(params) {
+      try {
+        if (params.meta_id && params.pdm_id) {
+          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          this.relacionadosMeta = response;
+          return true;
+        }
+        throw new Error('ID da meta ou do PdM não fornecido.');
+      } catch (error) {
+        this.relacionadosMeta = { error };
         return false;
       }
     },
