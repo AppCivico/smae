@@ -1111,6 +1111,7 @@ export class TransferenciaService {
 
         return {
             ...row,
+            parlamentares: row.parlamentar,
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
         };

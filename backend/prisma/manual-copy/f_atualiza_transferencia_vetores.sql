@@ -13,21 +13,15 @@ BEGIN
                 COALESCE(NEW.nome_programa, ' ') || ' ' ||
                 COALESCE(NEW.objeto, ' ') || ' ' ||
                 COALESCE(tt.nome, '') || ' ' ||
-                COALESCE(p.sigla, ' ') || ' ' ||
-                COALESCE(p.nome, ' ')  || ' ' ||
                 COALESCE(o1.sigla, '') || '' ||
                 COALESCE(o1.descricao, '') || '' ||
                 COALESCE(o2.sigla, '') || '' ||
-                COALESCE(o2.descricao, '') ||
-                COALESCE(dr.nome, '')
+                COALESCE(o2.descricao, '')
             )
-        FROM (SELECT new.id, new.partido_id, new.orgao_concedente_id, new.secretaria_concedente_id, new.tipo_id ) t
+        FROM (SELECT new.orgao_concedente_id, new.secretaria_concedente_id, new.tipo_id ) t
         JOIN transferencia_tipo tt ON tt.id = t.tipo_id
-        LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id
-        LEFT JOIN partido p ON p.id = tp.partido_id
         LEFT JOIN orgao o1 ON o1.id = t.orgao_concedente_id
         LEFT JOIN orgao o2 ON o2.id = t.secretaria_concedente_id
-        LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
     );
 
     RETURN NEW;

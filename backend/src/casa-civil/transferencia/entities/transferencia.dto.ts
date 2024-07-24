@@ -69,7 +69,7 @@ export class TransferenciaDetailDto {
 
     workflow_id: number | null;
 
-    parlamentar: ParlamentarTransferenciaDto[];
+    parlamentares: ParlamentarTransferenciaDto[];
     orgao_concedente: IdSiglaDescricao;
     secretaria_concedente: string | null;
 
