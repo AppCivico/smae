@@ -118,7 +118,7 @@ export class TipoIntervencaoService {
             },
         });
         if (emUso > 0) {
-            throw new HttpException('Tipo de intervenção em uso em projeto(s)', 400);
+            throw new HttpException('Tipo de intervenção em uso, não pode ser removida.', 400);
         }
 
         await this.prisma.tipoIntervencao.findFirstOrThrow({
