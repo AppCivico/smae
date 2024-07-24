@@ -12,7 +12,7 @@ import { TagService } from '../tag/tag.service';
 import { TemaService } from '../tema/tema.service';
 import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
-import { DetalhePdmDto } from './dto/detalhe-pdm.dto';
+import { DetalhePSDto, DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, ListPdmDto, OrcamentoConfig } from './dto/list-pdm.dto';
 import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
@@ -220,12 +220,23 @@ export class PlanoSetorialController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles(PermsPS)
-    @ApiExtraModels(PlanoSetorialDto)
+    @ApiExtraModels(PlanoSetorialDto, DetalhePSDto)
     @ApiOkResponse({
-        schema: { anyOf: refs(PlanoSetorialDto) },
+        schema: { anyOf: refs(PlanoSetorialDto, DetalhePSDto) },
     })
-    async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoSetorialDto> {
+    async get(
+        @Param() params: FindOneParams,
+        @Query() detail: FilterPdmDetailDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PlanoSetorialDto | DetalhePSDto> {
         const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly');
+
+        if (!detail.incluir_auxiliares) {
+            return {
+                pdm: pdm as PlanoSetorialDto,
+                orcamento_config: await this.pdmService.getOrcamentoConfig(this.tipoPdm, +params.id),
+            } satisfies DetalhePSDto;
+        }
 
         return pdm as PlanoSetorialDto;
     }

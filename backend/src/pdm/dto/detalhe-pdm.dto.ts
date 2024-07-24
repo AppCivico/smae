@@ -5,6 +5,7 @@ import { SubTemaDto } from '../../subtema/entities/subtema.entity';
 import { TagDto } from '../../tag/entities/tag.entity';
 import { ListPdm } from '../entities/list-pdm.entity';
 import { OrcamentoConfig } from './list-pdm.dto';
+import { PlanoSetorialDto } from './pdm.dto';
 
 export class DetalhePdmDto {
     /**
@@ -42,6 +43,14 @@ export class DetalhePdmDto {
      * @example Tag[]
      */
     tag?: TagDto[];
+
+    orcamento_config: OrcamentoConfig[] | null;
+}
+
+export class DetalhePSDto {
+
+    pdm: PlanoSetorialDto;
+
 
     orcamento_config: OrcamentoConfig[] | null;
 }
