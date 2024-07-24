@@ -603,7 +603,8 @@ export class DashTransferenciaService {
         FROM (
             SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
         ) AS t
-        JOIN transferencia_parlamentar p ON t.transferencia_id = p.transferencia_id AND p.removido_em IS NULL
+        JOIN transferencia_parlamentar tp ON tp.transferencia_id = p.transferencia_id AND p.removido_em IS NULL
+        JOIN parlamentar p ON tp.parlamentar_id = p.id AND p.removido_em IS NULL
         WHERE t.parlamentar_id IS NOT NULL
         AND t.transferencia_id = ANY ( ${transferenciaIds} )
         GROUP BY t.parlamentar_id, p.foto_upload_id, p.nome_popular
