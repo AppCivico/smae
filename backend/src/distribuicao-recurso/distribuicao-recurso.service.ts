@@ -1406,6 +1406,9 @@ export class DistribuicaoRecursoService {
                                     // As tarefas criadas devem ter a mesma regra de dependência da tarefa de acompanhamento.
                                     data: andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].dependencias.map(
                                         (d) => {
+                                            console.log('\n==================\n');
+                                            console.log(d);
+                                            console.log('\n==================\n');
                                             return {
                                                 dependencia_tarefa_id: d.dependencia_tarefa_id,
                                                 tipo: d.tipo,
