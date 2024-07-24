@@ -449,6 +449,14 @@ model Pessoa {
     AditivosQAtualizei ContratoAditivo[] @relation("Atualizador")
     AditivosQRemovi    ContratoAditivo[] @relation("Removedor")
 
+    RelacaoParlamentarTransferenciaQCriei     TransferenciaParlamentar[] @relation("Criador")
+    RelacaoParlamentarTransferenciaQAtualizei TransferenciaParlamentar[] @relation("Atualizador")
+    RelacaoParlamentarTransferenciaQRemovi    TransferenciaParlamentar[] @relation("Removedor")
+
+    RelacaoParlamentarDistribuicaoQCriei     DistribuicaoParlamentar[] @relation("Criador")
+    RelacaoParlamentarDistribuicaoQAtualizei DistribuicaoParlamentar[] @relation("Atualizador")
+    RelacaoParlamentarDistribuicaoQRemovi    DistribuicaoParlamentar[] @relation("Removedor")
+
     AssuntoVariavelQCriei               AssuntoVariavel[]                     @relation("Criador")
     AssuntoVariavelQAtualizei           AssuntoVariavel[]                     @relation("Atualizador")
     AssuntoVariavelQRemovi              AssuntoVariavel[]                     @relation("Removedor")
@@ -4945,10 +4953,11 @@ model Partido {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    mandatos_candidatura ParlamentarMandato[] @relation("candidatura")
-    mandatos_atual       ParlamentarMandato[] @relation("atual")
+    mandatos_candidatura ParlamentarMandato[]       @relation("candidatura")
+    mandatos_atual       ParlamentarMandato[]       @relation("atual")
     bancadas             BancadaPartido[]
-    transferencias       Transferencia[]
+    transferencias       TransferenciaParlamentar[]
+    distribuicoes        DistribuicaoParlamentar[]
 
     @@map("partido")
 }
@@ -5086,7 +5095,8 @@ model Parlamentar {
     criador                     Pessoa?                               @relation("Criador", fields: [criado_por], references: [id])
     atualizador                 Pessoa?                               @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor                   Pessoa?                               @relation("Removedor", fields: [removido_por], references: [id])
-    transferencias              Transferencia[]
+    transferencias              TransferenciaParlamentar[]
+    distribuicoes               DistribuicaoParlamentar[]
     view_ranking_transferencias ViewRankingTransferenciaParlamentar[]
 
     @@map("parlamentar")
@@ -5322,12 +5332,6 @@ model Transferencia {
     // Portanto, mantendo as cols de rel.
     secretaria_concedente_str String?
 
-    parlamentar_id Int?
-    parlamentar    Parlamentar? @relation(fields: [parlamentar_id], references: [id])
-
-    partido_id Int?
-    partido    Partido? @relation(fields: [partido_id], references: [id])
-
     workflow_id Int?
     workflow    Workflow? @relation(fields: [workflow_id], references: [id])
 
@@ -5346,7 +5350,6 @@ model Transferencia {
     custeio                        Decimal? @default(0) @db.Decimal(15, 2)
     investimento                   Decimal? @default(0) @db.Decimal(15, 2)
 
-    cargo                ParlamentarCargo?
     ano                  Int?
     emenda               String?
     dotacao              String?
@@ -5397,8 +5400,42 @@ model Transferencia {
     TransferenciaStatusConsolidado TransferenciaStatusConsolidado[]
     ViewNotasTransferencias        ViewNotasTransferencias[]
     ViewDashboardAnalise           ViewTransferenciaAnalise[]
+    parlamentar                    TransferenciaParlamentar[]
 
     @@map("transferencia")
+}
+
+model TransferenciaParlamentar {
+    id Int @id @default(autoincrement())
+
+    transferencia_id Int
+    transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    partido_id Int?
+    partido    Partido? @relation(fields: [partido_id], references: [id])
+
+    parlamentar_id Int
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    cargo ParlamentarCargo?
+
+    objeto String?
+    // Valor não pode superar o valor do repasse da transferência.
+    // "valor do repasse" é o campo "valor" da tabela "transferencia".
+    valor  Decimal? @db.Decimal(15, 2)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime? @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("transferencia_parlamentar")
 }
 
 model TransferenciaAnexo {
@@ -5481,8 +5518,42 @@ model DistribuicaoRecurso {
     aditamentos   DistribuicaoRecursoAditamento[]
     status        DistribuicaoRecursoStatus[]
     tarefas       Tarefa[]
+    parlamentares DistribuicaoParlamentar[]
 
     @@map("distribuicao_recurso")
+}
+
+model DistribuicaoParlamentar {
+    id Int @id @default(autoincrement())
+
+    distribuicao_recurso_id Int
+    distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
+
+    partido_id Int?
+    partido    Partido? @relation(fields: [partido_id], references: [id])
+
+    parlamentar_id Int
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    cargo ParlamentarCargo
+
+    objeto String?
+    // Valor não pode superar o valor do repasse da transferência.
+    // "valor do repasse" é o campo "valor" da tabela "distribuição".
+    valor  Decimal? @db.Decimal(15, 2)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime? @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_parlamentar")
 }
 
 model DistribuicaoRecursoAditamento {

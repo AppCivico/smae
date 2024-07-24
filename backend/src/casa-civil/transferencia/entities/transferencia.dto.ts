@@ -11,7 +11,7 @@ export class TransferenciaDto {
     ano: number | null;
     identificador: string;
     valor: Decimal | null;
-    partido: IdSigla | null;
+    partido: IdSigla[] | null;
     tipo: IdNomeDto | null;
     objeto: string;
     detalhamento: string | null;
@@ -69,8 +69,7 @@ export class TransferenciaDetailDto {
 
     workflow_id: number | null;
 
-    partido: IdSigla | null;
-    parlamentar: ParlamnetarIdNomes | null;
+    parlamentar: ParlamentarTransferenciaDto[];
     orgao_concedente: IdSiglaDescricao;
     secretaria_concedente: string | null;
 
@@ -80,10 +79,17 @@ export class TransferenciaDetailDto {
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     esfera: TransferenciaTipoEsfera;
 
+    bloco_nota_token: string;
+}
+
+export class ParlamentarTransferenciaDto {
+    id: number;
+    parlamentar: ParlamnetarIdNomes;
+    partido: IdSigla | null;
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     cargo: ParlamentarCargo | null;
-
-    bloco_nota_token: string;
+    objeto: string | null;
+    valor: Decimal | null;
 }
 
 export class TransferenciaAnexoDto {

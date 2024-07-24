@@ -47,8 +47,12 @@ export class DashTransferenciaService {
                 situacao: filter.atividade ? { in: filter.atividade } : undefined,
                 transferencia: {
                     AND: this.transferenciaService.permissionSet(user),
-                    partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
                     esfera: filter.esfera ? { in: filter.esfera } : undefined,
+                    parlamentar: {
+                        some: {
+                            partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                        },
+                    },
                 },
             },
             include: {
@@ -58,7 +62,11 @@ export class DashTransferenciaService {
                         identificador: true,
                         esfera: true,
                         objeto: true,
-                        partido_id: true,
+                        parlamentar: {
+                            select: {
+                                partido_id: true,
+                            },
+                        },
                     },
                 },
             },
@@ -76,7 +84,9 @@ export class DashTransferenciaService {
                     esfera: r.transferencia.esfera,
                     orgaos: r.orgaos_envolvidos,
                     objeto: r.transferencia.objeto,
-                    partido_id: r.transferencia.partido_id,
+                    partido_ids: r.transferencia.parlamentar.length
+                        ? r.transferencia.parlamentar.map((p) => p.partido_id!)
+                        : null,
                 };
             }),
         };
@@ -116,8 +126,11 @@ export class DashTransferenciaService {
                     AND: this.transferenciaService.permissionSet(user),
                     removido_em: null,
                     id: transferenciasIds ? { in: transferenciasIds } : undefined,
-                    partido_id: filters.partido_ids ? { in: filters.partido_ids } : undefined,
                     esfera: filters.esfera ? { in: filters.esfera } : undefined,
+
+                    parlamentar: filters.partido_ids
+                        ? { some: { partido_id: { in: filters.partido_ids } } }
+                        : undefined,
 
                     TransferenciaStatusConsolidado:
                         filters.orgaos_ids || filters.atividade
@@ -590,7 +603,7 @@ export class DashTransferenciaService {
         FROM (
             SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
         ) AS t
-        JOIN parlamentar p ON t.parlamentar_id = p.id AND p.removido_em IS NULL
+        JOIN transferencia_parlamentar p ON t.transferencia_id = p.transferencia_id AND p.removido_em IS NULL
         WHERE t.parlamentar_id IS NOT NULL
         AND t.transferencia_id = ANY ( ${transferenciaIds} )
         GROUP BY t.parlamentar_id, p.foto_upload_id, p.nome_popular

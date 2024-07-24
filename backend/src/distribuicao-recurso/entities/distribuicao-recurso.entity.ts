@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DistribuicaoStatusTipo } from '@prisma/client';
+import { DistribuicaoStatusTipo, ParlamentarCargo } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -32,6 +33,17 @@ export class DistribuicaoRecursoDto {
     pode_registrar_status: boolean;
     historico_status: DistribuicaoHistoricoStatusDto[];
     pct_valor_transferencia: number;
+    parlamentares: ParlamentarDistribuicaoDto[];
+}
+
+export class ParlamentarDistribuicaoDto {
+    id: number;
+    parlamentar: ParlamnetarIdNomes;
+    partido: IdSigla | null;
+    @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
+    cargo: ParlamentarCargo | null;
+    objeto: string | null;
+    valor: Decimal | null;
 }
 
 export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {

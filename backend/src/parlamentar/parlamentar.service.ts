@@ -459,7 +459,7 @@ export class ParlamentarService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const countTransferencias = await this.prisma.transferencia.count({
+        const countTransferencias = await this.prisma.transferenciaParlamentar.count({
             where: {
                 parlamentar_id: id,
                 removido_em: null,

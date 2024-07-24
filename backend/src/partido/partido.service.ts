@@ -154,7 +154,7 @@ export class PartidoService {
         });
         if (countMandatos) throw new HttpException('Partido não pode ser excluído, pois possui mandato(s).', 400);
 
-        const countTransferencias = await this.prisma.transferencia.count({
+        const countTransferencias = await this.prisma.transferenciaParlamentar.count({
             where: {
                 partido_id: id,
                 removido_em: null,
