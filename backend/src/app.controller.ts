@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, Get, Res } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { spawn } from 'child_process';
 import { Response } from 'express';
 import * as path from 'path';
@@ -158,6 +158,9 @@ export class AppController {
     @Get('tail-logs')
     @ApiBearerAuth('access-token')
     @Roles(['SMAE.sysadmin'])
+    // esconde o endpoint da documentação, pois o swagger não suporta streaming, e isso poderia criar uma situação
+    // de espera infinita para o usuário
+    @ApiExcludeEndpoint()
     async tailLog(@Res() res: Response) {
         const logFile = process.env.LOG_FILE;
         if (!logFile) {
