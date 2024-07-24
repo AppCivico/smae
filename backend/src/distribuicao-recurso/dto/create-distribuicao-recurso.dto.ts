@@ -224,6 +224,17 @@ export class CreateDistribuicaoParlamentarDto {
     @MinLength(1)
     @MaxLength(1024)
     objeto: string;
+
+    @IsOptional()
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    valor?: number;
 }
 
 class CreateDistribuicaoRegistroSEIDto {
