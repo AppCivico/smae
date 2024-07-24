@@ -1,5 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Res } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { spawn } from 'child_process';
+import { Response } from 'express';
+import * as path from 'path';
 import * as percentile from 'percentile';
 import { IsPublic } from './auth/decorators/is-public.decorator';
 import { Roles } from './auth/decorators/roles.decorator';
@@ -26,7 +29,7 @@ export class AppController {
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
+    @Roles(['SMAE.sysadmin'])
     @Get('/system/performance-check')
     async performanceCheck() {
         return {
@@ -150,5 +153,56 @@ export class AppController {
             qtde_users_online: pessoaOnline,
             stats: stats7days,
         };
+    }
+
+    @Get('tail-logs')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    async tailLog(@Res() res: Response) {
+        const logFile = process.env.LOG_FILE;
+        if (!logFile) {
+            throw new BadRequestException('LOG_FILE environment variable not defined');
+        }
+
+        const resolvedLogFile = path.resolve(logFile);
+        await this.handleLogStream(res, 'tail', ['-n', '1000', '-f', resolvedLogFile]);
+    }
+
+    @Get('cat-logs')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    async catLog(@Res() res: Response) {
+        const logFile = process.env.LOG_FILE;
+        if (!logFile) {
+            throw new BadRequestException('LOG_FILE environment variable not defined');
+        }
+
+        const resolvedLogFile = path.resolve(logFile);
+        await this.handleLogStream(res, 'cat', [resolvedLogFile]);
+    }
+
+    private async handleLogStream(res: Response, command: string, args: string[]) {
+        res.setHeader('Content-Type', 'text/plain');
+
+        const process = spawn(command, args);
+
+        process.stdout.on('data', (data) => {
+            res.write(data);
+        });
+
+        process.stderr.on('data', (data) => {
+            console.error(`Process stderr: ${data}`);
+            res.write(data);
+        });
+
+        process.on('close', (code) => {
+            console.log(`Process exited with code ${code}`);
+            res.end();
+        });
+
+        res.on('close', () => {
+            console.log('Client disconnected, stopping process.');
+            process.kill();
+        });
     }
 }

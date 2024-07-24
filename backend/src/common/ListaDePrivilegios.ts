@@ -1,6 +1,7 @@
 export type ListaDePrivilegios =
     | 'SMAE.superadmin'
     | 'SMAE.login_suspenso'
+    | 'SMAE.sysadmin'
     | 'CadastroFonteRecurso.inserir'
     | 'CadastroFonteRecurso.editar'
     | 'CadastroFonteRecurso.remover'

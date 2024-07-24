@@ -1298,6 +1298,7 @@ export class PessoaService {
         const dados = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
+                nome: { not: 'SYSADMIN' },
                 modulos_sistemas: filter.sistemas
                     ? {
                           hasSome: filter.sistemas,

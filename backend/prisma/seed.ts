@@ -584,6 +584,11 @@ const PerfilAcessoConfig: {
         privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
     },
     {
+        nome: 'SYSADMIN',
+        descricao: 'Endpoints especiais do sistema',
+        privilegios: ['SMAE.sysadmin'],
+    },
+    {
         nome: 'Suspensão de Login',
         descricao: 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável',
         privilegios: ['SMAE.login_suspenso'],
