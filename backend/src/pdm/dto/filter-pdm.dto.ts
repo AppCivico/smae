@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
+import { NumberTransform } from '../../auth/transforms/number.transform';
 
 export class FilterPdmDto {
     /**
@@ -10,6 +11,10 @@ export class FilterPdmDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     ativo?: boolean;
+
+    @IsOptional()
+    @Transform(NumberTransform)
+    id?: number;
 }
 
 export class FilterPdmDetailDto {

@@ -188,7 +188,7 @@ export class PlanoSetorialController {
         let ciclo_fisico_ativo: CicloFisicoDto | null | undefined = undefined;
         let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
 
-        if (filters.ativo && linhas[0] && linhas[0].id) {
+        if (filters.ativo && linhas[0] && linhas[0].id && filters.id !== undefined) {
             ciclo_fisico_ativo = await this.pdmService.getCicloAtivo(linhas[0].id);
             orcamento_config = await this.pdmService.getOrcamentoConfig('PS', linhas[0].id);
         }

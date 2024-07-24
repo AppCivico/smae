@@ -229,6 +229,7 @@ export class PdmService {
                 removido_em: null,
                 ativo: active,
                 tipo: tipo,
+                id: filters.id,
                 AND: await this.getPermissionSet(user),
             },
             select: {
