@@ -11,12 +11,15 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
       lista: false,
       emFoco: false,
     },
-    erro: null,
+    erro: {
+      lista: null,
+      emFoco: null,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erro.item = null;
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/grupo-tematico/${id}`, params);
@@ -24,34 +27,34 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
           ...resposta,
         };
       } catch (erro) {
-        this.erro = erro;
+        this.erro.item = erro;
       }
       this.chamadasPendentes.emFoco = false;
     },
 
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erro.lista = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/grupo-tematico`, params);
         this.lista = linhas;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erro.item = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/grupo-tematico/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.item = erro;
         this.chamadasPendentes.lista = false;
         return false;
       }
@@ -59,7 +62,7 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
 
     async salvarItem(params = {}, id = 0) {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erro.item = null;
 
       try {
         if (id) {
@@ -71,7 +74,7 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
         this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.item = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
       }
