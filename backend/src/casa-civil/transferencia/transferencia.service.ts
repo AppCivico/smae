@@ -466,6 +466,7 @@ export class TransferenciaService {
                                         where: { id: relParlamentar.id },
                                         data: {
                                             parlamentar_id: relParlamentar.parlamentar_id,
+                                            partido_id: relParlamentar.partido_id,
                                             cargo: relParlamentar.cargo,
                                             valor: relParlamentar.valor,
                                             objeto: relParlamentar.objeto,
@@ -631,6 +632,7 @@ export class TransferenciaService {
                                         where: { id: relParlamentar.id },
                                         data: {
                                             parlamentar_id: relParlamentar.parlamentar_id,
+                                            partido_id: relParlamentar.partido_id,
                                             cargo: relParlamentar.cargo,
                                             valor: relParlamentar.valor,
                                             objeto: relParlamentar.objeto,
