@@ -96,6 +96,9 @@ const formulárioSujo = useIsFormDirty();
 function abrirDialogo(id = 0) {
   aditivoId.value = id;
   exibirDialogo.value = true;
+  resetForm({
+    values: itemParaEdição.value,
+  });
 }
 
 async function excluirAditivo(id, descricao) {
@@ -110,12 +113,6 @@ async function excluirAditivo(id, descricao) {
     'Remover',
   );
 }
-
-watch(itemParaEdição, (novoValor) => {
-  resetForm({
-    values: novoValor,
-  });
-});
 
 watch(exibirDialogo, (novoValor) => {
   if (novoValor) {
