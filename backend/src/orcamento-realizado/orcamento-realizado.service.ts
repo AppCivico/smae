@@ -829,7 +829,11 @@ export class OrcamentoRealizadoService {
     }
 
     private async buscaPermissoesStatus(user: PessoaFromJwt, filters: { meta_id: number; ano_referencia: number }) {
-        const ehAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        const ehAdmin = user.hasSomeRoles([
+            'CadastroMeta.administrador_orcamento',
+            // TODO PS permissão de admin de meta
+            'CadastroMetaPS.administrador_orcamento',
+        ]);
 
         // economizando query, admin não entra na condição de testar se está dentro dessa lista
         const metasRespCp = ehAdmin
@@ -1258,7 +1262,11 @@ export class OrcamentoRealizadoService {
     }
 
     async patchOrcamentoConcluidoProprioOrgao(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
-        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        const isAdmin = user.hasSomeRoles([
+            'CadastroMeta.administrador_orcamento',
+            // TODO ps
+            'CadastroMetaPS.administrador_orcamento',
+        ]);
 
         if (isAdmin) throw new BadRequestException(`Administrador de orçamento não deve utilizar esse serviço`);
 
