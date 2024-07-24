@@ -5535,7 +5535,7 @@ model DistribuicaoParlamentar {
     parlamentar_id Int
     parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
 
-    cargo ParlamentarCargo
+    cargo ParlamentarCargo?
 
     objeto String?
     // Valor não pode superar o valor do repasse da transferência.
