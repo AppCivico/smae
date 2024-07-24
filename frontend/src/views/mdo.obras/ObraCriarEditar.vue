@@ -283,7 +283,12 @@ const onSubmit = handleSubmit(async () => {
       emFoco.value = null;
       if (resposta.id) {
         obrasStore.buscarItem(props.obraId || resposta.id);
-        router.push({ name: route.meta.rotaDeEscape });
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: {
+            obraId: resposta.id,
+          },
+        });
       }
     }
   } catch (error) {
