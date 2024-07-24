@@ -836,11 +836,16 @@ export class DistribuicaoRecursoService {
                     }
 
                     if (dto.custeio != self.custeio.toNumber()) {
-                        if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                        if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber()) {
+                            console.log('\n======================================\n');
+                            console.log(sumCusteio);
+                            console.log(transferencia.custeio.toNumber());
+                            console.log('\n======================================\n');
                             throw new HttpException(
                                 'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
                                 400
                             );
+                        }
                     }
 
                     if (dto.investimento != self.investimento.toNumber()) {
