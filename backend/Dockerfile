@@ -41,5 +41,6 @@ USER node
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+ENV USE_FILE_LOG=1
 
 CMD ["sh", "./run-api.sh"]
