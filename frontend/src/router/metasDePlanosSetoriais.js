@@ -74,7 +74,7 @@ const rotasParaMenuSecundário = (nível) => {
 
   return [
     {
-      título: 'Programa de Metas',
+      título: 'Metas do Plano Setorial',
       rotas: rotasDoPdm,
     },
     {
