@@ -42,5 +42,6 @@ USER node
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 ENV USE_FILE_LOG=1
+RUN mkdir /usr/src/app/logs && chown node:node /usr/src/app/logs
 
 CMD ["sh", "./run-api.sh"]
