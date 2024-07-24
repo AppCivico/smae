@@ -198,6 +198,15 @@ export class DistribuicaoRecursoService {
                             'parlamentares| Parlamentar(es) não encontrado(s) na transferência.',
                             400
                         );
+
+                    const sumValor = dto.parlamentares
+                        .filter((e) => e.valor)
+                        .reduce((acc, curr) => acc + curr.valor!, 0);
+                    if (+sumValor > +dto.valor)
+                        throw new HttpException(
+                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                            400
+                        );
                 }
 
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
@@ -249,6 +258,8 @@ export class DistribuicaoRecursoService {
                                           return {
                                               parlamentar_id: e.parlamentar_id,
                                               cargo: e.cargo,
+                                              objeto: e.objeto,
+                                              valor: e.valor,
                                               partido_id: e.partido_id,
                                               criado_em: agora,
                                               criado_por: user.id,
@@ -837,10 +848,6 @@ export class DistribuicaoRecursoService {
 
                     if (dto.custeio != self.custeio.toNumber()) {
                         if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber()) {
-                            console.log('\n======================================\n');
-                            console.log(sumCusteio);
-                            console.log(transferencia.custeio.toNumber());
-                            console.log('\n======================================\n');
                             throw new HttpException(
                                 'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
                                 400
