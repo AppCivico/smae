@@ -1,19 +1,34 @@
 <script setup>
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { registroDeTransferencia as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  ErrorMessage, Field, useForm, FieldArray,
+} from 'vee-validate';
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Big from 'big.js';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { registroDeTransferencia as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
   chamadasPendentes, erro, itemParaEdição, emFoco: transferenciaEmFoco,
 } = storeToRefs(TransferenciasVoluntarias);
+
+const ParlamentaresStore = useParlamentaresStore();
+const {
+  lista: parlamentarComoLista,
+  parlamentaresPorId,
+  paginação: paginaçãoDeParlamentares,
+} = storeToRefs(ParlamentaresStore);
+
+const partidoStore = usePartidosStore();
+const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const router = useRouter();
 const props = defineProps({
@@ -29,6 +44,9 @@ const {
   initialValues: itemParaEdição,
   validationSchema: schema,
 });
+
+console.log(itemParaEdição);
+console.log(schema);
 
 const alertStore = useAlertStore();
 
@@ -111,6 +129,8 @@ const updateValorTotal = (fieldName, newValue) => {
 };
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
+partidoStore.buscarTudo();
 
 onMounted(() => {
   calcularValorCusteio('custeio');
@@ -149,7 +169,6 @@ onMounted(() => {
             name="valor"
             type="text"
             class="inputtext light mb1"
-            :value="values.valor"
             converter-para="string"
             @update:model-value="(newValue) =>
               updateValorTotal('valor', newValue, setFieldValue)"
@@ -360,6 +379,180 @@ onMounted(() => {
           name="ordenador_despesa"
         />
       </div>
+    </div>
+
+    <div class="flex spacebetween center mb1">
+      <h3 class="title">
+        Parlamentares
+      </h3>
+      <hr class="ml2 f1">
+    </div>
+
+    <div class="mb1">
+      <FieldArray
+        v-slot="{ fields, push, remove }"
+        name="parlamentares"
+      >
+        <div
+          v-for="(field, idx) in fields"
+          :key="field.key"
+          class="flex flexwrap center g2 mb2"
+        >
+          <Field
+            :name="`parlamentares[${idx}].id`"
+            type="hidden"
+            class="inputtext light"
+          />
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="parlamentar_id"
+              :schema="schema.fields.parlamentares.innerType"
+            />
+            <Field
+              :name="`parlamentares[${idx}].parlamentar_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors.parlamentar_id,
+                loading: ParlamentaresStore.chamadasPendentes?.lista,
+              }"
+              :disabled="!parlamentarComoLista?.length"
+            >
+              <option value="">
+                Selecionar
+              </option>
+
+              <option
+                v-for="item in parlamentarComoLista"
+                :key="item"
+                :value="item.id"
+                :disabled="!item?.mandatos?.length"
+              >
+                {{ item.nome_popular }}
+
+                <template v-if="!item?.mandatos?.length">
+                  (sem mandatos cadastrados)
+                </template>
+              </option>
+
+              <option
+                v-if="paginaçãoDeParlamentares.temMais"
+                disabled
+              >
+                &hellip;
+              </option>
+            </Field>
+            <ErrorMessage
+              :name="`parlamentares[${idx}].parlamentar_id`"
+              class="error-msg"
+            />
+          </div>
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="partido_id"
+              :schema="schema.fields.parlamentares.innerType"
+            />
+            <Field
+              :name="`parlamentares[${idx}].partido_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors.partido_id,
+                loading: partidoStore.chamadasPendentes?.lista,
+              }"
+              :disabled="!partidoComoLista.length"
+            >
+              <option value="">
+                Selecionar
+              </option>
+
+              <option
+                v-for="item in partidoComoLista"
+                :key="item"
+                :value="item.id"
+              >
+                {{ item.nome }}
+              </option>
+            </Field>
+            <ErrorMessage
+              :name="`parlamentares[${idx}].partido_id`"
+              class="error-msg"
+            />
+          </div>
+          <div class="f1">
+            <LabelFromYup
+              name="cargo"
+              :schema="schema.fields.parlamentares.innerType"
+            />
+            <Field
+              :name="`parlamentares[${idx}].cargo`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.cargo }"
+            >
+              <option value="">
+                Selecionar
+              </option>
+
+              <option
+                v-for="(cargo, i) in cargosDeParlamentar"
+                :key="i"
+                :value="cargo.valor || cargo"
+              >
+                {{ cargo.nome || cargo }}
+              </option>
+            </Field>
+            <div class="error-msg">
+              {{ errors.cargo }}
+            </div>
+          </div>
+
+          <div class="f1">
+            <LabelFromYup
+              name="objeto"
+              :schema="schema.fields.parlamentares.innerType"
+            />
+            <Field
+              :name="`parlamentares[${idx}].objeto`"
+              as="textarea"
+              class="inputtext light mb1"
+              rows="5"
+              maxlength="1000"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`parlamentares[${idx}].objeto`"
+            />
+          </div>
+
+          <LabelFromYup
+            name="valor"
+            :schema="schema.fields.parlamentares.innerType"
+          />
+          <MaskedFloatInput
+            :name="`parlamentares[${idx}].valor`"
+            type="text"
+            class="inputtext light mb1"
+            :value="values.valor"
+            converter-para="string"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            :name="`parlamentares[${idx}].valor`"
+          />
+        </div>
+
+        <button
+          class="like-a__text addlink"
+          type="button"
+          @click="push({})"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>Adicionar registro
+        </button>
+      </FieldArray>
     </div>
 
     <div class="flex spacebetween center mb1">

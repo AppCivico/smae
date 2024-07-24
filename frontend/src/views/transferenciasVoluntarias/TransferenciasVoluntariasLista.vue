@@ -246,7 +246,7 @@ watch([
           {{ item.tipo.nome }}
         </td>
         <td>
-          {{ item.partido?.sigla ? item.partido?.sigla : '-' }}
+          {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
         </td>
         <td>
           {{ item.andamento_etapa? item.andamento_etapa : '-' }}
