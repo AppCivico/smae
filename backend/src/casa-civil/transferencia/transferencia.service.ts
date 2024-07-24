@@ -1076,6 +1076,7 @@ export class TransferenciaService {
                         cargo: true,
                         objeto: true,
                         valor: true,
+                        parlamentar_id: true,
                         parlamentar: {
                             select: {
                                 id: true,
@@ -1083,6 +1084,7 @@ export class TransferenciaService {
                                 nome_popular: true,
                             },
                         },
+                        partido_id: true,
                         partido: {
                             select: {
                                 id: true,

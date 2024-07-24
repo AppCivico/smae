@@ -84,7 +84,9 @@ export class TransferenciaDetailDto {
 
 export class ParlamentarTransferenciaDto {
     id: number;
+    parlamentar_id: number;
     parlamentar: ParlamnetarIdNomes;
+    partido_id: number | null;
     partido: IdSigla | null;
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     cargo: ParlamentarCargo | null;

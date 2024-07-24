@@ -330,6 +330,7 @@ export class DistribuicaoRecursoService {
                     where: { removido_em: null },
                     select: {
                         id: true,
+                        parlamentar_id: true,
                         parlamentar: {
                             select: {
                                 id: true,
@@ -337,6 +338,7 @@ export class DistribuicaoRecursoService {
                                 nome_popular: true,
                             },
                         },
+                        partido_id: true,
                         partido: {
                             select: {
                                 id: true,
@@ -583,6 +585,7 @@ export class DistribuicaoRecursoService {
                     where: { removido_em: null },
                     select: {
                         id: true,
+                        parlamentar_id: true,
                         parlamentar: {
                             select: {
                                 id: true,
@@ -590,6 +593,7 @@ export class DistribuicaoRecursoService {
                                 nome_popular: true,
                             },
                         },
+                        partido_id: true,
                         partido: {
                             select: {
                                 id: true,
