@@ -352,7 +352,7 @@ iniciar();
           class="mt2 mb2"
         >
           <h2 class="">
-            Obras associados
+            Obras associadas
           </h2>
 
           <table class="tablemain">
