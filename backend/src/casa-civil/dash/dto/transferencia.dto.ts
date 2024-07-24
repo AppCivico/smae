@@ -17,7 +17,7 @@ export class MfDashTransferenciasDto {
     orgaos: number[];
     esfera: string;
     objeto: string;
-    partido_id: number | null;
+    partido_ids: number[] | null;
 }
 
 export class ListMfDashTransferenciasDto {

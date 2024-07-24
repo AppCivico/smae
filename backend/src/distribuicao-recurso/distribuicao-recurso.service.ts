@@ -63,6 +63,7 @@ export class DistribuicaoRecursoService {
         });
         if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
 
+        const agora = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.nome) {
@@ -184,6 +185,22 @@ export class DistribuicaoRecursoService {
                         400
                     );
 
+                if (dto.parlamentares?.length) {
+                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.count({
+                        where: {
+                            parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
+                            transferencia_id: dto.transferencia_id,
+                            removido_em: null,
+                        },
+                    });
+
+                    if (parlamentaresNaTransf != dto.parlamentares.length)
+                        throw new HttpException(
+                            'parlamentares| Parlamentar(es) não encontrado(s) na transferência.',
+                            400
+                        );
+                }
+
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                     data: {
                         transferencia_id: dto.transferencia_id,
@@ -208,7 +225,7 @@ export class DistribuicaoRecursoService {
                         assinatura_estado: dto.assinatura_estado,
                         vigencia: dto.vigencia,
                         conclusao_suspensiva: dto.conclusao_suspensiva,
-                        criado_em: new Date(Date.now()),
+                        criado_em: agora,
                         criado_por: user.id,
                         registros_sei: {
                             createMany: {
@@ -219,11 +236,26 @@ export class DistribuicaoRecursoService {
                                                   processo_sei: r.processo_sei.replace(/\D/g, ''),
                                                   nome: r.nome,
                                                   registro_sei_info: '{}',
-                                                  criado_em: new Date(Date.now()),
+                                                  criado_em: agora,
                                                   criado_por: user.id,
                                               };
                                           })
                                         : [],
+                            },
+                        },
+                        parlamentares: {
+                            createMany: {
+                                data: dto.parlamentares
+                                    ? dto.parlamentares.map((e) => {
+                                          return {
+                                              parlamentar_id: e.parlamentar_id,
+                                              cargo: e.cargo,
+                                              partido_id: e.partido_id,
+                                              criado_em: agora,
+                                              criado_por: user.id,
+                                          };
+                                      })
+                                    : [],
                             },
                         },
                     },
@@ -294,6 +326,28 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
+                parlamentares: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        parlamentar: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                nome_popular: true,
+                            },
+                        },
+                        partido: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        cargo: true,
+                        objeto: true,
+                        valor: true,
+                    },
+                },
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -392,6 +446,7 @@ export class DistribuicaoRecursoService {
                 conclusao_suspensiva: r.conclusao_suspensiva,
                 pode_registrar_status: pode_registrar_status,
                 pct_valor_transferencia: pct_valor_transferencia,
+                parlamentares: r.parlamentares,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -523,6 +578,29 @@ export class DistribuicaoRecursoService {
                         valor_total: true,
                     },
                 },
+
+                parlamentares: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        parlamentar: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                nome_popular: true,
+                            },
+                        },
+                        partido: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        cargo: true,
+                        objeto: true,
+                        valor: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
@@ -615,6 +693,7 @@ export class DistribuicaoRecursoService {
                     processo_sei: formataSEI(s.processo_sei),
                 };
             }),
+            parlamentares: row.parlamentares,
         };
     }
 
@@ -819,7 +898,7 @@ export class DistribuicaoRecursoService {
                         assinatura_estado: dto.assinatura_estado,
                         vigencia: dto.vigencia,
                         conclusao_suspensiva: dto.conclusao_suspensiva,
-                        atualizado_em: new Date(Date.now()),
+                        atualizado_em: now,
                         atualizado_por: user.id,
                     },
                     select: {
@@ -844,6 +923,17 @@ export class DistribuicaoRecursoService {
                         valor_contrapartida: true,
                         investimento: true,
                         valor_total: true,
+                        parlamentares: {
+                            where: { removido_em: null },
+                            select: {
+                                id: true,
+                                parlamentar_id: true,
+                                partido_id: true,
+                                cargo: true,
+                                valor: true,
+                                objeto: true,
+                            },
+                        },
                     },
                 });
 
@@ -875,6 +965,88 @@ export class DistribuicaoRecursoService {
                         'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
                         400
                     );
+
+                // Tratando upsert de parlamentares.
+                const operations = [];
+                if (dto.parlamentares?.length) {
+                    for (const relParlamentar of dto.parlamentares) {
+                        if (relParlamentar.id) {
+                            const row = updated.parlamentares.find((e) => e.id == relParlamentar.id);
+                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
+
+                            if (
+                                row.objeto !== relParlamentar.objeto ||
+                                row.valor?.toNumber() !== relParlamentar.valor ||
+                                row.parlamentar_id !== relParlamentar.parlamentar_id ||
+                                row.partido_id !== relParlamentar.partido_id ||
+                                row.cargo !== relParlamentar.cargo
+                            ) {
+                                // Verificando se parlamentar está na transferência.
+                                const parlamentarNaTransf = await prismaTx.transferenciaParlamentar.count({
+                                    where: {
+                                        parlamentar_id: relParlamentar.parlamentar_id,
+                                        transferencia_id: self.transferencia_id,
+                                        removido_em: null,
+                                    },
+                                });
+                                if (!parlamentarNaTransf)
+                                    throw new HttpException(
+                                        'parlamentar_id| Parlamentar não encontrado na transferência.',
+                                        400
+                                    );
+
+                                operations.push(
+                                    prismaTx.transferenciaParlamentar.update({
+                                        where: { id: relParlamentar.id },
+                                        data: {
+                                            parlamentar_id: relParlamentar.parlamentar_id,
+                                            cargo: relParlamentar.cargo,
+                                            valor: relParlamentar.valor,
+                                            objeto: relParlamentar.objeto,
+                                            atualizado_em: now,
+                                            atualizado_por: user.id,
+                                        },
+                                    })
+                                );
+                            }
+                        } else {
+                            operations.push(
+                                prismaTx.transferenciaParlamentar.create({
+                                    data: {
+                                        id: relParlamentar.id,
+                                        transferencia_id: id,
+                                        parlamentar_id: relParlamentar.parlamentar_id,
+                                        partido_id: relParlamentar.partido_id,
+                                        cargo: relParlamentar.cargo,
+                                        valor: relParlamentar.valor,
+                                        objeto: relParlamentar.objeto,
+                                        criado_em: now,
+                                        criado_por: user.id,
+                                    },
+                                })
+                            );
+                        }
+                    }
+                }
+
+                const parlamentaresRemovidos = updated.parlamentares.filter(
+                    (e) => !dto.parlamentares?.map((e) => e.id).includes(e.id)
+                );
+                if (parlamentaresRemovidos.length) {
+                    for (const row of parlamentaresRemovidos) {
+                        operations.push(
+                            prismaTx.transferenciaParlamentar.update({
+                                where: { id: row.id },
+                                data: {
+                                    removido_em: now,
+                                    removido_por: user.id,
+                                },
+                            })
+                        );
+                    }
+                }
+
+                if (operations.length) await Promise.all(operations);
 
                 return { id };
             },
