@@ -11,7 +11,7 @@ rotate_logs() {
             LOG_SIZE=$(stat -c%s "$LOG_FILE")
             if [ "$LOG_SIZE" -ge "$MAX_LOG_SIZE" ]; then
                 # Truncate (empty) the log file instead of renaming/copying
-            : > "$LOG_FILE"
+                : > "$LOG_FILE"
             fi
         fi
         sleep 600  # Sleep for 10 minutes
@@ -37,4 +37,4 @@ npx prisma migrate deploy 2>&1 | $LOGGING_CMD
 node --enable-source-maps dist/prisma/seed.js 2>&1 | $LOGGING_CMD
 
 # Run the main application, logging output
-node --enable-source-maps dist/src/main 2>&1 | $LOGGING_CMD
+LOG_FILE=$LOG_FILE node --enable-source-maps dist/src/main 2>&1 | $LOGGING_CMD
