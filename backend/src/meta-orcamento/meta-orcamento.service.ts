@@ -98,7 +98,13 @@ export class MetaOrcamentoService {
     async findAll(filters: FilterMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamento[]> {
         let filterIdIn: undefined | number[] = undefined;
 
-        if (!user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
+        if (
+            !user.hasSomeRoles([
+                'CadastroMeta.administrador_orcamento',
+                // TODO PS permissões
+                'CadastroMetaPS.administrador_orcamento',
+            ])
+        )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
