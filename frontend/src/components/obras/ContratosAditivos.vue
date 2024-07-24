@@ -95,20 +95,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 const formulárioSujo = useIsFormDirty();
 
-function fecharDialogo() {
-  console.debug('formulárioSujo@fecharDialogo', formulárioSujo.value);
-  console.debug('exibirDialogo@fecharDialogo', exibirDialogo.value);
-
-  if (formulárioSujo.value) {
-    alertStore.confirmAction('Deseja perder os dados preenchidos?', () => {
-      exibirDialogo.value = false;
-      console.debug('exibirDialogo@fecharDialogo', exibirDialogo.value);
-    }, 'Fechar sem salvar');
-  } else {
-    exibirDialogo.value = false;
-  }
-}
-
 function abrirDialogo(id = 0) {
   aditivoId.value = id;
   exibirDialogo.value = true;
@@ -247,8 +233,9 @@ watch(exibirDialogo, (novoValor) => {
       <h2>Aditivo</h2>
       <hr class="ml2 f1">
       <CheckClose
+        :formulário-sujo="formulárioSujo"
         :apenas-emitir="true"
-        @close="fecharDialogo"
+        @close="exibirDialogo = false"
       />
     </div>
 
