@@ -2019,6 +2019,31 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .min(new Date(2003, 0, 1))
     .nullable()
     .transform((v) => (!v ? null : v)),
+  parlamentares: array()
+    .label('Parlamentar')
+    .nullable()
+    .of(object({
+      id: number()
+        .nullable(),
+      parlamentar_id: number()
+        .label('Parlamentar'),
+      cargo: mixed()
+        .label('Cargo')
+        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+        .oneOf([...Object.keys(cargosDeParlamentar), null])
+        .nullable()
+        .transform((v) => (v === '' ? null : v)),
+      partido_id: number()
+        .label('Partido')
+        .nullable(),
+      objeto: string()
+        .label('Objeto/Empreendimento')
+        .max(1000)
+        .nullable(),
+      valor: number()
+        .label('Valor do Repasse')
+        .nullable(),
+    })),
 });
 
 export const registroDeTransferencia = object({
@@ -2077,6 +2102,31 @@ export const registroDeTransferencia = object({
   percentagem_investimento: number()
     .label('Porcentagem')
     .min(0),
+  parlamentares: array()
+    .label('Parlamentar')
+    .nullable()
+    .of(object({
+      id: number()
+        .nullable(),
+      parlamentar_id: number()
+        .label('Parlamentar'),
+      cargo: mixed()
+        .label('Cargo')
+        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+        .oneOf([...Object.keys(cargosDeParlamentar), null])
+        .nullable()
+        .transform((v) => (v === '' ? null : v)),
+      partido_id: number()
+        .label('Partido')
+        .nullable(),
+      objeto: string()
+        .label('Objeto/Empreendimento')
+        .max(1000)
+        .nullable(),
+      valor: number()
+        .label('Valor do Repasse')
+        .nullable(),
+    })),
 });
 
 export const transferenciasVoluntarias = object({
@@ -2096,12 +2146,6 @@ export const transferenciasVoluntarias = object({
     .label('Tipo')
     .nullable()
     .required(),
-  cargo: mixed()
-    .label('Cargo')
-    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-    .oneOf([...Object.keys(cargosDeParlamentar), null])
-    .nullable()
-    .transform((v) => (v === '' ? null : v)),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
     .nullable(),
@@ -2137,11 +2181,6 @@ export const transferenciasVoluntarias = object({
     .label('normativa')
     .nullable()
     .max(50000),
-  numero_identificacao: string()
-    .label('Número de identificação')
-    .max(250)
-    .min(1)
-    .nullable(),
   observacoes: string()
     .label('Observação')
     .max(50000)
@@ -2159,13 +2198,31 @@ export const transferenciasVoluntarias = object({
   programa: string()
     .label('Código do programa')
     .nullable(),
-  partido_id: number()
-    .label('Partido')
-    .nullable(),
-  parlamentar_id: number()
+  parlamentares: array()
     .label('Parlamentar')
     .nullable()
-    .transform((v) => (!v ? null : v)),
+    .of(object({
+      id: number()
+        .nullable(),
+      parlamentar_id: number()
+        .label('Parlamentar'),
+      cargo: mixed()
+        .label('Cargo')
+        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+        .oneOf([...Object.keys(cargosDeParlamentar), null])
+        .nullable()
+        .transform((v) => (v === '' ? null : v)),
+      partido_id: number()
+        .label('Partido')
+        .nullable(),
+      objeto: string()
+        .label('Objeto/Empreendimento')
+        .max(1000)
+        .nullable(),
+      valor: number()
+        .label('Valor do Repasse')
+        .nullable(),
+    })),
   secretaria_concedente: string()
     .label('Secretaria do órgão concedente')
     .nullable(),

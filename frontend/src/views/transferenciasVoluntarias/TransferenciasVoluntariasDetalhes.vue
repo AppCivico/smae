@@ -1,4 +1,6 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
@@ -8,8 +10,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent } from 'vue';
 
 const AndamentoDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
@@ -162,30 +162,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.secretaria_concedente || '-' }}
         </dd>
       </div>
-      <div class="f1 fb10em">
-        <dt class="t16 w700 mb05 tc500">
-          Parlamentar
-        </dt>
-        <dd>
-          {{ transferênciaEmFoco?.parlamentar?.nome || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb10em">
-        <dt class="t16 w700 mb05 tc500">
-          Cargo
-        </dt>
-        <dd>
-          {{ transferênciaEmFoco?.cargo || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb5em">
-        <dt class="t16 w700 mb05 tc500">
-          Partido
-        </dt>
-        <dd>
-          {{ transferênciaEmFoco?.partido?.sigla || '-' }}
-        </dd>
-      </div>
     </dl>
     <dl class="f0 fg999 fb10em flex g2 flexwrap align-start">
       <div class="f1 fb10em fg999">
@@ -223,6 +199,66 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </div>
     </dl>
+  </div>
+
+  <div class="flex g2 center mt3 mb2">
+    <h3 class="w400 tc300 t20 mb0">
+      Parlamentares
+    </h3>
+    <hr class="f1">
+  </div>
+
+  <div
+    v-for="parlamentar in transferênciaEmFoco?.parlamentares"
+    :key="parlamentar.id"
+  >
+    <div class="flex g2 flexwrap mb2">
+      <dl class="f1">
+        <dt class="t16 w700 mb05 tc500">
+          Parlamentar
+        </dt>
+        <dd>
+          {{ parlamentar.parlamentar.nome_popular || '-' }}
+        </dd>
+      </dl>
+
+      <dl class="f1">
+        <dt class="t16 w700 mb05 tc500">
+          Partido
+        </dt>
+        <dd>
+          {{ parlamentar.partido.sigla || '-' }}
+        </dd>
+      </dl>
+
+      <dl class="f1">
+        <dt class="t16 w700 mb05 tc500">
+          Cargo
+        </dt>
+        <dd>
+          {{ parlamentar.cargo || '-' }}
+        </dd>
+      </dl>
+    </div>
+
+    <div class="flex g2 flexwrap mb2">
+      <dl class="f1">
+        <dt class="t16 w700 mb05 tc500">
+          Valor
+        </dt>
+        <dd>
+          {{ parlamentar.valor ? `R$${dinheiro(parlamentar.valor)}` : '-' }}
+        </dd>
+      </dl>
+      <dl class="f1">
+        <dt class="t16 w700 mb05 tc500">
+          objeto
+        </dt>
+        <dd>
+          {{ parlamentar.objeto || '-' }}
+        </dd>
+      </dl>
+    </div>
   </div>
 
   <section class="resumo-da-distribuicao-de-recursos pt2 pb1">
