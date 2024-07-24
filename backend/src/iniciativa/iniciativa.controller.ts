@@ -79,7 +79,7 @@ export class IniciativaSetorialController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(MetaController.ReadPerm)
+    @Roles(MetaSetorialController.ReadPerm)
     async findAll(
         @Query() filters: FilterIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
