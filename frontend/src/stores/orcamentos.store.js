@@ -50,7 +50,7 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoCusteioById(id, ano) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/orcamento-previsto/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
 
         if (typeof r.previsto_eh_zero === 'boolean') {
