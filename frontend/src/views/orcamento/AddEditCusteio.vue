@@ -63,6 +63,7 @@ const caret = ref(0);
       break;
 
     case 'pdm':
+    case 'planoSetorial':
       await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
       break;
 

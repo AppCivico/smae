@@ -77,6 +77,7 @@ const complemento = computed(() => {
         break;
 
       case 'pdm':
+      case 'planoSetorial':
         await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
         break;
 

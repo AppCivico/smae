@@ -5,6 +5,10 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(parametrosDeModulo = this.route.params) {
   switch (true) {
+    // precisa vir antes de metas porque planos setoriais também as têm
+    case !!parametrosDeModulo.planoSetorialId:
+      return 'plano-setorial-';
+
     case !!parametrosDeModulo.projetoId:
       return `projeto/${parametrosDeModulo.projetoId}/`;
 
@@ -47,10 +51,10 @@ export const useOrcamentosStore = defineStore({
       this.getOrcamentoPlanejadoById(id, ano);
       this.getOrcamentoRealizadoById(id, ano);
     },
-    async getOrcamentoCusteioById(id, ano) {
+    async getOrcamentoCusteioById(id, ano, parametrosDeModulo = this.route.params) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/orcamento-previsto/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-previsto/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
 
         if (typeof r.previsto_eh_zero === 'boolean') {
@@ -66,7 +70,7 @@ export const useOrcamentosStore = defineStore({
         this.OrcamentoCusteio[ano] = { error };
       }
     },
-    async getOrcamentoPlanejadoById(idOrParams, ano) {
+    async getOrcamentoPlanejadoById(idOrParams, ano, parametrosDeModulo = this.route.params) {
       const params = typeof idOrParams === 'object'
         ? idOrParams
         : {
@@ -80,13 +84,13 @@ export const useOrcamentosStore = defineStore({
 
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/orcamento-planejado/`, params);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-planejado/`, params);
         this.OrcamentoPlanejado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoPlanejado[ano] = { error };
       }
     },
-    async getOrcamentoRealizadoById(idOrParams, ano) {
+    async getOrcamentoRealizadoById(idOrParams, ano, parametrosDeModulo = this.route.params) {
       const params = typeof idOrParams === 'object'
         ? idOrParams
         : {
@@ -100,7 +104,9 @@ export const useOrcamentosStore = defineStore({
 
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/orcamento-realizado/`, params);
+
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/`, params);
+
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
 
         if (r.concluido) {
@@ -229,12 +235,12 @@ export const useOrcamentosStore = defineStore({
       if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/${id}`, params)) return true;
       return false;
     },
-    async closeOrcamentoRealizado(params) {
-      if (await this.requestS.patch(`${baseUrl}/orcamento-realizado/orcamento-concluido`, params)) return true;
+    async closeOrcamentoRealizado(params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/orcamento-concluido`, params)) return true;
       return false;
     },
-    async closeOrcamentoRealizadoPorOrgao(params) {
-      return !!await this.requestS.patch(`${baseUrl}/orcamento-realizado/orcamento-concluido-admin`, params);
+    async closeOrcamentoRealizadoPorOrgao(params, parametrosDeModulo = this.route.params) {
+      return !!await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/orcamento-concluido-admin`, params);
     },
     async insertOrcamentoRealizado(params, parametrosDeModulo = this.route.params) {
       if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/`, params)) return true;

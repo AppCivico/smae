@@ -64,6 +64,7 @@ const d_fonte = ref('');
         break;
 
       case 'pdm':
+      case 'planoSetorial':
         await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
         break;
 
