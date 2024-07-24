@@ -378,6 +378,20 @@ export class IndicadorService {
     }
 
     async findAll(tipo: TipoPdm, filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<Indicador[]> {
+        if (filters.id) {
+            const indicadorFound = await this.prisma.indicador.findFirst({
+                where: {
+                    id: filters.id,
+                },
+                select: { meta_id: true, iniciativa_id: true, atividade_id: true },
+            });
+            if (!indicadorFound) throw new HttpException('Indicador não encontrado', 404);
+
+            filters.meta_id = indicadorFound.meta_id ?? undefined;
+            filters.iniciativa_id = indicadorFound.iniciativa_id ?? undefined;
+            filters.atividade_id = indicadorFound.atividade_id ?? undefined;
+        }
+
         if (!filters.meta_id && !filters.iniciativa_id && !filters.atividade_id)
             throw new HttpException(
                 'Para buscar os indicadores deve ser informado no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade',
