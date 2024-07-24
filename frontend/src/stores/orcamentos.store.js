@@ -182,7 +182,7 @@ export const useOrcamentosStore = defineStore({
       }
 
       try {
-        if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}/orcamento-previsto/zerado/`, parâmetrosCompletos)) {
+        if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-previsto/zerado/`, parâmetrosCompletos)) {
           if (parâmetrosCompletos.meta_id) {
             this.getOrcamentoCusteioById(parâmetrosCompletos.meta_id, ano);
           } else if (parâmetrosCompletos.projeto_id) {
