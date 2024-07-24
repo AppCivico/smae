@@ -1000,7 +1000,7 @@ export class DistribuicaoRecursoService {
                                     );
 
                                 operations.push(
-                                    prismaTx.transferenciaParlamentar.update({
+                                    prismaTx.distribuicaoParlamentar.update({
                                         where: { id: relParlamentar.id },
                                         data: {
                                             parlamentar_id: relParlamentar.parlamentar_id,
@@ -1016,10 +1016,9 @@ export class DistribuicaoRecursoService {
                             }
                         } else {
                             operations.push(
-                                prismaTx.transferenciaParlamentar.create({
+                                prismaTx.distribuicaoParlamentar.create({
                                     data: {
-                                        id: relParlamentar.id,
-                                        transferencia_id: id,
+                                        distribuicao_recurso_id: id,
                                         parlamentar_id: relParlamentar.parlamentar_id,
                                         partido_id: relParlamentar.partido_id,
                                         cargo: relParlamentar.cargo,
@@ -1040,7 +1039,7 @@ export class DistribuicaoRecursoService {
                 if (parlamentaresRemovidos.length) {
                     for (const row of parlamentaresRemovidos) {
                         operations.push(
-                            prismaTx.transferenciaParlamentar.update({
+                            prismaTx.distribuicaoParlamentar.update({
                                 where: { id: row.id },
                                 data: {
                                     removido_em: now,
