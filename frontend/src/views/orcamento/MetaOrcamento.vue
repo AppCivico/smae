@@ -47,6 +47,9 @@ const OrcamentosStore = useOrcamentosStore();
 const {
   OrcamentoRealizadoConclusao,
   OrcamentoRealizadoConclusaoAdmin,
+  OrcamentoCusteio,
+  OrcamentoPlanejado,
+  OrcamentoRealizado,
 } = storeToRefs(OrcamentosStore);
 
 OrcamentosStore.clear();
@@ -85,16 +88,28 @@ async function start() {
   await MetasStore.getPdM();
   if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
   else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
-  if (Array.isArray(activePdm.value.orcamento_config)) {
-    activePdm.value.orcamento_config.forEach((x) => {
-      if (props.area === 'Realizado') {
-        OrcamentosStore.getOrcamentoRealizadoById(meta_id, x.ano_referencia);
-      } else if (props.area === 'Planejado') {
-        OrcamentosStore.getOrcamentoPlanejadoById(meta_id, x.ano_referencia);
-      } else if (props.area === 'Custo') {
-        OrcamentosStore.getOrcamentoCusteioById(meta_id, x.ano_referencia);
+}
+
+function buscarDadosParaAno(ano) {
+  switch (props.area) {
+    case 'Realizado':
+      if (!Array.isArray(OrcamentoRealizado.value?.[ano]) || !OrcamentoRealizado.value?.[ano].length) {
+        OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
       }
-    });
+      break;
+    case 'Planejado':
+      if (!Array.isArray(OrcamentoPlanejado.value?.[ano]) || !OrcamentoPlanejado.value?.[ano].length) {
+        OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+      }
+      break;
+    case 'Custo':
+      if (!Array.isArray(OrcamentoCusteio.value?.[ano]) || !OrcamentoCusteio.value?.[ano].length) {
+        OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+      }
+      break;
+    default:
+      console.error('Área de orçamento não reconhecida');
+      break;
   }
 }
 
@@ -131,6 +146,11 @@ async function concluirOrçamento(evento, metaId, ano) {
 }
 
 watch(() => route.path, start, { immediate: true });
+watch(() => route.query.aba, (novoValor) => {
+  if (novoValor) {
+    buscarDadosParaAno(novoValor);
+  }
+}, { immediate: true });
 </script>
 <script>
 // use normal <script> to declare options
