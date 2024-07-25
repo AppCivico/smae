@@ -121,8 +121,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
   <div class="mb2">
     <div>
       <header class="flex spacebetween center">
-        <h3 class=" w700 mb0">{{ config.ano_referencia }}</h3>
-        <div >
+        <h3 class=" w700 mb0">
+          {{ config.ano_referencia }}
+        </h3>
+
+        <div>
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
             class="dropbtn"

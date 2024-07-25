@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue';
 import formataValor from '@/helpers/formataValor';
+import { computed } from 'vue';
 import mêsDoÚltimoItem from './helpers/mesDoUltimoItem';
 
 const props = defineProps({
