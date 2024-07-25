@@ -41,6 +41,8 @@ const propriedadesManipuladas = computed(() => {
 
   if (typeof to === 'string') {
     to = prefixoDosCaminhos + (to.startsWith('/') ? '' : '/') + to + (to.endsWith('/') ? '' : '/') + sufixoDosCaminhos;
+  } else if (typeof to.path === 'string') {
+    to.path = prefixoDosCaminhos + (to.path.startsWith('/') ? '' : '/') + to.path + (to.path.endsWith('/') ? '' : '/') + sufixoDosCaminhos;
   }
 
   return {
