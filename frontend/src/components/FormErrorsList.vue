@@ -14,6 +14,9 @@ defineProps({
     <p class="form-errors-report__message">
       Por favor, corrija os erros seguintes:
     </p>
+
+    <pre v-scrollLockDebug>errors:{{ errors }}</pre>
+
     <ul class="form-errors-report__list">
       <li
         v-for="(message, field) in errors"
