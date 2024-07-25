@@ -27,8 +27,22 @@ MetasStore.getPdM();
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 
 const AtividadesStore = useAtividadesStore();
-const { singleAtividade, órgãosResponsáveisNaAtividadeEmFoco } = storeToRefs(AtividadesStore);
-if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
+const {
+  singleAtividade,
+  órgãosResponsáveisNaAtividadeEmFoco,
+  relacionadosAtividade,
+} = storeToRefs(AtividadesStore);
+
+async function iniciar() {
+  if (singleAtividade.value.id !== atividade_id) {
+    await AtividadesStore.getById(iniciativa_id, atividade_id);
+  }
+  if (singleAtividade.value.id) {
+    AtividadesStore.getRelacionados({ atividade_id: singleAtividade.value.id });
+  }
+}
+
+iniciar();
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
@@ -55,7 +69,6 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
       Editar
     </SmaeLink>
   </div>
-
   <div class="boards">
     <template v-if="singleAtividade.id">
       <div class="flex g2">
@@ -150,6 +163,57 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
         :parent_id="atividade_id"
         parent_field="atividade_id"
       />
+
+      <div
+        v-if="relacionadosAtividade?.projetos?.length"
+        class="mt2 mb2"
+      >
+        <h2 class="m2">
+          Projetos associados
+        </h2>
+        <table class="tablemain">
+          <col>
+          <thead>
+            <th>Nome</th>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(projeto, index) in relacionadosAtividade.projetos"
+              :key="index"
+            >
+              <td>
+                {{ projeto.nome }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        v-if="relacionadosAtividade?.obras?.length"
+        class="mt2 mb2"
+      >
+        <h2 class="">
+          Obras associadas
+        </h2>
+
+        <table class="tablemain">
+          <col>
+          <thead>
+            <th>Nome</th>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(obra, index) in relacionadosAtividade.obras"
+              :key="index"
+            >
+              <td>
+                {{ obra.nome }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
     <template v-else-if="singleAtividade.loading">
       <div class="p1">

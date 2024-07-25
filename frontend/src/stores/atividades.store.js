@@ -7,6 +7,7 @@ export const useAtividadesStore = defineStore({
   state: () => ({
     Atividades: {},
     singleAtividade: {},
+    relacionadosAtividade: {},
   }),
   actions: {
     clear() {
@@ -31,6 +32,19 @@ export const useAtividadesStore = defineStore({
         return true;
       } catch (error) {
         this.Atividades[iniciativa_id] = { error };
+        return false;
+      }
+    },
+    async getRelacionados(params) {
+      try {
+        if (params.atividade_id) {
+          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          this.relacionadosAtividade = response;
+          return true;
+        }
+        throw new Error('ID do PdM ou atividade não fornecido.');
+      } catch (error) {
+        this.relacionadosAtividade = { error };
         return false;
       }
     },
