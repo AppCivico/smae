@@ -139,7 +139,10 @@ const somaDasLinhas = computed(() => ({
             />
           </tbody>
 
-          <template v-for="(g, k) in groups.filhos">
+          <template
+            v-for="(g, k) in groups.filhos"
+            :key="k"
+          >
             <tbody>
               <tr>
                 <td class="tc600 w700 pl1">
@@ -160,7 +163,10 @@ const somaDasLinhas = computed(() => ({
                 :parentlink="parentlink"
               />
             </tbody>
-            <template v-for="(gg, kk) in g.filhos">
+            <template
+              v-for="(gg, kk) in g.filhos"
+              :key="kk"
+            >
               <tbody>
                 <tr>
                   <td class="tc600 w700 pl2">
