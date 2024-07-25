@@ -33,7 +33,7 @@ defineProps({
     <td>{{ formataValor(item?.custo_previsto) }}</td>
     <td>{{ dateToField(item?.atualizado_em) }}</td>
     <td style="white-space: nowrap; text-align: right">
-      <router-link
+      <SmaeLink
         v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
         :to="$route.meta?.rotaParaEdição
           ? { name: $route.meta.rotaParaEdição, params: { ano: item.ano_referencia, id: item.id } }
@@ -44,7 +44,7 @@ defineProps({
           width="20"
           height="20"
         ><use xlink:href="#i_edit" /></svg>
-      </router-link>
+      </SmaeLink>
     </td>
   </tr>
 </template>
