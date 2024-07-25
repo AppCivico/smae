@@ -293,12 +293,12 @@ watch(props, (novosValores) => {
             :key="item.id"
           >
             <th>
-              <router-link
+              <SmaeLink
                 :title="item.título?.length > 36 ? item.título : undefined"
                 :to="item.rota"
               >
                 {{ item.prefixo }} - {{ item.código }} - {{ truncate(item.título, 36) }}
-              </router-link>
+              </SmaeLink>
             </th>
             <td class="cell--number">
               {{ months[item.maisRecentesDosItens.mês - 1] || item.maisRecentesDosItens.mês }}

@@ -43,7 +43,6 @@ const somaDasLinhas = computed(() => ({
   valor_planejado: formataValor(somaItems(linhasFiltradas.value, 'valor_planejado')),
   pressao_orcamentaria_valor: formataValor(somaItems(linhasFiltradas.value, 'pressao_orcamentaria_valor')),
 }));
-
 </script>
 <template>
   <div class="mb2">
@@ -193,7 +192,7 @@ const somaDasLinhas = computed(() => ({
         </template>
       </table>
       <div class="tc">
-        <router-link
+        <SmaeLink
           v-if="config.planejado_disponivel && ($route.meta?.rotaParaAdição || parentlink)"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
@@ -204,7 +203,7 @@ const somaDasLinhas = computed(() => ({
             width="20"
             height="20"
           ><use xlink:href="#i_+" /></svg> <span>Adicionar dotação</span>
-        </router-link>
+        </SmaeLink>
         <span
           v-else
           class="addlink disabled mt1 mb1"

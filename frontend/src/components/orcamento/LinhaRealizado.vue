@@ -70,7 +70,7 @@ const linhasEscolhidas = computed({
       v-if="item.pode_editar"
       style="white-space: nowrap; text-align: right"
     >
-      <router-link
+      <SmaeLink
         v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
         :to="$route.meta?.rotaParaEdição
           ? {
@@ -88,7 +88,7 @@ const linhasEscolhidas = computed({
           width="20"
           height="20"
         ><use xlink:href="#i_edit" /></svg>
-      </router-link>
+      </SmaeLink>
     </td>
     <td v-if="exibirCheckboxDeSeleção">
       <input

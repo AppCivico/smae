@@ -225,7 +225,7 @@ function restringirAZero() {
       </table>
 
       <div class="tc">
-        <router-link
+        <SmaeLink
           v-if="config.previsao_custo_disponivel && ($route.meta?.rotaParaAdição || parentlink)"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
@@ -237,7 +237,7 @@ function restringirAZero() {
             height="20"
           ><use xlink:href="#i_+" /></svg>
           <span>Adicionar previsão de custo</span>
-        </router-link>
+        </SmaeLink>
         <span
           v-else
           class="addlink disabled mt1 mb1"
