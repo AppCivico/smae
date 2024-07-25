@@ -29,7 +29,11 @@ const { activePdm } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
-const { singleIniciativa, órgãosResponsáveisNaIniciativaEmFoco } = storeToRefs(IniciativasStore);
+const {
+  singleIniciativa,
+  órgãosResponsáveisNaIniciativaEmFoco,
+  relacionadosIniciativa,
+} = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
 const { Atividades } = storeToRefs(AtividadesStore);
 
@@ -45,6 +49,12 @@ async function iniciar() {
 
   if (promessas.length) {
     await Promise.allSettled(promessas);
+  }
+
+  if (singleIniciativa.value.id) {
+    IniciativasStore.getRelacionados({
+      iniciativa_id: singleIniciativa.value.id,
+    });
   }
 
   nextTick().then(() => {
@@ -258,7 +268,56 @@ iniciar();
             </header>
           </div>
         </template>
+        <div
+          v-if="relacionadosIniciativa?.projetos?.length"
+          class="mt2 mb2"
+        >
+          <h2 class="m2">
+            Projetos associados
+          </h2>
+          <table class="tablemain">
+            <col>
+            <thead>
+              <th>Nome</th>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(projeto, index) in relacionadosIniciativa.projetos"
+                :key="index"
+              >
+                <td>
+                  {{ projeto.nome }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
+        <div
+          v-if="relacionadosIniciativa?.obras?.length"
+          class="mt2 mb2"
+        >
+          <h2 class="">
+            Obras associadas
+          </h2>
+
+          <table class="tablemain">
+            <col>
+            <thead>
+              <th>Nome</th>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(obra, index) in relacionadosIniciativa.obras"
+                :key="index"
+              >
+                <td>
+                  {{ obra.nome }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <div
           v-if="Atividades[iniciativa_id].loading"
           class="board_vazio"
