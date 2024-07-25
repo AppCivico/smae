@@ -5,7 +5,9 @@ import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/Simple
 import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 import { storeToRefs } from 'pinia';
-import { computed, defineOptions, ref } from 'vue';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useAlertStore } from '@/stores/alert.store';
@@ -23,8 +25,6 @@ const perm = permissions.value;
 const editModalStore = useEditModalStore();
 
 const props = defineProps(['area', 'title']);
-
-const SimpleOrcamento = props.area == 'Realizado' ? SimpleOrcamentoRealizado : props.area == 'Planejado' ? SimpleOrcamentoPlanejado : SimpleOrcamentoCusteio;
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -50,6 +50,19 @@ const {
 } = storeToRefs(OrcamentosStore);
 
 OrcamentosStore.clear();
+
+const SimpleOrcamento = computed(() => {
+  switch (props.area) {
+    case 'Realizado':
+      return SimpleOrcamentoRealizado;
+    case 'Planejado':
+      return SimpleOrcamentoPlanejado;
+    case 'Custo':
+      return SimpleOrcamentoCusteio;
+    default:
+      return null;
+  }
+});
 
 const orçamentosEmOrdemDecrescente = computed(() => (Array.isArray(activePdm.value.orcamento_config)
   ? activePdm.value.orcamento_config
@@ -117,7 +130,7 @@ async function concluirOrçamento(evento, metaId, ano) {
   });
 }
 
-start();
+watch(() => route.path, start, { immediate: true });
 </script>
 <script>
 // use normal <script> to declare options
@@ -138,6 +151,7 @@ export default {
 
   <EnvelopeDeAbas
     v-if="orçamentosEmOrdemDecrescente.length"
+    :key="$props.area"
     class="boards"
     :meta-dados-por-id="dadosExtrasDeAbas"
   >
