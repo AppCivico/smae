@@ -53,8 +53,7 @@ OrcamentosStore.clear();
 
 const orçamentosEmOrdemDecrescente = computed(() => (Array.isArray(activePdm.value.orcamento_config)
   ? activePdm.value.orcamento_config
-  // adicionando uma chave para ser usada como Object.key
-  // porque números causam sua reordenação
+    // adicionando `_` à chave para porque números causam sua reordenação
     .map((x) => ({ ...x, chave: `_${x.ano_referencia}` }))
     .sort((a, b) => b.ano_referencia - a.ano_referencia)
   : []));
