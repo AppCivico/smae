@@ -1,3 +1,4 @@
+import type { DetalhePSDto } from '@/../../backend/src/pdm/dto/detalhe-pdm.dto';
 import type { ListPdmDto } from '@/../../backend/src/pdm/dto/list-pdm.dto';
 import type { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
 import type { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
@@ -23,7 +24,7 @@ interface Erros {
 
 interface Estado {
   lista: Lista;
-  emFoco: PlanoSetorialDto | null;
+  emFoco: PlanoSetorialDto & DetalhePSDto | null;
   arquivos: ListPdmDocument['linhas'] | [];
 
   chamadasPendentes: ChamadasPendentes;
@@ -232,6 +233,44 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
         },
       }), {});
       return result;
+    },
+
+    orcamentosDisponiveisNoPlanoEmFoco: ({ emFoco }) => {
+      const disponiveis = {
+        execucao_disponivel: false,
+        planejado_disponivel: false,
+        previsao_custo_disponivel: false,
+      };
+
+      if (Array.isArray(emFoco?.orcamento_config) && emFoco?.orcamento_config.length) {
+        let i = 0;
+
+        while (emFoco?.orcamento_config[i]) {
+          const item = emFoco?.orcamento_config[i];
+
+          if (item.execucao_disponivel) {
+            disponiveis.execucao_disponivel = true;
+          }
+          if (item.planejado_disponivel) {
+            disponiveis.planejado_disponivel = true;
+          }
+          if (item.previsao_custo_disponivel) {
+            disponiveis.previsao_custo_disponivel = true;
+          }
+
+          if (
+            disponiveis.execucao_disponivel
+            && disponiveis.planejado_disponivel
+            && disponiveis.previsao_custo_disponivel
+          ) {
+            break;
+          }
+
+          i += 1;
+        }
+      }
+
+      return disponiveis;
     },
 
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: ListPdm } => lista
