@@ -231,14 +231,12 @@ export class PlanoSetorialController {
     ): Promise<PlanoSetorialDto | DetalhePSDto> {
         const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly');
 
-        if (!detail.incluir_auxiliares) {
-            return {
-                pdm: pdm as PlanoSetorialDto,
-                orcamento_config: await this.pdmService.getOrcamentoConfig(this.tipoPdm, +params.id),
-            } satisfies DetalhePSDto;
-        }
+        if (!detail.incluir_auxiliares) return pdm as PlanoSetorialDto;
 
-        return pdm as PlanoSetorialDto;
+        return {
+            pdm: pdm as PlanoSetorialDto,
+            orcamento_config: await this.pdmService.getOrcamentoConfig(this.tipoPdm, +params.id),
+        } satisfies DetalhePSDto;
     }
 
     @Patch(':id/orcamento-config')
