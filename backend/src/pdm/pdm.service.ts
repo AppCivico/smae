@@ -1278,7 +1278,31 @@ export class PdmService {
             },
         });
 
-        // colocar tudo true para PS
+        const defaultConfig: Record<
+            TipoPdm,
+            {
+                previsao_custo_disponivel: boolean;
+                planejado_disponivel: boolean;
+                execucao_disponivel: boolean;
+                execucao_disponivel_meses: number[];
+            }
+        > = {
+            PDM: {
+                previsao_custo_disponivel: true,
+                planejado_disponivel: false,
+                execucao_disponivel: false,
+                execucao_disponivel_meses: [3, 6, 9, 12],
+            },
+            PS: {
+                previsao_custo_disponivel: true,
+                planejado_disponivel: true,
+                execucao_disponivel: true,
+                execucao_disponivel_meses: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+            },
+        };
+
+        const pdmConfig = defaultConfig[tipo];
+
         const rows: {
             ano_referencia: number;
             id: number;
@@ -1291,10 +1315,10 @@ export class PdmService {
             select
                 extract('year' from x.x)::int as ano_referencia,
                 ${pdm_id}::int as pdm_id,
-                coalesce(previsao_custo_disponivel, true) as previsao_custo_disponivel,
-                coalesce(planejado_disponivel, false) as planejado_disponivel,
-                coalesce(execucao_disponivel, false) as execucao_disponivel,
-                coalesce(execucao_disponivel_meses, '{3,6,9,12}'::int[]) as execucao_disponivel_meses,
+                coalesce(previsao_custo_disponivel, ${pdmConfig.previsao_custo_disponivel}::boolean) as previsao_custo_disponivel,
+                coalesce(planejado_disponivel, ${pdmConfig.planejado_disponivel}::boolean) as planejado_disponivel,
+                coalesce(execucao_disponivel, ${pdmConfig.execucao_disponivel}::boolean) as execucao_disponivel,
+                coalesce(execucao_disponivel_meses, ${pdmConfig.execucao_disponivel_meses}::int[]) as execucao_disponivel_meses,
                 oc.id as id
             FROM generate_series(${pdm.data_inicio}, ${pdm.data_fim}, '1 year'::interval) x
             LEFT JOIN meta_orcamento_config oc ON oc.pdm_id = ${pdm_id}::int AND oc.ano_referencia = extract('year' from x.x)
