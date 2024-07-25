@@ -7,6 +7,7 @@ export const useIniciativasStore = defineStore({
   state: () => ({
     Iniciativas: {},
     singleIniciativa: {},
+    relacionadosIniciativa: {},
   }),
   actions: {
     clear() {
@@ -33,6 +34,19 @@ export const useIniciativasStore = defineStore({
         return true;
       } catch (error) {
         this.Iniciativas[meta_id] = { error };
+        return false;
+      }
+    },
+    async getRelacionados(params) {
+      try {
+        if (params.iniciativa_id) {
+          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          this.relacionadosIniciativa = response;
+          return true;
+        }
+        throw new Error('ID do PdM ou iniciativa não fornecido.');
+      } catch (error) {
+        this.relacionadosIniciativa = { error };
         return false;
       }
     },
