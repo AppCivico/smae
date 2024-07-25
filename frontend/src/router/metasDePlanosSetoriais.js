@@ -1,3 +1,5 @@
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+
 import {
   AddEditAtividade,
   AddEditCronograma,
@@ -35,9 +37,9 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 // - `/meta/:meta_id/iniciativas/:iniciativa_id`
 // - `/meta/:meta_id/iniciativas/:iniciativa_id/atividades/:atividade_id`
 
-const rotasParaMenuSecundário = (nível) => {
+const rotasParaMenuSecundário = (nível, orcamentosDisponiveis) => {
   let rotasDoPdm = [];
-  let rotasDoOrçamento = [];
+  const rotasDoOrçamento = [];
 
   switch (nível) {
     case 'atividade':
@@ -64,24 +66,38 @@ const rotasParaMenuSecundário = (nível) => {
         'planoSetorial:evoluçãoDaMeta',
         'planoSetorial:cronogramaDaMeta',
       ];
-      rotasDoOrçamento = [
-        'planoSetorial:MetaOrcamentoCusto',
-        'planoSetorial:MetaOrcamentoPlanejado',
-        'planoSetorial:MetaOrcamentoRealizado',
-      ];
+
+      if (orcamentosDisponiveis.previsao_custo_disponivel) {
+        rotasDoOrçamento.push('planoSetorial:MetaOrcamentoCusto');
+      }
+      if (orcamentosDisponiveis.planejado_disponivel) {
+        rotasDoOrçamento.push('planoSetorial:MetaOrcamentoPlanejado');
+      }
+
+      if (orcamentosDisponiveis.execucao_disponivel) {
+        rotasDoOrçamento.push('planoSetorial:MetaOrcamentoRealizado');
+      }
+
       break;
   }
 
-  return [
-    {
-      título: 'Metas do Plano Setorial',
-      rotas: rotasDoPdm,
-    },
-    {
-      título: 'Visão orçamentária',
-      rotas: rotasDoOrçamento,
-    },
-  ];
+  return rotasDoOrçamento.length
+    ? [
+      {
+        título: 'Metas do Plano Setorial',
+        rotas: rotasDoPdm,
+      },
+      {
+        título: 'Visão orçamentária',
+        rotas: rotasDoOrçamento,
+      },
+    ]
+    : [
+      {
+        título: 'Metas do Plano Setorial',
+        rotas: rotasDoPdm,
+      },
+    ];
 };
 
 export default [
@@ -141,7 +157,7 @@ export default [
     component: SingleMeta,
     meta: {
       títuloParaMenu: 'Resumo',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -149,7 +165,7 @@ export default [
     component: AddEditIndicador,
     meta: {
       rotaDeEscape: 'planoSetorial:meta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -158,7 +174,7 @@ export default [
     name: 'planoSetorial:indicadorDaMeta',
     meta: {
       rotaDeEscape: 'planoSetorial:meta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -168,7 +184,7 @@ export default [
     props: { group: 'variaveis' },
     meta: {
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -179,7 +195,7 @@ export default [
     meta: {
       funçãoDaTela: 'gerar',
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -189,7 +205,7 @@ export default [
     props: { group: 'variaveis' },
     meta: {
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -198,7 +214,7 @@ export default [
     props: { group: 'variaveis' },
     meta: {
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -207,7 +223,7 @@ export default [
     props: { group: 'valores' },
     meta: {
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -216,7 +232,7 @@ export default [
     props: { group: 'retroativos' },
     meta: {
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -231,7 +247,7 @@ export default [
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Nova variável composta',
       rotaPrescindeDeChave: true,
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -243,7 +259,7 @@ export default [
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Auxiliar de variável composta',
       rotaPrescindeDeChave: true,
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -254,7 +270,7 @@ export default [
       rotaDeEscape: 'planoSetorial:indicadorDaMeta',
       título: 'Editar variável composta',
       rotaPrescindeDeChave: true,
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -267,7 +283,7 @@ export default [
       título: 'Editar valores previstos',
       tipoDeValor: 'previsto',
       rotaPrescindeDeChave: true,
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -279,7 +295,7 @@ export default [
       título: 'Editar valores realizados',
       tipoDeValor: 'realizado',
       rotaPrescindeDeChave: true,
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -291,7 +307,7 @@ export default [
     component: SinglePainelMeta,
     meta: {
       títuloParaMenu: 'Painel da meta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -300,14 +316,14 @@ export default [
     component: SingleEvolucao,
     meta: {
       títuloParaMenu: 'Evolução',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
     path: ':meta_id/evolucao/:indicador_id',
     component: SingleEvolucao,
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -315,7 +331,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'variaveis' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -323,7 +339,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'variaveis' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -331,7 +347,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'variaveis' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -339,7 +355,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'valores' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -347,7 +363,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'retroativos' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -356,7 +372,7 @@ export default [
     component: SingleCronograma,
     meta: {
       títuloParaMenu: 'Cronograma',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -364,7 +380,7 @@ export default [
     component: AddEditCronograma,
     meta: {
       rotaDeEscape: 'planoSetorial:cronogramaDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -372,7 +388,7 @@ export default [
     component: AddEditCronograma,
     meta: {
       rotaDeEscape: 'planoSetorial:cronogramaDaMeta',
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -380,7 +396,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'etapas' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -388,7 +404,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'etapas' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -396,7 +412,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'fase' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -404,7 +420,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'fase' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -412,7 +428,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'subfase' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -420,7 +436,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'subfase' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -428,7 +444,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'monitorar', recorte: 'iniciativa' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -436,7 +452,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'monitorar', recorte: 'atividade' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
   {
@@ -444,7 +460,7 @@ export default [
     component: SingleCronograma,
     props: { group: 'monitorar' },
     meta: {
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
 
@@ -454,7 +470,7 @@ export default [
     component: MetaOrçamentoRaiz,
     meta: {
       rotaPrescindeDeChave: true,
-      rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
     children: [
       {
@@ -465,7 +481,7 @@ export default [
         meta: {
           títuloParaMenu: 'Previsão de custo',
           limitarÀsPermissões: 'CadastroMetaPS.orcamento',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -473,7 +489,7 @@ export default [
         component: AddEditCusteio,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoCusto',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -481,7 +497,7 @@ export default [
         component: AddEditCusteio,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoCusto',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -492,7 +508,7 @@ export default [
         meta: {
           títuloParaMenu: 'Orçamento planejado',
           limitarÀsPermissões: 'CadastroMetaPS.orcamento',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -500,7 +516,7 @@ export default [
         component: AddEditPlanejado,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoPlanejado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -508,7 +524,7 @@ export default [
         component: AddEditPlanejado,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoPlanejado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
 
@@ -520,7 +536,7 @@ export default [
         meta: {
           títuloParaMenu: 'Execução orçamentária',
           limitarÀsPermissões: 'CadastroMetaPS.orcamento',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -528,7 +544,7 @@ export default [
         component: AddRealizado,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -536,7 +552,7 @@ export default [
         component: AddRealizadoProcesso,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -544,7 +560,7 @@ export default [
         component: AddRealizadoNota,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -552,7 +568,7 @@ export default [
         component: EditRealizado,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -560,7 +576,7 @@ export default [
         component: EditRealizado,
         meta: {
           rotaDeEscape: 'planoSetorial:MetaOrcamentoRealizado',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
     ],
@@ -574,7 +590,7 @@ export default [
         component: SingleMeta,
         name: 'planoSetorial:listaDeIniciativas',
         meta: {
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
@@ -582,7 +598,7 @@ export default [
         component: AddEditIniciativa,
         meta: {
           rotaDeEscape: 'planoSetorial:listaDeIniciativas',
-          rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
         },
       },
       {
