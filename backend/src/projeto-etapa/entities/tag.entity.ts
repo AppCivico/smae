@@ -1,3 +1,4 @@
-export class ProjetoEtapa {
+export class ProjetoEtapaDto {
+    id: number;
     descricao: string;
 }
