@@ -1,7 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
@@ -9,6 +6,9 @@ import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 IniciativaAtiva();

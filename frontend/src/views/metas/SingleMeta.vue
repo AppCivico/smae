@@ -1,13 +1,13 @@
 <script setup>
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
