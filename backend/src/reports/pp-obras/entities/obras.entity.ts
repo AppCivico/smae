@@ -32,7 +32,6 @@ export class RelObrasDto {
     descricao: string | null;
     //objeto: string;
     //objetivo: string;
-    publico_alvo: string | null;
     previsao_inicio: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;
@@ -49,7 +48,9 @@ export class RelObrasDto {
     orgao_colaborador: IdSiglaDescricao | null;
     responsavel: IdNomeExibicaoDto | null;
     pontos_focais_colaboradores: string | null;
-
+    programa_habitacional: string | null;
+    n_unidades_habitacionais: number | null;
+    n_familias_beneficiadas: number | null;
     etapa: string | null;
 }
 
