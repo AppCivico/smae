@@ -292,6 +292,7 @@ export class IniciativaService {
                 const cronogramaId: number = dbIniciativa.Cronograma[0].id;
 
                 const cronogramaEtapaRet = await this.metaService.cronogramaEtapaService.findAll(
+                    tipo,
                     { cronograma_id: cronogramaId },
                     user,
                     true
