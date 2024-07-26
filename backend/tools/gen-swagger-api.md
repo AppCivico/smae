@@ -9,5 +9,5 @@ Ter o JSON da api /api-json
 
 Gerar o arquivo:
 
-    openapi-generator-cli generate -i /tmp/out.json -g typescript-axios --skip-validate-spec -o /tmp/generated
+    openapi-generator-cli generate -i /tmp/out.json -g typescript-axios --additional-properties=enumPropertyNaming=original,paramNaming=original,useSingleRequestParameter=true --skip-validate-spec -o /tmp/generated
 

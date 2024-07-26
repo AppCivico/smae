@@ -21,6 +21,7 @@ export class FilterProjetoProgramaDto {
 }
 
 export class ProjetoProgramaDto {
+    id: number;
     nome: string;
 }
 

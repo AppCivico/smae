@@ -1,5 +1,5 @@
-import { ProjetoEtapa } from '../entities/tag.entity';
+import { ProjetoEtapaDto } from '../entities/tag.entity';
 
 export class ListProjetoEtapaDto {
-    linhas: ProjetoEtapa[];
+    linhas: ProjetoEtapaDto[];
 }
