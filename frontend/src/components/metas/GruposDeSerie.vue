@@ -1,5 +1,10 @@
 <script setup>
+import { ref, defineProps } from 'vue';
+import SmallModal from '@/components/SmallModal.vue';
+
+const showModal = ref(false);
 const props = defineProps(['g']);
+
 function nestLinhas(l) {
   const a = {};
   l.forEach((x) => {
@@ -11,8 +16,29 @@ function nestLinhas(l) {
 function toggleAccordeon(t) {
   t.target.closest('.tzaccordeon').classList.toggle('active');
 }
+
+function openAnalise() {
+  console.log('abriu, showModal: ', showModal.value);
+  showModal.value = true;
+}
 </script>
 <template>
+  <!-- g: <pre>{{ g }}</pre> -->
+  <SmallModal
+    v-if="showModal"
+  >
+    <div class="flex spacebetween center mb2">
+      <h2>
+        Análise Qualitativa da Variável
+      </h2>
+      <hr class="ml2 f1">
+
+      <CheckClose
+        :apenas-emitir="true"
+        @close="showModal = false"
+      />
+    </div>
+  </SmallModal>
   <template v-if="g?.linhas">
     <template
       v-for="k in nestLinhas(g.linhas)"
@@ -22,7 +48,9 @@ function toggleAccordeon(t) {
         class="tzaccordeon"
         @click="toggleAccordeon"
       >
-        <td colspan="56">
+        <td
+          colspan="56"
+        >
           <svg
             class="arrow"
             width="13"
@@ -35,9 +63,12 @@ function toggleAccordeon(t) {
           v-for="(val,i) in k[1]"
           :key="val.id ? val.id : i"
         >
-          <td>
+          <td
+            @click="openAnalise"
+          >
             <div class="flex center">
-              <div class="farol i1" /> <span>{{ val.periodo }}</span>
+              <div class="farol i1" />
+              <span>{{ val.periodo }}</span>
             </div>
           </td>
           <td>
