@@ -148,6 +148,10 @@ export class CreateTransferenciaDto {
 }
 
 export class CreateTransferenciaParlamentarDto {
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
     @IsNumber()
     parlamentar_id: number;
 
