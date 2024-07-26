@@ -37,8 +37,10 @@ async function iniciar() {
   if (singleAtividade.value.id !== atividade_id) {
     await AtividadesStore.getById(iniciativa_id, atividade_id);
   }
-  if (singleAtividade.value.id) {
-    AtividadesStore.getRelacionados({ atividade_id: singleAtividade.value.id });
+  if (route.meta.entidadeMãe === 'pdm') {
+    if (singleAtividade.value.id) {
+      AtividadesStore.getRelacionados({ atividade_id: singleAtividade.value.id });
+    }
   }
 }
 
