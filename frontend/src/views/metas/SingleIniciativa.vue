@@ -51,10 +51,12 @@ async function iniciar() {
     await Promise.allSettled(promessas);
   }
 
-  if (singleIniciativa.value.id) {
-    IniciativasStore.getRelacionados({
-      iniciativa_id: singleIniciativa.value.id,
-    });
+  if (route.meta.entidadeMãe === 'pdm') {
+    if (singleIniciativa.value.id) {
+      IniciativasStore.getRelacionados({
+        iniciativa_id: singleIniciativa.value.id,
+      });
+    }
   }
 
   nextTick().then(() => {
