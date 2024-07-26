@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
-import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
+import { CronogramaEtapaNivel, Prisma, TipoPdm } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
@@ -26,6 +26,7 @@ export class CronogramaEtapaService {
     ) {}
 
     async findAll(
+        tipo: TipoPdm,
         filters: FilterCronogramaEtapaDto,
         user: PessoaFromJwt,
         desligaAssertMeta: boolean
@@ -36,7 +37,7 @@ export class CronogramaEtapaService {
         const cronogramaId = filters.cronograma_id;
         if (!desligaAssertMeta) {
             this.logger.debug('assertMetaForCronograma');
-            await this.assertMetaForCronograma(cronogramaId, user, 'readonly');
+            await this.assertMetaForCronograma(tipo, cronogramaId, user, 'readonly');
         }
 
         const etapaId = filters.etapa_id;
@@ -460,8 +461,13 @@ export class CronogramaEtapaService {
         return ret_arr;
     }
 
-    async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
-        await this.assertMetaForCronograma(dto.cronograma_id, user);
+    async update(
+        tipo: TipoPdm,
+        dto: UpdateCronogramaEtapaDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ) {
+        await this.assertMetaForCronograma(tipo, dto.cronograma_id, user);
 
         if (dto.ordem && dto.ordem <= 0) dto.ordem = 1;
 
@@ -605,6 +611,7 @@ export class CronogramaEtapaService {
     }
 
     private async assertMetaForCronograma(
+        tipo: TipoPdm,
         cronograma_id: number,
         user: PessoaFromJwt,
         readwrite: 'readonly' | 'readwrite' = 'readwrite'
@@ -613,7 +620,7 @@ export class CronogramaEtapaService {
             where: { cronograma_id },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', r.meta_id, user, 'cronograma', readwrite);
+        await this.metaService.assertMetaWriteOrThrow(tipo, r.meta_id, user, 'cronograma', readwrite);
     }
 
     async getNivelOrdemForUpsert(
@@ -672,8 +679,8 @@ export class CronogramaEtapaService {
         return { nivel, ordem };
     }
 
-    async delete(id: number, user: PessoaFromJwt) {
-        await this.assertMetaForCronograma(id, user);
+    async delete(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+        await this.assertMetaForCronograma(tipo, id, user);
 
         const deleted = await this.prisma.cronogramaEtapa.findUnique({
             where: { id: id },

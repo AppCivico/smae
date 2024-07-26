@@ -557,6 +557,7 @@ export class MetaService {
                 let cronogramaAtraso: string | null = null;
                 if (cronograma) {
                     const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                        tipo,
                         {
                             cronograma_id: cronograma.id,
                         },

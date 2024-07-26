@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,7 +17,7 @@ export class CronogramaService {
         private readonly cronogramaEtapaService: CronogramaEtapaService
     ) {}
 
-    async create(createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdm, createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
             throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
 
@@ -26,11 +26,12 @@ export class CronogramaService {
                 meta_id: createCronogramaDto.meta_id,
                 atividade_id: createCronogramaDto.atividade_id,
                 iniciativa_id: createCronogramaDto.iniciativa_id,
+                pdm: { tipo },
             },
             select: { meta_id: true },
         });
 
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'cronograma');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'cronograma');
 
         const created = await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -50,7 +51,7 @@ export class CronogramaService {
         return created;
     }
 
-    async findAll(filters: FilterCronogramaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterCronogramaDto | undefined = undefined, user: PessoaFromJwt) {
         const metaId = filters?.meta_id;
         const atividadeId = filters?.atividade_id;
         const iniciativaId = filters?.iniciativa_id;
@@ -98,6 +99,7 @@ export class CronogramaService {
 
             // a verificação de permissão acaba sendo feita aqui dentro, depois de descobrir qual é a meta
             const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                tipo,
                 { cronograma_id: row.id },
                 user,
                 false
@@ -113,12 +115,12 @@ export class CronogramaService {
         return ret;
     }
 
-    async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdm, id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
         const self = await this.prisma.view_meta_cronograma.findFirstOrThrow({
             where: { cronograma_id: id },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', self.meta_id, user, 'cronograma');
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'cronograma');
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const cronograma = await prisma.cronograma.update({
@@ -137,15 +139,15 @@ export class CronogramaService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.view_meta_cronograma.findFirstOrThrow({
             where: { cronograma_id: id },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', self.meta_id, user, 'cronograma');
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'cronograma');
 
         const removed = await this.prisma.cronograma.updateMany({
-            where: { id: id },
+            where: { id: id, removido_em: null },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
