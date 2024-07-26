@@ -2110,15 +2110,6 @@ export const registroDeTransferencia = object({
         .nullable(),
       parlamentar_id: number()
         .label('Parlamentar'),
-      cargo: mixed()
-        .label('Cargo')
-        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-        .oneOf([...Object.keys(cargosDeParlamentar), null])
-        .nullable()
-        .transform((v) => (v === '' ? null : v)),
-      partido_id: number()
-        .label('Partido')
-        .nullable(),
       objeto: string()
         .label('Objeto/Empreendimento')
         .max(1000)
@@ -2702,6 +2693,12 @@ export const relatórioDePortfolioObras = object({
       .label('Subprefeitura')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
+    periodo: date()
+      .label('Início do período')
+      .max(dataMax)
+      .min(new Date(2003, 0, 1))
+      .nullable()
+      .transform((v) => (!v ? null : v)),
   }),
   salvar_arquivo: boolean(),
 });
