@@ -4,3 +4,4 @@
 .~lock*
 utils/sync-proxy.sh
 *.env
+openapitools.json
