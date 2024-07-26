@@ -16,10 +16,7 @@ import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateTransferenciaDto, CreateTransferenciaParlamentarDto } from './create-transferencia.dto';
 
-export class UpdateTransferenciaDto extends PartialType(OmitType(CreateTransferenciaDto, ['parlamentares'])) {
-    @IsOptional()
-    parlamentares?: UpdateTransferenciaParlamentarDto[];
-}
+export class UpdateTransferenciaDto extends PartialType(OmitType(CreateTransferenciaDto, [])) {}
 
 export class CompletarTransferenciaDto {
     @IsNumberString(
@@ -138,8 +135,9 @@ export class CompletarTransferenciaDto {
     @Type(() => UpdateTransferenciaParlamentarDto)
     parlamentares?: UpdateTransferenciaParlamentarDto[];
 }
-
-export class UpdateTransferenciaParlamentarDto extends CreateTransferenciaParlamentarDto {
+export class UpdateTransferenciaParlamentarDto extends PartialType(
+    OmitType(CreateTransferenciaParlamentarDto, ['cargo', 'partido_id'])
+) {
     @IsOptional()
     @IsNumber()
     id?: number;
