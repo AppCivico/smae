@@ -186,7 +186,8 @@ export default {
       />
 
       <div
-        v-if="$route.meta.entidadeMãe === 'pdm' && Object.keys(respostasof).length
+        v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe)
+          && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
       >

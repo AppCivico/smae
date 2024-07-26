@@ -7,8 +7,11 @@ import requestS from '@/helpers/requestS.ts';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import truncate from '@/helpers/truncate';
 import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const rota = useRoute();
 
 const props = defineProps({
   pdm: {
@@ -147,9 +150,26 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
 
   chamadaPendente.value = true;
   try {
-    const r = await requestS.get(`${baseUrl}/orcamento-realizado/compartilhados-no-pdm`, params);
+    let caminhoNaApi = '';
 
-    compartilhamentos.value = Array.isArray(r.linhas) ? r.linhas : r;
+    switch (rota.meta.entidadeMãe) {
+      case 'pdm':
+        caminhoNaApi = `${baseUrl}/orcamento-realizado/compartilhados-no-pdm`;
+        break;
+
+      case 'planoSetorial':
+        caminhoNaApi = `${baseUrl}/plano-setorial-orcamento-realizado/compartilhados-no-pdm`;
+        break;
+      default:
+        console.trace('Caminho para orçamentos não pôde ser identificado.');
+        throw new Error('Caminho para orçamentos não pôde ser identificado.');
+    }
+
+    const r = await requestS.get(caminhoNaApi, params);
+
+    compartilhamentos.value = Array.isArray(r.linhas)
+      ? r.linhas
+      : r;
   } catch (error) {
     erro.value = error;
   } finally {
