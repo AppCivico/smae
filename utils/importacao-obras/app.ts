@@ -1,4 +1,5 @@
 import { Database } from 'duckdb-async';
+import { matchStringFuzzy } from './func';
 import {
     Configuration,
     IniciativaApi,
@@ -6,7 +7,6 @@ import {
     MonitoramentoDeObrasCadastroBsicoEquipamentoApi,
     MonitoramentoDeObrasCadastroBsicoGrupoTemticoApi,
     MonitoramentoDeObrasCadastroBsicoTipoDeIntervenoApi,
-    PDMApi,
     PessoaApi,
     PortflioDeObrasApi,
     ProgramasProjetoMDOExclusivoParaObrasApi,
@@ -78,7 +78,8 @@ interface ProjetoRow {
     // novas colunas sem destino
     status_contratacao: string | null;
     mdo_n_familias_beneficiadas_ate_agora: number | null;
-}
+};
+
 const LISTA_COL_ORGAO = [
     'rel_orgao_gestor_id',
     'orgao_responsavel_id',
@@ -97,43 +98,37 @@ const programaApi = new ProgramasProjetoMDOExclusivoParaObrasApi(config);
 const equipamentoApi = new MonitoramentoDeObrasCadastroBsicoEquipamentoApi(config);
 const grupoTematicoApi = new MonitoramentoDeObrasCadastroBsicoGrupoTemticoApi(config);
 const tipoIntervencaoApi = new MonitoramentoDeObrasCadastroBsicoTipoDeIntervenoApi(config);
-
 const metaApi = new MetaApi(config);
-const metas = metaApi.metaControllerFindAll({
-
-});
-
-
-const iniApi = new IniciativaApi(config);
-const ini = ini
+const iniciativaApi = new IniciativaApi(config);
 
 const PDM_STR = 'Programa de Metas 2021-2024 - Versão Alteração Programática';
-const memory = {
-    rel_responsaveis_no_orgao_gestor_id: {} as any,
-    rel_responsavel_id: {} as any,
-    orgaos: {} as any,
-    portfolios: {} as any,
-    orgao2id: {} as Record<string, number>,
-    etapas: {} as any,
-    etapa2id: {} as Record<string, number>,
-    regioes: {} as any,
-    regiao2id: {} as Record<string, number>,
-    programas: {} as any,
-    programa2id: {} as Record<string, number>,
-    tipo_intervencao: {} as any,
-    tipo_intervencao2id: {} as Record<string, number>,
-    equipamentos: {} as any,
-    equipamento2id: {} as Record<string, number>,
-    grupo_tematico: {} as any,
-    grupo_tematico2id: {} as Record<string, number>,
-    pdm2id: {
-        [PDM_STR]: 11,
-    } as Record<string, number>,
-    meta: {} as any,
-    meta2id: {} as Record<string, number>,
-    iniciativa: {} as any,
-    iniciativa2id: {} as Record<string, number>,
+
+const rel_responsaveis_no_orgao_gestor_id: Record<string, number> = {};
+const rel_responsavel_id: Record<string, number> = {};
+const orgaos: Record<string, number> = {};
+const portfolios: Record<string, number> = {};
+const orgao2id: Record<string, number> = {};
+const etapas: Record<string, number> = {};
+const etapa2id: Record<string, number> = {};
+const regioes: Record<string, number> = {};
+const regiao2id: Record<string, number> = {};
+const programas: Record<string, number> = {};
+const programa2id: Record<string, number> = {};
+const tipo_intervencao: Record<string, number> = {};
+const tipo_intervencao2id: Record<string, number> = {};
+const equipamentos: Record<string, number> = {};
+const equipamento2id: Record<string, number> = {};
+const grupo_tematico: Record<string, number> = {};
+const grupo_tematico2id: Record<string, number> = {};
+const pdm2id: Record<string, number> = {
+    [PDM_STR]: 11,
 };
+const memMeta: Record<string, number> = {};
+const memMeta2id: Record<string, number> = {};
+const memMeta2cod: Record<string, string> = {};
+const memIniciativa: Record<string, Record<string, number>> = {};
+const memIniciativa2id: Record<string, Record<string, number>> = {};
+
 let runImport = true;
 async function main() {
     const {
@@ -148,81 +143,16 @@ async function main() {
     const rows = (await db.all(`select * from importacao`)) as ProjetoRow[];
 
     for (const row of rows) {
-        if (!memory.rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id])
-            memory.rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] = 0;
-        memory.rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] += 1;
-
-        if (row.rel_colaboradores_no_orgao) {
-            if (!memory.rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao])
-                memory.rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] = 0;
-            memory.rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] += 1;
-        }
-
-        if (!memory.rel_responsavel_id[row.rel_responsavel_id]) memory.rel_responsavel_id[row.rel_responsavel_id] = 0;
-        memory.rel_responsavel_id[row.rel_responsavel_id] += 1;
-
-        for (const col of LISTA_COL_ORGAO) {
-            let rowValue = row[col]?.trim();
-            if (!rowValue) continue;
-
-            if (rowValue.includes('-')) {
-                rowValue = rowValue.split('-')[0].trim();
-            }
-            if (!memory.orgaos[rowValue]) memory.orgaos[rowValue] = 0;
-
-            memory.orgaos[rowValue] += 1;
-        }
-
-        if (!memory.portfolios[row.rel_portfolio_id]) memory.portfolios[row.rel_portfolio_id] = 0;
-        memory.portfolios[row.rel_portfolio_id] += 1;
-
-        const etapa = row.rel_projeto_etapa_id?.trim();
-        if (etapa) {
-            if (!memory.etapas[etapa]) memory.etapas[etapa] = 0;
-            memory.etapas[etapa] += 1;
-        }
-
-        const regiao = row.rel_subprefeitura_id?.trim();
-        if (regiao) {
-            if (!memory.regioes[regiao]) memory.regioes[regiao] = 0;
-            memory.regioes[regiao] += 1;
-        }
-
-        const programa = row.rel_programa_id?.trim();
-        if (programa) {
-            if (!memory.programas[programa]) memory.programas[programa] = 0;
-            memory.programas[programa] += 1;
-        }
-
-        const tipoIntervencao = row.rel_tipo_intervencao_id?.trim();
-        if (tipoIntervencao) {
-            if (!memory.tipo_intervencao[tipoIntervencao]) memory.tipo_intervencao[tipoIntervencao] = 0;
-            memory.tipo_intervencao[tipoIntervencao] += 1;
-        }
-
-        const equipamento = row.rel_equipamento_id?.trim();
-        if (equipamento) {
-            if (!memory.equipamentos[equipamento]) memory.equipamentos[equipamento] = 0;
-            memory.equipamentos[equipamento] += 1;
-        }
-
-        const grupoTematico = row.rel_grupo_tematico_id?.trim();
-        if (grupoTematico) {
-            if (!memory.grupo_tematico[grupoTematico]) memory.grupo_tematico[grupoTematico] = 0;
-            memory.grupo_tematico[grupoTematico] += 1;
-        }
-
-        const meta = row.origem_meta_id?.trim();
-        if (meta) {
-            if (!memory.meta[meta]) memory.meta[meta] = 0;
-            memory.meta[meta] += 1;
-        }
-
-        const iniciativa = row.origem_iniciativa_id?.trim();
-        if (iniciativa) {
-            if (!memory.iniciativa[iniciativa]) memory.iniciativa[iniciativa] = 0;
-            memory.iniciativa[iniciativa] += 1;
-        }
+        incrementResponsaveis(row);
+        incrementOrgaos(row);
+        incrementPortfolioCount(row);
+        incrementEtapaCount(row);
+        incrementRegiaoCount(row);
+        incrementProgramCount(row);
+        incrementTipoIntervencaoCount(row);
+        incrementEquipamentoCount(row);
+        incrementGroupThemeCount(row);
+        incrementIniciativaCount(row);
 
         const origem_pdms = row.origem_pdm?.trim();
         if (origem_pdms) {
@@ -242,40 +172,8 @@ async function main() {
     await validaTipoIntervencao();
     await validaEquipamento();
     await validaGrupoTematico();
-
-//    const meta = await metaApi.metaControllerFindAll();
-//    for (const contentRaw in memory.meta) {
-//        let content = contentRaw;
-//        if (content.includes('-')) {
-//            content = content.split('-')[0].trim();
-//        }
-//
-//        if (meta.data.linhas.length > 0) {
-//            memory.meta2id[content] = meta.data.linhas[0].id!;
-//            continue;
-//        }
-//
-//        console.log('Meta', content, 'não encontrado, necessário em', memory.meta[content], 'registros');
-//        runImport = false;
-//    }
-
-    //
-    //    for (const contentRaw in memory.iniciativa) {
-    //        let content = contentRaw;
-    //        if (content.includes('-')) {
-    //            content = content.split('-')[0].trim();
-    //        }
-    //        const iniciativa = await iniApi.inici({
-    //            //descricao: content,
-    //        });
-    //        if (iniciativa.data.linhas.length > 0) {
-    //            memory.iniciativa2id[content] = iniciativa.data.linhas[0].id!;
-    //            continue;
-    //        }
-    //
-    //        console.log('Iniciativa', content, 'não encontrado, necessário em', memory.iniciativa[content], 'registros');
-    //        runImport = false;
-    //    }
+    await validaMetas();
+    await validaIniciativas();
 
     if (!runImport) {
         console.log('Importação não pode ser realizada');
@@ -285,12 +183,169 @@ async function main() {
 
 main();
 
+function incrementPortfolioCount(row: ProjetoRow) {
+    if (!portfolios[row.rel_portfolio_id]) portfolios[row.rel_portfolio_id] = 0;
+    portfolios[row.rel_portfolio_id] += 1;
+}
+
+function incrementResponsaveis(row: ProjetoRow) {
+    if (!rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id])
+        rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] = 0;
+    rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] += 1;
+
+    if (row.rel_colaboradores_no_orgao) {
+        if (!rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao])
+            rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] = 0;
+        rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] += 1;
+    }
+
+    if (!rel_responsavel_id[row.rel_responsavel_id]) rel_responsavel_id[row.rel_responsavel_id] = 0;
+    rel_responsavel_id[row.rel_responsavel_id] += 1;
+}
+
+function incrementOrgaos(row: ProjetoRow) {
+    for (const col of LISTA_COL_ORGAO) {
+        const rowValue = row[col]?.trim();
+        if (!rowValue) continue;
+        if (!orgaos[rowValue]) orgaos[rowValue] = 0;
+
+        orgaos[rowValue] += 1;
+    }
+}
+
+function incrementEtapaCount(row: ProjetoRow) {
+    const etapa = row.rel_projeto_etapa_id?.trim();
+    if (etapa) {
+        if (!etapas[etapa]) etapas[etapa] = 0;
+        etapas[etapa] += 1;
+    }
+}
+
+function incrementProgramCount(row: ProjetoRow) {
+    const programa = row.rel_programa_id?.trim();
+    if (programa) {
+        if (!programas[programa]) programas[programa] = 0;
+        programas[programa] += 1;
+    }
+}
+
+function incrementRegiaoCount(row: ProjetoRow) {
+    const regiao = row.rel_subprefeitura_id?.trim();
+    if (regiao) {
+        if (!regioes[regiao]) regioes[regiao] = 0;
+        regioes[regiao] += 1;
+    }
+}
+
+function incrementIniciativaCount(row: ProjetoRow) {
+    const metaX = row.origem_meta_id?.trim();
+    if (metaX) {
+        if (!memMeta[metaX]) memMeta[metaX] = 0;
+        memMeta[metaX] += 1;
+    }
+
+    const iniciativa = row.origem_iniciativa_id?.trim();
+    if (iniciativa && metaX) {
+        if (!memIniciativa[metaX]) memIniciativa[metaX] = {};
+        if (!memIniciativa[metaX][iniciativa]) memIniciativa[metaX][iniciativa] = 0;
+
+        memIniciativa[metaX][iniciativa] += 1;
+    }
+}
+
+function incrementGroupThemeCount(row: ProjetoRow) {
+    const grupoTematico = row.rel_grupo_tematico_id?.trim();
+    if (grupoTematico) {
+        if (!grupo_tematico[grupoTematico]) grupo_tematico[grupoTematico] = 0;
+        grupo_tematico[grupoTematico] += 1;
+    }
+}
+
+function incrementEquipamentoCount(row: ProjetoRow) {
+    const equipamento = row.rel_equipamento_id?.trim();
+    if (equipamento) {
+        if (!equipamentos[equipamento]) equipamentos[equipamento] = 0;
+        equipamentos[equipamento] += 1;
+    }
+}
+
+function incrementTipoIntervencaoCount(row: ProjetoRow) {
+    const tipoIntervencao = row.rel_tipo_intervencao_id?.trim();
+    if (tipoIntervencao) {
+        if (!tipo_intervencao[tipoIntervencao]) tipo_intervencao[tipoIntervencao] = 0;
+        tipo_intervencao[tipoIntervencao] += 1;
+    }
+}
+
+async function validaIniciativas() {
+    for (const metaCodigoOrCodigo in memIniciativa) {
+        const metaId = memMeta2id[metaCodigoOrCodigo];
+        if (!metaId) {
+            runImport = false;
+            continue;
+        }
+        const metaCod = memMeta2cod[metaCodigoOrCodigo];
+        const iniciativasNaApi = await iniciativaApi.iniciativaControllerFindAll({
+            meta_id: memMeta2id[metaCodigoOrCodigo],
+        });
+        for (const iniciativaCodigo in memIniciativa[metaCodigoOrCodigo]) {
+            const matchByCodigo = iniciativasNaApi.data.linhas.find((iniciativa) => matchStringFuzzy(iniciativa.codigo, metaCod + '.' + iniciativaCodigo)
+            );
+            if (matchByCodigo) {
+                memIniciativa2id[metaCodigoOrCodigo] = memIniciativa2id[metaCodigoOrCodigo] || {};
+                memIniciativa2id[metaCodigoOrCodigo][iniciativaCodigo] = (matchByCodigo as any).id;
+                continue;
+            }
+            console.log(
+                'Iniciativa',
+                iniciativaCodigo,
+                'não encontrado, necessário em',
+                memIniciativa[metaCodigoOrCodigo][iniciativaCodigo],
+                'registros'
+            );
+            runImport = false;
+        }
+    }
+}
+
+async function validaMetas() {
+    const metasNaApi = await metaApi.metaControllerFindAll({
+        pdm_id: 11,
+    });
+
+    for (const contentRaw in memMeta) {
+        let content = contentRaw;
+        if (content.includes('-')) {
+            content = content.split('-')[0].trim();
+        }
+
+        const metaByCodigo = metasNaApi.data.linhas.find((meta) => matchStringFuzzy(meta.codigo, content));
+        if (metaByCodigo) {
+            memMeta2id[contentRaw] = metaByCodigo.id!;
+            memMeta2cod[contentRaw] = metaByCodigo.codigo;
+            continue;
+        }
+
+        const metaByDesc = metasNaApi.data.linhas.find((meta) => matchStringFuzzy(meta.titulo, content));
+        if (metaByDesc) {
+            memMeta2id[contentRaw] = metaByDesc.id!;
+            memMeta2cod[contentRaw] = metaByDesc.codigo;
+            continue;
+        }
+
+        console.log('Meta', content, 'não encontrado, necessário em', memMeta[contentRaw], 'registros');
+        runImport = false;
+    }
+
+
+}
+
 async function validaGrupoTematico() {
     const grupoTematico = await grupoTematicoApi.grupoTematicoControllerFindAll();
-    for (const content in memory.grupo_tematico) {
+    for (const content in grupo_tematico) {
         const matchByTitulo = grupoTematico.data.linhas.find((grupo) => matchStringFuzzy(grupo.nome, content));
         if (matchByTitulo) {
-            memory.grupo_tematico2id[content] = (matchByTitulo as any).id;
+            grupo_tematico2id[content] = (matchByTitulo as any).id;
             continue;
         }
 
@@ -298,7 +353,7 @@ async function validaGrupoTematico() {
             'Grupo temático',
             content,
             'não encontrado, necessário em',
-            memory.grupo_tematico[content],
+            grupo_tematico[content],
             'registros'
         );
         runImport = false;
@@ -306,34 +361,33 @@ async function validaGrupoTematico() {
 }
 
 async function validaEquipamento() {
-    const equipamentos = await equipamentoApi.equipamentoControllerFindAll();
-    for (const content in memory.equipamentos) {
-        const matchByTitulo = equipamentos.data.linhas.find((equip) => matchStringFuzzy(equip.nome, content));
+    const equipamentosRows = await equipamentoApi.equipamentoControllerFindAll();
+    for (const content in equipamentos) {
+        const matchByTitulo = equipamentosRows.data.linhas.find((equip) => matchStringFuzzy(equip.nome, content));
         if (matchByTitulo) {
-            memory.equipamento2id[content] = (matchByTitulo as any).id;
+            equipamento2id[content] = (matchByTitulo as any).id;
             continue;
         }
 
-        console.log('Equipamento', content, 'não encontrado, necessário em', memory.equipamentos[content], 'registros');
+        console.log('Equipamento', content, 'não encontrado, necessário em', equipamentos[content], 'registros');
         runImport = false;
     }
 }
 
 async function validaTipoIntervencao() {
     const tipoIntervencao = await tipoIntervencaoApi.tipoIntervencaoControllerFindAll();
-    for (const content in memory.tipo_intervencao) {
+    for (const content in tipo_intervencao) {
         const matchByTitulo = tipoIntervencao.data.linhas.find((tipo) => matchStringFuzzy(tipo.nome, content));
         if (matchByTitulo) {
-            memory.tipo_intervencao2id[content] = (matchByTitulo as any).id;
+            tipo_intervencao2id[content] = (matchByTitulo as any).id;
             continue;
         }
-        const pdmApi = new PDMApi(config);
 
         console.log(
             'Tipo de intervenção',
             content,
             'não encontrado, necessário em',
-            memory.tipo_intervencao[content],
+            tipo_intervencao[content],
             'registros'
         );
         runImport = false;
@@ -341,61 +395,61 @@ async function validaTipoIntervencao() {
 }
 
 async function validaPrograma() {
-    const programas = await programaApi.projetoProgramaMDOControllerFindAll();
-    for (const programa in memory.programas) {
-        const matchByTitulo = programas.data.linhas.find((prog) => matchStringFuzzy(prog.nome, programa));
+    const programasNoDb = await programaApi.projetoProgramaMDOControllerFindAll();
+    for (const programa in programas) {
+        const matchByTitulo = programasNoDb.data.linhas.find((prog) => matchStringFuzzy(prog.nome, programa));
 
         if (matchByTitulo) {
-            memory.programa2id[programa] = (matchByTitulo as any).id;
+            programa2id[programa] = (matchByTitulo as any).id;
             continue;
         }
 
-        console.log('Programa', programa, 'não encontrado, necessário em', memory.programas[programa], 'registros');
+        console.log('Programa', programa, 'não encontrado, necessário em', programas[programa], 'registros');
         runImport = false;
     }
 }
 
 async function validaRegioes() {
-    const regioes = await regiaoApi.regiaoControllerFindAll();
-    for (const regiao in memory.regioes) {
-        const matchByNome = regioes.data.linhas.find((reg) => matchStringFuzzy(reg.descricao, regiao));
+    const regioesNoDb = await regiaoApi.regiaoControllerFindAll();
+    for (const regiao in regioes) {
+        const matchByNome = regioesNoDb.data.linhas.find((reg) => matchStringFuzzy(reg.descricao, regiao));
 
         if (matchByNome) {
             if (matchByNome.nivel == 4) {
-                memory.regiao2id[regiao] = matchByNome.parente_id!;
+                regiao2id[regiao] = matchByNome.parente_id!;
                 continue;
             } else if (matchByNome.nivel == 3) {
-                memory.regiao2id[regiao] = matchByNome.id!;
+                regiao2id[regiao] = matchByNome.id!;
                 continue;
             }
         }
 
-        console.log('Região', regiao, 'não encontrado, necessário em', memory.regioes[regiao], 'registros');
+        console.log('Região', regiao, 'não encontrado, necessário em', regioes[regiao], 'registros');
         runImport = false;
     }
 }
 
 async function validaEtapas() {
-    const etapas = await etapaApi.projetoEtapaMDOControllerFindAll();
-    for (const content in memory.etapas) {
-        const matchByTitulo = etapas.data.linhas.find((etapa) => matchStringFuzzy(etapa.descricao, content));
+    const etapasNoDb = await etapaApi.projetoEtapaMDOControllerFindAll();
+    for (const content in etapas) {
+        const matchByTitulo = etapasNoDb.data.linhas.find((etapa) => matchStringFuzzy(etapa.descricao, content));
         if (matchByTitulo) {
-            memory.etapa2id[content] = (matchByTitulo as any).id;
+            etapa2id[content] = (matchByTitulo as any).id;
             continue;
         }
 
-        console.log('Etapa', content, 'não encontrado, necessário em', memory.etapas[content], 'registros');
+        console.log('Etapa', content, 'não encontrado, necessário em', etapas[content], 'registros');
         runImport = false;
     }
 }
 
 async function validaPortfolios() {
-    const portfolios = await portApi.portfolioMDOControllerFindAll();
-    for (const portifolio in memory.portfolios) {
-        const matchByTitulo = portfolios.data.linhas.find((port) => matchStringFuzzy(port.titulo, portifolio));
+    const portfoliosNoDb = await portApi.portfolioMDOControllerFindAll();
+    for (const portifolio in portfolios) {
+        const matchByTitulo = portfoliosNoDb.data.linhas.find((port) => matchStringFuzzy(port.titulo, portifolio));
 
         if (matchByTitulo) {
-            memory.portfolios[portifolio] = matchByTitulo.id!;
+            portfolios[portifolio] = matchByTitulo.id!;
             continue;
         }
 
@@ -403,7 +457,7 @@ async function validaPortfolios() {
             'Portifolio',
             portifolio,
             'não encontrado, necessário em',
-            memory.portfolios[portifolio],
+            portfolios[portifolio],
             'registros'
         );
         runImport = false;
@@ -411,23 +465,25 @@ async function validaPortfolios() {
 }
 
 async function validaOrgaos() {
-    const orgaos = await orgaoApi.orgaoControllerFindAll();
-    for (const content in memory.orgaos) {
-        const matchByCodigo = orgaos.data.linhas.find((orgao) => matchStringFuzzy(orgao.sigla, content));
-
+    const orgaosNoDb = await orgaoApi.orgaoControllerFindAll();
+    for (const contentRaw in orgaos) {
+        let content = contentRaw;
+        if (content.includes('-')) {
+            content = content.split('-')[0].trim();
+        }
+        const matchByCodigo = orgaosNoDb.data.linhas.find((orgao) => matchStringFuzzy(orgao.sigla, content));
         if (matchByCodigo) {
-            memory.orgao2id[content] = matchByCodigo.id!;
+            orgao2id[contentRaw] = matchByCodigo.id!;
             continue;
         }
 
-        const matchByNome = orgaos.data.linhas.find((orgao) => orgao.descricao === content);
-
+        const matchByNome = orgaosNoDb.data.linhas.find((orgao) => matchStringFuzzy(orgao.descricao, content) || matchStringFuzzy(orgao.descricao, contentRaw));
         if (matchByNome) {
-            memory.orgao2id[content] = matchByNome.id!;
+            orgao2id[contentRaw] = matchByNome.id!;
             continue;
         }
 
-        console.log('Órgão', content, 'não encontrado, necessário em', memory.orgaos[content], 'registros');
+        console.log('Órgão', contentRaw, 'não encontrado, necessário em', orgaos[contentRaw], 'registros');
         runImport = false;
     }
 }
@@ -452,37 +508,18 @@ async function buscaPessoas() {
 }
 
 function validaPessoas(pessoasCollabProjeto: Record<string, number>, pessoasGestorDeProjeto: Record<string, number>) {
-    for (const email in memory.rel_responsaveis_no_orgao_gestor_id) {
-        const count = memory.rel_responsaveis_no_orgao_gestor_id[email];
+    for (const email in rel_responsaveis_no_orgao_gestor_id) {
+        const count = rel_responsaveis_no_orgao_gestor_id[email];
         if (!pessoasCollabProjeto[email]) {
             runImport = false;
             console.log('Faltando rel_responsaveis_no_orgao_gestor_id', email, 'necessário em', count, 'registros');
         }
     }
-    for (const email in memory.rel_responsavel_id) {
-        const count = memory.rel_responsavel_id[email];
+    for (const email in rel_responsavel_id) {
+        const count = rel_responsavel_id[email];
         if (!pessoasGestorDeProjeto[email]) {
             runImport = false;
             console.log('Faltando rel_responsavel_id', email, 'necessário em', count, 'registros');
         }
     }
-}
-
-function matchStringFuzzy(str1: string | undefined | null, str2: string | undefined | null): boolean {
-    if (!str1 || !str2) {
-        return false;
-    }
-
-    const normalizeString = (str: string): string => {
-        let tmp = str
-            .toLocaleLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '');
-
-        tmp = tmp.replace(/\s+/g, ' ');
-        tmp = tmp.replace(/[^a-z0-9 ]/g, '');
-        return tmp;
-    };
-
-    return normalizeString(str1) === normalizeString(str2);
 }
