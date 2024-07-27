@@ -34,7 +34,8 @@ function openAnalise() {
       <hr class="ml2 f1">
 
       <CheckClose
-        :apenas-emitir="true"
+        :apenas-modal="true"
+        :formulário-sujo="false"
         @close="showModal = false"
       />
     </div>
