@@ -97,7 +97,7 @@ export class VariavelService {
         @Inject(forwardRef(() => MetaService))
         private readonly metaService: MetaService,
         private readonly prisma: PrismaService
-    ) { }
+    ) {}
 
     async loadVariaveisComCategorica(
         prismaTxn: Prisma.TransactionClient,
@@ -514,13 +514,13 @@ export class VariavelService {
                 OR: [
                     indicador_id
                         ? {
-                            tipo: 'PDM',
-                            indicador_variavel: {
-                                some: {
-                                    indicador_id: indicador_id,
-                                },
-                            },
-                        }
+                              tipo: 'PDM',
+                              indicador_variavel: {
+                                  some: {
+                                      indicador_id: indicador_id,
+                                  },
+                              },
+                          }
                         : {},
                     {
                         tipo: 'Global',
@@ -572,10 +572,10 @@ export class VariavelService {
                     createMany:
                         Array.isArray(dto.assuntos) && dto.assuntos.length > 0
                             ? {
-                                data: dto.assuntos.map((assunto_id) => ({
-                                    assunto_variavel_id: assunto_id,
-                                })),
-                            }
+                                  data: dto.assuntos.map((assunto_id) => ({
+                                      assunto_variavel_id: assunto_id,
+                                  })),
+                              }
                             : undefined,
                 },
             },
@@ -1329,11 +1329,11 @@ export class VariavelService {
                         },
                         indicador_id
                             ? {
-                                tipo: 'PDM',
-                                indicador_variavel: {
-                                    some: { indicador_id: indicador_id },
-                                },
-                            }
+                                  tipo: 'PDM',
+                                  indicador_variavel: {
+                                      some: { indicador_id: indicador_id },
+                                  },
+                              }
                             : {},
                     ],
                 },
@@ -1600,10 +1600,10 @@ export class VariavelService {
                     if (!catValor)
                         throw new BadRequestException(
                             'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis. Valores encontrados: ' +
-                            serieValores
-                                .slice(0, 10)
-                                .map((v) => v.valor_nominal)
-                                .join(', ')
+                                serieValores
+                                    .slice(0, 10)
+                                    .map((v) => v.valor_nominal)
+                                    .join(', ')
                         );
 
                     promises.push(
@@ -2097,11 +2097,11 @@ export class VariavelService {
 
         const mapAnalisesCiclo: Record<string, (typeof analisesCiclo)[0]> = {};
         for (const analise of analisesCiclo) {
-            mapAnalisesCiclo[analise.referencia_data.toISOString().substring(0, 10)] = analise;
+            mapAnalisesCiclo[Date2YMD.toString(analise.referencia_data)] = analise;
         }
         const mapDocumentoCiclo: Record<string, (typeof documentoCiclo)[0]> = {};
         for (const doc of documentoCiclo) {
-            mapDocumentoCiclo[doc.referencia_data.toISOString().substring(0, 10)] = doc;
+            mapDocumentoCiclo[Date2YMD.toString(doc.referencia_data)] = doc;
         }
 
         // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir (e agora com o plano setorial)
