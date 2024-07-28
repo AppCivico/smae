@@ -1,6 +1,7 @@
 <script setup>
 import { ref, defineProps } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
+import requestS from '@/helpers/requestS.ts';
 
 const showModal = ref(false);
 let analise = null;
@@ -28,18 +29,16 @@ function hasModal(cicloFisico) {
 }
 
 async function buscarAnalise(dataValor, variavelId) {
-  console.log('dataValor, variavelId: ', dataValor, variavelId);
-
   try {
-    analise = await this.requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, { data_valor: dataValor, variavel_id: variavelId });
+    analise = await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, { data_valor: dataValor, variavel_id: variavelId });
   } catch (erro) {
     console.log(erro);
   }
 }
 
-function handleClick(cicloFisico) {
-  if (hasModal(cicloFisico)) {
-    buscarAnalise(cicloFisico.data_valor, cicloFisico.variavel_id);
+function handleClick(obj) {
+  if (hasModal(obj.ciclo_fisico)) {
+    buscarAnalise(obj.series[0].data_valor, props.g?.variavel?.id);
     openAnalise();
   }
 }
@@ -58,6 +57,9 @@ function handleClick(cicloFisico) {
         :formulário-sujo="false"
         @close="showModal = false"
       />
+    </div>
+    <div>
+      analise: <pre>{{ analise }}</pre>
     </div>
   </SmallModal>
   <template v-if="g?.linhas">
@@ -84,15 +86,13 @@ function handleClick(cicloFisico) {
           v-for="(val,i) in k[1]"
           :key="val.id ? val.id : i"
         >
-          <!-- analise: {{ analise }}
-          val: <pre>{{ val }}</pre> -->
           <td>
             <div class="flex center">
               <div
                 v-if="variavel"
                 class="mr1"
                 :style="{ color: hasModal(val.ciclo_fisico) ? '#94DA00' : '#B8C0CC' }"
-                @click="handleClick(val.ciclo_fisico)"
+                @click="handleClick(val)"
               >
                 <svg
                   width="16"
