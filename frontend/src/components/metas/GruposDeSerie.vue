@@ -4,7 +4,7 @@ import SmallModal from '@/components/SmallModal.vue';
 import requestS from '@/helpers/requestS.ts';
 
 const showModal = ref(false);
-let analise = null;
+const analise = ref(null);
 const props = defineProps(['g', 'variavel']);
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -30,7 +30,7 @@ function hasModal(cicloFisico) {
 
 async function buscarAnalise(dataValor, variavelId) {
   try {
-    analise = await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, { data_valor: dataValor, variavel_id: variavelId });
+    analise.value = await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, { data_valor: dataValor, variavel_id: variavelId });
   } catch (erro) {
     console.log(erro);
   }
