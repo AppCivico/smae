@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { onMounted, onUpdated, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
@@ -12,9 +15,6 @@ import { useVariaveisStore } from '@/stores/variaveis.store';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
-import { storeToRefs } from 'pinia';
-import { onMounted, onUpdated, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
@@ -273,7 +273,8 @@ onUpdated(() => { start(); });
                         Valores previstos
                       </SmaeLink>
                     </li>
-                    <li> <!-- a perm de admin ta errada, provavelmente precisa colocar algo novo na api ou buscar admin/tec cp, ou meta.pode-editar -->
+                    <li>
+                      <!-- a perm de admin ta errada, provavelmente precisa colocar algo novo na api ou buscar admin/tec cp, ou meta.pode-editar -->
                       <SmaeLink
                         v-if="temPermissãoPara(['CadastroPessoa.administrador'])"
                         :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
@@ -327,7 +328,10 @@ onUpdated(() => { start(); });
                     <th style="width: 5%" />
                   </tr>
                 </thead>
-                <GruposDeSerie :g="Valores[v.id]" />
+                <GruposDeSerie
+                  :g="Valores[v.id]"
+                  variavel="true"
+                />
               </table>
             </div>
           </div>

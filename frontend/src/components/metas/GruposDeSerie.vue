@@ -3,7 +3,9 @@ import { ref, defineProps } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 
 const showModal = ref(false);
-const props = defineProps(['g']);
+let analise = null;
+const props = defineProps(['g', 'variavel']);
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function nestLinhas(l) {
   const a = {};
@@ -18,12 +20,31 @@ function toggleAccordeon(t) {
 }
 
 function openAnalise() {
-  console.log('abriu, showModal: ', showModal.value);
   showModal.value = true;
+}
+
+function hasModal(cicloFisico) {
+  return cicloFisico?.analise || cicloFisico?.tem_documentos;
+}
+
+async function buscarAnalise(dataValor, variavelId) {
+  console.log('dataValor, variavelId: ', dataValor, variavelId);
+
+  try {
+    analise = await this.requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, { data_valor: dataValor, variavel_id: variavelId });
+  } catch (erro) {
+    console.log(erro);
+  }
+}
+
+function handleClick(cicloFisico) {
+  if (hasModal(cicloFisico)) {
+    buscarAnalise(cicloFisico.data_valor, cicloFisico.variavel_id);
+    openAnalise();
+  }
 }
 </script>
 <template>
-  <!-- g: <pre>{{ g }}</pre> -->
   <SmallModal
     v-if="showModal"
   >
@@ -32,7 +53,6 @@ function openAnalise() {
         Análise Qualitativa da Variável
       </h2>
       <hr class="ml2 f1">
-
       <CheckClose
         :apenas-modal="true"
         :formulário-sujo="false"
@@ -64,11 +84,25 @@ function openAnalise() {
           v-for="(val,i) in k[1]"
           :key="val.id ? val.id : i"
         >
-          <td
-            @click="openAnalise"
-          >
+          <!-- analise: {{ analise }}
+          val: <pre>{{ val }}</pre> -->
+          <td>
             <div class="flex center">
-              <div class="farol i1" />
+              <div
+                v-if="variavel"
+                class="mr1"
+                :style="{ color: hasModal(val.ciclo_fisico) ? '#94DA00' : '#B8C0CC' }"
+                @click="handleClick(val.ciclo_fisico)"
+              >
+                <svg
+                  width="16"
+                  height="20"
+                ><use xlink:href="#i_document" /></svg>
+              </div>
+              <div
+                v-else
+                class="farol i1"
+              />
               <span>{{ val.periodo }}</span>
             </div>
           </td>
