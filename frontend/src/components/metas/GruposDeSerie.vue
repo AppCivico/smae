@@ -1,12 +1,28 @@
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, computed } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 import requestS from '@/helpers/requestS.ts';
+import { dateToMonthYear } from '@/helpers/dateToDate';
 
 const showModal = ref(false);
 const analise = ref(null);
 const props = defineProps(['g', 'variavel']);
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const mappedValues = computed(() => {
+  const mapping = {
+    Previsto: '',
+    Realizado: '',
+    PrevistoAcumulado: '',
+    RealizadoAcumulado: '',
+  };
+
+  analise.value.ordem_series.forEach((item, index) => {
+    mapping[item] = analise.value.series[index]?.valor_nominal || '';
+  });
+
+  return mapping;
+});
 
 function nestLinhas(l) {
   const a = {};
@@ -59,7 +75,45 @@ function handleClick(obj) {
       />
     </div>
     <div>
-      analise: <pre>{{ analise }}</pre>
+      <h3>
+        {{ analise?.variavel?.titulo }}
+      </h3>
+
+      <table class="tablemain">
+        <col>
+        <thead>
+          <tr>
+            <th>Mês/ano</th>
+            <th>Previsto mensal</th>
+            <th> Realizado mensal</th>
+            <th> Previsto acumulado</th>
+            <th> Realizado acumulado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="analise.series?.length">
+            <td>{{ dateToMonthYear(analise.series[0].data_valor) }}</td>
+            <td>{{ mappedValues['Previsto'] }}</td>
+            <td>{{ mappedValues['Realizado'] }}</td>
+            <td>{{ mappedValues['PrevistoAcumulado'] }}</td>
+            <td>{{ mappedValues['RealizadoAcumulado'] }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mt2 mb2">
+        <h4>
+          Análise
+        </h4>
+        <hr class="mt1 mb1">
+        <p>
+          {{ analise?.analises[0].analise_qualitativa }}
+        </p>
+        <hr class="mt1 mb1">
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_doc" /></svg>
+      </div>
     </div>
   </SmallModal>
   <template v-if="g?.linhas">
