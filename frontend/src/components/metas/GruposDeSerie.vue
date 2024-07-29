@@ -2,7 +2,7 @@
 import { ref, defineProps, computed } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 import requestS from '@/helpers/requestS.ts';
-import { dateToMonthYear } from '@/helpers/dateToDate';
+import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
 
 const showModal = ref(false);
 const analise = ref(null);
@@ -92,7 +92,7 @@ function handleClick(obj) {
         </thead>
         <tbody>
           <tr v-if="analise?.series?.length">
-            <td>{{ dateToMonthYear(analise.series[0].data_valor) }}</td>
+            <td>{{ dateToMonthYear(analise?.series[0]?.data_valor) }}</td>
             <td>{{ mappedValues['Previsto'] }}</td>
             <td>{{ mappedValues['Realizado'] }}</td>
             <td>{{ mappedValues['PrevistoAcumulado'] }}</td>
@@ -144,8 +144,14 @@ function handleClick(obj) {
               </td>
               <td>{{ arquivo.arquivo.descricao }}</td>
               <td>{{ arquivo.criador.nome_exibicao }}</td>
-              <td>{{ arquivo.criado_em }}</td>
-              <td />
+              <td>{{ dateToDate(arquivo.criado_em) }}</td>
+              <td>
+                <svg
+                  width="20"
+                  height="20"
+                  class="mr1"
+                ><use xlink:href="#i_download" /></svg>
+              </td>
             </tr>
           </tbody>
         </table>
