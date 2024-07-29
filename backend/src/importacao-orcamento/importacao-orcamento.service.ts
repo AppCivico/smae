@@ -100,47 +100,55 @@ export class ImportacaoOrcamentoService {
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
-        if (!dto.tipo_projeto && dto.tipo_pdm) {
+        if (!dto.tipo_projeto && !dto.tipo_pdm) {
             const sistema = user.assertOneModuloSistema('criar', 'importações');
 
-            if (sistema == 'MDO') {
+            if (sistema === 'MDO') {
                 dto.tipo_projeto = 'MDO';
-            } else if (sistema == 'Projetos') {
+            } else if (sistema === 'Projetos') {
                 dto.tipo_projeto = 'PP';
-            } else if (sistema == 'PDM') {
+            } else if (sistema === 'PDM') {
                 dto.tipo_pdm = 'PDM';
-            } else if (sistema == 'PlanoSetorial') {
+            } else if (sistema === 'PlanoSetorial') {
                 dto.tipo_pdm = 'PS';
             }
         } else {
-            if (dto.tipo_pdm && dto.tipo_projeto)
+            if (dto.tipo_pdm && dto.tipo_projeto) {
                 throw new BadRequestException('Você deve informar apenas um tipo, não ambos.');
+            }
 
-            if (!dto.tipo_pdm && dto.pdm_id)
+            if (!dto.tipo_pdm && dto.pdm_id) {
                 throw new BadRequestException('Você deve informar o tipo de PDM ou Plano Setorial');
+            }
 
-            if (!dto.tipo_projeto && dto.portfolio_id)
+            if (!dto.tipo_projeto && dto.portfolio_id) {
                 throw new BadRequestException('Você deve informar o tipo de Projeto ou Obras');
+            }
         }
 
         if (dto.pdm_id !== undefined) {
-            if (dto.tipo_pdm == 'PDM' && !user.hasSomeRoles(['CadastroMeta.orcamento']))
+            if (dto.tipo_pdm === 'PDM' && !user.hasSomeRoles(['CadastroMeta.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Meta');
+            }
 
-            if (dto.tipo_pdm == 'PS' && !user.hasSomeRoles(['CadastroMetaPS.orcamento']))
+            if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(['CadastroMetaPS.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Meta do Plano Setorial');
+            }
         }
 
         if (dto.portfolio_id !== undefined) {
-            if (dto.tipo_projeto == 'PP' && !user.hasSomeRoles(['Projeto.orcamento']))
+            if (dto.tipo_projeto === 'PP' && !user.hasSomeRoles(['Projeto.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Projetos');
+            }
 
-            if (dto.tipo_projeto == 'MDO' && !user.hasSomeRoles(['ProjetoMDO.orcamento']))
+            if (dto.tipo_projeto === 'MDO' && !user.hasSomeRoles(['ProjetoMDO.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Obras');
+            }
         }
 
-        if (!dto.portfolio_id && !dto.pdm_id)
+        if (!dto.portfolio_id && !dto.pdm_id) {
             throw new BadRequestException('Você deve informar um portfolio ou um pdm para importar o orçamento.');
+        }
 
         // TODO verificar quais Metas as pessoa pode ver, e assim por diante em cada um dos casos acima
 
