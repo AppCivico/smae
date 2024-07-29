@@ -662,10 +662,6 @@ export class EtapaService {
                 throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
 
             if (tipoPdm == 'PS' && !dto.variavel.codigo) {
-                // TODO revisar, vai pegar o ano daqui
-                if (!etapaAtualizada.inicio_previsto)
-                    throw new BadRequestException('Data de início previsto é obrigatória para criar a variável');
-                // buscar do indicador
                 dto.variavel.codigo = await this.variavelService.geraCodigoVariavel('Global', {
                     inicio_medicao: indicadorInfo.indicador.inicio_medicao,
                     periodicidade: indicadorInfo.indicador.periodicidade,
