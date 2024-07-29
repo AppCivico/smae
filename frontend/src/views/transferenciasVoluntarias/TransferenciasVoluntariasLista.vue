@@ -202,6 +202,9 @@ watch([
           Fase
         </th>
         <th>
+          Status da Fase
+        </th>
+        <th>
           Objeto/Empreendimento
         </th>
         <th class="cell--number">
@@ -253,6 +256,9 @@ watch([
         </td>
         <td>
           {{ item.andamento_fase? item.andamento_fase : '-' }}
+        </td>
+        <td>
+          {{ item.fase_status? item.fase_status : '-' }}
         </td>
         <td>
           {{ item.objeto }}
