@@ -313,7 +313,9 @@ function filterResponsible(orgao_id) {
       </div>
 
       <div v-if="tempTags.length">
-        <label class="legend mb1">Tags</label>
+        <legend class="legend mb1">
+          Tags
+        </legend>
         <CampoDeTagsComBuscaPorCategoria
           v-model="values.tags"
           name="tags"
