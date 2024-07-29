@@ -1,5 +1,6 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
@@ -41,13 +42,7 @@ const orgaos_participantes = ref([
   },
 ]);
 const coordenadores_cp = ref({ participantes: [], busca: '' });
-const m_tags = ref({ participantes: [], busca: '' });
 
-const virtualParent = ref({
-  macro_tema_id: route.params.macro_tema_id,
-  sub_tema_id: route.params.sub_tema_id,
-  tema_id: route.params.tema_id,
-});
 let title = 'Cadastro de Meta';
 if (meta_id) {
   title = 'Editar Meta';
@@ -106,15 +101,24 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
     if (singleMeta.value.coordenadores_cp) {
       coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map((x) => x.id);
     }
-    if (singleMeta.value.tags) {
-      m_tags.value.participantes = singleMeta.value.tags.map((x) => x?.id ?? x);
-    }
   }
 
   oktogo.value = true;
 })();
 
 const schema = computed(() => metaSchema(activePdm.value));
+
+const valoresIniciais = computed(() => ({
+  ...singleMeta.value,
+
+  macro_tema_id: singleMeta.value.macro_tema_id || route.params.macro_tema_id,
+  sub_tema_id: singleMeta.value.sub_tema_id || route.params.sub_tema_id,
+  tema_id: singleMeta.value.tema_id || route.params.tema_id,
+
+  tags: Array.isArray(singleMeta.value?.tags)
+    ? singleMeta.value.tags.map((tag) => tag.id)
+    : [],
+}));
 
 async function onSubmit(values) {
   try {
@@ -127,10 +131,6 @@ async function onSubmit(values) {
 
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
-
-    values.tags = m_tags.value.participantes.length
-      ? m_tags.value.participantes
-      : null;
 
     if (!values.pdm_id) values.pdm_id = activePdm.value.id;
 
@@ -208,7 +208,7 @@ function filterResponsible(orgao_id) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="meta_id ? singleMeta : virtualParent"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -313,11 +313,11 @@ function filterResponsible(orgao_id) {
       </div>
 
       <div v-if="tempTags.length">
-        <label class="label">Tags</label>
-        <AutocompleteField
-          :controlador="m_tags"
-          :grupo="tempTags"
-          label="descricao"
+        <label class="legend mb1">Tags</label>
+        <CampoDeTagsComBuscaPorCategoria
+          v-model="values.tags"
+          name="tags"
+          :valores-iniciais="valoresIniciais.tags || []"
         />
       </div>
 
