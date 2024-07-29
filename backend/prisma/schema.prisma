@@ -5340,6 +5340,7 @@ model Transferencia {
     objeto                         String
     interface                      TransferenciaInterface?
     identificador                  String
+    identificador_nro              Int
     esfera                         TransferenciaTipoEsfera
     clausula_suspensiva            Boolean?
     clausula_suspensiva_vencimento DateTime?               @db.Date()

@@ -107,6 +107,7 @@ export class TransferenciaService {
                         interface: dto.interface,
                         esfera: dto.esfera,
                         identificador: identificador,
+                        identificador_nro: idParaAno,
                         clausula_suspensiva: dto.clausula_suspensiva,
                         clausula_suspensiva_vencimento: dto.clausula_suspensiva_vencimento,
                         ano: dto.ano,
@@ -903,7 +904,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
-            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'desc' }],
+            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'desc' }, { identificador_nro: 'asc' }],
             skip: offset,
             take: ipp + 1,
             select: {
@@ -979,44 +980,33 @@ export class TransferenciaService {
             token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
         }
 
-        const linhas = rows
-            .map((r) => {
-                return {
-                    id: r.id,
-                    ano: r.ano,
-                    identificador: r.identificador,
-                    valor: r.valor,
-                    partido: r.parlamentar
-                        .filter((e) => e.partido)
-                        .map((e) => {
-                            return { id: e.partido!.id, sigla: e.partido!.sigla };
-                        }),
-                    tipo: r.tipo,
-                    objeto: r.objeto,
-                    detalhamento: r.detalhamento,
-                    clausula_suspensiva: r.clausula_suspensiva,
-                    clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
-                    normativa: r.normativa,
-                    observacoes: r.observacoes,
-                    programa: r.programa,
-                    pendente_preenchimento_valores: r.pendente_preenchimento_valores,
-                    esfera: r.esfera,
-                    orgao_concedente: r.orgao_concedente,
-                    secretaria_concedente: r.secretaria_concedente_str,
-                    andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
-                    andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
-                };
-            })
-            .sort((a, b) => {
-                const [idA, yearA] = a.identificador.split('/').map(Number);
-                const [idB, yearB] = b.identificador.split('/').map(Number);
-
-                if (yearA !== yearB) {
-                    return yearB - yearA;
-                }
-
-                return idA - idB;
-            });
+        const linhas = rows.map((r) => {
+            return {
+                id: r.id,
+                ano: r.ano,
+                identificador: r.identificador,
+                valor: r.valor,
+                partido: r.parlamentar
+                    .filter((e) => e.partido)
+                    .map((e) => {
+                        return { id: e.partido!.id, sigla: e.partido!.sigla };
+                    }),
+                tipo: r.tipo,
+                objeto: r.objeto,
+                detalhamento: r.detalhamento,
+                clausula_suspensiva: r.clausula_suspensiva,
+                clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
+                normativa: r.normativa,
+                observacoes: r.observacoes,
+                programa: r.programa,
+                pendente_preenchimento_valores: r.pendente_preenchimento_valores,
+                esfera: r.esfera,
+                orgao_concedente: r.orgao_concedente,
+                secretaria_concedente: r.secretaria_concedente_str,
+                andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
+                andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
+            };
+        });
 
         return {
             linhas: linhas,
