@@ -83,15 +83,15 @@ function handleClick(obj) {
         <col>
         <thead>
           <tr>
-            <th>Mês/ano</th>
-            <th>Previsto mensal</th>
-            <th> Realizado mensal</th>
-            <th> Previsto acumulado</th>
-            <th> Realizado acumulado</th>
+            <th> Mês/ano </th>
+            <th> Previsto mensal </th>
+            <th> Realizado mensal </th>
+            <th> Previsto acumulado </th>
+            <th> Realizado acumulado </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-if="analise.series?.length">
+          <tr v-if="analise?.series?.length">
             <td>{{ dateToMonthYear(analise.series[0].data_valor) }}</td>
             <td>{{ mappedValues['Previsto'] }}</td>
             <td>{{ mappedValues['Realizado'] }}</td>
@@ -101,18 +101,54 @@ function handleClick(obj) {
         </tbody>
       </table>
       <div class="mt2 mb2">
-        <h4>
-          Análise
-        </h4>
-        <hr class="mt1 mb1">
+        <h5 class="mb0 tc300">
+          ANÁLISE
+        </h5>
+        <hr class="mt05 mb1">
         <p>
-          {{ analise?.analises[0].analise_qualitativa }}
+          {{ analise?.analises[0]?.analise_qualitativa }}
         </p>
         <hr class="mt1 mb1">
-        <svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_doc" /></svg>
+      </div>
+      <div
+        v-if="analise?.arquivos.length"
+        class="mt2 mb2"
+      >
+        <table class="tablemain">
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <thead>
+            <tr>
+              <th>Documento comprobatório</th>
+              <th />
+              <th />
+              <th />
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="arquivo in analise.arquivos"
+              :key="arquivo.id"
+            >
+              <td class="flex center">
+                <svg
+                  width="20"
+                  height="20"
+                  class="mr1"
+                ><use xlink:href="#i_doc" /></svg>
+                {{ arquivo?.arquivo.nome_original }}
+              </td>
+              <td>{{ arquivo.arquivo.descricao }}</td>
+              <td>{{ arquivo.criador.nome_exibicao }}</td>
+              <td>{{ arquivo.criado_em }}</td>
+              <td />
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </SmallModal>
@@ -136,6 +172,7 @@ function handleClick(obj) {
         </td>
       </tr>
       <tbody>
+        <!-- ver erro -->
         <tr
           v-for="(val,i) in k[1]"
           :key="val.id ? val.id : i"
