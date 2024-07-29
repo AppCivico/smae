@@ -1341,6 +1341,10 @@ export class PdmService {
                     data: {
                         ano_referencia: r.ano_referencia,
                         pdm_id: pdm_id,
+                        execucao_disponivel: pdmConfig.execucao_disponivel,
+                        execucao_disponivel_meses: pdmConfig.execucao_disponivel_meses,
+                        planejado_disponivel: pdmConfig.planejado_disponivel,
+                        previsao_custo_disponivel: pdmConfig.previsao_custo_disponivel,
                     },
                     select: { id: true },
                 });
