@@ -53,9 +53,12 @@ class RetornoDbProjeto {
     secretario_colaborador?: string;
     previsao_inicio?: Date;
     previsao_termino?: Date;
+    inicio_planejado?: Date;
+    termino_planejado?: Date;
     data_inauguracao_planejada?: Date;
     previsao_duracao?: number;
     previsao_custo?: number;
+    custo_planejado?: number;
     secretario_responsavel?: string;
     secretario_executivo?: string;
     status: ProjetoStatus;
@@ -404,10 +407,13 @@ export class PPObrasService implements ReportableService {
             projeto.codigo,
             projeto.objeto,
             projeto.objetivo,
-            tc.previsao_inicio AS previsao_inicio,
-            tc.previsao_termino AS previsao_termino,
+            tc.previsao_inicio AS inicio_planejado,
+            tc.previsao_termino AS termino_planejado,
+            projeto.previsao_inicio AS previsao_inicio,
+            projeto.previsao_termino AS previsao_termino,
             coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
             projeto.previsao_custo AS previsao_custo,
+            tc.previsao_custo AS custo_planejado,
             projeto.escopo,
             projeto.nao_escopo,
             projeto.secretario_responsavel,
@@ -524,8 +530,11 @@ export class PPObrasService implements ReportableService {
                 secretario_colaborador: db.secretario_colaborador,
                 previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
                 previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
+                inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
+                termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
                 previsao_duracao: db.previsao_duracao ? db.previsao_duracao : null,
                 previsao_custo: db.previsao_custo ? db.previsao_custo : null,
+                custo_planejado: db.custo_planejado ? db.custo_planejado : null,
                 data_inauguracao_planejada: db.data_inauguracao_planejada
                     ? Date2YMD.toString(db.data_inauguracao_planejada)
                     : null,
@@ -777,7 +786,7 @@ export class PPObrasService implements ReportableService {
             orgao.sigla AS orgao_sigla,
             orgao.descricao AS orgao_descricao,
             (
-                contrato.valor + ( SELECT sum(valor) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL )
+                COALESCE(SELECT max(valor) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL, contrato.valor)
             ) AS valor,
             (
                 SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.numero DESC LIMIT 1 
@@ -824,7 +833,7 @@ export class PPObrasService implements ReportableService {
                     ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
                     : null,
                 fontes_recurso: db.fontes_recurso,
-                area_geradora: db.orgao_id
+                area_gestora: db.orgao_id
                     ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
                     : null,
                 objeto: db.objeto,
