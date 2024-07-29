@@ -903,7 +903,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
-            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'asc' }],
+            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'desc' }],
             skip: offset,
             take: ipp + 1,
             select: {
@@ -1012,10 +1012,10 @@ export class TransferenciaService {
                 const [idB, yearB] = b.identificador.split('/').map(Number);
 
                 if (yearA !== yearB) {
-                    return yearA - yearB;
+                    return yearB - yearA;
                 }
 
-                return idA - idB;
+                return idB - idA;
             });
 
         return {
