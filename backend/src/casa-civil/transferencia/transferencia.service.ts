@@ -930,6 +930,17 @@ export class TransferenciaService {
                 workflow_fase_atual: {
                     select: {
                         fase: true,
+                        transferenciaAndamento: {
+                            take: 1,
+                            where: { removido_em: null },
+                            select: {
+                                workflow_situacao: {
+                                    select: {
+                                        situacao: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
 
@@ -1005,6 +1016,12 @@ export class TransferenciaService {
                 secretaria_concedente: r.secretaria_concedente_str,
                 andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
                 andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
+                fase_status:
+                    r.workflow_fase_atual &&
+                    r.workflow_fase_atual.transferenciaAndamento.length &&
+                    r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
+                        ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
+                        : null,
             };
         });
 
