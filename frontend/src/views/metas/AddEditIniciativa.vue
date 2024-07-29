@@ -1,12 +1,15 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { defineOptions, ref, unref } from 'vue';
+import {
+  computed, defineOptions, ref, unref,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
@@ -56,6 +59,15 @@ let title = 'Cadastro de';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
+
+const valoresIniciais = computed(() => ({
+  ...singleIniciativa.value,
+
+  tags: Array.isArray(singleIniciativa.value?.tags)
+    ? singleIniciativa.value.tags.map((tag) => tag.id)
+    : [],
+}));
+
 if (iniciativa_id) {
   title = 'Editar';
 }
@@ -87,9 +99,6 @@ if (iniciativa_id) {
     if (singleIniciativa.value.coordenadores_cp) {
       coordenadores_cp.value.participantes = singleIniciativa.value.coordenadores_cp.map((x) => x.id);
     }
-    if (singleIniciativa.value.tags) {
-      m_tags.value.participantes = singleIniciativa.value.tags.map((x) => x.id);
-    }
   }
   oktogo.value = true;
 })();
@@ -116,7 +125,6 @@ async function onSubmit(values) {
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
 
-    if (m_tags.value.participantes.length) values.tags = m_tags.value.participantes;
 
     if (!values.meta_id) values.meta_id = meta_id;
     values.compoe_indicador_meta = !!values.compoe_indicador_meta;
@@ -196,9 +204,9 @@ function filterResponsible(orgao_id) {
   </div>
   <template v-if="oktogo&&!(singleIniciativa?.loading || singleIniciativa?.error)">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="iniciativa_id?singleIniciativa:virtualParent"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <hr class="mt2 mb2">
@@ -280,13 +288,14 @@ function filterResponsible(orgao_id) {
         </div>
       </div>
 
-      <div v-if="tempTags.length">
-        <hr class="mt2 mb2">
-        <label class="label">Tags</label>
-        <AutocompleteField
-          :controlador="m_tags"
-          :grupo="tempTags"
-          label="descricao"
+      <div class="fieldset mb1">
+        <legend class="legend mb1">
+          Tags
+        </legend>
+        <CampoDeTagsComBuscaPorCategoria
+          v-model="values.tags"
+          name="tags"
+          :valores-iniciais="valoresIniciais.tags || []"
         />
       </div>
 
