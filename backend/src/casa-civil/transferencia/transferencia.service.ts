@@ -1015,7 +1015,7 @@ export class TransferenciaService {
                     return yearB - yearA;
                 }
 
-                return idB - idA;
+                return idA - idB;
             });
 
         return {
