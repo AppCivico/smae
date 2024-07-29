@@ -1349,6 +1349,7 @@ model Indicador {
     FormulaCompostaOrigem         IndicadorFormulaComposta[]      @relation("Origem")
     FormulaComposta               IndicadorFormulaComposta[]      @relation("FK")
     IndicadorFormulaCompostaEmUso IndicadorFormulaCompostaEmUso[]
+    view_etapa_rel_meta_indicador view_etapa_rel_meta_indicador[]
 
     @@index([meta_id])
     @@index([iniciativa_id])
@@ -4719,6 +4720,7 @@ view view_etapa_rel_meta_indicador {
     atividade_id  Int?
     iniciativa_id Int?
     indicador_id  Int?
+    indicador     Indicador? @relation(fields: [indicador_id], references: [id])
 
     @@map("view_etapa_rel_meta_indicador")
 }

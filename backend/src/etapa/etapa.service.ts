@@ -648,17 +648,27 @@ export class EtapaService {
 
             const indicadorInfo = await prismaTx.view_etapa_rel_meta_indicador.findFirst({
                 where: { etapa_id: id, tipo: tipoRelacionamento },
+                select: {
+                    indicador: {
+                        select: {
+                            id: true,
+                            periodicidade: true,
+                            inicio_medicao: true,
+                        },
+                    },
+                },
             });
-            if (!indicadorInfo || !indicadorInfo.indicador_id)
+            if (!indicadorInfo || !indicadorInfo.indicador?.id)
                 throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
 
             if (tipoPdm == 'PS' && !dto.variavel.codigo) {
                 // TODO revisar, vai pegar o ano daqui
                 if (!etapaAtualizada.inicio_previsto)
                     throw new BadRequestException('Data de início previsto é obrigatória para criar a variável');
+                // buscar do indicador
                 dto.variavel.codigo = await this.variavelService.geraCodigoVariavel('Global', {
-                    inicio_medicao: DateTime.fromJSDate(etapaAtualizada.inicio_previsto).startOf('month').toJSDate(),
-                    periodicidade: 'Mensal',
+                    inicio_medicao: indicadorInfo.indicador.inicio_medicao,
+                    periodicidade: indicadorInfo.indicador.periodicidade,
                     variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,
                 });
             }
@@ -667,7 +677,7 @@ export class EtapaService {
                 {
                     titulo: dto.variavel.titulo,
                     orgao_id: orgao_id,
-                    indicador_id: indicadorInfo.indicador_id,
+                    indicador_id: indicadorInfo.indicador.id,
                 },
                 dto.variavel.codigo,
                 user,
