@@ -268,7 +268,7 @@ export class EtapaService {
     ) {
         const prisma = prismaCtx || this.prisma;
 
-        const metaRow = await this.prisma.view_etapa_rel_meta.findFirstOrThrow({
+        const metaRow = await prisma.view_etapa_rel_meta.findFirstOrThrow({
             where: { etapa_id: id },
             select: { meta_id: true },
         });
