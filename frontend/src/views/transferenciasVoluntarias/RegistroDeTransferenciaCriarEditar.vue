@@ -14,6 +14,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
@@ -144,7 +145,6 @@ onMounted(() => {
   </pre>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
-    <div>{{ values.parlamentares }}</div>
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -388,97 +388,50 @@ onMounted(() => {
       </h3>
       <hr class="ml2 f1">
     </div>
-
-    <div class="mb1">
-      <FieldArray
-        v-slot="{ fields, push, remove }"
-        name="parlamentares"
-      >
-        <div
-          v-for="(field, idx) in fields"
-          :key="field.key"
-          class="flex flexwrap center g2 mb2"
-        >
-          <Field
-            :name="`parlamentares[${idx}].id`"
-            type="hidden"
-            class="inputtext light"
+    <div
+      v-for="parlamentar in transferenciaEmFoco.parlamentar"
+      :key="parlamentar.id"
+    >
+      <div class="flex g2">
+        <div class="f1">
+          <LabelFromYup
+            name="parlamentar_id"
+            :schema="schema.fields.parlamentares.innerType"
           />
-          <div class="flex g2 mb1">
-            <LabelFromYup
-              name="parlamentar_id"
-              :schema="schema.fields.parlamentares.innerType"
-            />
-            <Field
-              :name="`parlamentares[${idx}].parlamentar_id`"
-              as="select"
-              class="inputtext light mb1"
-              :class="{
-                error: errors.parlamentar_id,
-                loading: ParlamentaresStore.chamadasPendentes?.lista,
-              }"
-              :disabled="true"
-            >
-              <option
-                v-for="item in parlamentarComoLista"
-                :key="item"
-                :value="item.id"
-                :disabled="!item?.mandatos?.length"
-              >
-                {{ item.nome_popular }}
-              </option>
-            </Field>
-            <ErrorMessage
-              :name="`parlamentares[${idx}].parlamentar_id`"
-              class="error-msg"
-            />
-            <LabelFromYup
-              name="valor"
-              :schema="schema.fields.parlamentares.innerType"
-            />
-            <MaskedFloatInput
-              :name="`parlamentares[${idx}].valor`"
-              type="text"
-              class="inputtext light mb1"
-              :value="`values.parlamentares[${idx}].valor`"
-              converter-para="string"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`parlamentares[${idx}].valor`"
-            />
-          </div>
-          <div class="flex g2 mb1">
-            <br>
-            <LabelFromYup
-              name="objeto"
-              :schema="schema.fields.parlamentares.innerType"
-            />
-            <Field
-              :name="`parlamentares[${idx}].objeto`"
-              as="textarea"
-              class="inputtext light mb1"
-              rows="5"
-              maxlength="1000"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`parlamentares[${idx}].objeto`"
-            />
-          </div>
+          <Field
+            name="parlamentar_id"
+            class="inputtext light mb1"
+            type="text"
+            :disabled="true"
+            :value="parlamentar?.parlamentar?.nome"
+          />
         </div>
-
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="push({})"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar registro
-        </button>
-      </FieldArray>
+        <div class="f1">
+          <LabelFromYup
+            name="valor"
+            :schema="schema.fields.parlamentares.innerType"
+          />
+          <Field
+            name="valor"
+            class="inputtext light mb1"
+            type="text"
+            :value="parlamentar?.parlamentar?.nome"
+          />
+        </div>
+      </div>
+      <div>
+        <LabelFromYup
+          name="objeto"
+          :schema="schema.fields.parlamentares.innerType"
+        />
+        <Field
+          name="objeto"
+          class="inputtext light mb1"
+          type="textarea"
+          as="textarea"
+          rows="10"
+        />
+      </div>
     </div>
 
     <div class="flex spacebetween center mb1">
