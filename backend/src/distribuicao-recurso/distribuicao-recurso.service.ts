@@ -184,16 +184,23 @@ export class DistribuicaoRecursoService {
                         400
                     );
 
+                const parlamentaresTratadosParaCreate = [];
                 if (dto.parlamentares?.length) {
-                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.count({
+                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.findMany({
                         where: {
                             parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
                             transferencia_id: dto.transferencia_id,
                             removido_em: null,
                         },
+                        select: {
+                            parlamentar_id: true,
+                            partido_id: true,
+                            cargo: true,
+                            valor: true,
+                        },
                     });
 
-                    if (parlamentaresNaTransf != dto.parlamentares.length)
+                    if (parlamentaresNaTransf.length != dto.parlamentares.length)
                         throw new HttpException(
                             'parlamentares| Parlamentar(es) não encontrado(s) na transferência.',
                             400
@@ -207,6 +214,43 @@ export class DistribuicaoRecursoService {
                             'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
                             400
                         );
+
+                    for (const novaRow of dto.parlamentares) {
+                        const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
+                            where: {
+                                parlamentar_id: novaRow.parlamentar_id,
+                                distribuicao_recurso: {
+                                    transferencia_id: dto.transferencia_id,
+                                },
+                                removido_em: null,
+                            },
+                            select: {
+                                valor: true,
+                            },
+                        });
+
+                        const rowParlamentarTransf = parlamentaresNaTransf.find(
+                            (e) => e.parlamentar_id == novaRow.parlamentar_id
+                        );
+                        if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                        const valorNaTransf = rowParlamentarTransf.valor ?? 0;
+
+                        const sumValor = rowsParlamentarDist
+                            .filter((e) => e.valor)
+                            .reduce((acc, curr) => acc + +curr.valor!, 0);
+                        if (+sumValor > +valorNaTransf)
+                            throw new HttpException(
+                                'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                                400
+                            );
+
+                        parlamentaresTratadosParaCreate.push({
+                            parlamentar_id: novaRow.parlamentar_id,
+                            cargo: rowParlamentarTransf.cargo,
+                            partido_id: rowParlamentarTransf.partido_id,
+                            valor: novaRow.valor,
+                        });
+                    }
                 }
 
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
@@ -253,19 +297,16 @@ export class DistribuicaoRecursoService {
                         },
                         parlamentares: {
                             createMany: {
-                                data: dto.parlamentares
-                                    ? dto.parlamentares.map((e) => {
-                                          return {
-                                              parlamentar_id: e.parlamentar_id,
-                                              cargo: e.cargo,
-                                              objeto: e.objeto,
-                                              valor: e.valor,
-                                              partido_id: e.partido_id,
-                                              criado_em: agora,
-                                              criado_por: user.id,
-                                          };
-                                      })
-                                    : [],
+                                data: parlamentaresTratadosParaCreate.map((e) => {
+                                    return {
+                                        parlamentar_id: e.parlamentar_id,
+                                        cargo: e.cargo,
+                                        valor: e.valor,
+                                        partido_id: e.partido_id,
+                                        criado_em: agora,
+                                        criado_por: user.id,
+                                    };
+                                }),
                             },
                         },
                     },
@@ -983,39 +1024,61 @@ export class DistribuicaoRecursoService {
                 // Tratando upsert de parlamentares.
                 const operations = [];
                 if (dto.parlamentares?.length) {
+                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.findMany({
+                        where: {
+                            parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
+                            transferencia_id: self.transferencia_id,
+                            removido_em: null,
+                        },
+                        select: {
+                            parlamentar_id: true,
+                            partido_id: true,
+                            cargo: true,
+                            valor: true,
+                        },
+                    });
+
+                    const sumValor = dto.parlamentares
+                        .filter((e) => e.valor)
+                        .reduce((acc, curr) => acc + curr.valor!, 0);
+                    if (+sumValor > +updated.valor)
+                        throw new HttpException(
+                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                            400
+                        );
+
                     for (const relParlamentar of dto.parlamentares) {
+                        const parlamentarNaTransf = await prismaTx.transferenciaParlamentar.findFirst({
+                            where: {
+                                parlamentar_id: relParlamentar.parlamentar_id,
+                                transferencia_id: self.transferencia_id,
+                                removido_em: null,
+                            },
+                            select: {
+                                parlamentar_id: true,
+                                partido_id: true,
+                                cargo: true,
+                                valor: true,
+                            },
+                        });
+                        if (!parlamentarNaTransf)
+                            throw new HttpException(
+                                'parlamentar_id| Parlamentar não encontrado na transferência.',
+                                400
+                            );
+
                         if (relParlamentar.id) {
                             const row = updated.parlamentares.find((e) => e.id == relParlamentar.id);
                             if (!row) throw new HttpException('id| Linha não encontrada.', 400);
 
                             if (
                                 row.objeto !== relParlamentar.objeto ||
-                                row.valor?.toNumber() !== relParlamentar.valor ||
-                                row.parlamentar_id !== relParlamentar.parlamentar_id ||
-                                row.partido_id !== relParlamentar.partido_id ||
-                                row.cargo !== relParlamentar.cargo
+                                row.valor?.toNumber() !== relParlamentar.valor
                             ) {
-                                // Verificando se parlamentar está na transferência.
-                                const parlamentarNaTransf = await prismaTx.transferenciaParlamentar.count({
-                                    where: {
-                                        parlamentar_id: relParlamentar.parlamentar_id,
-                                        transferencia_id: self.transferencia_id,
-                                        removido_em: null,
-                                    },
-                                });
-                                if (!parlamentarNaTransf)
-                                    throw new HttpException(
-                                        'parlamentar_id| Parlamentar não encontrado na transferência.',
-                                        400
-                                    );
-
                                 operations.push(
                                     prismaTx.distribuicaoParlamentar.update({
                                         where: { id: relParlamentar.id },
                                         data: {
-                                            parlamentar_id: relParlamentar.parlamentar_id,
-                                            partido_id: relParlamentar.partido_id,
-                                            cargo: relParlamentar.cargo,
                                             valor: relParlamentar.valor,
                                             objeto: relParlamentar.objeto,
                                             atualizado_em: now,
@@ -1025,13 +1088,41 @@ export class DistribuicaoRecursoService {
                                 );
                             }
                         } else {
+                            const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
+                                where: {
+                                    parlamentar_id: relParlamentar.parlamentar_id,
+                                    distribuicao_recurso: {
+                                        transferencia_id: self.transferencia_id,
+                                    },
+                                    removido_em: null,
+                                },
+                                select: {
+                                    valor: true,
+                                },
+                            });
+
+                            const rowParlamentarTransf = parlamentaresNaTransf.find(
+                                (e) => e.parlamentar_id == relParlamentar.parlamentar_id
+                            );
+                            if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                            const valorNaTransf = rowParlamentarTransf.valor ?? 0;
+
+                            const sumValor = rowsParlamentarDist
+                                .filter((e) => e.valor)
+                                .reduce((acc, curr) => acc + +curr.valor!, 0);
+                            if (+sumValor > +valorNaTransf)
+                                throw new HttpException(
+                                    'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                                    400
+                                );
+
                             operations.push(
                                 prismaTx.distribuicaoParlamentar.create({
                                     data: {
                                         distribuicao_recurso_id: id,
                                         parlamentar_id: relParlamentar.parlamentar_id,
-                                        partido_id: relParlamentar.partido_id,
-                                        cargo: relParlamentar.cargo,
+                                        partido_id: parlamentarNaTransf.partido_id,
+                                        cargo: parlamentarNaTransf.cargo,
                                         valor: relParlamentar.valor,
                                         objeto: relParlamentar.objeto,
                                         criado_em: now,

@@ -210,20 +210,11 @@ export class CreateDistribuicaoParlamentarDto {
     @IsNumber()
     parlamentar_id: number;
 
-    @IsNumber()
-    partido_id: number;
-
-    @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
-    @IsEnum(ParlamentarCargo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
-    })
-    cargo: ParlamentarCargo;
-
     @IsOptional()
     @IsString()
     @MinLength(1)
     @MaxLength(1024)
-    objeto: string;
+    objeto?: string;
 
     @IsOptional()
     @IsNumberString(

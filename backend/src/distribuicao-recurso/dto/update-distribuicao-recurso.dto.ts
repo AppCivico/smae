@@ -39,15 +39,4 @@ export class UpdateDistribuicaoParlamentarDto extends CreateDistribuicaoParlamen
     @IsOptional()
     @IsNumber()
     id?: number;
-
-    @IsOptional()
-    @IsNumberString(
-        {},
-        {
-            message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
-    @ValidateIf((object, value) => value !== null)
-    valor?: number;
 }
