@@ -636,6 +636,7 @@ export default [
       limitarÀsPermissões: 'CadastroOds.',
       título: 'Categorias',
       rotasParaMenuSecundário,
+      entidadeMãe: 'pdm',
     },
     children: [
       {
