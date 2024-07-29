@@ -473,6 +473,35 @@ export class TransferenciaService {
                                         },
                                     })
                                 );
+
+                                // Verificando se há linhas em distribuição de recurso.
+                                // E caso exista, atualizar os dados.
+                                const distribuicoesParlamentares = await prismaTxn.distribuicaoParlamentar.findMany({
+                                    where: {
+                                        distribuicao_recurso: {
+                                            transferencia_id: id,
+                                        },
+                                        parlamentar_id: row.parlamentar_id,
+                                        removido_em: null,
+                                    },
+                                    select: {
+                                        id: true,
+                                    },
+                                });
+
+                                for (const distribuicaoParlamentar of distribuicoesParlamentares) {
+                                    operations.push(
+                                        prismaTxn.distribuicaoParlamentar.update({
+                                            where: { id: distribuicaoParlamentar.id },
+                                            data: {
+                                                cargo: relParlamentar.cargo,
+                                                partido_id: relParlamentar.partido_id,
+                                                atualizado_em: agora,
+                                                atualizado_por: user.id,
+                                            },
+                                        })
+                                    );
+                                }
                             }
                         } else {
                             operations.push(
