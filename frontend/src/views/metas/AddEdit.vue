@@ -411,7 +411,7 @@ function filterResponsible(orgao_id) {
             <select
               v-if="OrgansStore.organResponsibles.length"
               v-model="item.orgao_id"
-              class="inputtext"
+              class="inputtext light"
               @change="item.participantes = []"
             >
               <option
@@ -471,7 +471,7 @@ function filterResponsible(orgao_id) {
             <select
               v-if="OrgansStore.organResponsibles.length"
               v-model="item.orgao_id"
-              class="inputtext"
+              class="inputtext light"
               @change="item.participantes = []"
             >
               <option
