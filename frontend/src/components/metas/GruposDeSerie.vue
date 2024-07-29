@@ -146,11 +146,17 @@ function handleClick(obj) {
               <td>{{ arquivo.criador.nome_exibicao }}</td>
               <td>{{ dateToDate(arquivo.criado_em) }}</td>
               <td>
-                <svg
-                  width="20"
-                  height="20"
-                  class="mr1"
-                ><use xlink:href="#i_download" /></svg>
+                <SmaeLink
+                  v-if="arquivo?.arquivo.download_token"
+                  :to="baseUrl + '/download/' + arquivo?.arquivo.download_token"
+                  download
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    class="mr1"
+                  ><use xlink:href="#i_download" /></svg>
+                </SmaeLink>
               </td>
             </tr>
           </tbody>
@@ -178,7 +184,6 @@ function handleClick(obj) {
         </td>
       </tr>
       <tbody>
-        <!-- ver erro -->
         <tr
           v-for="(val,i) in k[1]"
           :key="val.id ? val.id : i"
