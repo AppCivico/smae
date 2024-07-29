@@ -78,7 +78,9 @@ interface ProjetoRow {
     // novas colunas sem destino
     status_contratacao: string | null;
     mdo_n_familias_beneficiadas_ate_agora: number | null;
-};
+    parsed_processos_sei: string[];
+    parsed_contratos: string[];
+}
 
 const LISTA_COL_ORGAO = [
     'rel_orgao_gestor_id',
@@ -129,6 +131,9 @@ const memMeta2cod: Record<string, string> = {};
 const memIniciativa: Record<string, Record<string, number>> = {};
 const memIniciativa2id: Record<string, Record<string, number>> = {};
 
+export const CONST_PROC_SEI_SINPROC_REGEXP = /(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)/;
+const seiRegexp = new RegExp(CONST_PROC_SEI_SINPROC_REGEXP, 'g');
+
 let runImport = true;
 async function main() {
     const {
@@ -153,6 +158,8 @@ async function main() {
         incrementEquipamentoCount(row);
         incrementGroupThemeCount(row);
         incrementIniciativaCount(row);
+        extractAndNormalizeSEIProcesses(row);
+        extractContracts(row);
 
         const origem_pdms = row.origem_pdm?.trim();
         if (origem_pdms) {
@@ -182,6 +189,26 @@ async function main() {
 }
 
 main();
+
+function extractContracts(row: ProjetoRow) {
+    row.parsed_contratos = [];
+    if (row.mdo_numero_contrato) {
+        row.parsed_contratos = row.mdo_numero_contrato.split(/,|\n/).map((r) => r.trim());
+    }
+}
+
+function extractAndNormalizeSEIProcesses(row: ProjetoRow) {
+    if (row.rel_processo_sei) {
+        const processos: string[] = [];
+
+        let match = seiRegexp.exec(row.rel_processo_sei);
+        while (match != null) {
+            processos.push(match[0].trim());
+            match = seiRegexp.exec(row.rel_processo_sei);
+        }
+        row.parsed_processos_sei = processos.map((r) => normalizeProcesso(r));
+    }
+}
 
 function incrementPortfolioCount(row: ProjetoRow) {
     if (!portfolios[row.rel_portfolio_id]) portfolios[row.rel_portfolio_id] = 0;
@@ -289,7 +316,8 @@ async function validaIniciativas() {
             meta_id: memMeta2id[metaCodigoOrCodigo],
         });
         for (const iniciativaCodigo in memIniciativa[metaCodigoOrCodigo]) {
-            const matchByCodigo = iniciativasNaApi.data.linhas.find((iniciativa) => matchStringFuzzy(iniciativa.codigo, metaCod + '.' + iniciativaCodigo)
+            const matchByCodigo = iniciativasNaApi.data.linhas.find((iniciativa) =>
+                matchStringFuzzy(iniciativa.codigo, metaCod + '.' + iniciativaCodigo)
             );
             if (matchByCodigo) {
                 memIniciativa2id[metaCodigoOrCodigo] = memIniciativa2id[metaCodigoOrCodigo] || {};
@@ -336,8 +364,6 @@ async function validaMetas() {
         console.log('Meta', content, 'não encontrado, necessário em', memMeta[contentRaw], 'registros');
         runImport = false;
     }
-
-
 }
 
 async function validaGrupoTematico() {
@@ -349,13 +375,7 @@ async function validaGrupoTematico() {
             continue;
         }
 
-        console.log(
-            'Grupo temático',
-            content,
-            'não encontrado, necessário em',
-            grupo_tematico[content],
-            'registros'
-        );
+        console.log('Grupo temático', content, 'não encontrado, necessário em', grupo_tematico[content], 'registros');
         runImport = false;
     }
 }
@@ -453,13 +473,7 @@ async function validaPortfolios() {
             continue;
         }
 
-        console.log(
-            'Portifolio',
-            portifolio,
-            'não encontrado, necessário em',
-            portfolios[portifolio],
-            'registros'
-        );
+        console.log('Portifolio', portifolio, 'não encontrado, necessário em', portfolios[portifolio], 'registros');
         runImport = false;
     }
 }
@@ -477,7 +491,9 @@ async function validaOrgaos() {
             continue;
         }
 
-        const matchByNome = orgaosNoDb.data.linhas.find((orgao) => matchStringFuzzy(orgao.descricao, content) || matchStringFuzzy(orgao.descricao, contentRaw));
+        const matchByNome = orgaosNoDb.data.linhas.find(
+            (orgao) => matchStringFuzzy(orgao.descricao, content) || matchStringFuzzy(orgao.descricao, contentRaw)
+        );
         if (matchByNome) {
             orgao2id[contentRaw] = matchByNome.id!;
             continue;
@@ -521,5 +537,28 @@ function validaPessoas(pessoasCollabProjeto: Record<string, number>, pessoasGest
             runImport = false;
             console.log('Faltando rel_responsavel_id', email, 'necessário em', count, 'registros');
         }
+    }
+}
+
+function normalizeProcesso(processo: string): string {
+    const cleanedProcesso = processo.replace(/[^0-9]/g, '');
+
+    if (cleanedProcesso.length === 16) {
+        // SEI format (DDDDDD.DDDD/DDDDDDD-D):
+        const part1 = cleanedProcesso.substring(0, 4);
+        const part2 = cleanedProcesso.substring(4, 8);
+        const part3 = cleanedProcesso.substring(8, 15);
+        const part4 = cleanedProcesso.substring(15, 16);
+        return `${part1}.${part2}/${part3}-${part4}`;
+    } else if (cleanedProcesso.length === 12) {
+        // SINPROC format (YYYY-D.DDD.DDD-D):
+        const year = cleanedProcesso.substring(0, 4);
+        const part2 = cleanedProcesso.substring(4, 5);
+        const part3 = cleanedProcesso.substring(5, 8);
+        const part4 = cleanedProcesso.substring(8, 11);
+        const part5 = cleanedProcesso.substring(11, 12);
+        return `${year}-${part2}.${part3}.${part4}-${part5}`;
+    } else {
+        return processo;
     }
 }
