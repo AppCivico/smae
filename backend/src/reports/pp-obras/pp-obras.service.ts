@@ -787,7 +787,7 @@ export class PPObrasService implements ReportableService {
             orgao.descricao AS orgao_descricao,
             (
                 COALESCE(
-                  (SELECT max(valor) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1),
+                  (SELECT max(valor) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1),
                   contrato.valor
                 )
             ) AS valor,
