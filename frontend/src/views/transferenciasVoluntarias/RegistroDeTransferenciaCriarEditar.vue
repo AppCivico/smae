@@ -45,9 +45,6 @@ const {
   validationSchema: schema,
 });
 
-console.log(itemParaEdição);
-console.log(schema);
-
 const alertStore = useAlertStore();
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
