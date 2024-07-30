@@ -3608,4 +3608,22 @@ export const obra = projeto.concat(obras).shape({
             .required(),
         }),
     ),
+  empreendimento: object()
+    .label('Empreendimento')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+      identificador: string()
+        .required(),
+    }),
+  responsaveis_no_orgao_gestor: array()
+    .label('Ponto focal do monitoramento')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
 });
