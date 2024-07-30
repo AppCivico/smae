@@ -1,4 +1,6 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
@@ -8,8 +10,6 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
@@ -45,6 +45,11 @@ const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizaca
     return acc;
   }, {})
   : {}));
+
+const exibeBloco = computed(() => emFoco?.mdo_n_familias_beneficiadas
+         || emFoco?.mdo_n_unidades_habitacionais
+         || emFoco?.programa?.nome
+         || emFoco?.programa);
 
 defineProps({
   obraId: {
@@ -130,9 +135,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </div>
 
     <hr class="mb1 f1">
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
+    <dl
+      class="flex g2 flexwrap"
+    >
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.grupo_tematico.spec.label }}
         </dt>
@@ -140,10 +146,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           class="t13"
           v-html="emFoco?.grupo_tematico?.nome || '-'"
         />
-      </dl>
-    </div>
-    <div class="flex g2">
-      <dl class="f1 mb1">
+      </div>
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.tipo_intervencao.spec.label }}
         </dt>
@@ -151,10 +155,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           class="t13"
           v-html="emFoco?.tipo_intervencao?.nome || '-'"
         />
-      </dl>
-    </div>
-    <div class="flex g2">
-      <dl class="f1 mb1">
+      </div>
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.equipamento.spec.label }}
         </dt>
@@ -162,9 +164,37 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           class="t13"
           v-html="emFoco?.equipamento?.nome || '-'"
         />
-      </dl>
-    </div>
-
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.empreendimento.spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.empreendimento?.identificador || '-'"
+        />
+      </div>
+    </dl>
+    <hr class="mb1 f1">
+    <dl class="flex g2 flexwrap">
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.orgao_origem_id.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.orgao_origem.sigla }} - {{ emFoco?.orgao_origem.descricao }}
+        </dd>
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.orgao_executor_id.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.orgao_executor?.sigla }} - {{ emFoco?.orgao_executor?.descricao }}
+        </dd>
+      </div>
+    </dl>
+    <hr class="mb1 f1">
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -172,7 +202,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.projeto_etapa?.nome || '-'"
+          v-html="emFoco?.projeto_etapa?.descricao || '-'"
         />
       </dl>
     </div>
@@ -184,46 +214,48 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.mdo_detalhamento || '-'"
+          v-html="emFoco?.mdo_detalhamento|| '-'"
         />
       </dl>
     </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.mdo_n_familias_beneficiadas.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.mdo_n_familias_beneficiadas || '-'"
-        />
-      </dl>
-    </div>
+    <div v-if=" exibeBloco">
+      <hr class="mb1 f1">
+      <dl
+        class="flex g2 flexwrap"
+      >
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.mdo_n_familias_beneficiadas.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+            v-html="emFoco?.mdo_n_familias_beneficiadas || '-'"
+          />
+        </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.mdo_n_unidades_habitacionais.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.mdo_n_unidades_habitacionais || '-'"
-        />
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.mdo_n_unidades_habitacionais.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+            v-html="emFoco?.mdo_n_unidades_habitacionais || '-'"
+          />
+        </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.programa_id.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+          >
+            {{ emFoco?.programa?.nome || emFoco?.programa || '-' }}
+          </dd>
+        </div>
       </dl>
-    </div>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.programa_id.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-        >
-          {{ emFoco?.programa?.nome || emFoco?.programa || '-' }}
-        </dd>
-      </dl>
+      <hr class="mb1 f1">
     </div>
 
     <div class="flex g2">
@@ -246,18 +278,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <dd
           class="t13"
           v-html="emFoco?.mdo_observacoes || '-'"
-        />
-      </dl>
-    </div>
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.tags.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.tags?.map((r) => r.descricao).join(', ') || '-'"
         />
       </dl>
     </div>
@@ -404,6 +424,14 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.mdo_previsao_inauguracao.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.mdo_previsao_inauguracao ? dateToField(emFoco.mdo_previsao_inauguracao) : '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.tolerancia_atraso.spec.label }}
         </dt>
         <dd class="t13">
@@ -437,21 +465,59 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_origem_id.spec.label }}
+            {{ schema.fields.orgao_gestor_id.spec.label }}
           </dt>
           <dd class="t13">
-            {{ emFoco?.orgao_origem.sigla }} - {{ emFoco?.orgao_origem.descricao }}
+            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
           </dd>
         </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_executor_id.spec.label }}
+            {{ schema.fields.secretario_executivo.spec.label }}
           </dt>
           <dd class="t13">
-            {{ emFoco?.orgao_executor?.sigla }} - {{ emFoco?.orgao_executor?.descricao }}
+            {{ emFoco?.secretario_executivo || '-' }}
+          </dd>
+        </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsaveis_no_orgao_gestor
+              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
+              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
+              : '-' }}
           </dd>
         </div>
       </dl>
+      <dl class="flex g2 flexwrap">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgao_responsavel_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
+          </dd>
+        </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.secretario_responsavel.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.secretario_responsavel || '-' }}
+          </dd>
+        </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsavel_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
+          </dd>
+        </div>
+      </dl>
+
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
@@ -485,62 +551,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
                 {{ item.nome_exibicao }}
               </li>
             </ul>
-          </dd>
-        </div>
-      </dl>
-      <dl class="flex g2 flexwrap">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_gestor_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsaveis_no_orgao_gestor
-              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
-              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
-              : '-' }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_executivo.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_executivo || '-' }}
-          </dd>
-        </div>
-      </dl>
-
-      <dl class="flex g2 flexwrap">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_responsavel_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsavel_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_responsavel.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_responsavel || '-' }}
           </dd>
         </div>
       </dl>

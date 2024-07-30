@@ -1,12 +1,12 @@
 <script setup>
+import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
@@ -118,7 +118,7 @@ function permitirEdição(indicadorVariavel) {
               height="20"
             ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
           </button>
-          <router-link
+          <SmaeLink
             :to="{
               path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
               query: $route.query,
@@ -129,8 +129,8 @@ function permitirEdição(indicadorVariavel) {
               width="20"
               height="20"
             ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-          </router-link>
-          <router-link
+          </SmaeLink>
+          <SmaeLink
             v-if="permitirEdição(v.indicador_variavel)"
             :to="{
               path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
@@ -142,7 +142,7 @@ function permitirEdição(indicadorVariavel) {
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-          </router-link>
+          </SmaeLink>
           <button
             v-else
             disabled
@@ -153,7 +153,7 @@ function permitirEdição(indicadorVariavel) {
               height="20"
             ><use xlink:href="#i_edit" /></svg><div>Editar</div>
           </button>
-          <router-link
+          <SmaeLink
             :to="{
               path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
               query: $route.query,
@@ -164,8 +164,8 @@ function permitirEdição(indicadorVariavel) {
               width="20"
               height="20"
             ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-          </router-link>
-          <router-link
+          </SmaeLink>
+          <SmaeLink
             v-if="permissions.CadastroPessoa?.administrador"
             :to="{
               path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
@@ -177,7 +177,7 @@ function permitirEdição(indicadorVariavel) {
               width="20"
               height="20"
             ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-          </router-link>
+          </SmaeLink>
         </td>
       </tr>
     </tbody>

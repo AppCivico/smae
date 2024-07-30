@@ -8,6 +8,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return 'pdm';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const usePdMStore = defineStore({
   id: 'PdM',
   state: () => ({
@@ -55,7 +65,7 @@ export const usePdMStore = defineStore({
       try {
         if (this.PdM.loading) return;
         this.PdM = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/pdm`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const macrotemasStore = useMacrotemasStore();
           const subtemasStore = useSubtemasStore();
@@ -92,7 +102,7 @@ export const usePdMStore = defineStore({
     async getById(id) {
       this.singlePdm = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/pdm/${id}?incluir_auxiliares=true`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}?incluir_auxiliares=true`);
         if (r.pdm) {
           this.singlePdm = ((x) => {
             x.pdm.data_inicio = this.dateToField(x.pdm.data_inicio);
@@ -128,7 +138,7 @@ export const usePdMStore = defineStore({
       try {
         if (!this.activePdm.id && !this.activePdm.loading) {
           this.activePdm = { loading: true };
-          const r = await this.requestS.get(`${baseUrl}/pdm?ativo=true`);
+          const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?ativo=true`);
           if (r.linhas.length) {
             this.activePdm = ((x) => {
               x.data_inicio = this.dateToField(x.data_inicio);
@@ -163,6 +173,7 @@ export const usePdMStore = defineStore({
         return this.activePdm;
       } catch (error) {
         this.activePdm = { error };
+        return false;
       }
     },
     async insert(params) {
@@ -198,7 +209,7 @@ export const usePdMStore = defineStore({
 
         nivel_orcamento: params.nivel_orcamento,
       };
-      if (await this.requestS.post(`${baseUrl}/pdm`, m)) {
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, m)) {
         this.activePdm = {};
         return true;
       }
@@ -239,14 +250,14 @@ export const usePdMStore = defineStore({
 
         nivel_orcamento: params.nivel_orcamento,
       };
-      if (await this.requestS.patch(`${baseUrl}/pdm/${id}`, m)) {
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, m)) {
         this.activePdm = {};
         return true;
       }
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/pdm/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) {
         this.activePdm = {};
         return true;
       }
@@ -274,13 +285,13 @@ export const usePdMStore = defineStore({
       }
     },
     async insertArquivo(pdm_id, params) {
-      if (await this.requestS.post(`${baseUrl}/pdm/${pdm_id}/documento`, params)) {
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${pdm_id}/documento`, params)) {
         return true;
       }
       return false;
     },
     async deleteArquivo(pdm_id, id) {
-      if (await this.requestS.delete(`${baseUrl}/pdm/${pdm_id}/documento/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${pdm_id}/documento/${id}`)) {
         this.arquivos[pdm_id] = {};
         this.carregaArquivos(pdm_id);
         return true;
@@ -290,7 +301,7 @@ export const usePdMStore = defineStore({
     async carregaArquivos(pdm_id) {
       if (!this.arquivos[pdm_id]?.length) this.arquivos[pdm_id] = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/pdm/${pdm_id}/documento`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${pdm_id}/documento`);
         this.arquivos[pdm_id] = r.linhas;
       } catch (error) {
         this.arquivos[pdm_id] = { error };
@@ -298,7 +309,7 @@ export const usePdMStore = defineStore({
     },
 
     async updatePermissoesOrcamento(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/pdm/${id}/orcamento-config`, params)) {
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}/orcamento-config`, params)) {
         this.activePdm = {};
         return true;
       }

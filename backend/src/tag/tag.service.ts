@@ -52,10 +52,9 @@ export class TagService {
     async findAll(tipo: TipoPdm, filters: FilterTagDto): Promise<TagDto[]> {
         const listActive = await this.prisma.tag.findMany({
             where: {
-                id: filters.id,
+                id: filters.id ? { in: filters.id } : undefined,
                 pdm_id: filters.pdm_id,
                 pdm: { id: filters.pdm_id, tipo: tipo },
-
                 removido_em: null,
             },
             select: {
@@ -65,6 +64,9 @@ export class TagService {
                 ods_id: true,
                 icone: true,
                 arquivo_icone_id: true,
+                ods: {
+                    select: { id: true, titulo: true },
+                },
             },
             orderBy: { descricao: 'asc' },
         });

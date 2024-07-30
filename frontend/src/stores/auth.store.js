@@ -108,13 +108,9 @@ export const useAuthStore = defineStore({
       }
 
       const a = [
-        'CadastroAtividade',
         'CadastroCicloFisico',
-        'CadastroCronograma',
         'CadastroEtapa',
         'CadastroGrupoPaineis',
-        'CadastroIndicador',
-        'CadastroIniciativa',
         'CadastroMacroTema',
         'CadastroMeta',
         'CadastroOds',

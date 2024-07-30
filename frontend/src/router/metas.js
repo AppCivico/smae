@@ -63,6 +63,7 @@ const rotasParaMenuSecundário = (nível) => {
         'painelDaMeta',
         'evoluçãoDaMeta',
         'cronogramaDaMeta',
+        'metas:item:historicoDeMonitoramento',
       ];
       rotasDoOrçamento = [
         'MetaOrcamentoCusto',
@@ -86,6 +87,7 @@ const rotasParaMenuSecundário = (nível) => {
 
 export default {
   path: '/metas',
+  component: () => import('@/views/metas/MetasRaiz.vue'),
   meta: {
     limitarÀsPermissões: [
       'PDM.admin_cp',
@@ -93,7 +95,7 @@ export default {
       'PDM.ponto_focal',
       'CadastroMeta.orcamento',
     ],
-    entidadeMãe: 'meta',
+    entidadeMãe: 'pdm',
     presenteNoMenu: true,
     título: 'Metas',
     íconeParaMenu: `<svg width="19" height="22" viewBox="0 0 19 22" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -557,7 +559,7 @@ export default {
           path: 'novo',
           component: AddEditIniciativa,
           meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
         {
@@ -866,7 +868,7 @@ export default {
               path: 'novo',
               component: AddEditAtividade,
               meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
               },
             },
             {
@@ -1147,6 +1149,27 @@ export default {
               },
             },
           ],
+        },
+      ],
+    },
+
+    {
+      path: ':meta_id',
+      name: 'metas:item',
+      component: () => import('@/views/metas/MetasItem.vue'),
+      props: true,
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+      children: [
+        {
+          name: 'metas:item:historicoDeMonitoramento',
+          path: 'historico-de-monitoramento',
+          component: () => import('@/views/metas/MetasHistoricoDeMonitoramento.vue'),
+          props: true,
+          meta: {
+            título: 'Histórico de monitoramento',
+          },
         },
       ],
     },

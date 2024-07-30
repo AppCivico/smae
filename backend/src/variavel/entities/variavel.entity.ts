@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
@@ -10,6 +10,9 @@ import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
+import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { DateTransform } from '../../auth/transforms/date.transform';
+import { Transform } from 'class-transformer';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -70,6 +73,29 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     pode_excluir: boolean;
 }
 
+export class FilterSVNPeriodoDto {
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_inicio?: Date;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_fim?: Date;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_valor?: Date;
+}
+
+export class SACicloFisicoDto {
+    id: number;
+    analise: string;
+    tem_documentos: boolean;
+}
+
 export class SerieValorNomimal {
     /**
      * valor da serie lida
@@ -125,6 +151,12 @@ export class SeriesAgrupadas {
      * opcional - volta no get formula serie da formula composta
      */
     variavel?: VariavelResumo;
+
+    /**
+     * ciclo fisico
+     * opcional - não volta na serie de indicadores
+     */
+    ciclo_fisico?: SACicloFisicoDto;
 
     @ApiProperty({
         type: 'array',

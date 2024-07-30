@@ -42,6 +42,7 @@ export class PerfilAcessoService {
         const listActive = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
+                nome: { not: 'SYSADMIN' },
             },
             select: {
                 id: true,

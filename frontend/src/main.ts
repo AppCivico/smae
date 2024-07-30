@@ -4,6 +4,7 @@ import FormErrorsList from '@/components/FormErrorsList.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
@@ -123,6 +124,7 @@ app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
 app.component('LoadingComponent', LoadingComponent);
 app.component('MigalhasDePão', MigalhasDePão);
+app.component('SmaeLink', SmaeLink);
 app.component('TítuloDePágina', TítuloDePágina);
 
 app.use(pinia);

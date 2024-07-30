@@ -1,4 +1,12 @@
-import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+    forwardRef,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
     Periodicidade,
@@ -36,12 +44,16 @@ import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variave
 import { ListSeriesAgrupadas, VariavelDetailDto, VariavelGlobalDetailDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
+    FilterSVNPeriodoDto,
+    SACicloFisicoDto,
     SerieValorNomimal,
     SerieValorPorPeriodo,
     ValorSerieExistente,
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
+import { PrismaHelpers } from '../common/PrismaHelpers';
+import { MetaService } from '../meta/meta.service';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -71,11 +83,19 @@ export type VariavelComCategorica = {
     } | null;
 };
 
+type FiltroData = {
+    data_inicio?: Date;
+    data_fim?: Date;
+    data_valor?: Date;
+};
+
 @Injectable()
 export class VariavelService {
     private readonly logger = new Logger(VariavelService.name);
     constructor(
         private readonly jwtService: JwtService,
+        @Inject(forwardRef(() => MetaService))
+        private readonly metaService: MetaService,
         private readonly prisma: PrismaService
     ) {}
 
@@ -146,12 +166,19 @@ export class VariavelService {
                 throw new BadRequestException('Código é obrigatório para variáveis do PDM');
 
             codigo = dto.codigo;
-
             indicador = await this.buscaIndicadorParaVariavel(dto.indicador_id);
 
-            this.fixIndicadorInicioFim(dto, indicador);
+            const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
+                where: {
+                    meta_id: indicador.meta_id ?? undefined,
+                    iniciativa_id: indicador.iniciativa_id,
+                    atividade_id: indicador.atividade_id,
+                },
+                select: { meta_id: true },
+            });
+            await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
 
-            await this.checkPermissionsPDM(dto, user);
+            this.fixIndicadorInicioFim(dto, indicador);
         } else if (tipo == 'Global') {
             this.checkPeriodoVariavelGlobal(dto);
 
@@ -310,7 +337,6 @@ export class VariavelService {
             if (!('indicador_id' in dto))
                 throw new BadRequestException('Indicador é obrigatório para variáveis do PDM');
 
-            await this.checkPermissionsPDM(dto, user);
             indicador_id = dto.indicador_id;
         }
 
@@ -683,19 +709,7 @@ export class VariavelService {
             },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
-        return indicador;
-    }
-
-    private async checkPermissionsPDM(
-        createVariavelDto: CreateVariavelPDMDto | CreateGeradorVariavelPDMDto,
-        user: PessoaFromJwt
-    ) {
-        const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id, this.prisma);
-        if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
-            if (filterIdIn.includes(meta_id) === false)
-                throw new HttpException('Sem permissão para criar variável nesta meta', 400);
-        }
+        return indicador!;
     }
 
     async resyncIndicadorVariavel(indicador: IndicadorInfo, variavel_id: number, prisma: Prisma.TransactionClient) {
@@ -1090,7 +1104,10 @@ export class VariavelService {
             return plano;
         };
 
-        const perm = user.hasSomeRoles(['CadastroIndicadorPS.editar', 'CadastroIndicadorPS.administrador']);
+        const perm = user.hasSomeRoles([
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            'CadastroVariavelGlobal.administrador',
+        ]);
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -1264,14 +1281,9 @@ export class VariavelService {
             body,
         };
     }
+
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        let palavrasChave: number[] | undefined = undefined;
-        if (input) {
-            const rows: { id: number }[] = await this.prisma
-                .$queryRaw`SELECT id FROM variavel WHERE vetores_busca @@ plainto_tsquery('simple', ${input})`;
-            palavrasChave = rows.map((row) => row.id);
-        }
-        return palavrasChave;
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'variavel', input);
     }
 
     async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
@@ -1297,26 +1309,12 @@ export class VariavelService {
         let indicador_id: number | undefined = undefined;
         if (tipo == 'PDM') {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
-            const selfIndicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
-                where: { variavel_id: variavelId, indicador_origem_id: null },
-                select: {
-                    indicador_id: true,
-                },
-            });
+            const indicadorViaVar = await this.verificaEscritaNaMeta(variavelId, user);
 
-            if (!selfIndicadorVariavel)
-                throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
-
-            // check de permissões
-            const meta_id = await this.getMetaIdDoIndicador(selfIndicadorVariavel.indicador_id, this.prisma);
-            // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
-            if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
-                const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
-                if (filterIdIn.includes(meta_id) === false)
-                    throw new HttpException('Sem permissão para criar variável nesta meta', 400);
-            }
-
-            indicador_id = selfIndicadorVariavel.indicador_id;
+            indicador_id = indicadorViaVar.indicador.id;
+        } else {
+            // será que não há nenhuma regra mesmo? como a variavel não tem rel com o PDM sem o indicador,
+            // provavelmente não tem mesmo o que verificam além do orgao proprietario
         }
 
         if (dto.codigo !== undefined) {
@@ -1514,6 +1512,36 @@ export class VariavelService {
         return { id: variavelId };
     }
 
+    private async verificaEscritaNaMeta(variavelId: number, user: PessoaFromJwt) {
+        const indicadorViaVar = await this.prisma.indicadorVariavel.findFirst({
+            where: { variavel_id: variavelId, indicador_origem_id: null },
+            select: {
+                indicador: {
+                    select: {
+                        id: true,
+                        meta_id: true,
+                        atividade_id: true,
+                        iniciativa_id: true,
+                    },
+                },
+            },
+        });
+
+        if (!indicadorViaVar)
+            throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
+
+        const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
+            where: {
+                meta_id: indicadorViaVar.indicador.meta_id ?? undefined,
+                iniciativa_id: indicadorViaVar.indicador.iniciativa_id,
+                atividade_id: indicadorViaVar.indicador.atividade_id,
+            },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
+        return indicadorViaVar;
+    }
+
     private checkPeriodoVariavelGlobal(dto: UpdateVariavelDto) {
         if (!dto.inicio_medicao)
             throw new HttpException('inicio_medicao| Início da medição é obrigatório para variáveis globais', 400);
@@ -1698,7 +1726,7 @@ export class VariavelService {
                 throw new BadRequestException('Órgão proprietário é obrigatório para variáveis globais');
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão');
 
-            if (!user.hasSomeRoles(['CadastroIndicadorPS.administrador'])) {
+            if (!user.hasSomeRoles(['CadastroVariavelGlobal.administrador'])) {
                 if (dto.orgao_proprietario_id !== user.orgao_id)
                     throw new HttpException('Você só pode criar variáveis globais em seu próprio órgão.', 400);
             }
@@ -1857,6 +1885,11 @@ export class VariavelService {
                 'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa.'
             );
 
+        if (tipo == 'PDM') {
+            // buscando apenas pelo indicador pai verdadeiro desta variavel
+            await this.verificaEscritaNaMeta(variavelId, user);
+        }
+
         const now = new Date(Date.now());
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
@@ -1960,7 +1993,7 @@ export class VariavelService {
     async getValorSerieExistente(
         variavelId: number,
         series: Serie[],
-        data_valor: Date | undefined
+        filters: FiltroData
     ): Promise<ValorSerieExistente[]> {
         return await this.prisma.serieVariavel.findMany({
             where: {
@@ -1968,7 +2001,11 @@ export class VariavelService {
                 serie: {
                     in: series,
                 },
-                data_valor: data_valor,
+                AND: [
+                    { data_valor: filters.data_inicio ? { gte: filters.data_inicio } : undefined },
+                    { data_valor: filters.data_fim ? { lte: filters.data_fim } : undefined },
+                    { data_valor: filters.data_valor }, // filtro fixo
+                ],
             },
             select: {
                 valor_nominal: true,
@@ -2006,14 +2043,18 @@ export class VariavelService {
         return porPeriodo;
     }
 
-    async getSeriePrevistoRealizado(tipo: TipoVariavel, variavelId: number) {
+    async getSeriePrevistoRealizado(
+        tipo: TipoVariavel,
+        filters: FilterSVNPeriodoDto,
+        variavelId: number
+    ): Promise<ListSeriesAgrupadas> {
         const indicador = await this.getIndicadorViaVariavel(variavelId);
         const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
             return v.variavel.id === variavelId;
         });
         const variavel = indicadorVariavelRelList[0].variavel;
 
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, undefined);
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
         const result: ListSeriesAgrupadas = {
@@ -2030,9 +2071,44 @@ export class VariavelService {
             ordem_series: ORDEM_SERIES_RETORNO,
         };
 
-        // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir
+        const [analisesCiclo, documentoCiclo] = await Promise.all([
+            this.prisma.variavelCicloFisicoQualitativo.findMany({
+                where: {
+                    variavel_id: variavelId,
+                    referencia_data: { in: valoresExistentes.map((v) => v.data_valor) },
+                    removido_em: null,
+                },
+                distinct: ['referencia_data'],
+                select: {
+                    id: true,
+                    referencia_data: true,
+                    analise_qualitativa: true,
+                },
+            }),
+            this.prisma.variavelCicloFisicoDocumento.groupBy({
+                where: {
+                    variavel_id: variavelId,
+                    removido_em: null,
+                    referencia_data: { in: valoresExistentes.map((v) => v.data_valor) },
+                },
+                by: ['referencia_data'],
+                _count: true,
+            }),
+        ]);
 
-        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id);
+        const mapAnalisesCiclo: Record<string, (typeof analisesCiclo)[0]> = {};
+        for (const analise of analisesCiclo) {
+            mapAnalisesCiclo[Date2YMD.toString(analise.referencia_data)] = analise;
+        }
+        const mapDocumentoCiclo: Record<string, (typeof documentoCiclo)[0]> = {};
+        for (const doc of documentoCiclo) {
+            mapDocumentoCiclo[Date2YMD.toString(doc.referencia_data)] = doc;
+        }
+
+        // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir (e agora com o plano setorial)
+        // isso mudou mais uma vez
+
+        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id, filters);
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieValorNomimal[] = this.populaSeriesExistentes(
                 porPeriodo,
@@ -2041,10 +2117,23 @@ export class VariavelService {
                 variavel
             );
 
+            let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
+
+            const analiseCiclo = mapAnalisesCiclo[periodoYMD];
+            const docCiclo = mapDocumentoCiclo[periodoYMD];
+            if (analiseCiclo) {
+                ciclo_fisico = {
+                    id: analiseCiclo.id,
+                    analise: analiseCiclo.analise_qualitativa || '',
+                    tem_documentos: (docCiclo?._count || 0) > 0,
+                };
+            }
+
             result.linhas.push({
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
+                ciclo_fisico: ciclo_fisico,
             });
         }
 
@@ -2140,12 +2229,18 @@ export class VariavelService {
         } as NonExistingSerieJwt);
     }
 
-    private async gerarPeriodoVariavelEntreDatas(variavelId: number): Promise<DateYMD[]> {
-        const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+    private async gerarPeriodoVariavelEntreDatas(variavelId: number, filtros?: FiltroData): Promise<DateYMD[]> {
+        if (isNaN(variavelId)) throw new BadRequestException('Variável inválida');
+
+        const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
             select to_char(p.p, 'yyyy-mm-dd') as dt
             from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim),
             generate_series(inicio, fim, p) p
-        `;
+            where true
+            ${filtros && filtros.data_inicio ? `and p.p >= '${filtros.data_inicio.toISOString()}'::date` : ''}
+            ${filtros && filtros.data_fim ? `and p.p <= '${filtros.data_fim.toISOString()}'::date` : ''}
+            ${filtros && filtros.data_valor ? `and p.p = '${filtros.data_valor.toISOString()}'::date` : ''}
+        `);
 
         return dados.map((e) => e.dt);
     }

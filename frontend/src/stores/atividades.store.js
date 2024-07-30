@@ -2,11 +2,22 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return 'atividade';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-atividade';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useAtividadesStore = defineStore({
   id: 'Atividades',
   state: () => ({
     Atividades: {},
     singleAtividade: {},
+    relacionadosAtividade: {},
   }),
   actions: {
     clear() {
@@ -22,7 +33,7 @@ export const useAtividadesStore = defineStore({
         if (!this.Atividades[iniciativa_id]?.length) {
           this.Atividades[iniciativa_id] = { loading: true };
         }
-        const r = await this.requestS.get(`${baseUrl}/atividade?iniciativa_id=${iniciativa_id}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?iniciativa_id=${iniciativa_id}`);
 
         this.Atividades[iniciativa_id] = r.linhas.map((x) => {
           x.compoe_indicador_iniciativa = x.compoe_indicador_iniciativa ? '1' : false;
@@ -31,6 +42,19 @@ export const useAtividadesStore = defineStore({
         return true;
       } catch (error) {
         this.Atividades[iniciativa_id] = { error };
+        return false;
+      }
+    },
+    async getRelacionados(params) {
+      try {
+        if (params.atividade_id) {
+          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          this.relacionadosAtividade = response;
+          return true;
+        }
+        throw new Error('ID do PdM ou atividade não fornecido.');
+      } catch (error) {
+        this.relacionadosAtividade = { error };
         return false;
       }
     },
@@ -52,16 +76,16 @@ export const useAtividadesStore = defineStore({
       }
     },
     async insert(params) {
-      const r = await this.requestS.post(`${baseUrl}/atividade`, params);
+      const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/atividade/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params)) return true;
       return false;
     },
     async delete(iniciativa_id, atividade_id) {
-      if (await this.requestS.delete(`${baseUrl}/atividade/${atividade_id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${atividade_id}`)) {
         this.Atividades[iniciativa_id] = {};
         this.getAll(iniciativa_id);
         return true;

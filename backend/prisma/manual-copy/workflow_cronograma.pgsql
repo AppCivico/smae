@@ -129,11 +129,7 @@ BEGIN
             tarefas.transferencia_tarefa_id,
             tarefas.marco,
             tarefas.duracao,
-            CASE
-                WHEN tarefas.responsabilidade::varchar = 'Propria'
-                THEN _orgao_seri_id
-                ELSE NULL
-            END
+            _orgao_seri_id
         FROM tarefas
         JOIN tarefas_fases tf ON tf.tarefa = tarefas.tarefa_pai;
 

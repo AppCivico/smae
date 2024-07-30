@@ -21,7 +21,6 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
 import { ContentInterceptor } from './content.interceptor';
-import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DistribuicaoRecursoModule } from './distribuicao-recurso/distribuicao-recurso.module';
@@ -50,6 +49,7 @@ import { WorkflowFluxoModule } from './workflow/configuracao/fluxo/workflow-flux
 import { WorkflowSituacaoModule } from './workflow/configuracao/situacao/workflow-situacao.module';
 import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowModule } from './workflow/configuracao/workflow.module';
+import { TaskModule } from './task/task.module';
 
 // Hacks pro JS
 /*
@@ -77,7 +77,7 @@ import { WorkflowModule } from './workflow/configuracao/workflow.module';
         OrcamentoModule,
         OrcamentoPlanejadoModule,
         OrcamentoRealizadoModule,
-        CronogramaEtapaModule,
+
         OrcamentoPrevistoModule,
         DashboardModule,
         BancadaModule,
@@ -101,7 +101,8 @@ import { WorkflowModule } from './workflow/configuracao/workflow.module';
         BlocoNotasModule,
         DashTransferenciaModule,
         PessoaPrivilegioModule,
-        CommonBaseModule
+        CommonBaseModule,
+        TaskModule,
     ],
     controllers: [AppController],
     providers: [

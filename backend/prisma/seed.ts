@@ -16,7 +16,7 @@ import {
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
 
-const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
+const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
     CadastroTipoOrgao: ['Tipos de Órgãos', 'SMAE'],
     CadastroPessoa: ['Pessoas', 'SMAE'],
@@ -91,12 +91,13 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
-    ModalidadeContratacao: ['Modalidade de Contratação', 'SMAE'],
+    ModalidadeContratacao: ['Modalidade de Contratação', ['MDO', 'Projetos']],
 
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
-    TipoAditivo: ['Tipo Aditivo', 'SMAE'],
-    CadastroGrupoVariavel: ['Grupos de Variáveis', 'SMAE'],
+    TipoAditivo: ['Tipo Aditivo', ['MDO', 'Projetos']],
+    CadastroVariavelGlobal: ['Variáveis Globais', 'PlanoSetorial'], // depois vai ter o PDM
+    CadastroGrupoVariavel: ['Grupos de Variáveis', ['PlanoSetorial']], // depois vai ter o PDM
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -123,6 +124,14 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroGrupoPaineisExternas: false,
     TipoAditivoMDO: false,
     ModalidadeContratacaoMDO: false,
+    CadastroIndicador: false,
+    CadastroIniciativa: false,
+    CadastroIniciativaPS: false,
+    CadastroAtividade: false,
+    CadastroAtividadePS: false,
+    CadastroIndicadorPS: false,
+    CadastroCronograma: false,
+    CadastroCronogramaPS: false,
 
     ModalidadeContratacao: [
         ['ModalidadeContratacao.inserir', 'Inserir Modalidade de Contratação'],
@@ -288,19 +297,17 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['ProjetoTag.remover', 'Remover Tag'],
     ],
     ProjetoTagMDO: [
-        ['ProjetoTagMDO.inserir', 'Inserir Tag'],
-        ['ProjetoTagMDO.editar', 'Editar Tag'],
-        ['ProjetoTagMDO.remover', 'Remover Tag'],
+        ['ProjetoTagMDO.inserir', 'Inserir Tag de MdO'],
+        ['ProjetoTagMDO.editar', 'Editar Tag de MdO'],
+        ['ProjetoTagMDO.remover', 'Remover Tag de MdO'],
     ],
     CadastroMeta: [
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
         // quando tem essa permissão, é liberado vários outros itens
         [
-            'CadastroMeta.inserir',
-            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.',
+            'CadastroMeta.administrador_no_pdm',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis do PDM.',
         ],
-        ['CadastroMeta.editar', 'Editar Metas pelas quais for responsável'],
-        ['CadastroMeta.remover', 'Remover Metas pelas quais for responsável'],
         [
             'CadastroMeta.administrador_orcamento',
             'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
@@ -310,11 +317,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroMetaPS: [
         [
-            'CadastroMetaPS.inserir',
-            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.',
+            'CadastroMetaPS.administrador_no_pdm',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis nos planos setoriais, de acordo com o seu perfil.',
         ],
-        ['CadastroMetaPS.editar', 'Editar Metas pelas quais for responsável'],
-        ['CadastroMetaPS.remover', 'Remover Metas pelas quais for responsável'],
         [
             'CadastroMetaPS.administrador_orcamento',
             'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
@@ -322,51 +327,15 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMetaPS.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMetaPS.listar', 'Listar metas, iniciativas e atividades'],
     ],
-    CadastroIndicador: [
-        ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicador.editar', 'Editar Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicador.remover', 'Remover Indicadores e variáveis quando for responsável'],
-    ],
-    CadastroIndicadorPS: [
-        ['CadastroIndicadorPS.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
-        ['CadastroIndicadorPS.inserir', 'Inserir Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicadorPS.editar', 'Editar Indicadores e variáveis quando for responsável'],
-        ['CadastroIndicadorPS.remover', 'Remover Indicadores e variáveis quando for responsável'],
+    CadastroVariavelGlobal: [
+        ['CadastroVariavelGlobal.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
+        ['CadastroVariavelGlobal.administrador_no_orgao', 'Inserir Indicadores e variáveis quando for responsável'],
     ],
     CadastroVariavelCategorica: [
         ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
     ],
     CadastroVariavelCategoricaPS: [['CadastroVariavelCategoricaPS.administrador', false]],
-    CadastroIniciativa: [
-        ['CadastroIniciativa.inserir', 'Inserir Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativa.editar', 'Editar Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativa.remover', 'Remover Iniciativas pelas quais for responsável'],
-    ],
-    CadastroIniciativaPS: [
-        ['CadastroIniciativaPS.inserir', 'Inserir Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativaPS.editar', 'Editar Iniciativas pelas quais for responsável'],
-        ['CadastroIniciativaPS.remover', 'Remover Iniciativas pelas quais for responsável'],
-    ],
-    CadastroAtividade: [
-        ['CadastroAtividade.inserir', 'Inserir Atividades pelas quais for responsável'],
-        ['CadastroAtividade.editar', 'Editar Atividades pelas quais for responsável'],
-        ['CadastroAtividade.remover', 'Remover Atividades pelas quais for responsável'],
-    ],
-    CadastroAtividadePS: [
-        ['CadastroAtividadePS.inserir', 'Inserir Atividades pelas quais for responsável'],
-        ['CadastroAtividadePS.editar', 'Editar Atividades pelas quais for responsável'],
-        ['CadastroAtividadePS.remover', 'Remover Atividades pelas quais for responsável'],
-    ],
-    CadastroCronograma: [
-        ['CadastroCronograma.inserir', 'Inserir Cronogramas pelos quais for responsável'],
-        ['CadastroCronograma.editar', 'Editar Cronogramas pelos quais for responsável'],
-        ['CadastroCronograma.remover', 'Remover Cronogramas pelos quais for responsável'],
-    ],
-    CadastroCronogramaPS: [
-        ['CadastroCronogramaPS.inserir', 'Inserir Cronogramas pelos quais for responsável'],
-        ['CadastroCronogramaPS.editar', 'Editar Cronogramas pelos quais for responsável'],
-        ['CadastroCronogramaPS.remover', 'Remover Cronogramas pelos quais for responsável'],
-    ],
+
     CadastroPainel: [
         ['CadastroPainel.visualizar', 'Visualizar Painéis e detalhes do conteúdo'],
         ['CadastroPainel.inserir', 'Inserir Painéis pelos quais for responsável'],
@@ -454,13 +423,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
     Config: [
+        ['SMAE.login_suspenso', 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável'],
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
-        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
-        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
     ],
     CadastroGrupoVariavel: [
@@ -495,6 +463,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['MDO.espectador_de_projeto', 'Participante de Grupos de Portfólio de MdO'],
         ['MDO.gestor_de_projeto', 'Gestor de Projeto de MdO'],
         ['MDO.colaborador_de_projeto', 'Colaborador de projeto de MdO'],
+        [
+            'CadastroPessoa.administrador.MDO',
+            'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
+        ],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', 'Pode ser designado como Coordenador Responsável na CP'],
@@ -510,6 +482,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PS.tecnico_cp', 'Plano Setorial - Técnico CP'],
         ['PS.admin_cp', 'Plano Setorial - Administrador CP'],
         ['PS.ponto_focal', 'Plano Setorial - Ponto Focal'],
+        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
 };
 
@@ -529,20 +503,7 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
     'PDM.coordenador_responsavel_cp',
     'PDM.tecnico_cp',
     'CadastroMeta.listar',
-    'CadastroMeta.editar',
-    'CadastroMeta.remover',
-    'CadastroIndicador.inserir',
-    'CadastroIndicador.editar',
-    'CadastroIndicador.remover',
-    'CadastroIniciativa.inserir',
-    'CadastroIniciativa.editar',
-    'CadastroIniciativa.remover',
-    'CadastroAtividade.inserir',
-    'CadastroAtividade.editar',
-    'CadastroAtividade.remover',
-    'CadastroCronograma.inserir',
-    'CadastroCronograma.editar',
-    'CadastroCronograma.remover',
+    'CadastroMeta.administrador_no_pdm',
     'CadastroPainel.inserir',
     'CadastroPainel.editar',
     'CadastroPainel.remover',
@@ -552,24 +513,41 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
 const PrivRespNaCpPS: ListaDePrivilegios[] = [
     'PS.tecnico_cp',
     'CadastroMetaPS.listar',
-    'CadastroMetaPS.editar',
-    'CadastroMetaPS.remover',
-    'CadastroIndicadorPS.inserir',
-    'CadastroIndicadorPS.editar',
-    'CadastroIndicadorPS.remover',
-    'CadastroIniciativaPS.inserir',
-    'CadastroIniciativaPS.editar',
-    'CadastroIniciativaPS.remover',
-    'CadastroAtividadePS.inserir',
-    'CadastroAtividadePS.editar',
-    'CadastroAtividadePS.remover',
-    'CadastroCronogramaPS.inserir',
-    'CadastroCronogramaPS.editar',
-    'CadastroCronogramaPS.remover',
+    'CadastroMetaPS.administrador_no_pdm',
+    'CadastroVariavelGlobal.administrador_no_orgao',
+
     'CadastroPainelPS.inserir',
     'CadastroPainelPS.editar',
     'CadastroPainelPS.remover',
     'CadastroPainelPS.visualizar',
+];
+
+const PSCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroMacroTemaPS.inserir',
+    'CadastroMacroTemaPS.editar',
+    'CadastroMacroTemaPS.remover',
+    'CadastroTemaPS.inserir',
+    'CadastroTemaPS.editar',
+    'CadastroTemaPS.remover',
+    'CadastroSubTemaPS.inserir',
+    'CadastroSubTemaPS.editar',
+    'CadastroSubTemaPS.remover',
+    'CadastroTagPS.inserir',
+    'CadastroTagPS.editar',
+    'CadastroTagPS.remover',
+];
+const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
+    'CadastroMetaPS.administrador_no_pdm',
+    'CadastroMetaPS.administrador_orcamento',
+
+    'CadastroPainelPS.inserir',
+    'CadastroPainelPS.editar',
+    'CadastroPainelPS.remover',
+    'CadastroPainelPS.visualizar',
+
+    'Reports.executar.PlanoSetorial',
+    'Reports.remover.PlanoSetorial',
+    'Reports.dashboard_ps',
 ];
 const removerNomePerfil = (nome: string) => {
     return {
@@ -606,6 +584,16 @@ const PerfilAcessoConfig: {
         privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
     },
     {
+        nome: 'SYSADMIN',
+        descricao: 'Endpoints especiais do sistema',
+        privilegios: ['SMAE.sysadmin'],
+    },
+    {
+        nome: 'Suspensão de Login',
+        descricao: 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável',
+        privilegios: ['SMAE.login_suspenso'],
+    },
+    {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
         descricao:
             'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
@@ -626,22 +614,8 @@ const PerfilAcessoConfig: {
             'CadastroTag.inserir',
             'CadastroTag.editar',
             'CadastroTag.remover',
-            'CadastroMeta.inserir', // pq ele é admin_cp, vai poder editar varias coisas
+            'CadastroMeta.administrador_no_pdm', // pq ele é admin_cp, vai poder editar varias coisas
             'CadastroMeta.listar',
-            'CadastroMeta.editar',
-            'CadastroMeta.remover',
-            'CadastroIndicador.inserir',
-            'CadastroIndicador.editar',
-            'CadastroIndicador.remover',
-            'CadastroIniciativa.inserir',
-            'CadastroIniciativa.editar',
-            'CadastroIniciativa.remover',
-            'CadastroAtividade.inserir',
-            'CadastroAtividade.editar',
-            'CadastroAtividade.remover',
-            'CadastroCronograma.inserir',
-            'CadastroCronograma.editar',
-            'CadastroCronograma.remover',
             'CadastroPainel.inserir',
             'CadastroPainel.editar',
             'CadastroPainel.remover',
@@ -656,61 +630,34 @@ const PerfilAcessoConfig: {
 
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
-        descricao: 'Pode editar qualquer plano setorial.',
-        privilegios: ['CadastroPS.administrador'],
+        descricao:
+            'Pode editar qualquer plano setorial, administrar variaveis globais. Não pode participar como responsável.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroPS.administrador',
+            'CadastroVariavelGlobal.administrador',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
     },
 
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Pode editar qualquer plano setorial do órgão ao qual pertence.',
-        privilegios: ['CadastroPS.administrador_no_orgao'],
+        descricao:
+            'Pode editar qualquer plano setorial do órgão ao qual pertence, assim como suas variáveis globais. Não pode participar como responsável.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
     },
 
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),
-        descricao: 'Pode editar metas e dados do plano setorial que for administrador. Criar novos planos setoriais.',
-        privilegios: [
-            'PS.admin_cp',
-
-            'CadastroMetaPS.administrador_orcamento',
-            'CadastroMacroTemaPS.inserir',
-            'CadastroMacroTemaPS.editar',
-            'CadastroMacroTemaPS.remover',
-            'CadastroTemaPS.inserir',
-            'CadastroTemaPS.editar',
-            'CadastroTemaPS.remover',
-            'CadastroSubTemaPS.inserir',
-            'CadastroSubTemaPS.editar',
-            'CadastroSubTemaPS.remover',
-            'CadastroTagPS.inserir',
-            'CadastroTagPS.editar',
-            'CadastroTagPS.remover',
-            'CadastroMetaPS.inserir', // pq ele é admin_cp, vai poder editar varias coisas
-            'CadastroMetaPS.listar',
-            'CadastroMetaPS.editar',
-            'CadastroMetaPS.remover',
-            'CadastroIndicadorPS.inserir',
-            'CadastroIndicadorPS.editar',
-            'CadastroIndicadorPS.remover',
-            'CadastroIniciativaPS.inserir',
-            'CadastroIniciativaPS.editar',
-            'CadastroIniciativaPS.remover',
-            'CadastroAtividadePS.inserir',
-            'CadastroAtividadePS.editar',
-            'CadastroAtividadePS.remover',
-            'CadastroCronogramaPS.inserir',
-            'CadastroCronogramaPS.editar',
-            'CadastroCronogramaPS.remover',
-            'CadastroPainelPS.inserir',
-            'CadastroPainelPS.editar',
-            'CadastroPainelPS.remover',
-            'CadastroPainelPS.visualizar',
-
-            'Reports.executar.PlanoSetorial',
-            'Reports.remover.PlanoSetorial',
-
-            'Reports.dashboard_ps',
-        ],
+        descricao: '',
+        privilegios: false,
     },
 
     {
@@ -767,40 +714,18 @@ const PerfilAcessoConfig: {
     },
     {
         nome: 'Orçamento - MdO',
-        descricao: 'Pode criar orçamento para os projetos de obra que tem acesso.',
+        descricao: 'Pode criar orçamento para as obras que tem acesso.',
         privilegios: ['ProjetoMDO.orcamento'],
     },
     {
         nome: 'Administrador de Portfólio',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: [
-            'Projeto.administrar_portfolios',
-            'CadastroGrupoPortfolio.administrador',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-        ],
+        privilegios: ['Projeto.administrar_portfolios', 'CadastroGrupoPortfolio.administrador'],
     },
     {
         nome: 'Administrador de Portfólio do MdO',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: [
-            'ProjetoMDO.administrar_portfolios',
-            'CadastroGrupoPortfolioMDO.administrador',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-            // ...
-        ],
+        privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
     },
     {
         nome: 'Administrador de Grupo de Variáveis',
@@ -829,6 +754,14 @@ const PerfilAcessoConfig: {
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
+        ],
+    },
+
+    {
+        nome: 'Gestor de Cadastros Básicos de Projetos e Obras',
+        descricao:
+            'Responsável por gerenciar os cadastros básicos de projetos e obras, incluindo a criação, edição e remoção de etapas, modalidades de contratação e tipos de aditivo. Este perfil garante a consistência e organização das informações essenciais para o gerenciamento de projetos e obras.',
+        privilegios: [
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
@@ -845,18 +778,7 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador do Módulo de Obras',
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
-        privilegios: [
-            'ProjetoMDO.administrador',
-            'CadastroPessoa.administrador',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-        ],
+        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador.MDO'],
     },
     {
         nome: 'Gestor de Obras no Órgão',
@@ -875,16 +797,10 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
+
             'ProjetoProgramaMDO.inserir',
             'ProjetoProgramaMDO.editar',
             'ProjetoProgramaMDO.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
         ],
     },
     {
@@ -894,16 +810,6 @@ const PerfilAcessoConfig: {
             'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
-            'CadastroProjetoEtapa.inserir',
-            'CadastroProjetoEtapa.editar',
-            'CadastroProjetoEtapa.remover',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
         ],
     },
     {
@@ -919,14 +825,6 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
         ],
     },
     {
@@ -937,15 +835,12 @@ const PerfilAcessoConfig: {
             'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
-            'CadastroProjetoEtapa.inserir',
-            'CadastroProjetoEtapa.editar',
-            'CadastroProjetoEtapa.remover',
         ],
     },
     {
         nome: 'Colaborador de obra no órgão',
         descricao:
-            'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+            'Pode ser escolhido como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
             'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
             'MDO.colaborador_de_projeto',
@@ -973,7 +868,7 @@ const PerfilAcessoConfig: {
     // TODO Observador de obras
     {
         nome: atualizarNomePerfil('Observador de obra', []),
-        descricao: 'Pode participar como leitor em portfólio e projetos',
+        descricao: 'Pode participar como leitor em portfólio e obras',
         privilegios: ['MDO.espectador_de_projeto'],
     },
     {
@@ -1062,6 +957,8 @@ async function main() {
 
         await populateEleicao();
         await populateDistribuicaoStatusBase();
+
+        await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
     });
 }
 
@@ -1172,12 +1069,12 @@ async function atualizar_modulos_e_privilegios() {
                 where: { codigo: codModulo },
                 update: {
                     descricao: modConfig[0],
-                    modulo_sistema: modConfig[1],
+                    modulo_sistema: Array.isArray(modConfig[1]) ? modConfig[1] : [modConfig[1]],
                 },
                 create: {
                     codigo: codModulo,
                     descricao: modConfig[0],
-                    modulo_sistema: modConfig[1],
+                    modulo_sistema: Array.isArray(modConfig[1]) ? modConfig[1] : [modConfig[1]],
                 },
             });
         }
@@ -1265,10 +1162,10 @@ async function upsert_privilegios(
         return Promise.resolve(0);
     }
 
-    if (!priv || priv.nome !== nome) {
+    if (!priv || priv.nome !== nome || priv.modulo_id !== moduloId) {
         return prisma.privilegio.upsert({
-            where: { codigo: codigo, modulo_id: moduloId },
-            update: { nome: nome },
+            where: { codigo: codigo },
+            update: { nome: nome, modulo_id: moduloId },
             create: {
                 nome: nome,
                 modulo_id: moduloId,

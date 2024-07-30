@@ -1,13 +1,10 @@
+import type { DetalhePSDto } from '@/../../backend/src/pdm/dto/detalhe-pdm.dto';
+import type { ListPdmDto, OrcamentoConfig } from '@/../../backend/src/pdm/dto/list-pdm.dto';
+import type { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
+import type { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
+import type { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPdmDto } from '@/../../backend/src/pdm/dto/list-pdm.dto';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -25,9 +22,11 @@ interface Erros {
   arquivos: null | unknown;
 }
 
+type EmFoco = PlanoSetorialDto & { orcamento_config?: OrcamentoConfig[] | null };
+
 interface Estado {
   lista: Lista;
-  emFoco: PlanoSetorialDto | null;
+  emFoco: EmFoco | null;
   arquivos: ListPdmDocument['linhas'] | [];
 
   chamadasPendentes: ChamadasPendentes;
@@ -57,10 +56,16 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.emFoco = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params);
-        this.emFoco = {
-          ...resposta,
-        };
+        const resposta: DetalhePSDto | PlanoSetorialDto = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params);
+
+        this.emFoco = 'pdm' in resposta
+          ? {
+            ...resposta.pdm,
+            orcamento_config: resposta.orcamento_config,
+          }
+          : {
+            ...resposta,
+          };
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
       }
@@ -148,7 +153,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
     },
 
-    async associarArquivo(params = {}, id=0, idDoPlanoSetorial = 0,): Promise<boolean> {
+    async associarArquivo(params = {}, id = 0, idDoPlanoSetorial = 0): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
       this.erros.arquivos = null;
 
@@ -222,22 +227,58 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       rotulo_tema: emFoco?.rotulo_tema || '',
       upload_logo: emFoco?.logo || null,
     }),
-    
+
     arquivosPorId: ({ arquivos }: Estado) => {
-      const result = arquivos.reduce((acc, cur) => {
-        return {
-          ...acc,
-          [cur.id]: {
-            ...cur,
-            arquivo: {
-              ...cur.arquivo,
-              descricao: cur.descricao,
-              id: cur.id,
-            }
+      const result = arquivos.reduce((acc, cur) => ({
+        ...acc,
+        [cur.id]: {
+          ...cur,
+          arquivo: {
+            ...cur.arquivo,
+            descricao: cur.descricao,
+            id: cur.id,
           },
-        };
-      }, {});
+        },
+      }), {});
       return result;
+    },
+
+    orcamentosDisponiveisNoPlanoEmFoco: ({ emFoco }) => {
+      const disponiveis = {
+        execucao_disponivel: false,
+        planejado_disponivel: false,
+        previsao_custo_disponivel: false,
+      };
+
+      if (Array.isArray(emFoco?.orcamento_config) && emFoco?.orcamento_config.length) {
+        let i = 0;
+
+        while (emFoco?.orcamento_config[i]) {
+          const item = emFoco?.orcamento_config[i];
+
+          if (item.execucao_disponivel) {
+            disponiveis.execucao_disponivel = true;
+          }
+          if (item.planejado_disponivel) {
+            disponiveis.planejado_disponivel = true;
+          }
+          if (item.previsao_custo_disponivel) {
+            disponiveis.previsao_custo_disponivel = true;
+          }
+
+          if (
+            disponiveis.execucao_disponivel
+            && disponiveis.planejado_disponivel
+            && disponiveis.previsao_custo_disponivel
+          ) {
+            break;
+          }
+
+          i += 1;
+        }
+      }
+
+      return disponiveis;
     },
 
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: ListPdm } => lista

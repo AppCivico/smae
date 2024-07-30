@@ -2,6 +2,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return 'ods';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-ods';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useOdsStore = defineStore('odsStore', {
   state: () => ({
     lista: [],
@@ -19,7 +29,7 @@ export const useOdsStore = defineStore('odsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/ods/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -33,7 +43,7 @@ export const useOdsStore = defineStore('odsStore', {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/ods`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -46,7 +56,7 @@ export const useOdsStore = defineStore('odsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/ods/${id}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -62,9 +72,9 @@ export const useOdsStore = defineStore('odsStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/ods/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/ods`, params);
+          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

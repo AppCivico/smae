@@ -18,7 +18,7 @@ function iniciar() {
   if (emFoco?.id !== Number(props.planoSetorialId)) {
     planosSetoriaisStore.$reset();
 
-    planosSetoriaisStore.buscarItem(props.planoSetorialId);
+    planosSetoriaisStore.buscarItem(props.planoSetorialId, { incluir_auxiliares: true });
   }
 }
 

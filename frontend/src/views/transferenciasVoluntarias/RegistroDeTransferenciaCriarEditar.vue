@@ -1,19 +1,36 @@
 <script setup>
+import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
+import {
+  computed, nextTick, watch,
+} from 'vue';
+import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
   chamadasPendentes, erro, itemParaEdição, emFoco: transferenciaEmFoco,
 } = storeToRefs(TransferenciasVoluntarias);
+
+const ParlamentaresStore = useParlamentaresStore();
+const {
+  lista: parlamentarComoLista,
+  parlamentaresPorId,
+  paginação: paginaçãoDeParlamentares,
+} = storeToRefs(ParlamentaresStore);
+
+const partidoStore = usePartidosStore();
+const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const router = useRouter();
 const props = defineProps({
@@ -24,7 +41,7 @@ const props = defineProps({
 });
 
 const {
-  errors, isSubmitting, setFieldValue, values, handleSubmit,
+  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -111,13 +128,17 @@ const updateValorTotal = (fieldName, newValue) => {
 };
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
+partidoStore.buscarTudo();
 
-onMounted(() => {
+watch(itemParaEdição, async (novosValores) => {
+  resetForm({ values: novosValores });
+
+  await nextTick();
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
-});
+}, { immediate: true });
 </script>
-
 <template>
   <pre v-scrollLockDebug>
     transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
@@ -149,8 +170,8 @@ onMounted(() => {
             name="valor"
             type="text"
             class="inputtext light mb1"
-            :value="values.valor"
             converter-para="string"
+            :value="values.valor"
             @update:model-value="(newValue) =>
               updateValorTotal('valor', newValue, setFieldValue)"
           />
@@ -361,6 +382,75 @@ onMounted(() => {
         />
       </div>
     </div>
+
+    <div class="flex spacebetween center mb1">
+      <h3 class="title">
+        Parlamentares
+      </h3>
+      <hr class="ml2 f1">
+    </div>
+
+    <!-- Esse FieldArray é desnecessário -->
+    <FieldArray
+      v-slot="{ fields }"
+      name="parlamentares"
+    >
+      <div
+        v-for="(field, idx) in fields"
+        :key="`parlamentares--${field.key}`"
+        class="mb2"
+      >
+        <Field
+          :name="`parlamentares[${idx}].id`"
+          type="hidden"
+        />
+
+        <div class="flex g2">
+          <div class="f1">
+            <LabelFromYup
+              name="parlamentar_id"
+              :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].parlamentar.nome_popular`"
+            />
+            <input
+              :name="`parlamentares[${idx}].parlamentar.nome_popular`"
+              class="inputtext light mb1"
+              type="text"
+              aria-readonly="true"
+              readonly
+              :value="values.parlamentares?.[idx]?.parlamentar?.nome_popular"
+            >
+          </div>
+          <div class="f1">
+            <LabelFromYup
+              name="valor"
+              :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].valor`"
+            />
+            <MaskedFloatInput
+              :name="`parlamentares[${idx}].valor`"
+              type="text"
+              class="inputtext light mb1"
+              converter-para="string"
+              :value="values.parlamentares?.[idx]?.valor"
+            />
+          </div>
+        </div>
+        <div>
+          <LabelFromYup
+            name="objeto"
+            :schema="schema.fields.parlamentares.innerType"
+            :for="`parlamentares[${idx}].objeto`"
+          />
+          <Field
+            :name="`parlamentares[${idx}].objeto`"
+            class="inputtext light mb1"
+            as="textarea"
+            rows="10"
+          />
+        </div>
+      </div>
+    </FieldArray>
 
     <div class="flex spacebetween center mb1">
       <h3 class="title">

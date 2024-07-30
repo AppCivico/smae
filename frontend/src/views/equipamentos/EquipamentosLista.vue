@@ -56,9 +56,9 @@
           Carregando
         </td>
       </tr>
-      <tr v-else-if="erro">
+      <tr v-else-if="erro.lista">
         <td colspan="3">
-          Erro: {{ erro }}
+          Erro: {{ erro.lista }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
@@ -71,9 +71,9 @@
 </template>
 
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 
 const route = useRoute();
@@ -86,9 +86,8 @@ async function excluirEquipamento(id, descricao) {
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await equipamentosStore.excluirItem(id)) {
-        equipamentosStore.$reset();
-        equipamentosStore.buscarTudo();
         alertStore.success(`"${descricao}" removido.`);
+        equipamentosStore.buscarTudo();
       }
     },
     'Remover',

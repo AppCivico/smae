@@ -2,6 +2,7 @@ import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
+    IsEnum,
     IsNumber,
     IsNumberString,
     IsOptional,
@@ -13,6 +14,8 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
+import { ApiProperty } from '@nestjs/swagger';
+import { ParlamentarCargo } from '@prisma/client';
 
 export class CreateDistribuicaoRecursoDto {
     @IsNumber()
@@ -194,6 +197,35 @@ export class CreateDistribuicaoRecursoDto {
     @ValidateNested({ each: true })
     @Type(() => CreateDistribuicaoRegistroSEIDto)
     registros_sei?: CreateDistribuicaoRegistroSEIDto[];
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreateDistribuicaoParlamentarDto)
+    parlamentares?: CreateDistribuicaoParlamentarDto[];
+}
+
+export class CreateDistribuicaoParlamentarDto {
+    @IsNumber()
+    parlamentar_id: number;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(1024)
+    objeto?: string;
+
+    @IsOptional()
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    valor?: number;
 }
 
 class CreateDistribuicaoRegistroSEIDto {

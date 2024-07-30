@@ -12,17 +12,45 @@ BEGIN
                 COALESCE(NEW.emenda, ' ') || ' ' ||
                 COALESCE(NEW.nome_programa, ' ') || ' ' ||
                 COALESCE(NEW.objeto, ' ') || ' ' ||
-                COALESCE(tt.nome, '') || ' ' ||
-                COALESCE(p.sigla, ' ') || ' ' ||
-                COALESCE(p.nome, ' ')  || ' ' ||
-                COALESCE(o1.sigla, '') || '' ||
-                COALESCE(o1.descricao, '') || '' ||
-                COALESCE(o2.sigla, '') || '' ||
-                COALESCE(o2.descricao, '')
+                COALESCE(tt.nome, ' ') || ' ' ||
+                COALESCE(o1.sigla, ' ') || ' ' ||
+                COALESCE(o1.descricao, ' ') || ' ' ||
+                COALESCE(o2.sigla, ' ') || ' ' ||
+                COALESCE(o2.descricao, ' ') || ' ' ||
+                COALESCE(
+                    ( SELECT string_agg(CAST(p.nome_popular AS TEXT), ' ')
+                        FROM transferencia_parlamentar tp
+                        JOIN parlamentar p ON p.id = tp.parlamentar_id
+                        WHERE tp.transferencia_id = NEW.id AND tp.removido_em IS NULL
+                    ),
+                    ' '
+                ) || ' ' ||
+                COALESCE(
+                    ( SELECT string_agg(CAST(p.sigla AS TEXT), ' ')
+                        FROM transferencia_parlamentar tp
+                        JOIN partido p ON p.id = tp.partido_id
+                        WHERE tp.transferencia_id = NEW.id AND tp.removido_em IS NULL
+                    ),
+                    ' '
+                ) || ' ' ||
+                COALESCE(
+                    ( SELECT string_agg(CAST(tp.cargo AS TEXT), ' ')
+                        FROM transferencia_parlamentar tp
+                        JOIN partido p ON p.id = tp.partido_id
+                        WHERE tp.transferencia_id = NEW.id AND tp.removido_em IS NULL
+                    ),
+                    ' '
+                ) || ' ' ||
+                COALESCE(
+                    ( SELECT string_agg(CAST(dr.nome AS TEXT), ' ')
+                        FROM distribuicao_recurso dr
+                        WHERE dr.transferencia_id = t.id AND dr.removido_em IS NULL
+                    ),
+                    ' '
+                )
             )
-        FROM (SELECT new.partido_id, new.orgao_concedente_id, new.secretaria_concedente_id, new.tipo_id ) t
+        FROM (SELECT new.id, new.orgao_concedente_id, new.secretaria_concedente_id, new.tipo_id ) t
         JOIN transferencia_tipo tt ON tt.id = t.tipo_id
-        LEFT JOIN partido p ON p.id = t.partido_id
         LEFT JOIN orgao o1 ON o1.id = t.orgao_concedente_id
         LEFT JOIN orgao o2 ON o2.id = t.secretaria_concedente_id
     );
@@ -63,4 +91,21 @@ EXECUTE PROCEDURE f_transferencia_update_tsvector();
 CREATE TRIGGER trigger_transferencia_update_tsvector_insert
 BEFORE INSERT ON transferencia
 FOR EACH ROW
+EXECUTE PROCEDURE f_transferencia_update_tsvector();
+
+CREATE TRIGGER trigger_transferencia_parlamentar_update_tsvector_insert
+BEFORE INSERT ON transferencia_parlamentar
+FOR EACH ROW
+EXECUTE PROCEDURE f_transferencia_update_tsvector();
+
+DROP TRIGGER trigger_distribuicao_update_tsvector_insert;
+CREATE TRIGGER trigger_distribuicao_update_tsvector_insert
+BEFORE INSERT ON distribuicao_recurso
+FOR EACH ROW
+EXECUTE PROCEDURE f_transferencia_update_tsvector();
+
+CREATE TRIGGER trigger_distribuicao_update_tsvector_update
+BEFORE UPDATE ON distribuicao_recurso
+FOR EACH ROW
+WHEN ( OLD.nome IS DISTINCT FROM NEW.nome )
 EXECUTE PROCEDURE f_transferencia_update_tsvector();

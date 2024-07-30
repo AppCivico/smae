@@ -1,4 +1,16 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -16,27 +28,26 @@ import {
   ref,
   watch,
 } from 'vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import dinheiro from '@/helpers/dinheiro';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const ÓrgãosStore = useOrgansStore();
+const partidoStore = usePartidosStore();
+const ParlamentaresStore = useParlamentaresStore();
 
 const {
   chamadasPendentes, erro, lista, itemParaEdição, emFoco: distribuiçãoEmFoco,
 } = storeToRefs(distribuicaoRecursos);
 const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+
+const {
+  lista: parlamentarComoLista,
+  parlamentaresPorId,
+  paginação: paginaçãoDeParlamentares,
+} = storeToRefs(ParlamentaresStore);
+const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const props = defineProps({
   transferenciaId: {
@@ -167,7 +178,8 @@ async function iniciar() {
   if (transferenciasVoluntariaEmFoco.value?.id !== Number(props.transferenciaId)) {
     await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   }
-
+  ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
+  partidoStore.buscarTudo();
   ÓrgãosStore.getAll();
 }
 
@@ -184,7 +196,17 @@ function abrirModalStatus(status = null) {
 iniciar();
 
 watch(itemParaEdição, (novosValores) => {
-  resetForm({ values: novosValores });
+  resetForm({
+    values: {
+      ...novosValores,
+      parlamentares: novosValores.parlamentares?.length
+        ? novosValores.parlamentares
+        : transferenciasVoluntariaEmFoco.value?.parlamentares.map((x) => ({
+          valor: x.valor,
+          parlamentar_id: x.parlamentar_id,
+        })),
+    },
+  });
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
 });
@@ -977,6 +999,64 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
+    <div class="flex spacebetween center mb1">
+      <h3 class="title">
+        Parlamentares
+      </h3>
+      <hr class="ml2 f1">
+    </div>
+
+    <div class="mb1">
+      <div
+        v-for="(parlamentar, idx) in transferenciasVoluntariaEmFoco.parlamentares"
+        :key="`parlamentares--${parlamentar.id}`"
+        class="mb2"
+      >
+        <Field
+          :name="`parlamentares[${idx}].id`"
+          type="hidden"
+        />
+
+        <Field
+          :name="`parlamentares[${idx}].parlamentar_id`"
+          type="hidden"
+          :value="parlamentar.parlamentar_id"
+        />
+
+        <div class="flex g2">
+          <div class="f1">
+            <LabelFromYup
+              name="parlamentar_id"
+              :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].parlamentar.nome_popular`"
+            />
+            <input
+              :name="`parlamentares[${idx}].parlamentar.nome_popular`"
+              class="inputtext light mb1"
+              type="text"
+              aria-readonly="true"
+              readonly
+              :value="parlamentar?.parlamentar?.nome_popular"
+            >
+          </div>
+          <div class="f1">
+            <LabelFromYup
+              name="valor"
+              :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].valor`"
+            />
+            <MaskedFloatInput
+              :name="`parlamentares[${idx}].valor`"
+              type="text"
+              class="inputtext light mb1"
+              converter-para="string"
+              :value="values.parlamentares?.[idx]?.valor"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -1072,7 +1152,7 @@ const isSomaCorreta = computed(() => {
           v-for="item in distribuiçãoEmFoco.historico_status"
           :key="item.id"
         >
-          <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
+          <td>{{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
           <td>{{ item.status_base?.nome || item.status_customizado?.nome }}</td>
           <td>{{ item.orgao_responsavel?.sigla }}</td>
           <td>{{ item.nome_responsavel }}</td>

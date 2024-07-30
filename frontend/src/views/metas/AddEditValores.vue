@@ -61,10 +61,20 @@ async function onSubmit(el) {
         VariaveisStore.getValores(var_id);
         alertStore.success(msg);
         editModalStore.$reset();
-        router.push({
-          path: `${currentEdit}`,
-          query: route.query,
-        });
+
+        if (route.meta.rotaDeEscape) {
+          router.push({
+            name: route.meta.rotaDeEscape,
+            query: route.query,
+          });
+        } else if (route.meta.entidadeMãe === 'pdm') {
+          router.push({
+            path: `${currentEdit}`,
+            query: route.query,
+          });
+        } else {
+          throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+        }
       }
     }
   } catch (error) {
@@ -75,10 +85,20 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.$reset();
     alertStore.$reset();
-    router.push({
-      path: `${currentEdit}`,
-      query: route.query,
-    });
+
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+        query: route.query,
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: `${currentEdit}`,
+        query: route.query,
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
   });
 }
 function acumular(períodoAComparar, valorDoMês) {
@@ -152,9 +172,7 @@ function limparFormulário() {
     }
   });
 }
-
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h2>Editar valores</h2>

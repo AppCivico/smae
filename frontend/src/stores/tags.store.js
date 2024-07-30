@@ -4,6 +4,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return 'tag';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-tag';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useTagsStore = defineStore({
   id: 'Tags',
   state: () => ({
@@ -19,7 +29,7 @@ export const useTagsStore = defineStore({
       try {
         if (this.Tags.loading) return;
         this.Tags = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/tag`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           const ODSStore = useODSStore();
@@ -44,7 +54,7 @@ export const useTagsStore = defineStore({
     async getAllSimple() {
       this.Tags = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/tag`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
         if (r.linhas.length) {
           const ODSStore = useODSStore();
           await ODSStore.getAll();
@@ -72,15 +82,15 @@ export const useTagsStore = defineStore({
       }
     },
     async insert(params) {
-      if (await this.requestS.post(`${baseUrl}/tag`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params)) return true;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/tag/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/tag/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
       return false;
     },
     async filterTags(f) {
@@ -112,8 +122,18 @@ export const useTagsStore = defineStore({
   },
 
   getters: {
+    // melhor filtrar na busca do que usar essa função, que não tem cache
     filtradasPorPdM: ({ Tags }) => (pdmId) => (Tags.length
       ? Tags.filter((x) => x.pdm_id == pdmId)
       : []),
+    tagsPorPlano: ({ Tags }) => (Array.isArray(Tags)
+      ? Tags.reduce((acc, tag) => {
+        if (!acc[tag.pdm_id]) {
+          acc[tag.pdm_id] = [];
+        }
+        acc[tag.pdm_id].push(tag);
+        return acc;
+      }, {})
+      : {}),
   },
 });

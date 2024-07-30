@@ -43,6 +43,7 @@ export class ContratoService {
                         observacoes: dto.observacoes,
                         data_assinatura: dto.data_assinatura,
                         data_inicio: dto.data_inicio,
+                        data_termino: dto.data_termino,
                         prazo_numero: dto.prazo_numero,
                         prazo_unidade: dto.prazo_unidade,
                         data_base_mes: dto.data_base_mes,
@@ -98,7 +99,7 @@ export class ContratoService {
                 valor: true,
                 aditivos: {
                     where: { removido_em: null },
-                    orderBy: { numero: 'asc' },
+                    orderBy: { data: 'desc' },
                     select: {
                         id: true,
                         data: true,
@@ -117,11 +118,8 @@ export class ContratoService {
         return linhasContrato.map((contrato) => {
             const valorMaisAtual = contrato.aditivos.find((aditivo) => aditivo.valor != null)?.valor || contrato.valor;
 
-            const linhaComDatas = contrato.aditivos.find(
-                (aditivo) => aditivo.data_termino_atualizada != null || aditivo.data != null
-            );
-            const dataMaisAtual =
-                linhaComDatas?.data_termino_atualizada || linhaComDatas?.data || contrato.data_termino;
+            const linhaComDatas = contrato.aditivos.find((aditivo) => aditivo.data_termino_atualizada != null);
+            const dataMaisAtual = linhaComDatas?.data_termino_atualizada ?? contrato.data_termino;
 
             return {
                 id: contrato.id,

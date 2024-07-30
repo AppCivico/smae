@@ -6,7 +6,6 @@ SELECT
     t.workflow_etapa_atual_id,
     t.workflow_fase_atual_id,
     t.parlamentar_id,
-    p.foto_upload_id AS parlamentar_foto_id,
     t.valor_total,
     dr.orgao_gestor_id AS distribuicao_orgao_id,
     dr.valor_total AS distribuicao_valor_total,

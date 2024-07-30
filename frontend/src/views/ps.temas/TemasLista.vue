@@ -69,14 +69,16 @@
     </tbody>
   </table>
 </template>
-
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
+import { useTemasPsStore } from '@/stores/temasPs.store';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { useTemasPsStore } from '@/stores/temasPs.store';
+defineOptions({
+  inheritAttrs: false,
+});
 
 const route = useRoute();
 const titulo = typeof route?.meta?.título === 'function'

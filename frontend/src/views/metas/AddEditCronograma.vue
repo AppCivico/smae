@@ -1,6 +1,5 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { Dashboard } from '@/components';
 import { router } from '@/router';
 import {
   useAlertStore,
@@ -101,7 +100,13 @@ async function onSubmit(values) {
       msg = 'Item adicionado com sucesso!';
     }
     if (r) {
-      router.push(`${parentlink}/cronograma`);
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        router.push(`${parentlink}/cronograma`);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
       return;
     }
@@ -115,7 +120,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await CronogramasStore.delete(id)) {
           CronogramasStore.clear();
-          await router.push(`${parentlink}/cronograma`);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push(`${parentlink}/cronograma`);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Cronograma removido.');
         }
       }, 'Remover');
@@ -123,16 +135,34 @@ async function checkDelete(id) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/cronograma`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    alertStore.$reset();
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: `${parentlink}/cronograma`,
+
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
+  });
 }
 </script>
 
 <template>
-  <Dashboard>
     <MigalhasDeMetas class="mb1" />
 
     <div class="flex spacebetween center">
-      <h1>{{ title }}</h1>
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        {{ title }}
+      </TítuloDePágina>
       <hr class="ml2 f1">
       <button
         class="btn round ml2"
@@ -325,12 +355,12 @@ async function checkClose() {
         </div>
       </div>
       <div class="tc">
-        <router-link
+        <SmaeLink
           :to="`${parentlink}`"
           class="btn big mt1 mb1"
         >
           <span>Voltar</span>
-        </router-link>
+        </SmaeLink>
       </div>
     </template>
 
@@ -343,5 +373,4 @@ async function checkClose() {
         Remover item
       </button>
     </template>
-  </Dashboard>
 </template>

@@ -1,15 +1,9 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { usePdMStore } from '@/stores/pdm.store';
-
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
 
 const PdMStore = usePdMStore();
 const { activePdm } = storeToRefs(PdMStore);

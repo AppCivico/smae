@@ -30,7 +30,7 @@ export class FilterCronogramaDto {
     @Type(() => Number)
     atividade_id?: number;
 
-    // usado intermaente para filtrar apenas cronogramas que os ids derem match
+    // usado internamente para filtrar apenas cronogramas que os ids derem match
     @ApiHideProperty()
     cronograma_etapa_ids?: number[];
 }

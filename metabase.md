@@ -16,6 +16,7 @@ Para que os sub-menus sejam carregados, insira na tabela `metabase_permissao` de
 
     Caso exista o `params.projetos_ids` será substituído pelo ids dos projetos que o usuário logado pode visualizar
     Caso exista o `params.metas_ids` será substituído pelo ids das metas que o usuário logado pode visualizar
+        - necessário informar params.tipo_pdm = PDM ou tipo_pdm=PS, default é assumir PDM
     Caso exista o `params.pdm_id` será gerado um link de embed para cada PDM que existe registrado no sistema
 
 Exemplo de configuração da tabela:

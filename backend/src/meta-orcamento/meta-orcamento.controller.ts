@@ -74,3 +74,65 @@ export class MetaOrcamentoController {
         return '';
     }
 }
+
+@Controller('plano-setorial-orcamento-previsto')
+@ApiTags('Orçamento - Meta (Custeio e Investimento)')
+export class MetaPSOrcamentoController {
+    // TODO fechar pra só ver o que realmente é PS
+    constructor(private readonly metaOrcamentoService: MetaOrcamentoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    async create(
+        @Body() createMetaDto: CreateMetaOrcamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.metaOrcamentoService.create(createMetaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    async findAll(
+        @Query() filters: FilterMetaOrcamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListMetaOrcamentoDto> {
+        return {
+            linhas: await this.metaOrcamentoService.findAll(filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero(filters.meta_id, filters.ano_referencia)),
+        };
+    }
+
+    @Patch('zerado')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiNoContentResponse()
+    async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.metaOrcamentoService.patchZerado(updateZeradoDto, user);
+        return '';
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @HttpCode(HttpStatus.ACCEPTED)
+    async patch(
+        @Param() params: FindOneParams,
+        @Body() updateMetaDto: UpdateMetaOrcamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<void> {
+        await this.metaOrcamentoService.update(+params.id, updateMetaDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.metaOrcamentoService.remove(+params.id, user);
+        return '';
+    }
+}

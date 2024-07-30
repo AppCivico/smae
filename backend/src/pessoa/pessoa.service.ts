@@ -25,7 +25,7 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
 const BCRYPT_ROUNDS = 10;
-
+const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['CadastroPessoa.administrador', 'CadastroPessoa.administrador.MDO'];
 @Injectable()
 export class PessoaService {
     private readonly logger = new Logger(PessoaService.name);
@@ -165,7 +165,7 @@ export class PessoaService {
 
     private async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
         if (createPessoaDto.orgao_id === undefined) {
-            if (user.hasSomeRoles(['CadastroPessoa.administrador']) === false) {
+            if (user.hasSomeRoles(LISTA_PRIV_ADMIN) === false) {
                 throw new ForbiddenException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
             }
         }
@@ -173,7 +173,7 @@ export class PessoaService {
         if (
             createPessoaDto.orgao_id &&
             user.orgao_id &&
-            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
+            user.hasSomeRoles(LISTA_PRIV_ADMIN) === false &&
             Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
@@ -185,7 +185,7 @@ export class PessoaService {
     }
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
-        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
         if (user.hasSomeRoles(['SMAE.superadmin']) == false && updatePessoaDto.perfil_acesso_ids) {
             const oldPessoaPerfis = (
                 await this.prisma.pessoaPerfil.findMany({
@@ -413,13 +413,13 @@ export class PessoaService {
             async (prismaTx: Prisma.TransactionClient) => {
                 const emailExists = updatePessoaDto.email
                     ? await prismaTx.pessoa.count({
-                        where: {
-                            email: updatePessoaDto.email,
-                            NOT: {
-                                id: pessoaId,
-                            },
-                        },
-                    })
+                          where: {
+                              email: updatePessoaDto.email,
+                              NOT: {
+                                  id: pessoaId,
+                              },
+                          },
+                      })
                     : 0;
                 if (emailExists > 0) {
                     throw new HttpException('email| E-mail está em uso em outra conta', 400);
@@ -1023,8 +1023,12 @@ export class PessoaService {
                         prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } })
                     );
                 }
-                promises.push(this.enviaPrimeiraSenha(created, newPass, prismaTx));
+
                 await Promise.all(promises);
+
+                // se a pessoa não está suspensa, envia a senha
+                const estaSuspenso = await this.carregaPrivPessoa(prismaTx, ['SMAE.login_suspenso'], created.id);
+                if (!estaSuspenso.length) await this.enviaPrimeiraSenha(created, newPass, prismaTx);
 
                 this.logger.log(`calculando pessoa_acesso_pdm...`);
                 await prismaTx.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
@@ -1055,7 +1059,7 @@ export class PessoaService {
     }
 
     private async buscaPerfisVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
-        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
         if (ehAdmin) {
             return await this.listaPerfilAcessoIds();
@@ -1283,7 +1287,7 @@ export class PessoaService {
     }
 
     async listaPerfilAcessoParaPessoas(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
-        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
         if (filter.sistemas && !ehAdmin)
             throw new BadRequestException(
@@ -1294,13 +1298,14 @@ export class PessoaService {
         const dados = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
+                nome: { not: 'SYSADMIN' },
                 modulos_sistemas: filter.sistemas
                     ? {
-                        hasSome: filter.sistemas,
-                    }
+                          hasSome: filter.sistemas,
+                      }
                     : ehAdmin
-                        ? undefined
-                        : {
+                      ? undefined
+                      : {
                             hasSome: ['SMAE', ...user.modulo_sistema],
                         },
             },
@@ -1328,13 +1333,13 @@ export class PessoaService {
         });
         if (ehAdmin) return dadosRetorno;
 
-        const sistema = user.assertOneModuloSistema('buscar', 'pérfil de acesso');
+        const sistema = user.assertOneModuloSistema('buscar', 'perfil de acesso');
 
         // exceto a linha de administrador, que não pode ser editada se você não for administrador
         for (const r of dadosRetorno) {
             r.modulos_sistemas = [sistema];
 
-            if (r.perfil_privilegio.some((v) => v.privilegio.codigo == 'CadastroPessoa.administrador'))
+            if (r.perfil_privilegio.some((v) => LISTA_PRIV_ADMIN.includes(v.privilegio.codigo as ListaDePrivilegios)))
                 r.pode_editar = false;
         }
 
@@ -1347,33 +1352,44 @@ export class PessoaService {
     ): Promise<ListaPrivilegiosModulos> {
         if (!filterModulos) filterModulos = Object.keys(ModuloSistema) as ModuloSistema[];
 
+        const filterModulosJson = JSON.stringify(filterModulos);
+
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
-            with perms as (
-                select p.codigo as cod_priv, m.codigo as cod_modulos, m.modulo_sistema
-                from pessoa_perfil pp
-                join perfil_acesso pa on pp.perfil_acesso_id = pa.id
-                join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
-                join privilegio p on p.id = priv.privilegio_id
-                join privilegio_modulo m on p.modulo_id = m.id
-                join pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
-                where pp.pessoa_id = ${pessoaId}
-                AND m.modulo_sistema = ANY(${filterModulos}::"ModuloSistema"[])
-                AND pa.removido_em IS null
+            WITH filter_modulos AS (
+                SELECT array_agg(value::text)::"ModuloSistema"[] AS modulos
+                from jsonb_array_elements_text(${filterModulosJson}::jsonb)
+            ),
+            perms AS (
+                SELECT p.codigo AS cod_priv, m.codigo AS cod_modulos, unnest(m.modulo_sistema) AS modulo_sistema
+                FROM pessoa_perfil pp
+                JOIN perfil_acesso pa ON pp.perfil_acesso_id = pa.id
+                JOIN perfil_privilegio priv ON priv.perfil_acesso_id = pa.id
+                JOIN privilegio p ON p.id = priv.privilegio_id
+                JOIN privilegio_modulo m ON p.modulo_id = m.id
+                JOIN pessoa pessoa ON pessoa.id = pp.pessoa_id AND pessoa.desativado = false
+                JOIN filter_modulos fm ON m.modulo_sistema && fm.modulos
+                WHERE pp.pessoa_id = ${pessoaId}
+                AND pa.removido_em IS NULL
             )
-            select
-                array_agg(distinct cod_priv) as privilegios,
-                array_agg(distinct cod_modulos) as modulos,
-                array_agg(distinct modulo_sistema) as sistemas
-            from perms;
+            SELECT
+                array_agg(DISTINCT cod_priv) AS privilegios,
+                array_agg(DISTINCT cod_modulos) AS modulos,
+                array_agg(DISTINCT modulo_sistema) AS sistemas
+            FROM perms;
         `;
         if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
-        if (filterModulos.length == 2) {
-            const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
-            this.filtraPrivilegiosSMAE(sistema, ret);
-        }
+        //if (filterModulos.length == 2) {
+        //const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
+        //this.filtraPrivilegiosSMAE(sistema, ret);
+        //}
+        if (!ret.modulos.includes('SMAE')) ret.modulos.push('SMAE');
+
+        if (ret.privilegios.includes('SMAE.login_suspenso'))
+            throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
+
         return ret;
     }
 
@@ -1393,7 +1409,7 @@ export class PessoaService {
      *
      * 1. **MDO e Projetos**:
      *    - Se o sistema atual não for `MDO` ou `Projetos`, remove os privilégios que começam com `TipoAditivo.`,
- *          `ModalidadeContratacao.`, etc...
+     *          `ModalidadeContratacao.`, etc...
      *      Estes privilégios são específicos para `MDO` e `Projetos`, portanto, não devem aparecer em outros sistemas.
      *
      * 2. **PDM e PlanoSetorial**:
@@ -1428,12 +1444,16 @@ export class PessoaService {
             removePrivilegios('CadastroVariavelCategorica.');
         }
 
+        if (!(sistema == 'PlanoSetorial')) {
+            removePrivilegios('FonteVariavel.');
+            removePrivilegios('AssuntoVariavel.');
+        }
+
         if (sistema == 'CasaCivil') {
             removePrivilegios('CadastroPainelExterno.');
             removePrivilegios('CadastroGrupoPainelExterno.');
             removePrivilegios('SMAE.espectador_de_painel_externo');
         }
-
     }
 
     async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {

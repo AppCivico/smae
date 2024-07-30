@@ -14,15 +14,13 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
     erro: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}) {
+    async buscarItem(params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel/${id}`, params);
-        this.emFoco = {
-          ...resposta,
-        };
+        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel/`, params);
+        this.emFoco = resposta?.linhas?.[0] || null;
       } catch (erro) {
         this.erro = erro;
       }
@@ -82,6 +80,8 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+        participantes: emFoco?.participantes?.map((participante) => participante.id) || [],
+        colaboradores: emFoco?.colaboradores?.map((colaborador) => colaborador.id) || [],
       };
     },
   },

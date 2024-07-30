@@ -202,6 +202,9 @@ watch([
           Fase
         </th>
         <th>
+          Status da Fase
+        </th>
+        <th>
           Objeto/Empreendimento
         </th>
         <th class="cell--number">
@@ -246,13 +249,16 @@ watch([
           {{ item.tipo.nome }}
         </td>
         <td>
-          {{ item.partido?.sigla ? item.partido?.sigla : '-' }}
+          {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
         </td>
         <td>
           {{ item.andamento_etapa? item.andamento_etapa : '-' }}
         </td>
         <td>
           {{ item.andamento_fase? item.andamento_fase : '-' }}
+        </td>
+        <td>
+          {{ item.fase_status? item.fase_status : '-' }}
         </td>
         <td>
           {{ item.objeto }}

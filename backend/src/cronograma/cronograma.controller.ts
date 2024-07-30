@@ -14,10 +14,14 @@ import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from './dto/list-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
+import { MetaController, MetaSetorialController } from '../meta/meta.controller';
+import { TipoPdm } from '@prisma/client';
 
-@ApiTags('Cronograma')
+export const API_TAGS_CRONOGRAMA = 'Cronograma - PDM e PS';
+@ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('cronograma')
 export class CronogramaController {
+    private tipo: TipoPdm = 'PDM';
     constructor(
         private readonly cronogramaService: CronogramaService,
         private readonly etapaService: EtapaService
@@ -25,68 +29,59 @@ export class CronogramaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.inserir', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async create(
         @Body() createCronogramaDto: CreateCronogramaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.cronogramaService.create(createCronogramaDto, user);
+        return await this.cronogramaService.create(this.tipo, createCronogramaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles([
-        'CadastroCronograma.editar',
-        'CadastroMeta.inserir',
-        'PDM.admin_cp',
-        'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal',
-    ])
-    async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
-        return { linhas: await this.cronogramaService.findAll(filters) };
+    @Roles(MetaController.ReadPerm)
+    async findAll(
+        @Query() filters: FilterCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListCronogramaDto> {
+        return { linhas: await this.cronogramaService.findAll(this.tipo, filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async update(
         @Param() params: FindOneParams,
         @Body() updateCronogramaDto: UpdateCronogramaDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.cronogramaService.update(+params.id, updateCronogramaDto, user);
+        return await this.cronogramaService.update(this.tipo, +params.id, updateCronogramaDto, user);
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.remover', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.cronogramaService.remove(+params.id, user);
+        await this.cronogramaService.remove(this.tipo, +params.id, user);
         return '';
     }
 
     @Post(':id/etapa')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroCronograma.inserir', 'CadastroMeta.inserir'])
+    @Roles(MetaController.WritePerm)
     async createEtapa(
         @Body() createEtapaDto: CreateEtapaDto,
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.etapaService.create(+params.id, createEtapaDto, user);
+        return await this.etapaService.create(this.tipo, +params.id, createEtapaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id/etapa')
-    @Roles([
-        'CadastroCronograma.editar',
-        'CadastroMeta.inserir',
-        'PDM.admin_cp',
-        'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal',
-    ])
+    @Roles(MetaController.ReadPerm)
     @ApiOperation({ deprecated: true, description: 'Use o endpoint /api/cronograma-etapa' })
     async findAllEtapas(
         @Query() filters: FilterEtapaSemCronoIdDto,
@@ -98,5 +93,67 @@ export class CronogramaController {
                 cronograma_id: +params.id,
             }),
         };
+    }
+}
+
+@ApiTags(API_TAGS_CRONOGRAMA)
+@Controller('plano-setorial-cronograma')
+export class CronogramaPSController {
+    private tipo: TipoPdm = 'PS';
+    constructor(
+        private readonly cronogramaService: CronogramaService,
+        private readonly etapaService: EtapaService
+    ) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    async create(
+        @Body() createCronogramaDto: CreateCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.cronogramaService.create(this.tipo, createCronogramaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles(MetaSetorialController.ReadPerm)
+    async findAll(
+        @Query() filters: FilterCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListCronogramaDto> {
+        return { linhas: await this.cronogramaService.findAll(this.tipo, filters, user) };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateCronogramaDto: UpdateCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.cronogramaService.update(this.tipo, +params.id, updateCronogramaDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.cronogramaService.remove(this.tipo, +params.id, user);
+        return '';
+    }
+
+    @Post(':id/etapa')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    async createEtapa(
+        @Body() createEtapaDto: CreateEtapaDto,
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.etapaService.create(this.tipo, +params.id, createEtapaDto, user);
     }
 }

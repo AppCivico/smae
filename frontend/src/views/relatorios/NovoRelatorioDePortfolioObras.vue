@@ -188,6 +188,9 @@ iniciar();
           {{ errors['parametros.grupo_tematico_id'] }}
         </div>
       </div>
+    </div>
+
+    <div class="flex g2 mb2">
       <div class="f1 mb1">
         <LabelFromYup
           name="regiao_id"
@@ -221,6 +224,27 @@ iniciar();
           class="error-msg"
         >
           {{ errors['parametros.regiao_id'] }}
+        </div>
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="periodo"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          id="periodo"
+          name="parametros.periodo"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametros.periodo'] }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('parametros.periodo', $v || null); }"
+        />
+        <div
+          v-if="errors['parametros.periodo']"
+          class="error-msg"
+        >
+          {{ errors['parametros.periodo'] }}
         </div>
       </div>
     </div>

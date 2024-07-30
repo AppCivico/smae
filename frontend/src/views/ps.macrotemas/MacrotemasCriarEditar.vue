@@ -60,15 +60,18 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { macrotema as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import { useMacrotemasStore } from '@/stores/macrotemasPs.store';
+import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, defineOptions } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const router = useRouter();
 const route = useRoute();

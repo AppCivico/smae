@@ -1,11 +1,22 @@
-import { PartialType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsNumberString, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { OmitType, PartialType } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import {
+    IsArray,
+    IsBoolean,
+    IsNumber,
+    IsNumberString,
+    IsOptional,
+    IsString,
+    MaxLength,
+    MinLength,
+    ValidateIf,
+    ValidateNested,
+} from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { CreateTransferenciaDto } from './create-transferencia.dto';
+import { CreateTransferenciaDto, CreateTransferenciaParlamentarDto } from './create-transferencia.dto';
 
-export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) {}
+export class UpdateTransferenciaDto extends PartialType(OmitType(CreateTransferenciaDto, [])) {}
 
 export class CompletarTransferenciaDto {
     @IsNumberString(
@@ -116,6 +127,31 @@ export class CompletarTransferenciaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     empenho?: boolean;
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => UpdateTransferenciaParlamentarDto)
+    parlamentares?: UpdateTransferenciaParlamentarDto[];
+}
+export class UpdateTransferenciaParlamentarDto extends PartialType(
+    OmitType(CreateTransferenciaParlamentarDto, ['cargo', 'partido_id'])
+) {
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
+    @IsOptional()
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    valor?: number;
 }
 
 export class UpdateTransferenciaAnexoDto {

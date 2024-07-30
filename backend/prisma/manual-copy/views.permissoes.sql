@@ -33,7 +33,10 @@ FROM
     join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
     join privilegio p on p.id = priv.privilegio_id
     join public.pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
-WHERE mo.responsavel AND p.codigo in ('CadastroMeta.orcamento', 'CadastroMeta.administrador_orcamento' )
+WHERE mo.responsavel AND p.codigo in (
+    'CadastroMeta.orcamento', 'CadastroMeta.administrador_orcamento' ,
+    'CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'
+)
 group by 1, 2;
 
 CREATE OR REPLACE VIEW view_pessoa_espectador_de_projeto AS

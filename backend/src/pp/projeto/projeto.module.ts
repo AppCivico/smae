@@ -24,7 +24,7 @@ import { JwtModule } from '@nestjs/jwt';
     imports: [
         PrismaModule,
         GeoLocModule,
-        MetaModule,
+        forwardRef(() => MetaModule),
         UploadModule,
         PortfolioModule,
         BlocoNotaModule,

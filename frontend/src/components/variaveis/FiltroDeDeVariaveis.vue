@@ -351,7 +351,7 @@ import truncate from '@/helpers/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { usePsMetasStore } from '@/stores/ps.metas.store.ts';
+import { usePsMetasStore } from '@/stores/metasPs.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import { nextTick, onUnmounted, ref } from 'vue';
