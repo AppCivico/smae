@@ -16,7 +16,7 @@ export class EmpreendimentoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExistsNome = await prismaTx.empreendimento.count({
                     where: {
-                        nome: { endsWith: dto.nome, mode: 'insensitive' },
+                        nome: { equals: dto.nome, mode: 'insensitive' },
                         removido_em: null,
                     },
                 });
@@ -25,7 +25,7 @@ export class EmpreendimentoService {
 
                 const similarExistsIdentificador = await prismaTx.empreendimento.count({
                     where: {
-                        identificador: { endsWith: dto.identificador, mode: 'insensitive' },
+                        identificador: { equals: dto.identificador, mode: 'insensitive' },
                         removido_em: null,
                     },
                 });
@@ -95,7 +95,7 @@ export class EmpreendimentoService {
                 if (dto.nome && dto.nome != self.nome) {
                     const similarExists = await prismaTx.empreendimento.count({
                         where: {
-                            nome: { endsWith: dto.nome, mode: 'insensitive' },
+                            nome: { equals: dto.nome, mode: 'insensitive' },
                             removido_em: null,
                             id: { not: id },
                         },
@@ -110,7 +110,7 @@ export class EmpreendimentoService {
                 if (dto.identificador && dto.identificador != self.identificador) {
                     const similarExists = await prismaTx.empreendimento.count({
                         where: {
-                            identificador: { endsWith: dto.identificador, mode: 'insensitive' },
+                            identificador: { equals: dto.identificador, mode: 'insensitive' },
                             removido_em: null,
                             id: { not: id },
                         },
