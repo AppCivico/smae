@@ -125,7 +125,6 @@ async function onSubmit(values) {
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
 
-
     if (!values.meta_id) values.meta_id = meta_id;
     values.compoe_indicador_meta = !!values.compoe_indicador_meta;
 
