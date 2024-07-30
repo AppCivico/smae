@@ -110,17 +110,17 @@ BEGIN
                     SELECT
                         COALESCE(valor_nominal, 0)
                     INTO resultado
-                    FROM SerieVariavel
+                    FROM Serie_Variavel
                     WHERE variavel_id = vVariavelIdLookup
                         AND serie = vSerieLookup
                         AND data_valor <= vPeriodo
-                        AND data_valor > pPeriodo - (vJanela || ' months')::interval;
+                        AND data_valor > vPeriodo - (vJanela || ' months')::interval;
                 ELSIF vJanela > 1 THEN
                     -- Average of Past N Periods
                     SELECT
                         COALESCE(AVG(valor_nominal), 0)
                     INTO resultado
-                    FROM SerieVariavel
+                    FROM Serie_Variavel
                     WHERE variavel_id = vVariavelIdLookup
                         AND serie = vSerieLookup
                         AND data_valor <= vPeriodo
@@ -130,7 +130,7 @@ BEGIN
                     SELECT
                         COALESCE(valor_nominal, 0)
                     INTO resultado
-                    FROM SerieVariavel
+                    FROM Serie_Variavel
                     WHERE variavel_id = vVariavelIdLookup
                         AND serie = vSerieLookup
                         AND data_valor = vPeriodo - (abs(vJanela) || ' months')::interval;
@@ -140,7 +140,7 @@ BEGIN
                 vFormula := replace(vFormula, '$' || vReferencia, 'round(' || coalesce(resultado, 0)::text || ', ' || vVariavel.casas_decimais || ')');
             END LOOP;
 
-            -- Evaluate the expression and insert the result into SerieVariavel
+            -- Evaluate the expression and insert the result into Serie_Variavel
             EXECUTE 'SELECT ' || vFormula INTO resultado;
             INSERT INTO Serie_Variavel (variavel_id, serie, data_valor, valor_nominal)
             VALUES (pVariavelId, vSerieAtual, vPeriodo, resultado);
