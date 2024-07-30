@@ -416,7 +416,7 @@ onMounted(() => {
               type="text"
               aria-readonly="true"
               readonly
-              :value="values.parlamentar[idx]?.parlamentar?.nome"
+              :value="values.parlamentares[idx]?.parlamentar?.nome"
             >
           </div>
           <div class="f1">
@@ -430,7 +430,7 @@ onMounted(() => {
               type="text"
               class="inputtext light mb1"
               converter-para="string"
-              :value="values.parlamentar[idx]?.valor"
+              :value="values.parlamentares[idx]?.valor"
             />
           </div>
         </div>
