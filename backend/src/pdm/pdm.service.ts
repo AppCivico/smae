@@ -496,8 +496,7 @@ export class PdmService {
         await this.verificarPrivilegiosEdicao({}, user, pdm);
 
         const now = new Date(Date.now());
-
-        async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
@@ -505,7 +504,7 @@ export class PdmService {
                     removido_em: now,
                 },
             });
-        };
+        });
     }
 
     async update(
