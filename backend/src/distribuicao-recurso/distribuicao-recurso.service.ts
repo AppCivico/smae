@@ -1108,6 +1108,12 @@ export class DistribuicaoRecursoService {
                             if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
                             const valorNaTransf = rowParlamentarTransf.valor ?? 0;
 
+                            if (valorNaTransf == 0)
+                                throw new HttpException(
+                                    'Parlamentar não está com valor de repasse definido na transferência.',
+                                    400
+                                );
+
                             console.log('\n==================================\n');
                             const sumValor = rowsParlamentarDist
                                 .filter((e) => e.valor)
