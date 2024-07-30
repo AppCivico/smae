@@ -17,6 +17,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
   computed, defineOptions, ref, unref,
+  watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -70,10 +71,6 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
   await MetasStore.getPdM();
 
   const promessas = [
-    MacrotemaStore.filterByPdm(activePdm.value.id),
-    TemaStore.filterByPdm(activePdm.value.id),
-    SubtemaStore.filterByPdm(activePdm.value.id),
-    TagsStore.filterByPdm(activePdm.value.id),
     OrgansStore.getAllOrganResponsibles(),
     UserStore.buscarPessoasSimplificadas({ coordenador_responsavel_cp: true }),
   ];
@@ -215,6 +212,23 @@ function filterResponsible(orgao_id) {
   const v = r.length ? r.find((x) => x.id == orgao_id) : false;
   return v?.responsible ?? [];
 }
+
+watch(() => activePdm.value.id, async (novoValor) => {
+  if (activePdm.value.id) {
+    // usando essa flag porque a montagem do formulário está síncrona.
+    // PRA-FAZER: montar o formulário de forma assíncrona.
+    oktogo.value = false;
+    const promessas = [
+      MacrotemaStore.filterByPdm(novoValor),
+      TemaStore.filterByPdm(novoValor),
+      SubtemaStore.filterByPdm(novoValor),
+      TagsStore.filterByPdm(novoValor),
+    ];
+
+    await Promise.allSettled(promessas);
+    oktogo.value = true;
+  }
+}, { immediate: true });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
