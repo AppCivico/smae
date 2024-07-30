@@ -96,7 +96,7 @@ iniciar();
         :to="{ name: 'contratosDaObraCriar' }"
         class="btn"
       >
-        Novo contrato x
+        Novo contrato
       </router-link>
     </div>
   </div>
