@@ -1108,12 +1108,16 @@ export class DistribuicaoRecursoService {
                             if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
                             const valorNaTransf = rowParlamentarTransf.valor ?? 0;
 
+                            console.log('\n==================================\n');
                             const sumValor = rowsParlamentarDist
                                 .filter((e) => e.valor)
                                 .reduce((acc, curr) => acc + +curr.valor!, 0);
+                            console.log(sumValor);
+                            console.log(valorNaTransf);
+                            console.log('\n==================================\n');
                             if (+sumValor > +valorNaTransf)
                                 throw new HttpException(
-                                    'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                                    'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
                                     400
                                 );
 
