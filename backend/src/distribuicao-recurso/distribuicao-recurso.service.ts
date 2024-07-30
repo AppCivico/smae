@@ -354,6 +354,7 @@ export class DistribuicaoRecursoService {
                 removido_em: null,
                 transferencia_id: filters.transferencia_id,
             },
+            orderBy: { orgao_gestor: { sigla: 'asc' } },
             select: {
                 id: true,
                 transferencia_id: true,
