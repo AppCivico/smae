@@ -390,50 +390,66 @@ onMounted(() => {
       <hr class="ml2 f1">
     </div>
 
-    <div
-      v-for="parlamentar in transferenciaEmFoco?.parlamentar"
-      :key="parlamentar.id"
+    <FieldArray
+      v-slot="{ fields }"
+      name="parlamentares"
     >
-      <div class="flex g2">
-        <div class="f1">
-          <LabelFromYup
-            name="parlamentar_id"
-            :schema="schema.fields.parlamentares.innerType"
-          />
-          <Field
-            name="parlamentar_id"
-            class="inputtext light mb1"
-            type="text"
-            :disabled="true"
-            :value="parlamentar?.parlamentar?.nome"
-          />
-        </div>
-        <div class="f1">
-          <LabelFromYup
-            name="valor"
-            :schema="schema.fields.parlamentares.innerType"
-          />
-          <Field
-            name="valor"
-            class="inputtext light mb1"
-            type="text"
-          />
-        </div>
-      </div>
-      <div>
-        <LabelFromYup
-          name="objeto"
-          :schema="schema.fields.parlamentares.innerType"
-        />
+      <div
+        v-for="(field, idx) in fields"
+        :key="`parlamentares--${field.key}`"
+        class="mb2"
+      >
         <Field
-          name="objeto"
-          class="inputtext light mb1"
-          type="textarea"
-          as="textarea"
-          rows="10"
+          :name="`parlamentares[${idx}].id`"
+          type="hidden"
         />
+
+        <div class="flex g2">
+          <div class="f1">
+            <LabelFromYup
+              name="parlamentar_id"
+              :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].parlamentar.nome`"
+            />
+            <input
+              :name="`parlamentares[${idx}].parlamentar.nome`"
+              class="inputtext light mb1"
+              type="text"
+              aria-readonly="true"
+              readonly
+              :value="values.parlamentar[idx]?.parlamentar?.nome"
+            >
+          </div>
+          <div class="f1">
+            <LabelFromYup
+              name="valor"
+              :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].valor`"
+            />
+            <MaskedFloatInput
+              :name="`parlamentares[${idx}].valor`"
+              type="text"
+              class="inputtext light mb1"
+              converter-para="string"
+              :value="values.parlamentar[idx]?.valor"
+            />
+          </div>
+        </div>
+        <div>
+          <LabelFromYup
+            name="objeto"
+            :schema="schema.fields.parlamentares.innerType"
+            :for="`parlamentares[${idx}].objeto`"
+          />
+          <Field
+            :name="`parlamentares[${idx}].objeto`"
+            class="inputtext light mb1"
+            as="textarea"
+            rows="10"
+          />
+        </div>
       </div>
-    </div>
+    </FieldArray>
 
     <div class="flex spacebetween center mb1">
       <h3 class="title">
