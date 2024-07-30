@@ -171,6 +171,7 @@ onMounted(() => {
             type="text"
             class="inputtext light mb1"
             converter-para="string"
+            :value="values.valor"
             @update:model-value="(newValue) =>
               updateValorTotal('valor', newValue, setFieldValue)"
           />
