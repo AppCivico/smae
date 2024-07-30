@@ -139,6 +139,7 @@ export class RelObrasContratosDto {
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
     valor: number | null;
+    valor_reajustado: number | null;
     percentual_medido: number | null;
     observacoes: string | null;
 }

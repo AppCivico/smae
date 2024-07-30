@@ -160,6 +160,7 @@ class RetornoDbContratos {
     data_inicio: Date | null;
     data_termino: Date | null;
     valor: number | null;
+    valor_reajustado: number | null;
     observacoes: string | null;
     data_base: string | null;
     modalidade_contratacao_id: number | null;
@@ -785,12 +786,13 @@ export class PPObrasService implements ReportableService {
             orgao.id AS orgao_id,
             orgao.sigla AS orgao_sigla,
             orgao.descricao AS orgao_descricao,
+            contrato.valor AS valor,
             (
-                COALESCE(
-                  (SELECT max(valor) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1),
-                  contrato.valor
-                )
-            ) AS valor,
+                SELECT max(valor)
+                FROM contrato_aditivo
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
+            ) AS valor_reajustado,
             (
                 SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
             ) AS valor_com_reajuste,
@@ -850,6 +852,7 @@ export class PPObrasService implements ReportableService {
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
                 valor: db.valor,
+                valor_reajustado: db.valor_reajustado,
                 percentual_medido: db.percentual_medido,
                 observacoes: db.observacoes,
             };
