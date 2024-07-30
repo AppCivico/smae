@@ -1,20 +1,19 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, FieldArray,
-} from 'vee-validate';
-import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import Big from 'big.js';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
-import LabelFromYup from '@/components/LabelFromYup.vue';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
+import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
