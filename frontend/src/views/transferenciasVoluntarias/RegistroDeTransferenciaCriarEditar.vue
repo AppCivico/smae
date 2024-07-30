@@ -390,6 +390,7 @@ watch(itemParaEdição, async (novosValores) => {
       <hr class="ml2 f1">
     </div>
 
+    <!-- Esse FieldArray é desnecessário -->
     <FieldArray
       v-slot="{ fields }"
       name="parlamentares"
