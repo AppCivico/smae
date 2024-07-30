@@ -1047,7 +1047,7 @@ export class DistribuicaoRecursoService {
 
                     const sumValor = dto.parlamentares
                         .filter((e) => e.valor)
-                        .reduce((acc, curr) => acc + curr.valor!, 0);
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
                     if (+sumValor > +updated.valor)
                         throw new HttpException(
                             'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
