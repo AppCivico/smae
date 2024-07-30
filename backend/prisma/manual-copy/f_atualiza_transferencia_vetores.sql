@@ -98,6 +98,7 @@ BEFORE INSERT ON transferencia_parlamentar
 FOR EACH ROW
 EXECUTE PROCEDURE f_transferencia_update_tsvector();
 
+DROP TRIGGER trigger_distribuicao_update_tsvector_insert;
 CREATE TRIGGER trigger_distribuicao_update_tsvector_insert
 BEFORE INSERT ON distribuicao_recurso
 FOR EACH ROW

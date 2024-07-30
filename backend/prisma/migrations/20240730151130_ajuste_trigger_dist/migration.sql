@@ -1,0 +1,2 @@
+DROP TRIGGER trigger_distribuicao_update_tsvector_insert ON distribuicao_recurso;
+DROP TRIGGER trigger_distribuicao_update_tsvector_update ON distribuicao_recurso;
