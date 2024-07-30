@@ -63,6 +63,7 @@ const rotasParaMenuSecundário = (nível) => {
         'painelDaMeta',
         'evoluçãoDaMeta',
         'cronogramaDaMeta',
+        'metas:item:historicoDeMonitoramento',
       ];
       rotasDoOrçamento = [
         'MetaOrcamentoCusto',
@@ -1148,6 +1149,27 @@ export default {
               },
             },
           ],
+        },
+      ],
+    },
+
+    {
+      path: ':meta_id',
+      name: 'metas:item',
+      component: () => import('@/views/metas/MetasItem.vue'),
+      props: true,
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+      children: [
+        {
+          name: 'metas:item:historicoDeMonitoramento',
+          path: 'historico-de-monitoramento',
+          component: () => import('@/views/metas/MetasHistoricoDeMonitoramento.vue'),
+          props: true,
+          meta: {
+            título: 'Histórico de monitoramento',
+          },
         },
       ],
     },
