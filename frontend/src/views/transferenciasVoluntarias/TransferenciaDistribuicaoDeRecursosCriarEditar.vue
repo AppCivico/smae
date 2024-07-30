@@ -1028,15 +1028,15 @@ const isSomaCorreta = computed(() => {
             <LabelFromYup
               name="parlamentar_id"
               :schema="schema.fields.parlamentares.innerType"
-              :for="`parlamentares[${idx}].parlamentar.nome`"
+              :for="`parlamentares[${idx}].parlamentar.nome_popular`"
             />
             <input
-              :name="`parlamentares[${idx}].parlamentar.nome`"
+              :name="`parlamentares[${idx}].parlamentar.nome_popular`"
               class="inputtext light mb1"
               type="text"
               aria-readonly="true"
               readonly
-              :value="parlamentar?.parlamentar?.nome"
+              :value="parlamentar?.parlamentar?.nome_popular"
             >
           </div>
           <div class="f1">
