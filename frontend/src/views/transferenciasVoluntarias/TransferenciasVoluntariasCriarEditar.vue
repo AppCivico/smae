@@ -79,7 +79,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
     if (r) {
+      TransferenciasVoluntarias.buscarItem(r.id);
+
       alertStore.success(msg);
+
       if (!props.transferenciaId) {
         router.push({
           name: 'RegistroDeTransferenciaEditar',
