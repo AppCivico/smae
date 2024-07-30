@@ -50,17 +50,17 @@ BEGIN
             v.id,
             v.inicio_medicao,
             v.periodicidade,
-            coalesce(fim_medicao, ultimo_periodo_valido( v.periodicidade, 0)) AS fim_medicao
+            coalesce(fim_medicao, ultimo_periodo_valido( v.periodicidade::"Periodicidade" , 0)) AS fim_medicao
         FROM variavel v
         JOIN formula_composta_variavel fcv ON fcv.variavel_id = v.id
         AND fcv.formula_composta_id = vFormulaCompostaId
     )
-    SELECT periodicidade, MIN(inicio_medicao) AS inicio_medicao, MAX(fim_medicao) AS fim_medicao
+    SELECT periodicidade_intervalo(vp.periodicidade) , MIN(vp.inicio_medicao) AS inicio_medicao, MAX(vp.fim_medicao) AS fim_medicao
     INTO
         vPeriodicidade,
         vPeriodoInicio,
         vPeriodoFim
-    FROM varPeriodos
+    FROM varPeriodos vp
     GROUP BY 1
     LIMIT 1;
 
@@ -68,6 +68,8 @@ BEGIN
     FOR vSerieAtual IN
         SELECT unnest(enum_range(NULL::"Serie")) serie
     LOOP
+        raise notice 'Calculating Serie %, Periodicidade %, Periodo Inicio %, Periodo Fim %', vSerieAtual, vPeriodicidade, vPeriodoInicio, vPeriodoFim;
+
         -- Delete existing SerieVariavel entries for the calculated variable and current Serie
         DELETE FROM Serie_Variavel
         WHERE variavel_id = pVariavelId
@@ -76,6 +78,8 @@ BEGIN
         -- Loop through each period within the calculation range
         FOR vPeriodo IN SELECT generate_series(vPeriodoInicio, vPeriodoFim, vPeriodicidade)
         LOOP
+            raise notice 'Calculating Period %', vPeriodo;
+
             -- Construct the formula expression
             vFormula := vFormulaComposta.formula_compilada;
 

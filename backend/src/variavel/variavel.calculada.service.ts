@@ -12,7 +12,7 @@ export class VariavelCalculadaService {
         this.enabled = CrontabIsEnabled('variavel_calculada');
     }
 
-    @Interval(1000000)
+    @Interval(1000)
     async variavelCalcCrontab() {
         if (!this.enabled) return;
         const botUser = await this.prisma.pessoa.findUnique({
@@ -23,7 +23,7 @@ export class VariavelCalculadaService {
 
         const rows = await this.prisma.formulaComposta.findMany({
             where: {
-                id: 189,
+                //id: 189,
                 removido_em: null,
                 variavel_calc_id: null,
                 criar_variavel: true,
