@@ -73,7 +73,7 @@ const exibirColunasDeAção = computed(() => !permissõesDaObraEmFoco.value.apen
 function excluirProcesso(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
     if (await useContratosStore().excluirItem(id)) {
-      alertStore.success('Processo removido.');
+      alertStore.success('Contrato removido.');
 
       await processosStore.buscarTudo();
     }
@@ -96,7 +96,7 @@ iniciar();
         :to="{ name: 'contratosDaObraCriar' }"
         class="btn"
       >
-        Novo contrato
+        Novo contrato x
       </router-link>
     </div>
   </div>
