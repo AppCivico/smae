@@ -904,7 +904,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
-            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'desc' }, { identificador_nro: 'asc' }],
+            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'desc' }, { identificador_nro: 'desc' }],
             skip: offset,
             take: ipp + 1,
             select: {
