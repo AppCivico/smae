@@ -644,7 +644,7 @@ export class TransferenciaService {
                 if (dto.parlamentares?.length) {
                     const sumValor = dto.parlamentares
                         .filter((e) => e.valor)
-                        .reduce((acc, curr) => acc + curr.valor!, 0);
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
 
                     console.log('\n====================================\n');
                     console.log(sumValor);
