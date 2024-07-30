@@ -18,6 +18,7 @@ DECLARE
     vStartTime timestamp;
     vPeriodo DATE; -- Loop variable for generate_series
     vVariavelFormula RECORD; -- To store individual FormulaCompostaVariavel row
+    skip_period BOOLEAN; -- Flag to skip the current period if any resultado is NULL
 BEGIN
     vStartTime := clock_timestamp();
 
@@ -83,6 +84,9 @@ BEGIN
             -- Construct the formula expression
             vFormula := vFormulaComposta.formula_compilada;
 
+            -- Initialize skip_period flag for each period
+            skip_period := FALSE;
+
             -- Fetch and iterate over FormulaCompostaVariavel entries within the loop
             FOR vVariavelFormula IN
                 SELECT fcv.*
@@ -108,7 +112,7 @@ BEGIN
                 -- Atraso Handling
                 IF vJanela = 1 THEN
                     SELECT
-                        COALESCE(valor_nominal, 0)
+                        valor_nominal
                     INTO resultado
                     FROM Serie_Variavel
                     WHERE variavel_id = vVariavelIdLookup
@@ -118,7 +122,7 @@ BEGIN
                 ELSIF vJanela > 1 THEN
                     -- Average of Past N Periods
                     SELECT
-                        COALESCE(AVG(valor_nominal), 0)
+                        AVG(valor_nominal)
                     INTO resultado
                     FROM Serie_Variavel
                     WHERE variavel_id = vVariavelIdLookup
@@ -128,7 +132,7 @@ BEGIN
                 ELSIF vJanela < 1 THEN
                     -- Past Period (N months ago)
                     SELECT
-                        COALESCE(valor_nominal, 0)
+                        valor_nominal
                     INTO resultado
                     FROM Serie_Variavel
                     WHERE variavel_id = vVariavelIdLookup
@@ -136,9 +140,21 @@ BEGIN
                         AND data_valor = vPeriodo - (abs(vJanela) || ' months')::interval;
                 END IF;
 
+                -- Check if resultado is NULL and set skip_period flag
+                IF resultado IS NULL THEN
+                    skip_period := TRUE;
+                    EXIT; -- Exit the inner loop if any resultado is NULL
+                END IF;
+
                 -- Replace placeholders with calculated values
-                vFormula := replace(vFormula, '$' || vReferencia, 'round(' || coalesce(resultado, 0)::text || ', ' || vVariavel.casas_decimais || ')');
+                vFormula := replace(vFormula, '$' || vReferencia, 'round(' || resultado::text || ', ' || vVariavel.casas_decimais || ')');
             END LOOP;
+
+            -- Skip evaluation and insertion if skip_period is TRUE
+            IF skip_period THEN
+                raise notice 'Skipping period % due to missing value.', vPeriodo;
+                CONTINUE;
+            END IF;
 
             -- Evaluate the expression and insert the result into Serie_Variavel
             EXECUTE 'SELECT ' || vFormula INTO resultado;
