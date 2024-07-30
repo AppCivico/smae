@@ -61,7 +61,6 @@ export class VariavelCalculadaService {
             ];
 
             const orgaoIds = getUniqueValues('orgao_id');
-            const variaveisUnicas = getUniqueValues('id');
             const inicioMedicao = variaveis.map((v) => v.inicio_medicao);
             const fimMedicao = variaveis.map((v) => v.fim_medicao);
             const inicioMedicaoMin = inicioMedicao.includes(null)
@@ -71,9 +70,9 @@ export class VariavelCalculadaService {
 
             let erro = uniqueChecks.find((check) => getUniqueValues(check.key).length !== 1)?.label;
             if (!erro) {
-                if (orgaoIds.length !== variaveisUnicas.length) erro = 'Órgão';
-                if (inicioMedicaoMin === null) erro = 'Início de Medição';
-                if (!inicioMedicaoMin) erro = 'Início de Medição';
+                if (orgaoIds.length !== 1) erro = 'Deve ter apenas Órgão: ' + orgaoIds.join(', ');
+                if (inicioMedicaoMin === null) erro = 'Início de Medição não pode ser nulo';
+                if (!inicioMedicaoMin) erro = 'Faltando início de Medição';
             }
             const codigo = 'CALC.' + fc.titulo;
             const exists = await this.prisma.variavel.findFirst({
