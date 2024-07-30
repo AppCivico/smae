@@ -3,7 +3,7 @@ import DetalhamentoDeCiclo from '@/components/monitoramento/DetalhamentoDeCiclo.
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
-import { defineOptions, watch } from 'vue';
+import { computed, defineOptions, watch } from 'vue';
 
 defineOptions({
   inheritAttrs: false,
@@ -29,6 +29,14 @@ const {
 const PdMStore = usePdMStore();
 const { activePdm } = storeToRefs(PdMStore);
 
+// PRA-FAZER: Mover a filtragem e ordenação para o backend
+const currentDate = new Date();
+const lastDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+const ciclosOrdenados = computed(() => (Array.isArray(Ciclos.value)
+  ? Ciclos.value.filter((ciclo) => new Date(ciclo.data_ciclo) <= lastDayOfPreviousMonth)
+    .sort((a, b) => new Date(b.data_ciclo) - new Date(a.data_ciclo))
+  : []));
+
 watch(() => activePdm.value.id, (novoValor) => {
   if (novoValor) {
     CiclosStore.getCiclos();
@@ -53,7 +61,7 @@ watch(() => activePdm.value.id, (novoValor) => {
 
   <template v-if="Array.isArray(Ciclos)">
     <DetalhamentoDeCiclo
-      v-for="ciclo in Ciclos"
+      v-for="ciclo in ciclosOrdenados"
       :id="`ciclo--${ciclo.id}`"
       :key="ciclo.id"
       :ciclo-dados="ciclo"
