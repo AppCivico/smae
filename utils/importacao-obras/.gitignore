@@ -3,6 +3,10 @@
 /generated
 /node_modules
 
+# database file
+.duckdb
+.duck
+
 # Logs
 logs
 *.log

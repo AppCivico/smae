@@ -1,18 +1,26 @@
 import { Database } from 'duckdb-async';
 import { matchStringFuzzy } from './func';
 import {
+    CadastroDeObrasProjetosApi,
     Configuration,
     IniciativaApi,
     MetaApi,
+    MonitoramentoDeObrasCadastroBsicoEmpreendimentoApi,
     MonitoramentoDeObrasCadastroBsicoEquipamentoApi,
     MonitoramentoDeObrasCadastroBsicoGrupoTemticoApi,
     MonitoramentoDeObrasCadastroBsicoTipoDeIntervenoApi,
     PessoaApi,
     PortflioDeObrasApi,
     ProgramasProjetoMDOExclusivoParaObrasApi,
+    ProjetoAcompanhamentoDeObrasApi,
+    ProjetoApi,
     ProjetoEtapaDeObrasApi,
+    ProjetoMDOApi,
+    ProjetoOrigemTipo,
+    ProjetoStatus,
     RegiaoApi,
     RgoApi,
+    type CreateProjetoDto,
 } from './generated';
 if (!process.env.BASE_PATH) throw new Error('BASE_PATH for API is required');
 if (!process.env.ACCESS_TOKEN) throw new Error('ACCESS_TOKEN is required');
@@ -25,6 +33,7 @@ const config = new Configuration({
 });
 
 interface ProjetoRow {
+    internal_id: number;
     // -- pre-cadastro global --
     // pessoa
     rel_responsaveis_no_orgao_gestor_id: string;
@@ -97,6 +106,10 @@ const etapaApi = new ProjetoEtapaDeObrasApi(config);
 const regiaoApi = new RegiaoApi(config);
 const programaApi = new ProgramasProjetoMDOExclusivoParaObrasApi(config);
 
+const projetoApi = new CadastroDeObrasProjetosApi(config);
+const processoApi = new ProjetoAcompanhamentoDeObrasApi(config);
+
+const empreendimentoApi = new MonitoramentoDeObrasCadastroBsicoEmpreendimentoApi(config);
 const equipamentoApi = new MonitoramentoDeObrasCadastroBsicoEquipamentoApi(config);
 const grupoTematicoApi = new MonitoramentoDeObrasCadastroBsicoGrupoTemticoApi(config);
 const tipoIntervencaoApi = new MonitoramentoDeObrasCadastroBsicoTipoDeIntervenoApi(config);
@@ -181,10 +194,181 @@ async function main() {
     await validaGrupoTematico();
     await validaMetas();
     await validaIniciativas();
+    //console.log(orgao2id);
 
     if (!runImport) {
         console.log('Importação não pode ser realizada');
         return;
+    }
+
+    const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
+    const empreendimentosMap: Record<string, number> = {};
+    const empreendimento2id: Record<string, number> = {};
+    for (const emp of empreendimentos.data.linhas) {
+        empreendimentosMap[emp.identificador] = emp.id!;
+    }
+
+    for (const row of rows) {
+        if (!row.rel_empreendimento_id) continue;
+        const exists = empreendimentosMap[row.rel_empreendimento_id];
+        if (exists) continue;
+
+        try {
+            const emp = await empreendimentoApi.empreendimentoControllerCreate({
+                CreateEmpreendimentoDto: {
+                    nome: row.rel_empreendimento_id,
+                    identificador: row.rel_empreendimento_id,
+                },
+            });
+            empreendimento2id[row.rel_empreendimento_id] = emp.data.id;
+        } catch (error) {
+            console.log('Erro ao criar empreendimento', row.projeto_nome, row.rel_empreendimento_id);
+            console.error(row.rel_empreendimento_id, (error as any).response?.data);
+        }
+    }
+
+    for (const row of rows) {
+        let origem_tipo: ProjetoOrigemTipo = 'Outro';
+        let iniciativa_id: number | undefined;
+        let meta_id: number | undefined;
+        let origem_outro: string | null;
+
+        if (row.origem_pdm) {
+            origem_tipo = 'PdmSistema';
+            origem_outro = null;
+            if (row.origem_iniciativa_id) {
+                iniciativa_id = memIniciativa2id[row.origem_meta_id!][row.origem_iniciativa_id];
+            } else if (row.origem_meta_id) {
+                meta_id = memMeta2id[row.origem_meta_id];
+            } else {
+                //console.error(`-> Erro ao buscar iniciativa ou meta para a obra ${row.projeto_nome}, ${JSON.stringify(row)}`);
+                origem_tipo = 'Outro';
+                origem_outro = 'Meta ou iniciativa não informada';
+            }
+        } else {
+            origem_outro = row.origem_outro || '-';
+        }
+
+        const info: CreateProjetoDto = {
+            nome: row.projeto_nome,
+            status: row.projeto_status as ProjetoStatus,
+            grupo_tematico_id: row.rel_grupo_tematico_id ? grupo_tematico2id[row.rel_grupo_tematico_id] : undefined,
+            tipo_intervencao_id: row.rel_tipo_intervencao_id
+                ? tipo_intervencao2id[row.rel_tipo_intervencao_id]
+                : undefined,
+            equipamento_id: row.rel_equipamento_id ? equipamento2id[row.rel_equipamento_id] : undefined,
+            orgao_origem_id: row.rel_orgao_origem_id ? orgao2id[row.rel_orgao_origem_id] : undefined,
+            orgao_executor_id: row.rel_orgao_executor_id ? orgao2id[row.rel_orgao_executor_id] : undefined,
+            empreendimento_id: empreendimento2id[row.rel_empreendimento_id],
+            mdo_detalhamento: row.mdo_detalhamento ?? '',
+
+            previsao_inicio: row.previsao_inicio?.toISOString().substring(0, 10) ?? (null as any),
+            previsao_termino: row.previsao_termino?.toISOString().substring(0, 10) ?? null,
+            tolerancia_atraso: 0,
+            mdo_previsao_inauguracao: null,
+
+            previsao_custo: row.previsao_custo ? +row.previsao_custo.toPrecision(2) : null,
+
+            mdo_observacoes: row.mdo_observacoes ?? '',
+
+            orgao_gestor_id: orgao2id[row.rel_orgao_gestor_id],
+            responsaveis_no_orgao_gestor: [pessoasCollabProjeto[row.rel_responsaveis_no_orgao_gestor_id]],
+            secretario_executivo: row.secretario_executivo?.toLowerCase() ?? null,
+
+            orgao_responsavel_id: orgao2id[row.orgao_responsavel_id],
+            responsavel_id: pessoasGestorDeProjeto[row.rel_responsavel_id],
+            secretario_responsavel: row.secretario_responsavel?.toLowerCase(),
+
+            orgao_colaborador_id: row.rel_orgao_colaborador_id ? orgao2id[row.rel_orgao_colaborador_id] : undefined,
+
+            colaboradores_no_orgao: row.rel_colaboradores_no_orgao
+                ? [pessoasCollabProjeto[row.rel_colaboradores_no_orgao]]
+                : undefined,
+            secretario_colaborador: row.secretario_colaborador?.toLowerCase() ?? null,
+
+            portfolio_id: portfolios[row.rel_portfolio_id],
+            mdo_n_familias_beneficiadas: row.mdo_n_familias_beneficiadas,
+            mdo_n_unidades_habitacionais: row.mdo_n_unidades_habitacionais,
+            programa_id: row.rel_programa_id ? programa2id[row.rel_programa_id] : undefined,
+            regiao_ids: row.rel_subprefeitura_id ? [regiao2id[row.rel_subprefeitura_id]] : undefined,
+            origem_tipo,
+            origem_outro: origem_outro,
+            iniciativa_id,
+            meta_id,
+
+            orgaos_participantes: [],
+            geolocalizacao: [],
+        };
+
+        if (!row.projeto_id) {
+            try {
+                const projetoId = await projetoApi.projetoMDOControllerCreate({
+                    CreateProjetoDto: info,
+                });
+                console.log(`Projeto ${row.projeto_nome} criado com sucesso!`);
+                await db.run(
+                    `update importacao set projeto_id = ${projetoId.data.id} where internal_id = ${row.internal_id}`
+                );
+                row.projeto_id = projetoId.data.id;
+            } catch (error) {
+                console.log(`Erro ao criar projeto ${row.projeto_nome}`);
+                console.error((error as any).response?.data, info);
+            }
+        }
+        if (!row.projeto_id) continue;
+        const can_associate = row.parsed_processos_sei.length == 1 && row.parsed_contratos.length == 1;
+
+        if (row.parsed_contratos.length) {
+            for (const contrato of row.parsed_contratos) {
+                try {
+                    await processoApi.contratoMDOControllerCreate({
+                        CreateContratoDto: {
+                            contrato_exclusivo: false,
+                            fontes_recurso: [],
+                            numero: contrato,
+                            processos_sei: can_associate ? row.parsed_processos_sei : [],
+                            status: 'Assinado',
+                        },
+                        id: row.projeto_id,
+                    });
+
+                    console.log(`Contrato ${contrato} do projeto ${row.projeto_nome} criados com sucesso!`);
+                } catch (error) {
+                    const err = (error as any).response?.data;
+                    if (err?.message == 'Número igual ou semelhante já existe em outro registro ativo') {
+                        console.log(`Contrato ${contrato} do projeto ${row.projeto_nome} já existe`);
+                        continue;
+                    }
+                    console.log(`Erro ao criar contrato do projeto ${row.projeto_nome}`);
+                    console.error((error as any).response?.data);
+                }
+            }
+        }
+
+        if (row.parsed_processos_sei.length) {
+            for (const n_sei of row.parsed_processos_sei) {
+                try {
+                    await projetoApi.projetoMDOControllerCreateSEI({
+                        CreateProjetoSeiDto: {
+                            processo_sei: n_sei,
+                            descricao: '',
+                            link: undefined as any,
+                        },
+                        id: row.projeto_id,
+                    });
+
+                    console.log(`SEI ${n_sei} do projeto ${row.projeto_nome} criado com sucesso!`);
+                } catch (error) {
+                    const err = (error as any).response?.data;
+                    if (err?.message?.includes('existe um registro do processo')) {
+                        console.log(`SEI ${n_sei} do projeto ${row.projeto_nome} já existe`);
+                        continue;
+                    }
+                    console.log(`Erro ao criar sei do projeto ${row.projeto_nome}`);
+                    console.error((error as any).response?.data);
+                }
+            }
+        }
     }
 }
 
@@ -198,6 +382,7 @@ function extractContracts(row: ProjetoRow) {
 }
 
 function extractAndNormalizeSEIProcesses(row: ProjetoRow) {
+    row.parsed_processos_sei = [];
     if (row.rel_processo_sei) {
         const processos: string[] = [];
 
