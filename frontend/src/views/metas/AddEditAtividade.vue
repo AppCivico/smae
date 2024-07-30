@@ -200,7 +200,11 @@ function filterResponsible(orgao_id) {
 
   <div class="flex spacebetween center mb2">
     <div>
-      <h1>{{ title }} {{ activePdm.rotulo_atividade }}</h1>
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        {{ title }} {{ activePdm.rotulo_atividade }}
+      </TítuloDePágina>
       <div class="t24">
         {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.titulo }}
       </div>

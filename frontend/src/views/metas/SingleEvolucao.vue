@@ -84,10 +84,15 @@ onUpdated(() => { start(); });
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         {{ parentLabel }}
       </div>
-      <h1>Evolução da {{ parentLabel }}</h1>
+
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        Evolução da {{ parentLabel }}
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
   </div>

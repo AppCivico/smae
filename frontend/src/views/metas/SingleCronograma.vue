@@ -138,16 +138,17 @@ onUpdated(() => { start(); });
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         {{ parentLabel }}
       </div>
-      <h1
+      <TítuloDePágina
         :class="classeParaFarolDeAtraso(singleCronograma?.atraso_grau)"
         :title="textoParaFarolDeAtraso(singleCronograma?.atraso_grau)"
         style="padding-right: 8px;"
+        :ícone="activePdm?.logo"
       >
         Cronograma
-      </h1>
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
     <SmaeLink

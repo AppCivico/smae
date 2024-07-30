@@ -286,12 +286,17 @@ export default {
   <MigalhasDeMetas class="mb1" />
 
   <div class="flex spacebetween center">
-    <h1 v-if="indicador_id">
-      Editar Indicador
-    </h1>
-    <h1 v-else>
-      Adicionar Indicador
-    </h1>
+    <TítuloDePágina
+      :ícone="activePdm?.logo"
+    >
+      <template v-if="indicador_id">
+        Editar Indicador
+      </template>
+      <template v-else>
+        Adicionar Indicador
+      </template>
+    </TítuloDePágina>
+
     <hr class="ml2 f1">
     <button
       class="btn round ml2"

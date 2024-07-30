@@ -234,7 +234,11 @@ watch(() => activePdm.value.id, async (novoValor) => {
   <MigalhasDeMetas class="mb1" />
 
   <div class="flex spacebetween center mb2">
-    <h1>{{ title }}</h1>
+    <TítuloDePágina
+      :ícone="activePdm?.logo"
+    >
+      {{ title }}
+    </TítuloDePágina>
     <hr class="ml2 f1">
     <button
       class="btn round ml2"

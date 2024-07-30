@@ -71,16 +71,18 @@ iniciar();
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         {{ activePdm.rotulo_iniciativa }}
       </div>
-      <h1
+
+      <TítuloDePágina
         :class="classeParaFarolDeAtraso(singleIniciativa?.cronograma?.atraso_grau)"
         :title="textoParaFarolDeAtraso(singleIniciativa?.cronograma?.atraso_grau)"
         style="padding-right: 4px;"
+        :ícone="activePdm?.logo"
       >
         {{ singleIniciativa.codigo }} - {{ singleIniciativa.titulo }}
-      </h1>
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
     <SmaeLink

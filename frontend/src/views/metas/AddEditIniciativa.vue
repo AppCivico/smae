@@ -216,7 +216,12 @@ function filterResponsible(orgao_id) {
 
   <div class="flex spacebetween center mb2">
     <div>
-      <h1>{{ title }} {{ activePdm.rotulo_iniciativa }}</h1>
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        {{ title }} {{ activePdm.rotulo_iniciativa }}
+      </TítuloDePágina>
+
       <div class="t24">
         Meta {{ singleMeta.titulo }}
       </div>
