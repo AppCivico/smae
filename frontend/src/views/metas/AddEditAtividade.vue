@@ -167,7 +167,19 @@ async function checkDelete(id) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: `/metas/${meta_id}/iniciativas/${iniciativa_id}`,
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
+  });
 }
 function addOrgao(obj, r) {
   obj.push({
