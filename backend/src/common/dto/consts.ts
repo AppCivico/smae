@@ -1,2 +1,3 @@
 export const MAX_DTO_SAFE_NUM = 2147483647;
 export const MIN_DTO_SAFE_NUM = -2147483648;
+export const MIN_DB_SAFE_INT32 = 2147483647;

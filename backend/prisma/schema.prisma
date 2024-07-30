@@ -394,6 +394,10 @@ model Pessoa {
     TipoIntervencaoQueRemovi    TipoIntervencao[] @relation("Removedor")
     TipoIntervencaoQueAtualizei TipoIntervencao[] @relation("Atualizador")
 
+    EmpreendimentosQueCriei     Empreendimento[] @relation("Criador")
+    EmpreendimentosQueDesativei Empreendimento[] @relation("Removedor")
+    EmpreendimentosQueAtualizei Empreendimento[] @relation("Atualizador")
+
     EquipamentosQueCriei     Equipamento[] @relation("Criador")
     EquipamentosQueRemovi    Equipamento[] @relation("Removedor")
     EquipamentosQueAtualizei Equipamento[] @relation("Atualizador")
@@ -445,6 +449,14 @@ model Pessoa {
     AditivosQAtualizei ContratoAditivo[] @relation("Atualizador")
     AditivosQRemovi    ContratoAditivo[] @relation("Removedor")
 
+    RelacaoParlamentarTransferenciaQCriei     TransferenciaParlamentar[] @relation("Criador")
+    RelacaoParlamentarTransferenciaQAtualizei TransferenciaParlamentar[] @relation("Atualizador")
+    RelacaoParlamentarTransferenciaQRemovi    TransferenciaParlamentar[] @relation("Removedor")
+
+    RelacaoParlamentarDistribuicaoQCriei     DistribuicaoParlamentar[] @relation("Criador")
+    RelacaoParlamentarDistribuicaoQAtualizei DistribuicaoParlamentar[] @relation("Atualizador")
+    RelacaoParlamentarDistribuicaoQRemovi    DistribuicaoParlamentar[] @relation("Removedor")
+
     AssuntoVariavelQCriei               AssuntoVariavel[]                     @relation("Criador")
     AssuntoVariavelQAtualizei           AssuntoVariavel[]                     @relation("Atualizador")
     AssuntoVariavelQRemovi              AssuntoVariavel[]                     @relation("Removedor")
@@ -473,11 +485,11 @@ model LogGenerico {
 }
 
 model PrivilegioModulo {
-    id             Int           @id @default(autoincrement())
-    codigo         String        @unique
+    id             Int             @id @default(autoincrement())
+    codigo         String          @unique
     descricao      String
     privilegio     Privilegio[]
-    modulo_sistema ModuloSistema @default(SMAE)
+    modulo_sistema ModuloSistema[] @default([SMAE])
 
     @@map("privilegio_modulo")
 }
@@ -803,8 +815,9 @@ model Pdm {
 
     // index continua existindo para quem é PDM
     // create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true and tipo='PDM';
-    PdmPerfil PdmPerfil[]
-    Diretorio Diretorio[]
+    PdmPerfil                          PdmPerfil[]
+    Diretorio                          Diretorio[]
+    view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
 
     @@index([ativo])
     @@map("pdm")
@@ -1213,10 +1226,12 @@ model Meta {
     PdmOrcamentoRealizadoConfig            PdmOrcamentoRealizadoConfig[]
     MetaStatusConsolidadoCf                MetaStatusConsolidadoCf[]
     ViewMetaPessoaResponsavelNaCp          view_meta_pessoa_responsavel_na_cp[]
+    ViewMetaPessoaResponsavel              view_meta_pessoa_responsavel[]
     MetaStatusAtrasoConsolidadoMes         MetaStatusAtrasoConsolidadoMes[]
     MetaStatusAtrasoVariavel               MetaStatusAtrasoVariavel[]
     GeoEnderecoReferencia                  GeoLocalizacaoReferencia[]
     PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
+    view_pdm_meta_iniciativa_atividade     view_pdm_meta_iniciativa_atividade[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1334,6 +1349,7 @@ model Indicador {
     FormulaCompostaOrigem         IndicadorFormulaComposta[]      @relation("Origem")
     FormulaComposta               IndicadorFormulaComposta[]      @relation("FK")
     IndicadorFormulaCompostaEmUso IndicadorFormulaCompostaEmUso[]
+    view_etapa_rel_meta_indicador view_etapa_rel_meta_indicador[]
 
     @@index([meta_id])
     @@index([iniciativa_id])
@@ -1927,19 +1943,20 @@ model Iniciativa {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    iniciativa_orgao         IniciativaOrgao[]
-    iniciativa_responsavel   IniciativaResponsavel[]
-    iniciativa_tag           IniciativaTag[]
-    Indicador                Indicador[]
-    atividade                Atividade[]
-    Cronograma               Cronograma[]
-    PainelConteudoDetalhe    PainelConteudoDetalhe[]
-    OrcamentoPlanejado       OrcamentoPlanejado[]
-    OrcamentoRealizado       OrcamentoRealizado[]
-    MetaOrcamento            OrcamentoPrevisto[]
-    projetos                 Projeto[]
-    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
-    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
+    iniciativa_orgao                   IniciativaOrgao[]
+    iniciativa_responsavel             IniciativaResponsavel[]
+    iniciativa_tag                     IniciativaTag[]
+    Indicador                          Indicador[]
+    atividade                          Atividade[]
+    Cronograma                         Cronograma[]
+    PainelConteudoDetalhe              PainelConteudoDetalhe[]
+    OrcamentoPlanejado                 OrcamentoPlanejado[]
+    OrcamentoRealizado                 OrcamentoRealizado[]
+    MetaOrcamento                      OrcamentoPrevisto[]
+    projetos                           Projeto[]
+    OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
+    GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
+    view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2012,18 +2029,19 @@ model Atividade {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    atividade_orgao          AtividadeOrgao[]
-    atividade_responsavel    AtividadeResponsavel[]
-    atividade_tag            AtividadeTag[]
-    Indicador                Indicador[]
-    Cronograma               Cronograma[]
-    PainelConteudoDetalhe    PainelConteudoDetalhe[]
-    OrcamentoPlanejado       OrcamentoPlanejado[]
-    OrcamentoRealizado       OrcamentoRealizado[]
-    MetaOrcamento            OrcamentoPrevisto[]
-    projetos                 Projeto[]
-    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
-    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
+    atividade_orgao                    AtividadeOrgao[]
+    atividade_responsavel              AtividadeResponsavel[]
+    atividade_tag                      AtividadeTag[]
+    Indicador                          Indicador[]
+    Cronograma                         Cronograma[]
+    PainelConteudoDetalhe              PainelConteudoDetalhe[]
+    OrcamentoPlanejado                 OrcamentoPlanejado[]
+    OrcamentoRealizado                 OrcamentoRealizado[]
+    MetaOrcamento                      OrcamentoPrevisto[]
+    projetos                           Projeto[]
+    OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
+    GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
+    view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -3442,6 +3460,8 @@ model Projeto {
     tipo_intervencao             TipoIntervencao? @relation(fields: [tipo_intervencao_id], references: [id])
     equipamento_id               Int?
     equipamento                  Equipamento?     @relation(fields: [equipamento_id], references: [id])
+    empreendimento_id            Int?
+    empreendimento               Empreendimento?  @relation(fields: [empreendimento_id], references: [id])
 
     tipo_aditivo           TipoAditivo?           @relation(fields: [tipo_aditivo_id], references: [id])
     modalidade_contratacao ModalidadeContratacao? @relation(fields: [modalidade_contratacao_id], references: [id])
@@ -3608,6 +3628,10 @@ view ViewProjetoMDO {
 
     equipamento_id   Int?
     equipamento_nome String?
+
+    empreendimento_id            Int?
+    empreendimento_nome          String?
+    empreendimento_identificador String?
 
     orgao_origem_id Int
     orgao_origem    Orgao @relation(fields: [orgao_origem_id], references: [id])
@@ -4384,6 +4408,7 @@ view view_meta_pessoa_responsavel {
     meta_id   Int
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    meta      Meta   @relation(fields: [meta_id], references: [id])
     orgao_id  Int
 }
 
@@ -4669,6 +4694,27 @@ model MetaStatusAtrasoVariavel {
     @@map("meta_status_atraso_variavel")
 }
 
+model view_pdm_meta_iniciativa_atividade {
+    meta_id       Int  @id
+    pdm_id        Int
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    pdm        Pdm         @relation(fields: [pdm_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    @@map("view_pdm_meta_iniciativa_atividade")
+}
+
+// helper para subir atividade/iniciativa -> meta_id
+model view_meta_cronograma {
+    cronograma_id Int @id
+    meta_id       Int
+}
+
+// helper para subir etapa com atividade/iniciativa -> meta_id
 view view_etapa_rel_meta {
     etapa_id      Int  @id
     meta_id       Int
@@ -4686,6 +4732,7 @@ view view_etapa_rel_meta_indicador {
     atividade_id  Int?
     iniciativa_id Int?
     indicador_id  Int?
+    indicador     Indicador? @relation(fields: [indicador_id], references: [id])
 
     @@map("view_etapa_rel_meta_indicador")
 }
@@ -4920,10 +4967,11 @@ model Partido {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    mandatos_candidatura ParlamentarMandato[] @relation("candidatura")
-    mandatos_atual       ParlamentarMandato[] @relation("atual")
+    mandatos_candidatura ParlamentarMandato[]       @relation("candidatura")
+    mandatos_atual       ParlamentarMandato[]       @relation("atual")
     bancadas             BancadaPartido[]
-    transferencias       Transferencia[]
+    transferencias       TransferenciaParlamentar[]
+    distribuicoes        DistribuicaoParlamentar[]
 
     @@map("partido")
 }
@@ -5061,7 +5109,8 @@ model Parlamentar {
     criador                     Pessoa?                               @relation("Criador", fields: [criado_por], references: [id])
     atualizador                 Pessoa?                               @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor                   Pessoa?                               @relation("Removedor", fields: [removido_por], references: [id])
-    transferencias              Transferencia[]
+    transferencias              TransferenciaParlamentar[]
+    distribuicoes               DistribuicaoParlamentar[]
     view_ranking_transferencias ViewRankingTransferenciaParlamentar[]
 
     @@map("parlamentar")
@@ -5297,18 +5346,13 @@ model Transferencia {
     // Portanto, mantendo as cols de rel.
     secretaria_concedente_str String?
 
-    parlamentar_id Int?
-    parlamentar    Parlamentar? @relation(fields: [parlamentar_id], references: [id])
-
-    partido_id Int?
-    partido    Partido? @relation(fields: [partido_id], references: [id])
-
     workflow_id Int?
     workflow    Workflow? @relation(fields: [workflow_id], references: [id])
 
     objeto                         String
     interface                      TransferenciaInterface?
     identificador                  String
+    identificador_nro              Int
     esfera                         TransferenciaTipoEsfera
     clausula_suspensiva            Boolean?
     clausula_suspensiva_vencimento DateTime?               @db.Date()
@@ -5321,7 +5365,6 @@ model Transferencia {
     custeio                        Decimal? @default(0) @db.Decimal(15, 2)
     investimento                   Decimal? @default(0) @db.Decimal(15, 2)
 
-    cargo                ParlamentarCargo?
     ano                  Int?
     emenda               String?
     dotacao              String?
@@ -5372,8 +5415,42 @@ model Transferencia {
     TransferenciaStatusConsolidado TransferenciaStatusConsolidado[]
     ViewNotasTransferencias        ViewNotasTransferencias[]
     ViewDashboardAnalise           ViewTransferenciaAnalise[]
+    parlamentar                    TransferenciaParlamentar[]
 
     @@map("transferencia")
+}
+
+model TransferenciaParlamentar {
+    id Int @id @default(autoincrement())
+
+    transferencia_id Int
+    transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    partido_id Int?
+    partido    Partido? @relation(fields: [partido_id], references: [id])
+
+    parlamentar_id Int
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    cargo ParlamentarCargo?
+
+    objeto String?
+    // Valor não pode superar o valor do repasse da transferência.
+    // "valor do repasse" é o campo "valor" da tabela "transferencia".
+    valor  Decimal? @db.Decimal(15, 2)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime? @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("transferencia_parlamentar")
 }
 
 model TransferenciaAnexo {
@@ -5456,8 +5533,42 @@ model DistribuicaoRecurso {
     aditamentos   DistribuicaoRecursoAditamento[]
     status        DistribuicaoRecursoStatus[]
     tarefas       Tarefa[]
+    parlamentares DistribuicaoParlamentar[]
 
     @@map("distribuicao_recurso")
+}
+
+model DistribuicaoParlamentar {
+    id Int @id @default(autoincrement())
+
+    distribuicao_recurso_id Int
+    distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
+
+    partido_id Int?
+    partido    Partido? @relation(fields: [partido_id], references: [id])
+
+    parlamentar_id Int
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    cargo ParlamentarCargo?
+
+    objeto String?
+    // Valor não pode superar o valor do repasse da transferência.
+    // "valor do repasse" é o campo "valor" da tabela "distribuição".
+    valor  Decimal? @db.Decimal(15, 2)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime? @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_parlamentar")
 }
 
 model DistribuicaoRecursoAditamento {
@@ -6583,7 +6694,7 @@ model ContratoAditivo {
     tipo_aditivo_id Int
     tipo_aditivo    TipoAditivo @relation(fields: [tipo_aditivo_id], references: [id])
 
-    numero                  Int
+    numero                  String
     data                    DateTime? @db.Date()
     data_termino_atualizada DateTime? @db.Date()
     valor                   Decimal?  @db.Decimal(15, 2)
@@ -6603,4 +6714,28 @@ model ContratoAditivo {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("contrato_aditivo")
+}
+
+model Empreendimento {
+    id Int @id @default(autoincrement())
+
+    nome          String
+    identificador String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    projetos Projeto[]
+
+    @@map("empreendimento")
 }

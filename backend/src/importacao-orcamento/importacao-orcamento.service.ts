@@ -100,47 +100,55 @@ export class ImportacaoOrcamentoService {
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
-        if (!dto.tipo_projeto && dto.tipo_pdm) {
+        if (!dto.tipo_projeto && !dto.tipo_pdm) {
             const sistema = user.assertOneModuloSistema('criar', 'importações');
 
-            if (sistema == 'MDO') {
+            if (sistema === 'MDO') {
                 dto.tipo_projeto = 'MDO';
-            } else if (sistema == 'Projetos') {
+            } else if (sistema === 'Projetos') {
                 dto.tipo_projeto = 'PP';
-            } else if (sistema == 'PDM') {
+            } else if (sistema === 'PDM') {
                 dto.tipo_pdm = 'PDM';
-            } else if (sistema == 'PlanoSetorial') {
+            } else if (sistema === 'PlanoSetorial') {
                 dto.tipo_pdm = 'PS';
             }
         } else {
-            if (dto.tipo_pdm && dto.tipo_projeto)
+            if (dto.tipo_pdm && dto.tipo_projeto) {
                 throw new BadRequestException('Você deve informar apenas um tipo, não ambos.');
+            }
 
-            if (!dto.tipo_pdm && dto.pdm_id)
+            if (!dto.tipo_pdm && dto.pdm_id) {
                 throw new BadRequestException('Você deve informar o tipo de PDM ou Plano Setorial');
+            }
 
-            if (!dto.tipo_projeto && dto.portfolio_id)
+            if (!dto.tipo_projeto && dto.portfolio_id) {
                 throw new BadRequestException('Você deve informar o tipo de Projeto ou Obras');
+            }
         }
 
         if (dto.pdm_id !== undefined) {
-            if (dto.tipo_pdm == 'PDM' && !user.hasSomeRoles(['CadastroMeta.orcamento']))
+            if (dto.tipo_pdm === 'PDM' && !user.hasSomeRoles(['CadastroMeta.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Meta');
+            }
 
-            if (dto.tipo_pdm == 'PS' && !user.hasSomeRoles(['CadastroMetaPS.orcamento']))
+            if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(['CadastroMetaPS.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Meta do Plano Setorial');
+            }
         }
 
         if (dto.portfolio_id !== undefined) {
-            if (dto.tipo_projeto == 'PP' && !user.hasSomeRoles(['Projeto.orcamento']))
+            if (dto.tipo_projeto === 'PP' && !user.hasSomeRoles(['Projeto.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Projetos');
+            }
 
-            if (dto.tipo_projeto == 'MDO' && !user.hasSomeRoles(['ProjetoMDO.orcamento']))
+            if (dto.tipo_projeto === 'MDO' && !user.hasSomeRoles(['ProjetoMDO.orcamento'])) {
                 throw new BadRequestException('Você não tem permissão para Obras');
+            }
         }
 
-        if (!dto.portfolio_id && !dto.pdm_id)
+        if (!dto.portfolio_id && !dto.pdm_id) {
             throw new BadRequestException('Você deve informar um portfolio ou um pdm para importar o orçamento.');
+        }
 
         // TODO verificar quais Metas as pessoa pode ver, e assim por diante em cada um dos casos acima
 
@@ -346,7 +354,7 @@ export class ImportacaoOrcamentoService {
         }
 
         if (sistema == 'PDM' && user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
-            const metas = await this.metaService.findAllIds(user);
+            const metas = await this.metaService.findAllIds('PDM', user);
             this.logger.warn(`só pode as metas ${metas.map((r) => r.id)}`);
 
             filtros.push({
@@ -367,7 +375,7 @@ export class ImportacaoOrcamentoService {
                 ],
             });
         } else if (sistema == 'PlanoSetorial' && user.hasSomeRoles(['CadastroMetaPS.orcamento']) && filters.pdm_id) {
-            const metas = await this.metaService.findAllIds(user);
+            const metas = await this.metaService.findAllIds('PS', user);
             this.logger.warn(`só pode as metas plano setorial ${metas.map((r) => r.id)}`);
 
             filtros.push({
@@ -566,6 +574,12 @@ export class ImportacaoOrcamentoService {
                 arquivo: {
                     select: { nome_original: true },
                 },
+                pdm: {
+                    select: { tipo: true },
+                },
+                portfolio: {
+                    select: { tipo_projeto: true },
+                },
             },
         });
 
@@ -611,23 +625,12 @@ export class ImportacaoOrcamentoService {
         let tipo_pdm: TipoPdm | undefined = undefined;
 
         if (job.portfolio_id) {
-            const portfolio = await this.prisma.portfolio.findFirstOrThrow({
-                where: { id: job.portfolio_id },
-                select: { tipo_projeto: true },
-            });
-
-            tipo_projeto = portfolio.tipo_projeto;
-            const projetosDoUser = await this.projetoService.findAllIds(portfolio.tipo_projeto, user, job.portfolio_id);
+            tipo_projeto = job.portfolio!.tipo_projeto;
+            const projetosDoUser = await this.projetoService.findAllIds(tipo_projeto, user, job.portfolio_id);
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
-            const metasDoUser = await this.metaService.findAllIds(user, job.pdm_id);
-
-            const pdm = await this.prisma.pdm.findFirstOrThrow({
-                where: { id: job.pdm_id },
-                select: { tipo: true },
-            });
-
-            tipo_pdm = pdm.tipo;
+            tipo_pdm = job.pdm!.tipo;
+            const metasDoUser = await this.metaService.findAllIds(tipo_pdm, user, job.pdm_id);
 
             metasIds.push(...metasDoUser.map((r) => r.id));
         }

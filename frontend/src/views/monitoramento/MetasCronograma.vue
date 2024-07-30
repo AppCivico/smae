@@ -1,8 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as itemFilho } from '@/components/monitoramento/itemFilho.vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { usePdMStore } from '@/stores/pdm.store';
@@ -14,14 +12,7 @@ import {
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from '../metas/helpers/auxiliaresParaFaroisDeAtraso.ts';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
 const editModalStore = useEditModalStore();
-const alertStore = useAlertStore();
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const route = useRoute();
 const { meta_id } = route.params;
 const { iniciativa_id } = route.params;
@@ -60,14 +51,6 @@ function start() {
 }
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
-
-function dateToField(d) {
-  const dd = d ? new Date(d) : false;
-  return (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone: 'UTC' }) : '';
-}
-function vazio(s) {
-  return s || '-';
-}
 </script>
 <template>
   <Dashboard>

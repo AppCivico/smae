@@ -15,6 +15,7 @@ const props = defineProps({
     type: Object,
     default: null,
     required: true,
+    validator: (valorDaProp) => valorDaProp.pdm_id || valorDaProp.portfolio_id,
   },
   complemento: {
     type: String,
@@ -279,7 +280,7 @@ watch(valorDoComplemento, (novoValor) => {
       <label
         class="label"
         for="campo-de-dotação"
-      >Dotação <span class="tvermelho">*</span></label>
+      >Dotação&nbsp;<span class="tvermelho">*</span></label>
       <input
         id="campo-de-dotação"
         v-model.trim="dotaçãoEComplemento"
@@ -321,7 +322,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           for="órgão"
           class="label tc300"
-        >Órgão <span class="tvermelho">*</span></label>
+        >Órgão&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="órgão"
           v-model="órgão"
@@ -349,7 +350,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="unidade"
-        >Unidade <span class="tvermelho">*</span></label>
+        >Unidade&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="unidade"
           v-model="unidade"
@@ -386,7 +387,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="função"
-        >Função <span class="tvermelho">*</span></label>
+        >Função&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="função"
           v-model="função"
@@ -414,7 +415,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="subFunção"
-        >Subfunção <span class="tvermelho">*</span></label>
+        >Subfunção&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="subFunção"
           v-model="subFunção"
@@ -442,7 +443,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="programa"
-        >Programa <span class="tvermelho">*</span></label>
+        >Programa&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="programa"
           v-model="programa"
@@ -473,7 +474,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="projetoAtividade"
-        >Projeto/atividade <span class="tvermelho">*</span></label>
+        >Projeto/atividade&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="projetoAtividade"
           v-model="projetoAtividade"
@@ -502,7 +503,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="contaDespesa"
-        >Conta despesa <span class="tvermelho">*</span></label>
+        >Conta despesa&nbsp;<span class="tvermelho">*</span></label>
         <input
           id="contaDespesa"
           v-model="contaDespesa"
@@ -518,7 +519,7 @@ watch(valorDoComplemento, (novoValor) => {
         <label
           class="label tc300"
           for="fonte"
-        >Fonte <span class="tvermelho">*</span></label>
+        >Fonte&nbsp;<span class="tvermelho">*</span></label>
         <select
           id="fonte"
           v-model="fonte"
@@ -553,7 +554,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoExercício"
         >
-          Exercício da Fonte de Recurso <span class="tvermelho">*</span>
+          Exercício da Fonte de Recurso&nbsp;<span class="tvermelho">*</span>
         </label>
         <input
           id="complementoExercício"
@@ -573,7 +574,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoFonte"
         >
-          Fonte <span class="tvermelho">*</span>
+          Fonte&nbsp;<span class="tvermelho">*</span>
         </label>
         <input
           id="complementoFonte"
@@ -593,7 +594,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoAcompanhamento"
         >
-          Acompanhamento da Execução Orçamentária <span class="tvermelho">*</span>
+          Acompanhamento da Execução Orçamentária&nbsp;<span class="tvermelho">*</span>
         </label>
         <input
           id="complementoAcompanhamento"
@@ -612,7 +613,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoOrigem"
         >
-          Origem do Recurso <span class="tvermelho">*</span>
+          Origem do Recurso&nbsp;<span class="tvermelho">*</span>
         </label>
         <input
           id="complementoOrigem"

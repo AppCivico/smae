@@ -85,5 +85,9 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
         habilita_valor_data_termino: emFoco?.habilita_valor_data_termino || false,
       };
     },
+    tipoDeAditivoPorId: ({ lista }) => lista.reduce((acc, cur) => {
+      acc[cur.id] = cur;
+      return acc;
+    }, {}),
   },
 });

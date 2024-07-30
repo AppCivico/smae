@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
+    IsArray,
     IsBoolean,
     IsEnum,
     IsInt,
@@ -13,6 +14,7 @@ import {
     Min,
     MinLength,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
@@ -29,14 +31,6 @@ export class CreateTransferenciaDto {
     @MinLength(1)
     @MaxLength(250)
     secretaria_concedente?: string;
-
-    @IsOptional()
-    @IsNumber()
-    partido_id?: number;
-
-    @IsOptional()
-    @IsNumber()
-    parlamentar_id: number | null;
 
     @IsString()
     @MinLength(1)
@@ -56,13 +50,6 @@ export class CreateTransferenciaDto {
             '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     esfera: TransferenciaTipoEsfera;
-
-    @IsOptional()
-    @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
-    @IsEnum(ParlamentarCargo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
-    })
-    cargo?: ParlamentarCargo;
 
     @IsOptional()
     @IsBoolean()
@@ -151,6 +138,37 @@ export class CreateTransferenciaDto {
     @IsOptional()
     @IsInt()
     workflow_orgao_responsavel_id?: number;
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreateTransferenciaParlamentarDto)
+    parlamentares?: CreateTransferenciaParlamentarDto[];
+}
+
+export class CreateTransferenciaParlamentarDto {
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
+    @IsNumber()
+    parlamentar_id: number;
+
+    @IsNumber()
+    partido_id: number;
+
+    @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
+    @IsEnum(ParlamentarCargo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
+    })
+    cargo: ParlamentarCargo;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(1024)
+    objeto: string;
 }
 
 export class CreateTransferenciaAnexoDto {

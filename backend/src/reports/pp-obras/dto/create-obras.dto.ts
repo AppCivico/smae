@@ -1,12 +1,10 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { ProjetoStatus } from '@prisma/client';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from 'src/auth/transforms/date.transform';
-import { NumberArrayTransformOrUndef } from 'src/auth/transforms/number-array.transform';
 
 export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     'eh_prioritario',
@@ -37,4 +35,9 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     @IsNumber()
     @Transform(NumberTransform)
     projeto_regiao_id?: number;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    periodo?: Date;
 }

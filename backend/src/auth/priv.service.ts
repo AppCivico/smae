@@ -21,7 +21,7 @@ export class PrivService {
             where: {
                 modulo: filter.sistemas
                     ? {
-                          modulo_sistema: { in: filter.sistemas },
+                          modulo_sistema: { hasSome: filter.sistemas },
                       }
                     : undefined,
             },
@@ -34,7 +34,7 @@ export class PrivService {
 
         const listMod = await this.prisma.privilegioModulo.findMany({
             where: {
-                modulo_sistema: filter.sistemas ? { in: filter.sistemas } : undefined,
+                modulo_sistema: filter.sistemas ? { hasSome: filter.sistemas } : undefined,
             },
             select: {
                 codigo: true,
@@ -46,7 +46,14 @@ export class PrivService {
 
         return {
             linhas: listPriv,
-            modulos: listMod,
+            modulos: listMod.flatMap((mod) =>
+                mod.modulo_sistema.map((modulo) => ({
+                    id: mod.id,
+                    codigo: mod.codigo,
+                    descricao: mod.descricao,
+                    modulo_sistema: modulo,
+                }))
+            ),
         };
     }
 }

@@ -121,8 +121,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
   <div class="mb2">
     <div>
       <header class="flex spacebetween center">
-        <h3 class=" w700 mb0">{{ config.ano_referencia }}</h3>
-        <div >
+        <h3 class=" w700 mb0">
+          {{ config.ano_referencia }}
+        </h3>
+
+        <div>
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
             class="dropbtn"
@@ -137,41 +140,41 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                   v-for="item, i in $route.meta.rotasParaAdição"
                   :key="i"
                 >
-                  <router-link :to="{ name: item.nome, params: { ano } }">
+                  <SmaeLink :to="{ name: item.nome, params: { ano } }">
                     {{ item.texto }}
-                  </router-link>
+                  </SmaeLink>
                 </li>
               </template>
               <template v-else>
                 <li>
-                  <router-link
+                  <SmaeLink
                     :to="{
                       path: `${parentlink}/orcamento/realizado/${ano}/dotacao`,
                       query: $route.query
                     }"
                   >
                     Dotação
-                  </router-link>
+                  </SmaeLink>
                 </li>
                 <li>
-                  <router-link
+                  <SmaeLink
                     :to="{
                       path: `${parentlink}/orcamento/realizado/${ano}/processo`,
                       query: $route.query
                     }"
                   >
                     Processo
-                  </router-link>
+                  </SmaeLink>
                 </li>
                 <li>
-                  <router-link
+                  <SmaeLink
                     :to="{
                       path: `${parentlink}/orcamento/realizado/${ano}/nota`,
                       query: $route.query
                     }"
                   >
                     Nota de empenho
-                  </router-link>
+                  </SmaeLink>
                 </li>
               </template>
             </ul>

@@ -44,6 +44,9 @@ export const router = createRouter({
       name: 'panorama',
       component: Panorama,
       props: { submenu: false },
+      meta: {
+        entidadeMãe: 'pdm',
+      },
     },
 
     { path: '/login', component: Login },
@@ -91,7 +94,7 @@ router.beforeEach(async (r) => {
   }
 });
 
-router.afterEach((to) => {
+router.afterEach((to, from, failure) => {
   const { título } = to.meta;
 
   if (título) {
@@ -105,12 +108,29 @@ router.afterEach((to) => {
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
   }
+
+  if (failure) {
+    console.error('to:', to, 'from:', from, 'failure:', failure);
+    throw new Error(failure);
+  }
 });
 
 router.beforeEach((to, from, next) => {
+  const { meta } = to;
+
   if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
     $eventHub.emit('recebimentoIniciado', to); // Start progress bar
   }
+
+  Object.keys(meta).forEach((key) => {
+    // Limitar à propriedade `prefixoDosCaminhos` para manter a
+    // retrocompatibilidade com a propriedade `título`,
+    // que precisa ser usada numa `computed()`
+    if (typeof meta[key] === 'function' && key === 'prefixoDosCaminhos') {
+      meta[key] = meta[key](to);
+    }
+  });
+
   next();
 });
 

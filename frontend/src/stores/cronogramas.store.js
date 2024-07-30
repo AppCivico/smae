@@ -4,6 +4,16 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return 'cronograma';
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return 'plano-setorial-cronograma';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useCronogramasStore = defineStore({
   id: 'Cronogramas',
   state: () => ({
@@ -27,7 +37,7 @@ export const useCronogramasStore = defineStore({
         }
         if (!this.Cronogramas[parent_field][p_id]) {
           this.Cronogramas[parent_field][p_id] = { loading: true };
-          const r = await this.requestS.get(`${baseUrl}/cronograma?${parent_field}=${p_id}`);
+          const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}?${parent_field}=${p_id}`);
           this.Cronogramas[parent_field][p_id] = r.linhas.map((x) => {
             x.inicio_previsto = dateToField(x.inicio_previsto);
             x.termino_previsto = dateToField(x.termino_previsto);
@@ -80,16 +90,16 @@ export const useCronogramasStore = defineStore({
       }
     },
     async insert(params) {
-      const r = await this.requestS.post(`${baseUrl}/cronograma`, params);
+      const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/cronograma/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params)) return true;
       return false;
     },
     async delete(cronograma_id) {
-      const r = await this.requestS.delete(`${baseUrl}/cronograma/${cronograma_id}`);
+      const r = await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${cronograma_id}`);
       if (r) return true;
       return false;
     },

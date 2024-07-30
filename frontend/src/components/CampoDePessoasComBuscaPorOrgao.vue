@@ -267,7 +267,8 @@ watch(() => props.prontoParaMontagem, () => {
     <button
       class="like-a__text addlink"
       type="button"
-      :disabled="órgãosDisponíveis.length === listaDeÓrgãos.length"
+      :disabled="!órgãosDisponíveis.length
+        || órgãosDisponíveis.length === listaDeÓrgãos.length"
       @click="adicionarLinha"
     >
       <svg

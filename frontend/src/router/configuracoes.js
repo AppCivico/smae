@@ -94,6 +94,7 @@ const rotasParaMenuPrincipal = [
   'gerenciarPainéisDeMetas',
   'mdoEtiquetasListar',
   'mdoProgramaHabitacionalListar',
+  'mdoEmpreendimentosListar',
   'parlamentaresListar',
   'paineisExternosListar',
   'planosSetoriaisListar',
@@ -120,7 +121,7 @@ export default [
         'CadastroWorkflows.',
       ],
       presenteNoMenu: true,
-      pesoNoMenu: 1,
+      pesoNoMenu: 5,
       título: 'Configurações',
       íconeParaMenu:
         `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -286,7 +287,7 @@ export default [
         meta: {
           título: 'Grupos de Variáveis',
           rotaPrescindeDeChave: true,
-          // limitarÀsPermissões: '',
+          limitarÀsPermissões: 'CadastroGrupoVariavel.',
           // rotasParaMenuSecundário: [
           // ],
 
@@ -378,6 +379,55 @@ export default [
               título: 'Editar etiqueta',
               rotasParaMigalhasDePão: [
                 'mdoEtiquetasListar',
+              ],
+            },
+          },
+        ],
+      },
+      {
+        path: 'empreendimento',
+        component: () => import('@/views/mdo.empreendimentos/EmpreendimentosRaiz.vue'),
+        meta: {
+          título: 'Empreendimentos',
+          entidadeMãe: 'mdo',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: [
+            'ProjetoMDO.administrador',
+          ],
+          rotasParaMenuSecundário: [
+            'mdoEmpreendimentosListar',
+          ],
+          presenteNoMenu: true,
+        },
+        children: [
+          {
+            name: 'mdoEmpreendimentosListar',
+            path: '',
+            component: () => import('@/views/mdo.empreendimentos/EmpreendimentosLista.vue'),
+          },
+          {
+            name: 'mdoEmpreendimentosCriar',
+            path: 'novo',
+            component: () => import('@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'),
+            meta: {
+              título: 'Novo empreendimento',
+              rotasParaMigalhasDePão: [
+                'mdoEmpreendimentosListar',
+              ],
+            },
+          },
+          {
+            path: ':empreendimentoId',
+            name: 'mdoEmpreendimentosEditar',
+            component: () => import('@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{ empreendimentoId: Number.parseInt(params.empreendimentoId, 10) || undefined },
+            }),
+            meta: {
+              título: 'Editar empreendimento',
+              rotasParaMigalhasDePão: [
+                'mdoEmpreendimentosListar',
               ],
             },
           },
@@ -815,6 +865,7 @@ export default [
     meta: {
       limitarÀsPermissões: 'CadastroPdm.',
       título: 'Programa de metas',
+      entidadeMãe: 'pdm',
       rotasParaMenuPrincipal,
     },
     children: [
@@ -930,7 +981,7 @@ export default [
     meta: {
       limitarÀsPermissões: [
         'CadastroPainel.inserir',
-        'CadastroMeta.inserir',
+        'CadastroMeta.administrador_no_pdm',
       ],
       título: 'Painéis de metas',
       rotasParaMenuSecundário,

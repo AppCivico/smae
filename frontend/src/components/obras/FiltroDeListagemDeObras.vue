@@ -71,7 +71,7 @@
           name="grupo_tematico_id"
           class="inputtext light"
           :aria-busy="chamadasPendentesDeGruposTemáticos.lista"
-          :class="{ error: erroDeGrupoTemático }"
+          :class="{ error: erroDeGrupoTemático.lista }"
         >
           <option value="" />
           <option
@@ -96,7 +96,7 @@
           name="equipamento_id"
           class="inputtext light"
           :aria-busy="chamadasPendentesDeEquipamentos.lista"
-          :class="{ error: erroDeEquipamentos }"
+          :class="{ error: erroDeEquipamentos.lista }"
         >
           <option value="" />
           <option
@@ -236,6 +236,8 @@
   </FormularioQueryString>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { onUnmounted, ref } from 'vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { obras as schema } from '@/consts/formSchemas';
@@ -245,8 +247,6 @@ import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
-import { storeToRefs } from 'pinia';
-import { onUnmounted, ref } from 'vue';
 
 const props = defineProps({
   ariaBusy: {

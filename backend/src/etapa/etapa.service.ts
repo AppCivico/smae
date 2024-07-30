@@ -1,18 +1,21 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService, UpsertEnderecoDto } from '../geo-loc/geo-loc.service';
+import { MetaService } from '../meta/meta.service';
+import { MfPessoaAcessoPdm } from '../mf/mf.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { VariavelService } from '../variavel/variavel.service';
 import { CreateEtapaDto } from './dto/create-etapa.dto';
 import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { EtapaItemDto } from './entities/etapa.entity';
-import { VariavelService } from '../variavel/variavel.service';
-import { MfPessoaAcessoPdm } from '../mf/mf.service';
 
 const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser posterior à data de término previsto.';
 const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
@@ -56,16 +59,19 @@ export class EtapaService {
 
     constructor(
         private readonly prisma: PrismaService,
+        private readonly metaService: MetaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly geolocService: GeoLocService,
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            // logo, é um tecnico_cp
-            // TODO buscar o ID da meta pelo cronograma, pra verificar
-        }
+    async create(tipo: TipoPdm, cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
+        const metaRow = await this.prisma.view_meta_cronograma.findFirstOrThrow({
+            where: { cronograma_id: cronogramaId },
+            select: { meta_id: true },
+        });
+
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
         if (dto.inicio_previsto && dto.termino_previsto && dto.inicio_previsto > dto.termino_previsto)
             throw new BadRequestException(MSG_INI_POSTERIOR_TERM_PREV);
@@ -119,11 +125,12 @@ export class EtapaService {
                     etapa_id: etapa.id,
                     ordem: dto.ordem,
                 };
-                await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user, prismaTx);
+                await this.cronogramaEtapaService.update(tipo, dadosUpsertCronogramaEtapa, user, prismaTx);
 
                 if (dto.regiao_id || dto.termino_real || dto.geolocalizacao || dto.variavel) {
                     this.logger.log('encaminhando para método de atualização e validações restantes...');
                     await this.update(
+                        tipo,
                         etapa.id,
                         {
                             regiao_id: dto.regiao_id,
@@ -151,6 +158,9 @@ export class EtapaService {
      * Esse endpoint não está sendo usado no frontend, e pelo retorno, está com os filtros errados
      **/
     async findAllDeprecated(filters: FilterEtapaDto | undefined = undefined): Promise<EtapaItemDto[]> {
+        throw new Error(
+            'Teste para verificar se esse endpoint realmente não está sendo usado no frontend, e pelo retorno, está com os filtros errados'
+        );
         const ret: EtapaItemDto[] = [];
 
         const etapaPaiId = filters?.etapa_pai_id;
@@ -249,6 +259,7 @@ export class EtapaService {
     }
 
     async update(
+        tipo: TipoPdm,
         id: number,
         dto: UpdateEtapaDto,
         user: PessoaFromJwt,
@@ -256,6 +267,12 @@ export class EtapaService {
         config?: MfPessoaAcessoPdm
     ) {
         const prisma = prismaCtx || this.prisma;
+
+        const metaRow = await prisma.view_etapa_rel_meta.findFirstOrThrow({
+            where: { etapa_id: id },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
         const basicSelf = await prisma.etapa.findFirstOrThrow({
             where: { id, removido_em: null },
@@ -394,7 +411,6 @@ export class EtapaService {
                         regiao_id: { not: null },
                     },
                 });
-                console.log(etapasFilhas);
                 if (etapasFilhas)
                     throw new BadRequestException(
                         'Não é possível alterar a região de uma etapa/fase que possui filhos com região cadastrada.'
@@ -529,6 +545,7 @@ export class EtapaService {
                             pessoa_id: true,
                         },
                     },
+                    inicio_previsto: true,
                     cronograma: {
                         select: {
                             meta_id: true,
@@ -566,7 +583,7 @@ export class EtapaService {
                 await this.verificaEtapaEnderecoObrigatorioPais(prismaTx, id, self.cronograma.id);
             }
 
-            await this.upsertVariavel(self, dto, etapaAtualizadaGeo, prismaTx, id, user, createdNow);
+            await this.upsertVariavel(tipo, self, dto, etapaAtualizadaGeo, prismaTx, id, user, createdNow);
 
             return etapaAtualizada;
         };
@@ -583,12 +600,14 @@ export class EtapaService {
     }
 
     private async upsertVariavel(
+        tipoPdm: TipoPdm,
         self: {
             variavel_id: number | null;
         },
         dto: UpdateEtapaDto,
         etapaAtualizada: {
             responsaveis: { pessoa_id: number }[];
+            inicio_previsto: Date | null;
             cronograma: {
                 meta_id: number | null;
                 iniciativa_id: number | null;
@@ -601,8 +620,13 @@ export class EtapaService {
         now: Date
     ) {
         if (self.variavel_id === null && dto.variavel) {
-            if (!dto.variavel.codigo || !dto.variavel.titulo)
-                throw new BadRequestException('Código e título da variável são obrigatórios');
+            if (tipoPdm == 'PDM') {
+                if (!dto.variavel.codigo || !dto.variavel.titulo)
+                    throw new BadRequestException('Código e título da variável são obrigatórios');
+            } else {
+                if (!dto.variavel.titulo) throw new BadRequestException('Título da variável é obrigatório');
+            }
+
             let orgao_id: number | null = null;
 
             for (const r of etapaAtualizada.responsaveis) {
@@ -616,28 +640,45 @@ export class EtapaService {
                 throw new BadRequestException(
                     'Órgão da etapa não foi encontrado, necessário ter pelo menos um responsável com órgão'
                 );
-            const tipo = etapaAtualizada.cronograma.meta_id
+            const tipoRelacionamento = etapaAtualizada.cronograma.meta_id
                 ? 'meta'
                 : etapaAtualizada.cronograma.iniciativa_id
                   ? 'iniciativa'
                   : 'atividade';
 
             const indicadorInfo = await prismaTx.view_etapa_rel_meta_indicador.findFirst({
-                where: { etapa_id: id, tipo: tipo },
+                where: { etapa_id: id, tipo: tipoRelacionamento },
+                select: {
+                    indicador: {
+                        select: {
+                            id: true,
+                            periodicidade: true,
+                            inicio_medicao: true,
+                        },
+                    },
+                },
             });
-            if (!indicadorInfo || !indicadorInfo.indicador_id)
+            if (!indicadorInfo || !indicadorInfo.indicador?.id)
                 throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
+
+            if (tipoPdm == 'PS' && !dto.variavel.codigo) {
+                dto.variavel.codigo = await this.variavelService.geraCodigoVariavel('Global', {
+                    inicio_medicao: indicadorInfo.indicador.inicio_medicao,
+                    periodicidade: indicadorInfo.indicador.periodicidade,
+                    variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,
+                });
+            }
 
             const variavel = await this.variavelService.criarVariavelCronograma(
                 {
                     titulo: dto.variavel.titulo,
                     orgao_id: orgao_id,
-                    indicador_id: indicadorInfo.indicador_id,
+                    indicador_id: indicadorInfo.indicador.id,
                 },
                 dto.variavel.codigo,
                 user,
                 prismaTx,
-                now,
+                now
             );
 
             for (const r of etapaAtualizada.responsaveis) {
@@ -998,7 +1039,13 @@ export class EtapaService {
         await Promise.all(promises);
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+        const metaRow = await this.prisma.view_etapa_rel_meta.findFirstOrThrow({
+            where: { etapa_id: id },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'etapa do cronograma');
+
         const etapa_has_children = await this.prisma.etapa.count({ where: { etapa_pai_id: id, removido_em: null } });
         if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
 
@@ -1017,12 +1064,12 @@ export class EtapaService {
             });
 
             for (const cronograma of cronogramas) {
-                await this.cronogramaEtapaService.delete(cronograma.id, user);
+                await this.cronogramaEtapaService.delete(tipo, cronograma.id, user);
             }
         });
     }
 
-    async buildEtapaResponsaveis(
+    private async buildEtapaResponsaveis(
         etapaId: number,
         responsaveis: number[]
     ): Promise<Prisma.EtapaResponsavelCreateManyInput[]> {

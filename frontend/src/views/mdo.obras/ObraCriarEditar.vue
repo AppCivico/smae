@@ -1,4 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
@@ -20,19 +30,11 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+const empreendimentosStore = useEmpreendimentosStore();
 const gruposTematicosStore = useGruposTematicosStore();
 const ÓrgãosStore = useOrgansStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
@@ -44,6 +46,12 @@ const programaHabitacionalStore = useProgramaHabitacionalStore();
 const obrasStore = useObrasStore();
 const equipamentosStore = useEquipamentosStore();
 const etiquetasStore = useEtiquetasStore();
+
+const {
+  lista: listaDeEmpreendimentos,
+  chamadasPendentes: chamadasPendentesDeEmpreendimentos,
+  erro: erroDeEmpreendimentos,
+} = storeToRefs(empreendimentosStore);
 
 const {
   lista: listaDeEquipamentos,
@@ -143,9 +151,10 @@ const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaborador
     return acc;
   }, {}));
 
-const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioMdoStore
-  .portfoliosPorId?.[idDoPortfólio]?.orgaos
-  .filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
+const orgaosDisponiveisPorPortolio = computed(() => portfolioMdoStore.lista.reduce((acc, cur) => {
+  acc[cur.id] = cur.orgaos.filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
+  return acc;
+}, {}));
 
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
@@ -282,7 +291,12 @@ const onSubmit = handleSubmit(async () => {
       emFoco.value = null;
       if (resposta.id) {
         obrasStore.buscarItem(props.obraId || resposta.id);
-        router.push({ name: route.meta.rotaDeEscape });
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: {
+            obraId: resposta.id,
+          },
+        });
       }
     }
   } catch (error) {
@@ -294,6 +308,7 @@ function iniciar() {
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
 
+  empreendimentosStore.buscarTudo();
   portfolioMdoStore.buscarTudo();
   equipamentosStore.buscarTudo();
   etiquetasStore.buscarTudo();
@@ -304,6 +319,8 @@ function iniciar() {
   if (emFoco.value?.portfolio_id) {
     observadoresStore.buscarTudo();
   }
+  // Aqui por causa de alguma falha de reatividade apenas nesse store
+  ÓrgãosStore.$reset();
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
@@ -356,7 +373,7 @@ watch(itemParaEdição, (novoValor) => {
     </h1>
 
     <hr class="f1">
-<!--
+    <!--
   <MenuDeMudançaDeStatusDeProjeto
     v-if="obraId"
   />
@@ -430,10 +447,10 @@ watch(itemParaEdição, (novoValor) => {
             v-for="item in portfolioMdoStore.lista"
             :key="item.id"
             :value="item.id"
-            :disabled="!órgãosDisponíveisNessePortfolio(item.id)?.length"
+            :disabled="!orgaosDisponiveisPorPortolio[item.id]?.length"
           >
             {{ item.titulo }}
-            <template v-if="!órgãosDisponíveisNessePortfolio(item.id)?.length">
+            <template v-if="!orgaosDisponiveisPorPortolio[item.id]?.length">
               (órgão sem responsáveis cadastrados)
             </template>
           </option>
@@ -692,6 +709,37 @@ watch(itemParaEdição, (novoValor) => {
         </Field>
         <ErrorMessage
           name="orgao_executor_id"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="empreendimento_id"
+          :schema="schema"
+        />
+        <Field
+          name="empreendimento_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.empreendimento_id,
+          }"
+          :disabled="!listaDeEmpreendimentos.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeEmpreendimentos || []"
+            :key="item.id"
+            :value="item.id"
+            :title="item.nome"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="empreendimento_id"
           class="error-msg"
         />
       </div>
@@ -1201,15 +1249,14 @@ watch(itemParaEdição, (novoValor) => {
             :class="{
               error: errors.orgao_gestor_id,
             }"
-            :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
+            :disabled="!orgaosDisponiveisPorPortolio[values.portfolio_id]?.length"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
               Selecionar
             </option>
             <option
-              v-for="item in
-                órgãosDisponíveisNessePortfolio(values.portfolio_id) || []"
+              v-for="item in orgaosDisponiveisPorPortolio[values.portfolio_id] || []"
               :key="item.id"
               :value="item.id"
               :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
@@ -1440,8 +1487,6 @@ watch(itemParaEdição, (novoValor) => {
         </div>
       </div>
     </fieldset>
-
-    <!-- PRA-FAZER: inserir campo de etiquetas -->
 
     <div class="mb2">
       <legend class="label mt2 mb1">

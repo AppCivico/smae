@@ -190,32 +190,6 @@ iniciar();
         </div>
       </div>
       <div class="flex flexwrap center g2">
-        <div class="f1">
-          <LabelFromYup
-            name="responsabilidade"
-            :schema="schema"
-          />
-          <Field
-            name="responsabilidade"
-            as="select"
-            class="inputtext light mb2"
-          >
-            <option value="">
-              Selecionar
-            </option>
-            <option
-              v-for="item in Object.values(responsabilidadeEtapaFluxo)"
-              :key="item.valor"
-              :value="item.valor"
-            >
-              {{ item.nome }}
-            </option>
-          </Field>
-          <ErrorMessage
-            class="error-msg"
-            name="responsabilidade"
-          />
-        </div>
         <div class="mb1">
           <LabelFromYup
             name="duracao"

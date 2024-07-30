@@ -13,7 +13,7 @@ export default {
 </svg>`,
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
-    pesoNoMenu: 4,
+    pesoNoMenu: 1,
     entidadeMãe: 'obras',
     limitarÀsPermissões: [
       'MDO.',
@@ -45,7 +45,7 @@ export default {
         limitarÀsPermissões: [
           'ProjetoMDO.administrador_no_orgao',
         ],
-        rotaDeEscape: 'obrasResumo',
+        rotaDeEscape: 'obrasListar',
         rotasParaMigalhasDePão: [
           'obrasListar',
         ],
@@ -135,7 +135,6 @@ export default {
               'obrasListar',
               'obrasResumo',
               'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
-              'obrasTarefasListar',
             ],
           },
           children: [

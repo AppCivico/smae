@@ -1,42 +1,30 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
+import { MetaIniAtvTag } from '../meta/entities/meta.entity';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 
 @Injectable()
 export class IniciativaService {
     private readonly logger = new Logger(IniciativaService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly variavelService: VariavelService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly geolocService: GeoLocService
+        private readonly metaService: MetaService,
+        private readonly variavelService: VariavelService
     ) {}
 
-    async create(dto: CreateIniciativaDto, user: PessoaFromJwt) {
-        // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
-        // e se tem o privilegios de CP
-        // e se os *tema_id são do mesmo PDM
-        // se existe pelo menos 1 responsável=true no op
-
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            if (!filterIdIn.includes(dto.meta_id)) {
-                throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400);
-            }
-        }
+    async create(tipo: TipoPdm, dto: CreateIniciativaDto, user: PessoaFromJwt) {
+        await this.metaService.assertMetaWriteOrThrow(tipo, dto.meta_id, user, 'iniciativa');
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -97,7 +85,7 @@ export class IniciativaService {
                     geoDto.tokens = geolocalizacao;
                     geoDto.tipo = 'Endereco';
 
-                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                    await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
                 }
 
                 return iniciativa;
@@ -105,6 +93,14 @@ export class IniciativaService {
         );
 
         return created;
+    }
+
+    private async loadMetaOrThrow(tipo: TipoPdm, meta_id: number, user: PessoaFromJwt) {
+        const meta = await this.metaService.findAll(tipo, { id: meta_id }, user);
+        if (!meta) {
+            throw new HttpException('meta_id| Meta não encontrada', 400);
+        }
+        return meta;
     }
 
     async buildIniciativaTags(iniciativaId: number, tags: number[]): Promise<Prisma.IniciativaTagCreateManyInput[]> {
@@ -203,26 +199,16 @@ export class IniciativaService {
         return arr;
     }
 
-    async findAll(filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
         const meta_id = filters?.meta_id;
 
-        let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
-                filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_iniciativa_pessoa_responsavel);
-            } else {
-                filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            }
-            // Maybe TODO: notei que existe responsavel na iniciativa, então talvez seja necessário na verdade,
-            // filtrar usando o responsavel da iniciativa e não da meta
-            // o mesmo vale pra atividade
-        }
+        const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.iniciativa.findMany({
             where: {
                 removido_em: null,
                 meta_id: meta_id ? meta_id : undefined,
-                AND: [{ meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
+                meta: { AND: metaFilterSet },
             },
             orderBy: [{ codigo: 'asc' }],
             select: {
@@ -254,13 +240,28 @@ export class IniciativaService {
                         id: true,
                     },
                 },
+                iniciativa_tag: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                descricao: true,
+                                arquivo_icone_id: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        tag: { descricao: 'asc' },
+                    },
+                },
             },
         });
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.iniciativa_id = listActive.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
+        const tags: MetaIniAtvTag[] = [];
         const ret: Iniciativa[] = [];
         for (const dbIniciativa of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
@@ -290,14 +291,30 @@ export class IniciativaService {
             if (dbIniciativa.Cronograma && dbIniciativa.Cronograma.length > 0) {
                 const cronogramaId: number = dbIniciativa.Cronograma[0].id;
 
-                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: cronogramaId });
+                const cronogramaEtapaRet = await this.metaService.cronogramaEtapaService.findAll(
+                    tipo,
+                    { cronograma_id: cronogramaId },
+                    user,
+                    true
+                );
                 cronogramaAtraso = {
                     id: cronogramaId,
-                    atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
+                    atraso_grau: await this.metaService.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
                 };
             }
 
+            for (const metaTag of dbIniciativa.iniciativa_tag) {
+                tags.push({
+                    id: metaTag.tag.id,
+                    descricao: metaTag.tag.descricao,
+                    download_token: this.metaService.uploadService.getPersistentDownloadToken(
+                        metaTag.tag.arquivo_icone_id
+                    ),
+                });
+            }
+
             ret.push({
+                tags,
                 id: dbIniciativa.id,
                 titulo: dbIniciativa.titulo,
                 codigo: dbIniciativa.codigo,
@@ -317,14 +334,13 @@ export class IniciativaService {
         return ret;
     }
 
-    async update(id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
-        const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
+    async update(tipo: TipoPdm, id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
+        const self = await this.prisma.iniciativa.findFirstOrThrow({
+            where: { id, meta: { pdm: { tipo } }, removido_em: null },
+            select: { meta_id: true },
+        });
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            if (!filterIdIn.includes(self.meta_id))
-                throw new HttpException('Sem permissão para editar iniciativa', 400);
-        }
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'iniciativa');
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -421,7 +437,7 @@ export class IniciativaService {
                 geoDto.tokens = geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
             }
 
             return iniciativa;
@@ -430,9 +446,9 @@ export class IniciativaService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({
-            where: { id },
+            where: { id, removido_em: null },
             select: {
                 meta_id: true,
                 compoe_indicador_meta: true,
@@ -446,15 +462,11 @@ export class IniciativaService {
                 },
             },
         });
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'iniciativa');
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
-            if (!filterIdIn.includes(self.meta_id))
-                throw new HttpException('Sem permissão para remover iniciativa', 400);
-        }
-
+        const now = new Date(Date.now());
         return await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+            async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
                 // Antes de remover a Iniciativa, deve ser verificada a Meta para garantir de que não há variaveis em uso
                 if (self.compoe_indicador_meta) {
                     let has_vars_in_use = false;
@@ -474,13 +486,13 @@ export class IniciativaService {
                     where: { id: id },
                     data: {
                         removido_por: user.id,
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                     },
                 });
 
                 // Caso a Iniciativa seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
                 // public.painel_conteudo_detalhe
-                await prisma.painelConteudoDetalhe.deleteMany({ where: { iniciativa_id: id } });
+                await prismaTx.painelConteudoDetalhe.deleteMany({ where: { iniciativa_id: id } });
 
                 return removed;
             }

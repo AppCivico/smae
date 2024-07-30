@@ -40,7 +40,11 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     }
 
     public async verificaPermissaoOrcamentoNaMetaRespNaCp(meta_id: number, prisma: Prisma.TransactionClient) {
-        const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        // Verificar comentário abaixo sobre as permissões no PS
+        const isAdmin = this.hasSomeRoles([
+            'CadastroMeta.administrador_orcamento',
+            'CadastroMetaPS.administrador_orcamento',
+        ]);
         if (isAdmin) return;
 
         const metas = await prisma.view_meta_pessoa_responsavel_na_cp.findMany({
@@ -57,7 +61,13 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     }
 
     public async verificaPermissaoOrcamentoNaMeta(meta_id: number, prisma: Prisma.TransactionClient): Promise<void> {
-        const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        // TODO aqui vai precisar carregar a meta do PS, ou receber o tipo do PDM, verificar de verdade a permissão
+        // do Usuario
+        // esse método é chamado em ... 16 lugares!!
+        const isAdmin = this.hasSomeRoles([
+            'CadastroMeta.administrador_orcamento',
+            'CadastroMetaPS.administrador_orcamento',
+        ]);
         if (isAdmin) return;
 
         const metas = await prisma.view_meta_responsavel_orcamento.findMany({

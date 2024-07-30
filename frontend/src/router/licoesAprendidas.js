@@ -36,7 +36,6 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'liçõesAprendidasListar',
         ],
       },
       props: true,
@@ -56,7 +55,6 @@ export default {
           'projetosListar',
           'projetosResumo',
           'liçõesAprendidasListar',
-          'liçõesAprendidasCriar',
         ],
       },
     },

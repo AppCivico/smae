@@ -32,11 +32,10 @@ export class RelObrasDto {
     descricao: string | null;
     //objeto: string;
     //objetivo: string;
-    publico_alvo: string | null;
-    previsao_inicio: string | null;
+    inicio_planejado: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;
-    previsao_termino: string | null;
+    termino_planejado: string | null;
     secretario_responsavel: string | undefined;
     secretario_executivo: string | undefined;
     secretario_colaborador: string | undefined;
@@ -49,8 +48,13 @@ export class RelObrasDto {
     orgao_colaborador: IdSiglaDescricao | null;
     responsavel: IdNomeExibicaoDto | null;
     pontos_focais_colaboradores: string | null;
-
+    programa_habitacional: string | null;
+    n_unidades_habitacionais: number | null;
+    n_familias_beneficiadas: number | null;
     etapa: string | null;
+    custo_planejado: number | null;
+    previsao_inicio: string | null;
+    previsao_termino: string | null;
 }
 
 export class RelObrasCronogramaDto {
@@ -122,7 +126,7 @@ export class RelObrasContratosDto {
     status: StatusContrato;
     modalidade_licitacao: IdNomeDto | null;
     fontes_recurso: string | null;
-    area_geradora: IdSiglaDescricao | null;
+    area_gestora: IdSiglaDescricao | null;
     objeto: string | null;
     descricao_detalhada: string | null;
     contratante: string | null;
@@ -135,6 +139,7 @@ export class RelObrasContratosDto {
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
     valor: number | null;
+    valor_reajustado: number | null;
     percentual_medido: number | null;
     observacoes: string | null;
 }

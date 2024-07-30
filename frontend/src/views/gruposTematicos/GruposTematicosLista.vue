@@ -56,9 +56,9 @@
           Carregando
         </td>
       </tr>
-      <tr v-else-if="erro">
+      <tr v-else-if="erro.lista">
         <td colspan="3">
-          Erro: {{ erro }}
+          Erro: {{ erro.lista }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
@@ -71,9 +71,9 @@
 </template>
 
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 
 const route = useRoute();

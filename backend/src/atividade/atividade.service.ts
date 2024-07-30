@@ -1,49 +1,35 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
-import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 
 @Injectable()
 export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly variavelService: VariavelService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly geolocService: GeoLocService
+        private readonly metaService: MetaService,
+        private readonly variavelService: VariavelService
     ) {}
 
-    async create(dto: CreateAtividadeDto, user: PessoaFromJwt) {
-        // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
-        // e se tem o privilegios de CP
-        // e se os *tema_id são do mesmo PDM
-        // se existe pelo menos 1 responsável=true no op
-
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            const filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-            if (filterIdIn.includes(dto.iniciativa_id) === false)
-                throw new HttpException(
-                    'Sem permissão para criar atividade nesta iniciativa (por não ter também permissão da meta)',
-                    400
-                );
-        }
+    async create(tipo: TipoPdm, dto: CreateAtividadeDto, user: PessoaFromJwt) {
+        const iniciativa = await this.prisma.iniciativa.findFirstOrThrow({
+            where: { id: dto.iniciativa_id, removido_em: null },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow(tipo, iniciativa.meta_id, user, 'atividade');
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -119,7 +105,7 @@ export class AtividadeService {
                 geoDto.tokens = dto.geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
                 return atividade;
             }
@@ -215,31 +201,16 @@ export class AtividadeService {
         return arr;
     }
 
-    async findAll(filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
         const iniciativa_id = filters?.iniciativa_id;
 
-        let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            let metas: number[];
-            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
-                metas = await user.getMetaIdsFromAnyModel(this.prisma.view_atividade_pessoa_responsavel);
-            } else {
-                metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-                // Maybe TODO: assim como na atividade, conferir se não era melhor verificar era responsavel na iniciativa
-                // aqui em teoria são os acessos dos técnicos
-            }
-
-            filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-        }
+        const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
-                AND: [{ iniciativa_id: iniciativa_id }, { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }],
+                iniciativa_id: iniciativa_id,
+                iniciativa: { meta: { AND: metaFilterSet } },
             },
             orderBy: [{ codigo: 'asc' }],
             select: {
@@ -271,13 +242,25 @@ export class AtividadeService {
                         id: true,
                     },
                 },
+                atividade_tag: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                descricao: true,
+                                arquivo_icone_id: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.iniciativa_id = listActive.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
+        const tags: MetaIniAtvTag[] = [];
         const ret: Atividade[] = [];
         for (const dbAtividade of listActive) {
             const coordenadores_cp: IdNomeExibicaoDto[] = [];
@@ -307,14 +290,30 @@ export class AtividadeService {
             if (dbAtividade.Cronograma && dbAtividade.Cronograma.length > 0) {
                 const cronogramaId = dbAtividade.Cronograma[0].id;
 
-                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: cronogramaId });
+                const cronogramaEtapaRet = await this.metaService.cronogramaEtapaService.findAll(
+                    tipo,
+                    { cronograma_id: cronogramaId },
+                    user,
+                    true // já ta validado que tem acesso se chegou aqui
+                );
                 cronogramaAtraso = {
                     id: cronogramaId,
-                    atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
+                    atraso_grau: await this.metaService.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet),
                 };
             }
 
+            for (const metaTag of dbAtividade.atividade_tag) {
+                tags.push({
+                    id: metaTag.tag.id,
+                    descricao: metaTag.tag.descricao,
+                    download_token: this.metaService.uploadService.getPersistentDownloadToken(
+                        metaTag.tag.arquivo_icone_id
+                    ),
+                });
+            }
+
             ret.push({
+                tags,
                 id: dbAtividade.id,
                 titulo: dbAtividade.titulo,
                 codigo: dbAtividade.codigo,
@@ -334,22 +333,18 @@ export class AtividadeService {
         return ret;
     }
 
-    async update(id: number, dto: UpdateAtividadeDto, user: PessoaFromJwt) {
-        const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
+    async update(tipo: TipoPdm, id: number, dto: UpdateAtividadeDto, user: PessoaFromJwt) {
+        const self = await this.prisma.atividade.findFirstOrThrow({
+            where: {
+                id,
+                iniciativa: { meta: { pdm: { tipo } } },
+                removido_em: null,
+            },
+            select: { iniciativa_id: true, iniciativa: { select: { meta_id: true } } },
+        });
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            const filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-            if (filterIdIn.includes(self.iniciativa_id) === false)
-                throw new HttpException(
-                    'Sem permissão para editar atividade nesta iniciativa (por não ter também permissão da meta)',
-                    400
-                );
-        }
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.iniciativa.meta_id, user, 'atividade');
+
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -461,7 +456,7 @@ export class AtividadeService {
                 geoDto.tokens = dto.geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                await this.metaService.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
             }
 
             return atividade;
@@ -470,11 +465,16 @@ export class AtividadeService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.atividade.findFirstOrThrow({
-            where: { id },
+            where: { id, iniciativa: { meta: { pdm: { tipo } } }, removido_em: null },
             select: {
                 iniciativa_id: true,
+                iniciativa: {
+                    select: {
+                        meta_id: true,
+                    },
+                },
                 compoe_indicador_iniciativa: true,
                 Indicador: {
                     select: {
@@ -487,19 +487,7 @@ export class AtividadeService {
             },
         });
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            const filterIdIn = (
-                await this.prisma.iniciativa.findMany({
-                    where: { removido_em: null, meta_id: { in: metas } },
-                })
-            ).map((r) => r.id);
-            if (filterIdIn.includes(self.iniciativa_id) === false)
-                throw new HttpException(
-                    'Sem permissão para remover atividade nesta iniciativa (por não ter também permissão da meta)',
-                    400
-                );
-        }
+        await this.metaService.assertMetaWriteOrThrow(tipo, self.iniciativa.meta_id, user, 'atividade');
 
         // Antes de remover a Atividade, deve ser verificada a Iniciativa para garantir de que não há variaveis em uso
         if (self.compoe_indicador_iniciativa) {
@@ -516,19 +504,20 @@ export class AtividadeService {
             }
         }
 
+        const now = new Date(Date.now());
         return await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
-                const removed = await prisma.atividade.updateMany({
+            async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+                const removed = await prismaTx.atividade.updateMany({
                     where: { id: id },
                     data: {
                         removido_por: user.id,
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                     },
                 });
 
                 // Caso a Atividade seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
                 // public.painel_conteudo_detalhe
-                await prisma.painelConteudoDetalhe.deleteMany({ where: { atividade_id: id } });
+                await prismaTx.painelConteudoDetalhe.deleteMany({ where: { atividade_id: id } });
 
                 return removed;
             }

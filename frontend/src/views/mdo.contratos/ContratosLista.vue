@@ -1,4 +1,7 @@
 <script setup>
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { contratoDeObras as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
@@ -8,9 +11,6 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
-import Big from 'big.js';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 
 defineProps({
   obraId: {
@@ -71,9 +71,9 @@ const exibirColunasDeAção = computed(() => !permissõesDaObraEmFoco.value.apen
   || permissõesDaObraEmFoco.value.sou_responsavel);
 
 function excluirProcesso(id, nome) {
-  alertStore.confirmAction(`Deseja mesmo remover "${formatProcesso(nome)}"?`, async () => {
+  alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
     if (await useContratosStore().excluirItem(id)) {
-      alertStore.success('Processo removido.');
+      alertStore.success('Contrato removido.');
 
       await processosStore.buscarTudo();
     }
@@ -167,26 +167,26 @@ iniciar();
       :key="linha.id"
     >
       <tr>
-        <td class="">
+        <th class="">
           <router-link
             :to="{
               name: 'contratosDaObraResumo',
               params: {
                 obraId: obraId,
-                processoId: linha.id,
+                contratoId: linha.id,
               }
             }"
           >
             {{ linha.numero }}
           </router-link>
-        </td>
+        </th>
         <td>{{ linha.status }}</td>
 
         <td class="cell--data">
-          {{ dateToShortDate(linha.data_termino_atual) }}
+          {{ dateToShortDate(linha.data_termino_inicial) }}
         </td>
         <td class="cell--data">
-          {{ dateToShortDate(linha.data_termino_inicial) }}
+          {{ dateToShortDate(linha.data_termino_atual) }}
         </td>
 
         <td class="cell--number">
@@ -214,7 +214,7 @@ iniciar();
               name: 'contratosDaObraEditar',
               params: {
                 obraId: obraId,
-                processoId: linha.id,
+                contratoId: linha.id,
               }
             }"
             title="Editar contrato"
@@ -233,7 +233,7 @@ iniciar();
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirProcesso(linha.id, linha.processo_sei)"
+            @click="excluirProcesso(linha.id, linha.numero)"
           >
             <svg
               width="20"

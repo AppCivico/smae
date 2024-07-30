@@ -105,14 +105,19 @@
 import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import { tag as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { useOdsStore } from '@/stores/odsPs.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field, Form,
 } from 'vee-validate';
+import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const route = useRoute();
 const props = defineProps({

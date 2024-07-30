@@ -636,6 +636,7 @@ export default [
       limitarÀsPermissões: 'CadastroOds.',
       título: 'Categorias',
       rotasParaMenuSecundário,
+      entidadeMãe: 'pdm',
     },
     children: [
       {
@@ -776,7 +777,7 @@ export default [
     path: '/assuntos',
     component: () => import('@/views/ps.assuntos/AssuntosRaiz.vue'),
     meta: {
-      limitarÀsPermissões: '',
+      limitarÀsPermissões: 'AssuntoVariavel.',
       título: 'Assuntos',
       rotasParaMenuSecundário,
     },
@@ -822,7 +823,7 @@ export default [
     path: '/fontes',
     component: () => import('@/views/ps.fontes/FontesRaiz.vue'),
     meta: {
-      limitarÀsPermissões: '',
+      limitarÀsPermissões: 'FonteVariavel.',
       título: 'Fontes',
       rotasParaMenuSecundário,
     },

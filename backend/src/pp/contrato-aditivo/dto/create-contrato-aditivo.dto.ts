@@ -1,4 +1,15 @@
-import { IsOptional, IsInt, IsNumberString, ValidateIf, IsNumber, Max, Min } from 'class-validator';
+import {
+    IsOptional,
+    IsInt,
+    IsNumberString,
+    ValidateIf,
+    IsNumber,
+    Max,
+    Min,
+    IsString,
+    MaxLength,
+    MinLength,
+} from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { Transform, Type } from 'class-transformer';
@@ -6,20 +17,16 @@ import { Transform, Type } from 'class-transformer';
 export class CreateContratoAditivoDto {
     @IsInt()
     @Type(() => Number)
-    contrato_id: number;
-
-    @IsInt()
-    @Type(() => Number)
     tipo_aditivo_id: number;
 
-    @IsInt()
-    @Type(() => Number)
-    numero: number;
+    @IsString()
+    @MinLength(1)
+    @MaxLength(500)
+    numero: string;
 
-    @IsOptional()
     @Transform(DateTransform)
     @IsOnlyDate()
-    data?: Date;
+    data: Date;
 
     @IsOptional()
     @Transform(DateTransform)

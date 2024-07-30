@@ -57,7 +57,7 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  processoId: {
+  contratoId: {
     type: Number,
     default: 0,
   },
@@ -72,12 +72,12 @@ const {
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
-    const msg = props.processoId
+    const msg = props.contratoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.processoId
-      ? await contratosStore.salvarItem(carga, props.processoId)
+    const resposta = props.contratoId
+      ? await contratosStore.salvarItem(carga, props.contratoId)
       : await contratosStore.salvarItem(carga);
 
     if (resposta) {
@@ -124,7 +124,7 @@ watch(itemParaEdição, (novosValores) => {
 
 onMounted(async () => {
   await contratosStore.buscarDependencias();
-  if (props.processoId) {
+  if (props.contratoId) {
     fontesRecurso.value.participantes = carga.fontes_recurso.map((fonteRecurso) => fonteRecurso.id);
   }
   if (!carga.contrato_exclusivo) {
@@ -139,12 +139,12 @@ onMounted(async () => {
   <div class="flex spacebetween center mb2">
     <h1>
       <div
-        v-if="processoId"
+        v-if="contratoId"
         class="t12 uc w700 tamarelo"
       >
         {{ 'Editar contrato' }}
       </div>
-      {{ emFoco?.descricao || (processoId ? 'Edição de Contrato' : 'Cadastro de Contrato') }}
+      {{ emFoco?.descricao || (contratoId ? 'Edição de Contrato' : 'Cadastro de Contrato') }}
     </h1>
 
     <hr class="ml2 f1">
@@ -153,7 +153,7 @@ onMounted(async () => {
   </div>
 
   <form
-    v-if="!processoId || emFoco"
+    v-if="!contratoId || emFoco"
     :disabled="chamadasPendentes.emFoco"
     :aria-busy="chamadasPendentes.emFoco"
     @submit="onSubmit"

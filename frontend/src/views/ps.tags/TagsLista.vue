@@ -76,9 +76,14 @@
 
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { useTagsPsStore } from '@/stores/tagsPs.store';
+import { storeToRefs } from 'pinia';
+import { defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const route = useRoute();
 const alertStore = useAlertStore();

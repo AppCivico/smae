@@ -186,6 +186,41 @@ export const acompanhamento = object()
       ),
   });
 
+export const aditivoDeContrato = object({
+  contrato_id: number()
+    .label('Contrato')
+    .integer()
+    .positive()
+    .required(),
+  data: date()
+    .label('Data')
+    .required(),
+  data_termino_atualizada: date()
+    .label('Data de término atualizada')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  numero: string()
+    .label('Número do aditivo')
+    .min(1)
+    .max(500)
+    .required(),
+  percentual_medido: number()
+    .label('Percentual medido')
+    .min(0)
+    .max(100)
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+  tipo_aditivo_id: number()
+    .label('Tipo')
+    .integer()
+    .positive()
+    .required(),
+  valor: number()
+    .label('Valor')
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+});
+
 export const andamentoDaFase = (órgãoRequerido = false, pessoaRequerida = false) => object({
   fase_id: number()
     .label('Fase')
@@ -311,6 +346,7 @@ export const auxiliarDePreenchimentoDeEvoluçãoDeMeta = object()
       .label('Envio ao CP'),
   });
 
+// PRÁ-FAZER: Provavelmente não é necessário. Deve ter sido criado por engano
 export const contrato = object()
   .shape({
     comentarios: string()
@@ -862,17 +898,17 @@ export const gruposTematicos = object({
 export const grupoDeVariaveis = object({
   colaboradores: array()
     .label('Responsáveis pelo grupo')
-    .required('Colaboradores inválidos'),
+    .nullable('Responsáveis inválidos'),
   orgao_id: number()
     .label('Órgão responsável')
     .nullable(),
   participantes: array()
-    .label('Alocados ao grupo')
+    .label('Participantes alocados ao grupo')
     .required('Participantes inválidos'),
   perfil: mixed()
-    .label('Pessoas responsáveis pelo grupo')
+    .label('Tipo de grupo')
     .oneOf(Object.keys(tipoDePerfil))
-    .required('Responsaveis inválidos'),
+    .required('Tipo de grupo inválido'),
   titulo: string()
     .label('Nome')
     .min(3)
@@ -1050,6 +1086,10 @@ export const obras = object({
       number()
         .min(1),
     )
+    .nullable(),
+  empreendimento_id: number()
+    .label('Identificador do empreendimento')
+    .min(1, 'Empreendimento inválido')
     .nullable(),
   equipamento_id: number()
     .label('Equipamento/Estrutura pública')
@@ -1979,6 +2019,31 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .min(new Date(2003, 0, 1))
     .nullable()
     .transform((v) => (!v ? null : v)),
+  parlamentares: array()
+    .label('Parlamentar')
+    .nullable()
+    .of(object({
+      id: number()
+        .nullable(),
+      parlamentar_id: number()
+        .label('Parlamentar'),
+      cargo: mixed()
+        .label('Cargo')
+        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+        .oneOf([...Object.keys(cargosDeParlamentar), null])
+        .nullable()
+        .transform((v) => (v === '' ? null : v)),
+      partido_id: number()
+        .label('Partido')
+        .nullable(),
+      objeto: string()
+        .label('Objeto/Empreendimento')
+        .max(1000)
+        .nullable(),
+      valor: number()
+        .label('Valor do Repasse')
+        .nullable(),
+    })),
 });
 
 export const registroDeTransferencia = object({
@@ -2037,6 +2102,22 @@ export const registroDeTransferencia = object({
   percentagem_investimento: number()
     .label('Porcentagem')
     .min(0),
+  parlamentares: array()
+    .label('Parlamentar')
+    .nullable()
+    .of(object({
+      id: number()
+        .nullable(),
+      parlamentar_id: number()
+        .label('Parlamentar'),
+      objeto: string()
+        .label('Objeto/Empreendimento')
+        .max(1000)
+        .nullable(),
+      valor: number()
+        .label('Valor do Repasse')
+        .nullable(),
+    })),
 });
 
 export const transferenciasVoluntarias = object({
@@ -2056,12 +2137,6 @@ export const transferenciasVoluntarias = object({
     .label('Tipo')
     .nullable()
     .required(),
-  cargo: mixed()
-    .label('Cargo')
-    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-    .oneOf([...Object.keys(cargosDeParlamentar), null])
-    .nullable()
-    .transform((v) => (v === '' ? null : v)),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
     .nullable(),
@@ -2097,11 +2172,6 @@ export const transferenciasVoluntarias = object({
     .label('normativa')
     .nullable()
     .max(50000),
-  numero_identificacao: string()
-    .label('Número de identificação')
-    .max(250)
-    .min(1)
-    .nullable(),
   observacoes: string()
     .label('Observação')
     .max(50000)
@@ -2119,13 +2189,31 @@ export const transferenciasVoluntarias = object({
   programa: string()
     .label('Código do programa')
     .nullable(),
-  partido_id: number()
-    .label('Partido')
-    .nullable(),
-  parlamentar_id: number()
+  parlamentares: array()
     .label('Parlamentar')
     .nullable()
-    .transform((v) => (!v ? null : v)),
+    .of(object({
+      id: number()
+        .nullable(),
+      parlamentar_id: number()
+        .label('Parlamentar'),
+      cargo: mixed()
+        .label('Cargo')
+        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+        .oneOf([...Object.keys(cargosDeParlamentar), null])
+        .nullable()
+        .transform((v) => (v === '' ? null : v)),
+      partido_id: number()
+        .label('Partido')
+        .nullable(),
+      objeto: string()
+        .label('Objeto/Empreendimento')
+        .max(1000)
+        .nullable(),
+      valor: number()
+        .label('Valor do Repasse')
+        .nullable(),
+    })),
   secretaria_concedente: string()
     .label('Secretaria do órgão concedente')
     .nullable(),
@@ -2605,6 +2693,12 @@ export const relatórioDePortfolioObras = object({
       .label('Subprefeitura')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
+    periodo: date()
+      .label('Início do período')
+      .max(dataMax)
+      .min(new Date(2003, 0, 1))
+      .nullable()
+      .transform((v) => (!v ? null : v)),
   }),
   salvar_arquivo: boolean(),
 });
@@ -2877,10 +2971,6 @@ export const etapasFluxo = object({
   fase_id: number()
     .label('Tipo de fase')
     .required(),
-  responsabilidade: mixed()
-    .label('Responsabilidade')
-    .oneOf(Object.keys(responsabilidadeEtapaFluxo))
-    .required(),
   situacao: array()
     .label('Situação')
     .nullable(),
@@ -3086,6 +3176,19 @@ export const emailTransferencia = object()
       .label('Periodicidade')
       .required(),
   });
+
+export const empreendimento = object({
+  identificador: string()
+    .label('Identificador')
+    .max(250)
+    .min(3)
+    .required(),
+  nome: string()
+    .label('Nome')
+    .max(250)
+    .min(3)
+    .required(),
+});
 
 export const tag = object()
   .shape({
@@ -3505,4 +3608,22 @@ export const obra = projeto.concat(obras).shape({
             .required(),
         }),
     ),
+  empreendimento: object()
+    .label('Empreendimento')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+      identificador: string()
+        .required(),
+    }),
+  responsaveis_no_orgao_gestor: array()
+    .label('Ponto focal do monitoramento')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
 });

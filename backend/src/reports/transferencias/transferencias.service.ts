@@ -170,7 +170,8 @@ export class TransferenciasService implements ReportableService {
                 o2.descricao AS distribuicao_recurso_orgao_gestor
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
-            LEFT JOIN parlamentar p ON p.id = t.parlamentar_id
+            LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
+            LEFT JOIN parlamentar p ON p.id = tp.parlamentar_id AND p.removido_em IS NULL
             LEFT JOIN partido pa ON pa.id = t.partido_id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
@@ -227,37 +228,38 @@ export class TransferenciasService implements ReportableService {
         let paramIndex = 1;
 
         if (filters.esfera) {
-            whereConditions.push(`t.vetores_busca @@ plainto_tsquery('simple', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.esfera = $${paramIndex}`);
             queryParams.push(filters.esfera);
             paramIndex++;
         }
 
         if (filters.interface) {
-            whereConditions.push(`t.vetores_busca @@ plainto_tsquery('simple', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.interface = $${paramIndex}`);
             queryParams.push(filters.interface);
             paramIndex++;
         }
 
         if (filters.ano) {
-            whereConditions.push(`t.vetores_busca @@ plainto_tsquery('simple', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.ano = $${paramIndex}`);
             queryParams.push(filters.ano);
             paramIndex++;
         }
 
         if (filters.objeto) {
-            whereConditions.push(`t.vetores_busca @@ plainto_tsquery('simple', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.objeto = $${paramIndex}`);
             queryParams.push(filters.objeto);
             paramIndex++;
         }
 
         if (filters.gestor_contrato) {
-            whereConditions.push(`t.vetores_busca @@ plainto_tsquery('simple', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.gestor_contrato = $${paramIndex}`);
             queryParams.push(filters.gestor_contrato);
             paramIndex++;
         }
 
         if (filters.secretaria_concedente) {
-            whereConditions.push(`t.vetores_busca @@ plainto_tsquery('simple', $${paramIndex} || ':*')`);
+            // via secretaria_concedente_str
+            whereConditions.push(`t.secretaria_concedente_str = $${paramIndex}`);
             queryParams.push(filters.secretaria_concedente);
             paramIndex++;
         }
@@ -269,7 +271,7 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.partido_id) {
-            whereConditions.push(`t.partido_id = $${paramIndex}`);
+            whereConditions.push(`tp.partido_id = $${paramIndex}`);
             queryParams.push(filters.partido_id);
             paramIndex++;
         }

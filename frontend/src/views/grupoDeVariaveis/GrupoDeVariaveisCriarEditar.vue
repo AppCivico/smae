@@ -4,19 +4,12 @@
   <div class="flex spacebetween center mb2">
     <h1> {{ titulo || "Grupo de variáveis" }}</h1>
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
-  <!-- <pre>
-    participantes: {{ participantes }}
-  </pre>
-  <pre>
-    colaboradores: {{ colaboradores }}
-  </pre> -->
-  <Form
-    v-slot="{ errors, isSubmitting }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
-    @submit="onSubmit"
+
+  <form
+    @submit.prevent="onSubmit"
   >
     <div class="f1">
       <LabelFromYup
@@ -106,9 +99,10 @@
           :schema="schema"
         />
         <AutocompleteField
+          id="colaboradores"
           name="colaboradores"
-          :controlador="{ busca: '', participantes: carga.colaboradores || [] }"
-          :grupo="colaboradores[orgao]"
+          :controlador="{ busca: '', participantes: carga?.colaboradores || [] }"
+          :grupo="colaboradores[orgao] || []"
           label="nome_exibicao"
         />
         <ErrorMessage
@@ -174,7 +168,6 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage,
   Field,
-  Form,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
@@ -183,7 +176,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
 import { useUsersStore } from '@/stores/users.store';
@@ -215,7 +207,6 @@ const alertStore = useAlertStore();
 const usersStore = useUsersStore();
 const ÓrgãosStore = useOrgansStore();
 const grupoDeVariaveisStore = useGrupoDeVariaveisStore();
-const { pessoasSimplificadasPorÓrgão } = storeToRefs(usersStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(grupoDeVariaveisStore);
 
@@ -228,65 +219,58 @@ const {
 
 const authStore = useAuthStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
+const formulárioSujo = useIsFormDirty();
 
-async function onSubmit(values) {
+const onSubmit = handleSubmit.withControlled(async () => {
   try {
     let response;
     const msg = props.grupoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
-
-    if (route.params?.grupoId) {
+    if (route.params?.grupoDeVariaveisId) {
       response = await grupoDeVariaveisStore.salvarItem(
-        dataToSend,
-        route.params.grupoId,
+        carga,
+        route.params.grupoDeVariaveisId,
       );
     } else {
-      response = await grupoDeVariaveisStore.salvarItem(dataToSend);
+      response = await grupoDeVariaveisStore.salvarItem(carga);
     }
     if (response) {
       alertStore.success(msg);
       grupoDeVariaveisStore.$reset();
-      router.push({ name: 'planosSetoriaisMacrotemas' });
+      router.push({ name: 'grupoDeVariaveisListar' });
     }
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function buscarPessoasSimplificadas() {
-  // if (colaboradores.value[orgao.value]?.length) {
-  //   return;
-  // }
-  console.log('entrou no buscarPessoasSimplificadas');
-
   if (!participantes.value[orgao.value]) {
     const { linhas: linhasParticipantes } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
-      colaborador_grupo_variavel: true,
+      participante_grupo_variavel: true,
       orgao_id: orgao.value,
     });
+
     if (Array.isArray(linhasParticipantes)) {
-      console.log('linhasParticipantes', linhasParticipantes);
       participantes.value[orgao.value] = linhasParticipantes;
     } else {
       throw new Error('Erro ao buscar pessoas simplificadas');
     }
   }
+
   if (!colaboradores.value[orgao.value]) {
     const { linhas: linhasColaboradores } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
-      participante_grupo_variavel: true,
+      colaborador_grupo_variavel: true,
       orgao_id: orgao.value,
     });
 
     if (Array.isArray(linhasColaboradores)) {
-      console.log('linhasColaboradores', linhasColaboradores);
       colaboradores.value[orgao.value] = linhasColaboradores;
     } else {
       throw new Error('Erro ao buscar pessoas simplificadas');
     }
-    console.log('linhasColaboradores', linhasColaboradores);
   }
 }
 
@@ -309,9 +293,9 @@ watch(orgao, () => {
 iniciar();
 
 grupoDeVariaveisStore.$reset();
-// não foi usada a prop.grupoId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.grupoId) {
-  grupoDeVariaveisStore.buscarItem(route.params?.grupoId);
+// não foi usada a prop.grupoDeVariaveisId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.grupoDeVariaveisId) {
+  grupoDeVariaveisStore.buscarItem({ id: route.params.grupoDeVariaveisId });
 }
 </script>
 

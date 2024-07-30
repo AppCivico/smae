@@ -51,12 +51,14 @@ class RetornoDbProjeto {
     codigo?: string;
     detalhamento?: string;
     secretario_colaborador?: string;
-    publico_alvo: string;
     previsao_inicio?: Date;
     previsao_termino?: Date;
+    inicio_planejado?: Date;
+    termino_planejado?: Date;
     data_inauguracao_planejada?: Date;
     previsao_duracao?: number;
     previsao_custo?: number;
+    custo_planejado?: number;
     secretario_responsavel?: string;
     secretario_executivo?: string;
     status: ProjetoStatus;
@@ -80,6 +82,10 @@ class RetornoDbProjeto {
     pontos_focais_colaboradores: string;
     responsavel_id: number;
     responsavel_nome_exibicao: string;
+
+    programa_habitacional?: string;
+    n_unidades_habitacionais?: number;
+    n_familias_beneficiadas?: number;
 
     orgao_id: number;
     orgao_sigla: string;
@@ -154,6 +160,7 @@ class RetornoDbContratos {
     data_inicio: Date | null;
     data_termino: Date | null;
     valor: number | null;
+    valor_reajustado: number | null;
     observacoes: string | null;
     data_base: string | null;
     modalidade_contratacao_id: number | null;
@@ -164,7 +171,7 @@ class RetornoDbContratos {
     valor_com_reajuste: number | null;
     data_termino_atualizada: Date | null;
     percentual_medido: number | null;
-    processos_SEI: string | null;
+    processos_sei: string | null;
     fontes_recurso: string | null;
 }
 
@@ -366,11 +373,11 @@ export class PPObrasService implements ReportableService {
             paramIndex++;
         }
 
-        //if (filters.data_termino) {
-        //    whereConditions.push(`projeto. = $${paramIndex}`);
-        //    queryParams.push(filters.grupo_tematico_id);
-        //    paramIndex++;
-        //}
+        if (filters.periodo) {
+            whereConditions.push(`projeto.termino_planejado <= $${paramIndex}`);
+            queryParams.push(filters.periodo);
+            paramIndex++;
+        }
 
         whereConditions.push(`projeto.removido_em IS NULL`);
         whereConditions.push(`projeto.tipo::varchar = 'MDO'`);
@@ -401,11 +408,13 @@ export class PPObrasService implements ReportableService {
             projeto.codigo,
             projeto.objeto,
             projeto.objetivo,
-            projeto.publico_alvo,
-            coalesce(tc.previsao_inicio, projeto.previsao_inicio) AS previsao_inicio,
-            coalesce(tc.previsao_termino, projeto.previsao_termino) AS previsao_termino,
+            tc.previsao_inicio AS inicio_planejado,
+            tc.previsao_termino AS termino_planejado,
+            projeto.previsao_inicio AS previsao_inicio,
+            projeto.previsao_termino AS previsao_termino,
             coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
-            coalesce(tc.previsao_custo, projeto.previsao_custo) AS previsao_custo,
+            projeto.previsao_custo AS previsao_custo,
+            tc.previsao_custo AS custo_planejado,
             projeto.escopo,
             projeto.nao_escopo,
             projeto.secretario_responsavel,
@@ -469,7 +478,10 @@ export class PPObrasService implements ReportableService {
                 WHERE projeto_regiao.projeto_id = projeto.id
                 AND projeto_regiao.removido_em IS NULL
                 AND regiao.removido_em IS NULL
-            ) AS subprefeituras
+            ) AS subprefeituras,
+            projeto.mdo_programa_habitacional as programa_habitacional,
+            projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
+            projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas
         FROM projeto
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
@@ -517,11 +529,13 @@ export class PPObrasService implements ReportableService {
                 origem_tipo: db.origem_tipo,
                 descricao: db.descricao ?? null,
                 secretario_colaborador: db.secretario_colaborador,
-                publico_alvo: db.publico_alvo,
                 previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
                 previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
+                inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
+                termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
                 previsao_duracao: db.previsao_duracao ? db.previsao_duracao : null,
                 previsao_custo: db.previsao_custo ? db.previsao_custo : null,
+                custo_planejado: db.custo_planejado ? db.custo_planejado : null,
                 data_inauguracao_planejada: db.data_inauguracao_planejada
                     ? Date2YMD.toString(db.data_inauguracao_planejada)
                     : null,
@@ -530,6 +544,9 @@ export class PPObrasService implements ReportableService {
                 status: db.status,
                 subprefeituras: db.subprefeituras,
                 etapa: db.projeto_etapa ? db.projeto_etapa : null,
+                n_familias_beneficiadas: db.n_familias_beneficiadas ? db.n_familias_beneficiadas : null,
+                n_unidades_habitacionais: db.n_unidades_habitacionais ? db.n_unidades_habitacionais : null,
+                programa_habitacional: db.programa_habitacional ? db.programa_habitacional : null,
                 pontos_focais_colaboradores: db.pontos_focais_colaboradores,
                 orgao_executor: db.orgao_executor_id
                     ? {
@@ -762,7 +779,6 @@ export class PPObrasService implements ReportableService {
             contrato.prazo_unidade AS unidade_prazo,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
-            contrato.valor AS valor,
             contrato.observacoes AS observacoes,
             contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
             modalidade_contratacao.id AS modalidade_contratacao_id,
@@ -770,8 +786,15 @@ export class PPObrasService implements ReportableService {
             orgao.id AS orgao_id,
             orgao.sigla AS orgao_sigla,
             orgao.descricao AS orgao_descricao,
+            contrato.valor AS valor,
             (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.numero DESC LIMIT 1 
+                SELECT max(valor)
+                FROM contrato_aditivo
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
+            ) AS valor_reajustado,
+            (
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
             ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
@@ -783,7 +806,7 @@ export class PPObrasService implements ReportableService {
                 SELECT string_agg(contrato_sei.numero_sei::text, '|')
                 FROM contrato_sei
                 WHERE contrato_sei.contrato_id = contrato.id
-            ) AS processos_SEI,
+            ) AS processos_sei,
             (
                 SELECT string_agg(cod_sof::text, '|')
                 FROM contrato_fonte_recurso
@@ -809,13 +832,13 @@ export class PPObrasService implements ReportableService {
                 obra_id: db.obra_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
-                processos_SEI: db.processos_SEI,
+                processos_SEI: db.processos_sei,
                 status: db.status,
                 modalidade_licitacao: db.modalidade_contratacao_id
                     ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
                     : null,
                 fontes_recurso: db.fontes_recurso,
-                area_geradora: db.orgao_id
+                area_gestora: db.orgao_id
                     ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
                     : null,
                 objeto: db.objeto,
@@ -829,6 +852,7 @@ export class PPObrasService implements ReportableService {
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
                 valor: db.valor,
+                valor_reajustado: db.valor_reajustado,
                 percentual_medido: db.percentual_medido,
                 observacoes: db.observacoes,
             };

@@ -66,12 +66,13 @@ function userToken(url: RequestInfo | URL): HeadersInit {
   const isLoggedIn = !!authStore.token;
   const isApiUrl = String(url).startsWith(import.meta.env.VITE_API_URL);
   if (isLoggedIn && isApiUrl) {
-    return {
+    const headers: HeadersInit = {
       Authorization: `Bearer ${authStore.token}`,
-      'smae-sistemas': !authStore.sistemaEscolhido || authStore.sistemaEscolhido === 'SMAE'
-        ? 'SMAE,PDM,CasaCivil,Projetos,PlanoSetorial'
-        : `SMAE,${authStore.sistemaEscolhido}`,
     };
+    if (authStore.sistemaEscolhido && authStore.sistemaEscolhido !== 'SMAE') {
+      headers['smae-sistemas'] = `SMAE,${authStore.sistemaEscolhido}`;
+    }
+    return headers;
   }
   return {};
 }

@@ -1,14 +1,13 @@
 <script setup>
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
-import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const props = defineProps(['group', 'parentlink', 'parent_id', 'parent_field']);
 
@@ -43,7 +42,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
     >
       <div class="p1">
         <div class="flex center g2">
-          <router-link
+          <SmaeLink
             :to="`${parentlink}/evolucao`"
             class="flex center f1 g2"
           >
@@ -59,9 +58,12 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
             <h2 class="mt1 mb1">
               {{ ind.titulo }}
             </h2>
-          </router-link>
-          <router-link
-            v-if="perm?.CadastroIndicador?.editar"
+          </SmaeLink>
+          <SmaeLink
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm',
+            ])"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
           >
@@ -69,16 +71,16 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </div>
         <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
         <div class="tc">
-          <router-link
+          <SmaeLink
             :to="`${parentlink}/evolucao`"
             class="btn big mt1 mb1"
           >
             <span>Acompanhar evolução</span>
-          </router-link>
+          </SmaeLink>
         </div>
       </div>
     </div>
@@ -93,16 +95,19 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
       </h2>
     </div>
     <div
-      v-if="perm?.CadastroIndicador?.inserir"
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm',
+      ])"
       class="bgc50"
     >
       <div class="tc">
-        <router-link
+        <SmaeLink
           :to="`${parentlink}/indicadores/novo`"
           class="btn mt1 mb1"
         >
           <span>Adicionar indicador</span>
-        </router-link>
+        </SmaeLink>
       </div>
     </div>
   </div>

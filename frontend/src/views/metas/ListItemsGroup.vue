@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
@@ -13,8 +12,7 @@ import { useRoute } from 'vue-router';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const props = defineProps(['group', 'type', 'parentPage']);
 
@@ -65,142 +63,175 @@ function groupSlug(s) {
 }
 </script>
 <template>
-  <Dashboard>
-    <MigalhasDeMetas class="mb1" />
+  <MigalhasDeMetas class="mb1" />
 
-    <div class="flex spacebetween center mb2">
-      <img
-        v-if="activePdm.logo"
-        :src="`${baseUrl}/download/${activePdm.logo}?inline=true`"
-        width="100"
-        class="ib mr1"
-      >
-      <h1 v-else>
-        {{ activePdm.nome }}
-      </h1>
-      <hr class="ml2 f1">
-      <div class="ml2 dropbtn">
-        <span class="btn">Adicionar</span>
-        <ul>
-          <li>
-            <router-link
-              v-if="perm?.CadastroMeta?.inserir"
-              to="/metas/novo"
+  <header class="flex g2 spacebetween center mb2">
+    <img
+      v-if="activePdm.logo"
+      :src="`${baseUrl}/download/${activePdm.logo}?inline=true`"
+      width="100"
+      class="ib"
+    >
+    <h1 v-else>
+      {{ activePdm.nome }}
+    </h1>
+    <hr class="f1">
+
+    <SmaeLink
+      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm')"
+      class="btn big"
+      to="/metas/novo"
+    >
+      Nova Meta
+    </SmaeLink>
+
+    <div
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMacroTema.inserir',
+        'CadastroTema.inserir',
+        'CadastroSubTema.inserir',
+        'CadastroTag.inserir',
+      ])"
+      class="dropbtn"
+    >
+      <span class="btn">Adicionar</span>
+      <ul>
+        <li>
+          <SmaeLink
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm'
+            ])"
+            to="/metas/novo"
+          >
+            Nova Meta
+          </SmaeLink>
+        </li>
+        <li>
+          <SmaeLink
+            v-if="temPermissãoPara([
+              'CadastroMacroTema.inserir'
+            ]) && activePdm.possui_macro_tema"
+            to="/metas/macrotemas/novo"
+          >
+            {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
+          </SmaeLink>
+        </li>
+        <li>
+          <SmaeLink
+            v-if="temPermissãoPara([
+              'CadastroTema.inserir'
+            ]) && activePdm.possui_tema"
+            to="/metas/temas/novo"
+          >
+            {{ activePdm.rotulo_tema ?? 'Tema' }}
+          </SmaeLink>
+        </li>
+        <li>
+          <SmaeLink
+            v-if="temPermissãoPara([
+              'CadastroSubTema.inserir'
+            ]) && activePdm.possui_sub_tema"
+            to="/metas/subtemas/novo"
+          >
+            {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
+          </SmaeLink>
+        </li>
+        <li>
+          <SmaeLink
+            v-if="temPermissãoPara([
+              'CadastroTag.inserir'
+            ])"
+            to="/metas/tags/novo"
+          >
+            Tag
+          </SmaeLink>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="mb2">
+    <div class="label tc300">
+      {{ activePdm['rotulo_' + filters.groupBy] }}
+    </div>
+    <div class="t48 w700">
+      {{ currentStore[currentStoreKey]?.descricao }}
+    </div>
+  </div>
+
+  <div class="boards">
+    <template v-if="itemsFiltered.length">
+      <div class="">
+        <ul class="metas">
+          <li
+            v-for="m in itemsFiltered"
+            :key="m.id"
+            class="meta flex center mb1"
+          >
+            <SmaeLink
+              :to="`/metas/${m.id}`"
+              class="flex center f1"
             >
-              Nova Meta
-            </router-link>
-          </li>
-          <li>
-            <router-link
-              v-if="perm?.CadastroMacroTema?.inserir && activePdm.possui_macro_tema"
-              to="/metas/macrotemas/novo"
+              <div class="farol" />
+              <div class="t13">
+                Meta {{ m.codigo }} - {{ m.titulo }}
+              </div>
+            </SmaeLink>
+            <SmaeLink
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
+              :to="`/metas/editar/${m.id}`"
+              class="f0 tprimary ml1"
             >
-              {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
-            </router-link>
-          </li>
-          <li>
-            <router-link
-              v-if="perm?.CadastroTema?.inserir && activePdm.possui_tema"
-              to="/metas/temas/novo"
-            >
-              {{ activePdm.rotulo_tema ?? 'Tema' }}
-            </router-link>
-          </li>
-          <li>
-            <router-link
-              v-if="perm?.CadastroSubTema?.inserir && activePdm.possui_sub_tema"
-              to="/metas/subtemas/novo"
-            >
-              {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
-            </router-link>
-          </li>
-          <li>
-            <router-link
-              v-if="perm?.CadastroTag?.inserir"
-              to="/metas/tags/novo"
-            >
-              Tag
-            </router-link>
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </SmaeLink>
           </li>
         </ul>
-      </div>
-    </div>
-    <div class="mb2">
-      <div class="label tc300">
-        {{ activePdm['rotulo_' + filters.groupBy] }}
-      </div>
-      <div class="t48 w700">
-        {{ currentStore[currentStoreKey]?.descricao }}
-      </div>
-    </div>
-
-    <div class="boards">
-      <template v-if="itemsFiltered.length">
-        <div class="">
-          <ul class="metas">
-            <li
-              v-for="m in itemsFiltered"
-              :key="m.id"
-              class="meta flex center mb1"
-            >
-              <router-link
-                :to="`/metas/${m.id}`"
-                class="flex center f1"
-              >
-                <div class="farol" />
-                <div class="t13">
-                  Meta {{ m.codigo }} - {{ m.titulo }}
-                </div>
-              </router-link>
-              <router-link
-                v-if="perm?.CadastroMeta?.editar"
-                :to="`/metas/editar/${m.id}`"
-                class="f0 tprimary ml1"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </li>
-          </ul>
-          <hr class="mt2 mb2">
-          <div
-            v-if="perm?.CadastroMeta?.inserir"
-            class="tc bgc50 p1"
+        <hr class="mt2 mb2">
+        <div
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm'
+          ])"
+          class="tc bgc50 p1"
+        >
+          <SmaeLink
+            :to="`/metas/${groupSlug(filters.groupBy)}/${id}/novo`"
+            class="btn big"
           >
-            <router-link
-              :to="`/metas/${groupSlug(filters.groupBy)}/${id}/novo`"
-              class="btn big"
-            >
-              <span>Adicionar meta</span>
-            </router-link>
-          </div>
+            <span>Adicionar meta</span>
+          </SmaeLink>
         </div>
-      </template>
-      <template v-else-if="itemsFiltered.loading">
-        <div class="p1">
-          <span>Carregando</span> <svg
-            class="ml1 ib"
-            width="20"
-            height="20"
-          ><use xlink:href="#i_spin" /></svg>
-        </div>
-      </template>
-      <template v-else-if="itemsFiltered.error">
-        <div class="error p1">
-          <p class="error-msg">
-            Error: {{ itemsFiltered.error }}
-          </p>
-        </div>
-      </template>
-      <template v-else>
-        <div class="error p1">
-          <p class="error-msg">
-            Nenhum item encontrado.
-          </p>
-        </div>
-      </template>
-    </div>
-  </Dashboard>
+      </div>
+    </template>
+    <template v-else-if="itemsFiltered.loading">
+      <div class="p1">
+        <span>Carregando</span> <svg
+          class="ml1 ib"
+          width="20"
+          height="20"
+        ><use xlink:href="#i_spin" /></svg>
+      </div>
+    </template>
+    <template v-else-if="itemsFiltered.error">
+      <div class="error p1">
+        <p class="error-msg">
+          Error: {{ itemsFiltered.error }}
+        </p>
+      </div>
+    </template>
+    <template v-else>
+      <div class="error p1">
+        <p class="error-msg">
+          Nenhum item encontrado.
+        </p>
+      </div>
+    </template>
+  </div>
 </template>

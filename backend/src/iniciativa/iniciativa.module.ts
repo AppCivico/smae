@@ -1,15 +1,13 @@
 import { Module } from '@nestjs/common';
+import { MetaModule } from '../meta/meta.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { VariavelModule } from '../variavel/variavel.module';
-import { IniciativaController } from './iniciativa.controller';
+import { IniciativaController, IniciativaSetorialController } from './iniciativa.controller';
 import { IniciativaService } from './iniciativa.service';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.module';
-import { GeoLocModule } from '../geo-loc/geo-loc.module';
 
 @Module({
-    imports: [PrismaModule, VariavelModule, CronogramaEtapaModule, GeoLocModule],
-    controllers: [IniciativaController],
-    providers: [IniciativaService, CronogramaEtapaService],
+    imports: [PrismaModule, MetaModule, VariavelModule],
+    controllers: [IniciativaController, IniciativaSetorialController],
+    providers: [IniciativaService],
 })
 export class IniciativaModule {}

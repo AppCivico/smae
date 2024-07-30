@@ -1,19 +1,23 @@
 <script setup>
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import ContratosAditivos from '@/components/obras/ContratosAditivos.vue';
 import { contratoDeObras as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
-import { useObrasStore } from '@/stores/obras.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
-const processosStore = useContratosStore();
+const contratosStore = useContratosStore();
 const {
   chamadasPendentes,
   emFoco,
   erro,
-} = storeToRefs(processosStore);
+} = storeToRefs(contratosStore);
 
 const obrasStore = useObrasStore();
 const {
@@ -47,93 +51,203 @@ const {
     v-if="emFoco"
     class="boards"
   >
-    <div class="flex">
-      <div class="flex g2 f1">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.numero.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.numero || '-' }}
-          </dd>
-        </div>
+    <dl class="flex g2 flexwrap">
+      <div class="f1 fb10em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.numero.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.numero || '-' }}
+        </dd>
       </div>
-      <div class="flex g2 f1">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.contrato_exclusivo.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.contrato_exclusivo ? 'Sim' : 'Não' }}
-          </dd>
-        </div>
+      <div class="f1 fb10em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.contrato_exclusivo.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.contrato_exclusivo ? 'Sim' : 'Não' }}
+        </dd>
       </div>
-      <div class="flex g2 f1">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.numero.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.status || '-' }}
-          </dd>
-        </div>
+      <div class="f1 fb10em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.status.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.status || '-' }}
+        </dd>
       </div>
-    </div>
-
-    <div class="flex">
-      <div class="flex g2 f1">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.processos_sei.spec.label }}
-          </dt>
-          <dd class="t13">
-            <div
-              v-for="processoSei in emFoco?.processos_sei"
-              :key="processoSei"
+      <div class="f1 fb20em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.processos_sei.spec.label }}
+        </dt>
+        <dd class="t13 contentStyle">
+          <ul v-if="emFoco?.processos_sei?.length">
+            <li
+              v-for="processoSei, i in emFoco?.processos_sei"
+              :key="i"
             >
-              {{ processoSei }}
-            </div>
-          </dd>
-        </div>
+              {{ formatProcesso(processoSei) }}
+            </li>
+          </ul>
+        </dd>
       </div>
-      <div class="flex g2 f1">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.modalidade_contratacao_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.modalidade_contratacao_id }}
-          </dd>
-        </div>
+      <div class="f1 fb10em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.orgao_id.spec.label }}
+        </dt>
+        <dd class="t13">
+          <abbr
+            v-if="emFoco?.orgao?.sigla"
+            :title="emFoco?.orgao?.descricao"
+          >
+            {{ emFoco.orgao.sigla }}
+          </abbr>
+          <template v-else>
+            {{ emFoco?.orgao }}
+          </template>
+        </dd>
       </div>
-      <div class="flex g2 f1">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.fontes_recurso_ids.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.fontes_recurso_ids }}
-          </dd>
-        </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.modalidade_contratacao_id.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.modalidade_contratacao?.nome || emFoco?.modalidade_contratacao || '-' }}
+        </dd>
       </div>
-    </div>
+      <div class="f1 fb25em mbi">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_termino.spec.label }}
+        </dt>
+        <dd>
+          {{ emFoco?.data_termino ? dateToShortDate(emFoco.data_termino) : '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.fontes_recurso.spec.label }}
+        </dt>
+        <dd class="t13 contentStyle">
+          <ul v-if="emFoco?.fontes_recurso?.length">
+            <li
+              v-for="fonte, i in emFoco?.fontes_recurso"
+              :key="i"
+            >
+              {{ fonte.fonte_recurso_cod_sof }}
+              ({{ fonte.fonte_recurso_ano }})
+            </li>
+          </ul>
+        </dd>
+      </div>
+      <div class="f1 fb100 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.objeto_resumo.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.objeto_resumo || '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb100 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.objeto_detalhado.spec.label }}
+        </dt>
+        <dd
+          class="t13 contentStyle"
+          v-html="emFoco?.objeto_detalhado"
+        />
+      </div>
 
-    <div><h2>IMPLEMENTAR ADITIVOS!!</h2></div>
-
-    <div
-      v-if="chamadasPendentes?.emFoco"
-      class="spinner"
-    >
-      Carregando
-    </div>
-
-    <div
-      v-if="erro"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erro }}
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.contratante.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.contratante || '-' }}
+        </dd>
       </div>
-    </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.empresa_contratada.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.empresa_contratada || '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.cnpj_contratada.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.cnpj_contratada || '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_assinatura.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.data_assinatura
+            ? dateToShortDate(emFoco.data_assinatura)
+            : '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.prazo_numero.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.prazo_numero }} {{ emFoco?.prazo_unidade }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_base_mes.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.data_base_mes || '-' }}/{{ emFoco?.data_base_ano || '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_inicio.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.data_inicio ? dateToShortDate(emFoco.data_inicio) : '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.valor.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.valor ? `R$ ${dinheiro(emFoco?.valor)}` : '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb100 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Aditivos
+        </dt>
+        <dd>
+          <ContratosAditivos
+            @salvo="contratosStore.buscarItem(emFoco.id)"
+            @excluido="contratosStore.buscarItem(emFoco.id)"
+          />
+        </dd>
+      </div>
+      <div class="f1 fb100 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.observacoes.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.observacoes || '-' }}
+        </dd>
+      </div>
+    </dl>
+
+    <LoadingComponent v-if="chamadasPendentes?.emFoco" />
+
+    <ErrorComponent v-if="erro">
+      {{ erro }}
+    </ErrorComponent>
   </div>
 </template>

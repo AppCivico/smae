@@ -11,12 +11,15 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
       lista: false,
       emFoco: false,
     },
-    erro: null,
+    erro: {
+      lista: null,
+      emFoco: null,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erro.emFoco = null;
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/equipamento/${id}`, params);
@@ -24,34 +27,34 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
           ...resposta,
         };
       } catch (erro) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
       }
       this.chamadasPendentes.emFoco = false;
     },
 
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erro.lista = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/equipamento`, params);
         this.lista = linhas;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erro.emFoco = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/equipamento/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
         this.chamadasPendentes.lista = false;
         return false;
       }
@@ -59,7 +62,7 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
 
     async salvarItem(params = {}, id = 0) {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erro.emFoco = null;
 
       try {
         if (id) {
@@ -71,7 +74,7 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
         this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
       }

@@ -63,6 +63,7 @@ export class DistribuicaoRecursoService {
         });
         if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
 
+        const agora = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.nome) {
@@ -125,7 +126,6 @@ export class DistribuicaoRecursoService {
                 });
 
                 const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                    console.log(distribuicao.status);
                     const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                     if (statusAtual) {
@@ -184,6 +184,81 @@ export class DistribuicaoRecursoService {
                         400
                     );
 
+                const parlamentaresTratadosParaCreate = [];
+                if (dto.parlamentares?.length) {
+                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.findMany({
+                        where: {
+                            parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
+                            transferencia_id: dto.transferencia_id,
+                            removido_em: null,
+                        },
+                        select: {
+                            parlamentar_id: true,
+                            partido_id: true,
+                            cargo: true,
+                            valor: true,
+                        },
+                    });
+
+                    if (parlamentaresNaTransf.length != dto.parlamentares.length)
+                        throw new HttpException(
+                            'parlamentares| Parlamentar(es) não encontrado(s) na transferência.',
+                            400
+                        );
+
+                    const sumValor = dto.parlamentares
+                        .filter((e) => e.valor)
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
+                    if (+sumValor > +dto.valor)
+                        throw new HttpException(
+                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                            400
+                        );
+
+                    for (const novaRow of dto.parlamentares) {
+                        const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
+                            where: {
+                                parlamentar_id: novaRow.parlamentar_id,
+                                distribuicao_recurso: {
+                                    transferencia_id: dto.transferencia_id,
+                                },
+                                removido_em: null,
+                            },
+                            select: {
+                                valor: true,
+                            },
+                        });
+
+                        const rowParlamentarTransf = parlamentaresNaTransf.find(
+                            (e) => e.parlamentar_id == novaRow.parlamentar_id
+                        );
+                        if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                        const valorNaTransf = rowParlamentarTransf.valor ?? 0;
+
+                        if (valorNaTransf == 0)
+                            throw new HttpException(
+                                'Parlamentar não está com valor de repasse definido na transferência.',
+                                400
+                            );
+
+                        const sumValor = rowsParlamentarDist
+                            .filter((e) => e.valor)
+                            .reduce((acc, curr) => acc + +curr.valor!, 0);
+                        if (+sumValor > +valorNaTransf)
+                            throw new HttpException(
+                                'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                400
+                            );
+
+                        parlamentaresTratadosParaCreate.push({
+                            parlamentar_id: novaRow.parlamentar_id,
+                            cargo: rowParlamentarTransf.cargo,
+                            partido_id: rowParlamentarTransf.partido_id,
+                            valor: novaRow.valor,
+                        });
+                    }
+                }
+
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                     data: {
                         transferencia_id: dto.transferencia_id,
@@ -208,7 +283,7 @@ export class DistribuicaoRecursoService {
                         assinatura_estado: dto.assinatura_estado,
                         vigencia: dto.vigencia,
                         conclusao_suspensiva: dto.conclusao_suspensiva,
-                        criado_em: new Date(Date.now()),
+                        criado_em: agora,
                         criado_por: user.id,
                         registros_sei: {
                             createMany: {
@@ -219,11 +294,25 @@ export class DistribuicaoRecursoService {
                                                   processo_sei: r.processo_sei.replace(/\D/g, ''),
                                                   nome: r.nome,
                                                   registro_sei_info: '{}',
-                                                  criado_em: new Date(Date.now()),
+                                                  criado_em: agora,
                                                   criado_por: user.id,
                                               };
                                           })
                                         : [],
+                            },
+                        },
+                        parlamentares: {
+                            createMany: {
+                                data: parlamentaresTratadosParaCreate.map((e) => {
+                                    return {
+                                        parlamentar_id: e.parlamentar_id,
+                                        cargo: e.cargo,
+                                        valor: e.valor,
+                                        partido_id: e.partido_id,
+                                        criado_em: agora,
+                                        criado_por: user.id,
+                                    };
+                                }),
                             },
                         },
                     },
@@ -271,6 +360,7 @@ export class DistribuicaoRecursoService {
                 removido_em: null,
                 transferencia_id: filters.transferencia_id,
             },
+            orderBy: { orgao_gestor: { sigla: 'asc' } },
             select: {
                 id: true,
                 transferencia_id: true,
@@ -294,6 +384,30 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
+                parlamentares: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        parlamentar_id: true,
+                        parlamentar: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                nome_popular: true,
+                            },
+                        },
+                        partido_id: true,
+                        partido: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        cargo: true,
+                        objeto: true,
+                        valor: true,
+                    },
+                },
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -392,6 +506,7 @@ export class DistribuicaoRecursoService {
                 conclusao_suspensiva: r.conclusao_suspensiva,
                 pode_registrar_status: pode_registrar_status,
                 pct_valor_transferencia: pct_valor_transferencia,
+                parlamentares: r.parlamentares,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -523,6 +638,31 @@ export class DistribuicaoRecursoService {
                         valor_total: true,
                     },
                 },
+
+                parlamentares: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        parlamentar_id: true,
+                        parlamentar: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                nome_popular: true,
+                            },
+                        },
+                        partido_id: true,
+                        partido: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        cargo: true,
+                        objeto: true,
+                        valor: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
@@ -615,6 +755,7 @@ export class DistribuicaoRecursoService {
                     processo_sei: formataSEI(s.processo_sei),
                 };
             }),
+            parlamentares: row.parlamentares,
         };
     }
 
@@ -731,7 +872,6 @@ export class DistribuicaoRecursoService {
                     });
 
                     const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                        console.log(distribuicao.status);
                         const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                         if (statusAtual) {
@@ -748,18 +888,19 @@ export class DistribuicaoRecursoService {
                     let sumTotal: number = dto.valor_total ?? 0;
 
                     for (const distRow of outrasDistribuicoesFiltradas) {
-                        sumCusteio += +distRow.custeio.toNumber();
-                        sumContrapartida += +distRow.valor_contrapartida.toNumber();
-                        sumInvestimento += +distRow.investimento.toNumber();
-                        sumTotal += +distRow.valor_total.toNumber();
+                        sumCusteio = +sumCusteio + +distRow.custeio.toNumber();
+                        sumContrapartida = +sumContrapartida + +distRow.valor_contrapartida.toNumber();
+                        sumInvestimento = +sumInvestimento + +distRow.investimento.toNumber();
+                        sumTotal = +sumTotal + +distRow.valor_total.toNumber();
                     }
 
                     if (dto.custeio != self.custeio.toNumber()) {
-                        if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                        if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber()) {
                             throw new HttpException(
                                 'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
                                 400
                             );
+                        }
                     }
 
                     if (dto.investimento != self.investimento.toNumber()) {
@@ -819,11 +960,12 @@ export class DistribuicaoRecursoService {
                         assinatura_estado: dto.assinatura_estado,
                         vigencia: dto.vigencia,
                         conclusao_suspensiva: dto.conclusao_suspensiva,
-                        atualizado_em: new Date(Date.now()),
+                        atualizado_em: now,
                         atualizado_por: user.id,
                     },
                     select: {
                         id: true,
+                        nome: true,
                         orgao_gestor: {
                             select: {
                                 id: true,
@@ -843,20 +985,28 @@ export class DistribuicaoRecursoService {
                         valor_contrapartida: true,
                         investimento: true,
                         valor_total: true,
+                        parlamentares: {
+                            where: { removido_em: null },
+                            select: {
+                                id: true,
+                                parlamentar_id: true,
+                                partido_id: true,
+                                cargo: true,
+                                valor: true,
+                                objeto: true,
+                            },
+                        },
                     },
                 });
 
                 if (self.orgao_gestor.id != dto.orgao_gestor_id) {
                     if (updated.tarefas.length > 0) {
-                        console.log('======================================');
-                        console.log('Atualizando tarefas');
                         await prismaTx.$executeRaw`
                         UPDATE tarefa SET
-                            tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.orgao_gestor.sigla}),
+                            tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.nome}),
                             orgao_id = ${updated.orgao_gestor.id}
                         WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
                     `;
-                        console.log('======================================');
                     } else {
                         await this._createTarefasOutroOrgao(prismaTx, id, user);
                     }
@@ -877,6 +1027,148 @@ export class DistribuicaoRecursoService {
                         'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
                         400
                     );
+
+                // Tratando upsert de parlamentares.
+                const operations = [];
+                if (dto.parlamentares?.length) {
+                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.findMany({
+                        where: {
+                            parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
+                            transferencia_id: self.transferencia_id,
+                            removido_em: null,
+                        },
+                        select: {
+                            parlamentar_id: true,
+                            partido_id: true,
+                            cargo: true,
+                            valor: true,
+                        },
+                    });
+
+                    const sumValor = dto.parlamentares
+                        .filter((e) => e.valor)
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
+                    if (+sumValor > +updated.valor)
+                        throw new HttpException(
+                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                            400
+                        );
+
+                    for (const relParlamentar of dto.parlamentares) {
+                        const parlamentarNaTransf = await prismaTx.transferenciaParlamentar.findFirst({
+                            where: {
+                                parlamentar_id: relParlamentar.parlamentar_id,
+                                transferencia_id: self.transferencia_id,
+                                removido_em: null,
+                            },
+                            select: {
+                                parlamentar_id: true,
+                                partido_id: true,
+                                cargo: true,
+                                valor: true,
+                            },
+                        });
+                        if (!parlamentarNaTransf)
+                            throw new HttpException(
+                                'parlamentar_id| Parlamentar não encontrado na transferência.',
+                                400
+                            );
+
+                        if (relParlamentar.id) {
+                            const row = updated.parlamentares.find((e) => e.id == relParlamentar.id);
+                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
+
+                            if (
+                                row.objeto !== relParlamentar.objeto ||
+                                row.valor?.toNumber() !== relParlamentar.valor
+                            ) {
+                                operations.push(
+                                    prismaTx.distribuicaoParlamentar.update({
+                                        where: { id: relParlamentar.id },
+                                        data: {
+                                            valor: relParlamentar.valor,
+                                            objeto: relParlamentar.objeto,
+                                            atualizado_em: now,
+                                            atualizado_por: user.id,
+                                        },
+                                    })
+                                );
+                            }
+                        } else {
+                            const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
+                                where: {
+                                    parlamentar_id: relParlamentar.parlamentar_id,
+                                    distribuicao_recurso: {
+                                        transferencia_id: self.transferencia_id,
+                                    },
+                                    removido_em: null,
+                                },
+                                select: {
+                                    valor: true,
+                                },
+                            });
+
+                            const rowParlamentarTransf = parlamentaresNaTransf.find(
+                                (e) => e.parlamentar_id == relParlamentar.parlamentar_id
+                            );
+                            if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                            const valorNaTransf = rowParlamentarTransf.valor ?? 0;
+
+                            if (valorNaTransf == 0)
+                                throw new HttpException(
+                                    'Parlamentar não está com valor de repasse definido na transferência.',
+                                    400
+                                );
+
+                            console.log('\n==================================\n');
+                            const sumValor = rowsParlamentarDist
+                                .filter((e) => e.valor)
+                                .reduce((acc, curr) => acc + +curr.valor!, 0);
+                            console.log(sumValor);
+                            console.log(valorNaTransf);
+                            console.log('\n==================================\n');
+                            if (+sumValor > +valorNaTransf)
+                                throw new HttpException(
+                                    'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                    400
+                                );
+
+                            operations.push(
+                                prismaTx.distribuicaoParlamentar.create({
+                                    data: {
+                                        distribuicao_recurso_id: id,
+                                        parlamentar_id: relParlamentar.parlamentar_id,
+                                        partido_id: parlamentarNaTransf.partido_id,
+                                        cargo: parlamentarNaTransf.cargo,
+                                        valor: relParlamentar.valor,
+                                        objeto: relParlamentar.objeto,
+                                        criado_em: now,
+                                        criado_por: user.id,
+                                    },
+                                })
+                            );
+                        }
+                    }
+                }
+
+                const parlamentaresRemovidos = updated.parlamentares.filter(
+                    (e) => !dto.parlamentares?.map((e) => e.id).includes(e.id)
+                );
+                if (parlamentaresRemovidos.length) {
+                    for (const row of parlamentaresRemovidos) {
+                        operations.push(
+                            prismaTx.distribuicaoParlamentar.update({
+                                where: { id: row.id },
+                                data: {
+                                    removido_em: now,
+                                    removido_por: user.id,
+                                },
+                            })
+                        );
+                    }
+                }
+
+                if (operations.length) await Promise.all(operations);
 
                 return { id };
             },
@@ -1121,6 +1413,7 @@ export class DistribuicaoRecursoService {
             select: {
                 id: true,
                 transferencia_id: true,
+                nome: true,
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -1150,6 +1443,9 @@ export class DistribuicaoRecursoService {
                         tarefaEspelhada: {
                             select: {
                                 id: true,
+                                inicio_planejado: true,
+                                termino_planejado: true,
+                                duracao_planejado: true,
                             },
                         },
                     },
@@ -1157,6 +1453,21 @@ export class DistribuicaoRecursoService {
                 workflow_tarefa: {
                     select: {
                         tarefa_fluxo: true,
+                    },
+                },
+                tarefaEspelhada: {
+                    select: {
+                        id: true,
+                        inicio_planejado: true,
+                        termino_planejado: true,
+                        duracao_planejado: true,
+                        dependencias: {
+                            select: {
+                                dependencia_tarefa_id: true,
+                                tipo: true,
+                                latencia: true,
+                            },
+                        },
                     },
                 },
             },
@@ -1205,20 +1516,42 @@ export class DistribuicaoRecursoService {
                             tarefa_pai_id: tarefa_pai_id,
                             nivel: 3,
                             numero: numero,
-                            tarefa:
-                                andamentoTarefa.workflow_tarefa.tarefa_fluxo +
-                                ` - ${distribuicaoRecurso.orgao_gestor.sigla}`,
-                            descricao:
-                                andamentoTarefa.workflow_tarefa.tarefa_fluxo +
-                                ` - ${distribuicaoRecurso.orgao_gestor.sigla}`,
+                            tarefa: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
+                            descricao: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
                             distribuicao_recurso_id: distribuicaoRecurso.id,
                             recursos: distribuicaoRecurso.orgao_gestor.sigla,
                             orgao_id: distribuicaoRecurso.orgao_gestor.id,
+                            inicio_planejado: andamentoTarefa.tarefaEspelhada[0].inicio_planejado,
+                            termino_planejado: andamentoTarefa.tarefaEspelhada[0].termino_planejado,
+                            duracao_planejado: andamentoTarefa.tarefaEspelhada[0].duracao_planejado,
+                            dependencias: {
+                                createMany: {
+                                    // As tarefas criadas devem ter a mesma regra de dependência da tarefa de acompanhamento.
+                                    data: andamentoTarefa.tarefaEspelhada[0].dependencias.map((d) => {
+                                        return {
+                                            dependencia_tarefa_id: d.dependencia_tarefa_id,
+                                            tipo: d.tipo,
+                                            latencia: d.latencia,
+                                        };
+                                    }),
+                                },
+                            },
                         },
                     })
                 );
             }
         }
+
+        const orgaoCasaCivil = await prismaTx.orgao.findFirst({
+            where: {
+                removido_em: null,
+                sigla: 'SERI',
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
         await Promise.all(operations);
         await this._validarTopologia(prismaTx, distribuicao_id, user);
@@ -1300,7 +1633,6 @@ export class DistribuicaoRecursoService {
 
         const updates = [];
         for (const row of tarefaEtapasAcompanhamentos) {
-            console.log(row);
             if (row.nivel == 1 && row.tarefa_pai_id == null) {
                 // Tarefa referente à própia etapa.
                 // Buscando tarefa filha de maior número.

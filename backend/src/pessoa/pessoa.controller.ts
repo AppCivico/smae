@@ -42,6 +42,13 @@ export class PessoaController {
         'SMAE.gestor_de_projeto',
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
+        'CadastroPS.administrador_no_orgao',
+        'CadastroPS.administrador',
+        'PS.admin_cp',
+        'PS.tecnico_cp',
+        'PS.ponto_focal',
     ])
     async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters, user) };
@@ -61,10 +68,17 @@ export class PessoaController {
         'SMAE.espectador_de_projeto',
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
         'CadastroGrupoPortfolio.administrador',
         'CadastroGrupoPortfolio.administrador_no_orgao',
         'CadastroPessoa.editar_responsabilidade',
         'CadastroTransferencia.listar',
+        'CadastroPS.administrador_no_orgao',
+        'CadastroPS.administrador',
+        'PS.admin_cp',
+        'PS.tecnico_cp',
+        'PS.ponto_focal',
     ])
     async findAllReduced(
         @Query() filters: FilterPessoaDto,
