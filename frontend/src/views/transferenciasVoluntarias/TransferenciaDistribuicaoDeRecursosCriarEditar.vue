@@ -1,4 +1,16 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -16,19 +28,6 @@ import {
   ref,
   watch,
 } from 'vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import dinheiro from '@/helpers/dinheiro';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { usePartidosStore } from '@/stores/partidos.store';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
@@ -1153,7 +1152,7 @@ const isSomaCorreta = computed(() => {
           v-for="item in distribuiçãoEmFoco.historico_status"
           :key="item.id"
         >
-          <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
+          <td>{{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
           <td>{{ item.status_base?.nome || item.status_customizado?.nome }}</td>
           <td>{{ item.orgao_responsavel?.sigla }}</td>
           <td>{{ item.nome_responsavel }}</td>
