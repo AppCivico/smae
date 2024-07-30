@@ -12,7 +12,9 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
-import { computed, onMounted } from 'vue';
+import {
+  computed, nextTick, watch,
+} from 'vue';
 import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -39,7 +41,7 @@ const props = defineProps({
 });
 
 const {
-  errors, isSubmitting, setFieldValue, values, handleSubmit,
+  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -129,12 +131,14 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 partidoStore.buscarTudo();
 
-onMounted(() => {
+watch(itemParaEdição, async (novosValores) => {
+  resetForm({ values: novosValores });
+
+  await nextTick();
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
-});
+}, { immediate: true });
 </script>
-
 <template>
   <pre v-scrollLockDebug>
     transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
