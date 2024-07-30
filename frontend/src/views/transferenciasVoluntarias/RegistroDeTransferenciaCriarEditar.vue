@@ -388,8 +388,9 @@ onMounted(() => {
       </h3>
       <hr class="ml2 f1">
     </div>
+
     <div
-      v-for="parlamentar in transferenciaEmFoco.parlamentar"
+      v-for="parlamentar in transferenciaEmFoco?.parlamentar"
       :key="parlamentar.id"
     >
       <div class="flex g2">
@@ -415,7 +416,6 @@ onMounted(() => {
             name="valor"
             class="inputtext light mb1"
             type="text"
-            :value="parlamentar?.parlamentar?.nome"
           />
         </div>
       </div>
