@@ -197,7 +197,17 @@ function abrirModalStatus(status = null) {
 iniciar();
 
 watch(itemParaEdição, (novosValores) => {
-  resetForm({ values: novosValores });
+  resetForm({
+    values: {
+      ...novosValores,
+      parlamentares: novosValores.parlamentares?.length
+        ? novosValores.parlamentares
+        : transferenciasVoluntariaEmFoco.value?.parlamentares.map((x) => ({
+          valor: x.valor,
+          parlamentar_id: x.parlamentar_id,
+        })),
+    },
+  });
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
 });
@@ -998,184 +1008,54 @@ const isSomaCorreta = computed(() => {
     </div>
 
     <div class="mb1">
-      <FieldArray
-        v-slot="{ fields, push, remove }"
-        name="parlamentares"
+      <div
+        v-for="(parlamentar, idx) in transferenciasVoluntariaEmFoco.parlamentares"
+        :key="`parlamentares--${parlamentar.id}`"
+        class="mb2"
       >
-        <div
-          v-for="(field, idx) in fields"
-          :key="field.key"
-          class="flex flexwrap center g2 mb2"
-        >
-          <div class="f1 mb1">
-            <Field
-              :name="`parlamentares[${idx}].id`"
-              type="hidden"
-              class="inputtext light"
-            />
+        <Field
+          :name="`parlamentares[${idx}].id`"
+          type="hidden"
+        />
+
+        <Field
+          :name="`parlamentares[${idx}].parlamentar_id`"
+          type="hidden"
+          :value="parlamentar.parlamentar_id"
+        />
+
+        <div class="flex g2">
+          <div class="f1">
             <LabelFromYup
               name="parlamentar_id"
               :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].parlamentar.nome`"
             />
-            <Field
-              :name="`parlamentares[${idx}].parlamentar_id`"
-              as="select"
+            <input
+              :name="`parlamentares[${idx}].parlamentar.nome`"
               class="inputtext light mb1"
-              :class="{
-                error: errors.parlamentar_id,
-                loading: ParlamentaresStore.chamadasPendentes?.lista,
-              }"
-              :disabled="!parlamentarComoLista?.length"
+              type="text"
+              aria-readonly="true"
+              readonly
+              :value="parlamentar?.parlamentar?.nome"
             >
-              <option value="">
-                Selecionar
-              </option>
-
-              <option
-                v-for="item in parlamentarComoLista"
-                :key="item"
-                :value="item.id"
-                :disabled="!item?.mandatos?.length"
-              >
-                {{ item.nome_popular }}
-
-                <template v-if="!item?.mandatos?.length">
-                  (sem mandatos cadastrados)
-                </template>
-              </option>
-
-              <option
-                v-if="paginaçãoDeParlamentares.temMais"
-                disabled
-              >
-                &hellip;
-              </option>
-            </Field>
-            <ErrorMessage
-              :name="`parlamentares[${idx}].parlamentar_id`"
-              class="error-msg"
-            />
-          </div>
-          <div class="f1 mb1">
-            <LabelFromYup
-              name="partido_id"
-              :schema="schema.fields.parlamentares.innerType"
-            />
-            <Field
-              :name="`parlamentares[${idx}].partido_id`"
-              as="select"
-              class="inputtext light mb1"
-              :class="{
-                error: errors.partido_id,
-                loading: partidoStore.chamadasPendentes?.lista,
-              }"
-              :disabled="!partidoComoLista.length"
-            >
-              <option value="">
-                Selecionar
-              </option>
-
-              <option
-                v-for="item in partidoComoLista"
-                :key="item"
-                :value="item.id"
-              >
-                {{ item.nome }}
-              </option>
-            </Field>
-            <ErrorMessage
-              :name="`parlamentares[${idx}].partido_id`"
-              class="error-msg"
-            />
           </div>
           <div class="f1">
             <LabelFromYup
-              name="`cargo`"
+              name="valor"
               :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].valor`"
             />
-            <Field
-              :name="`parlamentares[${idx}].cargo`"
-              as="select"
+            <MaskedFloatInput
+              :name="`parlamentares[${idx}].valor`"
+              type="text"
               class="inputtext light mb1"
-              :class="{ 'error': errors.cargo }"
-            >
-              <option value="">
-                Selecionar
-              </option>
-
-              <option
-                v-for="(cargo, i) in cargosDeParlamentar"
-                :key="i"
-                :value="cargo.valor || cargo"
-              >
-                {{ cargo.nome || cargo }}
-              </option>
-            </Field>
-            <div class="error-msg">
-              {{ errors.cargo }}
-            </div>
-          </div>
-
-          <div class="f1">
-            <LabelFromYup
-              name="objeto"
-              :schema="schema.fields.parlamentares.innerType"
+              converter-para="string"
+              :value="values.parlamentares?.[idx]?.valor"
             />
-            <Field
-              :name="`parlamentares[${idx}].objeto`"
-              as="textarea"
-              class="inputtext light mb1"
-              rows="5"
-              maxlength="1000"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`parlamentares[${idx}].objeto`"
-            />
-          </div>
-
-          <LabelFromYup
-            name="valor"
-            :schema="schema.fields.parlamentares.innerType"
-          />
-          <MaskedFloatInput
-            :name="`parlamentares[${idx}].valor`"
-            type="text"
-            class="inputtext light mb1"
-            :value="values.valor"
-            converter-para="string"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            :name="`parlamentares[${idx}].valor`"
-          />
-
-          <div class="align-end">
-            <button
-              class="like-a__text addlink"
-              arial-label="excluir"
-              title="excluir"
-              @click="remove(idx)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg>
-            </button>
           </div>
         </div>
-
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="push({ nome: '', processo_sei: '' })"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar registro
-        </button>
-      </FieldArray>
+      </div>
     </div>
 
     <FormErrorsList :errors="errors" />
