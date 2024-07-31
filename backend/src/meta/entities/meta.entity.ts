@@ -1,8 +1,10 @@
-import { TipoPdm } from '@prisma/client';
+import { ProjetoStatus, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
+import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
+import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
 
 export class IdDesc {
     id: number;
@@ -61,9 +63,20 @@ export class MetaPdmDto {
     tipo: TipoPdm;
 }
 
+export class IdObrasDto {
+    id: number;
+    codigo: string | null;
+    nome: string;
+    tipo_intervencao: IdNomeDto | null;
+    subprefeituras: IdDescRegiaoComParent[];
+    equipamento: IdNomeDto | null;
+    status: ProjetoStatus;
+    percentual_concluido: number | null;
+}
+
 export class RelacionadosDTO {
     pdm_metas: MetaPdmDto[];
     ps_metas: MetaPdmDto[];
-    obras: IdCodNomeDto[];
+    obras: IdObrasDto[];
     projetos: IdCodNomeDto[];
 }

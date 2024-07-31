@@ -19,12 +19,15 @@ import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import {
     IdNomeExibicao,
+    IdObrasDto,
     MetaIniAtvTag,
     MetaItemDto,
     MetaOrgao,
     MetaPdmDto,
     RelacionadosDTO,
 } from './entities/meta.entity';
+import { IdCodNomeDto } from '../common/dto/IdCodNome.dto';
+import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -1061,14 +1064,62 @@ export class MetaService {
                 tipo: true,
                 codigo: true,
                 nome: true,
+                tipo_intervencao: {
+                    select: { id: true, nome: true },
+                },
+                ProjetoRegiao: {
+                    where: { removido_em: null, regiao: { nivel: 3 } },
+                    select: { regiao: { select: { id: true, nivel: true, parente_id: true, descricao: true } } },
+                },
+                equipamento: { select: { id: true, nome: true } },
+                status: true,
+                TarefaCronograma: {
+                    where: { removido_em: null },
+                    take: 1,
+                    select: {
+                        id: true,
+                        percentual_concluido: true,
+                    },
+                },
             },
         });
 
         return {
             pdm_metas: MetaPdmDto.filter((p) => p.tipo === 'PDM'),
             ps_metas: MetaPdmDto.filter((p) => p.tipo === 'PS'),
-            obras: projetos.filter((p) => p.tipo === 'MDO'),
-            projetos: projetos.filter((p) => p.tipo === 'PP'),
+            obras: projetos
+                .filter((p) => p.tipo === 'MDO')
+                .map((r) => {
+                    return {
+                        codigo: r.codigo,
+                        equipamento: r.equipamento ? { id: r.equipamento.id, nome: r.equipamento.nome } : null,
+                        id: r.id,
+                        nome: r.nome,
+                        status: r.status,
+                        tipo_intervencao: r.tipo_intervencao
+                            ? { id: r.tipo_intervencao.id, nome: r.tipo_intervencao.nome }
+                            : null,
+                        subprefeituras: r.ProjetoRegiao.map((r) => {
+                            return {
+                                id: r.regiao.id,
+                                descricao: r.regiao.descricao,
+                                nivel: r.regiao.nivel,
+                                parente_id: r.regiao.parente_id,
+                            } satisfies IdDescRegiaoComParent;
+                        }),
+                        percentual_concluido:
+                            r.TarefaCronograma.length > 0 ? r.TarefaCronograma[0].percentual_concluido : null,
+                    } satisfies IdObrasDto;
+                }),
+            projetos: projetos
+                .filter((p) => p.tipo === 'PP')
+                .map((r) => {
+                    return {
+                        codigo: r.codigo,
+                        id: r.id,
+                        nome: r.nome,
+                    } satisfies IdCodNomeDto;
+                }),
         };
     }
 }
