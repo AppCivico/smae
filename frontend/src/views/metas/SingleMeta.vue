@@ -359,6 +359,9 @@ iniciar();
 
             <table class="tablemain">
               <col>
+              <col>
+              <col>
+              <col>
               <thead>
                 <th>Nome</th>
                 <th>Portfólio</th>
