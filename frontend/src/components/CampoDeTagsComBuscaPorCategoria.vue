@@ -241,7 +241,7 @@ watch(() => props.valoresIniciais, () => {
       <svg
         width="20"
         height="20"
-      ><use xlink:href="#i_+" /></svg>Adicionar categoria
+      ><use xlink:href="#i_+" /></svg>Adicionar tag
     </button>
 
     <div
