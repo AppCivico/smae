@@ -20,6 +20,7 @@ import { UpdateMetaDto } from './dto/update-meta.dto';
 import {
     IdNomeExibicao,
     IdObrasDto,
+    IdProjetoDto,
     MetaIniAtvTag,
     MetaItemDto,
     MetaOrgao,
@@ -1064,6 +1065,10 @@ export class MetaService {
                 tipo: true,
                 codigo: true,
                 nome: true,
+                portfolio: { select: { id: true, descricao: true } },
+                projeto_etapa: {
+                    select: { id: true, descricao: true },
+                },
                 tipo_intervencao: {
                     select: { id: true, nome: true },
                 },
@@ -1118,7 +1123,11 @@ export class MetaService {
                         codigo: r.codigo,
                         id: r.id,
                         nome: r.nome,
-                    } satisfies IdCodNomeDto;
+                        portfolio: { id: r.portfolio.id, descricao: r.portfolio.descricao },
+                        projeto_etapa: r.projeto_etapa
+                            ? { id: r.projeto_etapa.id, descricao: r.projeto_etapa.descricao }
+                            : null,
+                    } satisfies IdProjetoDto;
                 }),
         };
     }
