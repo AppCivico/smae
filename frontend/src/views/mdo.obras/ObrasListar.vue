@@ -21,7 +21,6 @@
       <table class="tablemain">
         <col>
         <col>
-        <col class="col--minimum">
         <col>
         <col>
         <col>
@@ -38,9 +37,6 @@
             </th>
             <th>
               {{ schema.fields.portfolio_id.spec.label }}
-            </th>
-            <th class="cell--nowrap">
-              Código
             </th>
             <th>
               {{ schema.fields.nome.spec.label }}
@@ -71,13 +67,6 @@
           >
             <td>{{ item.orgao_origem.sigla }}</td>
             <td>{{ item.portfolio?.titulo || item.portfolio }}</td>
-            <td class="cell--nowrap">
-              <router-link
-                :to="{ name: 'obrasResumo', params: { obraId: item.id } }"
-              >
-                {{ item.codigo }}
-              </router-link>
-            </td>
             <th>
               <router-link
                 :to="{ name: 'obrasResumo', params: { obraId: item.id } }"
@@ -125,17 +114,17 @@
             </td>
           </tr>
           <tr v-if="chamadasPendentes.lista">
-            <td colspan="11">
+            <td colspan="10">
               Carregando
             </td>
           </tr>
           <tr v-else-if="erro">
-            <td colspan="11">
+            <td colspan="10">
               Erro: {{ erro }}
             </td>
           </tr>
           <tr v-else-if="!lista.length">
-            <td colspan="11">
+            <td colspan="10">
               Nenhum resultado encontrado.
             </td>
           </tr>
