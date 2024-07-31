@@ -2469,7 +2469,7 @@ export class VariavelService {
 
             for (const vc of row.FormulaCompostaVariavel) {
                 this.logger.verbose(`Invalidando variavel calculada ${vc.formula_composta.variavel_calc_id}...`);
-                await prismaTxn.$queryRaw`select refresh_variavel(${vc.formula_composta.variavel_calc_id}::int)`;
+                await prismaTxn.$queryRaw`select refresh_variavel(${vc.formula_composta.variavel_calc_id}::int, null)`;
             }
         }
     }
