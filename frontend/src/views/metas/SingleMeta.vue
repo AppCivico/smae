@@ -361,6 +361,9 @@ iniciar();
               <col>
               <thead>
                 <th>Nome</th>
+                <th>Portfólio</th>
+                <th>Código</th>
+                <th>Etapa</th>
               </thead>
               <tbody>
                 <tr
@@ -369,6 +372,15 @@ iniciar();
                 >
                   <td>
                     {{ projeto.nome }}
+                  </td>
+                  <td>
+                    {{ projeto.portfolio.descricao }}
+                  </td>
+                  <td>
+                    {{ projeto.codigo || '-' }}
+                  </td>
+                  <td>
+                    {{ projeto.projeto_etapa?.descricao || '-' }}
                   </td>
                 </tr>
               </tbody>
