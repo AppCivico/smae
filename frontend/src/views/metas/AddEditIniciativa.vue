@@ -2,7 +2,6 @@
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
@@ -20,8 +19,6 @@ import {
 defineOptions({
   inheritAttrs: false,
 });
-
-IniciativaAtiva();
 
 const alertStore = useAlertStore();
 const route = useRoute();
