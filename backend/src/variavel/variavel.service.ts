@@ -2448,12 +2448,31 @@ export class VariavelService {
             },
             select: {
                 id: true,
+                FormulaCompostaVariavel: {
+                    where: {
+                        formula_composta: {
+                            NOT: { variavel_calc_id: null },
+                        },
+                    },
+                    select: {
+                        formula_composta: {
+                            select: {
+                                variavel_calc_id: true,
+                            },
+                        },
+                    },
+                },
             },
         });
-        this.logger.log(`query.afetadas => ${JSON.stringify(afetadas)}`);
+        this.logger.debug(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
-            this.logger.debug(`Recalculando serie acumulada variavel ${row.id}...`);
+            this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
             await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+
+            for (const vc of row.FormulaCompostaVariavel) {
+                this.logger.verbose(`Invalidando variavel calculada ${vc.formula_composta.variavel_calc_id}...`);
+                await prismaTxn.$queryRaw`select refresh_variavel(${vc.formula_composta.variavel_calc_id}::int)`;
+            }
         }
     }
 
