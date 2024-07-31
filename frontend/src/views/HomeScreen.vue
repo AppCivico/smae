@@ -247,7 +247,7 @@ iniciar();
 }
 
 .escolha-de-módulos__botão-de-saída {
-  max-with: max-content;
+  max-width: max-content;
   margin-right: auto;
   margin-left: auto;
 }
