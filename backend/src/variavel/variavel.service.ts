@@ -598,7 +598,7 @@ export class VariavelService {
 
         await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
 
-        await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
+        await this.recalc_series_dependentes([variavel.id], prismaTxn);
 
         return variavel;
     }
@@ -1503,7 +1503,7 @@ export class VariavelService {
 
             if (Number(self.valor_base).toString() !== Number(updated.valor_base).toString()) {
                 logger.log(`Valor base alterado de ${self.valor_base} para ${updated.valor_base}`);
-                await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
+                await this.recalc_series_dependentes([variavelId], prismaTxn);
             }
 
             await logger.saveLogs(prismaTxn, user.getLogData());
@@ -2424,7 +2424,7 @@ export class VariavelService {
                 this.logger.log(`Variáveis modificadas: ${JSON.stringify(variaveisMod)}`);
 
                 if (Array.isArray(variaveisMod)) {
-                    await this.recalc_variaveis_acumulada(variaveisMod, prismaTxn);
+                    await this.recalc_series_dependentes(variaveisMod, prismaTxn);
                     await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTxn);
                 }
             },
@@ -2436,16 +2436,16 @@ export class VariavelService {
         );
     }
 
-    async recalc_variaveis_acumulada(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
-        this.logger.log(`called recalc_variaveis_acumulada (${JSON.stringify(variaveis)})`);
+    async recalc_series_dependentes(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
+        this.logger.log(`called recalc_series_dependentes (${JSON.stringify(variaveis)})`);
         const afetadas = await prismaTxn.variavel.findMany({
             where: {
                 id: { in: variaveis },
-                acumulativa: true,
                 removido_em: null,
             },
             select: {
                 id: true,
+                acumulativa: true,
                 FormulaCompostaVariavel: {
                     where: {
                         formula_composta: {
@@ -2464,8 +2464,10 @@ export class VariavelService {
         });
         this.logger.debug(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
-            this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
-            await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+            if (row.acumulativa) {
+                this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
+                await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+            }
 
             for (const vc of row.FormulaCompostaVariavel) {
                 this.logger.verbose(`Invalidando variavel calculada ${vc.formula_composta.variavel_calc_id}...`);

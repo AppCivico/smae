@@ -1171,7 +1171,7 @@ export class MetasService {
             }
 
             if (needRecalc) {
-                await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
+                await this.variavelService.recalc_series_dependentes([dto.variavel_id], prismaTxn);
                 await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
             }
 
@@ -1348,7 +1348,7 @@ export class MetasService {
                     ehPontoFocal
                 );
                 if (needRecalc) {
-                    await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
+                    await this.variavelService.recalc_series_dependentes([dto.variavel_id], prismaTxn);
                     await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
                 }
 
@@ -1498,7 +1498,7 @@ export class MetasService {
                 }
 
                 if (needRecalcVars.length > 0) {
-                    await this.variavelService.recalc_variaveis_acumulada(needRecalcVars, prismaTxn);
+                    await this.variavelService.recalc_series_dependentes(needRecalcVars, prismaTxn);
                     await this.variavelService.recalc_indicador_usando_variaveis(needRecalcVars, prismaTxn);
                 }
 
