@@ -653,13 +653,13 @@ export class VariavelService {
         if (!p) return { periodo_preenchimento, periodo_validacao, periodo_liberacao };
 
         if (p.preenchimento_inicio >= p.preenchimento_fim) {
-            throw new Error('Preenchimento: Início deve ser menor que fim');
+            throw new BadRequestException('Preenchimento: Início deve ser menor que fim');
         }
         if (p.validacao_inicio >= p.validacao_fim) {
-            throw new Error('Validação: Início deve ser menor que fim');
+            throw new BadRequestException('Validação: Início deve ser menor que fim');
         }
         if (p.liberacao_inicio >= p.liberacao_fim) {
-            throw new Error('Liberação: Início deve ser menor que fim');
+            throw new BadRequestException('Liberação: Início deve ser menor que fim');
         }
 
         // desativando regra por enquanto
