@@ -2048,11 +2048,9 @@ export class VariavelService {
         filters: FilterSVNPeriodoDto,
         variavelId: number
     ): Promise<ListSeriesAgrupadas> {
-        const indicador = await this.getIndicadorViaVariavel(variavelId);
-        const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
-            return v.variavel.id === variavelId;
-        });
-        const variavel = indicadorVariavelRelList[0].variavel;
+        const selfItem = await this.findAll(tipo, { id: variavelId });
+        if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
+        const variavel = selfItem[0];
 
         const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
@@ -2065,7 +2063,7 @@ export class VariavelService {
                 acumulativa: variavel.acumulativa,
                 codigo: variavel.codigo,
                 titulo: variavel.titulo,
-                suspendida: variavel.suspendida_em ? true : false,
+                suspendida: variavel.suspendida,
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,
