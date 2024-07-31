@@ -48,7 +48,6 @@ export default {
         rotasParaMenuSecundário: () => {
           const rotas = [
             'planosSetoriaisResumo',
-            'planoSetorial:listaDeMetas',
             'planosSetoriaisDocumentos',
           ];
 
@@ -61,6 +60,7 @@ export default {
           if (usePlanosSetoriaisStore()?.emFoco?.possui_sub_tema) {
             rotas.push('planosSetoriaisSubtemas');
           }
+          rotas.push('planoSetorial:listaDeMetas');
           rotas.push('planosSetoriaisTags');
           return rotas;
         },
