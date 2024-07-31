@@ -1,7 +1,6 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -13,8 +12,6 @@ import { Field, Form } from 'vee-validate';
 import { ref, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
-
-AtividadeAtiva();
 
 const alertStore = useAlertStore();
 const route = useRoute();
