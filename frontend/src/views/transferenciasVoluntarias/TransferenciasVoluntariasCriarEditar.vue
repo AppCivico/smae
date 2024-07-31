@@ -454,8 +454,8 @@ watch(itemParaEdição, (novosValores) => {
           </div>
           <div class="f1 mb1">
             <LabelFromYup
-              name="partido_id"
-              :schema="schema.fields.parlamentares.innerType"
+              name="parlamentares.partido_id"
+              :schema="schema"
             />
             <Field
               :name="`parlamentares[${idx}].partido_id`"
@@ -486,8 +486,8 @@ watch(itemParaEdição, (novosValores) => {
           </div>
           <div class="f1">
             <LabelFromYup
-              name="`cargo`"
-              :schema="schema.fields.parlamentares.innerType"
+              name="parlamentares.cargo"
+              :schema="schema"
             />
             <Field
               :name="`parlamentares[${idx}].cargo`"
