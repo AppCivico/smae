@@ -114,6 +114,20 @@ function iniciar() {
   partidoStore.buscarTudo();
 }
 
+function sugerirCamposDoMandato(parlamentarId, idx) {
+  const {
+    cargo_mais_recente: cargoMaisRecente,
+    partido: { id: partidoId } = {},
+  } = parlamentaresPorId.value[parlamentarId];
+
+  if (cargoMaisRecente) {
+    setFieldValue(`parlamentares[${idx}].cargo`, cargoMaisRecente);
+  }
+  if (partidoId) {
+    setFieldValue(`parlamentares[${idx}].partido_id`, partidoId);
+  }
+}
+
 iniciar();
 
 watch(itemParaEdição, (novosValores) => {
@@ -407,6 +421,7 @@ watch(itemParaEdição, (novosValores) => {
                 loading: ParlamentaresStore.chamadasPendentes?.lista,
               }"
               :disabled="!parlamentarComoLista?.length"
+              @change="($e) => sugerirCamposDoMandato($e.target.value, idx)"
             >
               <option value="">
                 Selecionar
