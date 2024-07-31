@@ -535,7 +535,7 @@ watch(itemParaEdição, (novosValores) => {
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar registro
+          ><use xlink:href="#i_+" /></svg>Adicionar parlamentar
         </button>
       </FieldArray>
     </div>
