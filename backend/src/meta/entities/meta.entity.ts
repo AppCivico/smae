@@ -73,10 +73,14 @@ export class IdObrasDto {
     status: ProjetoStatus;
     percentual_concluido: number | null;
 }
+export class IdProjetoDto extends IdCodNomeDto {
+    portfolio: IdDesc;
+    projeto_etapa: IdDesc | null;
+}
 
 export class RelacionadosDTO {
     pdm_metas: MetaPdmDto[];
     ps_metas: MetaPdmDto[];
     obras: IdObrasDto[];
-    projetos: IdCodNomeDto[];
+    projetos: IdProjetoDto[];
 }
