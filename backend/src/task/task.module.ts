@@ -11,6 +11,7 @@ import { RefreshTransferenciaModule } from './refresh_transferencia/refresh-tran
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
+import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.module';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamenta
         forwardRef(() => AeNotaModule),
         forwardRef(() => RefreshTransferenciaModule),
         forwardRef(() => ImportacaoParlamentarModule),
+        forwardRef(() => RefreshVariavelModule),
     ],
     controllers: [TaskController],
     providers: [TaskService],
