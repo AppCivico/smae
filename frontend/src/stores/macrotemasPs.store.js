@@ -12,7 +12,7 @@ function caminhoParaApi(rotaMeta) {
   throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
-export const useMacrotemasStore = defineStore('macrotemasStore', {
+export const useMacrotemasPsStore = defineStore('macrotemasPsStore', {
   state: () => ({
     lista: [],
     emFoco: null,
