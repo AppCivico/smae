@@ -987,7 +987,7 @@ export class PdmService {
                 const varsSuspensas = await this.variavelService.processVariaveisSuspensas(prismaTx);
 
                 if (varsSuspensas.length) {
-                    await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prismaTx);
+                    await this.variavelService.recalc_series_dependentes(varsSuspensas, prismaTx);
                     await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prismaTx);
                 }
 
