@@ -396,15 +396,38 @@ iniciar();
           >
             <div class="flex spacebetween center mt4 mb2">
               <h2 class="mb0">
-                Obras associados
+                Obras associadas
               </h2>
               <hr class="ml2 f1">
             </div>
-
             <table class="tablemain">
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
               <col>
               <thead>
                 <th>Nome</th>
+                <th>
+                  Código
+                </th>
+                <th>
+                  Tipo obra/intervenção
+                </th>
+                <th>
+                  Subprefeitura
+                </th>
+                <th>
+                  Equipamento
+                </th>
+                <th>
+                  Status
+                </th>
+                <th>
+                  Percentual concluído
+                </th>
               </thead>
               <tbody>
                 <tr
@@ -413,6 +436,24 @@ iniciar();
                 >
                   <td>
                     {{ obra.nome }}
+                  </td>
+                  <td>
+                    {{ obra.codigo }}
+                  </td>
+                  <td>
+                    {{ obra.tipo_intervencao?.nome || '-' }}
+                  </td>
+                  <td>
+                    {{ obra.subprefeituras.map(x => x.descricao).join(', ') || '-' }}
+                  </td>
+                  <td>
+                    {{ obra.equipamento?.nome || '-' }}
+                  </td>
+                  <td>
+                    {{ obra.status || '-' }}
+                  </td>
+                  <td>
+                    {{ obra.percentual_concluido || '-' }}
                   </td>
                 </tr>
               </tbody>
