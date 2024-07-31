@@ -69,7 +69,7 @@ BEGIN
     FOR vSerieAtual IN
         SELECT unnest(enum_range(NULL::"Serie")) serie
     LOOP
-        raise notice 'Calculating Serie %, Periodicidade %, Periodo Inicio %, Periodo Fim %', vSerieAtual, vPeriodicidade, vPeriodoInicio, vPeriodoFim;
+        --raise notice 'Calculating Serie %, Periodicidade %, Periodo Inicio %, Periodo Fim %', vSerieAtual, vPeriodicidade, vPeriodoInicio, vPeriodoFim;
 
         -- Delete existing SerieVariavel entries for the calculated variable and current Serie
         DELETE FROM Serie_Variavel
@@ -79,7 +79,7 @@ BEGIN
         -- Loop through each period within the calculation range
         FOR vPeriodo IN SELECT generate_series(vPeriodoInicio, vPeriodoFim, vPeriodicidade)
         LOOP
-            raise notice 'Calculating Period %', vPeriodo;
+            --raise notice 'Calculating Period %', vPeriodo;
 
             -- Construct the formula expression
             vFormula := vFormulaComposta.formula_compilada;
@@ -152,7 +152,7 @@ BEGIN
 
             -- Skip evaluation and insertion if skip_period is TRUE
             IF skip_period THEN
-                raise notice 'Skipping period % due to missing value.', vPeriodo;
+                --raise notice 'Skipping period % due to missing value.', vPeriodo;
                 CONTINUE;
             END IF;
 
@@ -163,7 +163,7 @@ BEGIN
         END LOOP;
     END LOOP;
 
-    RAISE NOTICE 'monta_serie_variavel_calculada (%s) demorou %', pVariavelId, clock_timestamp() - vStartTime;
+    --RAISE NOTICE 'monta_serie_variavel_calculada (%s) demorou %', pVariavelId, clock_timestamp() - vStartTime;
 
     RETURN '';
 END;
