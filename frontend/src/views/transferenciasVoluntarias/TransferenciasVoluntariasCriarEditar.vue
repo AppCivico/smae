@@ -402,7 +402,7 @@ watch(itemParaEdição, (novosValores) => {
           :key="field.key"
           class="flex flexwrap center g2 mb2"
         >
-          <div class="f1 mb1">
+          <div class="f1">
             <Field
               :name="`parlamentares[${idx}].id`"
               type="hidden"
@@ -452,7 +452,7 @@ watch(itemParaEdição, (novosValores) => {
               class="error-msg"
             />
           </div>
-          <div class="f1 mb1">
+          <div class="f1">
             <LabelFromYup
               name="parlamentares.partido_id"
               :schema="schema"
@@ -512,7 +512,7 @@ watch(itemParaEdição, (novosValores) => {
             </div>
           </div>
 
-          <div class="align-end">
+          <div class="align-center">
             <button
               class="like-a__text addlink"
               arial-label="excluir"
