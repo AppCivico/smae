@@ -2046,12 +2046,14 @@ export class VariavelService {
     async getSeriePrevistoRealizado(
         tipo: TipoVariavel,
         filters: FilterSVNPeriodoDto,
-        variavelId: number
+        variavelId: number,
+        user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
         const selfItem = await this.findAll(tipo, { id: variavelId });
         if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
         const variavel = selfItem[0];
 
+        // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
