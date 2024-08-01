@@ -249,8 +249,8 @@ export class MetaService {
         // depois o busca a serie do painel-conteúdo correspondente
 
         if (tipo == 'PDM') {
-            if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm'])) {
-                this.logger.verbose('Usuário tem CadastroMeta.administrador_no_pdm, filtrando por todas do PDM.');
+            if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
+                this.logger.verbose('Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.');
                 return permissionsSet;
             }
             const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
