@@ -180,7 +180,12 @@
 
         class="mb2"
       >
-        <h3>Fechamento</h3>
+        <div class="flex g2 center mt3 mb2">
+          <h3 class="w700 mb0">
+            Fechamento
+          </h3>
+          <hr class="f1">
+        </div>
         <LoadingComponent
           v-if="chamadasPendentes.fechamento"
         >
@@ -194,8 +199,8 @@
           <div
             class="mb1"
           >
-            <dt class="t12 uc w700 mb05 tamarelo">
-              Comentário
+            <dt class="t12 uc w700 mb05 tc300">
+              Comentários
             </dt>
             <dd
               class="t13 contentStyle"
