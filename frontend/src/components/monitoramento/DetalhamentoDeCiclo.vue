@@ -126,16 +126,35 @@
         <table
           v-if="Array.isArray(analiseDocumentos)
             && analiseDocumentos?.length"
-          class="tablemain mb1"
+          class="tablemain mb1 mt1"
         >
-          <caption>Documentos</caption>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <thead>
+            <tr>
+              <th>Documentos</th>
+              <th />
+              <th />
+              <th />
+              <th />
+            </tr>
+          </thead>
           <tbody>
             <tr
               v-for="doc in analiseDocumentos"
               :key="doc.id"
             >
-              <td>ícone</td>
-              <th>{{ doc.arquivo?.nome_original }}</th>
+              <td class="flex center">
+                <svg
+                  width="20"
+                  height="20"
+                  class="mr1"
+                ><use xlink:href="#i_doc" /></svg>
+                {{ doc?.arquivo?.nome_original }}
+              </td>
               <td>{{ doc.arquivo?.descricao }}</td>
               <td>{{ doc.criador?.nome_exibicao }}</td>
               <td>{{ dateToShortDate(doc.criado_em) }}</td>
@@ -145,7 +164,11 @@
                   :to="baseUrl + '/download/' + doc?.arquivo?.download_token"
                   download
                 >
-                  baixar
+                  <svg
+                    width="20"
+                    height="20"
+                    class="mr1"
+                  ><use xlink:href="#i_download" /></svg>
                 </SmaeLink>
               </td>
             </tr>
