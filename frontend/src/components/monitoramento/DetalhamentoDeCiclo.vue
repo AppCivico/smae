@@ -13,7 +13,12 @@
       <div
         class="mb2"
       >
-        <h3>Análise de risco</h3>
+        <div class="flex g2 center mt3 mb2">
+          <h3 class="w700 mb0">
+            Análise de risco
+          </h3>
+          <hr class="f1">
+        </div>
 
         <LoadingComponent
           v-if="chamadasPendentes.risco"
@@ -30,8 +35,9 @@
           <div
             class="mb1"
           >
-            <dt class="t12 uc w700 mb05 tamarelo">
+            <dt class="t12 uc w700 mb05 tc300">
               Detalhamento
+              <hr class="f1 mt025">
             </dt>
             <dd
               class="t13 contentStyle"
@@ -41,8 +47,9 @@
           <div
             class="mb1"
           >
-            <dt class="t12 uc w700 mb05 tamarelo">
+            <dt class="t12 uc w700 mb05 tc300">
               Ponto de ação
+              <hr class="f1 mt025">
             </dt>
             <dd
               class="t13 contentStyle"
