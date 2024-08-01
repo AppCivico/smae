@@ -32,8 +32,8 @@ interface Estado {
 }
 
 type MãeComId = {
-  projetoId?: Number;
-  obraId?: Number;
+  projetoId?: number;
+  obraId?: number;
 } | undefined;
 
 function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
@@ -155,7 +155,7 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       }
     },
 
-    async salvarItem(params:any = {}, id = 0, mãeComId: MãeComId = undefined): Promise<boolean> {
+    async salvarItem(params: any = {}, id = 0, mãeComId: MãeComId = undefined): Promise<boolean> {
       console.log(mãeComId);
       this.chamadasPendentes.emFoco = true;
 
@@ -178,7 +178,7 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       }
     },
 
-    async salvarAditivo(carga:any = {}, idDoAditivo = 0, idDoContrato = 0): Promise<boolean> {
+    async salvarAditivo(carga: any = {}, idDoAditivo = 0, idDoContrato = 0): Promise<boolean> {
       this.chamadasPendentes.aditivo = true;
       this.erro = null;
 
@@ -197,14 +197,14 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
         return false;
       }
     },
-    async excluirAditivo( idDoAditivo: number , idDoContrato = 0): Promise<boolean> {
+    async excluirAditivo(idDoAditivo: number, idDoContrato = 0): Promise<boolean> {
       this.chamadasPendentes.aditivo = true;
 
       try {
         await this.requestS.delete(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`);
         this.chamadasPendentes.aditivo = false;
         return true;
-      }catch (erro) {
+      } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.aditivo = false;
         return false;
@@ -227,7 +227,7 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
     }),
-    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce((acc, cur:ContratoAditivoItemDto) => {
+    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce((acc, cur: ContratoAditivoItemDto) => {
       acc[cur.id] = cur;
       return acc;
     }, {}),
