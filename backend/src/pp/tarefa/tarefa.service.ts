@@ -957,10 +957,7 @@ export class TarefaService {
             const now = new Date(Date.now());
 
             await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
-            console.log('\n=================================\n');
-            console.log(tarefaCronoId);
-            console.log(id);
-            console.log('\n=================================\n');
+
             const tarefa = await prismaTx.tarefa.findFirst({
                 where: {
                     removido_em: null,
