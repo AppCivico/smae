@@ -29,6 +29,7 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
+  segmentoIdentificador: string;
 }
 
 type MãeComId = {
@@ -50,7 +51,7 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
   }
 }
 
-export const useContratosStore = defineStore('contratos', {
+export const useContratosStore = (segmentoIdentificador: string) => defineStore(segmentoIdentificador ? `${segmentoIdentificador}.contratos` : 'contratos', {
   state: (): Estado => ({
     lista: [],
     listaDeDependencias: {
@@ -69,6 +70,7 @@ export const useContratosStore = defineStore('contratos', {
       aditivo: false,
     },
     erro: null,
+    segmentoIdentificador,
   }),
   actions: {
     criaTodosOsStatusDeContratoDisponiveis() {
@@ -108,7 +110,7 @@ export const useContratosStore = defineStore('contratos', {
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
-      console.log(mãeComId);
+      console.log('segmentoIdentificador', this.segmentoIdentificador);
       this.chamadasPendentes.emFoco = true;
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
