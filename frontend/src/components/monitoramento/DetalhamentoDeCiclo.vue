@@ -91,18 +91,20 @@
           <div
             class="mb1"
           >
-            <dt class="t12 uc w700 mb05 tamarelo">
+            <dt class="t12 uc w700 mb05 tc300">
               Informações complementares
+              <hr class="f1 mt025">
             </dt>
             <dd
-              class="t13 contentStyle"
+              class="t13 contentStyle mt1"
               v-html="analise?.informacoes_complementares || '-'"
             />
           </div>
         </dl>
+        <hr class="f1">
         <footer
           v-if="analise?.criador?.nome_exibicao || analise?.criado_em"
-          class="tc600"
+          class="tc600 mt1"
         >
           <p>
             Analisado
@@ -113,7 +115,9 @@
               em <time :datetime="analise.criado_em">{{ dateToShortDate(analise.criado_em) }}</time>.
             </template>
           </p>
+          <hr class="f1">
         </footer>
+
         <table
           v-if="Array.isArray(analiseDocumentos)
             && analiseDocumentos?.length"
