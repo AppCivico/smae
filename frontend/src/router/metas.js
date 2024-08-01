@@ -1160,6 +1160,10 @@ export default {
       props: true,
       meta: {
         rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+        limitarÀsPermissões: [
+          'PDM.admin_cp',
+          'PDM.tecnico_cp',
+        ],
       },
       children: [
         {
