@@ -316,6 +316,7 @@ watch(props, (novosValores) => {
               <SmaeLink
                 :title="item.título?.length > 36 ? item.título : undefined"
                 :to="item.rota"
+                exibir-desabilitado
               >
                 {{ item.prefixo }} - {{ item.código }} - {{ truncate(item.título, 36) }}
               </SmaeLink>
