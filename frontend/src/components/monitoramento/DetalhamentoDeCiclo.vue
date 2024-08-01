@@ -76,7 +76,12 @@
       <div
         class="mb2"
       >
-        <h3>Informações complementares</h3>
+        <div class="flex g2 center mt3 mb2">
+          <h3 class="w700 mb0">
+            Qualificação
+          </h3>
+          <hr class="f1">
+        </div>
 
         <LoadingComponent
           v-if="chamadasPendentes.analise"
