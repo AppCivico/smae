@@ -1571,6 +1571,7 @@ export class DistribuicaoRecursoService {
 
         const tarefas = await prismaTxn.tarefa.findMany({
             where: {
+                removido_em: null,
                 tarefa_cronograma: {
                     transferencia_id: distribuicaoRecurso.transferencia_id,
                 },
