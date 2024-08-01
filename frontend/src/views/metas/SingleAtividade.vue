@@ -203,16 +203,56 @@ iniciar();
 
         <table class="tablemain">
           <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
           <thead>
+            <th>
+              Código da obra
+            </th>
             <th>Nome</th>
+            <th>
+              Tipo obra/intervenção
+            </th>
+            <th>
+              Subprefeitura
+            </th>
+            <th>
+              Equipamento
+            </th>
+            <th>
+              Status
+            </th>
+            <th>
+              Percentual concluído
+            </th>
           </thead>
           <tbody>
             <tr
               v-for="(obra, index) in relacionadosAtividade.obras"
               :key="index"
             >
+              <td>{{ obra.codigo }}</td>
               <td>
                 {{ obra.nome }}
+              </td>
+              <td>
+                {{ obra.tipo_intervencao?.nome || '-' }}
+              </td>
+              <td>
+                {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
+              </td>
+              <td>
+                {{ obra.equipamento?.nome || '-' }}
+              </td>
+              <td>
+                {{ obra.status || '-' }}
+              </td>
+              <td>
+                {{ obra.percentual_concluido || '-' }}
               </td>
             </tr>
           </tbody>
