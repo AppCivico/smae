@@ -920,7 +920,10 @@ export class OrcamentoRealizadoService {
         pdm_id: number
     ): Promise<OrcamentoRealizado[]> {
         let filterIdIn: undefined | number[] = undefined;
-        if (!ehCompartilhado && !user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
+        if (
+            !ehCompartilhado &&
+            !user.hasSomeRoles(['CadastroMeta.administrador_orcamento', 'CadastroMetaPS.administrador_orcamento'])
+        )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
         // quando é compartilhado, queremos que o campo seja sempre filtrado para retornar o null, se não for enviado o vizinho
@@ -1309,7 +1312,10 @@ export class OrcamentoRealizadoService {
     }
 
     async patchOrcamentoConcluidoMetaOrgao(dto: PatchOrcamentoRealizadoConcluidoComOrgaoDto, user: PessoaFromJwt) {
-        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        const isAdmin = user.hasSomeRoles([
+            'CadastroMeta.administrador_orcamento',
+            'CadastroMetaPS.administrador_orcamento',
+        ]);
 
         if (!isAdmin) {
             await user.verificaPermissaoOrcamentoNaMetaRespNaCp(dto.meta_id, this.prisma);
