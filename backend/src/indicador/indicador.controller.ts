@@ -76,7 +76,7 @@ export class IndicadorController {
     @ApiTags('Indicador')
     @Get('indicador/:id/serie')
     @ApiBearerAuth('access-token')
-    @Roles(MetaController.WritePerm)
+    @Roles(MetaController.ReadPerm)
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
         description:
