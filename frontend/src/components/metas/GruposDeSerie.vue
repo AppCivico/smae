@@ -81,6 +81,10 @@ function handleClick(obj) {
 
       <table class="tablemain">
         <col>
+        <col>
+        <col>
+        <col>
+        <col>
         <thead>
           <tr>
             <th> Mês/ano </th>
