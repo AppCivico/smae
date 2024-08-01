@@ -1620,6 +1620,7 @@ enum PerfilResponsavelVariavel {
     Medicao
     Validacao
     Liberacao
+    // TODO: mover admin e tecnico na meta, para cá, junto com o ponto focal, rename para equipe
 }
 
 model GrupoResponsavelVariavel {
