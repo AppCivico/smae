@@ -29,7 +29,6 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
-  segmentoIdentificador: string;
 }
 
 type MãeComId = {
@@ -51,7 +50,7 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
   }
 }
 
-export const useContratosStore = (segmentoIdentificador: string) => defineStore(segmentoIdentificador ? `${segmentoIdentificador}.contratos` : 'contratos', {
+export const useContratosStore = defineStore('contratos', {
   state: (): Estado => ({
     lista: [],
     listaDeDependencias: {
@@ -70,7 +69,6 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       aditivo: false,
     },
     erro: null,
-    segmentoIdentificador,
   }),
   actions: {
     criaTodosOsStatusDeContratoDisponiveis() {
