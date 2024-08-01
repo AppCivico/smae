@@ -45,7 +45,7 @@ watch(() => activePdm.value.id, (novoValor) => {
 </script>
 <template>
   <header class="flex flexwrap g1">
-    <TítuloDePágina :ícone="activePdm?.logo" />
+    <TítuloDePágina />
     <hr class="f1">
   </header>
 
