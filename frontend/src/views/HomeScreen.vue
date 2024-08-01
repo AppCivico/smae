@@ -1,5 +1,6 @@
 <script setup>
 import módulos from '@/consts/modulosDoSistema';
+import requestS from '@/helpers/requestS.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -15,6 +16,8 @@ import { useRouter } from 'vue-router';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { usePsMetasStore } from '@/stores/metasPs.store.ts';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 const authStore = useAuthStore();
 const router = useRouter();
 
@@ -24,6 +27,8 @@ const erro = ref(null);
 const {
   sistemaEscolhido, dadosDoSistemaEscolhido,
 } = storeToRefs(authStore);
+
+const módulosDisponíveis = ref([]);
 
 // PRA-FAZER: mover para o gerenciador de estado `auth.store`
 async function escolher(opção) {
@@ -72,13 +77,11 @@ async function escolher(opção) {
     });
 }
 
-const módulosDisponíveis = ref([]);
-
 async function iniciar() {
   emEspera.value = true;
   erro.value = null;
 
-  await authStore.getDados({ 'smae-sistemas': Object.keys(módulos).join(',') })
+  requestS.get(`${baseUrl}/minha-conta`, { 'smae-sistemas': Object.keys(módulos).join(',') })
     .then((resposta) => {
       const { sessao: { sistemas } } = resposta;
 
