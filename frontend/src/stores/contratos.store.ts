@@ -108,7 +108,6 @@ export const useContratosStore = defineStore('contratos', {
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
-      console.log('segmentoIdentificador', this.segmentoIdentificador);
       this.chamadasPendentes.emFoco = true;
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
