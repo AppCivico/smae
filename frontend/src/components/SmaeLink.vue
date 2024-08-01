@@ -83,6 +83,7 @@ const propriedadesManipuladas = computed(() => {
     </a>
     <span
       v-else-if="$props.exibirDesabilitado"
+      v-bind="$attrs"
     >
       <slot />
     </span>
