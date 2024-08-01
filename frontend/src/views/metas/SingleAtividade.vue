@@ -177,8 +177,14 @@ iniciar();
         </h2>
         <table class="tablemain">
           <col>
+          <col>
+          <col>
+          <col>
           <thead>
-            <th>Nome</th>
+            <th>Portfólio </th>
+            <th>Código</th>
+            <th> Nome </th>
+            <th>Etapa</th>
           </thead>
           <tbody>
             <tr
@@ -186,7 +192,16 @@ iniciar();
               :key="index"
             >
               <td>
-                {{ projeto.nome }}
+                {{ projeto.portfolio?.descricao || '-' }}
+              </td>
+              <td>
+                {{ projeto.codigo || '-' }}
+              </td>
+              <td>
+                {{ projeto.nome || '-' }}
+              </td>
+              <td>
+                {{ projeto.projeto_etapa?.descricao || '-' }}
               </td>
             </tr>
           </tbody>
