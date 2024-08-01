@@ -11,7 +11,7 @@ import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const rota = useRoute();
+const rotaCorrente = useRoute();
 
 const props = defineProps({
   pdm: {
@@ -152,7 +152,7 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
   try {
     let caminhoNaApi = '';
 
-    switch (rota.meta.entidadeMãe) {
+    switch (rotaCorrente.meta.entidadeMãe) {
       case 'pdm':
         caminhoNaApi = `${baseUrl}/orcamento-realizado/compartilhados-no-pdm`;
         break;
