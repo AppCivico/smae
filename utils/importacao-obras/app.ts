@@ -667,8 +667,8 @@ async function validaOrgaos() {
     const orgaosNoDb = await orgaoApi.orgaoControllerFindAll();
     for (const contentRaw in orgaos) {
         let content = contentRaw;
-        if (content.includes('-')) {
-            content = content.split('-')[0].trim();
+        if (content.includes(' - ')) {
+            content = content.split(' - ')[0].trim();
         }
         const matchByCodigo = orgaosNoDb.data.linhas.find((orgao) => matchStringFuzzy(orgao.sigla, content));
         if (matchByCodigo) {
@@ -711,14 +711,15 @@ async function buscaPessoas() {
 function validaPessoas(pessoasCollabProjeto: Record<string, number>, pessoasGestorDeProjeto: Record<string, number>) {
     for (const email in rel_responsaveis_no_orgao_gestor_id) {
         const count = rel_responsaveis_no_orgao_gestor_id[email];
-        if (!pessoasCollabProjeto[email]) {
+        if (!pessoasGestorDeProjeto[email]) {
             runImport = false;
-            console.log('Faltando rel_responsaveis_no_orgao_gestor_id', email, 'necessário em', count, 'registros');
+            console.log('Faltando pessoasGestorDeProjeto', email, 'necessário em', count, 'registros');
         }
     }
+
     for (const email in rel_responsavel_id) {
         const count = rel_responsavel_id[email];
-        if (!pessoasGestorDeProjeto[email]) {
+        if (!pessoasCollabProjeto[email]) {
             runImport = false;
             console.log('Faltando rel_responsavel_id', email, 'necessário em', count, 'registros');
         }
