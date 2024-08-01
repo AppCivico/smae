@@ -6,6 +6,7 @@ import {
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { useCounterStore } from '@/stores/counter.store';
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -30,6 +31,10 @@ if (atividade_id && singleAtividade.value.id != atividade_id) {
 }
 
 const groupBy = localStorage.getItem('groupBy') ?? 'todas';
+
+const b = useCounterStore('b');
+
+const { count: countB } = storeToRefs(b);
 </script>
 <template>
   <nav class="migalhas-de-pão migalhas-de-pão--metas">
@@ -107,4 +112,16 @@ const groupBy = localStorage.getItem('groupBy') ?? 'todas';
       </li>
     </ul>
   </nav>
+
+  <div class="flex g2">
+    <button
+      type="button"
+      class="f1"
+      @click="b.increment()"
+    >
+      Increment B
+    </button>
+  </div>
+
+  <pre>countB@MigalhasDeMetas.vue: {{ countB }}</pre>
 </template>

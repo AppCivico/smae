@@ -8,6 +8,7 @@ import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
+import { useCounterStore } from '@/stores/counter.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
@@ -59,6 +60,12 @@ async function iniciar() {
   });
 }
 
+const a = useCounterStore('a');
+const { count: countA } = storeToRefs(a);
+
+const counterStore = useCounterStore();
+const { count: defaultCounter } = storeToRefs(counterStore);
+
 iniciar();
 </script>
 <template>
@@ -92,6 +99,26 @@ iniciar();
         Editar
       </SmaeLink>
     </div>
+
+    <div class="flex g2">
+      <button
+        type="button"
+        class="f1"
+        @click="counterStore.increment()"
+      >
+        Increment defaultCounter
+      </button>
+      <button
+        type="button"
+        class="f1"
+        @click="a.increment()"
+      >
+        Increment A
+      </button>
+    </div>
+
+    <pre>defaultCountB@singleMeta.vue: {{ defaultCounter }}</pre>
+    <pre>countA@singleMeta.vue: {{ countA }}</pre>
 
     <div class="boards">
       <template v-if="singleMeta.id">
