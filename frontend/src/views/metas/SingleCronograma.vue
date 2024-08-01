@@ -12,7 +12,7 @@ import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
 import {
-  computed, onMounted, onUpdated, reactive, ref,
+  computed, watch, reactive, ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
@@ -130,8 +130,8 @@ function start() {
   if (props.group == 'subfase') editModalStore.modal(AddEditFase, props);
   if (props.group == 'monitorar') editModalStore.modal(AddEditMonitorar, props);
 }
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
+
+watch(() => props.group, () => { start(); }, { immediate: true });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
