@@ -89,7 +89,7 @@ export class IndicadorVariavelPDMController {
     @ApiBearerAuth('access-token')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    @Roles(MetaController.WritePerm)
+    @Roles([...MetaController.WritePerm, 'PDM.admin_cp', 'PDM.tecnico_cp'])
     async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
         await this.variavelService.batchUpsertSerie(this.tipo, series.valores, user);
 
@@ -110,13 +110,13 @@ export class IndicadorVariavelPDMController {
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @Get('indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')
-    @Roles(MetaController.WritePerm)
+    @Roles(MetaController.ReadPerm)
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
         @Query() filters: FilterSVNPeriodoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id);
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
     }
 }
 
@@ -229,6 +229,6 @@ export class VariavelGlobalController {
         @Query() filters: FilterSVNPeriodoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id);
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
     }
 }
