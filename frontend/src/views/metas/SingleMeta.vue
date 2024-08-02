@@ -363,9 +363,9 @@ iniciar();
               <col>
               <col>
               <thead>
-                <th>Nome</th>
-                <th>Portfólio</th>
+                <th>Portfólio </th>
                 <th>Código</th>
+                <th> Nome </th>
                 <th>Etapa</th>
               </thead>
               <tbody>
@@ -374,13 +374,13 @@ iniciar();
                   :key="index"
                 >
                   <td>
-                    {{ projeto.nome }}
-                  </td>
-                  <td>
-                    {{ projeto.portfolio.descricao }}
+                    {{ projeto.portfolio?.descricao || '-' }}
                   </td>
                   <td>
                     {{ projeto.codigo || '-' }}
+                  </td>
+                  <td>
+                    {{ projeto.nome || '-' }}
                   </td>
                   <td>
                     {{ projeto.projeto_etapa?.descricao || '-' }}
