@@ -427,6 +427,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
     Config: [
+        ['SMAE.sysadmin', 'SMAE.sysadmin'],
         ['SMAE.login_suspenso', 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável'],
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
