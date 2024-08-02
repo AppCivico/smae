@@ -100,10 +100,10 @@ export class TransferenciasService implements ReportableService {
 
     async asJSON(dto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
         const whereCond = await this.buildFilteredWhereStr(dto);
-        console.log('\n===================================\n');
-        console.log(whereCond);
-        console.log(dto);
-        console.log('\n===================================\n');
+        console.debug('\n===================================\n');
+        console.debug(whereCond);
+        console.debug(dto);
+        console.debug('\n===================================\n');
         const out_transferencias: RelTransferenciasDto[] = [];
 
         const sql = `
