@@ -1703,7 +1703,7 @@ export class MetasService {
         fastlane = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
-        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane, config);
+         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane, config);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente

@@ -1050,27 +1050,26 @@ export class MetaService {
         const projetos = await this.prisma.projeto.findMany({
             where: {
                 removido_em: null,
-                OR: [
-                    {
-                        AND: [
-                            {
-                                meta_id: dto.meta_id,
-                                iniciativa_id: null,
-                                atividade_id: null,
-                            },
-                        ],
-                    },
-                    {
-                        AND: [
-                            {
-                                iniciativa_id: dto.iniciativa_id,
-                                atividade_id: null,
-                            },
-                        ],
-                    },
-                    {
-                        atividade_id: dto.atividade_id,
-                    },
+
+                AND: [
+                    dto.meta_id
+                        ? {
+                              meta_id: dto.meta_id,
+                              iniciativa_id: null,
+                              atividade_id: null,
+                          }
+                        : {},
+                    dto.iniciativa_id
+                        ? {
+                              iniciativa_id: dto.iniciativa_id,
+                              atividade_id: null,
+                          }
+                        : {},
+                    dto.atividade_id
+                        ? {
+                              atividade_id: dto.atividade_id,
+                          }
+                        : {},
                 ],
             },
             select: {
