@@ -282,6 +282,7 @@ iniciar();
           <h2 class="m2">
             Projetos associados
           </h2>
+
           <table class="tablemain">
             <col>
             <col>
@@ -299,7 +300,7 @@ iniciar();
                 :key="index"
               >
                 <td>
-                  {{ projeto.portfolio?.descricao || '-' }}
+                  {{ projeto.portfolio?.titulo || '-' }}
                 </td>
                 <td>
                   {{ projeto.codigo || '-' }}
