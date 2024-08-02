@@ -514,7 +514,7 @@ export class TransferenciasService implements ReportableService {
             });
         }
 
-        if (dados.linhas_cronograma.length) {
+        if (dados.linhas_cronograma?.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
