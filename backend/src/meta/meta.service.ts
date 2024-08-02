@@ -1052,13 +1052,21 @@ export class MetaService {
                 removido_em: null,
                 OR: [
                     {
-                        meta_id: dto.meta_id,
-                        iniciativa_id: null,
-                        atividade_id: null,
+                        AND: [
+                            {
+                                meta_id: dto.meta_id,
+                                iniciativa_id: null,
+                                atividade_id: null,
+                            },
+                        ],
                     },
                     {
-                        iniciativa_id: dto.iniciativa_id,
-                        atividade_id: null,
+                        AND: [
+                            {
+                                iniciativa_id: dto.iniciativa_id,
+                                atividade_id: null,
+                            },
+                        ],
                     },
                     {
                         atividade_id: dto.atividade_id,
