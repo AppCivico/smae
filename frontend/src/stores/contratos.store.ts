@@ -28,7 +28,6 @@ interface Estado {
   };
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
-  segmentoIdentificador: string;
 }
 
 type MãeComId = {
