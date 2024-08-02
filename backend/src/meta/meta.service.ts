@@ -1053,9 +1053,12 @@ export class MetaService {
                 OR: [
                     {
                         meta_id: dto.meta_id,
+                        iniciativa_id: null,
+                        atividade_id: null,
                     },
                     {
                         iniciativa_id: dto.iniciativa_id,
+                        atividade_id: null,
                     },
                     {
                         atividade_id: dto.atividade_id,
