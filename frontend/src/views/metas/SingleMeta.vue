@@ -409,10 +409,10 @@ iniciar();
               <col>
               <col>
               <thead>
-                <th>Nome</th>
                 <th>
-                  Código
+                  Código da obra
                 </th>
+                <th>Nome</th>
                 <th>
                   Tipo obra/intervenção
                 </th>
@@ -434,17 +434,15 @@ iniciar();
                   v-for="(obra, index) in relacionadosMeta.obras"
                   :key="index"
                 >
+                  <td>{{ obra.codigo }}</td>
                   <td>
                     {{ obra.nome }}
-                  </td>
-                  <td>
-                    {{ obra.codigo }}
                   </td>
                   <td>
                     {{ obra.tipo_intervencao?.nome || '-' }}
                   </td>
                   <td>
-                    {{ obra.subprefeituras.map(x => x.descricao).join(', ') || '-' }}
+                    {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
                   </td>
                   <td>
                     {{ obra.equipamento?.nome || '-' }}
