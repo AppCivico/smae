@@ -100,10 +100,6 @@ export class TransferenciasService implements ReportableService {
 
     async asJSON(dto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
         const whereCond = await this.buildFilteredWhereStr(dto);
-        console.debug('\n===================================\n');
-        console.debug(whereCond);
-        console.debug(dto);
-        console.debug('\n===================================\n');
         const out_transferencias: RelTransferenciasDto[] = [];
 
         const sql = `
@@ -229,8 +225,7 @@ export class TransferenciasService implements ReportableService {
         const queryParams: any[] = [];
 
         let paramIndex = 1;
-        console.log('\n=========================================\n');
-        console.log(filters);
+
         if (filters.esfera) {
             whereConditions.push(`t.esfera::TEXT = $${paramIndex}`);
             queryParams.push(filters.esfera);
@@ -283,9 +278,7 @@ export class TransferenciasService implements ReportableService {
         whereConditions.push(`t.removido_em IS NULL`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
-        console.log(whereString);
-        console.log(queryParams);
-        console.log('\n=========================================\n');
+
         return { whereString, queryParams };
     }
 
