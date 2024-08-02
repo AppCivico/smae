@@ -12,18 +12,13 @@ export class VariavelCalculadaService {
         this.enabled = CrontabIsEnabled('variavel_calculada');
     }
 
-    @Interval(1000)
+    @Interval(10000)
     async variavelCalcCrontab() {
         if (!this.enabled) return;
-        const botUser = await this.prisma.pessoa.findUnique({
-            where: { id: -1 },
-            select: { id: true },
-        });
-        if (!botUser) return;
 
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         const rows = await this.prisma.formulaComposta.findMany({
             where: {
-                //id: 189,
                 removido_em: null,
                 variavel_calc_id: null,
                 criar_variavel: true,
@@ -39,6 +34,7 @@ export class VariavelCalculadaService {
                 },
             },
         });
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
 
         for (const fc of rows) {
             const logger = LoggerWithLog('VariavelCalculadaService');
@@ -79,6 +75,12 @@ export class VariavelCalculadaService {
                 where: { codigo, removido_em: null, tipo: 'Calculada' },
             });
             if (exists) erro = `Variável com código ${codigo} já existente`;
+
+            const botUser = await this.prisma.pessoa.findUnique({
+                where: { id: -1 },
+                select: { id: true },
+            });
+            if (!botUser) return;
 
             if (erro) {
                 await this.prisma.formulaComposta.update({
