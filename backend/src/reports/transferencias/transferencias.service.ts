@@ -232,13 +232,13 @@ export class TransferenciasService implements ReportableService {
         console.log('\n=========================================\n');
         console.log(filters);
         if (filters.esfera) {
-            whereConditions.push(`t.esfera = $${paramIndex}`);
+            whereConditions.push(`t.esfera::TEXT = $${paramIndex}`);
             queryParams.push(filters.esfera);
             paramIndex++;
         }
 
         if (filters.interface) {
-            whereConditions.push(`t.interface = $${paramIndex}`);
+            whereConditions.push(`t.interface::TEXT = $${paramIndex}`);
             queryParams.push(filters.interface);
             paramIndex++;
         }
