@@ -5,6 +5,7 @@ import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
+import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 
 export class IdDesc {
     id: number;
@@ -74,7 +75,7 @@ export class IdObrasDto {
     percentual_concluido: number | null;
 }
 export class IdProjetoDto extends IdCodNomeDto {
-    portfolio: IdDesc;
+    portfolio: IdTituloDto;
     projeto_etapa: IdDesc | null;
 }
 

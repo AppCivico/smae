@@ -250,7 +250,9 @@ export class MetaService {
 
         if (tipo == 'PDM') {
             if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
-                this.logger.verbose('Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.');
+                this.logger.verbose(
+                    'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
+                );
                 return permissionsSet;
             }
             const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
@@ -1065,7 +1067,7 @@ export class MetaService {
                 tipo: true,
                 codigo: true,
                 nome: true,
-                portfolio: { select: { id: true, descricao: true } },
+                portfolio: { select: { id: true, titulo: true } },
                 projeto_etapa: {
                     select: { id: true, descricao: true },
                 },
@@ -1123,7 +1125,7 @@ export class MetaService {
                         codigo: r.codigo,
                         id: r.id,
                         nome: r.nome,
-                        portfolio: { id: r.portfolio.id, descricao: r.portfolio.descricao },
+                        portfolio: { id: r.portfolio.id, titulo: r.portfolio.titulo },
                         projeto_etapa: r.projeto_etapa
                             ? { id: r.projeto_etapa.id, descricao: r.projeto_etapa.descricao }
                             : null,
