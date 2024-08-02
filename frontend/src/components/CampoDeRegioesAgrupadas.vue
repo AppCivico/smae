@@ -97,7 +97,7 @@ async function montar() {
   }
 }
 
-watch(() => props.valoresIniciais, () => {
+watch(() => [props.valoresIniciais, props.nível], (novoValor) => {
   montar();
 }, { immediate: true });
 
