@@ -192,7 +192,7 @@ iniciar();
               :key="index"
             >
               <td>
-                {{ projeto.portfolio?.descricao || '-' }}
+                {{ projeto.portfolio?.titulo || '-' }}
               </td>
               <td>
                 {{ projeto.codigo || '-' }}
