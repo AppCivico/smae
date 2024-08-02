@@ -194,7 +194,7 @@ async function main() {
     await validaGrupoTematico();
     await validaMetas();
     await validaIniciativas();
-    //console.log(orgao2id);
+    console.log(orgao2id);
 
     if (!runImport) {
         console.log('Importação não pode ser realizada');
@@ -324,7 +324,15 @@ async function main() {
                 row.projeto_id = projetoId.data.id;
             } catch (error) {
                 console.log(`Erro ao criar projeto ${row.projeto_nome}`);
-                console.error((error as any).response?.data, info);
+
+                const errAsObj = (error as any).response?.data;
+                console.error(errAsObj, info);
+
+                const asJson = JSON.stringify({ response: errAsObj, request: info });
+
+                await db.run(`
+                    update importacao set err_msg = '${asJson}' where internal_id = ${row.internal_id}
+                `);
             }
         }
         if (!row.projeto_id) continue;
