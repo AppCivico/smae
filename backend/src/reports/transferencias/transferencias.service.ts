@@ -137,7 +137,7 @@ export class TransferenciasService implements ReportableService {
                 t.secretaria_concedente_str,
                 t.interface,
                 t.esfera,
-                t.cargo,
+                tp.cargo,
                 pa.id AS partido_id,
                 pa.sigla AS partido_sigla,
                 pa.nome AS partido_nome,
@@ -172,7 +172,7 @@ export class TransferenciasService implements ReportableService {
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
             LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
             LEFT JOIN parlamentar p ON p.id = tp.parlamentar_id AND p.removido_em IS NULL
-            LEFT JOIN partido pa ON pa.id = t.partido_id
+            LEFT JOIN partido pa ON pa.id = tp.partido_id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
             LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
@@ -497,7 +497,7 @@ export class TransferenciasService implements ReportableService {
             ];
         }
 
-        if (dados.linhas.length) {
+        if (dados.linhas?.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
