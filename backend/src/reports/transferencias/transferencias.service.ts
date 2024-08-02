@@ -379,7 +379,8 @@ export class TransferenciasService implements ReportableService {
     }
 
     async toFileOutput(myInput: any, params: any): Promise<FileOutput[]> {
-        const dados = myInput as TransferenciasRelatorioDto;
+        //const dados = myInput as TransferenciasRelatorioDto;
+        const dados = await this.asJSON(params);
 
         const out: FileOutput[] = [];
 
