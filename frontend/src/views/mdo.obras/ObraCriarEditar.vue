@@ -438,7 +438,6 @@ watch(itemParaEdição, (novoValor) => {
           :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
           :class="{ error: errors.portfolio_id }"
           :disabled="!!portfolioId || !!obraId"
-          @change="() => setFieldValue('regiao_id', 0)"
         >
           <option :value="0">
             Selecionar
