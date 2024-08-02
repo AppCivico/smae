@@ -595,7 +595,7 @@ export class MetaService {
                 tags: tags,
                 cronograma: metaCronograma,
                 geolocalizacao: geolocalizacao.get(dbMeta.id) || [],
-                pode_editar: true, // TODO
+                pode_editar: false, // TODO
             });
         }
 
