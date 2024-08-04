@@ -150,7 +150,13 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Get('variaveis/analise-qualitativa')
-    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
+    @Roles([
+        'PDM.admin_cp',
+        'PDM.tecnico_cp',
+        'PDM.ponto_focal',
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMeta.administrador_no_pdm_admin_cp',
+    ])
     @ApiExtraModels(MfListVariavelAnaliseQualitativaDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
@@ -160,10 +166,16 @@ export class MetasController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<MfListVariavelAnaliseQualitativaDto & RequestInfoDto> {
         const start = Date.now();
-        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
+            const config = await this.mfService.pessoaAcessoPdm(user);
+            if (!config.metas_variaveis.includes(dto.variavel_id)) {
+                throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+            }
+        }
 
         return {
-            ...(await this.metasService.getMetaVariavelAnaliseQualitativa(dto, config, user)),
+            ...(await this.metasService.getMetaVariavelAnaliseQualitativa(dto, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -171,7 +183,13 @@ export class MetasController {
     @ApiBearerAuth('access-token')
     @Post('variaveis/busca-analise-qualitativa')
     @Roles(
-        ['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'],
+        [
+            'PDM.admin_cp',
+            'PDM.tecnico_cp',
+            'PDM.ponto_focal',
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMeta.administrador_no_pdm_admin_cp',
+        ],
         'Retorna informações das variaveis, última análise qualitativa e arquivos em lote, não retorna série valores'
     )
     @ApiExtraModels(
@@ -187,10 +205,18 @@ export class MetasController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto & RequestInfoDto> {
         const start = Date.now();
-        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
+            const config = await this.mfService.pessoaAcessoPdm(user);
+            for (const item of dto.linhas) {
+                if (!config.metas_variaveis.includes(item.variavel_id)) {
+                    throw new HttpException(`ID da meta ${item.variavel_id} não faz parte do seu perfil`, 404);
+                }
+            }
+        }
 
         return {
-            ...(await this.metasService.getMetaVariavelAnaliseQualitativaEmLote(dto, config, user)),
+            ...(await this.metasService.getMetaVariavelAnaliseQualitativaEmLote(dto, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }

@@ -188,7 +188,6 @@ export class AuxiliarService {
                             variavel_id: envio.variavel_id,
                             apenas_ultima_revisao: true,
                         },
-                        config,
                         user,
                         true // não precisamos do arquivos, nem de nada, só os valores da série
                     )
