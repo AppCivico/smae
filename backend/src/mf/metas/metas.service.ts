@@ -1698,12 +1698,11 @@ export class MetasService {
 
     async getMetaVariavelAnaliseQualitativa(
         dto: FilterVariavelAnaliseQualitativaDto,
-        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt,
         fastlane = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
-         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane, config);
+         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
@@ -1750,13 +1749,12 @@ export class MetasService {
 
     async getMetaVariavelAnaliseQualitativaEmLote(
         dto: FilterVariavelAnaliseQualitativaEmLoteDto,
-        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto> {
         const promises: Promise<MfListVariavelAnaliseQualitativaReducedDto>[] = [];
 
         for (const linha of dto.linhas) {
-            promises.push(this.processLinha(linha, true, false, config));
+            promises.push(this.processLinha(linha, true, false));
         }
 
         const ret = await Promise.all(promises);
@@ -1767,11 +1765,9 @@ export class MetasService {
     private async processLinha(
         linha: FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
         apenas_ultima_revisao: boolean,
-        fastlane: boolean,
-        config: MfPessoaAcessoPdm
+        fastlane: boolean
     ): Promise<MfListVariavelAnaliseQualitativaReducedDto> {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
-        this.verificaPermissaoMeta(config, meta_id);
         const dateYMD = Date2YMD.toString(linha.data_valor);
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, linha.variavel_id, meta_id);
 
