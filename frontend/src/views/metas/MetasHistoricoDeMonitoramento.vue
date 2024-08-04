@@ -44,7 +44,7 @@ watch(() => activePdm.value.id, (novoValor) => {
 }, { immediate: true });
 </script>
 <template>
-  <header class="flex flexwrap g1">
+  <header class="flex  g1 center">
     <TítuloDePágina />
     <hr class="f1">
   </header>

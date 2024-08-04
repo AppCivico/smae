@@ -97,7 +97,7 @@ async function montar() {
   }
 }
 
-watch(() => props.valoresIniciais, () => {
+watch(() => [props.valoresIniciais, props.nível], (novoValor) => {
   montar();
 }, { immediate: true });
 
@@ -142,7 +142,7 @@ watch(() => listaDeRegiões.value, (novoValor) => {
               :value="região.id"
               :disabled="mapaDeAgrupadores[região.id] && lista[idx].agrupadora !== região.id"
             >
-              {{ região.id }} - {{ região.descricao }}
+              {{ região.descricao }}
             </option>
           </select>
         </div>

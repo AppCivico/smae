@@ -194,7 +194,7 @@ async function main() {
     await validaGrupoTematico();
     await validaMetas();
     await validaIniciativas();
-    //console.log(orgao2id);
+    console.log(orgao2id);
 
     if (!runImport) {
         console.log('Importação não pode ser realizada');
@@ -249,6 +249,15 @@ async function main() {
             origem_outro = row.origem_outro || '-';
         }
 
+        const regiao_id =
+            row.rel_subprefeitura_id == 'Várias'
+                ? undefined
+                : row.rel_subprefeitura_id
+                ? regiao2id[row.rel_subprefeitura_id]
+                : undefined;
+
+        const regiao = regiao_id ? regiao2id[regiao_id] : undefined;
+
         const info: CreateProjetoDto = {
             nome: row.projeto_nome,
             status: row.projeto_status as ProjetoStatus,
@@ -269,7 +278,10 @@ async function main() {
 
             previsao_custo: row.previsao_custo ? +row.previsao_custo.toPrecision(2) : null,
 
-            mdo_observacoes: row.mdo_observacoes ?? '',
+            mdo_observacoes:
+                row.rel_subprefeitura_id == 'Várias'
+                    ? `${row.mdo_observacoes ?? ''} - Várias regiões`
+                    : row.mdo_observacoes ?? '',
 
             orgao_gestor_id: orgao2id[row.rel_orgao_gestor_id],
             responsaveis_no_orgao_gestor: [pessoasCollabProjeto[row.rel_responsaveis_no_orgao_gestor_id]],
@@ -290,7 +302,7 @@ async function main() {
             mdo_n_familias_beneficiadas: row.mdo_n_familias_beneficiadas,
             mdo_n_unidades_habitacionais: row.mdo_n_unidades_habitacionais,
             programa_id: row.rel_programa_id ? programa2id[row.rel_programa_id] : undefined,
-            regiao_ids: row.rel_subprefeitura_id ? [regiao2id[row.rel_subprefeitura_id]] : undefined,
+            regiao_ids: regiao ? [regiao] : undefined,
             origem_tipo,
             origem_outro: origem_outro,
             iniciativa_id,
@@ -312,7 +324,15 @@ async function main() {
                 row.projeto_id = projetoId.data.id;
             } catch (error) {
                 console.log(`Erro ao criar projeto ${row.projeto_nome}`);
-                console.error((error as any).response?.data, info);
+
+                const errAsObj = (error as any).response?.data;
+                console.error(errAsObj, info);
+
+                const asJson = JSON.stringify({ response: errAsObj, request: info });
+
+                await db.run(`
+                    update importacao set err_msg = '${asJson}' where internal_id = ${row.internal_id}
+                `);
             }
         }
         if (!row.projeto_id) continue;
@@ -617,6 +637,8 @@ async function validaPrograma() {
 async function validaRegioes() {
     const regioesNoDb = await regiaoApi.regiaoControllerFindAll();
     for (const regiao in regioes) {
+        if (regiao == 'Várias') continue;
+
         const matchByNome = regioesNoDb.data.linhas.find((reg) => matchStringFuzzy(reg.descricao, regiao));
 
         if (matchByNome) {

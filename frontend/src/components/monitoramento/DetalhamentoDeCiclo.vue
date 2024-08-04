@@ -7,7 +7,9 @@
     @toggle="estaAberto = !estaAberto"
   >
     <summary>
-      <h2>Ciclo {{ dateToTitle($props.cicloDados.data_ciclo) }}</h2>
+      <h2 class="tc500 t20 ml05">
+        Ciclo {{ dateToTitle($props.cicloDados.data_ciclo) }}
+      </h2>
     </summary>
     <div class="details-content">
       <div

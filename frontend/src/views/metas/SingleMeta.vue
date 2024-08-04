@@ -363,9 +363,9 @@ iniciar();
               <col>
               <col>
               <thead>
-                <th>Nome</th>
-                <th>Portfólio</th>
+                <th>Portfólio </th>
                 <th>Código</th>
+                <th> Nome </th>
                 <th>Etapa</th>
               </thead>
               <tbody>
@@ -374,13 +374,13 @@ iniciar();
                   :key="index"
                 >
                   <td>
-                    {{ projeto.nome }}
-                  </td>
-                  <td>
-                    {{ projeto.portfolio.descricao }}
+                    {{ projeto.portfolio?.titulo || '-' }}
                   </td>
                   <td>
                     {{ projeto.codigo || '-' }}
+                  </td>
+                  <td>
+                    {{ projeto.nome || '-' }}
                   </td>
                   <td>
                     {{ projeto.projeto_etapa?.descricao || '-' }}
@@ -409,10 +409,10 @@ iniciar();
               <col>
               <col>
               <thead>
-                <th>Nome</th>
                 <th>
-                  Código
+                  Código da obra
                 </th>
+                <th>Nome</th>
                 <th>
                   Tipo obra/intervenção
                 </th>
@@ -434,17 +434,15 @@ iniciar();
                   v-for="(obra, index) in relacionadosMeta.obras"
                   :key="index"
                 >
+                  <td>{{ obra.codigo }}</td>
                   <td>
                     {{ obra.nome }}
-                  </td>
-                  <td>
-                    {{ obra.codigo }}
                   </td>
                   <td>
                     {{ obra.tipo_intervencao?.nome || '-' }}
                   </td>
                   <td>
-                    {{ obra.subprefeituras.map(x => x.descricao).join(', ') || '-' }}
+                    {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
                   </td>
                   <td>
                     {{ obra.equipamento?.nome || '-' }}

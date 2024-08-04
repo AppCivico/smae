@@ -3351,6 +3351,7 @@ model PortfolioOrgao {
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
     @@index([portfolio_id])
+    @@unique([portfolio_id, orgao_id])
     @@map("portifolio_orgao")
 }
 
@@ -4695,7 +4696,7 @@ model MetaStatusAtrasoVariavel {
     @@map("meta_status_atraso_variavel")
 }
 
-model view_pdm_meta_iniciativa_atividade {
+view view_pdm_meta_iniciativa_atividade {
     meta_id       Int  @id
     pdm_id        Int
     iniciativa_id Int?
@@ -4710,7 +4711,7 @@ model view_pdm_meta_iniciativa_atividade {
 }
 
 // helper para subir atividade/iniciativa -> meta_id
-model view_meta_cronograma {
+view view_meta_cronograma {
     cronograma_id Int @id
     meta_id       Int
 }
