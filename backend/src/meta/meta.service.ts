@@ -27,7 +27,6 @@ import {
     MetaPdmDto,
     RelacionadosDTO,
 } from './entities/meta.entity';
-import { IdCodNomeDto } from '../common/dto/IdCodNome.dto';
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
@@ -405,9 +404,10 @@ export class MetaService {
         user: PessoaFromJwt,
         context?: string,
         readonly: 'readonly' | 'readwrite' = 'readwrite'
-    ) {
+    ): Promise<void> {
         console.trace(`meta-service: assertMetaWriteOrThrow ${meta_id} ${context} ${readonly}`);
-        const meta = await this.findAll(tipo, { id: meta_id }, user);
+
+        const meta = await this.findAll(tipo, { id: meta_id }, user, true);
         if (!meta || meta.length == 0) {
             throw new HttpException(
                 context ? `Meta não pode ser encontrada para ${context}` : 'Meta não encontrada',
@@ -421,13 +421,14 @@ export class MetaService {
                 400
             );
 
-        return meta;
+        return;
     }
 
     async findAll(
         tipo: TipoPdm,
         filters: FilterMetaDto | undefined = undefined,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        skipObjects: boolean = false
     ): Promise<MetaItemDto[]> {
         const permissionsSet = await this.getMetasPermissionSet(tipo, user, false);
 
@@ -507,75 +508,80 @@ export class MetaService {
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.meta_id = listActive.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const geolocalizacao = skipObjects ? [] : await this.geolocService.carregaReferencias(geoDto);
 
         const ret: MetaItemDto[] = [];
         for (const dbMeta of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, MetaOrgao> = {};
             const tags: MetaIniAtvTag[] = [];
-
-            for (const orgao of dbMeta.meta_orgao) {
-                orgaos[orgao.orgao.id] = {
-                    orgao: orgao.orgao,
-                    responsavel: orgao.responsavel,
-                    participantes: [],
-                };
-            }
-
-            for (const responsavel of dbMeta.meta_responsavel) {
-                if (responsavel.coordenador_responsavel_cp) {
-                    // só coloca a pessoa 1x
-                    if (coordenadores_cp.filter((r) => r.id == responsavel.pessoa.id).length == 0)
-                        coordenadores_cp.push({
-                            id: responsavel.pessoa.id,
-                            nome_exibicao: responsavel.pessoa.nome_exibicao,
-                        });
-                } else {
-                    const orgao = orgaos[responsavel.orgao.id];
-                    if (!orgao) {
-                        this.logger.error(
-                            `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}, participante ${responsavel.pessoa.id} não pode ser mais responsável`
-                        );
-                        continue;
-                    }
-
-                    if (orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
-                        orgao.participantes.push(responsavel.pessoa);
-                }
-            }
-
-            for (const metaTag of dbMeta.meta_tag) {
-                tags.push({
-                    id: metaTag.tag.id,
-                    descricao: metaTag.tag.descricao,
-                    download_token: this.uploadService.getPersistentDownloadToken(metaTag.tag.arquivo_icone_id),
-                });
-            }
-
-            // TODO: revisar isso aqui pra virar uma trigger, fazer um findAll no cronograma durante
-            // a listagem de metas é muito custoso, por isso foi desligado, mas mesmo em findById é custoso
-            // pois a parte de cronograma é muito grande, cheia de join's
             let metaCronograma: CronogramaAtrasoGrau | null = null;
-            if (dbMeta.cronograma && filters?.id !== undefined) {
-                const cronograma = dbMeta.cronograma[0];
 
-                let cronogramaAtraso: string | null = null;
-                if (cronograma) {
-                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
-                        tipo,
-                        {
-                            cronograma_id: cronograma.id,
-                        },
-                        user,
-                        true
-                    );
-                    cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
+            // usando skipObjects para não carregar os objetos,
+            // pois quando a chamada for apenas para verificar a permissão de acesso essas informações
+            // não são necessárias
+            if (!skipObjects) {
+                for (const orgao of dbMeta.meta_orgao) {
+                    orgaos[orgao.orgao.id] = {
+                        orgao: orgao.orgao,
+                        responsavel: orgao.responsavel,
+                        participantes: [],
+                    };
                 }
-                metaCronograma = {
-                    id: cronograma ? cronograma.id : null,
-                    atraso_grau: cronogramaAtraso,
-                };
+
+                for (const responsavel of dbMeta.meta_responsavel) {
+                    if (responsavel.coordenador_responsavel_cp) {
+                        // só coloca a pessoa 1x
+                        if (coordenadores_cp.filter((r) => r.id == responsavel.pessoa.id).length == 0)
+                            coordenadores_cp.push({
+                                id: responsavel.pessoa.id,
+                                nome_exibicao: responsavel.pessoa.nome_exibicao,
+                            });
+                    } else {
+                        const orgao = orgaos[responsavel.orgao.id];
+                        if (!orgao) {
+                            this.logger.error(
+                                `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}, participante ${responsavel.pessoa.id} não pode ser mais responsável`
+                            );
+                            continue;
+                        }
+
+                        if (orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
+                            orgao.participantes.push(responsavel.pessoa);
+                    }
+                }
+
+                for (const metaTag of dbMeta.meta_tag) {
+                    tags.push({
+                        id: metaTag.tag.id,
+                        descricao: metaTag.tag.descricao,
+                        download_token: this.uploadService.getPersistentDownloadToken(metaTag.tag.arquivo_icone_id),
+                    });
+                }
+
+                // TODO: revisar isso aqui pra virar uma trigger, fazer um findAll no cronograma durante
+                // a listagem de metas é muito custoso, por isso foi desligado, mas mesmo em findById é custoso
+                // pois a parte de cronograma é muito grande, cheia de join's
+                if (dbMeta.cronograma && filters?.id !== undefined) {
+                    const cronograma = dbMeta.cronograma[0];
+
+                    let cronogramaAtraso: string | null = null;
+                    if (cronograma) {
+                        const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                            tipo,
+                            {
+                                cronograma_id: cronograma.id,
+                            },
+                            user,
+                            true
+                        );
+                        cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
+                    }
+                    metaCronograma = {
+                        id: cronograma ? cronograma.id : null,
+                        atraso_grau: cronogramaAtraso,
+                    };
+                }
             }
 
             ret.push({
@@ -594,7 +600,7 @@ export class MetaService {
                 orgaos_participantes: Object.values(orgaos),
                 tags: tags,
                 cronograma: metaCronograma,
-                geolocalizacao: geolocalizacao.get(dbMeta.id) || [],
+                geolocalizacao: 'get' in geolocalizacao ? geolocalizacao.get(dbMeta.id) || [] : [],
                 pode_editar: true, // TODO
             });
         }
