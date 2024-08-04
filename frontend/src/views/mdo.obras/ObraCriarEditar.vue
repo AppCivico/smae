@@ -1,4 +1,24 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import MapaCampo from '@/components/geo/MapaCampo.vue';
+import { obras as schema } from '@/consts/formSchemas';
+import statusObras from '@/consts/statusObras';
+import requestS from '@/helpers/requestS.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useObrasStore } from '@/stores/obras.store';
+import { useObservadoresStore } from '@/stores/observadores.store.ts';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
+import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -9,28 +29,6 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
-import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import MapaCampo from '@/components/geo/MapaCampo.vue';
-import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
-import { obras as schema } from '@/consts/formSchemas';
-import statusObras from '@/consts/statusObras';
-import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
-import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useObrasStore } from '@/stores/obras.store';
-import { useObservadoresStore } from '@/stores/observadores.store.ts';
-import { useOrgansStore } from '@/stores/organs.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -438,7 +436,6 @@ watch(itemParaEdição, (novoValor) => {
           :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
           :class="{ error: errors.portfolio_id }"
           :disabled="!!portfolioId || !!obraId"
-          @change="() => setFieldValue('regiao_id', 0)"
         >
           <option :value="0">
             Selecionar
