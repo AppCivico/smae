@@ -201,9 +201,9 @@ async function main() {
         return;
     }
 
+    const empreendimento2id: Record<string, number> = {};
     const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
     const empreendimentosMap: Record<string, number> = {};
-    const empreendimento2id: Record<string, number> = {};
     for (const emp of empreendimentos.data.linhas) {
         empreendimentosMap[emp.identificador] = emp.id!;
     }
@@ -330,9 +330,12 @@ async function main() {
 
                 const asJson = JSON.stringify({ response: errAsObj, request: info });
 
-                await db.run(`
-                    update importacao set err_msg = '${asJson}' where internal_id = ${row.internal_id}
-                `);
+                await db.run(
+                    `
+                    update importacao set err_msg = ? where internal_id = ${row.internal_id}
+                `,
+                    [asJson]
+                );
             }
         }
         if (!row.projeto_id) continue;
