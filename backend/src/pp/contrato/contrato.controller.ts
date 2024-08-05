@@ -76,7 +76,7 @@ export class ContratoPPController {
 
     @Delete(':id/contrato/:id2')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

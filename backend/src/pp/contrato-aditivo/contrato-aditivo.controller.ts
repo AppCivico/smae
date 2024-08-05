@@ -30,7 +30,7 @@ export class ContratoAditivoPPController {
 
     @Post(':id/aditivo')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() createContratoAditivoDto: CreateContratoAditivoDto,
@@ -41,7 +41,7 @@ export class ContratoAditivoPPController {
 
     @Get(':id/aditivo')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...roles])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListContratoAditivoDto> {
         return {
             linhas: await this.contratoAditivoService.findAll(+params.id, user),
@@ -50,7 +50,7 @@ export class ContratoAditivoPPController {
 
     @Patch(':id/aditivo/:id2')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...roles])
     async update(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateContratoAditivoDto,
@@ -61,7 +61,7 @@ export class ContratoAditivoPPController {
 
     @Delete(':id/aditivo/:id2')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
