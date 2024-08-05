@@ -23,7 +23,7 @@ const rolesMDO: ListaDePrivilegios[] = [
     ...PROJETO_READONLY_ROLES_MDO,
 ];
 
-@Controller('contrato')
+@Controller('contrato-pp')
 @ApiTags('Projeto - Contrato Aditivo PP')
 export class ContratoAditivoPPController {
     constructor(private readonly contratoAditivoService: ContratoAditivoService) {}
@@ -70,7 +70,7 @@ export class ContratoAditivoPPController {
     }
 }
 
-@Controller('contrato')
+@Controller('contrato-mdo')
 @ApiTags('Projeto - Contrato Aditivo MDO')
 export class ContratoAditivoMDOController {
     constructor(private readonly contratoAditivoService: ContratoAditivoService) {}
