@@ -17,6 +17,10 @@ defineProps({
     type: Number,
     default: 0,
   },
+  projetoId: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const alertStore = useAlertStore();
@@ -93,7 +97,7 @@ iniciar();
     <div class="ml2">
       <router-link
         v-if="exibirColunasDeAção"
-        :to="{ name: 'contratosDaObraCriar' }"
+        :to="{name: $route.params.obraId ? 'contratosDaObraCriar' : 'contratosDoProjetoCriar' }"
         class="btn"
       >
         Novo contrato
@@ -170,10 +174,11 @@ iniciar();
         <th class="">
           <router-link
             :to="{
-              name: 'contratosDaObraResumo',
+              name: $route.params.obraId ? 'contratosDaObraResumo' : 'contratosDoProjetoResumo',
               params: {
                 obraId: obraId,
                 contratoId: linha.id,
+                projetoId: projetoId
               }
             }"
           >
@@ -211,10 +216,11 @@ iniciar();
         >
           <router-link
             :to="{
-              name: 'contratosDaObraEditar',
+              name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
               params: {
                 obraId: obraId,
                 contratoId: linha.id,
+                projetoId: projetoId,
               }
             }"
             title="Editar contrato"
