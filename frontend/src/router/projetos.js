@@ -148,12 +148,17 @@ export default {
             título: 'Plano de projeto',
             rotas: [
               'projetosResumo',
+              'projetoTarefasListar',
+              'projetosEAP',
+              'projetosGantt',
             ],
           };
 
           const rotasDeAcompanhamento = {
             título: 'Acompanhamento',
             rotas: [
+              'acompanhamentosListar',
+              'riscosListar',
               'projetosDocumentos',
               'processosListar',
             ],
@@ -174,20 +179,6 @@ export default {
               'ProjetoOrçamentoRealizado',
             ],
           };
-
-          rotasDeAcompanhamento.rotas.splice(
-            0,
-            0,
-            'acompanhamentosListar',
-            'riscosListar',
-          );
-          rotasDePlanoDeProjeto.rotas.splice(
-            1,
-            0,
-            'projetoTarefasListar',
-            'projetosEAP',
-            'projetosGantt',
-          );
 
           return [
             rotasDePlanoDeProjeto,
