@@ -86,10 +86,10 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
         { id: 'Meses', nome: 'Meses' },
       ];
     },
-    async buscarDependencias() {
+    async buscarDependencias(mãeComId: MãeComId = undefined) {
       this.chamadasPendentes.emFoco = true;
-      const obra = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}`);
-      const processosSei = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/sei`);
+      const obra = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}`);
+      const processosSei = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`);
       const orgaos = await this.requestS.get(`${baseUrl}/orgao`);
       const modalidadesContratacao = await this.requestS.get(`${baseUrl}/modalidade-contratacao-mdo`);
       this.listaDeDependencias.processos_sei = processosSei.linhas.map((processoSei: any) => {
@@ -107,10 +107,10 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
-      console.log('segmentoIdentificador', this.segmentoIdentificador);
+      console.log('segmentoIdentificador');
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
         if (resposta.orgao) {
           resposta.orgao_id = resposta.orgao.id;
         }
@@ -128,7 +128,7 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -142,7 +142,7 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -161,9 +161,9 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
         let resposta;
         console.log('PAYLOAD', params);
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
