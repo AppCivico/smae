@@ -33,8 +33,6 @@ export default {
 
         rotasParaMigalhasDePão: [
           'contratosDoProjetoListar',
-          'contratosDoProjetoResumo',
-          'contratosDoProjetoListar',
         ],
       },
     },
@@ -59,7 +57,6 @@ export default {
             rotasParaMigalhasDePão: [
               'contratosDoProjetoListar',
               'contratosDoProjetoResumo',
-              'contratosDoProjetoListar',
             ],
           },
         },
