@@ -68,7 +68,6 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
       aditivo: false,
     },
     erro: null,
-    segmentoIdentificador,
   }),
   actions: {
     criaTodosOsStatusDeContratoDisponiveis() {
