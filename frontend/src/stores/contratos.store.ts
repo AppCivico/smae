@@ -44,8 +44,22 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
       return `projeto-mdo/${mãeComId?.obraId}`;
 
     default:
-      console.error('Id identificado da entidade mãe não foi provido como esperado', mãeComId);
-      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
+      console.error('Id identificador não foi provido como esperado', mãeComId);
+      throw new Error('Id identificador não foi provido como esperado');
+  }
+}
+
+function gerarCaminhoParaApiAditivo(mãeComId: MãeComId): string | null {
+  switch (true) {
+    case !!mãeComId?.projetoId:
+      return 'contrato-pp';
+
+    case !!mãeComId?.obraId:
+      return 'projeto-mdo/';
+
+    default:
+      console.error('Id identificador não foi provido como esperado', mãeComId);
+      throw new Error('Id identificador não foi provido como esperado');
   }
 }
 
@@ -175,16 +189,20 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
         return false;
       }
     },
-
-    async salvarAditivo(carga: any = {}, idDoAditivo = 0, idDoContrato = 0): Promise<boolean> {
+    async salvarAditivo(
+      carga: any = {},
+      idDoAditivo = 0,
+      idDoContrato = 0,
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
       this.chamadasPendentes.aditivo = true;
       this.erro = null;
 
       try {
         if (idDoAditivo) {
-          await this.requestS.patch(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`, carga);
+          await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApiAditivo(mãeComId || this.route.params)}/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`, carga);
         } else {
-          await this.requestS.post(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo`, carga);
+          await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApiAditivo(mãeComId || this.route.params)}/${idDoContrato || this.route.params.contratoId}/aditivo`, carga);
         }
 
         this.chamadasPendentes.aditivo = false;
@@ -195,11 +213,15 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
         return false;
       }
     },
-    async excluirAditivo(idDoAditivo: number, idDoContrato = 0): Promise<boolean> {
+    async excluirAditivo(
+      idDoAditivo: number,
+      idDoContrato = 0,
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
       this.chamadasPendentes.aditivo = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApiAditivo(mãeComId || this.route.params)}/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`);
         this.chamadasPendentes.aditivo = false;
         return true;
       } catch (erro) {
