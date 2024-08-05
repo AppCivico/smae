@@ -5,6 +5,7 @@ import { defineAsyncComponent } from 'vue';
 import acompanhamentos from './acompanhamentos';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
+import contratos from './projetos.contratos';
 import projetosOrcamentos from './projetos.orcamentos';
 import riscos from './riscos';
 import tarefas from './tarefas';
@@ -161,6 +162,7 @@ export default {
               'riscosListar',
               'projetosDocumentos',
               'processosListar',
+              'contratosDoProjetoListar',
             ],
           };
 
@@ -331,6 +333,8 @@ export default {
         processos,
 
         projetosOrcamentos,
+
+        contratos,
       ],
     },
   ],
