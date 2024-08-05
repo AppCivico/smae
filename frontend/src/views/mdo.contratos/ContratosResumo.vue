@@ -37,7 +37,7 @@ const {
         && (!permissõesDaObraEmFoco.apenas_leitura
           || permissõesDaObraEmFoco.sou_responsavel)"
       :to="{
-        name: 'contratosDaObraEditar',
+        name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
         params: $route.params
       }"
       title="Editar contrato"
