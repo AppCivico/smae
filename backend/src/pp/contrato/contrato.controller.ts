@@ -7,17 +7,84 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ProjetoService } from '../projeto/projeto.service';
-import { PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
+import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { ContratoDetailDto, ListContratoDto } from './entities/contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { ContratoService } from './contrato.service';
 
+const roles: ListaDePrivilegios[] = [
+    'Projeto.administrador',
+    'Projeto.administrador_no_orgao',
+    ...PROJETO_READONLY_ROLES,
+];
 const rolesMDO: ListaDePrivilegios[] = [
     'ProjetoMDO.administrador',
     'ProjetoMDO.administrador_no_orgao',
     ...PROJETO_READONLY_ROLES_MDO,
 ];
+
+@Controller('projeto')
+@ApiTags('Projeto - Contratos')
+export class ContratoPPController {
+    constructor(
+        private readonly projetoService: ProjetoService,
+        private readonly contratoService: ContratoService
+    ) {}
+
+    @Post(':id/contrato')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async create(
+        @Param() params: FindOneParams,
+        @Body() createContratoDto: CreateContratoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.contratoService.create(+params.id, createContratoDto, user);
+    }
+
+    @Get(':id/contrato')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListContratoDto> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        return {
+            linhas: await this.contratoService.findAll(+params.id, user),
+        };
+    }
+
+    @Get(':id/contrato/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ContratoDetailDto> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        return await this.contratoService.findOne(+params.id, +params.id2, user);
+    }
+
+    @Patch(':id/contrato/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateContratoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.contratoService.update(+params.id, +params.id2, dto, user);
+    }
+
+    @Delete(':id/contrato/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        await this.contratoService.remove(+params.id, +params.id2, user);
+        return '';
+    }
+}
 
 @Controller('projeto-mdo')
 @ApiTags('Projeto - Acompanhamento de Obras')
