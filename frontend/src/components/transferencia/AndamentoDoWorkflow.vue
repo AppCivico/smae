@@ -510,7 +510,6 @@ watch(itemParaEdição, () => {
     height: 2px;
     background-color: currentColor;
     margin-top: -1px;
-    z-index: -1;
     color: @c300;
   }
 
@@ -554,6 +553,8 @@ watch(itemParaEdição, () => {
     color: @c300;
     background-position: 50% 50%;
     background-repeat: no-repeat;
+    z-index: 1;
+    position: relative;
   }
 
   .andamento-fluxo__fase--iniciada &::before {
