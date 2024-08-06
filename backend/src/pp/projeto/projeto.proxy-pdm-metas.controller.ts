@@ -66,6 +66,7 @@ export class ProjetoMDOProxyPdmMetasController {
             'ProjetoMDO.administrador_no_orgao',
             'MDO.gestor_de_projeto',
             'MDO.colaborador_de_projeto',
+            'Reports.executar.PDM'
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -84,6 +85,7 @@ export class ProjetoMDOProxyPdmMetasController {
         'ProjetoMDO.administrador_no_orgao',
         'MDO.gestor_de_projeto',
         'MDO.colaborador_de_projeto',
+        'Reports.executar.PDM'
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
