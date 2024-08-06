@@ -3,14 +3,14 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import { useAlertStore } from '@/stores/alert.store';
-import { usePaineisStore } from '@/stores/paineis.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { usePaineisStore } from '@/stores/paineis.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { watch, onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
