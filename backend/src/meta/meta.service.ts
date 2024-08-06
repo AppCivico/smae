@@ -1056,27 +1056,33 @@ export class MetaService {
         const projetos = await this.prisma.projeto.findMany({
             where: {
                 removido_em: null,
-
-                AND: [
-                    dto.meta_id
-                        ? {
-                              meta_id: dto.meta_id,
-                              iniciativa_id: null,
-                              atividade_id: null,
-                          }
-                        : {},
-                    dto.iniciativa_id
-                        ? {
-                              iniciativa_id: dto.iniciativa_id,
-                              atividade_id: null,
-                          }
-                        : {},
-                    dto.atividade_id
-                        ? {
-                              atividade_id: dto.atividade_id,
-                          }
-                        : {},
-                ],
+                ProjetoOrigem: {
+                    some: {
+                        AND: [
+                            dto.meta_id
+                                ? {
+                                      removido_em: null,
+                                      meta_id: dto.meta_id,
+                                      iniciativa_id: null,
+                                      atividade_id: null,
+                                  }
+                                : {},
+                            dto.iniciativa_id
+                                ? {
+                                      removido_em: null,
+                                      iniciativa_id: dto.iniciativa_id,
+                                      atividade_id: null,
+                                  }
+                                : {},
+                            dto.atividade_id
+                                ? {
+                                      removido_em: null,
+                                      atividade_id: dto.atividade_id,
+                                  }
+                                : {},
+                        ],
+                    },
+                },
             },
             select: {
                 id: true,

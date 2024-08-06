@@ -51,13 +51,14 @@ export class PPProjetoService implements ReportableService {
         const detail: RelProjetoRelatorioDto = {
             id: projetoRow.id,
             arquivado: projetoRow.arquivado,
-            origem_tipo: projetoRow.origem_tipo,
-            meta_id: projetoRow.meta_id,
-            iniciativa_id: projetoRow.iniciativa_id,
-            atividade_id: projetoRow.atividade_id,
-            origem_outro: projetoRow.origem_outro,
+            //origem_tipo: projetoRow.origem_tipo,
+            //meta_id: projetoRow.meta_id,
+            //iniciativa_id: projetoRow.iniciativa_id,
+            //atividade_id: projetoRow.atividade_id,
+            //origem_outro: projetoRow.origem_outro,
+            //meta_codigo: projetoRow.meta_codigo,
+            //meta: projetoRow.meta,
             portfolio_id: projetoRow.portfolio_id,
-            meta_codigo: projetoRow.meta_codigo,
             nome: projetoRow.nome,
             status: projetoRow.status,
             resumo: projetoRow.resumo,
@@ -97,7 +98,6 @@ export class PPProjetoService implements ReportableService {
             orgao_responsavel_id: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.id : null,
             orgao_responsavel_sigla: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.sigla : null,
             orgao_responsavel_descricao: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.descricao : null,
-            meta: projetoRow.meta,
             responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length
                 ? projetoRow.responsaveis_no_orgao_gestor.map((e) => e.nome_exibicao).join('|')
                 : null,

@@ -464,6 +464,9 @@ model Pessoa {
     VariavelQCriei                      Variavel[]                            @relation("Criador")
     VariavelQAtualizei                  Variavel[]                            @relation("Atualizador")
     GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
+    ProjetoOrigemQcriei                 ProjetoOrigem[]                       @relation("Criador")
+    ProjetoOrigemQAtualizei             ProjetoOrigem[]                       @relation("Atualizador")
+    ProjetoOrigemQRemovi                ProjetoOrigem[]                       @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -1219,7 +1222,7 @@ model Meta {
     MetaOrcamento                          OrcamentoPrevisto[]
     OrcamentoPlanejado                     OrcamentoPlanejado[]
     OrcamentoRealizado                     OrcamentoRealizado[]
-    projetos                               Projeto[]
+    //projetos                               Projeto[]
     OrcamentoPlanejadoZerado               OrcamentoPrevistoZerado[]
     FormulaCompostaCicloFisicoQualitativo  FormulaCompostaCicloFisicoQualitativo[]
     FormulaCompostaCicloFisicoDocumento    FormulaCompostaCicloFisicoDocumento[]
@@ -1232,6 +1235,7 @@ model Meta {
     GeoEnderecoReferencia                  GeoLocalizacaoReferencia[]
     PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
     view_pdm_meta_iniciativa_atividade     view_pdm_meta_iniciativa_atividade[]
+    ProjetoOrigem                          ProjetoOrigem[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1564,7 +1568,7 @@ model Variavel {
     dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
 
     // para variaveis calculadas, há um atraso no preenchimento assim como no indicador
-    recalculando Boolean @default(false)
+    recalculando    Boolean  @default(false)
     recalculo_erro  String?
     recalculo_tempo Decimal?
 
@@ -1954,10 +1958,11 @@ model Iniciativa {
     OrcamentoPlanejado                 OrcamentoPlanejado[]
     OrcamentoRealizado                 OrcamentoRealizado[]
     MetaOrcamento                      OrcamentoPrevisto[]
-    projetos                           Projeto[]
+    //projetos                           Projeto[]
     OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
+    ProjetoOrigem                      ProjetoOrigem[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2039,10 +2044,11 @@ model Atividade {
     OrcamentoPlanejado                 OrcamentoPlanejado[]
     OrcamentoRealizado                 OrcamentoRealizado[]
     MetaOrcamento                      OrcamentoPrevisto[]
-    projetos                           Projeto[]
+    //projetos                           Projeto[]
     OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
+    ProjetoOrigem                      ProjetoOrigem[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -3350,8 +3356,8 @@ model PortfolioOrgao {
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
-    @@index([portfolio_id])
     @@unique([portfolio_id, orgao_id])
+    @@index([portfolio_id])
     @@map("portifolio_orgao")
 }
 
@@ -3409,16 +3415,12 @@ model Projeto {
 
     portfolios_compartilhados PortfolioProjetoCompartilhado[]
 
-    meta_id       Int?
-    iniciativa_id Int?
-    atividade_id  Int?
-
     projeto_etapa_id Int?
     projeto_etapa    ProjetoEtapa? @relation(fields: [projeto_etapa_id], references: [id])
 
-    meta       Meta?       @relation(fields: [meta_id], references: [id])
-    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
-    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+    //meta       Meta?       @relation(fields: [meta_id], references: [id])
+    //iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    //atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
     regiao_id Int?
     regiao    Regiao? @relation(fields: [regiao_id], references: [id])
@@ -3428,18 +3430,25 @@ model Projeto {
     logradouro_numero String?
     logradouro_cep    String?
 
-    codigo                    String? // abre apenas depois de priorizado
-    previsao_custo            Float?
-    nome                      String
-    objeto                    String /// HTML
-    objetivo                  String /// HTML
-    origem_tipo               ProjetoOrigemTipo @default(Outro)
-    origem_eh_pdm             Boolean           @default(false)
-    origem_outro              String?
-    meta_codigo               String?
+    codigo         String? // abre apenas depois de priorizado
+    previsao_custo Float?
+    nome           String
+    objeto         String /// HTML
+    objetivo       String /// HTML
+
+    origem_tipo   ProjetoOrigemTipo @default(Outro) @ignore
+    origem_eh_pdm Boolean           @default(false) @ignore
+    origem_outro  String?           @ignore
+    meta_codigo   String?           @ignore
+    meta_id       Int?              @ignore
+    iniciativa_id Int?              @ignore
+    atividade_id  Int?              @ignore
+
+    cache_metas      Json @default("{}") @db.Json
+
     publico_alvo              String /// HTML
-    previsao_inicio           DateTime?         @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
-    previsao_termino          DateTime?         @db.Date()
+    previsao_inicio           DateTime? @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
+    previsao_termino          DateTime? @db.Date()
     previsao_duracao          Int?
     tipo_aditivo_id           Int?
     modalidade_contratacao_id Int?
@@ -3604,10 +3613,42 @@ model Projeto {
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
 
-    tags Int[] @default([])
+    tags          Int[]           @default([])
+    ProjetoOrigem ProjetoOrigem[]
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+model ProjetoOrigem {
+    id         Int     @id @default(autoincrement())
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    origem_tipo   ProjetoOrigemTipo @default(Outro)
+    origem_eh_pdm Boolean           @default(false)
+    origem_outro  String?
+    meta_codigo   String?
+
+    meta_id       Int?
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    criado_por     Int?
+    atualizado_em  DateTime?
+    atualizado_por Int?
+    removido_em    DateTime?
+    removido_por   Int?
+
+    criador     Pessoa?     @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa?     @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa?     @relation("Removedor", fields: [removido_por], references: [id])
+    meta        Meta?       @relation(fields: [meta_id], references: [id])
+    iniciativa  Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade   Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    @@map("projeto_origem")
 }
 
 view ViewProjetoMDO {

@@ -1,8 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
-import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
-
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { FormatCurrency } from 'src/common/format-currency';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -12,7 +10,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto, PPfonteRecursoDto } from './dto/create-projeto.dto';
+import {
+    CachedMetasDto,
+    CreateProjetoDocumentDto,
+    CreateProjetoDto,
+    PPfonteRecursoDto,
+    UpsertOrigemDto,
+} from './dto/create-projeto.dto';
 import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
@@ -21,6 +25,7 @@ import {
     UpdateProjetoDto,
 } from './dto/update-projeto.dto';
 import {
+    OrigemDetailItem,
     ProjetoDetailBaseMdo,
     ProjetoDetailDto,
     ProjetoDetailMdoDto,
@@ -28,13 +33,13 @@ import {
     ProjetoDto,
     ProjetoEquipeItemDto,
     ProjetoMdoDto,
-    ProjetoMetaDetailDto,
     ProjetoPermissoesDto,
 } from './entities/projeto.entity';
 
 import { JwtService } from '@nestjs/jwt';
 import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
+import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { Object2Hash } from '../../common/object2hash';
@@ -43,7 +48,6 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
-import { PrismaHelpers } from '../../common/PrismaHelpers';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -91,9 +95,9 @@ export type HtmlProjetoUe = {
     dataTermino: string;
     custoEstimado: string;
     fonteDeRecursos: string[];
-    origem: string;
-    codigoDaMeta: string | null;
-    textoDaMeta: string;
+    //origem: string;
+    //codigoDaMeta: string | null;
+    //textoDaMeta: string;
     //escopo: string[];
     etapas: string[];
     orgaosEnvolvidos: string[];
@@ -130,74 +134,82 @@ export class ProjetoService {
         private readonly jwtService: JwtService
     ) {}
 
-    private async processaOrigem(dto: CreateProjetoDto) {
-        let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
-        let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
-        let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
-        let origem_outro: string | null = dto.origem_outro ? dto.origem_outro : null;
-        let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
-        const origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
+    private async processaOrigens(origens: UpsertOrigemDto[]): Promise<CachedMetasDto> {
+        const metas: CachedMetasDto = {
+            metas: [],
+        };
+        for (const dto of origens) {
+            const meta_id: number | null = dto.meta_id ? dto.meta_id : null;
+            const iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
+            const atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
+            const origem_outro: string | null = dto.origem_outro ? dto.origem_outro : null;
+            const meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
+            const origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
 
-        if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
-            await validaPdmSistema(this);
-        } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
-            validaPdmAntigo();
-        } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
-            validaOutro();
-        } else {
-            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
+            if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
+                const info = await validaPdmSistema(this, dto);
+                metas.metas.push({ id: info.id, codigo: info.codigo, pdm_id: info.pdm_id });
+            } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
+                validaPdmAntigo(dto);
+                metas.metas.push({ id: null, codigo: dto.meta_codigo!, pdm_id: null });
+            } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
+                validaOutro(dto);
+            } else {
+                throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
+            }
+
+            dto.meta_id = meta_id;
+            dto.iniciativa_id = iniciativa_id;
+            dto.atividade_id = atividade_id;
+            dto.origem_outro = origem_outro;
+            dto.meta_codigo = meta_codigo;
         }
 
-        return {
-            origem_tipo,
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo,
-        };
+        return metas;
 
-        function validaOutro() {
-            if (!origem_outro)
+        function validaOutro(dto: UpsertOrigemDto) {
+            if (!dto.origem_outro)
                 throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
-            if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-            if (iniciativa_id)
+            if (dto.meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (dto.iniciativa_id)
                 throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-            if (atividade_id)
+            if (dto.atividade_id)
                 throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-            if (meta_codigo)
+            if (dto.meta_codigo)
                 throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
-            meta_id = atividade_id = iniciativa_id = meta_codigo = null;
+            dto.meta_id = dto.atividade_id = dto.iniciativa_id = dto.meta_codigo = null;
         }
 
-        function validaPdmAntigo() {
+        function validaPdmAntigo(dto: UpsertOrigemDto) {
             const errMsg = 'caso origem seja outro sistema de meta';
-            if (!meta_codigo) throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
-            if (!origem_outro)
+            if (!dto.meta_codigo) throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!dto.origem_outro)
                 throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
 
-            if (meta_id) throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
-            if (iniciativa_id) throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
-            if (atividade_id) throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+            if (dto.meta_id) throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
+            if (dto.iniciativa_id)
+                throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
+            if (dto.atividade_id)
+                throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
-            meta_id = atividade_id = iniciativa_id = null;
+            dto.meta_id = dto.atividade_id = dto.iniciativa_id = null;
         }
 
-        async function validaPdmSistema(self: ProjetoService) {
-            if (!atividade_id && !iniciativa_id && !meta_id)
+        async function validaPdmSistema(self: ProjetoService, dto: UpsertOrigemDto) {
+            if (!dto.atividade_id && !dto.iniciativa_id && !dto.meta_id)
                 throw new HttpException(
                     'meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
                     400
                 );
 
-            if (atividade_id) {
+            if (dto.atividade_id) {
                 self.logger.log('validando atividade_id');
                 const atv = await self.prisma.atividade.findFirstOrThrow({
-                    where: { id: atividade_id, removido_em: null },
+                    where: { id: dto.atividade_id, removido_em: null },
                     select: { iniciativa_id: true },
                 });
                 const ini = await self.prisma.iniciativa.findFirstOrThrow({
@@ -209,34 +221,40 @@ export class ProjetoService {
                     select: { id: true },
                 });
 
-                iniciativa_id = atv.iniciativa_id;
-                meta_id = ini.meta_id;
-            } else if (iniciativa_id) {
+                dto.iniciativa_id = atv.iniciativa_id;
+                dto.meta_id = ini.meta_id;
+            } else if (dto.iniciativa_id) {
                 self.logger.log('validando iniciativa_id');
                 const ini = await self.prisma.iniciativa.findFirstOrThrow({
-                    where: { id: iniciativa_id, removido_em: null },
+                    where: { id: dto.iniciativa_id, removido_em: null },
                     select: { meta_id: true },
                 });
 
-                meta_id = ini.meta_id;
-                atividade_id = null;
-            } else if (meta_id) {
+                dto.meta_id = ini.meta_id;
+                dto.atividade_id = null;
+            } else if (dto.meta_id) {
                 self.logger.log('validando meta_id');
                 await self.prisma.meta.findFirstOrThrow({
-                    where: { id: meta_id, removido_em: null },
+                    where: { id: dto.meta_id, removido_em: null },
                     select: { id: true },
                 });
 
-                iniciativa_id = atividade_id = null;
+                dto.iniciativa_id = dto.atividade_id = null;
             }
 
-            if (origem_outro)
+            if (dto.origem_outro)
                 throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
-            if (meta_codigo)
+            if (dto.meta_codigo)
                 throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
-            meta_codigo = origem_outro = null;
+            dto.meta_codigo = dto.origem_outro = null;
+
+            const meta = await self.prisma.meta.findFirstOrThrow({
+                where: { id: dto.meta_id! },
+                select: { codigo: true, pdm_id: true, id: true },
+            });
+            return { pdm_id: meta.pdm_id, codigo: meta.codigo, id: meta.id };
         }
     }
 
@@ -311,10 +329,8 @@ export class ProjetoService {
                 400
             );
 
-        const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
+        const cache_metas = await this.processaOrigens(dto.origens);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
-
-        if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
         this.removeCampos(tipo, dto, 'create');
 
@@ -370,6 +386,7 @@ export class ProjetoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.projeto.create({
                     data: {
+                        cache_metas: cache_metas as any,
                         tipo: tipo,
                         registrado_por: user.id,
                         registrado_em: now,
@@ -393,12 +410,6 @@ export class ProjetoService {
                         resumo: dto.resumo ?? '',
                         previsao_inicio: dto.previsao_inicio,
                         previsao_termino: dto.previsao_termino,
-
-                        origem_tipo: origem_tipo,
-                        origem_outro: origem_outro,
-                        meta_id: meta_id,
-                        iniciativa_id: iniciativa_id,
-                        atividade_id: atividade_id,
 
                         previsao_custo: dto.previsao_custo,
                         principais_etapas: dto.principais_etapas,
@@ -475,6 +486,8 @@ export class ProjetoService {
                     where: { id: row.id },
                     select: { id: true, ProjetoRegiao: true },
                 });
+
+                await this.upsertOrigens(row.id, dto.origens, prismaTx, user, now);
 
                 await this.upsertFonteRecurso(dto, prismaTx, row.id);
 
@@ -748,42 +761,43 @@ export class ProjetoService {
                 arquivado: true,
                 codigo: true,
 
-                atividade: {
-                    select: {
-                        iniciativa: {
-                            select: {
-                                meta: {
-                                    select: {
-                                        id: true,
-                                        codigo: true,
-                                        titulo: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
+                //                atividade: {
+                //                    select: {
+                //                        iniciativa: {
+                //                            select: {
+                //                                meta: {
+                //                                    select: {
+                //                                        id: true,
+                //                                        codigo: true,
+                //                                        titulo: true,
+                //                                    },
+                //                                },
+                //                            },
+                //                        },
+                //                    },
+                //                },
+                //
+                //                iniciativa: {
+                //                    select: {
+                //                        meta: {
+                //                            select: {
+                //                                id: true,
+                //                                codigo: true,
+                //                                titulo: true,
+                //                            },
+                //                        },
+                //                    },
+                //                },
+                //
+                //                meta: {
+                //                    select: {
+                //                        id: true,
+                //                        codigo: true,
+                //                        titulo: true,
+                //                    },
+                //                },
 
-                iniciativa: {
-                    select: {
-                        meta: {
-                            select: {
-                                id: true,
-                                codigo: true,
-                                titulo: true,
-                            },
-                        },
-                    },
-                },
-
-                meta: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                    },
-                },
-
+                cache_metas: true,
                 orgao_responsavel: {
                     select: {
                         id: true,
@@ -821,23 +835,26 @@ export class ProjetoService {
         const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
 
         for (const row of rows) {
-            let meta: IdCodTituloDto | null;
+            // TODO isso aqui vai ter que virar uma array, agora pode virar um cache tbm,
+            // pois vai ser muito mais rápido do que fazer uma query para cada projeto, isso ta na listagem...
+            //const meta: IdCodTituloDto | null = null;
 
-            if (row.atividade) {
-                meta = { ...row.atividade.iniciativa.meta };
-            } else if (row.iniciativa) {
-                meta = { ...row.iniciativa.meta };
-            } else if (row.meta) {
-                meta = row.meta;
-            } else {
-                meta = null;
-            }
+            //            if (row.atividade) {
+            //                meta = { ...row.atividade.iniciativa.meta };
+            //            } else if (row.iniciativa) {
+            //                meta = { ...row.iniciativa.meta };
+            //            } else if (row.meta) {
+            //                meta = row.meta;
+            //            } else {
+            //                meta = null;
+            //            }
 
             ret.push({
                 id: row.id,
                 nome: row.nome,
                 status: row.status,
-                meta: meta,
+                //meta: meta,
+                resumo_origens: row.cache_metas?.valueOf() as CachedMetasDto,
                 orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null,
                 portfolio: row.portfolio,
                 arquivado: row.arquivado,
@@ -1137,9 +1154,9 @@ export class ProjetoService {
             dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino),
             custoEstimado: projeto.previsao_custo ? fc.toString(projeto.previsao_custo) : '-',
             fonteDeRecursos: fonte_recursos,
-            origem: projeto.origem_tipo == 'Outro' ? projeto.origem_outro || '' : 'Programa de Metas',
-            codigoDaMeta: projeto.meta ? projeto.meta.codigo : projeto.meta_codigo,
-            textoDaMeta: projeto.meta ? projeto.meta.titulo : '',
+            //origem: projeto.origem_tipo == 'Outro' ? projeto.origem_outro || '' : 'Programa de Metas',
+            //codigoDaMeta: projeto.meta ? projeto.meta.codigo : projeto.meta_codigo,
+            //textoDaMeta: projeto.meta ? projeto.meta.titulo : '',
             //escopo: projeto.escopo ? projeto.escopo.split('\n\n') : [],
             etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n\n') : [],
             orgaosEnvolvidos: projeto.orgaos_participantes.map((r) => r.sigla + ' - ' + r.descricao),
@@ -1179,13 +1196,7 @@ export class ProjetoService {
             select: {
                 id: true,
                 arquivado: true,
-                origem_tipo: true,
-                meta_id: true,
-                iniciativa_id: true,
-                atividade_id: true,
-                origem_outro: true,
                 portfolio_id: true,
-                meta_codigo: true,
                 nome: true,
                 status: true,
                 fase: true,
@@ -1326,54 +1337,54 @@ export class ProjetoService {
                         },
                     },
                 },
-
-                meta: {
-                    select: {
-                        pdm_id: true,
-                        codigo: true,
-                        titulo: true,
-                        id: true,
-                    },
-                },
-
-                iniciativa: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                        meta: {
-                            select: {
-                                id: true,
-                                codigo: true,
-                                titulo: true,
-                                pdm_id: true,
-                            },
-                        },
-                    },
-                },
-
-                atividade: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                        iniciativa: {
-                            select: {
-                                id: true,
-                                codigo: true,
-                                titulo: true,
-                                meta: {
-                                    select: {
-                                        id: true,
-                                        codigo: true,
-                                        titulo: true,
-                                        pdm_id: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
+                //
+                //                meta: {
+                //                    select: {
+                //                        pdm_id: true,
+                //                        codigo: true,
+                //                        titulo: true,
+                //                        id: true,
+                //                    },
+                //                },
+                //
+                //                iniciativa: {
+                //                    select: {
+                //                        id: true,
+                //                        codigo: true,
+                //                        titulo: true,
+                //                        meta: {
+                //                            select: {
+                //                                id: true,
+                //                                codigo: true,
+                //                                titulo: true,
+                //                                pdm_id: true,
+                //                            },
+                //                        },
+                //                    },
+                //                },
+                //
+                //                atividade: {
+                //                    select: {
+                //                        id: true,
+                //                        codigo: true,
+                //                        titulo: true,
+                //                        iniciativa: {
+                //                            select: {
+                //                                id: true,
+                //                                codigo: true,
+                //                                titulo: true,
+                //                                meta: {
+                //                                    select: {
+                //                                        id: true,
+                //                                        codigo: true,
+                //                                        titulo: true,
+                //                                        pdm_id: true,
+                //                                    },
+                //                                },
+                //                            },
+                //                        },
+                //                    },
+                //                },
 
                 regiao: {
                     select: {
@@ -1414,6 +1425,21 @@ export class ProjetoService {
                         },
                     },
                 },
+                ProjetoOrigem: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        meta: { select: { id: true, titulo: true, codigo: true } },
+                        atividade: { select: { id: true, titulo: true, codigo: true } },
+                        iniciativa: { select: { id: true, titulo: true, codigo: true } },
+                        meta_codigo: true,
+                        origem_eh_pdm: true,
+                        origem_tipo: true,
+                        origem_outro: true,
+                    },
+                },
                 secretario_colaborador: true,
                 orgao_colaborador: { select: { id: true, sigla: true, descricao: true } },
                 colaboradores_no_orgao: true,
@@ -1439,50 +1465,49 @@ export class ProjetoService {
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
-        let meta: ProjetoMetaDetailDto | null = projeto.meta ? projeto.meta : null;
-
-        let iniciativa: IdCodTituloDto | null = null;
-        let atividade: IdCodTituloDto | null = null;
+        //let meta: ProjetoMetaDetailDto | null = projeto.meta ? projeto.meta : null;
+        //let iniciativa: IdCodTituloDto | null = null;
+        //let atividade: IdCodTituloDto | null = null;
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.projeto_id = projeto.id;
         const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
 
-        if (projeto.iniciativa) {
-            iniciativa = {
-                id: projeto.iniciativa.id,
-                codigo: projeto.iniciativa.codigo,
-                titulo: projeto.iniciativa.titulo,
-            };
-
-            meta = {
-                id: projeto.iniciativa.meta.id,
-                codigo: projeto.iniciativa.meta.codigo,
-                titulo: projeto.iniciativa.meta.titulo,
-                pdm_id: projeto.iniciativa.meta.pdm_id,
-            };
-        }
-
-        if (projeto.atividade) {
-            atividade = {
-                id: projeto.atividade.id,
-                codigo: projeto.atividade.codigo,
-                titulo: projeto.atividade.titulo,
-            };
-
-            iniciativa = {
-                id: projeto.atividade.iniciativa.id,
-                codigo: projeto.atividade.iniciativa.codigo,
-                titulo: projeto.atividade.iniciativa.titulo,
-            };
-
-            meta = {
-                id: projeto.atividade.iniciativa.meta.id,
-                codigo: projeto.atividade.iniciativa.meta.codigo,
-                titulo: projeto.atividade.iniciativa.meta.titulo,
-                pdm_id: projeto.atividade.iniciativa.meta.pdm_id,
-            };
-        }
+        //        if (projeto.iniciativa) {
+        //            iniciativa = {
+        //                id: projeto.iniciativa.id,
+        //                codigo: projeto.iniciativa.codigo,
+        //                titulo: projeto.iniciativa.titulo,
+        //            };
+        //
+        //            meta = {
+        //                id: projeto.iniciativa.meta.id,
+        //                codigo: projeto.iniciativa.meta.codigo,
+        //                titulo: projeto.iniciativa.meta.titulo,
+        //                pdm_id: projeto.iniciativa.meta.pdm_id,
+        //            };
+        //        }
+        //
+        //        if (projeto.atividade) {
+        //            atividade = {
+        //                id: projeto.atividade.id,
+        //                codigo: projeto.atividade.codigo,
+        //                titulo: projeto.atividade.titulo,
+        //            };
+        //
+        //            iniciativa = {
+        //                id: projeto.atividade.iniciativa.id,
+        //                codigo: projeto.atividade.iniciativa.codigo,
+        //                titulo: projeto.atividade.iniciativa.titulo,
+        //            };
+        //
+        //            meta = {
+        //                id: projeto.atividade.iniciativa.meta.id,
+        //                codigo: projeto.atividade.iniciativa.meta.codigo,
+        //                titulo: projeto.atividade.iniciativa.meta.titulo,
+        //                pdm_id: projeto.atividade.iniciativa.meta.pdm_id,
+        //            };
+        //        }
 
         const [responsaveis_no_orgao_gestor, colaboradores_no_orgao, tags] = await Promise.all([
             this.prisma.pessoa.findMany({
@@ -1512,9 +1537,21 @@ export class ProjetoService {
 
         let ret: ProjetoDetailDto = {
             id: projeto.id,
-            meta_id: projeto.meta_id,
-            iniciativa_id: projeto.iniciativa_id,
-            atividade_id: projeto.atividade_id,
+            origens: projeto.ProjetoOrigem.map((o) => {
+                return {
+                    id: o.id,
+                    meta: o.meta,
+                    atividade: o.atividade,
+                    iniciativa: o.iniciativa,
+                    meta_codigo: o.meta_codigo,
+                    origem_eh_pdm: o.origem_eh_pdm,
+                    origem_tipo: o.origem_tipo,
+                    origem_outro: o.origem_outro,
+                } satisfies OrigemDetailItem;
+            }),
+            //meta_id: projeto.meta_id,
+            //iniciativa_id: projeto.iniciativa_id,
+            //atividade_id: projeto.atividade_id,
             projeto_etapa: projeto.projeto_etapa,
             nome: projeto.nome,
             status: projeto.status,
@@ -1539,9 +1576,9 @@ export class ProjetoService {
             premissas: projeto.premissas,
             restricoes: projeto.restricoes,
             fonte_recursos: projeto.fonte_recursos,
-            origem_tipo: projeto.origem_tipo,
-            origem_outro: projeto.origem_outro,
-            meta_codigo: projeto.meta_codigo,
+            //origem_tipo: projeto.origem_tipo,
+            //origem_outro: projeto.origem_outro,
+            //meta_codigo: projeto.meta_codigo,
             selecionado_em: projeto.selecionado_em,
             em_planejamento_em: projeto.em_planejamento_em,
             data_aprovacao: projeto.data_aprovacao,
@@ -1595,9 +1632,10 @@ export class ProjetoService {
             status_cronograma: tarefaCrono?.status_cronograma ?? null,
             colaboradores_no_orgao: colaboradores_no_orgao,
             regioes: projeto.ProjetoRegiao.map((r) => r.regiao),
-            meta: meta,
-            iniciativa: iniciativa,
-            atividade: atividade,
+
+            //meta: meta,
+            //iniciativa: iniciativa,
+            //atividade: atividade,
             responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
             bloco_nota_token: user ? await this.blocoNotaService.getTokenFor({ projeto_id: projeto.id }, user) : '',
@@ -1715,7 +1753,6 @@ export class ProjetoService {
             }
 
             if (projeto.status !== 'Registrado' && projeto.tipo == 'PP') {
-                permissoes.campo_codigo = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
 
@@ -2030,22 +2067,9 @@ export class ProjetoService {
 
         // TODO? se estiver arquivado, retorna 400 (estava só o comentario, sem o texto de TODO)
 
-        let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
-        let meta_id: number | null | undefined = undefined;
-        let iniciativa_id: number | null | undefined = undefined;
-        let atividade_id: number | null | undefined = undefined;
-        let origem_outro: string | null | undefined = undefined;
-        let meta_codigo: string | null | undefined = undefined;
-
-        if ('origem_tipo' in dto && dto.origem_tipo) {
-            const origemVerification = await this.processaOrigem(dto as any);
-
-            origem_tipo = origemVerification.origem_tipo;
-            meta_id = origemVerification.meta_id;
-            iniciativa_id = origemVerification.iniciativa_id;
-            atividade_id = origemVerification.atividade_id;
-            origem_outro = origemVerification.origem_outro;
-            meta_codigo = origemVerification.meta_codigo;
+        let cache_metas: undefined | object = undefined;
+        if (Array.isArray(dto.origens)) {
+            cache_metas = await this.processaOrigens(dto.origens);
         }
 
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
@@ -2180,13 +2204,7 @@ export class ProjetoService {
             const self = await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
-                    // origem
-                    meta_id,
-                    atividade_id,
-                    iniciativa_id,
-                    origem_outro,
-                    meta_codigo,
-                    origem_tipo,
+                    cache_metas: cache_metas as any,
 
                     // campos do create
                     orgao_gestor_id,
@@ -2269,6 +2287,10 @@ export class ProjetoService {
                 },
             });
 
+            if (Array.isArray(dto.origens)) {
+                await this.upsertOrigens(projetoId, dto.origens, prismaTx, user, now);
+            }
+
             if (self.projeto_etapa_id && self.projeto_etapa_id != projeto.projeto_etapa?.id) {
                 await prismaTx.projetoEtapa.findFirstOrThrow({
                     where: { id: self.projeto_etapa_id, removido_em: null, tipo_projeto: tipo },
@@ -2290,16 +2312,16 @@ export class ProjetoService {
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
             // ou atualizar o código
             if (
-                projeto.em_planejamento_em !== null &&
-                ((dto.meta_id && projeto.meta_id != dto.meta_id) ||
+                (projeto.em_planejamento_em !== null &&
+                    /*((dto.meta_id && projeto.meta_id != dto.meta_id) ||
                     (dto.origem_outro && projeto.origem_outro != dto.origem_outro) ||
                     (dto.origem_tipo && projeto.origem_tipo != dto.origem_tipo) ||
-                    (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo) ||
-                    (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id) ||
-                    (!projeto.codigo &&
-                        projeto.selecionado_em &&
-                        projeto.orgao_responsavel &&
-                        projeto.orgao_responsavel.id))
+                    (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
+                    || */
+                    dto.orgao_responsavel_id &&
+                    (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id) ||
+                (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
+                //)
             ) {
                 let codigo;
                 if (tipo == 'MDO') {
@@ -2596,13 +2618,13 @@ export class ProjetoService {
                         sigla: true,
                     },
                 },
-                meta: {
+                ProjetoOrigem: {
                     select: {
-                        codigo: true,
+                        meta: { select: { codigo: true } },
+                        meta_codigo: true,
+                        origem_tipo: true,
                     },
                 },
-                meta_codigo: true,
-                origem_tipo: true,
             },
         });
 
@@ -2651,11 +2673,16 @@ export class ProjetoService {
 
         // não sei se faz sentido ser M quando é outro, mas blz
         let cod_meta = 'M000';
+        if (projeto.ProjetoOrigem.length == 0)
+            throw new HttpException('Não foi possível encontrar a origem do projeto', 400);
+        if (projeto.ProjetoOrigem.length > 1)
+            throw new HttpException('Projeto com mais de uma origem, não é possível gerar o código', 400);
 
-        if (projeto.origem_tipo == 'PdmAntigo') {
-            cod_meta = 'M' + (projeto.meta_codigo || '').padStart(3, '0');
-        } else if (projeto.origem_tipo == 'PdmSistema' && projeto.meta) {
-            cod_meta = 'M' + projeto.meta.codigo.padStart(3, '0');
+        const origem = projeto.ProjetoOrigem[0];
+        if (origem.origem_tipo == 'PdmAntigo') {
+            cod_meta = 'M' + (origem.meta_codigo || '').padStart(3, '0');
+        } else if (origem.origem_tipo == 'PdmSistema' && origem.meta) {
+            cod_meta = 'M' + origem.meta.codigo.padStart(3, '0');
         }
 
         return [
@@ -3175,5 +3202,100 @@ export class ProjetoService {
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
         return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'projeto', input);
+    }
+
+    private async upsertOrigens(
+        projeto_id: number,
+        origens: UpsertOrigemDto[],
+        prismaTx: Prisma.TransactionClient,
+        user: PessoaFromJwt,
+        now: Date
+    ): Promise<void> {
+        const currentOrigens = await prismaTx.projetoOrigem.findMany({
+            where: {
+                projeto_id: projeto_id,
+                removido_em: null,
+            },
+        });
+
+        const updated = origens
+            .filter((o) => o.id !== undefined)
+            .filter((oNew) => {
+                const oOld = currentOrigens.find((o) => o.id === oNew.id);
+                if (oOld) {
+                    return (
+                        oNew.origem_tipo !== oOld.origem_tipo ||
+                        oNew.origem_outro !== oOld.origem_outro ||
+                        oNew.meta_id !== oOld.meta_id ||
+                        oNew.iniciativa_id !== oOld.iniciativa_id ||
+                        oNew.atividade_id !== oOld.atividade_id ||
+                        oNew.meta_codigo !== oOld.meta_codigo
+                    );
+                }
+                throw new BadRequestException(`Registro anterior com ID ${oNew.id} não encontrado.`);
+            });
+
+        const created = origens.filter((o) => o.id == undefined);
+
+        const deleted = currentOrigens.filter((o) => !origens.some((oNew) => oNew.id === o.id)).map((o) => o.id);
+
+        const operations = [];
+
+        for (const o of updated) {
+            operations.push(
+                prismaTx.projetoOrigem.update({
+                    where: {
+                        id: o.id!,
+                        removido_em: null,
+                    },
+                    data: {
+                        origem_tipo: o.origem_tipo,
+                        origem_outro: o.origem_outro,
+                        meta_id: o.meta_id,
+                        iniciativa_id: o.iniciativa_id,
+                        atividade_id: o.atividade_id,
+                        meta_codigo: o.meta_codigo,
+                        atualizado_em: now,
+                        atualizado_por: user.id,
+                    },
+                })
+            );
+        }
+
+        for (const o of created) {
+            operations.push(
+                prismaTx.projetoOrigem.create({
+                    data: {
+                        projeto_id: projeto_id,
+                        origem_tipo: o.origem_tipo,
+                        origem_outro: o.origem_outro,
+                        meta_id: o.meta_id,
+                        iniciativa_id: o.iniciativa_id,
+                        atividade_id: o.atividade_id,
+                        meta_codigo: o.meta_codigo,
+                        criado_em: now,
+                        criado_por: user.id,
+                    },
+                })
+            );
+        }
+
+        if (deleted.length > 0) {
+            operations.push(
+                prismaTx.projetoOrigem.updateMany({
+                    where: {
+                        id: { in: deleted },
+                        projeto_id: projeto_id,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                        removido_por: user.id,
+                    },
+                })
+            );
+        }
+
+        await Promise.all(operations);
     }
 }
