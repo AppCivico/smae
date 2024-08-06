@@ -23,6 +23,11 @@ export class ProjetoProxyPdmMetasController {
             'Projeto.administrador_no_orgao',
             'SMAE.gestor_de_projeto',
             'SMAE.colaborador_de_projeto',
+            'Reports.executar.PDM',
+            'Reports.executar.MDO',
+            'Reports.executar.CasaCivil',
+            'Reports.executar.PlanoSetorial',
+            'Reports.executar.Projetos',
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -41,6 +46,11 @@ export class ProjetoProxyPdmMetasController {
         'Projeto.administrador_no_orgao',
         'SMAE.gestor_de_projeto',
         'SMAE.colaborador_de_projeto',
+        'Reports.executar.PDM',
+        'Reports.executar.MDO',
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.Projetos',
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
@@ -66,7 +76,11 @@ export class ProjetoMDOProxyPdmMetasController {
             'ProjetoMDO.administrador_no_orgao',
             'MDO.gestor_de_projeto',
             'MDO.colaborador_de_projeto',
-            'Reports.executar.PDM'
+            'Reports.executar.PDM',
+            'Reports.executar.MDO',
+            'Reports.executar.CasaCivil',
+            'Reports.executar.PlanoSetorial',
+            'Reports.executar.Projetos',
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -85,7 +99,11 @@ export class ProjetoMDOProxyPdmMetasController {
         'ProjetoMDO.administrador_no_orgao',
         'MDO.gestor_de_projeto',
         'MDO.colaborador_de_projeto',
-        'Reports.executar.PDM'
+        'Reports.executar.PDM',
+        'Reports.executar.MDO',
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.Projetos',
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
