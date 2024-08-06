@@ -10,6 +10,7 @@ import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
+import { CachedMetasDto } from '../dto/create-projeto.dto';
 
 export class ProjetoDto {
     id: number;
@@ -25,6 +26,7 @@ export class ProjetoDto {
     eh_prioritario: boolean;
     meta: IdCodTituloDto | null;
     codigo: string | null;
+    resumo_origens: CachedMetasDto;
     portfolio: PortIdTituloModeloClonagemDto;
     portfolios_compartilhados: IdTituloDto[];
     geolocalizacao: GeolocalizacaoDto[];
@@ -137,6 +139,14 @@ export class ListProjetoSeiDto {
     linhas: ProjetoSeiDto[];
 }
 
+export class OrigemDetailItem {
+    id: number;
+    meta: IdCodTituloDto | null;
+    atividade: IdCodTituloDto | null;
+    iniciativa: IdCodTituloDto | null;
+    meta_codigo: string | null;
+    origem_tipo: ProjetoOrigemTipo;
+}
 export class IdTituloNivelMaxRegDto {
     id: number;
     titulo: string;
@@ -163,6 +173,7 @@ export class IdDescRegiaoComParent extends IdDesc {
 }
 
 export class ProjetoDetailDto {
+    origens_extra: OrigemDetailItem[];
     id: number;
     meta_id: number | null;
     iniciativa_id: number | null;

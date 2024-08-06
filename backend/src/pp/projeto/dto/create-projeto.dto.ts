@@ -69,7 +69,88 @@ export class PPfonteRecursoDto {
     valor_nominal?: number | null;
 }
 
+export class CachedMetasItem {
+    id: number | null;
+    pdm_id: number | null;
+    codigo: string;
+}
+
+export class CachedMetasDto {
+    metas: CachedMetasItem[];
+}
+
+export class UpsertOrigemDto {
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    id?: number;
+
+    /**
+     * tipo da origem
+     *
+     * @example "Outro"
+     */
+    @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
+    @IsEnum(ProjetoOrigemTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
+    })
+    origem_tipo: ProjetoOrigemTipo;
+
+    /**
+     * origem, não é obrigatório se enviar o campo `origem_tipo` com os valores `PdmSistema`.
+     *
+     * Obrigatório em caso de `PdmAntigo` ou `Outro`
+     *
+     * Quando enviar como `PdmSistema` também é necessário enviar `meta_id`, `iniciativa_id` ou `atividade_id`
+     * @example "foobar"
+     */
+    @IsOptional()
+    @IsString()
+    @MaxLength(2048)
+    @ValidateIf((object, value) => value !== null)
+    origem_outro?: string | null;
+
+    /**
+     * meta_id, se for por meta
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    meta_id?: number | null;
+
+    /**
+     * iniciativa_id, se for por iniciativa
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    iniciativa_id?: number | null;
+
+    /**
+     * atividade_id, se for por atividade
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    atividade_id?: number | null;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    meta_codigo?: string | null;
+}
+
 export class CreateProjetoDto {
+    @IsArray()
+    @IsOptional()
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(1000, { message: '$property| precisa ter no máximo 1000 items' })
+    @ValidateNested({ each: true })
+    @Type(() => UpsertOrigemDto)
+    origens_extra?: UpsertOrigemDto[];
+
     /**
      * portfolio_id
      * @example 0

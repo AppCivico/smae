@@ -9,24 +9,29 @@ datasource db {
 }
 
 model Pessoa {
-    id                  Int                 @id @default(autoincrement())
-    email               String              @unique
+    id                  Int       @id @default(autoincrement())
+    email               String    @unique
     senha               String
     nome_exibicao       String
     nome_completo       String
-    atualizado_em       DateTime            @default(now()) @db.Timestamptz(6)
+    atualizado_em       DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por      Int?
-    criado_em           DateTime            @default(now()) @db.Timestamptz(6)
+    criado_em           DateTime  @default(now()) @db.Timestamptz(6)
     criado_por          Int?
-    qtde_senha_invalida Int                 @default(0)
-    senha_atualizada_em DateTime?           @default(now()) @db.Timestamptz(6)
-    senha_bloqueada     Boolean             @default(false)
-    senha_bloqueada_em  DateTime?           @default(now()) @db.Timestamptz(6)
-    desativado          Boolean             @default(false)
+    qtde_senha_invalida Int       @default(0)
+    senha_atualizada_em DateTime? @default(now()) @db.Timestamptz(6)
+    senha_bloqueada     Boolean   @default(false)
+    senha_bloqueada_em  DateTime? @default(now()) @db.Timestamptz(6)
+    desativado          Boolean   @default(false)
     desativado_em       DateTime?
     desativado_por      Int?
     desativado_motivo   String?
     pessoa_fisica_id    Int?
+
+    ProjetoOrigemQcriei     ProjetoOrigem[] @relation("Criador")
+    ProjetoOrigemQAtualizei ProjetoOrigem[] @relation("Atualizador")
+    ProjetoOrigemQRemovi    ProjetoOrigem[] @relation("Removedor")
+
     atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
     desativador         Pessoa?             @relation("DesativadorPessoas", fields: [desativado_por], references: [id])
@@ -1232,6 +1237,7 @@ model Meta {
     GeoEnderecoReferencia                  GeoLocalizacaoReferencia[]
     PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
     view_pdm_meta_iniciativa_atividade     view_pdm_meta_iniciativa_atividade[]
+    ProjetoOrigem                          ProjetoOrigem[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1958,6 +1964,7 @@ model Iniciativa {
     OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
+    ProjetoOrigem                      ProjetoOrigem[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2043,6 +2050,7 @@ model Atividade {
     OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
+    ProjetoOrigem                      ProjetoOrigem[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -3606,10 +3614,40 @@ model Projeto {
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
 
-    tags Int[] @default([])
+    tags          Int[]           @default([])
+    ProjetoOrigem ProjetoOrigem[]
+
+    origem_cache Json @default("{}") @db.Json
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+model ProjetoOrigem {
+    id             Int               @id @default(autoincrement())
+    projeto_id     Int
+    projeto        Projeto           @relation(fields: [projeto_id], references: [id])
+    origem_tipo    ProjetoOrigemTipo @default(Outro)
+    origem_eh_pdm  Boolean           @default(false)
+    origem_outro   String?
+    meta_codigo    String?
+    meta_id        Int?
+    iniciativa_id  Int?
+    atividade_id   Int?
+    criado_em      DateTime          @default(now()) @db.Timestamptz(6)
+    criado_por     Int?
+    atualizado_em  DateTime?
+    atualizado_por Int?
+    removido_em    DateTime?
+    removido_por   Int?
+    criador        Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    atualizador    Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor      Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    meta           Meta?             @relation(fields: [meta_id], references: [id])
+    iniciativa     Iniciativa?       @relation(fields: [iniciativa_id], references: [id])
+    atividade      Atividade?        @relation(fields: [atividade_id], references: [id])
+
+    @@map("projeto_origem")
 }
 
 view ViewProjetoMDO {
