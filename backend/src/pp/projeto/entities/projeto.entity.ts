@@ -1,15 +1,16 @@
 import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
-import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
+import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
+import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
+import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
-import { IdNomeDto } from '../../../common/dto/IdNome.dto';
-import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
+import { CachedMetasDto } from '../dto/create-projeto.dto';
 
 export class ProjetoDto {
     id: number;
@@ -23,7 +24,8 @@ export class ProjetoDto {
     orgao_responsavel: IdSiglaDescricao | null;
     arquivado: boolean;
     eh_prioritario: boolean;
-    meta: IdCodTituloDto | null;
+    //meta: IdCodTituloDto | null;
+    resumo_origens: CachedMetasDto;
     codigo: string | null;
     portfolio: PortIdTituloModeloClonagemDto;
     portfolios_compartilhados: IdTituloDto[];
@@ -162,11 +164,23 @@ export class IdDescRegiaoComParent extends IdDesc {
     nivel: number;
 }
 
+export class OrigemDetailItem {
+    id: number;
+    meta: IdCodTituloDto | null;
+    atividade: IdCodTituloDto | null;
+    iniciativa: IdCodTituloDto | null;
+    meta_codigo: string | null;
+    origem_eh_pdm: boolean;
+    origem_tipo: ProjetoOrigemTipo;
+    origem_outro: string | null;
+}
+
 export class ProjetoDetailDto {
     id: number;
-    meta_id: number | null;
-    iniciativa_id: number | null;
-    atividade_id: number | null;
+    //meta_id: number | null;
+    //iniciativa_id: number | null;
+    //atividade_id: number | null;
+    origens: OrigemDetailItem[];
     projeto_etapa: IdDesc | null;
     nome: string;
     /**
@@ -221,9 +235,9 @@ export class ProjetoDetailDto {
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
     fonte_recursos: ProjetoRecursos[] | null;
-    origem_tipo: ProjetoOrigemTipo;
-    origem_outro: string | null;
-    meta_codigo: string | null;
+    //origem_tipo: ProjetoOrigemTipo;
+    //origem_outro: string | null;
+    //meta_codigo: string | null;
 
     selecionado_em: Date | null;
     em_planejamento_em: Date | null;
@@ -241,9 +255,9 @@ export class ProjetoDetailDto {
 
     equipe: ProjetoEquipeItemDto[];
     grupo_portfolio: number[];
-    meta: ProjetoMetaDetailDto | null;
-    iniciativa: IdCodTituloDto | null;
-    atividade: IdCodTituloDto | null;
+    //meta: ProjetoMetaDetailDto | null;
+    //iniciativa: IdCodTituloDto | null;
+    //atividade: IdCodTituloDto | null;
     // responsaveis_no_orgao_gestor:
 
     responsaveis_no_orgao_gestor: IdNomeExibicaoDto[];
