@@ -1,14 +1,14 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { usePdMStore } from '@/stores/pdm.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { onMounted, watch, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
