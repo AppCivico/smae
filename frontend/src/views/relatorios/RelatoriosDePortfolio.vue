@@ -35,7 +35,7 @@ iniciar();
     <hr class="ml2 f1">
     <router-link
       v-if="temPermissãoPara('Reports.executar.') "
-      :to="{ name: 'novoRelatórioDePortfolioObras' }"
+      :to="{ name: 'novoRelatórioDePortfolio' }"
       class="btn big ml2"
     >
       Novo relatório
