@@ -528,6 +528,23 @@ export class TransferenciaService {
                 );
                 if (parlamentaresRemovidos.length) {
                     for (const row of parlamentaresRemovidos) {
+                        // Verificando se parlamentar já está configurado em alguma distribuição desta transferência.
+                        // Caso esteja, não deixo deletar.
+                        const parlamentarDistribuicao = await prismaTxn.distribuicaoParlamentar.count({
+                            where: {
+                                distribuicao_recurso: {
+                                    transferencia_id: id,
+                                },
+                                parlamentar_id: row.parlamentar_id,
+                                removido_em: null,
+                            },
+                        });
+                        if (parlamentarDistribuicao)
+                            throw new HttpException(
+                                'parlamentar| Parlamentar já está configurado em distribuição de recurso. Remova-o primeiro na distribuição.',
+                                400
+                            );
+
                         operations.push(
                             prismaTxn.transferenciaParlamentar.update({
                                 where: { id: row.id },
@@ -646,10 +663,6 @@ export class TransferenciaService {
                         .filter((e) => e.valor)
                         .reduce((acc, curr) => acc + +curr.valor!, 0);
 
-                    console.log('\n====================================\n');
-                    console.log(sumValor);
-                    console.log(dto.valor);
-                    console.log('\n====================================\n');
                     if (+sumValor > +dto.valor!)
                         throw new HttpException(
                             'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
@@ -666,6 +679,34 @@ export class TransferenciaService {
                                 row.valor?.toNumber() !== relParlamentar.valor ||
                                 row.parlamentar_id !== relParlamentar.parlamentar_id
                             ) {
+                                // Caso o valor seja modificado, deve ser verificado se o novo valor é, no mínimo, superior ao valor cadastrado em distribuições.
+                                if (relParlamentar.valor && row.valor?.toNumber() != relParlamentar.valor) {
+                                    const distribuicoes = await prismaTxn.distribuicaoParlamentar.findMany({
+                                        where: {
+                                            distribuicao_recurso: {
+                                                transferencia_id: id,
+                                            },
+                                            parlamentar_id: row.parlamentar_id,
+                                            removido_em: null,
+                                            valor: { not: null },
+                                        },
+                                        select: {
+                                            valor: true,
+                                        },
+                                    });
+
+                                    const sumDistribuicoes = distribuicoes.reduce(
+                                        (acc, curr) => acc + curr.valor!.toNumber(),
+                                        0
+                                    );
+
+                                    if (+sumDistribuicoes > +relParlamentar.valor)
+                                        throw new HttpException(
+                                            'valor| O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
+                                            400
+                                        );
+                                }
+
                                 operations.push(
                                     prismaTxn.transferenciaParlamentar.update({
                                         where: { id: relParlamentar.id },
