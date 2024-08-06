@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoStatus } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato } from '@prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from 'src/pp/projeto/entities/projeto.entity';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class RelProjetosDto {
     id: number;
@@ -142,6 +143,44 @@ export class RelProjetosAcompanhamentosDto {
     riscos: string | null;
 }
 
+export class RelProjetosContratosDto {
+    id: number;
+    projeto_id: number;
+    numero: string;
+    exclusivo: boolean;
+    processos_SEI: string | null;
+    @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
+    status: StatusContrato;
+    modalidade_licitacao: IdNomeDto | null;
+    fontes_recurso: string | null;
+    area_gestora: IdSiglaDescricao | null;
+    objeto: string | null;
+    descricao_detalhada: string | null;
+    contratante: string | null;
+    empresa_contratada: string | null;
+    prazo: number | null;
+    @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
+    unidade_prazo: ContratoPrazoUnidade | null;
+    data_base: string | null;
+    data_inicio: Date | null;
+    data_termino: Date | null;
+    data_termino_atualizada: Date | null;
+    valor: number | null;
+    valor_reajustado: number | null;
+    percentual_medido: number | null;
+    observacoes: string | null;
+}
+
+export class RelProjetosAditivosDto {
+    id: number;
+    contrato_id: number;
+    tipo: IdNomeDto;
+    data: Date | null;
+    valor_com_reajuste: number | null;
+    percentual_medido: number | null;
+    data_termino_atual: Date | null;
+}
+
 export class PPProjetosRelatorioDto {
     linhas: RelProjetosDto[];
     cronograma: RelProjetosCronogramaDto[];
@@ -150,4 +189,6 @@ export class PPProjetosRelatorioDto {
     monitoramento_planos_de_acao: RelProjetosPlanoAcaoMonitoramentosDto[];
     licoes_aprendidas: RelProjetosLicoesAprendidasDto[];
     acompanhamentos: RelProjetosAcompanhamentosDto[];
+    contratos: RelProjetosContratosDto[];
+    aditivos: RelProjetosAditivosDto[];
 }
