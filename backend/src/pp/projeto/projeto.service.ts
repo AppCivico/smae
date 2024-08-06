@@ -12,7 +12,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto, PPfonteRecursoDto } from './dto/create-projeto.dto';
+import {
+    CachedMetasDto,
+    CreateProjetoDocumentDto,
+    CreateProjetoDto,
+    PPfonteRecursoDto,
+    UpsertOrigemDto,
+} from './dto/create-projeto.dto';
 import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
@@ -21,6 +27,7 @@ import {
     UpdateProjetoDto,
 } from './dto/update-projeto.dto';
 import {
+    OrigemDetailItem,
     ProjetoDetailBaseMdo,
     ProjetoDetailDto,
     ProjetoDetailMdoDto,
@@ -318,6 +325,8 @@ export class ProjetoService {
 
         this.removeCampos(tipo, dto, 'create');
 
+        const origem_cache = await this.processaOrigens(dto.origens_extra);
+
         if (dto.projeto_etapa_id) {
             await this.prisma.projetoEtapa.findFirstOrThrow({
                 where: { id: dto.projeto_etapa_id, removido_em: null, tipo_projeto: tipo },
@@ -370,6 +379,7 @@ export class ProjetoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.projeto.create({
                     data: {
+                        origem_cache: origem_cache as any,
                         tipo: tipo,
                         registrado_por: user.id,
                         registrado_em: now,
@@ -468,6 +478,8 @@ export class ProjetoService {
                     });
                 }
                 //await this.verificaCampos(prismaTx, row.id, tipo);
+
+                if (dto.origens_extra) await this.upsertOrigens(row.id, dto.origens_extra, prismaTx, user, now);
 
                 await this.upsertRegioes(dto, prismaTx, row.id, now, [], user, portfolio.nivel_regionalizacao);
 
@@ -748,33 +760,33 @@ export class ProjetoService {
                 arquivado: true,
                 codigo: true,
 
-                atividade: {
-                    select: {
-                        iniciativa: {
-                            select: {
-                                meta: {
-                                    select: {
-                                        id: true,
-                                        codigo: true,
-                                        titulo: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-
-                iniciativa: {
-                    select: {
-                        meta: {
-                            select: {
-                                id: true,
-                                codigo: true,
-                                titulo: true,
-                            },
-                        },
-                    },
-                },
+                //                atividade: {
+                //                    select: {
+                //                        iniciativa: {
+                //                            select: {
+                //                                meta: {
+                //                                    select: {
+                //                                        id: true,
+                //                                        codigo: true,
+                //                                        titulo: true,
+                //                                    },
+                //                                },
+                //                            },
+                //                        },
+                //                    },
+                //                },
+                //
+                //                iniciativa: {
+                //                    select: {
+                //                        meta: {
+                //                            select: {
+                //                                id: true,
+                //                                codigo: true,
+                //                                titulo: true,
+                //                            },
+                //                        },
+                //                    },
+                //                },
 
                 meta: {
                     select: {
@@ -812,6 +824,7 @@ export class ProjetoService {
                         descricao: true,
                     },
                 },
+                origem_cache: true,
             },
             orderBy: { codigo: 'asc' },
         });
@@ -823,17 +836,14 @@ export class ProjetoService {
         for (const row of rows) {
             let meta: IdCodTituloDto | null;
 
-            if (row.atividade) {
-                meta = { ...row.atividade.iniciativa.meta };
-            } else if (row.iniciativa) {
-                meta = { ...row.iniciativa.meta };
-            } else if (row.meta) {
+            if (row.meta) {
                 meta = row.meta;
             } else {
                 meta = null;
             }
 
             ret.push({
+                resumo_origens: row.origem_cache?.valueOf() as CachedMetasDto,
                 id: row.id,
                 nome: row.nome,
                 status: row.status,
@@ -1433,6 +1443,19 @@ export class ProjetoService {
                 modalidade_contratacao: { select: { id: true, nome: true } },
                 programa: { select: { id: true, nome: true } },
                 tipo_aditivo: { select: { id: true, nome: true } },
+                ProjetoOrigem: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        origem_tipo: true,
+                        meta_codigo: true,
+                        atividade: { select: { id: true, codigo: true, titulo: true } },
+                        iniciativa: { select: { id: true, codigo: true, titulo: true } },
+                        meta: { select: { id: true, codigo: true, titulo: true } },
+                    },
+                },
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1511,6 +1534,16 @@ export class ProjetoService {
         const tarefaCrono = projeto.TarefaCronograma[0] ? projeto.TarefaCronograma[0] : undefined;
 
         let ret: ProjetoDetailDto = {
+            origens_extra: projeto.ProjetoOrigem.map((po) => {
+                return {
+                    id: po.id,
+                    atividade: po.atividade,
+                    iniciativa: po.iniciativa,
+                    meta: po.meta,
+                    origem_tipo: po.origem_tipo,
+                    meta_codigo: po.meta_codigo,
+                } satisfies OrigemDetailItem;
+            }),
             id: projeto.id,
             meta_id: projeto.meta_id,
             iniciativa_id: projeto.iniciativa_id,
@@ -2070,6 +2103,11 @@ export class ProjetoService {
 
         if (dto.tags == null) dto.tags = [];
 
+        let origem_cache: object | undefined = undefined;
+        if (Array.isArray(dto.origens_extra)) {
+            origem_cache = await this.processaOrigens(dto.origens_extra);
+        }
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
@@ -2091,6 +2129,10 @@ export class ProjetoService {
                     if (tags.length !== dto.tags.length)
                         throw new HttpException('tags| Uma ou mais tag não foi encontrada', 400);
                 }
+            }
+
+            if (Array.isArray(dto.origens_extra)) {
+                await this.upsertOrigens(projetoId, dto.origens_extra, prismaTx, user, now);
             }
 
             if ('regiao_ids' in dto) {
@@ -2187,6 +2229,7 @@ export class ProjetoService {
                     origem_outro,
                     meta_codigo,
                     origem_tipo,
+                    origem_cache: origem_cache as any,
 
                     // campos do create
                     orgao_gestor_id,
@@ -3175,5 +3218,217 @@ export class ProjetoService {
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
         return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'projeto', input);
+    }
+
+    private async upsertOrigens(
+        projeto_id: number,
+        origens: UpsertOrigemDto[],
+        prismaTx: Prisma.TransactionClient,
+        user: PessoaFromJwt,
+        now: Date
+    ): Promise<void> {
+        const currentOrigens = await prismaTx.projetoOrigem.findMany({
+            where: {
+                projeto_id: projeto_id,
+                removido_em: null,
+            },
+        });
+
+        const updated = origens
+            .filter((o) => o.id !== undefined)
+            .filter((oNew) => {
+                const oOld = currentOrigens.find((o) => o.id === oNew.id);
+                if (oOld) {
+                    return (
+                        oNew.origem_tipo !== oOld.origem_tipo ||
+                        oNew.origem_outro !== oOld.origem_outro ||
+                        oNew.meta_id !== oOld.meta_id ||
+                        oNew.iniciativa_id !== oOld.iniciativa_id ||
+                        oNew.atividade_id !== oOld.atividade_id ||
+                        oNew.meta_codigo !== oOld.meta_codigo
+                    );
+                }
+                throw new BadRequestException(`Registro anterior com ID ${oNew.id} não encontrado.`);
+            });
+
+        const created = origens.filter((o) => o.id == undefined);
+
+        const deleted = currentOrigens.filter((o) => !origens.some((oNew) => oNew.id === o.id)).map((o) => o.id);
+
+        const operations = [];
+
+        for (const o of updated) {
+            operations.push(
+                prismaTx.projetoOrigem.update({
+                    where: {
+                        id: o.id!,
+                        removido_em: null,
+                    },
+                    data: {
+                        origem_tipo: o.origem_tipo,
+                        origem_outro: o.origem_outro,
+                        meta_id: o.meta_id,
+                        iniciativa_id: o.iniciativa_id,
+                        atividade_id: o.atividade_id,
+                        meta_codigo: o.meta_codigo,
+                        atualizado_em: now,
+                        atualizado_por: user.id,
+                    },
+                })
+            );
+        }
+
+        for (const o of created) {
+            operations.push(
+                prismaTx.projetoOrigem.create({
+                    data: {
+                        projeto_id: projeto_id,
+                        origem_tipo: o.origem_tipo,
+                        origem_outro: o.origem_outro,
+                        meta_id: o.meta_id,
+                        iniciativa_id: o.iniciativa_id,
+                        atividade_id: o.atividade_id,
+                        meta_codigo: o.meta_codigo,
+                        criado_em: now,
+                        criado_por: user.id,
+                    },
+                })
+            );
+        }
+
+        if (deleted.length > 0) {
+            operations.push(
+                prismaTx.projetoOrigem.updateMany({
+                    where: {
+                        id: { in: deleted },
+                        projeto_id: projeto_id,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                        removido_por: user.id,
+                    },
+                })
+            );
+        }
+
+        await Promise.all(operations);
+    }
+
+    private async processaOrigens(origens: UpsertOrigemDto[] | undefined): Promise<CachedMetasDto> {
+        const cached: CachedMetasDto = {
+            metas: [],
+        };
+        if (!origens || (Array.isArray(origens) && origens.length == 0)) return cached;
+
+        for (const dto of origens) {
+            const meta_id: number | null = dto.meta_id ? dto.meta_id : null;
+            const iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
+            const atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
+            const meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
+            const origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
+
+            if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
+                const _info = await validaPdmSistema(this, dto);
+                cached.metas.push({
+                    codigo: _info.codigo,
+                    id: _info.id,
+                    pdm_id: _info.pdm_id,
+                });
+            } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
+                validaPdmAntigo(dto);
+                cached.metas.push({
+                    codigo: dto.meta_codigo!,
+                    id: null,
+                    pdm_id: null,
+                });
+            } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
+                throw new HttpException('origem_tipo=Outro não é suportado para tipo extra', 500);
+            } else {
+                throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
+            }
+
+            dto.meta_id = meta_id;
+            dto.iniciativa_id = iniciativa_id;
+            dto.atividade_id = atividade_id;
+            dto.meta_codigo = meta_codigo;
+            dto.origem_tipo = origem_tipo;
+        }
+
+        return cached;
+
+        function validaPdmAntigo(dto: UpsertOrigemDto) {
+            const errMsg = 'caso origem seja outro sistema de meta';
+            if (!dto.meta_codigo) throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!dto.origem_outro)
+                throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
+
+            if (dto.meta_id) throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
+            if (dto.iniciativa_id)
+                throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
+            if (dto.atividade_id)
+                throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            dto.meta_id = dto.atividade_id = dto.iniciativa_id = null;
+        }
+
+        async function validaPdmSistema(self: ProjetoService, dto: UpsertOrigemDto) {
+            if (!dto.atividade_id && !dto.iniciativa_id && !dto.meta_id)
+                throw new HttpException(
+                    'meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
+                    400
+                );
+
+            if (dto.atividade_id) {
+                self.logger.log('validando atividade_id');
+                const atv = await self.prisma.atividade.findFirstOrThrow({
+                    where: { id: dto.atividade_id, removido_em: null },
+                    select: { iniciativa_id: true },
+                });
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({
+                    where: { id: atv.iniciativa_id, removido_em: null },
+                    select: { meta_id: true },
+                });
+                await self.prisma.iniciativa.findFirstOrThrow({
+                    where: { id: ini.meta_id, removido_em: null },
+                    select: { id: true },
+                });
+
+                dto.iniciativa_id = atv.iniciativa_id;
+                dto.meta_id = ini.meta_id;
+            } else if (dto.iniciativa_id) {
+                self.logger.log('validando iniciativa_id');
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({
+                    where: { id: dto.iniciativa_id, removido_em: null },
+                    select: { meta_id: true },
+                });
+
+                dto.meta_id = ini.meta_id;
+                dto.atividade_id = null;
+            } else if (dto.meta_id) {
+                self.logger.log('validando meta_id');
+                await self.prisma.meta.findFirstOrThrow({
+                    where: { id: dto.meta_id, removido_em: null },
+                    select: { id: true },
+                });
+
+                dto.iniciativa_id = dto.atividade_id = null;
+            }
+
+            if (dto.origem_outro)
+                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+            if (dto.meta_codigo)
+                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            dto.meta_codigo = dto.origem_outro = null;
+
+            const meta = await self.prisma.meta.findFirstOrThrow({
+                where: { id: dto.meta_id! },
+                select: { codigo: true, pdm_id: true, id: true },
+            });
+            return meta;
+        }
     }
 }
