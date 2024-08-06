@@ -1564,7 +1564,7 @@ model Variavel {
     dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
 
     // para variaveis calculadas, há um atraso no preenchimento assim como no indicador
-    recalculando Boolean @default(false)
+    recalculando    Boolean  @default(false)
     recalculo_erro  String?
     recalculo_tempo Decimal?
 
@@ -3229,6 +3229,7 @@ model TextoConfig {
 enum TipoRelatorio {
     Consolidado
     Analitico
+    Geral
 }
 
 enum FonteRelatorio {
@@ -3350,8 +3351,8 @@ model PortfolioOrgao {
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
-    @@index([portfolio_id])
     @@unique([portfolio_id, orgao_id])
+    @@index([portfolio_id])
     @@map("portifolio_orgao")
 }
 
