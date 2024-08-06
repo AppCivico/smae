@@ -316,7 +316,7 @@ export class ContratoService {
                         projeto_id,
                     },
                     data: {
-                        // TODO: adicionar mais campos e tratamentos.
+                        numero: dto.numero,
                         contrato_exclusivo: dto.contrato_exclusivo,
                         status: dto.status,
                         modalidade_contratacao_id: dto.modalidade_contratacao_id,
