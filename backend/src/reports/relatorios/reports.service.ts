@@ -33,6 +33,7 @@ import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } 
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
+import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -65,7 +66,9 @@ export class ReportsService {
         @Inject(forwardRef(() => PPStatusService)) private readonly ppStatusService: PPStatusService,
         @Inject(forwardRef(() => PPObrasService)) private readonly ppObrasService: PPObrasService,
         @Inject(forwardRef(() => ParlamentaresService)) private readonly parlamentaresService: ParlamentaresService,
-        @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService
+        @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
+        @Inject(forwardRef(() => TribunalDeContasService))
+        private readonly tribunalDeContasService: TribunalDeContasService
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -234,6 +237,9 @@ export class ReportsService {
                 break;
             case 'Transferencias':
                 service = this.transferenciasService;
+                break;
+            case 'TribunalDeContas':
+                service = this.tribunalDeContasService;
                 break;
             default:
                 dto.fonte satisfies never;

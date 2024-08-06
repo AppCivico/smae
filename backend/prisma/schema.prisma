@@ -3243,6 +3243,7 @@ enum FonteRelatorio {
     ProjetoPrevisaoCusto
     ProjetoOrcamento
     Parlamentares
+    TribunalDeContas
     Transferencias
     ObraStatus
     Obras
@@ -4633,6 +4634,8 @@ model feature_flag {
 
     panorama Boolean @default(false)
     mf_v2    Boolean @default(false)
+
+    // TODO? adicionar controle de sync de SEI aqui.
 }
 
 model MetaStatusConsolidadoCf {
@@ -6741,4 +6744,32 @@ model Empreendimento {
     projetos Projeto[]
 
     @@map("empreendimento")
+}
+
+model StatusSEI {
+    id Int @id @default(autoincrement())
+
+    ativo         Boolean @default(true)
+    processo_sei  String  @unique
+    url           String
+    status_code   Int?
+    json_resposta String?
+
+    // Para geração de hash.
+    // const convertToJsonString = require('fast-json-stable-stringify');
+    // function jsonFlatHash(obj) {
+    //     const sortedJson = convertToJsonString(obj);
+    //     return notWebCrypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
+    // }
+    sei_hash      String?
+    resumo_hash   String?
+    arquivos_hash String?
+
+    criado_em               DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_em           DateTime? @db.Timestamptz(6)
+    sei_atualizado_em       DateTime? @db.Timestamptz(6)
+    resumo_atualizado_em    DateTime? @db.Timestamptz(6)
+    arquivos_atualizados_em DateTime? @db.Timestamptz(6)
+
+    @@map("status_sei")
 }

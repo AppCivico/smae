@@ -15,6 +15,7 @@ import { PPStatusModule } from '../pp-status/pp-status.module';
 import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
 import { TransferenciasModule } from '../transferencias/transferencias.module';
 import { PPObrasModule } from '../pp-obras/pp-obras.module';
+import { TribunalDeContasModule } from '../tribunal-de-contas/tribunal-de-contas.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { PPObrasModule } from '../pp-obras/pp-obras.module';
         forwardRef(() => PPObrasModule),
         forwardRef(() => ParlamentaresModule),
         forwardRef(() => TransferenciasModule),
+        forwardRef(() => TribunalDeContasModule),
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
