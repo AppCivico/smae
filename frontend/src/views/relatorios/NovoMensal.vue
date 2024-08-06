@@ -60,9 +60,15 @@ async function onSubmit(values) {
   }
 }
 
-TagsStore.getAll();
+onMounted(async () => {
+  // esperando porque já chama o PdMStore.getAll() e pode travar a execução
+  // direta mais à frente.
+  await TagsStore.getAll();
 
-onMounted(() => {
+  if (!MetasStore.activePdm.id) {
+    await MetasStore.getPdM();
+  }
+
   PdMStore.getAll().then(() => {
     const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
     if (currentPdM?.id) {
