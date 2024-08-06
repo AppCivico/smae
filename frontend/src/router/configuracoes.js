@@ -979,6 +979,7 @@ export default [
   {
     path: '/paineis',
     meta: {
+      entidadeMãe: 'pdm',
       limitarÀsPermissões: [
         'CadastroPainel.inserir',
         'CadastroMeta.administrador_no_pdm',
