@@ -136,6 +136,7 @@ export default {
     {
       path: 'mensal',
       meta: {
+        entidadeMãe: 'pdm',
         título: 'Relatórios Mensais',
         títuloParaMenu: 'Relatório Mensal',
         limitarÀsPermissões: [
@@ -162,6 +163,7 @@ export default {
     {
       path: 'semestral-ou-anual',
       meta: {
+        entidadeMãe: 'pdm',
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PDM',
@@ -186,6 +188,7 @@ export default {
     {
       path: 'orcamentarios-pdm',
       meta: {
+        entidadeMãe: 'pdm',
         título: 'Relatórios orçamentários do PdM',
         títuloParaMenu: 'Relatórios orçamentários',
         limitarÀsPermissões: 'Reports.executar.PDM',
@@ -311,6 +314,7 @@ export default {
     {
       path: 'previsao-de-custo-pdm',
       meta: {
+        entidadeMãe: 'pdm',
         título: 'Relatórios de previsão de custo de PdM',
         títuloParaMenu: 'Previsão de custo',
         limitarÀsPermissões: 'Reports.executar.PDM',
