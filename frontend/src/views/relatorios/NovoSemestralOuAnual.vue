@@ -63,7 +63,11 @@ async function onSubmit(values) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (!MetasStore.activePdm.id) {
+    await MetasStore.getPdM();
+  }
+
   PdMStore.getAll().then(() => {
     const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
     if (currentPdM?.id) {
