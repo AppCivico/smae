@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoProxyPdmMetaDto } from './entities/projeto.proxy-pdm-meta.entity';
+import { FilterPdmOrNotDto } from './dto/create-projeto.dto';
 
 @Injectable()
 export class ProjetoProxyPdmMetasService {
     constructor(private readonly prisma: PrismaService) {}
-    async findAll(): Promise<ProjetoProxyPdmMetaDto[]> {
+    async findAll(filters: FilterPdmOrNotDto): Promise<ProjetoProxyPdmMetaDto[]> {
+        if (filters.apenas_pdm === undefined) filters.apenas_pdm = true;
         const rows = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
-                tipo: 'PDM',
+                tipo: filters.apenas_pdm ? 'PDM' : undefined,
             },
             orderBy: [{ ativo: 'desc' }, { atualizado_em: 'desc' }],
             select: {

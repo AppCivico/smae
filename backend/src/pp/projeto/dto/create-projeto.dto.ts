@@ -5,6 +5,7 @@ import {
     ArrayMaxSize,
     ArrayMinSize,
     IsArray,
+    IsBoolean,
     IsEnum,
     IsInt,
     IsNumber,
@@ -656,4 +657,11 @@ export class CreateProjetoSeiDto {
     @ValidateIf((object, value) => value !== null)
     @MaxLength(1024)
     observacoes?: string;
+}
+
+export class FilterPdmOrNotDto {
+    @IsBoolean()
+    @IsOptional()
+    @Transform((a: TransformFnParams) => (a.value === 'true' ? true : a.value === 'false' ? false : a.value))
+    apenas_pdm?: boolean;
 }
