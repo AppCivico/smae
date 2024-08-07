@@ -1,4 +1,5 @@
 <script setup>
+import SmallModal from '@/components/SmallModal.vue';
 import { storeToRefs } from 'pinia';
 import { computed, defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
@@ -306,29 +307,280 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           :key="status.id"
           class="resumo-da-distribuicao-de-recursos__status-item f1 mb1"
         >
-          <dt class="w700 t16">
-            {{ status.status_customizado?.nome || status.status_base?.nome }}
-          </dt>
-          <dd
-            v-if="status.dias_no_status"
-            class="w700 tc300"
+          <ul
+            v-if="status"
+            ref="listaDeStatus"
+            class="flex pb1 status-list"
           >
-            <time
-              :datetime="status.data_troca"
+            <li
+              :key="status.id"
+              class="p1 tc status-item"
             >
-              {{ status.dias_no_status }} dias
-              <span
-                class="tipinfo"
+              <div class="status-item__header">
+                <dt class="w700 t16 status-item__name">
+                  {{ status.status_customizado?.nome || status.status_base?.nome }}
+                </dt>
+                <dd
+                  v-if="status.dias_no_status"
+                  class="w700 tc300 status-item__days"
+                >
+                  <time :datetime="status.data_troca">
+                    {{ status.dias_no_status }} dias
+                    <span class="tipinfo">
+                      <svg
+                        width="16"
+                        height="16"
+                      >
+                        <use xlink:href="#i_i" />
+                      </svg>
+                      <div>{{ dateToShortDate(status.data_troca) }}</div>
+                    </span>
+                  </time>
+                </dd>
+              </div>
+            </li>
+          </ul>
+
+          <SmallModal v-if="statusSelecionado">
+            <div class="flex center mb2">
+              <h2
+                v-if="statusEmFoco.status?.nome"
+                class="título-do-status-selecionado f1"
               >
-                <svg
-                  width="16"
-                  height="16"
-                ><use xlink:href="#i_i" /></svg><div>
-                  {{ dateToShortDate(status.data_troca) }}
+                {{ statusEmFoco.status.nome }}
+              </h2>
+              <hr class="ml2 f1">
+              <CheckClose
+                :formulário-sujo="formulárioSujo"
+                :apenas-emitir="true"
+                @close="statusSelecionado = 0"
+              />
+            </div>
+
+            <pre v-scrollLockDebug>statusEmFoco: {{ statusEmFoco }}</pre>
+
+            <form
+              :disabled="isSubmitting"
+              @submit.prevent="onSubmit"
+            >
+              <Field
+                name="status_id"
+                type="hidden"
+              />
+              <Field
+                name="fase_id"
+                type="hidden"
+              />
+
+              <fieldset
+                v-if="statusEmFoco?.tarefas?.length"
+                class="campos-de-tarefas mb2"
+              >
+                <LabelFromYup
+                  class="label mb1"
+                  name="tarefas"
+                  :schema="schema"
+                  as="legend"
+                />
+                <div
+                  v-for="(tarefa, idx) in statusEmFoco.tarefas"
+                  :key="`tarefas--${tarefa.workflow_tarefa.id}`"
+                  class="mb2"
+                >
+                  <Field
+                    :name="`tarefas[${idx}].id`"
+                    :value="tarefa.workflow_tarefa.id"
+                    type="hidden"
+                  />
+                  <label class="block mb1 tc600">
+                    <Field
+                      :name="`tarefas[${idx}].concluida`"
+                      type="checkbox"
+                      :disabled="statusEmFoco?.andamento?.concluida"
+                      :value="true"
+                      :unchecked-value="false"
+                    />
+                    <span>
+                      Concluir <strong class="w600">{{ tarefa.workflow_tarefa.descricao }}</strong>
+                    </span>
+                    <ErrorMessage
+                      class="error-msg mb2"
+                      :name="`tarefas[${idx}].concluida`"
+                    />
+                  </label>
+
+                  <template v-if="tarefa.responsabilidade !== 'Propria'">
+                    <div
+                      v-if="(values.tarefas[idx].orgao_responsavel_id > -1 && values.tarefas[idx].orgao_responsavel_id !== '')
+                        || tarefa.andamento?.necessita_preencher_orgao"
+                      class="mb1"
+                    >
+                      <label :for="`tarefas[${idx}].orgao_responsavel_id`">
+                        Órgão associado <span
+                          v-if="tarefa.andamento?.necessita_preencher_orgao"
+                          class="tvermelho"
+                        >*</span>
+                      </label>
+                      <Field
+                        :id="`tarefas[${idx}].orgao_responsavel_id`"
+                        :name="`tarefas[${idx}].orgao_responsavel_id`"
+                        as="select"
+                        class="inputtext light mb1"
+                        :class="{ loading: organs?.loading }"
+                        :required="tarefa.andamento?.necessita_preencher_orgao"
+                        :disabled="!órgãosComoLista?.length || statusEmFoco?.andamento?.concluida"
+                      >
+                        <option
+                          value=""
+                          :disabled="tarefa.andamento?.necessita_preencher_orgao"
+                        >
+                          <template v-if="tarefa.andamento?.necessita_preencher_orgao">
+                            Selecionar
+                          </template>
+                        </option>
+                        <option
+                          v-for="item in órgãosComoLista"
+                          :key="item"
+                          :value="item.id"
+                          :title="item.descricao?.length > 36 ? item.descricao : null"
+                        >
+                          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+                        </option>
+                      </Field>
+                    </div>
+                    <button
+                      v-else
+                      type="button"
+                      class="like-a__link block addlink ml2"
+                      @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                      >
+                        <use xlink:href="#i_+" />
+                      </svg>
+                      Associar órgão responsável
+                    </button>
+                  </template>
                 </div>
-              </span>
-            </time>
-          </dd>
+              </fieldset>
+
+              <div class="mb1">
+                <LabelFromYup
+                  name="situacao_id"
+                  :schema="schema"
+                />
+                <Field
+                  name="situacao_id"
+                  as="select"
+                  rows="5"
+                  class="inputtext light mb1"
+                  :disabled="statusEmFoco?.andamento?.concluida"
+                  :class="{ error: errors.situacao_id }"
+                >
+                  <option value="" />
+                  <option
+                    v-for="item in statusEmFoco?.situacoes"
+                    :key="item.id"
+                    :value="item.id"
+                  >
+                    {{ item.situacao }}
+                  </option>
+                </Field>
+                <ErrorMessage
+                  class="error-msg mb2"
+                  name="situacao_id"
+                />
+              </div>
+
+              <div class="mb1">
+                <LabelFromYup
+                  name="orgao_responsavel_id"
+                  :schema="schema"
+                />
+                <Field
+                  name="orgao_responsavel_id"
+                  as="select"
+                  class="inputtext light mb1"
+                  :class="{ error: errors.orgao_responsavel_id, loading: organs?.loading }"
+                  :disabled="!órgãosComoLista?.length || statusEmFoco.responsabilidade === 'Propria' || statusEmFoco?.andamento?.concluida"
+                  @change="setFieldValue('pessoa_responsavel_id', null)"
+                >
+                  <option value="" />
+                  <option
+                    v-for="item in órgãosComoLista"
+                    :key="item"
+                    :value="item.id"
+                    :title="item.descricao?.length > 36 ? item.descricao : null"
+                  >
+                    {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+                  </option>
+                </Field>
+                <ErrorMessage
+                  class="error-msg mb2"
+                  name="orgao_responsavel_id"
+                />
+              </div>
+
+              <div class="mb1">
+                <LabelFromYup
+                  name="pessoa_responsavel_id"
+                  :schema="schema"
+                />
+                <Field
+                  name="pessoa_responsavel_id"
+                  as="select"
+                  class="inputtext light mb1"
+                  :class="{ error: errors.pessoa_responsavel_id, loading: pessoasSimplificadas?.loading }"
+                  :disabled="!pessoasDisponíveis?.length || statusEmFoco?.andamento?.concluida"
+                >
+                  <option value="" />
+                  <option
+                    v-for="item in pessoasDisponíveis"
+                    :key="item"
+                    :value="item.id"
+                  >
+                    {{ item.nome_exibicao }}
+                  </option>
+                </Field>
+                <ErrorMessage
+                  class="error-msg mb2"
+                  name="pessoa_responsavel_id"
+                />
+              </div>
+
+              <pre v-scrollLockDebug>values: {{ values }}</pre>
+              <FormErrorsList
+                :errors="errors"
+                class="mb1"
+              />
+
+              <div
+                v-if="!statusEmFoco?.andamento?.concluida"
+                class="flex spacebetween center g2 mb2"
+              >
+                <hr class="f1">
+                <button
+                  v-if="!statusEmFoco?.andamento?.concluida"
+                  type="button"
+                  class="btn outline bgnone tcprimary big mr1"
+                  :disabled="!statusEmFoco.andamento?.pode_concluir"
+                  @click="finalizarFase(statusEmFoco.fase?.id)"
+                >
+                  Salvar e finalizar
+                </button>
+                <button
+                  type="submit"
+                  class="btn big"
+                  :disabled="isSubmitting"
+                >
+                  Salvar
+                </button>
+                <hr class="f1">
+              </div>
+            </form>
+          </SmallModal>
           <dd class="mt1">
             {{ status.nome_responsavel }} (<abbr
               :title="status.orgao_responsavel?.descricao"
