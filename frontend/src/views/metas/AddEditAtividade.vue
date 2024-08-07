@@ -287,7 +287,10 @@ function filterResponsible(orgao_id) {
         </div>
       </div>
 
-      <div class="mb1 mt1">
+      <div
+        v-show="route.meta.entidadeMãe === 'pdm' "
+        class="mb1 mt1"
+      >
         <label class="block">
           <Field
             v-model="compoe_indicador_iniciativa"
