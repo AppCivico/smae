@@ -33,7 +33,7 @@ interface Estado {
   };
 }
 
-export const useVariaveisGlobaisStore = defineStore('variareisGlobais', {
+export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
