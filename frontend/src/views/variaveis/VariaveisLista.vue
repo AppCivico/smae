@@ -1,13 +1,15 @@
 <script setup>
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import { variavelGlobal as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
 import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -18,9 +20,17 @@ const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const { temPermissãoPara } = storeToRefs(authStore);
 
+const variavelCujosValoresSeraoExibidos = ref(0);
+const tipoDeValor = ref('Previsto');
+
 const {
   lista, chamadasPendentes, erros, paginacao,
 } = storeToRefs(variaveisGlobaisStore);
+
+function abrirEdicaoValores(idDaVariavel, tipo) {
+  variavelCujosValoresSeraoExibidos.value = idDaVariavel;
+  tipoDeValor.value = tipo;
+}
 
 async function excluirVariavel(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover a variável "${nome}"?`, async () => {
@@ -84,6 +94,8 @@ watchEffect(() => {
       <col class="col--minimum">
       <col class="col--minimum">
       <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <thead>
@@ -161,6 +173,32 @@ watchEffect(() => {
               </li>
             </ul>
           </td>
+
+          <td>
+            <button
+              type="button"
+              @click="abrirEdicaoValores(item.id, 'Previsto')"
+              class="tipinfo tprimary like-a__text"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_valores" /></svg><div>Preencher valores Previstos e Acumulados</div>
+            </button>
+          </td>
+          <td>
+            <button
+              type="button"
+              @click="abrirEdicaoValores(item.id, 'Realizado')"
+              class="tipinfo tprimary like-a__text"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_check" /></svg><div>Preencher valores Realizados Retroativos</div>
+            </button>
+          </td>
+
           <td>
             <router-link
               v-if="item.pode_editar"
@@ -190,7 +228,7 @@ watchEffect(() => {
         </tr>
         <tr v-if="item.metodologia">
           <td
-            colspan="8"
+            colspan="10"
             aria-label="schema.fields.metodologia?.spec.label || 'Campo faltando no schema'"
           >
             {{ item.metodologia }}
@@ -200,17 +238,17 @@ watchEffect(() => {
 
       <tbody>
         <tr v-if="chamadasPendentes.lista">
-          <td colspan="8">
+          <td colspan="10">
             Carregando
           </td>
         </tr>
         <tr v-else-if="erros.lista">
-          <td colspan="8">
+          <td colspan="10">
             Erro: {{ erros.lista }}
           </td>
         </tr>
         <tr v-else-if="!lista.length">
-          <td colspan="8">
+          <td colspan="10">
             Nenhum resultado encontrado.
           </td>
         </tr>
@@ -222,4 +260,15 @@ watchEffect(() => {
       v-bind="paginacao"
     />
   </div>
+
+  <SmallModal
+    v-if="variavelCujosValoresSeraoExibidos && tipoDeValor"
+    @close="abrirEdicaoValores(0, '')"
+  >
+  <VariaveisSeries
+      :variavel-id="variavelCujosValoresSeraoExibidos"
+      :tipo-de-valor="tipoDeValor"
+      @close="abrirEdicaoValores(0, '')"
+    />
+  </SmallModal>
 </template>

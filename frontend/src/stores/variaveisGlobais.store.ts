@@ -1,4 +1,4 @@
-import type { VariavelDetailDto, VariavelGlobalDetailDto } from '@/../../backend/src/variavel/dto/list-variavel.dto';
+import type { ListSeriesAgrupadas, VariavelDetailDto, VariavelGlobalDetailDto } from '@/../../backend/src/variavel/dto/list-variavel.dto';
 import type { VariavelGlobalItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
 
 import { defineStore } from 'pinia';
@@ -20,6 +20,7 @@ interface Erros {
 interface Estado {
   lista: Lista;
   emFoco: (VariavelDetailDto & VariavelGlobalDetailDto) | null;
+  seriesAgrupadas: ListSeriesAgrupadas | null;
 
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
@@ -37,6 +38,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
+    seriesAgrupadas: null,
 
     chamadasPendentes: {
       lista: false,
@@ -120,6 +122,35 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         } else {
           resposta = await this.requestS.post(`${baseUrl}/variavel`, params);
         }
+
+        this.chamadasPendentes.emFoco = false;
+        this.erros.emFoco = null;
+        return resposta;
+      } catch (erro) {
+        this.erros.emFoco = erro;
+        this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
+
+    async buscarSerie(variavelId: number | string, params = {}): Promise<void> {
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/variavel/${variavelId || this.route.params.variavelId}/serie`, params);
+
+        this.seriesAgrupadas = resposta;
+      } catch (erro: unknown) {
+        this.erros.emFoco = erro;
+      }
+      this.chamadasPendentes.emFoco = false;
+    },
+
+    async salvarSeries(params = {}): Promise<boolean> {
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        const resposta = await this.requestS.patch(`${baseUrl}/variavel-serie/`, params);
 
         this.chamadasPendentes.emFoco = false;
         this.erros.emFoco = null;
