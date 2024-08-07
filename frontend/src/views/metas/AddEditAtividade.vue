@@ -235,7 +235,7 @@ function filterResponsible(orgao_id) {
             type="text"
             class="inputtext light mb1"
             maxlength="30"
-            :class="{ 'error': errors.codigo }"
+            :class="{ error: errors.codigo }"
           />
           <div class="error-msg">
             {{ errors.codigo }}
@@ -247,7 +247,7 @@ function filterResponsible(orgao_id) {
             name="titulo"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.titulo }"
+            :class="{ error: errors.titulo }"
           />
           <div class="error-msg">
             {{ errors.titulo }}
@@ -262,7 +262,7 @@ function filterResponsible(orgao_id) {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.contexto }"
+            :class="{ error: errors.contexto }"
           />
           <div class="error-msg">
             {{ errors.contexto }}
@@ -279,7 +279,7 @@ function filterResponsible(orgao_id) {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.complemento }"
+            :class="{ error: errors.complemento }"
           />
           <div class="error-msg">
             {{ errors.complemento }}
@@ -298,7 +298,7 @@ function filterResponsible(orgao_id) {
             type="checkbox"
             value="1"
             class="inputcheckbox"
-          /><span :class="{ 'error': errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
+          /><span :class="{ error: errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
         </label>
         <div class="error-msg">
           {{ errors.compoe_indicador_iniciativa }}
