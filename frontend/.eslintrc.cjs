@@ -4,7 +4,11 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'airbnb-base',
+    'airbnb-typescript/base',
+    '@vue/eslint-config-typescript/recommended',
     'plugin:vue/vue3-recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
+    '@vue/eslint-config-prettier/skip-formatting',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
