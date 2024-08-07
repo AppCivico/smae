@@ -119,10 +119,6 @@ async function onSubmit(values) {
       return x.orgao_id;
     });
 
-    if (route.meta.entidadeMãe === 'planoSetorial') {
-      values.compoe_indicador_meta = false;
-    }
-
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
 
@@ -308,7 +304,7 @@ function filterResponsible(orgao_id) {
         </div>
       </div>
       <div
-        v-if="route.meta.entidadeMãe !== 'planoSetorial' "
+        v-show="route.meta.entidadeMãe === 'pdm' "
         class="mb1 mt1"
       >
         <label class="block">
