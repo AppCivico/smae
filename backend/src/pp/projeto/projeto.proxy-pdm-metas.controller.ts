@@ -5,6 +5,7 @@ import { ListDadosMetaIniciativaAtividadesDto } from '../../meta/dto/create-meta
 import { MetaService } from '../../meta/meta.service';
 import { ListProjetoProxyPdmMetaDto } from './entities/projeto.proxy-pdm-meta.entity';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
+import { FilterPdmOrNotDto } from './dto/create-projeto.dto';
 
 @ApiTags('Projeto')
 @Controller('projeto/proxy')
@@ -35,8 +36,8 @@ export class ProjetoProxyPdmMetasController {
         description:
             'Como não há necessidade de puxar todo os dados da meta e do PDM, esse endpoint retorna um resumo de Meta+PDM',
     })
-    async findAll(): Promise<ListProjetoProxyPdmMetaDto> {
-        return { linhas: await this.svc.findAll() };
+    async findAll(@Query() filters: FilterPdmOrNotDto): Promise<ListProjetoProxyPdmMetaDto> {
+        return { linhas: await this.svc.findAll(filters) };
     }
 
     @ApiBearerAuth('access-token')
@@ -88,8 +89,8 @@ export class ProjetoMDOProxyPdmMetasController {
         description:
             'Como não há necessidade de puxar todo os dados da meta e do PDM, esse endpoint retorna um resumo de Meta+PDM',
     })
-    async findAll(): Promise<ListProjetoProxyPdmMetaDto> {
-        return { linhas: await this.svc.findAll() };
+    async findAll(@Query() filters: FilterPdmOrNotDto): Promise<ListProjetoProxyPdmMetaDto> {
+        return { linhas: await this.svc.findAll(filters) };
     }
 
     @ApiBearerAuth('access-token')
