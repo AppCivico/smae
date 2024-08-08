@@ -868,7 +868,7 @@ export class VariavelService {
         const listActive = await this.prisma.variavel.findMany({
             where: {
                 AND: whereSet,
-                tipo: tipo,
+                tipo: tipo == 'Global' ? { in: ['Global', 'Calculada'] } : tipo,
             },
             select: {
                 id: true,
