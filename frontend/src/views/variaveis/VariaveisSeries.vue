@@ -277,12 +277,13 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
           v-model="valorPadrao"
           type="number"
           class="inputtext light mb1"
-        >
-      </div>
-      <button
+          :disabled="modoDePreenchimento === 'valor_acumulado'"
+          >
+        </div>
+        <button
         type="button"
         class="f0 mb1 btn bgnone outline tcprimary"
-        :disabled="valorPadrao === ''"
+        :disabled="valorPadrao === '' || modoDePreenchimento === 'valor_acumulado'"
         @click="preencherVaziosCom(valorPadrao)"
       >
         Preencher vazios
