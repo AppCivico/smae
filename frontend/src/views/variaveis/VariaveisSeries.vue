@@ -242,6 +242,7 @@ watch(() => props.variavelId, (novoId) => {
 });
 
 watch(SeriesAgrupadasPorAno, (novoValor) => {
+  modoDePreenchimento.value = 'valor_nominal';
   resetForm({
     values: novoValor
   });
@@ -305,24 +306,26 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
       </button>
     </div>
 
-    <hr class="mb2 f1">
+    <template v-if="seriesAgrupadas?.variavel?.acumulativa">
+      <hr class="mb2 f1">
 
-    <div class="flex mb2">
-      <label class="f1">
-        <input
-          v-model="modoDePreenchimento"
-          type="radio"
-          class="inputcheckbox"
-          value="valor_nominal"
-        ><span>Preencher por valor {{ $props.tipoDeValor?.toLowerCase() }}</span></label>
-      <label class="f1">
-        <input
-          v-model="modoDePreenchimento"
-          type="radio"
-          class="inputcheckbox"
-          value="valor_acumulado"
-        ><span>Preencher por valor acumulado</span></label>
-    </div>
+      <div class="flex mb2">
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_nominal"
+          ><span>Preencher por valor {{ $props.tipoDeValor?.toLowerCase() }}</span></label>
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_acumulado"
+          ><span>Preencher por valor acumulado</span></label>
+      </div>
+    </template>
   </auxiliarDePreenchimento>
 
   <hr class="mb2 f1">
