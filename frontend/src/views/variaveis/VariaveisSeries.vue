@@ -384,6 +384,11 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
               </td>
               <td v-if="seriesAgrupadas?.variavel?.acumulativa">
                   <Field
+                    @blur="($e) => {
+                      if ($e.target.value === '') {
+                        setFieldValue(`${chave}[${idx}].${$props.tipoDeValor + 'Acumulado'}.valor`, 0);
+                      }
+                    }"
                     @update:model-value="($v) => {
                       if (modoDePreenchimento === 'valor_acumulado') {
                         atualizarAPartirDoAcumulado($v, chave, idx);
