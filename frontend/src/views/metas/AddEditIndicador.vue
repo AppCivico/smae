@@ -249,12 +249,17 @@ async function checkClose() {
 }
 
 if (indicador_id) {
-  Promise.all([
-    VariaveisStore.getAllCompound(indicador_id),
-    VariaveisStore.getAllCompoundInUse(indicador_id),
+  const chamadas = [
     IndicadoresStore.getById(indicador_id),
     VariaveisStore.getAll(indicador_id),
-  ]).then(() => {
+  ];
+
+  if (route.meta.entidadeMãe === 'pdm') {
+    chamadas.push(VariaveisStore.getAllCompound(indicador_id));
+    chamadas.push(VariaveisStore.getAllCompoundInUse(indicador_id));
+  }
+
+  Promise.all(chamadas).then(() => {
     if (singleIndicadores.value.formula) {
       formula.value = singleIndicadores.value.formula;
 
@@ -717,7 +722,7 @@ export default {
   </template>
 
   <EnvelopeDeAbas
-    v-if="indicador_id"
+    v-if="indicador_id && $route.meta.entidadeMãe === 'pdm'"
     :meta-dados-por-id="dadosExtrasDeAbas"
     class="mt2 mb2"
   >
