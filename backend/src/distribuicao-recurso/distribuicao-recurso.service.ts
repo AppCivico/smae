@@ -432,7 +432,7 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 status: {
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: { data_troca: 'asc' },
                     select: {
                         id: true,
                         data_troca: true,
@@ -514,30 +514,47 @@ export class DistribuicaoRecursoService {
                         processo_sei: formataSEI(s.processo_sei),
                     };
                 }),
-                historico_status: r.status.map((r) => {
+                historico_status: r.status.map((status, idx) => {
+                    // Caso tenha rows mais novas, o dado "dias_no_status" deve ser calculado olhando a prox row.
+                    //const proxRow = r.status![idx + 1];
+                    const proxRow = r.status && idx + 1 < r.status.length ? r.status[idx + 1] : null;
+                    let data_prox_row;
+                    if (proxRow) {
+                        data_prox_row = proxRow.data_troca;
+                    }
+
                     return {
-                        id: r.id,
-                        data_troca: r.data_troca,
-                        dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
-                        motivo: r.motivo,
-                        nome_responsavel: r.nome_responsavel,
+                        id: status.id,
+                        data_troca: status.data_troca,
+                        dias_no_status: Math.abs(
+                            data_prox_row
+                                ? Math.round(
+                                      DateTime.fromJSDate(status.data_troca).diff(
+                                          DateTime.fromJSDate(data_prox_row),
+                                          'days'
+                                      ).days
+                                  )
+                                : Math.round(DateTime.fromJSDate(status.data_troca).diffNow('days').days)
+                        ),
+                        motivo: status.motivo,
+                        nome_responsavel: status.nome_responsavel,
                         orgao_responsavel: {
-                            id: r.orgao_responsavel.id,
-                            sigla: r.orgao_responsavel.sigla,
+                            id: status.orgao_responsavel.id,
+                            sigla: status.orgao_responsavel.sigla,
                         },
-                        status_customizado: r.status
+                        status_customizado: status.status
                             ? {
-                                  id: r.status.id,
-                                  nome: r.status.nome,
-                                  tipo: r.status.tipo,
+                                  id: status.status.id,
+                                  nome: status.status.nome,
+                                  tipo: status.status.tipo,
                                   status_base: false,
                               }
                             : null,
-                        status_base: r.status_base
+                        status_base: status.status_base
                             ? {
-                                  id: r.status_base.id,
-                                  nome: r.status_base.nome,
-                                  tipo: r.status_base.tipo,
+                                  id: status.status_base.id,
+                                  nome: status.status_base.nome,
+                                  tipo: status.status_base.tipo,
                                   status_base: true,
                               }
                             : null,
