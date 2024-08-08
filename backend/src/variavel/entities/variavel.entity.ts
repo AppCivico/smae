@@ -22,10 +22,11 @@ export class IndicadorVariavelOrigemDto {
     atividade: IdTituloDto | null;
 }
 
-export class IndicadorVariavel {
+export class IndicadorVariavelItemDto {
     desativado: boolean;
     indicador: IndicadorVariavelOrigemDto;
     indicador_origem: IndicadorVariavelOrigemDto | null;
+    aviso_data_fim: boolean;
 }
 
 export class VariavelItemDto {
@@ -43,7 +44,7 @@ export class VariavelItemDto {
     orgao: OrgaoResumo;
     regiao: Regiao | null;
     polaridade: Polaridade;
-    indicador_variavel: IndicadorVariavel[];
+    indicador_variavel: IndicadorVariavelItemDto[];
     responsaveis?: IdNomeExibicaoDto[];
     ano_base?: number | null;
     codigo: string;

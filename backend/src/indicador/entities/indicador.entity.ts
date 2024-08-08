@@ -23,6 +23,7 @@ export class Indicador {
     formula_variaveis: FormulaVariaveis[];
     casas_decimais: number | null;
     recalculando: boolean;
+    ha_avisos_data_fim: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
 }

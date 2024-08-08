@@ -46,7 +46,6 @@ export class RefreshIndicadorService implements TaskableService {
         await this.prisma.indicador.update({
             where: { id: inputParams.indicador_id },
             data: {
-                recalculando: false,
                 recalculo_erro: null,
                 recalculo_tempo: took / 1000,
             },

@@ -1,3 +1,9 @@
+-- AlterTable
+ALTER TABLE "indicador" ADD COLUMN     "ha_avisos_data_fim" BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE "indicador_variavel" ADD COLUMN     "aviso_data_fim" BOOLEAN NOT NULL DEFAULT false;
+
 CREATE OR REPLACE FUNCTION monta_serie_indicador (pIndicador_id int, eh_serie_realizado boolean, pPeriodoStart date, pPeriodoEnd date)
     RETURNS varchar
     AS $$

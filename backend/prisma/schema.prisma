@@ -1340,6 +1340,8 @@ model Indicador {
     complemento           String?
     casas_decimais        Int?          @db.SmallInt
 
+    ha_avisos_data_fim Boolean @default(false)
+
     recalculando    Boolean  @default(false)
     recalculo_erro  String?
     recalculo_tempo Decimal?
@@ -1790,6 +1792,8 @@ model IndicadorVariavel {
     desativado_em  DateTime?
     desativado_por Int?
     desativador    Pessoa?   @relation("Desativador", fields: [desativado_por], references: [id])
+
+    aviso_data_fim Boolean @default(false)
 
     @@index([variavel_id], map: "idx_indicador_variavel_variavel")
     @@index([indicador_id], map: "idx_indicador_variavel_indicador")
