@@ -11,7 +11,7 @@ import {
     ValorSerieExistente,
 } from '../variavel/entities/variavel.entity';
 import { VariavelService } from '../variavel/variavel.service';
-import { CreateIndicadorDto } from './dto/create-indicador.dto';
+import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
@@ -446,6 +446,7 @@ export class IndicadorService {
                 recalculando: true,
                 recalculo_erro: true,
                 recalculo_tempo: true,
+                ha_avisos_data_fim: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -931,5 +932,156 @@ export class IndicadorService {
         });
 
         return [...variaveis.map((r) => r.referencia), ...formulaCompostas.map((r) => r.referencia)];
+    }
+
+    async linkVariavel(id: number, dto: LinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
+        const indicador = await this.prisma.indicador.findFirstOrThrow({
+            where: { id: id, removido_em: null },
+            select: {
+                meta_id: true,
+                atividade_id: true,
+                iniciativa_id: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+            },
+        });
+        const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
+            where: {
+                meta_id: indicador.meta_id ?? undefined,
+                atividade_id: indicador.atividade_id ?? undefined,
+                iniciativa_id: indicador.iniciativa_id ?? undefined,
+            },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PS', metaRow.meta_id, user, 'indicador');
+
+        const variaveisDb = await this.prisma.variavel.findMany({
+            where: {
+                id: { in: dto.variavel_ids },
+                tipo: {
+                    in: ['Calculada', 'Global'],
+                },
+                removido_em: null,
+            },
+            select: { id: true, inicio_medicao: true, fim_medicao: true, titulo: true, codigo: true },
+        });
+        const alreadyInIndicador = await this.prisma.indicadorVariavel.findMany({
+            where: {
+                variavel_id: { in: dto.variavel_ids },
+                indicador_id: id,
+                desativado: false,
+                indicador_origem_id: null,
+            },
+            select: { variavel_id: true },
+        });
+        const alreadyLinkedIds = new Set(alreadyInIndicador.map((item) => item.variavel_id));
+
+        for (const varId of dto.variavel_ids) {
+            // pula se já tem, nem valida os dados, isso é apenas para não compilar o frontend se caso venha duplicado
+            if (alreadyLinkedIds.has(varId)) continue;
+
+            const variavel = variaveisDb.find((e) => e.id == varId);
+            if (!variavel) throw new HttpException(`Variável ${varId} não encontrada`, 400);
+
+            if (variavel.inicio_medicao == null)
+                throw new HttpException(
+                    `Variável ${variavel.titulo} (${variavel.codigo}) não possui data de início de medição`,
+                    400
+                );
+
+            if (variavel.inicio_medicao && indicador.inicio_medicao < variavel.inicio_medicao)
+                throw new HttpException(
+                    `A variável ${variavel.titulo} (${variavel.codigo}) inicia a medição em ${
+                        variavel.inicio_medicao
+                    }, enquanto o indicador inicia em ${indicador.inicio_medicao}`,
+                    400
+                );
+
+            if (variavel.fim_medicao && indicador.fim_medicao > variavel.fim_medicao)
+                throw new HttpException(
+                    `A variável ${variavel.titulo} (${variavel.codigo}) termina a medição em ${
+                        variavel.fim_medicao
+                    }, enquanto o indicador termina em ${indicador.fim_medicao}`,
+                    400
+                );
+        }
+
+        const variableIdsToLink = dto.variavel_ids.filter((varId) => !alreadyLinkedIds.has(varId));
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<void> => {
+            await prisma.indicadorVariavel.createMany({
+                data: variableIdsToLink.map(
+                    (varId) =>
+                        ({
+                            variavel_id: varId,
+                            indicador_id: id,
+                            desativado: false,
+                            indicador_origem_id: null,
+                            aviso_data_fim: false,
+                        }) satisfies Prisma.IndicadorVariavelCreateManyInput
+                ),
+            });
+        });
+
+        return;
+    }
+
+    async unlinkVariavel(id: number, dto: UnlinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
+        const indicador = await this.prisma.indicador.findFirstOrThrow({
+            where: { id: id, removido_em: null },
+            select: {
+                meta_id: true,
+                atividade_id: true,
+                iniciativa_id: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+            },
+        });
+        const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
+            where: {
+                meta_id: indicador.meta_id ?? undefined,
+                atividade_id: indicador.atividade_id ?? undefined,
+                iniciativa_id: indicador.iniciativa_id ?? undefined,
+            },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PS', metaRow.meta_id, user, 'indicador');
+
+        const alreadyInIndicador = await this.prisma.indicadorVariavel.findFirst({
+            where: {
+                variavel_id: dto.variavel_id,
+                indicador_id: id,
+                desativado: false,
+                indicador_origem_id: null,
+            },
+            select: { variavel_id: true },
+        });
+        // se não existe, já ta desvinculado
+        if (!alreadyInIndicador) return;
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const emUso = await prismaTx.indicadorFormulaVariavel.count({
+                where: {
+                    variavel_id: dto.variavel_id,
+                    indicador_id: id,
+                },
+            });
+            if (emUso > 0) {
+                throw new HttpException(
+                    `A variável ${dto.variavel_id} está sendo usada em fórmulas do indicador ${id}`,
+                    400
+                );
+            }
+
+            await prismaTx.indicadorVariavel.deleteMany({
+                where: {
+                    variavel_id: dto.variavel_id,
+                    indicador_id: id,
+                    desativado: false,
+                    indicador_origem_id: null,
+                },
+            });
+        });
+
+        return;
     }
 }

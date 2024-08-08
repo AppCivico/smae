@@ -1,7 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Periodicidade, Polaridade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import {
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsOptional,
+    IsString,
+    Max,
+    MaxLength,
+    Min,
+    ValidateIf,
+} from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { MAX_CASAS_DECIMAIS } from '../../variavel/dto/create-variavel.dto';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -112,4 +123,15 @@ export class CreateIndicadorDto {
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     @ValidateIf((object, value) => value !== null)
     casas_decimais: number | null;
+}
+
+export class LinkIndicadorVariavelDto {
+    @IsArray({ message: '$property| precisa ser um array' })
+    @IsInt({ each: true, message: '$property| precisa ser um número' })
+    variavel_ids: number[];
+}
+
+export class UnlinkIndicadorVariavelDto {
+    @IsInt({ message: '$property| precisa ser um número' })
+    variavel_id: number;
 }

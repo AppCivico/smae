@@ -7,7 +7,7 @@ import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from '../variavel/entities/variavel.entity';
-import { CreateIndicadorDto } from './dto/create-indicador.dto';
+import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import {
     CreateIndicadorFormulaCompostaDto,
     FilterFormulaCompostaFormDto,
@@ -189,6 +189,28 @@ export class IndicadorPSController {
     @Roles(MetaSetorialController.ReadPerm)
     async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
         return { linhas: await this.indicadorService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @Patch('plano-setorial-indicador/:id/associar-variavel')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    async link_var(
+        @Param() params: FindOneParams,
+        @Body() dto: LinkIndicadorVariavelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.indicadorService.linkVariavel(+params.id, dto, user);
+    }
+
+    @Delete('plano-setorial-indicador/:id/desassociar-variavel')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    async unlink_var(
+        @Param() params: FindOneParams,
+        @Body() dto: UnlinkIndicadorVariavelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.indicadorService.unlinkVariavel(+params.id, dto, user);
     }
 
     @Patch('plano-setorial-indicador/:id')

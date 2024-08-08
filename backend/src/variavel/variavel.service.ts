@@ -843,6 +843,20 @@ export class VariavelService {
     }
 
     async findAll(tipo: TipoVariavel, filters: FilterVariavelDto): Promise<VariavelItemDto[]> {
+        if (
+            !filters.indicador_id &&
+            !filters.meta_id &&
+            !filters.iniciativa_id &&
+            !filters.atividade_id &&
+            !filters.regiao_id &&
+            !filters.assuntos &&
+            !filters.id
+        ) {
+            throw new BadRequestException(
+                'Use ao menos um dos filtros: id, indicador_id, meta_id, iniciativa_id, atividade_id, regiao_id ou assuntos'
+            );
+        }
+
         const whereSet = this.getVariavelWhereSet(filters);
 
         // TODO seria bom verificar permissões do usuário, se realmente poderia visualizar [logo fazer batch edit dos valores] de todas as variaveis
@@ -899,6 +913,7 @@ export class VariavelService {
                     select: {
                         desativado: true,
                         id: true,
+                        aviso_data_fim: true,
                         indicador_origem: {
                             select: {
                                 id: true,
@@ -1162,7 +1177,7 @@ export class VariavelService {
 
     private getVariavelWhereSet(filters: FilterVariavelDto) {
         const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
-        if (filters.remover_desativados) {
+        if (filters.remover_desativados || filters.remover_desativados === undefined) {
             // não acredito que sirva de nada, mas vou manter pois já estava assim
             // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
             // impossíveis

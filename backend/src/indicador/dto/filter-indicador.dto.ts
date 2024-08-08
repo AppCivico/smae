@@ -7,7 +7,7 @@ import { DateTransform } from '../../auth/transforms/date.transform';
 export class FilterIndicadorDto {
     /**
      * Filtrar por meta_id?
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| meta_id' })
@@ -16,7 +16,7 @@ export class FilterIndicadorDto {
 
     /**
      * Filtrar por iniciativa_id?
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id' })
@@ -25,7 +25,7 @@ export class FilterIndicadorDto {
 
     /**
      * Filtrar por atividade_id?
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id' })
@@ -34,7 +34,7 @@ export class FilterIndicadorDto {
 
     /**
      * Filtrar por id
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| id' })
@@ -45,7 +45,7 @@ export class FilterIndicadorDto {
 export class FilterSerieVariavelDto {
     /**
      * Filtrar valores de
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsOnlyDate()
@@ -54,7 +54,7 @@ export class FilterSerieVariavelDto {
 
     /**
      * Filtrar valores até
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsOnlyDate()
@@ -72,7 +72,7 @@ export class FilterSerieVariavelDto {
 
     /**
      * Filtrar variaveis de uma atividade_id
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id' })
@@ -81,7 +81,7 @@ export class FilterSerieVariavelDto {
 
     /**
      * Filtrar variaveis de uma iniciativa
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa' })
