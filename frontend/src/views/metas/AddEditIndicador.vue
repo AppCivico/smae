@@ -28,7 +28,7 @@ import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
-  onMounted, onUpdated, ref, unref,
+  ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -125,9 +125,6 @@ function start() {
       break;
   }
 }
-
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
 
 // Formula
 async function validadeFormula(f) {
@@ -275,6 +272,10 @@ if (indicador_id) {
 } else {
   IndicadoresStore.getAll(meta_id, 'meta_id');
 }
+
+watch(() => props.group, () => {
+  start();
+}, { immediate: true });
 </script>
 <script>
 // use normal <script> to declare options
