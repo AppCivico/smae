@@ -97,7 +97,6 @@ const rotasParaMenuPrincipal = [
   'mdoEmpreendimentosListar',
   'parlamentaresListar',
   'paineisExternosListar',
-  'planosSetoriaisListar',
   'grupoDeVariaveisListar',
   'Workflow',
 ];
