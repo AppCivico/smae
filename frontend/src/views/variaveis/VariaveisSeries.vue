@@ -366,8 +366,7 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
                       atualizarAcumuladosEmCascata(chave, idx);
                     }
                   }"
-                  :aria-disabled="modoDePreenchimento === 'valor_acumulado'"
-                  :readonly="modoDePreenchimento === 'valor_acumulado'"
+                  :disabled="modoDePreenchimento === 'valor_acumulado'"
                   :aria-label="serie[$props.tipoDeValor as TiposValidos].periodo"
                   class="inputtext light"
                   :name="`${chave}[${idx}].${$props.tipoDeValor}.valor`"
@@ -386,8 +385,7 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
                         atualizarAPartirDoAcumulado($v, chave, idx);
                       }
                     }"
-                    :readonly="modoDePreenchimento === 'valor_nominal'"
-                    :aria-disabled="modoDePreenchimento === 'valor_nominal'"
+                    :disabled="modoDePreenchimento === 'valor_nominal'"
                     :name="`${chave}[${idx}].${$props.tipoDeValor + 'Acumulado'}.valor`"
                     :aria-label="`Acumulado ${serie[$props.tipoDeValor as TiposValidos].periodo}`"
                     class="inputtext light"
