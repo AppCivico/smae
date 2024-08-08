@@ -125,7 +125,8 @@ const formulárioSujo = useIsFormDirty();
 
 function buscarAcumuladoAnterior(ano: number, indice: number) {
   const digitos = carga[ano]?.[indice - 1]?.[`${props.tipoDeValor}Acumulado` as TiposValidos]?.valor
-    || carga[ano - 1]?.[carga[ano - 1].length - 1]?.[`${props.tipoDeValor}Acumulado` as TiposValidos]?.valor;
+    ?? carga[ano - 1]?.[carga[ano - 1].length - 1]?.[`${props.tipoDeValor}Acumulado` as TiposValidos]?.valor
+    ?? seriesAgrupadas.value?.variavel?.valor_base;
 
   const numero = Number(digitos);
 
