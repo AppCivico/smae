@@ -18,6 +18,14 @@ module.exports = {
     ],
     parser: '@typescript-eslint/parser',
   },
+  rules: {
+    'import/extensions': [
+      'error', {
+        ts: 'always',
+        vue: 'always',
+      },
+    ],
+  },
   settings: {
     'import/resolver': {
       alias: {
@@ -57,6 +65,11 @@ module.exports = {
       files: ['*.store.js', '*.store.ts'],
       rules: {
         'import/prefer-default-export': 'off',
+        'import/extensions': [
+          'error', {
+            ts: 'never',
+          },
+        ],
       },
     },
   ],
