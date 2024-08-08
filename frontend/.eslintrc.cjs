@@ -9,9 +9,14 @@ module.exports = {
     'plugin:vue/vue3-recommended',
     'plugin:@typescript-eslint/recommended-type-checked',
     '@vue/eslint-config-prettier/skip-formatting',
+    '@vue/eslint-config-typescript',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
+    project: [
+      './frontend/tsconfig.json',
+    ],
+    parser: '@typescript-eslint/parser',
   },
   settings: {
     'import/resolver': {
