@@ -59,6 +59,24 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const tituloIntroducao = (() => {
+  switch (props.tipoDeValor) {
+    case 'Previsto':
+      return {
+        titulo: 'Editar valores previstos',
+        introducao: 'Preencher valores previstos e acumulados para cada período.',
+      };
+    case 'Realizado':
+      return {
+        titulo: 'Editar valores realizados',
+        introducao: 'Preencher valores realizados retroativos para cada período.',
+      };
+    default:
+      throw new Error(`tipoDeValor desconhecido: ${props.tipoDeValor}`);
+  }
+})();
+
+
 const {
   seriesAgrupadas,
   chamadasPendentes,
@@ -233,7 +251,7 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
 </script>
 <template>
   <header class="flex g2 spacebetween center mb2">
-    <h2>Editar valores {{ $props.tipoDeValor?.toLowerCase() }}</h2>
+    <h2>{{ tituloIntroducao.titulo }}</h2>
 
     <hr class="f1">
 
@@ -245,7 +263,7 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
   </header>
 
   <p class="label mb1">
-    Valores previstos e previstos acumulados para cada período.
+    {{ tituloIntroducao.introducao }}
   </p>
 
   <hr class="mb2">
