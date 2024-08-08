@@ -303,29 +303,29 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       flex flexwrap g2 align-end"
       >
         <div
-          v-for="status in distribuição.historico_status"
-          :key="status.id"
+          v-if=" distribuição?.historico_status"
           class="resumo-da-distribuicao-de-recursos__status-item f1 mb1"
         >
           <ul
-            v-if="status"
             ref="listaDeStatus"
-            class="flex pb1 status-list"
+            class="flex pb1 andamento-fluxo__lista-de-fases"
           >
             <li
+              v-for="(status, index) in distribuição.historico_status"
               :key="status.id"
-              class="p1 tc status-item"
+              class="p1 tc andamento-fluxo__fase"
+              :class="index === distribuição.historico_status.length - 1 && index === 0? 'andamento-fluxo__fase--iniciada' : 'andamento-fluxo__fase--concluída'"
             >
               <div class="status-item__header">
-                <dt class="w700 t16 status-item__name">
+                <dt class="w700 t16 andamento-fluxo__nome-da-fase">
                   {{ status.status_customizado?.nome || status.status_base?.nome }}
                 </dt>
                 <dd
                   v-if="status.dias_no_status"
-                  class="w700 tc300 status-item__days"
+                  class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
                 >
                   <time :datetime="status.data_troca">
-                    {{ status.dias_no_status }} dias
+                    <strong>+ {{ status.dias_no_status }} dias </strong>
                     <span class="tipinfo">
                       <svg
                         width="16"
@@ -333,260 +333,34 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                       >
                         <use xlink:href="#i_i" />
                       </svg>
-                      <div>{{ dateToShortDate(status.data_troca) }}</div>
+                      <div>desde{{ dateToShortDate(status.data_troca) }}</div>
                     </span>
+                    <p>
+                      {{ status.nome_responsavel }}
+                    </p>
                   </time>
                 </dd>
               </div>
             </li>
           </ul>
-
-          <SmallModal v-if="statusSelecionado">
-            <div class="flex center mb2">
-              <h2
-                v-if="statusEmFoco.status?.nome"
-                class="título-do-status-selecionado f1"
-              >
-                {{ statusEmFoco.status.nome }}
-              </h2>
-              <hr class="ml2 f1">
-              <CheckClose
-                :formulário-sujo="formulárioSujo"
-                :apenas-emitir="true"
-                @close="statusSelecionado = 0"
-              />
+          <dd 
+           class="parlamentares"
+          >
+            <div
+              v-for="parlamentar in distribuição.parlamentares"
+              :key="parlamentar.id"
+              class=" flex flexwrap spacebetween center g2"
+            >
+              <dl>
+                <dt class="t16 w700 mb05 tc500">Parlamentar</dt>
+                <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
+              </dl>
+              <hr class="f1">
+              <dl>
+                <dt class="t16 w700 mb05 tc500">Valor do recurso</dt>
+                <dd> <strong>R$ {{parlamentar.valor || ' - '}}(%)</strong></dd>
+              </dl>
             </div>
-
-            <pre v-scrollLockDebug>statusEmFoco: {{ statusEmFoco }}</pre>
-
-            <form
-              :disabled="isSubmitting"
-              @submit.prevent="onSubmit"
-            >
-              <Field
-                name="status_id"
-                type="hidden"
-              />
-              <Field
-                name="fase_id"
-                type="hidden"
-              />
-
-              <fieldset
-                v-if="statusEmFoco?.tarefas?.length"
-                class="campos-de-tarefas mb2"
-              >
-                <LabelFromYup
-                  class="label mb1"
-                  name="tarefas"
-                  :schema="schema"
-                  as="legend"
-                />
-                <div
-                  v-for="(tarefa, idx) in statusEmFoco.tarefas"
-                  :key="`tarefas--${tarefa.workflow_tarefa.id}`"
-                  class="mb2"
-                >
-                  <Field
-                    :name="`tarefas[${idx}].id`"
-                    :value="tarefa.workflow_tarefa.id"
-                    type="hidden"
-                  />
-                  <label class="block mb1 tc600">
-                    <Field
-                      :name="`tarefas[${idx}].concluida`"
-                      type="checkbox"
-                      :disabled="statusEmFoco?.andamento?.concluida"
-                      :value="true"
-                      :unchecked-value="false"
-                    />
-                    <span>
-                      Concluir <strong class="w600">{{ tarefa.workflow_tarefa.descricao }}</strong>
-                    </span>
-                    <ErrorMessage
-                      class="error-msg mb2"
-                      :name="`tarefas[${idx}].concluida`"
-                    />
-                  </label>
-
-                  <template v-if="tarefa.responsabilidade !== 'Propria'">
-                    <div
-                      v-if="(values.tarefas[idx].orgao_responsavel_id > -1 && values.tarefas[idx].orgao_responsavel_id !== '')
-                        || tarefa.andamento?.necessita_preencher_orgao"
-                      class="mb1"
-                    >
-                      <label :for="`tarefas[${idx}].orgao_responsavel_id`">
-                        Órgão associado <span
-                          v-if="tarefa.andamento?.necessita_preencher_orgao"
-                          class="tvermelho"
-                        >*</span>
-                      </label>
-                      <Field
-                        :id="`tarefas[${idx}].orgao_responsavel_id`"
-                        :name="`tarefas[${idx}].orgao_responsavel_id`"
-                        as="select"
-                        class="inputtext light mb1"
-                        :class="{ loading: organs?.loading }"
-                        :required="tarefa.andamento?.necessita_preencher_orgao"
-                        :disabled="!órgãosComoLista?.length || statusEmFoco?.andamento?.concluida"
-                      >
-                        <option
-                          value=""
-                          :disabled="tarefa.andamento?.necessita_preencher_orgao"
-                        >
-                          <template v-if="tarefa.andamento?.necessita_preencher_orgao">
-                            Selecionar
-                          </template>
-                        </option>
-                        <option
-                          v-for="item in órgãosComoLista"
-                          :key="item"
-                          :value="item.id"
-                          :title="item.descricao?.length > 36 ? item.descricao : null"
-                        >
-                          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-                        </option>
-                      </Field>
-                    </div>
-                    <button
-                      v-else
-                      type="button"
-                      class="like-a__link block addlink ml2"
-                      @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                      >
-                        <use xlink:href="#i_+" />
-                      </svg>
-                      Associar órgão responsável
-                    </button>
-                  </template>
-                </div>
-              </fieldset>
-
-              <div class="mb1">
-                <LabelFromYup
-                  name="situacao_id"
-                  :schema="schema"
-                />
-                <Field
-                  name="situacao_id"
-                  as="select"
-                  rows="5"
-                  class="inputtext light mb1"
-                  :disabled="statusEmFoco?.andamento?.concluida"
-                  :class="{ error: errors.situacao_id }"
-                >
-                  <option value="" />
-                  <option
-                    v-for="item in statusEmFoco?.situacoes"
-                    :key="item.id"
-                    :value="item.id"
-                  >
-                    {{ item.situacao }}
-                  </option>
-                </Field>
-                <ErrorMessage
-                  class="error-msg mb2"
-                  name="situacao_id"
-                />
-              </div>
-
-              <div class="mb1">
-                <LabelFromYup
-                  name="orgao_responsavel_id"
-                  :schema="schema"
-                />
-                <Field
-                  name="orgao_responsavel_id"
-                  as="select"
-                  class="inputtext light mb1"
-                  :class="{ error: errors.orgao_responsavel_id, loading: organs?.loading }"
-                  :disabled="!órgãosComoLista?.length || statusEmFoco.responsabilidade === 'Propria' || statusEmFoco?.andamento?.concluida"
-                  @change="setFieldValue('pessoa_responsavel_id', null)"
-                >
-                  <option value="" />
-                  <option
-                    v-for="item in órgãosComoLista"
-                    :key="item"
-                    :value="item.id"
-                    :title="item.descricao?.length > 36 ? item.descricao : null"
-                  >
-                    {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-                  </option>
-                </Field>
-                <ErrorMessage
-                  class="error-msg mb2"
-                  name="orgao_responsavel_id"
-                />
-              </div>
-
-              <div class="mb1">
-                <LabelFromYup
-                  name="pessoa_responsavel_id"
-                  :schema="schema"
-                />
-                <Field
-                  name="pessoa_responsavel_id"
-                  as="select"
-                  class="inputtext light mb1"
-                  :class="{ error: errors.pessoa_responsavel_id, loading: pessoasSimplificadas?.loading }"
-                  :disabled="!pessoasDisponíveis?.length || statusEmFoco?.andamento?.concluida"
-                >
-                  <option value="" />
-                  <option
-                    v-for="item in pessoasDisponíveis"
-                    :key="item"
-                    :value="item.id"
-                  >
-                    {{ item.nome_exibicao }}
-                  </option>
-                </Field>
-                <ErrorMessage
-                  class="error-msg mb2"
-                  name="pessoa_responsavel_id"
-                />
-              </div>
-
-              <pre v-scrollLockDebug>values: {{ values }}</pre>
-              <FormErrorsList
-                :errors="errors"
-                class="mb1"
-              />
-
-              <div
-                v-if="!statusEmFoco?.andamento?.concluida"
-                class="flex spacebetween center g2 mb2"
-              >
-                <hr class="f1">
-                <button
-                  v-if="!statusEmFoco?.andamento?.concluida"
-                  type="button"
-                  class="btn outline bgnone tcprimary big mr1"
-                  :disabled="!statusEmFoco.andamento?.pode_concluir"
-                  @click="finalizarFase(statusEmFoco.fase?.id)"
-                >
-                  Salvar e finalizar
-                </button>
-                <button
-                  type="submit"
-                  class="btn big"
-                  :disabled="isSubmitting"
-                >
-                  Salvar
-                </button>
-                <hr class="f1">
-              </div>
-            </form>
-          </SmallModal>
-          <dd class="mt1">
-            {{ status.nome_responsavel }} (<abbr
-              :title="status.orgao_responsavel?.descricao"
-            >
-              {{ status.orgao_responsavel?.sigla }}
-            </abbr>)
           </dd>
         </div>
       </dl>
@@ -1043,6 +817,129 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </section>
 </template>
 <style scoped lang="less">
+
+.parlamentares{
+  border-left: solid 2px #B8C0CC;
+  border-radius: 12px;
+  padding: 20px;
+
+  h4{
+    color: #607A9F;
+  font-weight: 700;
+  font-size: 20px;
+  }
+}
+
+@tamanho-da-bolinha: 1.8rem;
+
+.andamento-fluxo {
+}
+
+.andamento-fluxo__título {
+}
+
+.andamento-fluxo__info {
+}
+
+.andamento-fluxo__lista-de-fases {
+  .rolavel-horizontalmente;
+}
+
+.andamento-fluxo__fase {
+  min-width: 18rem;
+  position: relative;
+  flex-grow: 1;
+  flex-basis: 0;
+
+  &::after {
+    position: absolute;
+    content: '';
+    left: 50%;
+    right: -50%;
+    top: calc(@tamanho-da-bolinha * 0.5 + 1rem);
+    height: 2px;
+    background-color: currentColor;
+    margin-top: -1px;
+    color: @c300;
+  }
+
+  &:first-child::after {
+    left: 50%;
+  }
+
+  &:last-child::after {
+    right: 25%;
+    background-image: linear-gradient(to left, @branco, @c300 3rem);
+  }
+}
+
+.andamento-fluxo__fase--concluída {
+  &::after {
+    color: @amarelo;
+  }
+}
+
+.andamento-fluxo__nome-da-fase {
+  text-wrap: balance;
+  width: 50%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+  &:disabled {
+    opacity: 1;
+  }
+
+  &::before {
+    width: @tamanho-da-bolinha;
+    height: @tamanho-da-bolinha;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    border-radius: 100%;
+    content: '';
+    display: block;
+    background-color: currentColor;
+    color: @c300;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    z-index: 1;
+    position: relative;
+  }
+
+  .andamento-fluxo__fase--iniciada &::before {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
+  }
+
+  .andamento-fluxo__fase--concluída &::before {
+    color: @amarelo;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC9SURBVHgB7ZAxDoIwFIb7UHZ3WIxx1oXQwoJLS1z0BngDjiCeQI/gDdx1YmN118QELkFiqCWxxoApYhz5pte+/l/bh1DHXyCEhZ7nDeRaQy0hxN8DoF2e6xO512+Rfwp4UBQ8SpJTXDtgWfMpIXSpEjgO4xjTdbX3+o6u3xcAcMDYD9QvOG6q/Z4s0vQam+ZoqGkoMozxLcsu528EJVC/lYoQiBCsxABnTYKPkndRWTcJlLgu29o2C1HHTzwAp05KMEpINHYAAAAASUVORK5CYII=);
+  }
+}
+
+.andamento-fluxo__dados-da-fase {
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.andamento-fluxo__dias-da-fase {}
+
+.andamento-fluxo__responsável-pela-fase {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: max-content;
+}
+
+.título-da-fase-selecionada {
+  flex-basis: 50%;
+  flex-grow: 1;
+}
+
+.campos-de-tarefas {
+  border-bottom: 1px solid @c100;
+}
+
 section + section {
   border-top: 1px solid @c100;
 }
