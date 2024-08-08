@@ -12,11 +12,11 @@ import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import { storeToRefs } from 'pinia';
 import {
   Field,
-  useForm, useIsFormDirty
+  useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
   computed, defineEmits, defineProps,
-  ref, watch
+  ref, watch,
 } from 'vue';
 
 type TiposValidos = 'Previsto' | 'PrevistoAcumulado' | 'Realizado' | 'RealizadoAcumulado';
@@ -76,7 +76,6 @@ const tituloIntroducao = (() => {
   }
 })();
 
-
 const {
   seriesAgrupadas,
   chamadasPendentes,
@@ -86,37 +85,35 @@ const {
 const modoDePreenchimento = ref('valor_nominal'); // ou `valor_acumulado`
 const valorPadrao = ref<number | ''>(0);
 
-const SeriesAgrupadasPorAno = computed(() => {
-  return Array.isArray(seriesAgrupadas.value?.linhas)
-    ? seriesAgrupadas.value.linhas.reduce((acc, cur) => {
-      if (!acc[cur.agrupador]) {
-        acc[cur.agrupador] = [];
+const SeriesAgrupadasPorAno = computed(() => (Array.isArray(seriesAgrupadas.value?.linhas)
+  ? seriesAgrupadas.value.linhas.reduce((acc, cur) => {
+    if (!acc[cur.agrupador]) {
+      acc[cur.agrupador] = [];
+    }
+    const novaLinha = {} as SeriePorTipo;
+
+    cur.series.forEach((serie: SerieValorNomimal | SerieIndicadorValorNominal, j: number) => {
+      let valorNominal: number | null = null;
+      if ('valor_nominal' in serie) {
+        valorNominal = Number.parseFloat(serie.valor_nominal);
       }
-      const novaLinha = {} as SeriePorTipo;
 
-      cur.series.forEach((serie: SerieValorNomimal | SerieIndicadorValorNominal, j: number) => {
-        let valorNominal: number | null = null;
-        if ('valor_nominal' in serie) {
-          valorNominal = Number.parseFloat(serie.valor_nominal);
-        }
+      if (seriesAgrupadas.value?.ordem_series[j]) {
+        novaLinha[seriesAgrupadas.value.ordem_series[j] as TiposValidos] = {
+          periodo: cur.periodo,
+          data_valor: 'data_valor' in serie ? serie.data_valor : '',
+          valor: Number.isNaN(valorNominal)
+            ? null
+            : valorNominal,
+          referencia: 'referencia' in serie ? serie.referencia : '',
+        };
+      }
+    });
 
-        if (seriesAgrupadas.value?.ordem_series[j]) {
-          novaLinha[seriesAgrupadas.value.ordem_series[j] as TiposValidos] = {
-            periodo: cur.periodo,
-            data_valor: 'data_valor' in serie ? serie.data_valor : '',
-            valor: Number.isNaN(valorNominal)
-              ? null
-              : valorNominal,
-            referencia: 'referencia' in serie ? serie.referencia : '',
-          };
-        }
-      });
-
-      acc[cur.agrupador].push(novaLinha);
-      return acc;
-    }, {} as SeriesPorAno)
-    : {} as SeriesPorAno;
-});
+    acc[cur.agrupador].push(novaLinha);
+    return acc;
+  }, {} as SeriesPorAno)
+  : {} as SeriesPorAno));
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, resetForm, resetField, values: carga,
@@ -127,8 +124,9 @@ const {
 const formulárioSujo = useIsFormDirty();
 
 function buscarAcumuladoAnterior(ano: number, indice: number) {
-  const digitos = carga[ano]?.[indice - 1]?.[props.tipoDeValor + 'Acumulado' as TiposValidos]?.valor
-    || carga[ano - 1]?.[carga[ano - 1].length - 1]?.[props.tipoDeValor + 'Acumulado' as TiposValidos]?.valor;
+  const digitos = carga[ano]?.[indice - 1]?.[`${props.tipoDeValor}Acumulado` as TiposValidos]?.valor
+    || carga[ano - 1]?.[carga[ano - 1].length - 1]?.[`${props.tipoDeValor}Acumulado` as TiposValidos]?.valor;
+
   const numero = Number(digitos);
 
   return Number.isNaN(numero)
@@ -143,9 +141,10 @@ function atualizarAcumuladosEmCascata(ano: number | string, indice: number) {
 
   while (carga[chaveDoAno]) {
     while (carga[chaveDoAno][indiceDaSerie]) {
-      valor += Number(carga[chaveDoAno][indiceDaSerie][props.tipoDeValor as TiposValidos].valor) || 0;
+      valor += Number(carga[chaveDoAno][indiceDaSerie][props.tipoDeValor as TiposValidos].valor)
+        || 0;
 
-      setFieldValue(`${chaveDoAno}[${indiceDaSerie}].${props.tipoDeValor + 'Acumulado'}.valor`, valor);
+      setFieldValue(`${chaveDoAno}[${indiceDaSerie}].${props.tipoDeValor}Acumulado.valor`, valor);
 
       indiceDaSerie += 1;
     }
@@ -153,8 +152,9 @@ function atualizarAcumuladosEmCascata(ano: number | string, indice: number) {
     indiceDaSerie = 0;
     chaveDoAno += 1;
   }
-};
+}
 
+// eslint-disable-next-line max-len
 function atualizarAPartirDoAcumulado(valorFornecido: number | string, ano: number | string, indice: number) {
   const valor = typeof valorFornecido === 'number'
     ? valorFornecido
@@ -166,20 +166,18 @@ function atualizarAPartirDoAcumulado(valorFornecido: number | string, ano: numbe
   setFieldValue(`${ano}[${indice}].${props.tipoDeValor}.valor`, novoValor);
 
   if (seriesAgrupadas.value?.variavel?.acumulativa) {
-    atualizarAcumuladosEmCascata(ano, indice + 1)
+    atualizarAcumuladosEmCascata(ano, indice + 1);
   }
-};
+}
 
 const onSubmit = handleSubmit.withControlled(async (cargaControlada) => {
   const cargaManipulada = Object.values(cargaControlada)
-    .flatMap((anos) => anos.flatMap((ano) =>
-      Object.values(ano).flatMap((serie) => serie.referencia !== 'SS'
-        ? nulificadorTotal({
-          valor: serie.valor,
-          referencia: serie.referencia,
-        })
-        : [])
-    ));
+    .flatMap((anos) => anos.flatMap((ano) => Object.values(ano).flatMap((serie) => (serie.referencia !== 'SS'
+      ? nulificadorTotal({
+        valor: serie.valor,
+        referencia: serie.referencia,
+      })
+      : []))));
 
   try {
     const msg = 'Valores salvos!';
@@ -197,15 +195,16 @@ const onSubmit = handleSubmit.withControlled(async (cargaControlada) => {
 function preencherVaziosCom(valor: number | string) {
   Object.keys(carga).forEach((ano) => {
     carga[ano].forEach((serie, i: number) => {
-      if (!serie[props.tipoDeValor as TiposValidos].valor && serie[props.tipoDeValor as TiposValidos].valor !== 0) {
+      if (!serie[props.tipoDeValor as TiposValidos].valor
+        && serie[props.tipoDeValor as TiposValidos].valor !== 0
+      ) {
         switch (modoDePreenchimento.value) {
           case 'valor_nominal':
             setFieldValue(`${ano}[${i}].${props.tipoDeValor}.valor`, valor);
             break;
 
           case 'valor_acumulado':
-            atualizarAPartirDoAcumulado(valor, ano, i);
-            break;
+            throw new Error('O prenchimento de vazios não faz sentido para `valor_acumulado`');
 
           default:
             throw new Error(`\`modoDePreenchimento\` inválido: \`${modoDePreenchimento.value}\`. Deveria ser \`valor_nominal\` ou \`valor_acumulado\`.`);
@@ -230,7 +229,6 @@ function limparFormulário() {
         default:
           throw new Error(`\`modoDePreenchimento\` inválido: \`${modoDePreenchimento.value}\`. Deveria ser \`valor_nominal\` ou \`valor_acumulado\`.`);
       }
-
     });
   });
 }
@@ -244,7 +242,7 @@ watch(() => props.variavelId, (novoId) => {
 watch(SeriesAgrupadasPorAno, (novoValor) => {
   modoDePreenchimento.value = 'valor_nominal';
   resetForm({
-    values: novoValor
+    values: novoValor,
   });
 }, {
   immediate: true,
@@ -278,9 +276,9 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
           type="number"
           class="inputtext light mb1"
           :disabled="modoDePreenchimento === 'valor_acumulado'"
-          >
-        </div>
-        <button
+        >
+      </div>
+      <button
         type="button"
         class="f0 mb1 btn bgnone outline tcprimary"
         :disabled="valorPadrao === '' || modoDePreenchimento === 'valor_acumulado'"
@@ -350,9 +348,11 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
         <table class="tablemain no-zebra mb1">
           <thead>
             <tr>
-              <th></th>
+              <th />
               <th>Valor {{ $props.tipoDeValor }}</th>
-              <th v-if="seriesAgrupadas?.variavel?.acumulativa">Valor Acumulado</th>
+              <th v-if="seriesAgrupadas?.variavel?.acumulativa">
+                Valor Acumulado
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -365,17 +365,18 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
               </th>
               <td>
                 <Field
-                  @update:model-value="() => {
-                    if (modoDePreenchimento === 'valor_nominal' && seriesAgrupadas?.variavel?.acumulativa) {
-                      atualizarAcumuladosEmCascata(chave, idx);
-                    }
-                  }"
                   :disabled="modoDePreenchimento === 'valor_acumulado'"
                   :aria-label="serie[$props.tipoDeValor as TiposValidos].periodo"
                   class="inputtext light"
                   :name="`${chave}[${idx}].${$props.tipoDeValor}.valor`"
                   :step="geradorDeAtributoStep(seriesAgrupadas?.variavel?.casas_decimais)"
                   type="number"
+                  @update:model-value="() => {
+                    if (modoDePreenchimento === 'valor_nominal'
+                      && seriesAgrupadas?.variavel?.acumulativa) {
+                      atualizarAcumuladosEmCascata(chave, idx);
+                    }
+                  }"
                 />
                 <Field
                   :name="`${chave}[${idx}].${$props.tipoDeValor}.referencia`"
@@ -383,27 +384,27 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
                 />
               </td>
               <td v-if="seriesAgrupadas?.variavel?.acumulativa">
-                  <Field
-                    @blur="($e) => {
-                      if ($e.target.value === '') {
-                        setFieldValue(`${chave}[${idx}].${$props.tipoDeValor + 'Acumulado'}.valor`, 0);
-                      }
-                    }"
-                    @update:model-value="($v) => {
-                      if (modoDePreenchimento === 'valor_acumulado') {
-                        atualizarAPartirDoAcumulado($v, chave, idx);
-                      }
-                    }"
-                    :disabled="modoDePreenchimento === 'valor_nominal'"
-                    :name="`${chave}[${idx}].${$props.tipoDeValor + 'Acumulado'}.valor`"
-                    :aria-label="`Acumulado ${serie[$props.tipoDeValor as TiposValidos].periodo}`"
-                    class="inputtext light"
-                    type="number"
-                  />
-                  <Field
-                    :name="`${chave}[${idx}].${$props.tipoDeValor + 'Acumulado'}.referencia`"
-                    type="hidden"
-                  />
+                <Field
+                  :disabled="modoDePreenchimento === 'valor_nominal'"
+                  :name="`${chave}[${idx}].${$props.tipoDeValor}Acumulado.valor`"
+                  :aria-label="`Acumulado ${serie[$props.tipoDeValor as TiposValidos].periodo}`"
+                  class="inputtext light"
+                  type="number"
+                  @blur="($e) => {
+                    if ($e.target.value === '') {
+                      setFieldValue(`${chave}[${idx}].${$props.tipoDeValor}Acumulado.valor`, 0);
+                    }
+                  }"
+                  @update:model-value="($v) => {
+                    if (modoDePreenchimento === 'valor_acumulado') {
+                      atualizarAPartirDoAcumulado($v, chave, idx);
+                    }
+                  }"
+                />
+                <Field
+                  :name="`${chave}[${idx}].${$props.tipoDeValor}Acumulado.referencia`"
+                  type="hidden"
+                />
               </td>
             </tr>
           </tbody>
