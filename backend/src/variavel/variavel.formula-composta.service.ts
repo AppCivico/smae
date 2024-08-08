@@ -75,6 +75,7 @@ export class VariavelFormulaCompostaService {
                 codigo: true,
                 titulo: true,
                 suspendida_em: true,
+                valor_base: true,
             },
         });
 
@@ -100,7 +101,7 @@ export class VariavelFormulaCompostaService {
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
                 variavel: {
-                    ...{ ...variavel, suspendida_em: undefined },
+                    ...{ ...variavel, valor_base: variavel.valor_base.toString(), suspendida_em: undefined },
                     suspendida: variavel.suspendida_em ? true : false,
                 },
             });

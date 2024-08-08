@@ -48,6 +48,7 @@ export class VariavelResumo {
 
     codigo: string;
     titulo: string;
+    valor_base: string;
 }
 
 export class ListSeriesAgrupadas {

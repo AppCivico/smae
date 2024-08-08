@@ -2066,6 +2066,7 @@ export class VariavelService {
                 codigo: variavel.codigo,
                 titulo: variavel.titulo,
                 suspendida: variavel.suspendida,
+                valor_base: variavel.valor_base.toString(),
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,
