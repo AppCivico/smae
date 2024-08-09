@@ -7,8 +7,6 @@ module.exports = {
     'airbnb-typescript/base',
     '@vue/eslint-config-typescript/recommended',
     'plugin:vue/vue3-recommended',
-    'plugin:@typescript-eslint/recommended-type-checked',
-    '@vue/eslint-config-prettier/skip-formatting',
     '@vue/eslint-config-typescript',
   ],
   parserOptions: {
