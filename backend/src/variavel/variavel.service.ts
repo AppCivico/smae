@@ -1314,6 +1314,7 @@ export class VariavelService {
                 variavel_categorica_id: true,
                 orgao_id: true,
                 inicio_medicao: true,
+                fim_medicao: true,
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
@@ -1485,8 +1486,14 @@ export class VariavelService {
                 },
                 select: {
                     valor_base: true,
+                    fim_medicao: true,
                 },
             });
+
+            // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
+            if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
+                await this.updateAvisoFimIndicador(prismaTxn, variavelId, updated);
+            }
 
             if (suspendida !== undefined && suspendida !== currentSuspendida) {
                 logger.log(`Suspensão alterada para ${suspendida}`);
@@ -1525,6 +1532,48 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private async updateAvisoFimIndicador(
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number,
+        updated: { valor_base: Prisma.Decimal; fim_medicao: Date | null }
+    ) {
+        const indicadoresQUsam = await prismaTxn.indicadorVariavel.findMany({
+            where: {
+                variavel_id: variavelId,
+                desativado: false,
+            },
+            select: {
+                indicador_id: true,
+                indicador: {
+                    select: {
+                        fim_medicao: true,
+                    },
+                },
+            },
+        });
+
+        // na tabela de indicador_variavel, o indicador_id pode repetir (ou era só na formula? mas just in case)
+        const repetidos = new Set<number>();
+        // Update aviso_data_fim for each indicador
+        for (const iv of indicadoresQUsam) {
+            if (repetidos.has(iv.indicador_id)) continue;
+            repetidos.add(iv.indicador_id);
+
+            const avisoDataFim = updated.fim_medicao ? iv.indicador.fim_medicao > updated.fim_medicao : false;
+            await prismaTxn.indicadorVariavel.updateMany({
+                where: {
+                    indicador_id: iv.indicador_id,
+                    variavel_id: variavelId,
+                },
+                data: {
+                    aviso_data_fim: avisoDataFim,
+                },
+            });
+        }
+
+        await this.recalc_indicador_usando_variaveis([variavelId], prismaTxn);
     }
 
     private async verificaEscritaNaMeta(variavelId: number, user: PessoaFromJwt) {
