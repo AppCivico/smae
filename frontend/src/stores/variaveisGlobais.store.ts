@@ -59,6 +59,8 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
   actions: {
     async buscarItem(variavelId: number, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
+      this.erros.emFoco = null;
+
       try {
         const resposta = await this.requestS.get(`${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`, params);
         this.emFoco = resposta;
@@ -70,7 +72,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
-      this.chamadasPendentes.emFoco = true;
+      this.erros.lista = null;
 
       try {
         const {
@@ -93,7 +95,6 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         this.erros.lista = erro;
       }
       this.chamadasPendentes.lista = false;
-      this.chamadasPendentes.emFoco = false;
     },
 
     async excluirItem(variavelId: number): Promise<boolean> {
