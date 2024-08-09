@@ -213,7 +213,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor 
         </dt>
         <dd>
-          {{ transferênciaEmFoco.valor
+          {{ transferênciaEmFoco?.valor
             ? `R$${dinheiro(transferênciaEmFoco.valor)}`
             : '-' }}
         </dd>
