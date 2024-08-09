@@ -1,5 +1,4 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
 import { storeToRefs } from 'pinia';
 import { computed, defineAsyncComponent, ref, nextTick, onMounted } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
@@ -357,7 +356,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                       >
                         <use xlink:href="#i_i" />
                       </svg>
-                      <div>desde{{ dateToShortDate(status.data_troca) }}</div>
+                      <div>desde {{ dateToShortDate(status.data_troca) }}</div>
                     </span>
                     <p>
                       {{ status.nome_responsavel }}
@@ -367,9 +366,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               </div>
             </li>
           </ul>
-          <dd 
-           class="parlamentares"
-          >
+          <dd class="parlamentares">
             <div
               v-for="parlamentar in distribuição.parlamentares"
               :key="parlamentar.id"
@@ -382,7 +379,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               <hr class="f1">
               <dl>
                 <dt class="t16 w700 mb05 tc500">Valor do recurso</dt>
-                <dd> <strong>R$ {{parlamentar.valor || ' - '}}(%)</strong></dd>
+                <dd><strong>R$ {{parlamentar.valor || ' - '}}(%)</strong></dd>
               </dl>
             </div>
           </dd>
@@ -499,10 +496,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar recursos financeiros"
       class="btn with-icon bgnone tcprimary p0"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -624,10 +618,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -849,8 +840,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   h4{
     color: #607A9F;
-  font-weight: 700;
-  font-size: 20px;
+    font-weight: 700;
+    font-size: 20px;
   }
 }
 
