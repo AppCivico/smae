@@ -1,7 +1,7 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, ref, nextTick, onMounted } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
@@ -44,6 +44,30 @@ const { temPermissãoPara } = storeToRefs(authStore);
 
 const totalDistribuído = computed(() => listaDeDistribuição.value
   .reduce((acc, cur) => acc + (Number(cur.valor_total) || 0), 0));
+
+const listaDeStatus = ref(null);
+
+function rolarParaStatusCorrente() {
+  if (listaDeStatus.value && Array.isArray(distribuição.historico_status)) {
+    const índiceDoStatusCorrente = distribuição.historico_status.findIndex(
+      (status) => status.concluida === false
+    );
+
+    nextTick(() => {
+      if (listaDeStatus.value) {
+        const { children: filhas } = listaDeStatus.value;
+
+        if (filhas[índiceDoStatusCorrente]) {
+          listaDeStatus.value.scrollLeft = filhas[índiceDoStatusCorrente].offsetLeft;
+        }
+      }
+    });
+  }
+}
+
+onMounted(() => {
+  rolarParaStatusCorrente();
+});
 
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
