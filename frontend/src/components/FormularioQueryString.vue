@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { UrlParams } from '@vueuse/core';
 import { pick } from 'lodash';
-import { onMounted } from 'vue';
+import { inject, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const emit = defineEmits(['enviado', 'montado']);
@@ -36,9 +36,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  valoresPadrao: {
+  valoresIniciais: {
     type: Object,
     default: () => ({
+      ordem_direcao: 'asc',
+      ipp: inject('gblIpp') || 100,
     }),
   },
 });
@@ -63,10 +65,10 @@ function aplicarFiltros(event: Event): void {
         (parametros[campo.name] as Array<string>).push(String(campo.value));
       } else {
         parametros[campo.name] = campo.value
-          || props.valoresPadrao[campo.name];
+          || props.valoresIniciais[campo.name];
       }
     } else {
-      parametros[campo.name] = props.valoresPadrao[campo.name];
+      parametros[campo.name] = props.valoresIniciais[campo.name];
     }
 
     i += 1;
@@ -74,7 +76,7 @@ function aplicarFiltros(event: Event): void {
 
   parametros = {
     ...route.query,
-    ...props.valoresPadrao,
+    ...props.valoresIniciais,
     ...parametros,
   };
 
@@ -89,7 +91,7 @@ function aplicarFiltros(event: Event): void {
 
 onMounted(() => {
   let parametrosCombinados = {
-    ...props.valoresPadrao,
+    ...props.valoresIniciais,
     ...route.query,
   };
 
