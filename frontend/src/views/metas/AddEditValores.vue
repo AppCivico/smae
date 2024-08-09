@@ -192,6 +192,7 @@ function limparFormulário() {
       Valores previstos e previstos acumulados para cada período <span class="tvermelho">*</span>
     </div>
     <hr class="mb2">
+
     <auxiliarDePreenchimento>
       <div class="flex g2 end mb1">
         <div class="f1">

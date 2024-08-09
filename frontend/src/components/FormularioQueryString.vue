@@ -2,8 +2,8 @@
   <form
     action=""
     method="get"
-    @submit.prevent="aplicarFiltros"
     class="formulario-query-string flex flexwrap g2 mb2 fb100"
+    @submit.prevent="aplicarFiltros"
   >
     <slot />
 
@@ -83,7 +83,7 @@ function aplicarFiltros(event: Event): void {
   emit('enviado', parametros);
 
   router.replace({
-    query: parametros
+    query: parametros,
   });
 }
 
@@ -98,7 +98,7 @@ onMounted(() => {
   emit('montado', parametrosCombinados);
 
   router.replace({
-    query: parametrosCombinados
+    query: parametrosCombinados,
   });
 });
 </script>

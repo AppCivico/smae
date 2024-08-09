@@ -177,8 +177,8 @@ watchEffect(() => {
           <td>
             <button
               type="button"
-              @click="abrirEdicaoValores(item.id, 'Previsto')"
               class="tipinfo tprimary like-a__text"
+              @click="abrirEdicaoValores(item.id, 'Previsto')"
             >
               <svg
                 width="20"
@@ -189,8 +189,8 @@ watchEffect(() => {
           <td>
             <button
               type="button"
-              @click="abrirEdicaoValores(item.id, 'Realizado')"
               class="tipinfo tprimary like-a__text"
+              @click="abrirEdicaoValores(item.id, 'Realizado')"
             >
               <svg
                 width="20"
@@ -265,7 +265,7 @@ watchEffect(() => {
     v-if="variavelCujosValoresSeraoExibidos && tipoDeValor"
     @close="abrirEdicaoValores(0, '')"
   >
-  <VariaveisSeries
+    <VariaveisSeries
       :variavel-id="variavelCujosValoresSeraoExibidos"
       :tipo-de-valor="tipoDeValor"
       @close="abrirEdicaoValores(0, '')"

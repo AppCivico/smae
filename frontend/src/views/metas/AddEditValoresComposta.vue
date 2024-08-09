@@ -4,19 +4,19 @@ import dateToTitle from '@/helpers/dateToTitle';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { storeToRefs } from 'pinia';
 import { cloneDeep } from 'lodash';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
 import {
   computed, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import {
-  Field,
-  FieldArray,
-  ErrorMessage,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
 
 const alertStore = useAlertStore();
 
