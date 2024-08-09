@@ -370,16 +370,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             <div
               v-for="parlamentar in distribuição.parlamentares"
               :key="parlamentar.id"
-              class=" flex flexwrap spacebetween center g2"
+              class=" flex spacebetween center g2"
             >
-              <dl>
+              <dl class="f1">
                 <dt class="t16 w700 mb05 tc500">Parlamentar</dt>
                 <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
               </dl>
-              <hr class="f1">
-              <dl>
+              <hr class="f2">
+              <dl class="f1">
                 <dt class="t16 w700 mb05 tc500 f1">Valor do recurso</dt>
-                <dd><strong>R$ {{parlamentar.valor || ' -'}} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed() }}%)</strong></dd>
+                <dd class="tc300"><strong>R$ {{parlamentar.valor || ' -'}} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed() }}%)</strong></dd>
               </dl>
             </div>
           </dd>
@@ -837,6 +837,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   border-left: solid 2px #B8C0CC;
   border-radius: 12px;
   padding: 20px;
+  max-width: 700px;
 
   h4{
     color: #607A9F;
