@@ -68,20 +68,25 @@ const dadosExtrasDeAbas = {
     id: 'variaveis',
     etiqueta: 'Variáveis',
   },
-  TabelaDeVariaveisCompostas: {
-    id: 'variaveis-compostas',
-    etiqueta: 'Variáveis Compostas',
-  },
-  TabelaDeVariaveisCompostasEmUso: {
-    id: 'variaveis-compostas-em-uso',
-    etiqueta: 'Variáveis compostas em uso',
-    aberta: true,
-  },
   TabelaDeVariaveisEmUso: {
     id: 'variaveis-em-uso',
     etiqueta: 'Variáveis em Uso',
   },
 };
+
+if (route.meta.entidadeMãe === 'pdm') {
+  dadosExtrasDeAbas.TabelaDeVariaveisCompostas = {
+    id: 'variaveis-compostas',
+    etiqueta: 'Variáveis Compostas',
+  };
+  dadosExtrasDeAbas.TabelaDeVariaveisCompostasEmUso = {
+    id: 'variaveis-compostas-em-uso',
+    etiqueta: 'Variáveis compostas em uso',
+    aberta: true,
+  };
+} else {
+  dadosExtrasDeAbas.TabelaDeVariaveisEmUso.aberta = true;
+}
 
 const formula = ref('');
 const variaveisFormula = ref([]);
@@ -722,7 +727,7 @@ export default {
   </template>
 
   <EnvelopeDeAbas
-    v-if="indicador_id && $route.meta.entidadeMãe === 'pdm'"
+    v-if="indicador_id"
     :meta-dados-por-id="dadosExtrasDeAbas"
     class="mt2 mb2"
   >
@@ -735,7 +740,10 @@ export default {
       />
     </template>
 
-    <template #TabelaDeVariaveisCompostas="{ estáAberta }">
+    <template
+      v-if="$route.meta.entidadeMãe === 'pdm'"
+      #TabelaDeVariaveisCompostas="{ estáAberta }"
+    >
       <TabelaDeVariaveisCompostas
         v-if="!Variaveis[indicador_id]?.loading && estáAberta"
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
@@ -746,7 +754,10 @@ export default {
       />
     </template>
 
-    <template #TabelaDeVariaveisCompostasEmUso="{ estáAberta }">
+    <template
+      v-if="$route.meta.entidadeMãe === 'pdm'"
+      #TabelaDeVariaveisCompostasEmUso="{ estáAberta }"
+    >
       <TabelaDeVariaveisCompostasEmUso
         v-if="!Variaveis[indicador_id]?.loading && estáAberta"
         :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
