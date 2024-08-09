@@ -235,6 +235,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   <div
     v-for="parlamentar in transferênciaEmFoco?.parlamentares"
     :key="parlamentar.id"
+    class="mb2"
   >
     <div class="flex g2 flexwrap mb2">
       <dl class="f1">
@@ -263,9 +264,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ parlamentar.cargo || '-' }}
         </dd>
       </dl>
-    </div>
 
-    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt class="t16 w700 mb05 tc500">
           Valor
@@ -274,15 +273,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ parlamentar.valor ? `R$${dinheiro(parlamentar.valor)}` : '-' }}
         </dd>
       </dl>
-      <dl class="f1">
-        <dt class="t16 w700 mb05 tc500">
-          objeto
-        </dt>
-        <dd>
-          {{ parlamentar.objeto || '-' }}
-        </dd>
-      </dl>
     </div>
+
+    <dl class="f1">
+      <dt class="t16 w700 mb05 tc500">
+        objeto
+      </dt>
+      <dd>
+        {{ parlamentar.objeto || '-' }}
+      </dd>
+    </dl>
   </div>
 
   <section class="resumo-da-distribuicao-de-recursos pt2 pb1">
