@@ -1,7 +1,7 @@
 <template>
   <FormularioQueryString
     :aria-busy="props.ariaBusy || !pronto"
-    :valores-padrao="{
+    :valores-iniciais="{
       ordem_coluna: 'codigo',
       ordem_direcao: 'asc',
       ipp: gblIpp,
