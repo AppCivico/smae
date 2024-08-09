@@ -208,6 +208,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             : '-' }}
         </dd>
       </div>
+      <div class="f1 fb10em fg999">
+        <dt class="t16 w700 mb05 tc500">
+          Valor 
+        </dt>
+        <dd>
+          {{ transferênciaEmFoco.valor
+            ? `R$${dinheiro(transferênciaEmFoco.valor)}`
+            : '-' }}
+        </dd>
+      </div>
       <div class="f1 fb10em fg999 align-end">
         <dt class="sr-only">
           Progresso da distribuição de recursos
