@@ -80,7 +80,17 @@ watchEffect(() => {
     </router-link>
   </header>
 
-  <FiltroDeDeVariaveis :aria-busy="chamadasPendentes.lista" />
+  <FiltroDeDeVariaveis
+    :aria-busy="chamadasPendentes.lista"
+    :valores-iniciais="{
+      ipp: $route.query.ipp || 100,
+      nivel_regionalizacao: $route.query.nivel_regionalizacao,
+      ordem_coluna: $route.query.codigo || 'codigo',
+      ordem_direcao: $route.query.ordem_direcao || 'crescente',
+      pagina: $route.query.pagina || 1,
+      regiao_id: $route.query.regiao_id,
+    }"
+  />
 
   <div
     role="region"

@@ -6,6 +6,7 @@
       ordem_direcao: 'asc',
       ipp: gblIpp,
       pagina: 1,
+  ...$props.valoresIniciais,
     }"
   >
     <div class="flex flexwrap end g2 fb100">
@@ -28,7 +29,7 @@
             v-for="assuntos in listaDeAssuntos"
             :key="assuntos.id"
             :value="assuntos.id"
-            :selected="Number($route.query.assuntos) === assuntos.id"
+            :selected="Number($props.valoresIniciais.assuntos) === assuntos.id"
           >
             {{ assuntos.nome }}
           </option>
@@ -45,7 +46,7 @@
           class="inputtext light"
           name="palavra_chave"
           type="text"
-          :value="$route.query.descricao"
+          :value="$props.valoresIniciais.descricao"
         >
       </div>
 
@@ -59,7 +60,7 @@
           class="inputtext light"
           name="palavra_chave"
           type="text"
-          :value="$route.query.titulo"
+          :value="$props.valoresIniciais.titulo"
         >
       </div>
 
@@ -73,7 +74,7 @@
           class="inputtext light"
           name="palavra_chave"
           type="text"
-          :value="$route.query.codigo"
+          :value="$props.valoresIniciais.codigo"
         >
       </div>
     </div>
@@ -100,7 +101,7 @@
             v-for="plano in listaDePlanosSetoriais"
             :key="plano.id"
             :value="plano.id"
-            :selected="Number($route.query.plano_setorial_id) === plano.id"
+            :selected="Number($props.valoresIniciais.plano_setorial_id) === plano.id"
           >
             {{ plano.nome }}
           </option>
@@ -126,7 +127,7 @@
             v-for="meta in listaDeMetas"
             :key="meta.id"
             :value="meta.id"
-            :selected="Number($route.query.meta_id) === meta.id"
+            :selected="Number($props.valoresIniciais.meta_id) === meta.id"
             :title="meta.titulo?.length > 36 ? meta.titulo : undefined"
           >
             {{ truncate(meta.titulo, 36) }}
@@ -154,7 +155,7 @@
             :key="nível.id"
             :value="nível.id"
             :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
-            :selected="Number($route.query.nivel_regionalizacao) === nível.id"
+            :selected="Number($props.valoresIniciais.nivel_regionalizacao) === nível.id"
           >
             {{ nível.nome }}
           </option>
@@ -179,7 +180,7 @@
             v-for="regiao in regiõesPorNívelOrdenadas[nivelRegionalizacao]"
             :key="regiao.id"
             :value="regiao.id"
-            :selected="Number($route.query.regiao_id) === regiao.id"
+            :selected="Number($props.valoresIniciais.regiao_id) === regiao.id"
           >
             {{ regiao.descricao }}
           </option>
@@ -204,7 +205,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="!Object.keys(periodicidades.variaveis).length"
-            :selected="$route.query.periodicidade === item.valor"
+            :selected="$props.valoresIniciais.periodicidade === item.valor"
           >
             {{ item.nome }}
           </option>
@@ -232,7 +233,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($route.query.orgao_id) === orgao.id"
+            :selected="Number($props.valoresIniciais.orgao_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -257,7 +258,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($route.query.orgao_proprietario_id) === orgao.id"
+            :selected="Number($props.valoresIniciais.orgao_proprietario_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -275,7 +276,7 @@
         class="inputtext light"
         name="palavra_chave"
         type="search"
-        :value="$route.query.palavra_chave"
+        :value="$props.valoresIniciais.palavra_chave"
       >
     </div>
     <div class="f1 fb10em">
@@ -292,7 +293,7 @@
           v-for="coluna in colunasParaOrdenacao"
           :key="coluna.valor"
           :value="coluna.valor"
-          :selected="$route.query.ordem_coluna === coluna.valor"
+          :selected="$props.valoresIniciais.ordem_coluna === coluna.valor"
         >
           {{ coluna.nome }}
         </option>
@@ -313,7 +314,7 @@
             Object.values(direcoesDeOrdenacao)"
           :key="direcao.valor"
           :value="direcao.valor"
-          :selected="$route.query.ordem_direcao === direcao.valor"
+          :selected="$props.valoresIniciais.ordem_direcao === direcao.valor"
         >
           {{ direcao.nome || direcao.valor }}
         </option>
@@ -333,7 +334,7 @@
           v-for="quantidade in itensPorPagina"
           :key="quantidade"
           :value="quantidade"
-          :selected="Number($route.query.ipp) === quantidade"
+          :selected="Number($props.valoresIniciais.ipp) === quantidade"
         >
           {{ quantidade }}
         </option>
@@ -354,13 +355,18 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
-import { nextTick, onUnmounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import {
+  nextTick, onUnmounted, ref, watch,
+} from 'vue';
 
 const props = defineProps({
   ariaBusy: {
     type: Boolean,
     default: false,
+  },
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
@@ -410,8 +416,6 @@ const itensPorPagina = [
   100,
 ];
 
-const route = useRoute();
-
 const assuntosStore = useAssuntosStore();
 const MetasStore = usePsMetasStore();
 const ÓrgãosStore = useOrgansStore();
@@ -451,8 +455,8 @@ const nivelRegionalizacao = ref(null);
 const regiaoId = ref(null);
 
 async function iniciar() {
-  const regiaoSelecionada = Number(route.query.regiao_id);
-  const nivelSelecionado = Number(route.query.nivel_regionalizacao);
+  const regiaoSelecionada = Number(props.valoresIniciais.regiao_id || 0);
+  const nivelSelecionado = Number(props.valoresIniciais.nivel_regionalizacao || 0);
 
   const cargaDeRegioes = regionsStore.getAll();
 
@@ -490,5 +494,16 @@ onUnmounted(() => {
   ÓrgãosStore.$reset();
   planosSetoriaisStore.$reset();
   regionsStore.$reset();
+});
+
+watch([
+  props.valoresIniciais.regiao_id,
+  props.valoresIniciais.nivel_regionalizacao,
+], (
+  novaRegiaoId,
+  novoNivelRegionalizacao,
+) => {
+  regiaoId.value = Number(novaRegiaoId || 0);
+  nivelRegionalizacao.value = Number(novoNivelRegionalizacao || 0);
 });
 </script>
