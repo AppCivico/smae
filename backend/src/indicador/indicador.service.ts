@@ -1,8 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import {
@@ -16,8 +18,6 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
-import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
-import { MetaService } from '../meta/meta.service';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -563,6 +563,9 @@ export class IndicadorService {
                     ]);
                 }
 
+                // independente de ter ou não formula_variaveis, revalida as regras do PS
+                if (tipo === 'PS') await this.validaRegrasPS(id, prismaTx);
+
                 await this.recalcIndicador(prismaTx, indicador.id);
 
                 await prismaTx.indicadorFormulaCompostaEmUso.deleteMany({ where: { indicador_id: indicador.id } });
@@ -1083,5 +1086,99 @@ export class IndicadorService {
         });
 
         return;
+    }
+
+    private async validaRegrasPS(indicadorId: number, prismaTx: Prisma.TransactionClient) {
+        const indicador = await prismaTx.indicador.findUniqueOrThrow({
+            where: { id: indicadorId },
+            include: {
+                IndicadorVariavel: {
+                    include: {
+                        variavel: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                inicio_medicao: true,
+                                fim_medicao: true,
+                            },
+                        },
+                    },
+                },
+                formula_variaveis: {
+                    select: {
+                        variavel: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                periodicidade: true,
+                                inicio_medicao: true,
+                                fim_medicao: true,
+                                regiao_id: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const indicadorPeriodicidade = this.periodicidade2mes(indicador.periodicidade);
+
+        // se tem formula, valida as regras
+        if (indicador.formula_compilada?.trim()) {
+            const temPeriodoValido = indicador.formula_variaveis.some(
+                (iv) => this.periodicidade2mes(iv.variavel.periodicidade) <= indicadorPeriodicidade
+            );
+            if (!temPeriodoValido) {
+                throw new HttpException(
+                    'A fórmula do indicador deve ter ao menos 1 variável com periodicidade menor ou igual à periodicidade do indicador',
+                    400
+                );
+            }
+
+            if (indicador.regionalizavel) {
+                // aqui n importa o nivel, só se tem ou não
+                const temVariavelComRegiao = indicador.formula_variaveis.some((iv) => iv.variavel.regiao_id !== null);
+                if (!temVariavelComRegiao) {
+                    throw new HttpException(
+                        'A fórmula de indicador regionalizado deve ter ao menos 1 variável regionalizada',
+                        400
+                    );
+                }
+            }
+        }
+
+        // validar se é pra manter com a fazer parte das variaveis da formula ou não
+        for (const iv of indicador.IndicadorVariavel) {
+            // na teoria todas as variaveis tem inicio_medicao quando Global/Calculada, mas just in case
+            if (iv.variavel.inicio_medicao) {
+                if (
+                    iv.variavel.inicio_medicao > indicador.inicio_medicao ||
+                    (iv.variavel.fim_medicao && iv.variavel.fim_medicao < indicador.fim_medicao)
+                ) {
+                    throw new HttpException(
+                        `A variável ${iv.variavel.codigo} não cobre o período de medição do indicador. Requerido: ${Date2YMD.toStringOrNull(
+                            indicador.inicio_medicao
+                        )} a ${Date2YMD.toStringOrNull(indicador.fim_medicao)}, Variável: ${Date2YMD.toStringOrNull(
+                            iv.variavel.inicio_medicao ?? '-'
+                        )} a ${Date2YMD.toStringOrNull(iv.variavel.fim_medicao) ?? '-'}`,
+                        400
+                    );
+                }
+            }
+        }
+    }
+
+    private periodicidade2mes(periodicidade: Periodicidade): number {
+        // hardcoded pra n chamar o postgres
+        const periodicidadeMap: Record<Periodicidade, number> = {
+            Mensal: 1,
+            Bimestral: 2,
+            Trimestral: 3,
+            Quadrimestral: 4,
+            Semestral: 6,
+            Anual: 12,
+            Quinquenal: 60,
+            Secular: 1200,
+        };
+        return periodicidadeMap[periodicidade];
     }
 }
