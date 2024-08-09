@@ -1,13 +1,7 @@
 <template>
-  <FormularioQueryString
-    :aria-busy="props.ariaBusy || !pronto"
-    :valores-iniciais="{
-      ordem_coluna: 'codigo',
-      ordem_direcao: 'asc',
-      ipp: gblIpp,
-      pagina: 1,
-  ...$props.valoresIniciais,
-    }"
+  <form
+    class="flex flexwrap g2 mb2 fb100"
+    @submit.prevent="($e) => emit('enviado', $e)"
   >
     <div class="flex flexwrap end g2 fb100">
       <div class="f1 fb20em">
@@ -340,10 +334,15 @@
         </option>
       </select>
     </div>
-  </FormularioQueryString>
+    <button
+      type="submit"
+      class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
+    >
+      Filtrar
+    </button>
+  </form>
 </template>
 <script setup>
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
@@ -369,6 +368,8 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const emit = defineEmits(['enviado']);
 
 const colunasParaOrdenacao = {
   id: {
@@ -507,3 +508,8 @@ watch([
   nivelRegionalizacao.value = Number(novoNivelRegionalizacao || 0);
 });
 </script>
+<style lang="less" scoped>
+.label {
+  color: @c300;
+}
+</style>
