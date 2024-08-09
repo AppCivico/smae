@@ -356,10 +356,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                       >
                         <use xlink:href="#i_i" />
                       </svg>
-                      <!-- ajustar data aqui -->
                       <div>desde {{ dateToShortDate(status.data_troca) }}</div>
                     </span>
-                    <p>
+                    <p class="mb0">
                       {{ status.nome_responsavel }}
                     </p>
                   </time>
@@ -369,18 +368,24 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </ul>
           <dd class="parlamentares">
             <div
-              v-for="parlamentar in distribuição.parlamentares"
+              v-for="parlamentar, index in distribuição.parlamentares"
               :key="parlamentar.id"
-              class=" flex spacebetween center g2"
+              :class="['flex spacebetween center g2', { 'mt1': index  > 0}]"
             >
               <dl class="f1">
-                <dt class="t16 w700 mb05 tc500">Parlamentar</dt>
+                <dt class="t16 w700 mb05 tc500">
+                  Parlamentar
+                </dt>
                 <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
               </dl>
               <hr class="f2">
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tc500 f1">Valor do recurso</dt>
-                <dd class="tc300"><strong>R$ {{dinheiro(parlamentar.valor) || ' 0'}} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed() }}%)</strong></dd>
+              <dl class="f2">
+                <dt class="t16 w700 mb05 tc500 f1">
+                  Valor do recurso
+                </dt>
+                <dd class="tc300">
+                  <strong>R$ {{ dinheiro(parlamentar.valor) || ' 0' }} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed() }}%)</strong>
+                </dd>
               </dl>
             </div>
           </dd>
