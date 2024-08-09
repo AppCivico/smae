@@ -1748,7 +1748,6 @@ export class ProjetoService {
             }
 
             if (projeto.status !== 'Registrado' && projeto.tipo == 'PP') {
-                permissoes.campo_codigo = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
 
