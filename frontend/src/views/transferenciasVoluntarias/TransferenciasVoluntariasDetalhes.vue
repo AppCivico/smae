@@ -378,8 +378,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               </dl>
               <hr class="f1">
               <dl>
-                <dt class="t16 w700 mb05 tc500">Valor do recurso</dt>
-                <dd><strong>R$ {{parlamentar.valor || ' - '}}(%)</strong></dd>
+                <dt class="t16 w700 mb05 tc500 f1">Valor do recurso</dt>
+                <dd><strong>R$ {{parlamentar.valor || ' -'}} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed(2) }}%)</strong></dd>
               </dl>
             </div>
           </dd>
