@@ -356,6 +356,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                       >
                         <use xlink:href="#i_i" />
                       </svg>
+                      <!-- ajustar data aqui -->
                       <div>desde {{ dateToShortDate(status.data_troca) }}</div>
                     </span>
                     <p>
@@ -379,7 +380,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               <hr class="f2">
               <dl class="f1">
                 <dt class="t16 w700 mb05 tc500 f1">Valor do recurso</dt>
-                <dd class="tc300"><strong>R$ {{parlamentar.valor || ' -'}} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed() }}%)</strong></dd>
+                <dd class="tc300"><strong>R$ {{dinheiro(parlamentar.valor) || ' 0'}} ({{ (parlamentar.valor / distribuição.valor_total * 100).toFixed() }}%)</strong></dd>
               </dl>
             </div>
           </dd>
