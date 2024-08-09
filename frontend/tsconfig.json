@@ -23,8 +23,14 @@
       "vite/client",
     ]
   },
+  "include": [
+    "vite.config.ts",
+    ".eslintrc.cjs",
+    "src"
+  ],
   "exclude": [
     "node_modules",
-    "build"
+    "build",
+    "./dist"
   ]
 }
