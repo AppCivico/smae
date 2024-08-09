@@ -308,20 +308,6 @@ const isSomaCorreta = computed(() => {
             <td>
               <button
                 class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirDistribuição(item.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td>
-              <button
-                class="like-a__text"
                 arial-label="editar"
                 title="editar"
                 type="button"
@@ -331,6 +317,20 @@ const isSomaCorreta = computed(() => {
                   width="20"
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
+              </button>
+            </td>
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                type="button"
+                @click="excluirDistribuição(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
               </button>
             </td>
           </tr>
@@ -360,7 +360,7 @@ const isSomaCorreta = computed(() => {
       <svg
         width="20"
         height="20"
-      ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso
+      ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso x
     </button>
   </div>
 
