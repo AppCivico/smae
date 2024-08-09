@@ -80,17 +80,27 @@ watchEffect(() => {
     </router-link>
   </header>
 
-  <FiltroDeDeVariaveis
-    :aria-busy="chamadasPendentes.lista"
+  <FormularioQueryString
+    v-slot="{ capturarEnvio }"
     :valores-iniciais="{
-      ipp: $route.query.ipp || 100,
-      nivel_regionalizacao: $route.query.nivel_regionalizacao,
-      ordem_coluna: $route.query.codigo || 'codigo',
-      ordem_direcao: $route.query.ordem_direcao || 'crescente',
-      pagina: $route.query.pagina || 1,
-      regiao_id: $route.query.regiao_id,
+      ordem_direcao: 'asc',
+      ipp: gblIpp,
+      pagina: 1,
+      token_paginacao: undefined,
     }"
-  />
+  >
+    <FiltroDeDeVariaveis
+      :aria-busy="chamadasPendentes.lista"
+      :valores-iniciais="{
+        ipp: $route.query.ipp || 100,
+        nivel_regionalizacao: $route.query.nivel_regionalizacao,
+        ordem_coluna: $route.query.codigo || 'codigo',
+        ordem_direcao: $route.query.ordem_direcao || 'crescente',
+        regiao_id: $route.query.regiao_id,
+      }"
+      @submit="capturarEnvio"
+    />
+  </FormularioQueryString>
 
   <div
     role="region"
