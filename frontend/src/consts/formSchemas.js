@@ -1,6 +1,7 @@
 /* eslint-disable no-template-curly-in-string */
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
+import tipoDeVariaveisCategorigacas from '@/consts/tipoDeVariaveisCategorigacas';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -3310,6 +3311,37 @@ export const variável = (singleIndicadores) => object()
       .label('Valor base')
       .required('Preencha o valor base'),
   });
+
+export const variávelCategórica = object({
+  descricao: string()
+    .label('Descrição')
+    .required('Descrição inválida'),
+  titulo: string()
+    .label('Título')
+    .required('Título inválido'),
+  tipo: mixed()
+    .label('Tipo')
+    .required('Tipo invalido')
+    .oneOf(Object.keys(tipoDeVariaveisCategorigacas)),
+  valores: array()
+    .label('Valores')
+    .of(
+      object().shape({
+        descricao: string()
+          .label('Descrição')
+          .required('Descrição inválida'),
+        ordem: number()
+          .label('Ordem')
+          .required('Ordem inválida'),
+        titulo: string()
+          .label('Título')
+          .required('Título inválido'),
+        valor_variavel: string()
+          .label('Valor')
+          .required('Valor inválido'),
+      }),
+    ),
+});
 
 export const variávelComposta = object()
   .shape({
