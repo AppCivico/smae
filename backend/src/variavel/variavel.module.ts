@@ -7,6 +7,7 @@ import { VariavelFormulaCompostaController } from './variavel.formula-composta.c
 import { VariavelFormulaCompostaService } from './variavel.formula-composta.service';
 import { VariavelCalculadaService } from './variavel.calculada.service';
 import { MetaModule } from '../meta/meta.module';
+import { IndicadorModule } from '../indicador/indicador.module';
 
 @Module({
     imports: [
@@ -15,9 +16,14 @@ import { MetaModule } from '../meta/meta.module';
             secret: process.env.SESSION_JWT_SECRET + 'for-variables',
             signOptions: { expiresIn: '1d' },
         }),
-        forwardRef(() => MetaModule)
+        forwardRef(() => MetaModule),
     ],
-    controllers: [IndicadorVariavelPDMController, VariavelFormulaCompostaController, VariavelGlobalController],
+    controllers: [
+        IndicadorVariavelPDMController,
+        VariavelFormulaCompostaController,
+        VariavelGlobalController,
+        IndicadorModule,
+    ],
     providers: [VariavelService, VariavelFormulaCompostaService, VariavelCalculadaService],
     exports: [VariavelService],
 })

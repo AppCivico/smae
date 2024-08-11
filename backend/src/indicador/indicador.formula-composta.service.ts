@@ -15,6 +15,7 @@ import {
 import { Indicador } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
+import { CreatePSFormulaCompostaDto } from '../variavel/dto/variavel.formula-composta.dto';
 
 @Injectable()
 export class IndicadorFormulaCompostaService {
@@ -40,7 +41,20 @@ export class IndicadorFormulaCompostaService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                return await this.performCreate(prismaTx, dto, indicador_id, formula_compilada, user, indicador);
+                return await this.performCreate(prismaTx, dto, formula_compilada, user, indicador);
+            },
+            { isolationLevel: 'Serializable', maxWait: 30000 }
+        );
+
+        return created;
+    }
+
+    async createPS(dto: CreatePSFormulaCompostaDto, user: PessoaFromJwt) {
+        this.checkFormulaCompostaRecursion(dto);
+
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                return await this.performCreate(prismaTx, dto, dto.formula, user, null);
             },
             { isolationLevel: 'Serializable', maxWait: 30000 }
         );
@@ -50,24 +64,27 @@ export class IndicadorFormulaCompostaService {
 
     private async performCreate(
         prismaTx: Prisma.TransactionClient,
-        dto: CreateIndicadorFormulaCompostaDto,
-        indicador_id: number,
+        dto: CreateIndicadorFormulaCompostaDto | CreatePSFormulaCompostaDto,
         formula_compilada: string,
         user: PessoaFromJwt,
-        indicador: Indicador
+        indicador: Indicador | null
     ) {
+        const tipo: TipoPdm = indicador ? 'PDM' : 'PS';
         const sameTitle = await prismaTx.formulaComposta.count({
             where: {
+                tipo_pdm: tipo,
                 removido_em: null,
                 titulo: {
                     mode: 'insensitive',
                     equals: dto.titulo,
                 },
-                IndicadorFormulaComposta: {
-                    some: {
-                        indicador_id: indicador_id,
-                    },
-                },
+                IndicadorFormulaComposta: indicador
+                    ? {
+                          some: {
+                              indicador_id: indicador.id,
+                          },
+                      }
+                    : undefined,
             },
         });
         if (sameTitle) throw new HttpException('Já existe uma fórmula composta com o mesmo título', 400);
@@ -75,16 +92,26 @@ export class IndicadorFormulaCompostaService {
         const formula_variaveis = dto.formula_variaveis;
 
         let formula;
-        ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
-            formula_variaveis,
-            dto.formula,
-            indicador_id,
-            formula_compilada,
-            prismaTx
-        ));
+        if (indicador) {
+            ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
+                formula_variaveis,
+                dto.formula,
+                indicador.id,
+                formula_compilada,
+                prismaTx
+            ));
+        } else {
+            formula = dto.formula;
+            formula_compilada = this.indicadorService.compilaFormula(dto.formula);
+        }
+        let calc_codigo: string | undefined = undefined;
+        if (tipo == 'PS') {
+            calc_codigo = dto.titulo;
+        }
 
         const ifc = await prismaTx.formulaComposta.create({
             data: {
+                tipo_pdm: tipo,
                 titulo: dto.titulo,
                 formula: formula,
                 formula_compilada: formula_compilada,
@@ -92,11 +119,20 @@ export class IndicadorFormulaCompostaService {
                 mostrar_monitoramento: dto.mostrar_monitoramento,
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
-                IndicadorFormulaComposta: {
-                    create: {
-                        indicador_id: indicador.id,
-                    },
-                },
+                calc_casas_decimais: 'casas_decimais' in dto ? dto.casas_decimais : undefined,
+                calc_codigo: calc_codigo,
+                calc_fim_medicao: 'casas_decimais' in dto ? dto.fim_medicao : undefined,
+                calc_inicio_medicao: 'inicio_medicao' in dto ? dto.inicio_medicao : undefined,
+                calc_periodicidade: 'periodicidade' in dto ? dto.periodicidade : undefined,
+                calc_regionalizavel: 'regionalizavel' in dto ? dto.regionalizavel : undefined,
+
+                IndicadorFormulaComposta: indicador
+                    ? {
+                          create: {
+                              indicador_id: indicador.id,
+                          },
+                      }
+                    : undefined,
                 FormulaCompostaVariavel: {
                     createMany: {
                         data: formula_variaveis,
@@ -106,7 +142,7 @@ export class IndicadorFormulaCompostaService {
             select: { id: true },
         });
 
-        await this.resyncFormulaComposta(indicador, ifc.id, prismaTx);
+        if (indicador) await this.resyncFormulaCompostaIndicators(indicador, ifc.id, prismaTx);
 
         return ifc;
     }
@@ -240,7 +276,7 @@ export class IndicadorFormulaCompostaService {
 
                 // pensando bem, isso aqui nem é 100% necessário, nem aqui, nem nas variaveis
                 // só é necessário em update do indicador
-                await this.resyncFormulaComposta(indicador, self.id, prismaTx);
+                await this.resyncFormulaCompostaIndicators(indicador, self.id, prismaTx);
 
                 // essa parte aqui se torna 100% obrigatória pois não da para saber no que mexeram na formula
                 let formula;
@@ -353,7 +389,7 @@ export class IndicadorFormulaCompostaService {
         });
     }
 
-    async resyncFormulaComposta(
+    async resyncFormulaCompostaIndicators(
         indicador: {
             id: number;
             iniciativa_id: number | null;
@@ -575,14 +611,7 @@ export class IndicadorFormulaCompostaService {
                         todo.formula
                     );
 
-                    const row = await this.performCreate(
-                        prismaTx,
-                        todo,
-                        indicador_id,
-                        formula_compilada,
-                        user,
-                        indicador
-                    );
+                    const row = await this.performCreate(prismaTx, todo, formula_compilada, user, indicador);
 
                     ret.ids.push(row);
                 }

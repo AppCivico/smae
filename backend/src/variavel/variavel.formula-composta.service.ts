@@ -3,9 +3,14 @@ import { plainToInstance } from 'class-transformer';
 import { Date2YMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
-import { FilterPeriodoFormulaCompostaDto, PeriodoFormulaCompostaDto } from './dto/variavel.formula-composta.dto';
+import {
+    FilterPeriodoFormulaCompostaDto,
+    PSFormulaCompostaDto,
+    PeriodoFormulaCompostaDto,
+} from './dto/variavel.formula-composta.dto';
 import { SerieValorNomimal } from './entities/variavel.entity';
 import { ORDEM_SERIES_RETORNO, VariavelService } from './variavel.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 @Injectable()
 export class VariavelFormulaCompostaService {
@@ -55,6 +60,7 @@ export class VariavelFormulaCompostaService {
         // para os usuários que não possuem permissão de escrita na variável (quem não está na meta e etc)
         // talvez invertendo a lógica, verificar se o usuário tem permissão na hora da escrita
         // e não na hora da leitura ajude a simplificar o código
+        // TODO v2: plano setorial agora também chama este método
         const { formula_composta, variaveis } = await this.buscaVariaveisDaFormulaComposta(formula_composta_id);
 
         const result: ListSeriesAgrupadas = {
@@ -117,5 +123,59 @@ export class VariavelFormulaCompostaService {
         });
 
         return result;
+    }
+
+    async findAll(user: PessoaFromJwt): Promise<PSFormulaCompostaDto[]> {
+        const rows = await this.prisma.formulaComposta.findMany({
+            where: {
+                removido_em: null,
+                autogerenciavel: false,
+                criar_variavel: true,
+                tipo_pdm: 'PS',
+            },
+            orderBy: {
+                titulo: 'asc',
+            },
+            select: {
+                id: true,
+                titulo: true,
+                formula: true,
+                FormulaCompostaVariavel: true,
+                mostrar_monitoramento: true,
+                nivel_regionalizacao: true,
+                calc_casas_decimais: true,
+                calc_periodicidade: true,
+                calc_regionalizavel: true,
+                calc_inicio_medicao: true,
+                calc_fim_medicao: true,
+                calc_orgao: true,
+                calc_codigo: true,
+            },
+        });
+
+        return rows.map((r) => {
+            return {
+                id: r.id,
+                titulo: r.titulo,
+                formula: r.formula,
+                formula_variaveis: r.FormulaCompostaVariavel.map((v) => {
+                    return {
+                        janela: v.janela,
+                        referencia: v.referencia,
+                        usar_serie_acumulada: v.usar_serie_acumulada,
+                        variavel_id: v.variavel_id,
+                    };
+                }),
+                mostrar_monitoramento: r.mostrar_monitoramento,
+                nivel_regionalizacao: r.nivel_regionalizacao,
+                casas_decimais: r.calc_casas_decimais,
+                periodicidade: r.calc_periodicidade,
+                regionalizavel: r.calc_regionalizavel,
+                inicio_medicao: r.calc_inicio_medicao,
+                fim_medicao: r.calc_fim_medicao,
+                orgao: r.calc_orgao,
+                codigo: r.calc_codigo,
+            } satisfies PSFormulaCompostaDto;
+        });
     }
 }

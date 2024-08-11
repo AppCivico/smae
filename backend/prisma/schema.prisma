@@ -570,6 +570,7 @@ model Orgao {
     ViewVariavelGlobalQSouResp          ViewVariavelGlobal[]                  @relation("resp")
     ViewVariavelGlobalQSouProp          ViewVariavelGlobal[]                  @relation("prop")
     GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
+    FormulaComposta                     FormulaComposta[]
 
     @@map("orgao")
 }
@@ -1455,6 +1456,18 @@ model FormulaComposta {
 
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
+
+    autogerenciavel Boolean @default(false)
+
+    calc_casas_decimais Int            @default(0) @db.SmallInt
+    calc_periodicidade  Periodicidade?
+    calc_regionalizavel Boolean        @default(false)
+    calc_inicio_medicao DateTime?      @db.Date()
+    calc_fim_medicao    DateTime?      @db.Date()
+    calc_orgao_id       Int?
+    calc_orgao          Orgao?         @relation(fields: [calc_orgao_id], references: [id])
+    calc_codigo         String?
+    tipo_pdm            TipoPdm        @default(PDM)
 
     criar_variavel     Boolean   @default(false)
     variavel_calc_erro String?

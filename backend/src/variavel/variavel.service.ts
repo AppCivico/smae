@@ -480,6 +480,8 @@ export class VariavelService {
                     formula: formula,
                     formula_compilada: formula,
                     criar_variavel: true,
+                    autogerenciavel: true,
+                    tipo_pdm: 'PS',
                     FormulaCompostaVariavel: {
                         create: varEscopo.map((vid) => ({
                             variavel_id: vid,

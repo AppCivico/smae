@@ -285,11 +285,7 @@ export class IndicadorService {
         const neededRefs: Record<string, number> = {};
         const neededFCs: Record<number, number> = {};
         if (formula) {
-            try {
-                formula_compilada = FP.parse(formula.toLocaleUpperCase());
-            } catch (error) {
-                throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
-            }
+            formula_compilada = this.compilaFormula(formula);
 
             this.extractVariavelFromFormula(formula_compilada, neededRefs);
             this.extractFormulaCompostaFromFormula(formula_compilada, neededFCs);
@@ -368,6 +364,16 @@ export class IndicadorService {
 
         // TODO adicionar limpeza de formula_variaveis que não tiveram as referencias usadas
 
+        return formula_compilada;
+    }
+
+    compilaFormula(formula: string) {
+        let formula_compilada: string;
+        try {
+            formula_compilada = FP.parse(formula.toLocaleUpperCase());
+        } catch (error) {
+            throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
+        }
         return formula_compilada;
     }
 
