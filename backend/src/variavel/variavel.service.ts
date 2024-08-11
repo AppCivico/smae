@@ -1262,6 +1262,17 @@ export class VariavelService {
 
             variavel: {
                 AND: this.getVariavelWhereSet(filters),
+
+                NOT: filters.not_indicador_id
+                    ? {
+                          indicador_variavel: {
+                              some: {
+                                  indicador_id: filters.not_indicador_id,
+                                  indicador_origem_id: null,
+                              },
+                          },
+                      }
+                    : undefined,
             },
         });
 

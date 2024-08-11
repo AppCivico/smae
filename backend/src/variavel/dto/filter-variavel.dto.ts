@@ -134,4 +134,9 @@ export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto,
     @IsOptional()
     @IsString()
     token_paginacao?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    not_indicador_id?: number;
 }
