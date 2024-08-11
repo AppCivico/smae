@@ -5,7 +5,7 @@
   />
 </template>
 <script setup lang="ts">
-import formularioParaObjeto from '@/helpers/formularioParaObjeto.ts';
+import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
 import { UrlParams } from '@vueuse/core';
 import { pick } from 'lodash';
 import { inject, onMounted } from 'vue';
@@ -23,16 +23,11 @@ const props = defineProps({
   },
 });
 
-function aplicarFiltros(event: Event): void {
-  const formulario: HTMLFormElement | null = event.target as HTMLFormElement;
-  const campos = formularioParaObjeto(formulario);
+function aplicarFiltros(evento: SubmitEvent): void {
+  const campos = EnvioParaObjeto(evento);
   const nomesDosCampos = Object.keys(campos);
 
   let parametros: UrlParams = {};
-
-  console.debug('Formulário:', formulario);
-
-  if (!formulario) return;
 
   let i = 0;
 
