@@ -8,7 +8,7 @@
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
 import { UrlParams } from '@vueuse/core';
 import { pick } from 'lodash';
-import { inject, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const emit = defineEmits(['aplicado', 'montado']);
