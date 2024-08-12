@@ -2,6 +2,7 @@
     "dependencies": {
         "@types/node": "^20.14.12",
         "axios": "^1.7.2",
+        "decimal.js": "^10.4.3",
         "duckdb-async": "^1.0.0"
     },
     "name": "importacao-obras",

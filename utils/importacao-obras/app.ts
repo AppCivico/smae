@@ -22,6 +22,7 @@ import {
     RgoApi,
     type CreateProjetoDto,
 } from './generated';
+import Decimal from 'decimal.js';
 if (!process.env.BASE_PATH) throw new Error('BASE_PATH for API is required');
 if (!process.env.ACCESS_TOKEN) throw new Error('ACCESS_TOKEN is required');
 if (!process.env.DB_PATH) throw new Error('env DB_PATH for database is required');
@@ -182,7 +183,6 @@ async function main() {
             }
         }
     }
-
     validaPessoas(pessoasCollabProjeto, pessoasGestorDeProjeto);
     await validaOrgaos();
     await validaPortfolios();
@@ -276,7 +276,9 @@ async function main() {
             tolerancia_atraso: 0,
             mdo_previsao_inauguracao: null,
 
-            previsao_custo: row.previsao_custo ? +row.previsao_custo.toPrecision(2) : null,
+            previsao_custo: row.previsao_custo
+                ? new Decimal(row.previsao_custo.toString()).toDecimalPlaces(2).toNumber()
+                : null,
 
             mdo_observacoes:
                 row.rel_subprefeitura_id == 'Várias'
