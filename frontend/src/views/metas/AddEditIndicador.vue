@@ -743,6 +743,7 @@ export default {
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
         :variáveis="Variaveis[indicador_id]"
         :parentlink="parentlink"
+        :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       >
         <template #dentro-do-menu>
           <li
@@ -794,6 +795,7 @@ export default {
       <TabelaDeVariaveisEmUso
         v-if="!Variaveis[indicador_id]?.loading && estáAberta"
         :parentlink="parentlink"
+        :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       />
     </template>
   </EnvelopeDeAbas>
