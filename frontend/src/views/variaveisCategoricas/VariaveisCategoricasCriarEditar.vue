@@ -158,7 +158,7 @@
             />
             <Field
               :name="`valores[${idx}].valor_variavel`"
-              type="text"
+              type="number"
               min="3"
               max="2048"
               class="inputtext light mb1"
@@ -186,12 +186,7 @@
       <button
         class="like-a__text addlink"
         type="button"
-        @click="
-          push({
-            orgao_enderecado_id: null,
-            pessoa_enderecado_id: null,
-          })
-        "
+        @click="push(null)"
       >
         <svg
           width="20"
@@ -264,7 +259,14 @@ async function onSubmit(values) {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const dataToSend = { ...values };
+    const dataToSend = {
+      ...values,
+      valores: values.valores.map((item) => ({
+        ...item,
+        valor_variavel: Number(item.valor_variavel),
+        ordem: Number(item.ordem),
+      })),
+    };
 
     if (route.params?.variavelId) {
       response = await variaveisCategoricasStore.salvarItem(
