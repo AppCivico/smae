@@ -18,6 +18,7 @@ export class ProjetoProxyPdmMetasService {
                 id: true,
                 nome: true,
                 ativo: true,
+                tipo: true,
                 Meta: {
                     where: {
                         removido_em: null,
@@ -37,8 +38,9 @@ export class ProjetoProxyPdmMetasService {
                 id: r.id,
                 nome: r.nome,
                 ativo: r.ativo,
+                tipo: r.tipo,
                 metas: r.Meta,
-            };
+            } satisfies ProjetoProxyPdmMetaDto;
         });
     }
 }
