@@ -1,15 +1,15 @@
-import { ApiProperty, IntersectionType, OmitType, PickType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
+import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
+import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
-import { IdNomeDto } from '../../../common/dto/IdNome.dto';
-import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
 import { CachedMetasDto } from '../dto/create-projeto.dto';
 
 export class ProjetoDto {
@@ -123,10 +123,6 @@ export class ProjetoMetaDetailDto {
     pdm_id: number;
 }
 
-export class ProjetoMetaDetailDtoV2 extends OmitType(ProjetoMetaDetailDto, ['pdm_id']) {
-    pdm: IdNomeDto;
-}
-
 export class ProjetoSeiDto {
     id: number;
     @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
@@ -145,7 +141,8 @@ export class ListProjetoSeiDto {
 
 export class OrigemDetailItem {
     id: number;
-    meta: ProjetoMetaDetailDtoV2 | null;
+    meta: ProjetoMetaDetailDto | null;
+    pdm: IdNomeDto | null;
     atividade: IdCodTituloDto | null;
     iniciativa: IdCodTituloDto | null;
 

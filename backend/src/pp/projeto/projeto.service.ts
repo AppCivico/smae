@@ -1551,7 +1551,15 @@ export class ProjetoService {
                     id: po.id,
                     atividade: po.atividade,
                     iniciativa: po.iniciativa,
-                    meta: po.meta,
+                    meta: po.meta
+                        ? {
+                              codigo: po.meta.codigo,
+                              id: po.meta.id,
+                              pdm_id: po.meta.pdm.id,
+                              titulo: po.meta.titulo,
+                          }
+                        : null,
+                    pdm: po.meta?.pdm ?? null,
                     origem_tipo: po.origem_tipo,
                     meta_codigo: po.meta_codigo,
                 } satisfies OrigemDetailItem;
