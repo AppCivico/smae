@@ -1,11 +1,14 @@
 <script setup>
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import dateToField from '@/helpers/dateToField';
+import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
@@ -16,7 +19,7 @@ const { indicador_id: indicadorId } = route.params;
 
 const { permissions } = storeToRefs(authStore);
 
-defineProps({
+const props = defineProps({
   parentlink: {
     type: String,
     required: true,
@@ -29,12 +32,26 @@ defineProps({
     type: Boolean,
     required: true,
   },
+  saoGlobais: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 async function apagarVariável(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+  const mensagem = props.saoGlobais
+    ? 'Deseja mesmo remover a associação?'
+    : 'Deseja mesmo remover esse item?';
+
+  const acao = props.saoGlobais
+    ? (variavelId) => requestS.delete(`${baseUrl}/plano-setorial-indicador/${indicadorId}/desassociar-variavel`, {
+      variavel_id: variavelId,
+    })
+    : VariaveisStore.delete;
+
+  alertStore.confirmAction(mensagem, async () => {
     try {
-      if (await VariaveisStore.delete(id)) {
+      if (await acao(id)) {
         VariaveisStore.clear();
         VariaveisStore.getAll(indicadorId);
         alertStore.success('Item removido!');
@@ -199,74 +216,77 @@ function permitirEdição(indicadorVariavel) {
         <template v-else>
           <button
             class="like-a__link tipinfo tprimary"
-            :disabled="!permitirEdição(v.indicador_variavel)"
+            :disabled="!permitirEdição(v.indicador_variavel) && !props.saoGlobais"
             @click="apagarVariável(v.id)"
           >
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
+            ><use xlink:href="#i_remove" /></svg><div>Remover</div>
           </button>
-          <SmaeLink
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-          </SmaeLink>
-          <SmaeLink
-            v-if="permitirEdição(v.indicador_variavel)"
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-          </SmaeLink>
-          <button
-            v-else
-            disabled
-            class="like-a__link tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-          </button>
-          <SmaeLink
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-          </SmaeLink>
-          <SmaeLink
-            v-if="permissions.CadastroPessoa?.administrador"
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-          </SmaeLink>
+
+          <template v-if="!$props.saoGlobais">
+            <SmaeLink
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
+            </SmaeLink>
+            <SmaeLink
+              v-if="permitirEdição(v.indicador_variavel)"
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+            </SmaeLink>
+            <button
+              v-else
+              disabled
+              class="like-a__link tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+            </button>
+            <SmaeLink
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
+            </SmaeLink>
+            <SmaeLink
+              v-if="permissions.CadastroPessoa?.administrador"
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
+            </SmaeLink>
+          </template>
         </template>
       </td>
     </tr>

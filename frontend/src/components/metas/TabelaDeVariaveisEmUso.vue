@@ -25,6 +25,10 @@ defineProps({
     type: String,
     required: true,
   },
+  saoGlobais: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const variáveisConsolidadas = computed(() => (
@@ -90,7 +94,10 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:13.3%;">
           Acumulativa
         </th>
-        <th style="width:20%" />
+        <th
+          v-if="!$props.saoGlobais"
+          style="width:20%"
+        />
       </tr>
     </thead>
     <tbody>
@@ -107,7 +114,10 @@ function permitirEdição(indicadorVariavel) {
         <td>{{ v.casas_decimais }}</td>
         <td>{{ v.atraso_meses }}</td>
         <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
-        <td style="white-space: nowrap; text-align: right;">
+        <td
+          v-if="!$props.saoGlobais"
+          style="white-space: nowrap; text-align: right;"
+        >
           <button
             class="like-a__link tipinfo tprimary"
             :disabled="!permitirEdição(v.indicador_variavel)"
