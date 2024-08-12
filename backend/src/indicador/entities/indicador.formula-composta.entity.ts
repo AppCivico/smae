@@ -21,7 +21,7 @@ export class IndicadorFormulaCompostaEmUsoDto {
 }
 
 export class ListIndicadorFormulaCompostaEmUsoDto {
-    rows: IndicadorFormulaCompostaEmUsoDto[];
+    linhas: IndicadorFormulaCompostaEmUsoDto[];
 }
 
 // na vdd, só pra ter um nome diferente, pq ela precisa retornar tudo o que é necessário pra criar
