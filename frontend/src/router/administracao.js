@@ -78,6 +78,7 @@ const rotasParaMenuSecundário = [
       'tiposDeIntervencao',
       'equipamentosLista',
       'tipoDeAditivosListar',
+      'variaveisCategoricasListar',
       'assuntosListar',
       'modalidadesListar',
       'fontesListar',
@@ -768,6 +769,52 @@ export default [
           título: 'Editar tipo de aditivo',
           rotasParaMigalhasDePão: [
             'tipoDeAditivosListar',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/variaveis',
+    component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: 'CadastroVariavelCategorica.',
+      título: 'Tipo de variável categórica',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        name: 'variaveisCategoricasListar',
+        path: '',
+        component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasLista.vue'),
+        meta: {
+          título: 'Tipo de variável categórica',
+        },
+      },
+      {
+        name: 'variaveisCategoricasCriar',
+        path: 'novo',
+        component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'),
+        meta: {
+          título: 'Novo tipo de variável categórica',
+          rotasParaMigalhasDePão: [
+            'variaveisCategoricasListar',
+          ],
+        },
+      },
+      {
+        path: ':variavelId',
+        name: 'variaveisCategoricasEditar',
+        component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'),
+        props: ({ params }) => ({
+          ...params,
+          ...{ variavelId: Number.parseInt(params.variavelId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar tipo de variável categórica',
+          rotasParaMigalhasDePão: [
+            'variaveisCategoricasListar',
           ],
         },
       },
