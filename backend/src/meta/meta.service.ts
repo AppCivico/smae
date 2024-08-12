@@ -850,7 +850,7 @@ export class MetaService {
         );
     }
 
-    async buscaMetasIniciativaAtividades(tipo: TipoPdm, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividades(tipo: TipoPdm | null, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
         const list: DadosCodTituloMetaDto[] = [];
 
         for (const meta_id of metas) {
@@ -858,7 +858,7 @@ export class MetaService {
             (
                 select 'meta' as tipo, m.id as meta_id, null::int as iniciativa_id, null::int as atividade_id, m.codigo, m.titulo
                 from meta m
-                join pdm p on p.id = m.pdm_id and p.removido_em is null and p.tipo = ${tipo}::"TipoPdm"
+                join pdm p on p.id = m.pdm_id and p.removido_em is null and (p.tipo = ${tipo}::"TipoPdm" or ${tipo}::"TipoPdm" is null)
                 where m.id = ${meta_id}
                 and m.removido_em is null
                 order by m.codigo
@@ -867,7 +867,7 @@ export class MetaService {
             (
                 select 'iniciativa' as tipo, m.id as meta_id, i.id , null, i.codigo, i.titulo
                 from meta m
-                join pdm p on p.id = m.pdm_id and p.removido_em is null and p.tipo = ${tipo}::"TipoPdm"
+                join pdm p on p.id = m.pdm_id and p.removido_em is null and (p.tipo = ${tipo}::"TipoPdm" or ${tipo}::"TipoPdm" is null)
                 join iniciativa i on i.meta_id = m.id and i.removido_em is null
                 where m.id = ${meta_id}
                 and m.removido_em is null
@@ -877,7 +877,7 @@ export class MetaService {
             (
                 select 'atividade' as tipo, m.id as meta_id, i.id as iniciativa_id, a.id as atividade_id, a.codigo, a.titulo
                 from meta m
-                join pdm p on p.id = m.pdm_id and p.removido_em is null and p.tipo = ${tipo}::"TipoPdm"
+                join pdm p on p.id = m.pdm_id and p.removido_em is null and (p.tipo = ${tipo}::"TipoPdm" or ${tipo}::"TipoPdm" is null)
                 join iniciativa i on i.meta_id = m.id and i.removido_em is null
                 join atividade a on a.iniciativa_id = i.id and a.removido_em is null
                 where m.id = ${meta_id}

@@ -1,4 +1,4 @@
-import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType, OmitType, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -123,6 +123,10 @@ export class ProjetoMetaDetailDto {
     pdm_id: number;
 }
 
+export class ProjetoMetaDetailDtoV2 extends OmitType(ProjetoMetaDetailDto, ['pdm_id']) {
+    pdm: IdNomeDto;
+}
+
 export class ProjetoSeiDto {
     id: number;
     @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
@@ -141,12 +145,12 @@ export class ListProjetoSeiDto {
 
 export class OrigemDetailItem {
     id: number;
-    meta: ProjetoMetaDetailDto | null;
+    meta: ProjetoMetaDetailDtoV2 | null;
     atividade: IdCodTituloDto | null;
     iniciativa: IdCodTituloDto | null;
 
     origem_tipo: ProjetoOrigemTipo;
-    @ApiProperty({ deprecated: true,  description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
+    @ApiProperty({ deprecated: true, description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
     meta_codigo: string | null;
 }
 export class IdTituloNivelMaxRegDto {
