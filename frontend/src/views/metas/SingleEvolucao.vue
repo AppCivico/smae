@@ -84,10 +84,15 @@ onUpdated(() => { start(); });
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         {{ parentLabel }}
       </div>
-      <h1>Evolução da {{ parentLabel }}</h1>
+
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        Evolução da {{ parentLabel }}
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
   </div>
@@ -138,7 +143,10 @@ onUpdated(() => { start(); });
                   </select> -->
               </div>
               <SmaeLink
-                v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+                v-if="temPermissãoPara([
+                  'CadastroMeta.administrador_no_pdm',
+                  'CadastroMetaPS.administrador_no_pdm'
+                ])"
                 :to="`${parentlink}/indicadores/${ind.id}`"
                 class="tprimary"
               >
@@ -249,7 +257,10 @@ onUpdated(() => { start(); });
                 </div>
 
                 <div
-                  v-if="!v.etapa && temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+                  v-if="!v.etapa && temPermissãoPara([
+                    'CadastroMeta.administrador_no_pdm',
+                    'CadastroMetaPS.administrador_no_pdm'
+                  ])"
                   class="f0 dropbtn right"
                 >
                   <span class="tamarelo"><svg
@@ -273,7 +284,8 @@ onUpdated(() => { start(); });
                         Valores previstos
                       </SmaeLink>
                     </li>
-                    <li> <!-- a perm de admin ta errada, provavelmente precisa colocar algo novo na api ou buscar admin/tec cp, ou meta.pode-editar -->
+                    <li>
+                      <!-- a perm de admin ta errada, provavelmente precisa colocar algo novo na api ou buscar admin/tec cp, ou meta.pode-editar -->
                       <SmaeLink
                         v-if="temPermissãoPara(['CadastroPessoa.administrador'])"
                         :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
@@ -327,7 +339,10 @@ onUpdated(() => { start(); });
                     <th style="width: 5%" />
                   </tr>
                 </thead>
-                <GruposDeSerie :g="Valores[v.id]" />
+                <GruposDeSerie
+                  :g="Valores[v.id]"
+                  variavel="true"
+                />
               </table>
             </div>
           </div>
@@ -354,7 +369,10 @@ onUpdated(() => { start(); });
         </h2>
       </div>
       <div
-        v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+        v-if="temPermissãoPara([
+          'CadastroMeta.administrador_no_pdm',
+          'CadastroMetaPS.administrador_no_pdm'
+        ])"
         class="bgc50"
       >
         <div class="tc">

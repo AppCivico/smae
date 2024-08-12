@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, ref, nextTick, onMounted } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
@@ -43,6 +43,30 @@ const { temPermissãoPara } = storeToRefs(authStore);
 
 const totalDistribuído = computed(() => listaDeDistribuição.value
   .reduce((acc, cur) => acc + (Number(cur.valor_total) || 0), 0));
+
+const listaDeStatus = ref(null);
+
+function rolarParaStatusCorrente() {
+  if (listaDeStatus.value && Array.isArray(distribuição.historico_status)) {
+    const índiceDoStatusCorrente = distribuição.historico_status.findIndex(
+      (status) => status.concluida === false
+    );
+
+    nextTick(() => {
+      if (listaDeStatus.value) {
+        const { children: filhas } = listaDeStatus.value;
+
+        if (filhas[índiceDoStatusCorrente]) {
+          listaDeStatus.value.scrollLeft = filhas[índiceDoStatusCorrente].offsetLeft;
+        }
+      }
+    });
+  }
+}
+
+onMounted(() => {
+  rolarParaStatusCorrente();
+});
 
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
@@ -184,6 +208,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             : '-' }}
         </dd>
       </div>
+      <div class="f1 fb10em fg999">
+        <dt class="t16 w700 mb05 tc500">
+          Valor 
+        </dt>
+        <dd>
+          {{ transferênciaEmFoco?.valor
+            ? `R$${dinheiro(transferênciaEmFoco.valor)}`
+            : '-' }}
+        </dd>
+      </div>
       <div class="f1 fb10em fg999 align-end">
         <dt class="sr-only">
           Progresso da distribuição de recursos
@@ -211,6 +245,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   <div
     v-for="parlamentar in transferênciaEmFoco?.parlamentares"
     :key="parlamentar.id"
+    class="mb2"
   >
     <div class="flex g2 flexwrap mb2">
       <dl class="f1">
@@ -239,9 +274,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ parlamentar.cargo || '-' }}
         </dd>
       </dl>
-    </div>
 
-    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt class="t16 w700 mb05 tc500">
           Valor
@@ -250,15 +283,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ parlamentar.valor ? `R$${dinheiro(parlamentar.valor)}` : '-' }}
         </dd>
       </dl>
-      <dl class="f1">
-        <dt class="t16 w700 mb05 tc500">
-          objeto
-        </dt>
-        <dd>
-          {{ parlamentar.objeto || '-' }}
-        </dd>
-      </dl>
     </div>
+
+    <dl class="f1">
+      <dt class="t16 w700 mb05 tc500">
+        objeto
+      </dt>
+      <dd>
+        {{ parlamentar.objeto || '-' }}
+      </dd>
+    </dl>
   </div>
 
   <section class="resumo-da-distribuicao-de-recursos pt2 pb1">
@@ -302,39 +336,68 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       flex flexwrap g2 align-end"
       >
         <div
-          v-for="status in distribuição.historico_status"
-          :key="status.id"
+          v-if=" distribuição?.historico_status"
           class="resumo-da-distribuicao-de-recursos__status-item f1 mb1"
         >
-          <dt class="w700 t16">
-            {{ status.status_customizado?.nome || status.status_base?.nome }}
-          </dt>
-          <dd
-            v-if="status.dias_no_status"
-            class="w700 tc300"
+          <ul
+            ref="listaDeStatus"
+            class="flex pb1 andamento-fluxo__lista-de-fases"
           >
-            <time
-              :datetime="status.data_troca"
+            <li
+              v-for="(status, index) in distribuição.historico_status"
+              :key="status.id"
+              class="p1 tc andamento-fluxo__fase"
+              :class="index === distribuição.historico_status.length - 1 && index === 0? 'andamento-fluxo__fase--iniciada' : 'andamento-fluxo__fase--concluída'"
             >
-              {{ status.dias_no_status }} dias
-              <span
-                class="tipinfo"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                ><use xlink:href="#i_i" /></svg><div>
-                  {{ dateToShortDate(status.data_troca) }}
-                </div>
-              </span>
-            </time>
-          </dd>
-          <dd class="mt1">
-            {{ status.nome_responsavel }} (<abbr
-              :title="status.orgao_responsavel?.descricao"
+              <div class="status-item__header">
+                <dt class="w700 t16 andamento-fluxo__nome-da-fase">
+                  {{ status.status_customizado?.nome || status.status_base?.nome }}
+                </dt>
+                <dd
+                  v-if="status.dias_no_status"
+                  class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
+                >
+                  <time :datetime="status.data_troca">
+                    <strong>+ {{ status.dias_no_status }} dias </strong>
+                    <span class="tipinfo">
+                      <svg
+                        width="16"
+                        height="16"
+                      >
+                        <use xlink:href="#i_i" />
+                      </svg>
+                      <div>desde {{ dateToShortDate(status.data_troca) }}</div>
+                    </span>
+                    <p class="mb0">
+                      {{ status.nome_responsavel }}
+                    </p>
+                  </time>
+                </dd>
+              </div>
+            </li>
+          </ul>
+          <dd class="parlamentares">
+            <div
+              v-for="parlamentar, index in distribuição.parlamentares"
+              :key="parlamentar.id"
+              :class="['flex spacebetween center g2', { 'mt1': index  > 0}]"
             >
-              {{ status.orgao_responsavel?.sigla }}
-            </abbr>)
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tc500">
+                  Parlamentar
+                </dt>
+                <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
+              </dl>
+              <hr class="f2">
+              <dl class="f2">
+                <dt class="t16 w700 mb05 tc500 f1">
+                  Valor do recurso
+                </dt>
+                <dd class="tc300">
+                  <strong>R$ {{ dinheiro(parlamentar.valor) || ' 0' }} ({{ (parlamentar.valor / transferênciaEmFoco.valor * 100).toFixed() }}%)</strong>
+                </dd>
+              </dl>
+            </div>
           </dd>
         </div>
       </dl>
@@ -449,10 +512,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar recursos financeiros"
       class="btn with-icon bgnone tcprimary p0"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -574,10 +634,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -791,6 +848,130 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </section>
 </template>
 <style scoped lang="less">
+
+.parlamentares{
+  border-left: solid 2px #B8C0CC;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 700px;
+
+  h4{
+    color: #607A9F;
+    font-weight: 700;
+    font-size: 20px;
+  }
+}
+
+@tamanho-da-bolinha: 1.8rem;
+
+.andamento-fluxo {
+}
+
+.andamento-fluxo__título {
+}
+
+.andamento-fluxo__info {
+}
+
+.andamento-fluxo__lista-de-fases {
+  .rolavel-horizontalmente;
+}
+
+.andamento-fluxo__fase {
+  min-width: 18rem;
+  position: relative;
+  flex-grow: 1;
+  flex-basis: 0;
+
+  &::after {
+    position: absolute;
+    content: '';
+    left: 50%;
+    right: -50%;
+    top: calc(@tamanho-da-bolinha * 0.5 + 1rem);
+    height: 2px;
+    background-color: currentColor;
+    margin-top: -1px;
+    color: @c300;
+  }
+
+  &:first-child::after {
+    left: 50%;
+  }
+
+  &:last-child::after {
+    right: 25%;
+    background-image: linear-gradient(to left, @branco, @c300 3rem);
+  }
+}
+
+.andamento-fluxo__fase--concluída {
+  &::after {
+    color: @amarelo;
+  }
+}
+
+.andamento-fluxo__nome-da-fase {
+  text-wrap: balance;
+  width: 50%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+  &:disabled {
+    opacity: 1;
+  }
+
+  &::before {
+    width: @tamanho-da-bolinha;
+    height: @tamanho-da-bolinha;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    border-radius: 100%;
+    content: '';
+    display: block;
+    background-color: currentColor;
+    color: @c300;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    z-index: 1;
+    position: relative;
+  }
+
+  .andamento-fluxo__fase--iniciada &::before {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
+  }
+
+  .andamento-fluxo__fase--concluída &::before {
+    color: @amarelo;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC9SURBVHgB7ZAxDoIwFIb7UHZ3WIxx1oXQwoJLS1z0BngDjiCeQI/gDdx1YmN118QELkFiqCWxxoApYhz5pte+/l/bh1DHXyCEhZ7nDeRaQy0hxN8DoF2e6xO512+Rfwp4UBQ8SpJTXDtgWfMpIXSpEjgO4xjTdbX3+o6u3xcAcMDYD9QvOG6q/Z4s0vQam+ZoqGkoMozxLcsu528EJVC/lYoQiBCsxABnTYKPkndRWTcJlLgu29o2C1HHTzwAp05KMEpINHYAAAAASUVORK5CYII=);
+  }
+}
+
+.andamento-fluxo__dados-da-fase {
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.andamento-fluxo__dias-da-fase {}
+
+.andamento-fluxo__responsável-pela-fase {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: max-content;
+}
+
+.título-da-fase-selecionada {
+  flex-basis: 50%;
+  flex-grow: 1;
+}
+
+.campos-de-tarefas {
+  border-bottom: 1px solid @c100;
+}
+
 section + section {
   border-top: 1px solid @c100;
 }

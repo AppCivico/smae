@@ -11,7 +11,26 @@
       </router-link>
     </header>
 
-    <FiltroDeListagemDeObras :aria-busy="chamadasPendentes.lista" />
+    <FormularioQueryString
+      v-slot="{ capturarEnvio }"
+      :valores-iniciais="{
+        ordem_direcao: 'asc',
+        ipp: gblIpp,
+        pagina: 1,
+        token_paginacao: undefined,
+      }"
+    >
+      <FiltroDeListagemDeObras
+        :aria-busy="chamadasPendentes.lista"
+        :valores-iniciais="{
+          ipp: $route.query.ipp || 100,
+          ordem_coluna: $route.query.codigo || 'codigo',
+          ordem_direcao: $route.query.ordem_direcao || 'asc',
+          regiao_id: $route.query.regiao_id,
+        }"
+        @submit="capturarEnvio"
+      />
+    </FormularioQueryString>
 
     <div
       role="region"
@@ -21,7 +40,6 @@
       <table class="tablemain">
         <col>
         <col>
-        <col class="col--minimum">
         <col>
         <col>
         <col>
@@ -38,9 +56,6 @@
             </th>
             <th>
               {{ schema.fields.portfolio_id.spec.label }}
-            </th>
-            <th class="cell--nowrap">
-              Código
             </th>
             <th>
               {{ schema.fields.nome.spec.label }}
@@ -71,13 +86,6 @@
           >
             <td>{{ item.orgao_origem.sigla }}</td>
             <td>{{ item.portfolio?.titulo || item.portfolio }}</td>
-            <td class="cell--nowrap">
-              <router-link
-                :to="{ name: 'obrasResumo', params: { obraId: item.id } }"
-              >
-                {{ item.codigo }}
-              </router-link>
-            </td>
             <th>
               <router-link
                 :to="{ name: 'obrasResumo', params: { obraId: item.id } }"
@@ -125,17 +133,17 @@
             </td>
           </tr>
           <tr v-if="chamadasPendentes.lista">
-            <td colspan="11">
+            <td colspan="10">
               Carregando
             </td>
           </tr>
           <tr v-else-if="erro">
-            <td colspan="11">
+            <td colspan="10">
               Erro: {{ erro }}
             </td>
           </tr>
           <tr v-else-if="!lista.length">
-            <td colspan="11">
+            <td colspan="10">
               Nenhum resultado encontrado.
             </td>
           </tr>
@@ -150,6 +158,7 @@
   </div>
 </template>
 <script setup>
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';

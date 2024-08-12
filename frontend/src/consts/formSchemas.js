@@ -1,4 +1,25 @@
 /* eslint-disable no-template-curly-in-string */
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
+import tipoDeVariaveisCategorigacas from '@/consts/tipoDeVariaveisCategorigacas';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
+import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
+import regEx from '@/consts/patterns';
+import periodicidades from '@/consts/periodicidades';
+import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
+import statusObras from '@/consts/statusObras';
+import tipoDePerfil from '@/consts/tipoDePerfil';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
+import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import tiposDeOrigens from '@/consts/tiposDeOrigens';
+import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
+import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import fieldToDate from '@/helpers/fieldToDate';
 import {
   addMethod,
   array,
@@ -12,26 +33,6 @@ import {
   setLocale,
   string,
 } from 'yup';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import estadosDoBrasil from '@/consts/estadosDoBrasil';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
-import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
-import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import regEx from '@/consts/patterns';
-import periodicidades from '@/consts/periodicidades';
-import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
-import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
-import statusObras from '@/consts/statusObras';
-import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
-import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
-import tipoDePerfil from '@/consts/tipoDePerfil';
-import tiposDeOrigens from '@/consts/tiposDeOrigens';
-import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
-import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
-import fieldToDate from '@/helpers/fieldToDate';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -3311,6 +3312,37 @@ export const variável = (singleIndicadores) => object()
       .required('Preencha o valor base'),
   });
 
+export const variávelCategórica = object({
+  descricao: string()
+    .label('Descrição')
+    .required('Descrição inválida'),
+  titulo: string()
+    .label('Título')
+    .required('Título inválido'),
+  tipo: mixed()
+    .label('Tipo')
+    .required('Tipo invalido')
+    .oneOf(Object.keys(tipoDeVariaveisCategorigacas)),
+  valores: array()
+    .label('Valores')
+    .of(
+      object().shape({
+        descricao: string()
+          .label('Descrição')
+          .required('Descrição inválida'),
+        ordem: number()
+          .label('Ordem')
+          .required('Ordem inválida'),
+        titulo: string()
+          .label('Título')
+          .required('Título inválido'),
+        valor_variavel: string()
+          .label('Valor')
+          .required('Valor inválido'),
+      }),
+    ),
+});
+
 export const variávelComposta = object()
   .shape({
     formula: string()
@@ -3608,4 +3640,22 @@ export const obra = projeto.concat(obras).shape({
             .required(),
         }),
     ),
+  empreendimento: object()
+    .label('Empreendimento')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+      identificador: string()
+        .required(),
+    }),
+  responsaveis_no_orgao_gestor: array()
+    .label('Ponto focal do monitoramento')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
 });

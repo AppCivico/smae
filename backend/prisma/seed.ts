@@ -309,6 +309,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
             'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis do PDM.',
         ],
         [
+            'CadastroMeta.administrador_no_pdm_admin_cp',
+            '[Uso interno para Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis do PDM.]',
+        ],
+        [
             'CadastroMeta.administrador_orcamento',
             'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
         ],
@@ -423,6 +427,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
     Config: [
+        ['SMAE.sysadmin', 'SMAE.sysadmin'],
         ['SMAE.login_suspenso', 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável'],
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
@@ -614,7 +619,8 @@ const PerfilAcessoConfig: {
             'CadastroTag.inserir',
             'CadastroTag.editar',
             'CadastroTag.remover',
-            'CadastroMeta.administrador_no_pdm', // pq ele é admin_cp, vai poder editar varias coisas
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMeta.administrador_no_pdm_admin_cp', // pq ele é admin_cp, vai poder editar varias coisas
             'CadastroMeta.listar',
             'CadastroPainel.inserir',
             'CadastroPainel.editar',

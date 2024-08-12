@@ -69,6 +69,7 @@ export type ListaDePrivilegios =
     | 'CadastroProjetoEtapa.remover'
     | 'CadastroMeta.listar'
     | 'CadastroMeta.administrador_no_pdm'
+    | 'CadastroMeta.administrador_no_pdm_admin_cp'
     | 'CadastroMetaPS.listar'
     | 'CadastroMetaPS.administrador_no_pdm'
     | 'CadastroMeta.orcamento'

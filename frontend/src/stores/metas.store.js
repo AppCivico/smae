@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { usePdMStore } from '@/stores/pdm.store';
+import { usePlanosSetoriaisStore } from './planosSetoriais.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -8,7 +9,7 @@ function caminhoParaApi(rotaMeta) {
     return 'meta';
   }
   if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'meta-setorial';
+    return 'plano-setorial-meta';
   }
   throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
@@ -28,7 +29,7 @@ export const useMetasStore = defineStore({
         case 'pdm':
           return usePdMStore().activePdm;
         case 'planoSetorial':
-          return usePlanosSetoriaisStore().emFoco;
+          return usePlanosSetoriaisStore().emFoco || {};
         default:
           throw new Error('Erro ao buscar PdM ativo');
       }

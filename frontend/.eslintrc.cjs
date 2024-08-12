@@ -4,10 +4,25 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'airbnb-base',
+    'airbnb-typescript/base',
+    '@vue/eslint-config-typescript/recommended',
     'plugin:vue/vue3-recommended',
+    '@vue/eslint-config-typescript',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
+    project: [
+      './frontend/tsconfig.json',
+    ],
+    parser: '@typescript-eslint/parser',
+  },
+  rules: {
+    'import/extensions': [
+      'error', {
+        ts: 'always',
+        vue: 'always',
+      },
+    ],
   },
   settings: {
     'import/resolver': {
@@ -48,6 +63,11 @@ module.exports = {
       files: ['*.store.js', '*.store.ts'],
       rules: {
         'import/prefer-default-export': 'off',
+        'import/extensions': [
+          'error', {
+            ts: 'never',
+          },
+        ],
       },
     },
   ],

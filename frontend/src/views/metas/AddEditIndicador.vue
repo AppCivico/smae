@@ -1,5 +1,13 @@
 <script setup>
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
+import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
+import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
+import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
+import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
@@ -11,14 +19,6 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-
-import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import SmallModal from '@/components/SmallModal.vue';
-import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
-import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
-import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
-import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
-import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
@@ -28,7 +28,7 @@ import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
-  onMounted, onUpdated, ref, unref,
+  ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -69,24 +69,30 @@ const dadosExtrasDeAbas = {
     id: 'variaveis',
     etiqueta: 'Variáveis',
   },
-  TabelaDeVariaveisCompostas: {
-    id: 'variaveis-compostas',
-    etiqueta: 'Variáveis Compostas',
-  },
-  TabelaDeVariaveisCompostasEmUso: {
-    id: 'variaveis-compostas-em-uso',
-    etiqueta: 'Variáveis compostas em uso',
-    aberta: true,
-  },
   TabelaDeVariaveisEmUso: {
     id: 'variaveis-em-uso',
     etiqueta: 'Variáveis em Uso',
   },
 };
 
+if (route.meta.entidadeMãe === 'pdm') {
+  dadosExtrasDeAbas.TabelaDeVariaveisCompostas = {
+    id: 'variaveis-compostas',
+    etiqueta: 'Variáveis Compostas',
+  };
+  dadosExtrasDeAbas.TabelaDeVariaveisCompostasEmUso = {
+    id: 'variaveis-compostas-em-uso',
+    etiqueta: 'Variáveis compostas em uso',
+    aberta: true,
+  };
+} else {
+  dadosExtrasDeAbas.TabelaDeVariaveisEmUso.aberta = true;
+}
+
 const formula = ref('');
 const variaveisFormula = ref([]);
 const errFormula = ref('');
+const AssociadorDeVariaveisEstaAberto = ref(false);
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -125,9 +131,6 @@ function start() {
       break;
   }
 }
-
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
 
 // Formula
 async function validadeFormula(f) {
@@ -201,7 +204,14 @@ async function onSubmit(values) {
     if (r == true) {
       MetasStore.clear();
       alertStore.success(msg);
-      router.push(parentlink);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe) {
+        router.push(parentlink);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -213,7 +223,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await IndicadoresStore.delete(id)) {
           IndicadoresStore.clear();
-          await router.push(parentlink);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe) {
+            await router.push(parentlink);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Indicador removido.');
         }
       }, 'Remover');
@@ -222,16 +239,34 @@ async function checkDelete(id) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', parentlink);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    alertStore.$reset();
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: parentlink,
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
+  });
 }
 
 if (indicador_id) {
-  Promise.all([
-    VariaveisStore.getAllCompound(indicador_id),
-    VariaveisStore.getAllCompoundInUse(indicador_id),
+  const chamadas = [
     IndicadoresStore.getById(indicador_id),
     VariaveisStore.getAll(indicador_id),
-  ]).then(() => {
+  ];
+
+  if (route.meta.entidadeMãe === 'pdm') {
+    chamadas.push(VariaveisStore.getAllCompound(indicador_id));
+    chamadas.push(VariaveisStore.getAllCompoundInUse(indicador_id));
+  }
+
+  Promise.all(chamadas).then(() => {
     if (singleIndicadores.value.formula) {
       formula.value = singleIndicadores.value.formula;
 
@@ -248,6 +283,14 @@ if (indicador_id) {
 } else {
   IndicadoresStore.getAll(meta_id, 'meta_id');
 }
+
+watch(AssociadorDeVariaveisEstaAberto.value, () => {
+  VariaveisStore.getAll(indicador_id);
+});
+
+watch(() => props.group, () => {
+  start();
+}, { immediate: true });
 </script>
 <script>
 // use normal <script> to declare options
@@ -259,12 +302,17 @@ export default {
   <MigalhasDeMetas class="mb1" />
 
   <div class="flex spacebetween center">
-    <h1 v-if="indicador_id">
-      Editar Indicador
-    </h1>
-    <h1 v-else>
-      Adicionar Indicador
-    </h1>
+    <TítuloDePágina
+      :ícone="activePdm?.logo"
+    >
+      <template v-if="indicador_id">
+        Editar Indicador
+      </template>
+      <template v-else>
+        Adicionar Indicador
+      </template>
+    </TítuloDePágina>
+
     <hr class="ml2 f1">
     <button
       class="btn round ml2"
@@ -695,10 +743,33 @@ export default {
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
         :variáveis="Variaveis[indicador_id]"
         :parentlink="parentlink"
-      />
+        :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
+      >
+        <template #dentro-do-menu>
+          <li
+            v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+            class="mr1"
+          >
+            <button
+              type="button"
+              class="addlink"
+              @click="AssociadorDeVariaveisEstaAberto = true"
+            >
+              <span>Associar variável</span>
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_+" /></svg>
+            </button>
+          </li>
+        </template>
+      </TabelaDeVariaveis>
     </template>
 
-    <template #TabelaDeVariaveisCompostas="{ estáAberta }">
+    <template
+      v-if="$route.meta.entidadeMãe === 'pdm'"
+      #TabelaDeVariaveisCompostas="{ estáAberta }"
+    >
       <TabelaDeVariaveisCompostas
         v-if="!Variaveis[indicador_id]?.loading && estáAberta"
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
@@ -709,7 +780,10 @@ export default {
       />
     </template>
 
-    <template #TabelaDeVariaveisCompostasEmUso="{ estáAberta }">
+    <template
+      v-if="$route.meta.entidadeMãe === 'pdm'"
+      #TabelaDeVariaveisCompostasEmUso="{ estáAberta }"
+    >
       <TabelaDeVariaveisCompostasEmUso
         v-if="!Variaveis[indicador_id]?.loading && estáAberta"
         :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
@@ -721,9 +795,22 @@ export default {
       <TabelaDeVariaveisEmUso
         v-if="!Variaveis[indicador_id]?.loading && estáAberta"
         :parentlink="parentlink"
+        :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       />
     </template>
   </EnvelopeDeAbas>
+
+  <template v-if="indicador_id && $route.meta.entidadeMãe === 'planoSetorial'">
+    <SmallModal
+      v-if="AssociadorDeVariaveisEstaAberto"
+      class="largura-total"
+    >
+      <AssociadorDeVariaveis
+        :indicador="singleIndicadores"
+        @close="AssociadorDeVariaveisEstaAberto = false"
+      />
+    </SmallModal>
+  </template>
 
   <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
     <hr class="mt2 mb2">

@@ -5,6 +5,7 @@ import { ListDadosMetaIniciativaAtividadesDto } from '../../meta/dto/create-meta
 import { MetaService } from '../../meta/meta.service';
 import { ListProjetoProxyPdmMetaDto } from './entities/projeto.proxy-pdm-meta.entity';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
+import { FilterPdmOrNotDto } from './dto/create-projeto.dto';
 
 @ApiTags('Projeto')
 @Controller('projeto/proxy')
@@ -23,6 +24,11 @@ export class ProjetoProxyPdmMetasController {
             'Projeto.administrador_no_orgao',
             'SMAE.gestor_de_projeto',
             'SMAE.colaborador_de_projeto',
+            'Reports.executar.PDM',
+            'Reports.executar.MDO',
+            'Reports.executar.CasaCivil',
+            'Reports.executar.PlanoSetorial',
+            'Reports.executar.Projetos',
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -30,8 +36,8 @@ export class ProjetoProxyPdmMetasController {
         description:
             'Como não há necessidade de puxar todo os dados da meta e do PDM, esse endpoint retorna um resumo de Meta+PDM',
     })
-    async findAll(): Promise<ListProjetoProxyPdmMetaDto> {
-        return { linhas: await this.svc.findAll() };
+    async findAll(@Query() filters: FilterPdmOrNotDto): Promise<ListProjetoProxyPdmMetaDto> {
+        return { linhas: await this.svc.findAll(filters) };
     }
 
     @ApiBearerAuth('access-token')
@@ -41,6 +47,11 @@ export class ProjetoProxyPdmMetasController {
         'Projeto.administrador_no_orgao',
         'SMAE.gestor_de_projeto',
         'SMAE.colaborador_de_projeto',
+        'Reports.executar.PDM',
+        'Reports.executar.MDO',
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.Projetos',
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
@@ -66,6 +77,11 @@ export class ProjetoMDOProxyPdmMetasController {
             'ProjetoMDO.administrador_no_orgao',
             'MDO.gestor_de_projeto',
             'MDO.colaborador_de_projeto',
+            'Reports.executar.PDM',
+            'Reports.executar.MDO',
+            'Reports.executar.CasaCivil',
+            'Reports.executar.PlanoSetorial',
+            'Reports.executar.Projetos',
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -73,8 +89,8 @@ export class ProjetoMDOProxyPdmMetasController {
         description:
             'Como não há necessidade de puxar todo os dados da meta e do PDM, esse endpoint retorna um resumo de Meta+PDM',
     })
-    async findAll(): Promise<ListProjetoProxyPdmMetaDto> {
-        return { linhas: await this.svc.findAll() };
+    async findAll(@Query() filters: FilterPdmOrNotDto): Promise<ListProjetoProxyPdmMetaDto> {
+        return { linhas: await this.svc.findAll(filters) };
     }
 
     @ApiBearerAuth('access-token')
@@ -84,6 +100,11 @@ export class ProjetoMDOProxyPdmMetasController {
         'ProjetoMDO.administrador_no_orgao',
         'MDO.gestor_de_projeto',
         'MDO.colaborador_de_projeto',
+        'Reports.executar.PDM',
+        'Reports.executar.MDO',
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.Projetos',
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]

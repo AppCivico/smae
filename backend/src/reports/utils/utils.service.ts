@@ -16,6 +16,7 @@ import { CreateRelParlamentaresDto } from '../parlamentares/dto/create-parlament
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
 import { WriteStream } from 'fs';
 import { CreateRelObrasDto } from '../pp-obras/dto/create-obras.dto';
+import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
 
 @Injectable()
 export class UtilsService {
@@ -130,6 +131,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'Obras':
             theClass = CreateRelObrasDto;
+            break;
+        case 'TribunalDeContas':
+            theClass = CreateRelTribunalDeContasDto;
             break;
         default:
             fonte satisfies never;

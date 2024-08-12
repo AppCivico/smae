@@ -109,7 +109,14 @@ async function onSubmit(values) {
       })();
       alertStore.success(msg);
       editModalStore.clear();
-      if (rota) router.push(rota);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        if (rota) router.push(rota);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
     }
   } catch (error) {
     alertStore.error(error);

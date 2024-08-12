@@ -1,10 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, FieldArray, useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
@@ -17,6 +11,15 @@ import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
@@ -79,7 +82,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
     if (r) {
+      TransferenciasVoluntarias.buscarItem(r.id);
+
       alertStore.success(msg);
+
       if (!props.transferenciaId) {
         router.push({
           name: 'RegistroDeTransferenciaEditar',
@@ -106,6 +112,20 @@ function iniciar() {
   ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
   TipoDeTransferenciaStore.buscarTudo();
   partidoStore.buscarTudo();
+}
+
+function sugerirCamposDoMandato(parlamentarId, idx) {
+  const {
+    cargo_mais_recente: cargoMaisRecente,
+    partido: { id: partidoId } = {},
+  } = parlamentaresPorId.value[parlamentarId];
+
+  if (cargoMaisRecente) {
+    setFieldValue(`parlamentares[${idx}].cargo`, cargoMaisRecente);
+  }
+  if (partidoId) {
+    setFieldValue(`parlamentares[${idx}].partido_id`, partidoId);
+  }
 }
 
 iniciar();
@@ -382,7 +402,7 @@ watch(itemParaEdição, (novosValores) => {
           :key="field.key"
           class="flex flexwrap center g2 mb2"
         >
-          <div class="f1 mb1">
+          <div class="f1">
             <Field
               :name="`parlamentares[${idx}].id`"
               type="hidden"
@@ -401,6 +421,7 @@ watch(itemParaEdição, (novosValores) => {
                 loading: ParlamentaresStore.chamadasPendentes?.lista,
               }"
               :disabled="!parlamentarComoLista?.length"
+              @change="($e) => sugerirCamposDoMandato($e.target.value, idx)"
             >
               <option value="">
                 Selecionar
@@ -431,10 +452,10 @@ watch(itemParaEdição, (novosValores) => {
               class="error-msg"
             />
           </div>
-          <div class="f1 mb1">
+          <div class="f1">
             <LabelFromYup
-              name="partido_id"
-              :schema="schema.fields.parlamentares.innerType"
+              name="parlamentares.partido_id"
+              :schema="schema"
             />
             <Field
               :name="`parlamentares[${idx}].partido_id`"
@@ -465,8 +486,8 @@ watch(itemParaEdição, (novosValores) => {
           </div>
           <div class="f1">
             <LabelFromYup
-              name="`cargo`"
-              :schema="schema.fields.parlamentares.innerType"
+              name="parlamentares.cargo"
+              :schema="schema"
             />
             <Field
               :name="`parlamentares[${idx}].cargo`"
@@ -491,7 +512,7 @@ watch(itemParaEdição, (novosValores) => {
             </div>
           </div>
 
-          <div class="align-end">
+          <div class="align-center">
             <button
               class="like-a__text addlink"
               arial-label="excluir"
@@ -514,7 +535,7 @@ watch(itemParaEdição, (novosValores) => {
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar registro
+          ><use xlink:href="#i_+" /></svg>Adicionar parlamentar
         </button>
       </FieldArray>
     </div>

@@ -21,7 +21,7 @@ export const useAlertStore = defineStore({
       });
     },
     clear() { // TODO: remover função desnecessária. Pode-se usar `.$reset();`
-      this.alertas.splice(0, this.alertas.length);
+      this.alertas.splice(0);
     },
   },
 });

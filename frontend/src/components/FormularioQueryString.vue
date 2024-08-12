@@ -1,72 +1,53 @@
 <template>
-  <form
-    action=""
-    method="get"
-    @submit.prevent="aplicarFiltros"
-    class="formulario-query-string flex flexwrap g2 mb2 fb100"
-  >
-    <slot />
-
-    <button
-      v-if="!ocultarBotaoDeEnvio"
-      type="submit"
-      class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
-    >
-      {{ etiquetaParaBotaoDeEnvio }}
-    </button>
-  </form>
+  <slot
+    class="formulario-query-string"
+    :capturar-envio="aplicarFiltros"
+  />
 </template>
 <script setup lang="ts">
+import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
 import { UrlParams } from '@vueuse/core';
 import { pick } from 'lodash';
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const emit = defineEmits(['enviado', 'montado']);
+const emit = defineEmits(['aplicado', 'montado']);
 
 const route = useRoute();
 const router = useRouter();
 
 const props = defineProps({
-  etiquetaParaBotaoDeEnvio: {
-    type: String,
-    default: 'Filtrar',
-  },
-  ocultarBotaoDeEnvio: {
-    type: Boolean,
-    default: false,
-  },
-  valoresPadrao: {
+  valoresIniciais: {
     type: Object,
-    default: () => ({
-    }),
+    default: () => ({}),
   },
 });
 
-function aplicarFiltros(event: Event): void {
-  const formulario: HTMLFormElement | null = event.target as HTMLFormElement;
-  let parametros: UrlParams = {};
+function aplicarFiltros(evento: SubmitEvent): void {
+  const campos = EnvioParaObjeto(evento);
+  const nomesDosCampos = Object.keys(campos);
 
-  if (!formulario) return;
+  let parametros: UrlParams = {};
 
   let i = 0;
 
-  while (formulario.elements[i]) {
-    const campo = formulario.elements[i] as HTMLInputElement;
+  while (nomesDosCampos[i]) {
+    const nomeDoCampo = nomesDosCampos[i];
+    const valor = campos[nomeDoCampo];
 
-    if (campo.value) {
-      if (parametros[campo.name]) {
-        if (!Array.isArray(parametros[campo.name])) {
-          parametros[campo.name] = [String(parametros[campo.name])];
+    if (valor) {
+      if (parametros[nomeDoCampo]) {
+        if (!Array.isArray(parametros[nomeDoCampo])) {
+          parametros[nomeDoCampo] = [String(parametros[nomeDoCampo])];
         }
 
-        (parametros[campo.name] as Array<string>).push(String(campo.value));
+        (parametros[nomeDoCampo] as Array<string>).push(String(valor));
       } else {
-        parametros[campo.name] = campo.value
-          || props.valoresPadrao[campo.name];
+        parametros[nomeDoCampo] = valor
+          || props.valoresIniciais[nomeDoCampo];
       }
     } else {
-      parametros[campo.name] = props.valoresPadrao[campo.name];
+      parametros[nomeDoCampo] = props.valoresIniciais[nomeDoCampo];
     }
 
     i += 1;
@@ -74,22 +55,22 @@ function aplicarFiltros(event: Event): void {
 
   parametros = {
     ...route.query,
-    ...props.valoresPadrao,
+    ...props.valoresIniciais,
     ...parametros,
   };
 
   parametros = pick(parametros, Object.keys(parametros).sort());
 
-  emit('enviado', parametros);
+  emit('aplicado', parametros);
 
   router.replace({
-    query: parametros
+    query: parametros,
   });
 }
 
 onMounted(() => {
   let parametrosCombinados = {
-    ...props.valoresPadrao,
+    ...props.valoresIniciais,
     ...route.query,
   };
 
@@ -98,13 +79,7 @@ onMounted(() => {
   emit('montado', parametrosCombinados);
 
   router.replace({
-    query: parametrosCombinados
+    query: parametrosCombinados,
   });
 });
 </script>
-<style lang="less">
-.formulario-query-string {}
-.formulario-query-string .label {
-  color: @c300;
-}
-</style>

@@ -63,7 +63,7 @@
 <script setup>
 import { macrotema as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useMacrotemasStore } from '@/stores/macrotemasPs.store';
+import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions } from 'vue';
@@ -87,7 +87,7 @@ const titulo = typeof route?.meta?.título === 'function'
   : route?.meta?.título;
 
 const alertStore = useAlertStore();
-const macrotemasStore = useMacrotemasStore();
+const macrotemasStore = useMacrotemasPsStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(macrotemasStore);
 
 async function onSubmit(values) {

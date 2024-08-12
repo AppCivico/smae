@@ -64,6 +64,7 @@ const d_fonte = ref('');
         break;
 
       case 'pdm':
+      case 'planoSetorial':
         await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
         break;
 
@@ -574,7 +575,7 @@ export default {
         </tbody>
       </table>
 
-      <div v-if="$route.meta.entidadeMãe === 'pdm'">
+      <div v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe)">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <div

@@ -1,5 +1,6 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
@@ -16,6 +17,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
   computed, defineOptions, ref, unref,
+  watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -41,13 +43,7 @@ const orgaos_participantes = ref([
   },
 ]);
 const coordenadores_cp = ref({ participantes: [], busca: '' });
-const m_tags = ref({ participantes: [], busca: '' });
 
-const virtualParent = ref({
-  macro_tema_id: route.params.macro_tema_id,
-  sub_tema_id: route.params.sub_tema_id,
-  tema_id: route.params.tema_id,
-});
 let title = 'Cadastro de Meta';
 if (meta_id) {
   title = 'Editar Meta';
@@ -75,10 +71,6 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
   await MetasStore.getPdM();
 
   const promessas = [
-    MacrotemaStore.filterByPdm(activePdm.value.id),
-    TemaStore.filterByPdm(activePdm.value.id),
-    SubtemaStore.filterByPdm(activePdm.value.id),
-    TagsStore.filterByPdm(activePdm.value.id),
     OrgansStore.getAllOrganResponsibles(),
     UserStore.buscarPessoasSimplificadas({ coordenador_responsavel_cp: true }),
   ];
@@ -93,7 +85,7 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
     if (singleMeta.value?.sub_tema?.id) singleMeta.value.sub_tema_id = singleMeta.value.sub_tema.id;
 
     if (singleMeta.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0, orgaos_participantes.value.length);
+      orgaos_participantes.value.splice(0);
       singleMeta.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;
@@ -106,15 +98,24 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
     if (singleMeta.value.coordenadores_cp) {
       coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map((x) => x.id);
     }
-    if (singleMeta.value.tags) {
-      m_tags.value.participantes = singleMeta.value.tags.map((x) => x?.id ?? x);
-    }
   }
 
   oktogo.value = true;
 })();
 
 const schema = computed(() => metaSchema(activePdm.value));
+
+const valoresIniciais = computed(() => ({
+  ...singleMeta.value,
+
+  macro_tema_id: singleMeta.value.macro_tema_id || route.params.macro_tema_id,
+  sub_tema_id: singleMeta.value.sub_tema_id || route.params.sub_tema_id,
+  tema_id: singleMeta.value.tema_id || route.params.tema_id,
+
+  tags: Array.isArray(singleMeta.value?.tags)
+    ? singleMeta.value.tags.map((tag) => tag.id)
+    : [],
+}));
 
 async function onSubmit(values) {
   try {
@@ -127,10 +128,6 @@ async function onSubmit(values) {
 
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
-
-    values.tags = m_tags.value.participantes.length
-      ? m_tags.value.participantes
-      : null;
 
     if (!values.pdm_id) values.pdm_id = activePdm.value.id;
 
@@ -150,7 +147,14 @@ async function onSubmit(values) {
     }
     if (r == true) {
       MetasStore.clear();
-      await router.push('/metas');
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        await router.push('/metas');
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
     }
   } catch (error) {
@@ -163,7 +167,15 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await MetasStore.delete(id)) {
           MetasStore.clear();
-          await router.push('/metas');
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push('/metas');
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
+
           alertStore.success('Meta removida.');
         }
       }, 'Remover');
@@ -171,7 +183,20 @@ async function checkDelete(id) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/metas');
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    alertStore.$reset();
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: '/metas',
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
+  });
 }
 function addOrgao(obj, r) {
   obj.push({
@@ -187,12 +212,33 @@ function filterResponsible(orgao_id) {
   const v = r.length ? r.find((x) => x.id == orgao_id) : false;
   return v?.responsible ?? [];
 }
+
+watch(() => activePdm.value.id, async (novoValor) => {
+  if (activePdm.value.id) {
+    // usando essa flag porque a montagem do formulário está síncrona.
+    // PRA-FAZER: montar o formulário de forma assíncrona.
+    oktogo.value = false;
+    const promessas = [
+      MacrotemaStore.filterByPdm(novoValor),
+      TemaStore.filterByPdm(novoValor),
+      SubtemaStore.filterByPdm(novoValor),
+      TagsStore.filterByPdm(novoValor),
+    ];
+
+    await Promise.allSettled(promessas);
+    oktogo.value = true;
+  }
+}, { immediate: true });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
 
   <div class="flex spacebetween center mb2">
-    <h1>{{ title }}</h1>
+    <TítuloDePágina
+      :ícone="activePdm?.logo"
+    >
+      {{ title }}
+    </TítuloDePágina>
     <hr class="ml2 f1">
     <button
       class="btn round ml2"
@@ -208,7 +254,7 @@ function filterResponsible(orgao_id) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="meta_id ? singleMeta : virtualParent"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -313,11 +359,13 @@ function filterResponsible(orgao_id) {
       </div>
 
       <div v-if="tempTags.length">
-        <label class="label">Tags</label>
-        <AutocompleteField
-          :controlador="m_tags"
-          :grupo="tempTags"
-          label="descricao"
+        <legend class="legend mb1">
+          Tags
+        </legend>
+        <CampoDeTagsComBuscaPorCategoria
+          v-model="values.tags"
+          name="tags"
+          :valores-iniciais="valoresIniciais.tags || []"
         />
       </div>
 
@@ -411,7 +459,7 @@ function filterResponsible(orgao_id) {
             <select
               v-if="OrgansStore.organResponsibles.length"
               v-model="item.orgao_id"
-              class="inputtext"
+              class="inputtext light"
               @change="item.participantes = []"
             >
               <option
@@ -471,7 +519,7 @@ function filterResponsible(orgao_id) {
             <select
               v-if="OrgansStore.organResponsibles.length"
               v-model="item.orgao_id"
-              class="inputtext"
+              class="inputtext light"
               @change="item.participantes = []"
             >
               <option

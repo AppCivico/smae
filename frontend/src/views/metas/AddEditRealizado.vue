@@ -59,7 +59,14 @@ async function onSubmit(el) {
         VariaveisStore.getValores(var_id);
         alertStore.success(msg);
         editModalStore.clear();
-        router.push(`${currentEdit}`);
+
+        if (route.meta.rotaDeEscape) {
+          router.push({ name: route.meta.rotaDeEscape });
+        } else if (route.meta.entidadeMãe === 'pdm') {
+          router.push(`${currentEdit}`);
+        } else {
+          throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+        }
       }
     }
   } catch (error) {
@@ -263,9 +270,10 @@ function limparFormulário() {
                   type="number"
                   :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')"
                   :name="v.series[Realizado]?.referencia"
-                  :disabled="!v.series[Realizado]?.referencia || modoDePreenchimento !== 'valor_nominal'"
                   :value="v.series[Realizado]?.valor_nominal"
                   class="inputtext light mb1"
+                  :disabled="!v.series[Realizado]?.referencia
+                    || modoDePreenchimento !== 'valor_nominal'"
                   @input="singleVariaveis.acumulativa
                     && modoDePreenchimento === 'valor_nominal'
                     && soma($event, k[1], i)"
@@ -277,10 +285,9 @@ function limparFormulário() {
                   type="number"
                   :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')"
                   :name="v.series[RealizadoAcumulado]?.referencia"
-                  :value="
-                    singleVariaveis.acumulativa
-                      ? acumular(v.periodo, v.series[Previsto]?.valor_nominal)
-                      : v.series[RealizadoAcumulado]?.valor_nominal
+                  :value="singleVariaveis.acumulativa
+                    ? acumular(v.periodo, v.series[Previsto]?.valor_nominal)
+                    : v.series[RealizadoAcumulado]?.valor_nominal
                   "
                   :disabled="singleVariaveis.acumulativa
                     && modoDePreenchimento === 'valor_nominal'

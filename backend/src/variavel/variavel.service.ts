@@ -479,6 +479,7 @@ export class VariavelService {
                     titulo: `${codigo}.${fc.pdm_codigo_sufixo}`,
                     formula: formula,
                     formula_compilada: formula,
+                    criar_variavel: true,
                     FormulaCompostaVariavel: {
                         create: varEscopo.map((vid) => ({
                             variavel_id: vid,
@@ -597,7 +598,7 @@ export class VariavelService {
 
         await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
 
-        await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
+        await this.recalc_series_dependentes([variavel.id], prismaTxn);
 
         return variavel;
     }
@@ -652,13 +653,13 @@ export class VariavelService {
         if (!p) return { periodo_preenchimento, periodo_validacao, periodo_liberacao };
 
         if (p.preenchimento_inicio >= p.preenchimento_fim) {
-            throw new Error('Preenchimento: Início deve ser menor que fim');
+            throw new BadRequestException('Preenchimento: Início deve ser menor que fim');
         }
         if (p.validacao_inicio >= p.validacao_fim) {
-            throw new Error('Validação: Início deve ser menor que fim');
+            throw new BadRequestException('Validação: Início deve ser menor que fim');
         }
         if (p.liberacao_inicio >= p.liberacao_fim) {
-            throw new Error('Liberação: Início deve ser menor que fim');
+            throw new BadRequestException('Liberação: Início deve ser menor que fim');
         }
 
         // desativando regra por enquanto
@@ -842,6 +843,20 @@ export class VariavelService {
     }
 
     async findAll(tipo: TipoVariavel, filters: FilterVariavelDto): Promise<VariavelItemDto[]> {
+        if (
+            !filters.indicador_id &&
+            !filters.meta_id &&
+            !filters.iniciativa_id &&
+            !filters.atividade_id &&
+            !filters.regiao_id &&
+            !filters.assuntos &&
+            !filters.id
+        ) {
+            throw new BadRequestException(
+                'Use ao menos um dos filtros: id, indicador_id, meta_id, iniciativa_id, atividade_id, regiao_id ou assuntos'
+            );
+        }
+
         const whereSet = this.getVariavelWhereSet(filters);
 
         // TODO seria bom verificar permissões do usuário, se realmente poderia visualizar [logo fazer batch edit dos valores] de todas as variaveis
@@ -853,7 +868,7 @@ export class VariavelService {
         const listActive = await this.prisma.variavel.findMany({
             where: {
                 AND: whereSet,
-                tipo: tipo,
+                tipo: tipo == 'Global' ? { in: ['Global', 'Calculada'] } : tipo,
             },
             select: {
                 id: true,
@@ -898,6 +913,7 @@ export class VariavelService {
                     select: {
                         desativado: true,
                         id: true,
+                        aviso_data_fim: true,
                         indicador_origem: {
                             select: {
                                 id: true,
@@ -1161,7 +1177,7 @@ export class VariavelService {
 
     private getVariavelWhereSet(filters: FilterVariavelDto) {
         const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
-        if (filters.remover_desativados) {
+        if (filters.remover_desativados || filters.remover_desativados === undefined) {
             // não acredito que sirva de nada, mas vou manter pois já estava assim
             // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
             // impossíveis
@@ -1246,6 +1262,17 @@ export class VariavelService {
 
             variavel: {
                 AND: this.getVariavelWhereSet(filters),
+
+                NOT: filters.not_indicador_id
+                    ? {
+                          indicador_variavel: {
+                              some: {
+                                  indicador_id: filters.not_indicador_id,
+                                  indicador_origem_id: null,
+                              },
+                          },
+                      }
+                    : undefined,
             },
         });
 
@@ -1298,6 +1325,7 @@ export class VariavelService {
                 variavel_categorica_id: true,
                 orgao_id: true,
                 inicio_medicao: true,
+                fim_medicao: true,
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
@@ -1469,8 +1497,14 @@ export class VariavelService {
                 },
                 select: {
                     valor_base: true,
+                    fim_medicao: true,
                 },
             });
+
+            // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
+            if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
+                await this.updateAvisoFimIndicador(prismaTxn, variavelId, updated);
+            }
 
             if (suspendida !== undefined && suspendida !== currentSuspendida) {
                 logger.log(`Suspensão alterada para ${suspendida}`);
@@ -1502,13 +1536,55 @@ export class VariavelService {
 
             if (Number(self.valor_base).toString() !== Number(updated.valor_base).toString()) {
                 logger.log(`Valor base alterado de ${self.valor_base} para ${updated.valor_base}`);
-                await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
+                await this.recalc_series_dependentes([variavelId], prismaTxn);
             }
 
             await logger.saveLogs(prismaTxn, user.getLogData());
         });
 
         return { id: variavelId };
+    }
+
+    private async updateAvisoFimIndicador(
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number,
+        updated: { valor_base: Prisma.Decimal; fim_medicao: Date | null }
+    ) {
+        const indicadoresQUsam = await prismaTxn.indicadorVariavel.findMany({
+            where: {
+                variavel_id: variavelId,
+                desativado: false,
+            },
+            select: {
+                indicador_id: true,
+                indicador: {
+                    select: {
+                        fim_medicao: true,
+                    },
+                },
+            },
+        });
+
+        // na tabela de indicador_variavel, o indicador_id pode repetir (ou era só na formula? mas just in case)
+        const repetidos = new Set<number>();
+        // Update aviso_data_fim for each indicador
+        for (const iv of indicadoresQUsam) {
+            if (repetidos.has(iv.indicador_id)) continue;
+            repetidos.add(iv.indicador_id);
+
+            const avisoDataFim = updated.fim_medicao ? iv.indicador.fim_medicao > updated.fim_medicao : false;
+            await prismaTxn.indicadorVariavel.updateMany({
+                where: {
+                    indicador_id: iv.indicador_id,
+                    variavel_id: variavelId,
+                },
+                data: {
+                    aviso_data_fim: avisoDataFim,
+                },
+            });
+        }
+
+        await this.recalc_indicador_usando_variaveis([variavelId], prismaTxn);
     }
 
     private async verificaEscritaNaMeta(variavelId: number, user: PessoaFromJwt) {
@@ -2045,14 +2121,14 @@ export class VariavelService {
     async getSeriePrevistoRealizado(
         tipo: TipoVariavel,
         filters: FilterSVNPeriodoDto,
-        variavelId: number
+        variavelId: number,
+        user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        const indicador = await this.getIndicadorViaVariavel(variavelId);
-        const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
-            return v.variavel.id === variavelId;
-        });
-        const variavel = indicadorVariavelRelList[0].variavel;
+        const selfItem = await this.findAll(tipo, { id: variavelId });
+        if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
+        const variavel = selfItem[0];
 
+        // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
@@ -2064,7 +2140,8 @@ export class VariavelService {
                 acumulativa: variavel.acumulativa,
                 codigo: variavel.codigo,
                 titulo: variavel.titulo,
-                suspendida: variavel.suspendida_em ? true : false,
+                suspendida: variavel.suspendida,
+                valor_base: variavel.valor_base.toString(),
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,
@@ -2425,7 +2502,7 @@ export class VariavelService {
                 this.logger.log(`Variáveis modificadas: ${JSON.stringify(variaveisMod)}`);
 
                 if (Array.isArray(variaveisMod)) {
-                    await this.recalc_variaveis_acumulada(variaveisMod, prismaTxn);
+                    await this.recalc_series_dependentes(variaveisMod, prismaTxn);
                     await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTxn);
                 }
             },
@@ -2437,22 +2514,43 @@ export class VariavelService {
         );
     }
 
-    async recalc_variaveis_acumulada(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
-        this.logger.log(`called recalc_variaveis_acumulada (${JSON.stringify(variaveis)})`);
+    async recalc_series_dependentes(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
+        this.logger.log(`called recalc_series_dependentes (${JSON.stringify(variaveis)})`);
         const afetadas = await prismaTxn.variavel.findMany({
             where: {
                 id: { in: variaveis },
-                acumulativa: true,
                 removido_em: null,
             },
             select: {
                 id: true,
+                acumulativa: true,
+                FormulaCompostaVariavel: {
+                    where: {
+                        formula_composta: {
+                            NOT: { variavel_calc_id: null },
+                        },
+                    },
+                    select: {
+                        formula_composta: {
+                            select: {
+                                variavel_calc_id: true,
+                            },
+                        },
+                    },
+                },
             },
         });
-        this.logger.log(`query.afetadas => ${JSON.stringify(afetadas)}`);
+        this.logger.debug(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
-            this.logger.debug(`Recalculando serie acumulada variavel ${row.id}...`);
-            await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+            if (row.acumulativa) {
+                this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
+                await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+            }
+
+            for (const vc of row.FormulaCompostaVariavel) {
+                this.logger.verbose(`Invalidando variavel calculada ${vc.formula_composta.variavel_calc_id}...`);
+                await prismaTxn.$queryRaw`select refresh_variavel(${vc.formula_composta.variavel_calc_id}::int, null)`;
+            }
         }
     }
 

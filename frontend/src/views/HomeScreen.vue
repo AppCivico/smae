@@ -1,12 +1,22 @@
 <script setup>
 import módulos from '@/consts/modulosDoSistema';
+import requestS from '@/helpers/requestS.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useUsersStore } from '@/stores/users.store';
+import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import { useMacrotemasStore } from '@/stores/macrotemas.store';
+import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
+import { usePsMetasStore } from '@/stores/metasPs.store.ts';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -17,6 +27,8 @@ const erro = ref(null);
 const {
   sistemaEscolhido, dadosDoSistemaEscolhido,
 } = storeToRefs(authStore);
+
+const módulosDisponíveis = ref([]);
 
 // PRA-FAZER: mover para o gerenciador de estado `auth.store`
 async function escolher(opção) {
@@ -48,6 +60,13 @@ async function escolher(opção) {
       useRegionsStore().$reset();
       useUsersStore().$reset();
       useTarefasStore().$reset();
+      usePsMetasStore().$reset();
+      useMetasStore().$reset();
+      useContratosStore().$reset();
+      useProcessosStore().$reset();
+      useAcompanhamentosStore().$reset();
+      useMacrotemasStore().$reset();
+      useMacrotemasPsStore().$reset();
     })
     .catch((err) => {
       sistemaEscolhido.value = 'SMAE';
@@ -58,13 +77,11 @@ async function escolher(opção) {
     });
 }
 
-const módulosDisponíveis = ref([]);
-
 async function iniciar() {
   emEspera.value = true;
   erro.value = null;
 
-  await authStore.getDados({ 'smae-sistemas': Object.keys(módulos).join(',') })
+  requestS.get(`${baseUrl}/minha-conta`, { 'smae-sistemas': Object.keys(módulos).join(',') })
     .then((resposta) => {
       const { sessao: { sistemas } } = resposta;
 
@@ -233,7 +250,7 @@ iniciar();
 }
 
 .escolha-de-módulos__botão-de-saída {
-  max-with: max-content;
+  max-width: max-content;
   margin-right: auto;
   margin-left: auto;
 }

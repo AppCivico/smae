@@ -1,12 +1,14 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { defineOptions, ref, unref } from 'vue';
+import {
+  computed, defineOptions, ref, unref,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
@@ -17,8 +19,6 @@ import {
 defineOptions({
   inheritAttrs: false,
 });
-
-IniciativaAtiva();
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -56,6 +56,15 @@ let title = 'Cadastro de';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
+
+const valoresIniciais = computed(() => ({
+  ...singleIniciativa.value,
+
+  tags: Array.isArray(singleIniciativa.value?.tags)
+    ? singleIniciativa.value.tags.map((tag) => tag.id)
+    : [],
+}));
+
 if (iniciativa_id) {
   title = 'Editar';
 }
@@ -74,7 +83,7 @@ if (iniciativa_id) {
   });
   if (iniciativa_id) {
     if (singleIniciativa.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0, orgaos_participantes.value.length);
+      orgaos_participantes.value.splice(0);
       singleIniciativa.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;
@@ -86,9 +95,6 @@ if (iniciativa_id) {
     }
     if (singleIniciativa.value.coordenadores_cp) {
       coordenadores_cp.value.participantes = singleIniciativa.value.coordenadores_cp.map((x) => x.id);
-    }
-    if (singleIniciativa.value.tags) {
-      m_tags.value.participantes = singleIniciativa.value.tags.map((x) => x.id);
     }
   }
   oktogo.value = true;
@@ -116,8 +122,6 @@ async function onSubmit(values) {
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
 
-    if (m_tags.value.participantes.length) values.tags = m_tags.value.participantes;
-
     if (!values.meta_id) values.meta_id = meta_id;
     values.compoe_indicador_meta = !!values.compoe_indicador_meta;
 
@@ -137,7 +141,14 @@ async function onSubmit(values) {
     }
     if (r) {
       IniciativasStore.clear();
-      await router.push(rota);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        await router.push(rota);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
     }
   } catch (error) {
@@ -150,7 +161,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await IniciativasStore.delete(meta_id, id)) {
           IniciativasStore.clear();
-          await router.push(`/metas/${meta_id}`);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push(`/metas/${meta_id}`);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Iniciativa removida.');
         }
       }, 'Remover');
@@ -158,7 +176,23 @@ async function checkDelete(id) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `/metas/${meta_id}`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    alertStore.$reset();
+
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+        query: route.query,
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: `/metas/${meta_id}`,
+        query: route.query,
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
+  });
 }
 function addOrgao(obj, r) {
   obj.push({
@@ -178,7 +212,12 @@ function filterResponsible(orgao_id) {
 
   <div class="flex spacebetween center mb2">
     <div>
-      <h1>{{ title }} {{ activePdm.rotulo_iniciativa }}</h1>
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        {{ title }} {{ activePdm.rotulo_iniciativa }}
+      </TítuloDePágina>
+
       <div class="t24">
         Meta {{ singleMeta.titulo }}
       </div>
@@ -196,9 +235,9 @@ function filterResponsible(orgao_id) {
   </div>
   <template v-if="oktogo&&!(singleIniciativa?.loading || singleIniciativa?.error)">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="iniciativa_id?singleIniciativa:virtualParent"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <hr class="mt2 mb2">
@@ -213,7 +252,7 @@ function filterResponsible(orgao_id) {
             type="text"
             class="inputtext light mb1"
             maxlength="30"
-            :class="{ 'error': errors.codigo }"
+            :class="{ error: errors.codigo }"
           />
           <div class="error-msg">
             {{ errors.codigo }}
@@ -225,7 +264,7 @@ function filterResponsible(orgao_id) {
             name="titulo"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.titulo }"
+            :class="{ error: errors.titulo }"
           />
           <div class="error-msg">
             {{ errors.titulo }}
@@ -240,7 +279,7 @@ function filterResponsible(orgao_id) {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.contexto }"
+            :class="{ error: errors.contexto }"
           />
           <div class="error-msg">
             {{ errors.contexto }}
@@ -257,15 +296,17 @@ function filterResponsible(orgao_id) {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.complemento }"
+            :class="{ error: errors.complemento }"
           />
           <div class="error-msg">
             {{ errors.complemento }}
           </div>
         </div>
       </div>
-
-      <div class="mb1 mt1">
+      <div
+        v-show="route.meta.entidadeMãe === 'pdm' "
+        class="mb1 mt1"
+      >
         <label class="block">
           <Field
             v-model="compoe_indicador_meta"
@@ -273,20 +314,21 @@ function filterResponsible(orgao_id) {
             type="checkbox"
             value="1"
             class="inputcheckbox"
-          /><span :class="{ 'error': errors.compoe_indicador_meta }">Compõe o Indicador da meta</span>
+          /><span :class="{ error: errors.compoe_indicador_meta }">Compõe o Indicador da meta</span>
         </label>
         <div class="error-msg">
           {{ errors.compoe_indicador_meta }}
         </div>
       </div>
 
-      <div v-if="tempTags.length">
-        <hr class="mt2 mb2">
-        <label class="label">Tags</label>
-        <AutocompleteField
-          :controlador="m_tags"
-          :grupo="tempTags"
-          label="descricao"
+      <div class="fieldset mb1">
+        <legend class="legend mb1">
+          Tags
+        </legend>
+        <CampoDeTagsComBuscaPorCategoria
+          v-model="values.tags"
+          name="tags"
+          :valores-iniciais="valoresIniciais.tags || []"
         />
       </div>
 
@@ -345,12 +387,12 @@ function filterResponsible(orgao_id) {
       ><svg
         width="20"
         height="20"
-      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante z</span></a>
+      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
 
       <hr class="mt2 mb2">
 
       <label class="label">
-        Responsável na coordenadoria de planejamento&nbsp; cd<span
+        Responsável na coordenadoria de planejamento&nbsp;<span
           class="tvermelho"
         >*</span>
       </label>

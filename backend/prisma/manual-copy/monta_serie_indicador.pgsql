@@ -45,7 +45,6 @@ BEGIN
     END IF;
 
 
-
     FOR serieRecord IN
 
         WITH series AS (
@@ -176,6 +175,18 @@ BEGIN
         END IF ;
 
     END LOOP; -- loop resultados das series
+
+    UPDATE indicador me
+    SET
+        recalculando = false,
+        ha_avisos_data_fim = (
+            SELECT count(1) > 0
+            FROM serie_indicador
+            WHERE indicador_id = pIndicador_id
+            AND ha_conferencia_pendente
+        )
+    WHERE me.id = pIndicador_id;
+
     --
     RETURN '';
 

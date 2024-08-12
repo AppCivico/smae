@@ -3,6 +3,17 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta, segmentoOriginal) {
+  if (rotaMeta.entidadeMãe === 'pdm') {
+    return segmentoOriginal;
+  }
+  if (rotaMeta.entidadeMãe === 'planoSetorial') {
+    return `plano-setorial-${segmentoOriginal}`;
+  }
+
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 export const useVariaveisStore = defineStore({
   id: 'Variaveis',
   state: () => ({
@@ -33,7 +44,7 @@ export const useVariaveisStore = defineStore({
         if (!this.Variaveis[indicador_id]?.length) {
           this.Variaveis[indicador_id] = { loading: true };
         }
-        const r = await this.requestS.get(`${baseUrl}/indicador-variavel?remover_desativados=true&indicador_id=${indicador_id}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}?remover_desativados=true&indicador_id=${indicador_id}`);
         this.Variaveis[indicador_id] = r.linhas.map((x) => {
           x.orgao_id = x.orgao?.id ?? null;
           x.regiao_id = x.regiao?.id ?? null;
@@ -131,12 +142,12 @@ export const useVariaveisStore = defineStore({
       return false;
     },
     async insert(params) {
-      const r = await this.requestS.post(`${baseUrl}/indicador-variavel`, params);
+      const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}`, params);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/indicador-variavel/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
@@ -151,7 +162,7 @@ export const useVariaveisStore = defineStore({
       try {
         if (!id) throw 'Variável inválida';
         this.Valores[id] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/indicador-variavel/${id}/serie`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}/${id}/serie`);
         this.Valores[id] = r;
       } catch (error) {
         this.Valores[id] = { error };

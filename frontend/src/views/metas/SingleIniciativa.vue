@@ -1,17 +1,14 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
-
-IniciativaAtiva();
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -71,20 +68,25 @@ iniciar();
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         {{ activePdm.rotulo_iniciativa }}
       </div>
-      <h1
+
+      <TítuloDePágina
         :class="classeParaFarolDeAtraso(singleIniciativa?.cronograma?.atraso_grau)"
         :title="textoParaFarolDeAtraso(singleIniciativa?.cronograma?.atraso_grau)"
         style="padding-right: 4px;"
+        :ícone="activePdm?.logo"
       >
         {{ singleIniciativa.codigo }} - {{ singleIniciativa.titulo }}
-      </h1>
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm'
+      ])"
       :to="`/metas/${meta_id}/iniciativas/editar/${iniciativa_id}`"
       class="btn big ml2"
     >
@@ -189,7 +191,10 @@ iniciar();
           </h2>
           <hr class="ml2 f1">
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])"
             :to="`${parentlink}/atividades/novo`"
             class="btn ml2"
           >
@@ -277,10 +282,17 @@ iniciar();
           <h2 class="m2">
             Projetos associados
           </h2>
+
           <table class="tablemain">
             <col>
+            <col>
+            <col>
+            <col>
             <thead>
-              <th>Nome</th>
+              <th>Portfólio </th>
+              <th>Código</th>
+              <th> Nome </th>
+              <th>Etapa</th>
             </thead>
             <tbody>
               <tr
@@ -288,13 +300,21 @@ iniciar();
                 :key="index"
               >
                 <td>
-                  {{ projeto.nome }}
+                  {{ projeto.portfolio?.titulo || '-' }}
+                </td>
+                <td>
+                  {{ projeto.codigo || '-' }}
+                </td>
+                <td>
+                  {{ projeto.nome || '-' }}
+                </td>
+                <td>
+                  {{ projeto.projeto_etapa?.descricao || '-' }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-
         <div
           v-if="relacionadosIniciativa?.obras?.length"
           class="mt2 mb2"
@@ -305,16 +325,56 @@ iniciar();
 
           <table class="tablemain">
             <col>
+            <col>
+            <col>
+            <col>
+            <col>
+            <col>
+            <col>
             <thead>
+              <th>
+                Código da obra
+              </th>
               <th>Nome</th>
+              <th>
+                Tipo obra/intervenção
+              </th>
+              <th>
+                Subprefeitura
+              </th>
+              <th>
+                Equipamento
+              </th>
+              <th>
+                Status
+              </th>
+              <th>
+                Percentual concluído
+              </th>
             </thead>
             <tbody>
               <tr
                 v-for="(obra, index) in relacionadosIniciativa.obras"
                 :key="index"
               >
+                <td>{{ obra.codigo }}</td>
                 <td>
                   {{ obra.nome }}
+                </td>
+                <td>
+                  {{ obra.tipo_intervencao?.nome || '-' }}
+                </td>
+                <td>
+                  {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
+                </td>
+                <td>
+                  {{ obra.equipamento?.nome || '-' }}
+                </td>
+                <td>
+                  {{ obra.status || '-' }}
+                </td>
+                <td>
+                  {{ obra.percentual_concluido || '-' }}
                 </td>
               </tr>
             </tbody>

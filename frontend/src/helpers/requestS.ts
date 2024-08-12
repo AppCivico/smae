@@ -14,10 +14,10 @@ type Alerta = {
   label?: string;
 };
 
-function listErrors(r: String[]) {
+function listErrors(r: string[]) {
   let o = '';
   if (typeof r === 'object') {
-    r.forEach((rr:String) => {
+    r.forEach((rr:string) => {
       o += `${rr.includes('|') ? rr.split('| ')[1] : rr}\r\n`;
     });
     return o;
@@ -81,7 +81,7 @@ function request(method: Method, upload = false) {
   return (
     url: RequestInfo | URL,
     params: { [key: string]: any } | undefined,
-    AlertarErros:Boolean = true,
+    AlertarErros = true,
   ) => {
     let urlFinal = url;
 

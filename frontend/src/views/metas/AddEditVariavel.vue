@@ -103,7 +103,7 @@ const estãoTodasAsRegiõesSelecionadas = computed({
       regiõesSelecionadas.value
         .splice(0, regiõesSelecionadas.value.length, ...idsDasRegiõesVálidas.value);
     } else {
-      regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
+      regiõesSelecionadas.value.splice(0);
     }
   },
 });
@@ -157,7 +157,14 @@ async function onSubmit(values) {
       VariaveisStore.getAll(indicador_id);
       alertStore.success(msg);
       editModalStore.clear();
-      if (rota) router.push(rota);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else if (route.meta.entidadeMãe === 'pdm') {
+        if (rota) router.push(rota);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -537,7 +544,7 @@ export default {
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_id }"
-          @change="responsaveisArr.participantes.splice(0,responsaveisArr.participantes.length)"
+          @change="responsaveisArr.participantes.splice(0)"
         >
           <option
             v-for="a in lastParent.orgaos_participantes"

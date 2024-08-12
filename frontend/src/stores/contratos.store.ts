@@ -27,13 +27,12 @@ interface Estado {
     fontes_recurso: any[];
   };
   chamadasPendentes: ChamadasPendentes;
-
   erro: null | unknown;
 }
 
 type MãeComId = {
-  projetoId?: Number;
-  obraId?: Number;
+  projetoId?: number;
+  obraId?: number;
 } | undefined;
 
 function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
@@ -45,12 +44,26 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
       return `projeto-mdo/${mãeComId?.obraId}`;
 
     default:
-      console.error('Id identificado da entidade mãe não foi provido como esperado', mãeComId);
-      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
+      console.error('Id identificador não foi provido como esperado', mãeComId);
+      throw new Error('Id identificador não foi provido como esperado');
   }
 }
 
-export const useContratosStore = defineStore('contratos', {
+function gerarCaminhoParaApiAditivo(mãeComId: MãeComId): string | null {
+  switch (true) {
+    case !!mãeComId?.projetoId:
+      return 'contrato-pp';
+
+    case !!mãeComId?.obraId:
+      return 'contrato-mdo/';
+
+    default:
+      console.error('Id identificador não foi provido como esperado', mãeComId);
+      throw new Error('Id identificador não foi provido como esperado');
+  }
+}
+
+export const useContratosStore = (segmentoIdentificador: string) => defineStore(segmentoIdentificador ? `${segmentoIdentificador}.contratos` : 'contratos', {
   state: (): Estado => ({
     lista: [],
     listaDeDependencias: {
@@ -87,10 +100,10 @@ export const useContratosStore = defineStore('contratos', {
         { id: 'Meses', nome: 'Meses' },
       ];
     },
-    async buscarDependencias() {
+    async buscarDependencias(mãeComId: MãeComId = undefined) {
       this.chamadasPendentes.emFoco = true;
-      const obra = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}`);
-      const processosSei = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/sei`);
+      const obra = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}`);
+      const processosSei = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`);
       const orgaos = await this.requestS.get(`${baseUrl}/orgao`);
       const modalidadesContratacao = await this.requestS.get(`${baseUrl}/modalidade-contratacao-mdo`);
       this.listaDeDependencias.processos_sei = processosSei.linhas.map((processoSei: any) => {
@@ -108,10 +121,10 @@ export const useContratosStore = defineStore('contratos', {
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
-      console.log(mãeComId);
+      console.log('segmentoIdentificador');
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
         if (resposta.orgao) {
           resposta.orgao_id = resposta.orgao.id;
         }
@@ -129,7 +142,7 @@ export const useContratosStore = defineStore('contratos', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -143,7 +156,7 @@ export const useContratosStore = defineStore('contratos', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -154,7 +167,7 @@ export const useContratosStore = defineStore('contratos', {
       }
     },
 
-    async salvarItem(params:any = {}, id = 0, mãeComId: MãeComId = undefined): Promise<boolean> {
+    async salvarItem(params: any = {}, id = 0, mãeComId: MãeComId = undefined): Promise<boolean> {
       console.log(mãeComId);
       this.chamadasPendentes.emFoco = true;
 
@@ -162,9 +175,9 @@ export const useContratosStore = defineStore('contratos', {
         let resposta;
         console.log('PAYLOAD', params);
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${this.route.params.obraId}/contrato`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -176,16 +189,20 @@ export const useContratosStore = defineStore('contratos', {
         return false;
       }
     },
-
-    async salvarAditivo(carga:any = {}, idDoAditivo = 0, idDoContrato = 0): Promise<boolean> {
+    async salvarAditivo(
+      carga: any = {},
+      idDoAditivo = 0,
+      idDoContrato = 0,
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
       this.chamadasPendentes.aditivo = true;
       this.erro = null;
 
       try {
         if (idDoAditivo) {
-          await this.requestS.patch(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`, carga);
+          await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApiAditivo(mãeComId || this.route.params)}/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`, carga);
         } else {
-          await this.requestS.post(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo`, carga);
+          await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApiAditivo(mãeComId || this.route.params)}/${idDoContrato || this.route.params.contratoId}/aditivo`, carga);
         }
 
         this.chamadasPendentes.aditivo = false;
@@ -196,14 +213,18 @@ export const useContratosStore = defineStore('contratos', {
         return false;
       }
     },
-    async excluirAditivo( idDoAditivo: number , idDoContrato = 0): Promise<boolean> {
+    async excluirAditivo(
+      idDoAditivo: number,
+      idDoContrato = 0,
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
       this.chamadasPendentes.aditivo = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/contrato/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApiAditivo(mãeComId || this.route.params)}/${idDoContrato || this.route.params.contratoId}/aditivo/${idDoAditivo}`);
         this.chamadasPendentes.aditivo = false;
         return true;
-      }catch (erro) {
+      } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.aditivo = false;
         return false;
@@ -226,9 +247,9 @@ export const useContratosStore = defineStore('contratos', {
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
     }),
-    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce((acc, cur:ContratoAditivoItemDto) => {
+    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce((acc, cur: ContratoAditivoItemDto) => {
       acc[cur.id] = cur;
       return acc;
     }, {}),
   },
-});
+})();

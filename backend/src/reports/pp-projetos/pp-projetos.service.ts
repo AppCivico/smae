@@ -3,7 +3,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ProjetoStatus, StatusRisco } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
@@ -14,6 +14,8 @@ import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import {
     PPProjetosRelatorioDto,
     RelProjetosAcompanhamentosDto,
+    RelProjetosAditivosDto,
+    RelProjetosContratosDto,
     RelProjetosCronogramaDto,
     RelProjetosDto,
     RelProjetosLicoesAprendidasDto,
@@ -21,6 +23,7 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
+import { RelObrasContratosDto } from '../pp-obras/entities/obras.entity';
 
 const {
     Parser,
@@ -185,6 +188,48 @@ class RetornoDbAcompanhamentos {
     riscos: string | null;
 }
 
+class RetornoDbAditivos {
+    aditivo_id: number;
+    contrato_id: number;
+    numero: number;
+    tipo_aditivo_id: number;
+    tipo_aditivo_nome: string;
+    data: Date | null;
+    data_termino_atual: Date | null;
+    valor_com_reajuste: number | null;
+    percentual_medido: number | null;
+}
+
+class RetornoDbContratos {
+    id: number;
+    projeto_id: number;
+    numero: string;
+    exclusivo: boolean;
+    status: StatusContrato;
+    objeto: string | null;
+    descricao_detalhada: string | null;
+    contratante: string | null;
+    empresa_contratada: string | null;
+    prazo: number | null;
+    unidade_prazo: ContratoPrazoUnidade | null;
+    data_inicio: Date | null;
+    data_termino: Date | null;
+    valor: number | null;
+    valor_reajustado: number | null;
+    observacoes: string | null;
+    data_base: string | null;
+    modalidade_contratacao_id: number | null;
+    modalidade_contratacao_nome: string | null;
+    orgao_id: number | null;
+    orgao_sigla: string | null;
+    orgao_descricao: string | null;
+    valor_com_reajuste: number | null;
+    data_termino_atualizada: Date | null;
+    percentual_medido: number | null;
+    processos_sei: string | null;
+    fontes_recurso: string | null;
+}
+
 @Injectable()
 export class PPProjetosService implements ReportableService {
     constructor(
@@ -202,6 +247,8 @@ export class PPProjetosService implements ReportableService {
         const out_monitoramento_planos_acao: RelProjetosPlanoAcaoMonitoramentosDto[] = [];
         const out_licoes_aprendidas: RelProjetosLicoesAprendidasDto[] = [];
         const out_acompanhamentos: RelProjetosAcompanhamentosDto[] = [];
+        const out_contratos: RelProjetosContratosDto[] = [];
+        const out_aditivos: RelProjetosAditivosDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
 
@@ -212,6 +259,8 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao);
         await this.queryDataLicoesAprendidas(whereCond, out_licoes_aprendidas);
         await this.queryDataAcompanhamentos(whereCond, out_acompanhamentos);
+        await this.queryDataContratos(whereCond, out_contratos);
+        await this.queryDataAditivos(whereCond, out_aditivos);
 
         return {
             linhas: out_projetos,
@@ -221,6 +270,8 @@ export class PPProjetosService implements ReportableService {
             monitoramento_planos_de_acao: out_monitoramento_planos_acao,
             licoes_aprendidas: out_licoes_aprendidas,
             acompanhamentos: out_acompanhamentos,
+            contratos: out_contratos,
+            aditivos: out_aditivos,
         };
     }
 
@@ -949,6 +1000,139 @@ export class PPProjetosService implements ReportableService {
                 detalhamento_status: db.detalhamento_status ? db.detalhamento_status : null,
                 pontos_atencao: db.pontos_atencao ? db.pontos_atencao : null,
                 riscos: db.riscos ? db.riscos : null,
+            };
+        });
+    }
+
+    private async queryDataContratos(whereCond: WhereCond, out: RelProjetosContratosDto[]) {
+        const sql = `SELECT
+            contrato.id AS id,
+            projeto.id AS obra_id,
+            contrato.numero AS numero,
+            contrato.contrato_exclusivo AS exclusivo,
+            contrato.status AS status,
+            contrato.objeto_resumo AS objeto,
+            contrato.objeto_detalhado AS descricao_detalhada,
+            contrato.contratante AS contratante,
+            contrato.empresa_contratada AS empresa_contratada,
+            contrato.prazo_numero AS prazo,
+            contrato.prazo_unidade AS unidade_prazo,
+            contrato.data_inicio AS data_inicio,
+            contrato.data_termino AS data_termino,
+            contrato.observacoes AS observacoes,
+            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            modalidade_contratacao.id AS modalidade_contratacao_id,
+            modalidade_contratacao.nome AS modalidade_contratacao_nome,
+            orgao.id AS orgao_id,
+            orgao.sigla AS orgao_sigla,
+            orgao.descricao AS orgao_descricao,
+            contrato.valor AS valor,
+            (
+                SELECT max(valor)
+                FROM contrato_aditivo
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
+            ) AS valor_reajustado,
+            (
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+            ) AS valor_com_reajuste,
+            (
+                SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+            ) AS data_termino_atualizada,
+            (
+                SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+            ) AS percentual_medido,
+            (
+                SELECT string_agg(contrato_sei.numero_sei::text, '|')
+                FROM contrato_sei
+                WHERE contrato_sei.contrato_id = contrato.id
+            ) AS processos_sei,
+            (
+                SELECT string_agg(cod_sof::text, '|')
+                FROM contrato_fonte_recurso
+                WHERE contrato_id = contrato.id
+            ) AS fontes_recurso
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+          LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
+          LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
+        ${whereCond.whereString}
+        `;
+
+        const data: RetornoDbContratos[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsContratos(data));
+    }
+
+    private convertRowsContratos(input: RetornoDbContratos[]): RelProjetosContratosDto[] {
+        return input.map((db) => {
+            return {
+                id: db.id,
+                projeto_id: db.projeto_id,
+                numero: db.numero,
+                exclusivo: db.exclusivo,
+                processos_SEI: db.processos_sei,
+                status: db.status,
+                modalidade_licitacao: db.modalidade_contratacao_id
+                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
+                    : null,
+                fontes_recurso: db.fontes_recurso,
+                area_gestora: db.orgao_id
+                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
+                    : null,
+                objeto: db.objeto,
+                descricao_detalhada: db.descricao_detalhada,
+                contratante: db.contratante,
+                empresa_contratada: db.empresa_contratada,
+                prazo: db.prazo,
+                unidade_prazo: db.unidade_prazo,
+                data_base: db.data_base,
+                data_inicio: db.data_inicio,
+                data_termino: db.data_termino,
+                data_termino_atualizada: db.data_termino_atualizada,
+                valor: db.valor,
+                valor_reajustado: db.valor_reajustado,
+                percentual_medido: db.percentual_medido,
+                observacoes: db.observacoes,
+            };
+        });
+    }
+
+    private async queryDataAditivos(whereCond: WhereCond, out: RelProjetosAditivosDto[]) {
+        const sql = `SELECT
+            contrato_aditivo.id AS aditivo_id,
+            contrato.id AS contrato_id,
+            contrato_aditivo.numero AS numero,
+            tipo_aditivo.id AS tipo_aditivo_id,
+            tipo_aditivo.nome AS tipo_aditivo_nome,
+            contrato_aditivo.data,
+            contrato_aditivo.data_termino_atualizada AS data_termino_atual,
+            contrato_aditivo.valor AS valor_com_reajuste,
+            contrato_aditivo.percentual_medido
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+          JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+          JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
+        ${whereCond.whereString}
+        `;
+
+        const data: RetornoDbAditivos[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsAditivos(data));
+    }
+
+    private convertRowsAditivos(input: RetornoDbAditivos[]): RelProjetosAditivosDto[] {
+        return input.map((db) => {
+            return {
+                id: db.aditivo_id,
+                contrato_id: db.contrato_id,
+                tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
+                data: db.data ?? null,
+                valor_com_reajuste: db.valor_com_reajuste ?? null,
+                percentual_medido: db.percentual_medido ?? null,
+                data_termino_atual: db.data_termino_atual ?? null,
             };
         });
     }

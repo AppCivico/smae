@@ -14,6 +14,12 @@ export const dateToMonth = (date, format = 'numeric') => dateToDate(date, { date
 
 export const dateToDay = (date, format = 'numeric') => dateToDate(date, { dateStyle: undefined, day: format });
 
+export const dateToMonthYear = (date) => {
+  const month = dateToMonth(date, '2-digit');
+  const year = dateToYear(date, 'numeric');
+  return `${month}/${year}`;
+};
+
 export const dateToShortDate = (date) => dateToDate(date, {
   year: 'numeric',
   month: 'numeric',

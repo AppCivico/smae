@@ -20,6 +20,7 @@ export default {
 </svg>`,
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
+    entidadeMãe: 'planoSetorial',
     pesoNoMenu: 3,
     limitarÀsPermissões: [
       'CadastroPS.administrador',

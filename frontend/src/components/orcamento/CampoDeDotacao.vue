@@ -15,6 +15,7 @@ const props = defineProps({
     type: Object,
     default: null,
     required: true,
+    validator: (valorDaProp) => valorDaProp.pdm_id || valorDaProp.portfolio_id,
   },
   complemento: {
     type: String,

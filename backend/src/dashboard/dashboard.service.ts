@@ -149,13 +149,16 @@ export class DashboardService {
                 select: { id: true, nome: true },
             });
 
+            // metabase crash com coluna extra, mas precisamos dessa para buscar os ids
+            delete config['params']['tipo_pdm'];
+
             const opcoes: DashboardOptionDto[] = [];
             for (const pdm of pdms) {
                 config['params']['pdm_id'] = pdm.id;
 
                 const jwt = sign(
                     {
-                        ...config,
+                        ...config
                     },
                     r.metabase_token,
                     { algorithm: 'HS256', expiresIn: 86400 }

@@ -23,6 +23,10 @@ const props = defineProps({
     type: String,
     default: undefined,
   },
+  exibirDesabilitado: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const prefixoDosCaminhos = props.prefixoDosCaminhos !== undefined
@@ -77,5 +81,11 @@ const propriedadesManipuladas = computed(() => {
     >
       <slot />
     </a>
+    <span
+      v-else-if="$props.exibirDesabilitado"
+      v-bind="$attrs"
+    >
+      <slot />
+    </span>
   </router-link>
 </template>

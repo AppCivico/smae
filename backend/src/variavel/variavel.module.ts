@@ -5,6 +5,7 @@ import { IndicadorVariavelPDMController, VariavelGlobalController } from './vari
 import { VariavelService } from './variavel.service';
 import { VariavelFormulaCompostaController } from './variavel.formula-composta.controller';
 import { VariavelFormulaCompostaService } from './variavel.formula-composta.service';
+import { VariavelCalculadaService } from './variavel.calculada.service';
 import { MetaModule } from '../meta/meta.module';
 
 @Module({
@@ -17,7 +18,7 @@ import { MetaModule } from '../meta/meta.module';
         forwardRef(() => MetaModule)
     ],
     controllers: [IndicadorVariavelPDMController, VariavelFormulaCompostaController, VariavelGlobalController],
-    providers: [VariavelService, VariavelFormulaCompostaService],
+    providers: [VariavelService, VariavelFormulaCompostaService, VariavelCalculadaService],
     exports: [VariavelService],
 })
 export class VariavelModule {}

@@ -92,14 +92,21 @@ const mouseUpHandler = function (e) {
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         Meta
       </div>
-      <h1>{{ singleMeta.titulo }}</h1>
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        {{ singleMeta.titulo }}
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm'
+      ])"
       :to="`/metas/editar/${singleMeta.id}`"
       class="btn big ml2"
     >

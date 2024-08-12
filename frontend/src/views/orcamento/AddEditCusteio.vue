@@ -63,6 +63,7 @@ const caret = ref(0);
       break;
 
     case 'pdm':
+    case 'planoSetorial':
       await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
       break;
 
@@ -474,7 +475,7 @@ function montaDotacao(a) {
         </div>
       </template>
 
-      <div v-if="$route.meta.entidadeMãe === 'pdm'">
+      <div v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe)">
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação <span class="tvermelho">*</span></label>
 

@@ -19,12 +19,15 @@ import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import {
     IdNomeExibicao,
+    IdObrasDto,
+    IdProjetoDto,
     MetaIniAtvTag,
     MetaItemDto,
     MetaOrgao,
     MetaPdmDto,
     RelacionadosDTO,
 } from './entities/meta.entity';
+import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -245,8 +248,10 @@ export class MetaService {
         // depois o busca a serie do painel-conteúdo correspondente
 
         if (tipo == 'PDM') {
-            if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm'])) {
-                this.logger.verbose('Usuário tem CadastroMeta.administrador_no_pdm, filtrando por todas do PDM.');
+            if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
+                this.logger.verbose(
+                    'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
+                );
                 return permissionsSet;
             }
             const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
@@ -399,9 +404,10 @@ export class MetaService {
         user: PessoaFromJwt,
         context?: string,
         readonly: 'readonly' | 'readwrite' = 'readwrite'
-    ) {
+    ): Promise<void> {
         console.trace(`meta-service: assertMetaWriteOrThrow ${meta_id} ${context} ${readonly}`);
-        const meta = await this.findAll(tipo, { id: meta_id }, user);
+
+        const meta = await this.findAll(tipo, { id: meta_id }, user, true);
         if (!meta || meta.length == 0) {
             throw new HttpException(
                 context ? `Meta não pode ser encontrada para ${context}` : 'Meta não encontrada',
@@ -415,13 +421,14 @@ export class MetaService {
                 400
             );
 
-        return meta;
+        return;
     }
 
     async findAll(
         tipo: TipoPdm,
         filters: FilterMetaDto | undefined = undefined,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        skipObjects: boolean = false
     ): Promise<MetaItemDto[]> {
         const permissionsSet = await this.getMetasPermissionSet(tipo, user, false);
 
@@ -501,75 +508,80 @@ export class MetaService {
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.meta_id = listActive.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const geolocalizacao = skipObjects ? [] : await this.geolocService.carregaReferencias(geoDto);
 
         const ret: MetaItemDto[] = [];
         for (const dbMeta of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, MetaOrgao> = {};
             const tags: MetaIniAtvTag[] = [];
-
-            for (const orgao of dbMeta.meta_orgao) {
-                orgaos[orgao.orgao.id] = {
-                    orgao: orgao.orgao,
-                    responsavel: orgao.responsavel,
-                    participantes: [],
-                };
-            }
-
-            for (const responsavel of dbMeta.meta_responsavel) {
-                if (responsavel.coordenador_responsavel_cp) {
-                    // só coloca a pessoa 1x
-                    if (coordenadores_cp.filter((r) => r.id == responsavel.pessoa.id).length == 0)
-                        coordenadores_cp.push({
-                            id: responsavel.pessoa.id,
-                            nome_exibicao: responsavel.pessoa.nome_exibicao,
-                        });
-                } else {
-                    const orgao = orgaos[responsavel.orgao.id];
-                    if (!orgao) {
-                        this.logger.error(
-                            `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}, participante ${responsavel.pessoa.id} não pode ser mais responsável`
-                        );
-                        continue;
-                    }
-
-                    if (orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
-                        orgao.participantes.push(responsavel.pessoa);
-                }
-            }
-
-            for (const metaTag of dbMeta.meta_tag) {
-                tags.push({
-                    id: metaTag.tag.id,
-                    descricao: metaTag.tag.descricao,
-                    download_token: this.uploadService.getPersistentDownloadToken(metaTag.tag.arquivo_icone_id),
-                });
-            }
-
-            // TODO: revisar isso aqui pra virar uma trigger, fazer um findAll no cronograma durante
-            // a listagem de metas é muito custoso, por isso foi desligado, mas mesmo em findById é custoso
-            // pois a parte de cronograma é muito grande, cheia de join's
             let metaCronograma: CronogramaAtrasoGrau | null = null;
-            if (dbMeta.cronograma && filters?.id !== undefined) {
-                const cronograma = dbMeta.cronograma[0];
 
-                let cronogramaAtraso: string | null = null;
-                if (cronograma) {
-                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
-                        tipo,
-                        {
-                            cronograma_id: cronograma.id,
-                        },
-                        user,
-                        true
-                    );
-                    cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
+            // usando skipObjects para não carregar os objetos,
+            // pois quando a chamada for apenas para verificar a permissão de acesso essas informações
+            // não são necessárias
+            if (!skipObjects) {
+                for (const orgao of dbMeta.meta_orgao) {
+                    orgaos[orgao.orgao.id] = {
+                        orgao: orgao.orgao,
+                        responsavel: orgao.responsavel,
+                        participantes: [],
+                    };
                 }
-                metaCronograma = {
-                    id: cronograma ? cronograma.id : null,
-                    atraso_grau: cronogramaAtraso,
-                };
+
+                for (const responsavel of dbMeta.meta_responsavel) {
+                    if (responsavel.coordenador_responsavel_cp) {
+                        // só coloca a pessoa 1x
+                        if (coordenadores_cp.filter((r) => r.id == responsavel.pessoa.id).length == 0)
+                            coordenadores_cp.push({
+                                id: responsavel.pessoa.id,
+                                nome_exibicao: responsavel.pessoa.nome_exibicao,
+                            });
+                    } else {
+                        const orgao = orgaos[responsavel.orgao.id];
+                        if (!orgao) {
+                            this.logger.error(
+                                `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}, participante ${responsavel.pessoa.id} não pode ser mais responsável`
+                            );
+                            continue;
+                        }
+
+                        if (orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
+                            orgao.participantes.push(responsavel.pessoa);
+                    }
+                }
+
+                for (const metaTag of dbMeta.meta_tag) {
+                    tags.push({
+                        id: metaTag.tag.id,
+                        descricao: metaTag.tag.descricao,
+                        download_token: this.uploadService.getPersistentDownloadToken(metaTag.tag.arquivo_icone_id),
+                    });
+                }
+
+                // TODO: revisar isso aqui pra virar uma trigger, fazer um findAll no cronograma durante
+                // a listagem de metas é muito custoso, por isso foi desligado, mas mesmo em findById é custoso
+                // pois a parte de cronograma é muito grande, cheia de join's
+                if (dbMeta.cronograma && filters?.id !== undefined) {
+                    const cronograma = dbMeta.cronograma[0];
+
+                    let cronogramaAtraso: string | null = null;
+                    if (cronograma) {
+                        const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll(
+                            tipo,
+                            {
+                                cronograma_id: cronograma.id,
+                            },
+                            user,
+                            true
+                        );
+                        cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
+                    }
+                    metaCronograma = {
+                        id: cronograma ? cronograma.id : null,
+                        atraso_grau: cronogramaAtraso,
+                    };
+                }
             }
 
             ret.push({
@@ -588,7 +600,7 @@ export class MetaService {
                 orgaos_participantes: Object.values(orgaos),
                 tags: tags,
                 cronograma: metaCronograma,
-                geolocalizacao: geolocalizacao.get(dbMeta.id) || [],
+                geolocalizacao: 'get' in geolocalizacao ? geolocalizacao.get(dbMeta.id) || [] : [],
                 pode_editar: true, // TODO
             });
         }
@@ -1044,15 +1056,53 @@ export class MetaService {
         const projetos = await this.prisma.projeto.findMany({
             where: {
                 removido_em: null,
-                OR: [
+
+                AND: [
+                    dto.meta_id
+                        ? {
+                              meta_id: dto.meta_id,
+                              iniciativa_id: null,
+                              atividade_id: null,
+                          }
+                        : {},
+                    dto.iniciativa_id
+                        ? {
+                              iniciativa_id: dto.iniciativa_id,
+                              atividade_id: null,
+                          }
+                        : {},
+                    dto.atividade_id
+                        ? {
+                              atividade_id: dto.atividade_id,
+                          }
+                        : {},
+                    // projetos extras
                     {
-                        meta_id: dto.meta_id,
-                    },
-                    {
-                        iniciativa_id: dto.iniciativa_id,
-                    },
-                    {
-                        atividade_id: dto.atividade_id,
+                        ProjetoOrigem: {
+                            some: {
+                                removido_em: null,
+                                AND: [
+                                    dto.meta_id
+                                        ? {
+                                              meta_id: dto.meta_id,
+                                              iniciativa_id: null,
+                                              atividade_id: null,
+                                          }
+                                        : {},
+                                    dto.iniciativa_id
+                                        ? {
+                                              iniciativa_id: dto.iniciativa_id,
+                                              atividade_id: null,
+                                          }
+                                        : {},
+                                    dto.atividade_id
+                                        ? {
+                                              atividade_id: dto.atividade_id,
+                                          }
+                                        : {},
+                                ],
+                            },
+                        },
                     },
                 ],
             },
@@ -1061,14 +1111,70 @@ export class MetaService {
                 tipo: true,
                 codigo: true,
                 nome: true,
+                portfolio: { select: { id: true, titulo: true } },
+                projeto_etapa: {
+                    select: { id: true, descricao: true },
+                },
+                tipo_intervencao: {
+                    select: { id: true, nome: true },
+                },
+                ProjetoRegiao: {
+                    where: { removido_em: null, regiao: { nivel: 3 } },
+                    select: { regiao: { select: { id: true, nivel: true, parente_id: true, descricao: true } } },
+                },
+                equipamento: { select: { id: true, nome: true } },
+                status: true,
+                TarefaCronograma: {
+                    where: { removido_em: null },
+                    take: 1,
+                    select: {
+                        id: true,
+                        percentual_concluido: true,
+                    },
+                },
             },
         });
 
         return {
             pdm_metas: MetaPdmDto.filter((p) => p.tipo === 'PDM'),
             ps_metas: MetaPdmDto.filter((p) => p.tipo === 'PS'),
-            obras: projetos.filter((p) => p.tipo === 'MDO'),
-            projetos: projetos.filter((p) => p.tipo === 'PP'),
+            obras: projetos
+                .filter((p) => p.tipo === 'MDO')
+                .map((r) => {
+                    return {
+                        codigo: r.codigo,
+                        equipamento: r.equipamento ? { id: r.equipamento.id, nome: r.equipamento.nome } : null,
+                        id: r.id,
+                        nome: r.nome,
+                        status: r.status,
+                        tipo_intervencao: r.tipo_intervencao
+                            ? { id: r.tipo_intervencao.id, nome: r.tipo_intervencao.nome }
+                            : null,
+                        subprefeituras: r.ProjetoRegiao.map((r) => {
+                            return {
+                                id: r.regiao.id,
+                                descricao: r.regiao.descricao,
+                                nivel: r.regiao.nivel,
+                                parente_id: r.regiao.parente_id,
+                            } satisfies IdDescRegiaoComParent;
+                        }),
+                        percentual_concluido:
+                            r.TarefaCronograma.length > 0 ? r.TarefaCronograma[0].percentual_concluido : null,
+                    } satisfies IdObrasDto;
+                }),
+            projetos: projetos
+                .filter((p) => p.tipo === 'PP')
+                .map((r) => {
+                    return {
+                        codigo: r.codigo,
+                        id: r.id,
+                        nome: r.nome,
+                        portfolio: { id: r.portfolio.id, titulo: r.portfolio.titulo },
+                        projeto_etapa: r.projeto_etapa
+                            ? { id: r.projeto_etapa.id, descricao: r.projeto_etapa.descricao }
+                            : null,
+                    } satisfies IdProjetoDto;
+                }),
         };
     }
 }

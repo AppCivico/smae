@@ -1,18 +1,26 @@
 import { Database } from 'duckdb-async';
+import { matchStringFuzzy } from './func';
 import {
+    CadastroDeObrasProjetosApi,
     Configuration,
     IniciativaApi,
     MetaApi,
+    MonitoramentoDeObrasCadastroBsicoEmpreendimentoApi,
     MonitoramentoDeObrasCadastroBsicoEquipamentoApi,
     MonitoramentoDeObrasCadastroBsicoGrupoTemticoApi,
     MonitoramentoDeObrasCadastroBsicoTipoDeIntervenoApi,
-    PDMApi,
     PessoaApi,
     PortflioDeObrasApi,
     ProgramasProjetoMDOExclusivoParaObrasApi,
+    ProjetoAcompanhamentoDeObrasApi,
+    ProjetoApi,
     ProjetoEtapaDeObrasApi,
+    ProjetoMDOApi,
+    ProjetoOrigemTipo,
+    ProjetoStatus,
     RegiaoApi,
     RgoApi,
+    type CreateProjetoDto,
 } from './generated';
 if (!process.env.BASE_PATH) throw new Error('BASE_PATH for API is required');
 if (!process.env.ACCESS_TOKEN) throw new Error('ACCESS_TOKEN is required');
@@ -25,6 +33,7 @@ const config = new Configuration({
 });
 
 interface ProjetoRow {
+    internal_id: number;
     // -- pre-cadastro global --
     // pessoa
     rel_responsaveis_no_orgao_gestor_id: string;
@@ -78,7 +87,10 @@ interface ProjetoRow {
     // novas colunas sem destino
     status_contratacao: string | null;
     mdo_n_familias_beneficiadas_ate_agora: number | null;
+    parsed_processos_sei: string[];
+    parsed_contratos: string[];
 }
+
 const LISTA_COL_ORGAO = [
     'rel_orgao_gestor_id',
     'orgao_responsavel_id',
@@ -94,46 +106,47 @@ const etapaApi = new ProjetoEtapaDeObrasApi(config);
 const regiaoApi = new RegiaoApi(config);
 const programaApi = new ProgramasProjetoMDOExclusivoParaObrasApi(config);
 
+const projetoApi = new CadastroDeObrasProjetosApi(config);
+const processoApi = new ProjetoAcompanhamentoDeObrasApi(config);
+
+const empreendimentoApi = new MonitoramentoDeObrasCadastroBsicoEmpreendimentoApi(config);
 const equipamentoApi = new MonitoramentoDeObrasCadastroBsicoEquipamentoApi(config);
 const grupoTematicoApi = new MonitoramentoDeObrasCadastroBsicoGrupoTemticoApi(config);
 const tipoIntervencaoApi = new MonitoramentoDeObrasCadastroBsicoTipoDeIntervenoApi(config);
-
 const metaApi = new MetaApi(config);
-const metas = metaApi.metaControllerFindAll({
-
-});
-
-
-const iniApi = new IniciativaApi(config);
-const ini = ini
+const iniciativaApi = new IniciativaApi(config);
 
 const PDM_STR = 'Programa de Metas 2021-2024 - Versão Alteração Programática';
-const memory = {
-    rel_responsaveis_no_orgao_gestor_id: {} as any,
-    rel_responsavel_id: {} as any,
-    orgaos: {} as any,
-    portfolios: {} as any,
-    orgao2id: {} as Record<string, number>,
-    etapas: {} as any,
-    etapa2id: {} as Record<string, number>,
-    regioes: {} as any,
-    regiao2id: {} as Record<string, number>,
-    programas: {} as any,
-    programa2id: {} as Record<string, number>,
-    tipo_intervencao: {} as any,
-    tipo_intervencao2id: {} as Record<string, number>,
-    equipamentos: {} as any,
-    equipamento2id: {} as Record<string, number>,
-    grupo_tematico: {} as any,
-    grupo_tematico2id: {} as Record<string, number>,
-    pdm2id: {
-        [PDM_STR]: 11,
-    } as Record<string, number>,
-    meta: {} as any,
-    meta2id: {} as Record<string, number>,
-    iniciativa: {} as any,
-    iniciativa2id: {} as Record<string, number>,
+
+const rel_responsaveis_no_orgao_gestor_id: Record<string, number> = {};
+const rel_responsavel_id: Record<string, number> = {};
+const orgaos: Record<string, number> = {};
+const portfolios: Record<string, number> = {};
+const orgao2id: Record<string, number> = {};
+const etapas: Record<string, number> = {};
+const etapa2id: Record<string, number> = {};
+const regioes: Record<string, number> = {};
+const regiao2id: Record<string, number> = {};
+const programas: Record<string, number> = {};
+const programa2id: Record<string, number> = {};
+const tipo_intervencao: Record<string, number> = {};
+const tipo_intervencao2id: Record<string, number> = {};
+const equipamentos: Record<string, number> = {};
+const equipamento2id: Record<string, number> = {};
+const grupo_tematico: Record<string, number> = {};
+const grupo_tematico2id: Record<string, number> = {};
+const pdm2id: Record<string, number> = {
+    [PDM_STR]: 11,
 };
+const memMeta: Record<string, number> = {};
+const memMeta2id: Record<string, number> = {};
+const memMeta2cod: Record<string, string> = {};
+const memIniciativa: Record<string, Record<string, number>> = {};
+const memIniciativa2id: Record<string, Record<string, number>> = {};
+
+export const CONST_PROC_SEI_SINPROC_REGEXP = /(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)/;
+const seiRegexp = new RegExp(CONST_PROC_SEI_SINPROC_REGEXP, 'g');
+
 let runImport = true;
 async function main() {
     const {
@@ -148,81 +161,18 @@ async function main() {
     const rows = (await db.all(`select * from importacao`)) as ProjetoRow[];
 
     for (const row of rows) {
-        if (!memory.rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id])
-            memory.rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] = 0;
-        memory.rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] += 1;
-
-        if (row.rel_colaboradores_no_orgao) {
-            if (!memory.rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao])
-                memory.rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] = 0;
-            memory.rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] += 1;
-        }
-
-        if (!memory.rel_responsavel_id[row.rel_responsavel_id]) memory.rel_responsavel_id[row.rel_responsavel_id] = 0;
-        memory.rel_responsavel_id[row.rel_responsavel_id] += 1;
-
-        for (const col of LISTA_COL_ORGAO) {
-            let rowValue = row[col]?.trim();
-            if (!rowValue) continue;
-
-            if (rowValue.includes('-')) {
-                rowValue = rowValue.split('-')[0].trim();
-            }
-            if (!memory.orgaos[rowValue]) memory.orgaos[rowValue] = 0;
-
-            memory.orgaos[rowValue] += 1;
-        }
-
-        if (!memory.portfolios[row.rel_portfolio_id]) memory.portfolios[row.rel_portfolio_id] = 0;
-        memory.portfolios[row.rel_portfolio_id] += 1;
-
-        const etapa = row.rel_projeto_etapa_id?.trim();
-        if (etapa) {
-            if (!memory.etapas[etapa]) memory.etapas[etapa] = 0;
-            memory.etapas[etapa] += 1;
-        }
-
-        const regiao = row.rel_subprefeitura_id?.trim();
-        if (regiao) {
-            if (!memory.regioes[regiao]) memory.regioes[regiao] = 0;
-            memory.regioes[regiao] += 1;
-        }
-
-        const programa = row.rel_programa_id?.trim();
-        if (programa) {
-            if (!memory.programas[programa]) memory.programas[programa] = 0;
-            memory.programas[programa] += 1;
-        }
-
-        const tipoIntervencao = row.rel_tipo_intervencao_id?.trim();
-        if (tipoIntervencao) {
-            if (!memory.tipo_intervencao[tipoIntervencao]) memory.tipo_intervencao[tipoIntervencao] = 0;
-            memory.tipo_intervencao[tipoIntervencao] += 1;
-        }
-
-        const equipamento = row.rel_equipamento_id?.trim();
-        if (equipamento) {
-            if (!memory.equipamentos[equipamento]) memory.equipamentos[equipamento] = 0;
-            memory.equipamentos[equipamento] += 1;
-        }
-
-        const grupoTematico = row.rel_grupo_tematico_id?.trim();
-        if (grupoTematico) {
-            if (!memory.grupo_tematico[grupoTematico]) memory.grupo_tematico[grupoTematico] = 0;
-            memory.grupo_tematico[grupoTematico] += 1;
-        }
-
-        const meta = row.origem_meta_id?.trim();
-        if (meta) {
-            if (!memory.meta[meta]) memory.meta[meta] = 0;
-            memory.meta[meta] += 1;
-        }
-
-        const iniciativa = row.origem_iniciativa_id?.trim();
-        if (iniciativa) {
-            if (!memory.iniciativa[iniciativa]) memory.iniciativa[iniciativa] = 0;
-            memory.iniciativa[iniciativa] += 1;
-        }
+        incrementResponsaveis(row);
+        incrementOrgaos(row);
+        incrementPortfolioCount(row);
+        incrementEtapaCount(row);
+        incrementRegiaoCount(row);
+        incrementProgramCount(row);
+        incrementTipoIntervencaoCount(row);
+        incrementEquipamentoCount(row);
+        incrementGroupThemeCount(row);
+        incrementIniciativaCount(row);
+        extractAndNormalizeSEIProcesses(row);
+        extractContracts(row);
 
         const origem_pdms = row.origem_pdm?.trim();
         if (origem_pdms) {
@@ -242,98 +192,430 @@ async function main() {
     await validaTipoIntervencao();
     await validaEquipamento();
     await validaGrupoTematico();
-
-//    const meta = await metaApi.metaControllerFindAll();
-//    for (const contentRaw in memory.meta) {
-//        let content = contentRaw;
-//        if (content.includes('-')) {
-//            content = content.split('-')[0].trim();
-//        }
-//
-//        if (meta.data.linhas.length > 0) {
-//            memory.meta2id[content] = meta.data.linhas[0].id!;
-//            continue;
-//        }
-//
-//        console.log('Meta', content, 'não encontrado, necessário em', memory.meta[content], 'registros');
-//        runImport = false;
-//    }
-
-    //
-    //    for (const contentRaw in memory.iniciativa) {
-    //        let content = contentRaw;
-    //        if (content.includes('-')) {
-    //            content = content.split('-')[0].trim();
-    //        }
-    //        const iniciativa = await iniApi.inici({
-    //            //descricao: content,
-    //        });
-    //        if (iniciativa.data.linhas.length > 0) {
-    //            memory.iniciativa2id[content] = iniciativa.data.linhas[0].id!;
-    //            continue;
-    //        }
-    //
-    //        console.log('Iniciativa', content, 'não encontrado, necessário em', memory.iniciativa[content], 'registros');
-    //        runImport = false;
-    //    }
+    await validaMetas();
+    await validaIniciativas();
+    console.log(orgao2id);
 
     if (!runImport) {
         console.log('Importação não pode ser realizada');
         return;
     }
+
+    const empreendimento2id: Record<string, number> = {};
+    const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
+    const empreendimentosMap: Record<string, number> = {};
+    for (const emp of empreendimentos.data.linhas) {
+        empreendimentosMap[emp.identificador] = emp.id!;
+    }
+
+    for (const row of rows) {
+        if (!row.rel_empreendimento_id) continue;
+        const exists = empreendimentosMap[row.rel_empreendimento_id];
+        if (exists) continue;
+
+        try {
+            const emp = await empreendimentoApi.empreendimentoControllerCreate({
+                CreateEmpreendimentoDto: {
+                    nome: row.rel_empreendimento_id,
+                    identificador: row.rel_empreendimento_id,
+                },
+            });
+            empreendimento2id[row.rel_empreendimento_id] = emp.data.id;
+        } catch (error) {
+            console.log('Erro ao criar empreendimento', row.projeto_nome, row.rel_empreendimento_id);
+            console.error(row.rel_empreendimento_id, (error as any).response?.data);
+        }
+    }
+
+    for (const row of rows) {
+        let origem_tipo: ProjetoOrigemTipo = 'Outro';
+        let iniciativa_id: number | undefined;
+        let meta_id: number | undefined;
+        let origem_outro: string | null;
+
+        if (row.origem_pdm) {
+            origem_tipo = 'PdmSistema';
+            origem_outro = null;
+            if (row.origem_iniciativa_id) {
+                iniciativa_id = memIniciativa2id[row.origem_meta_id!][row.origem_iniciativa_id];
+            } else if (row.origem_meta_id) {
+                meta_id = memMeta2id[row.origem_meta_id];
+            } else {
+                //console.error(`-> Erro ao buscar iniciativa ou meta para a obra ${row.projeto_nome}, ${JSON.stringify(row)}`);
+                origem_tipo = 'Outro';
+                origem_outro = 'Meta ou iniciativa não informada';
+            }
+        } else {
+            origem_outro = row.origem_outro || '-';
+        }
+
+        const regiao_id =
+            row.rel_subprefeitura_id == 'Várias'
+                ? undefined
+                : row.rel_subprefeitura_id
+                ? regiao2id[row.rel_subprefeitura_id]
+                : undefined;
+
+        const regiao = regiao_id ? regiao2id[regiao_id] : undefined;
+
+        const info: CreateProjetoDto = {
+            nome: row.projeto_nome,
+            status: row.projeto_status as ProjetoStatus,
+            grupo_tematico_id: row.rel_grupo_tematico_id ? grupo_tematico2id[row.rel_grupo_tematico_id] : undefined,
+            tipo_intervencao_id: row.rel_tipo_intervencao_id
+                ? tipo_intervencao2id[row.rel_tipo_intervencao_id]
+                : undefined,
+            equipamento_id: row.rel_equipamento_id ? equipamento2id[row.rel_equipamento_id] : undefined,
+            orgao_origem_id: row.rel_orgao_origem_id ? orgao2id[row.rel_orgao_origem_id] : undefined,
+            orgao_executor_id: row.rel_orgao_executor_id ? orgao2id[row.rel_orgao_executor_id] : undefined,
+            empreendimento_id: empreendimento2id[row.rel_empreendimento_id],
+            mdo_detalhamento: row.mdo_detalhamento ?? '',
+
+            previsao_inicio: row.previsao_inicio?.toISOString().substring(0, 10) ?? (null as any),
+            previsao_termino: row.previsao_termino?.toISOString().substring(0, 10) ?? null,
+            tolerancia_atraso: 0,
+            mdo_previsao_inauguracao: null,
+
+            previsao_custo: row.previsao_custo ? +row.previsao_custo.toPrecision(2) : null,
+
+            mdo_observacoes:
+                row.rel_subprefeitura_id == 'Várias'
+                    ? `${row.mdo_observacoes ?? ''} - Várias regiões`
+                    : row.mdo_observacoes ?? '',
+
+            orgao_gestor_id: orgao2id[row.rel_orgao_gestor_id],
+            responsaveis_no_orgao_gestor: [pessoasCollabProjeto[row.rel_responsaveis_no_orgao_gestor_id]],
+            secretario_executivo: row.secretario_executivo?.toLowerCase() ?? null,
+
+            orgao_responsavel_id: orgao2id[row.orgao_responsavel_id],
+            responsavel_id: pessoasGestorDeProjeto[row.rel_responsavel_id],
+            secretario_responsavel: row.secretario_responsavel?.toLowerCase(),
+
+            orgao_colaborador_id: row.rel_orgao_colaborador_id ? orgao2id[row.rel_orgao_colaborador_id] : undefined,
+
+            colaboradores_no_orgao: row.rel_colaboradores_no_orgao
+                ? [pessoasCollabProjeto[row.rel_colaboradores_no_orgao]]
+                : undefined,
+            secretario_colaborador: row.secretario_colaborador?.toLowerCase() ?? null,
+
+            portfolio_id: portfolios[row.rel_portfolio_id],
+            mdo_n_familias_beneficiadas: row.mdo_n_familias_beneficiadas,
+            mdo_n_unidades_habitacionais: row.mdo_n_unidades_habitacionais,
+            programa_id: row.rel_programa_id ? programa2id[row.rel_programa_id] : undefined,
+            regiao_ids: regiao ? [regiao] : undefined,
+            origem_tipo,
+            origem_outro: origem_outro,
+            iniciativa_id,
+            meta_id,
+
+            orgaos_participantes: [],
+            geolocalizacao: [],
+        };
+
+        if (!row.projeto_id) {
+            try {
+                const projetoId = await projetoApi.projetoMDOControllerCreate({
+                    CreateProjetoDto: info,
+                });
+                console.log(`Projeto ${row.projeto_nome} criado com sucesso!`);
+                await db.run(
+                    `update importacao set projeto_id = ${projetoId.data.id} where internal_id = ${row.internal_id}`
+                );
+                row.projeto_id = projetoId.data.id;
+            } catch (error) {
+                console.log(`Erro ao criar projeto ${row.projeto_nome}`);
+
+                const errAsObj = (error as any).response?.data;
+                console.error(errAsObj, info);
+
+                const asJson = JSON.stringify({ response: errAsObj, request: info });
+
+                await db.run(
+                    `
+                    update importacao set err_msg = ? where internal_id = ${row.internal_id}
+                `,
+                    [asJson]
+                );
+            }
+        }
+        if (!row.projeto_id) continue;
+        const can_associate = row.parsed_processos_sei.length == 1 && row.parsed_contratos.length == 1;
+
+        if (row.parsed_contratos.length) {
+            for (const contrato of row.parsed_contratos) {
+                try {
+                    await processoApi.contratoMDOControllerCreate({
+                        CreateContratoDto: {
+                            contrato_exclusivo: false,
+                            fontes_recurso: [],
+                            numero: contrato,
+                            processos_sei: can_associate ? row.parsed_processos_sei : [],
+                            status: 'Assinado',
+                        },
+                        id: row.projeto_id,
+                    });
+
+                    console.log(`Contrato ${contrato} do projeto ${row.projeto_nome} criados com sucesso!`);
+                } catch (error) {
+                    const err = (error as any).response?.data;
+                    if (err?.message == 'Número igual ou semelhante já existe em outro registro ativo') {
+                        console.log(`Contrato ${contrato} do projeto ${row.projeto_nome} já existe`);
+                        continue;
+                    }
+                    console.log(`Erro ao criar contrato do projeto ${row.projeto_nome}`);
+                    console.error((error as any).response?.data);
+                }
+            }
+        }
+
+        if (row.parsed_processos_sei.length) {
+            for (const n_sei of row.parsed_processos_sei) {
+                try {
+                    await projetoApi.projetoMDOControllerCreateSEI({
+                        CreateProjetoSeiDto: {
+                            processo_sei: n_sei,
+                            descricao: '',
+                            link: undefined as any,
+                        },
+                        id: row.projeto_id,
+                    });
+
+                    console.log(`SEI ${n_sei} do projeto ${row.projeto_nome} criado com sucesso!`);
+                } catch (error) {
+                    const err = (error as any).response?.data;
+                    if (err?.message?.includes('existe um registro do processo')) {
+                        console.log(`SEI ${n_sei} do projeto ${row.projeto_nome} já existe`);
+                        continue;
+                    }
+                    console.log(`Erro ao criar sei do projeto ${row.projeto_nome}`);
+                    console.error((error as any).response?.data);
+                }
+            }
+        }
+    }
 }
 
 main();
 
-async function validaGrupoTematico() {
-    const grupoTematico = await grupoTematicoApi.grupoTematicoControllerFindAll();
-    for (const content in memory.grupo_tematico) {
-        const matchByTitulo = grupoTematico.data.linhas.find((grupo) => matchStringFuzzy(grupo.nome, content));
-        if (matchByTitulo) {
-            memory.grupo_tematico2id[content] = (matchByTitulo as any).id;
+function extractContracts(row: ProjetoRow) {
+    row.parsed_contratos = [];
+    if (row.mdo_numero_contrato) {
+        row.parsed_contratos = row.mdo_numero_contrato.split(/,|\n/).map((r) => r.trim());
+    }
+}
+
+function extractAndNormalizeSEIProcesses(row: ProjetoRow) {
+    row.parsed_processos_sei = [];
+    if (row.rel_processo_sei) {
+        const processos: string[] = [];
+
+        let match = seiRegexp.exec(row.rel_processo_sei);
+        while (match != null) {
+            processos.push(match[0].trim());
+            match = seiRegexp.exec(row.rel_processo_sei);
+        }
+        row.parsed_processos_sei = processos.map((r) => normalizeProcesso(r));
+    }
+}
+
+function incrementPortfolioCount(row: ProjetoRow) {
+    if (!portfolios[row.rel_portfolio_id]) portfolios[row.rel_portfolio_id] = 0;
+    portfolios[row.rel_portfolio_id] += 1;
+}
+
+function incrementResponsaveis(row: ProjetoRow) {
+    if (!rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id])
+        rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] = 0;
+    rel_responsaveis_no_orgao_gestor_id[row.rel_responsaveis_no_orgao_gestor_id] += 1;
+
+    if (row.rel_colaboradores_no_orgao) {
+        if (!rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao])
+            rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] = 0;
+        rel_responsaveis_no_orgao_gestor_id[row.rel_colaboradores_no_orgao] += 1;
+    }
+
+    if (!rel_responsavel_id[row.rel_responsavel_id]) rel_responsavel_id[row.rel_responsavel_id] = 0;
+    rel_responsavel_id[row.rel_responsavel_id] += 1;
+}
+
+function incrementOrgaos(row: ProjetoRow) {
+    for (const col of LISTA_COL_ORGAO) {
+        const rowValue = row[col]?.trim();
+        if (!rowValue) continue;
+        if (!orgaos[rowValue]) orgaos[rowValue] = 0;
+
+        orgaos[rowValue] += 1;
+    }
+}
+
+function incrementEtapaCount(row: ProjetoRow) {
+    const etapa = row.rel_projeto_etapa_id?.trim();
+    if (etapa) {
+        if (!etapas[etapa]) etapas[etapa] = 0;
+        etapas[etapa] += 1;
+    }
+}
+
+function incrementProgramCount(row: ProjetoRow) {
+    const programa = row.rel_programa_id?.trim();
+    if (programa) {
+        if (!programas[programa]) programas[programa] = 0;
+        programas[programa] += 1;
+    }
+}
+
+function incrementRegiaoCount(row: ProjetoRow) {
+    const regiao = row.rel_subprefeitura_id?.trim();
+    if (regiao) {
+        if (!regioes[regiao]) regioes[regiao] = 0;
+        regioes[regiao] += 1;
+    }
+}
+
+function incrementIniciativaCount(row: ProjetoRow) {
+    const metaX = row.origem_meta_id?.trim();
+    if (metaX) {
+        if (!memMeta[metaX]) memMeta[metaX] = 0;
+        memMeta[metaX] += 1;
+    }
+
+    const iniciativa = row.origem_iniciativa_id?.trim();
+    if (iniciativa && metaX) {
+        if (!memIniciativa[metaX]) memIniciativa[metaX] = {};
+        if (!memIniciativa[metaX][iniciativa]) memIniciativa[metaX][iniciativa] = 0;
+
+        memIniciativa[metaX][iniciativa] += 1;
+    }
+}
+
+function incrementGroupThemeCount(row: ProjetoRow) {
+    const grupoTematico = row.rel_grupo_tematico_id?.trim();
+    if (grupoTematico) {
+        if (!grupo_tematico[grupoTematico]) grupo_tematico[grupoTematico] = 0;
+        grupo_tematico[grupoTematico] += 1;
+    }
+}
+
+function incrementEquipamentoCount(row: ProjetoRow) {
+    const equipamento = row.rel_equipamento_id?.trim();
+    if (equipamento) {
+        if (!equipamentos[equipamento]) equipamentos[equipamento] = 0;
+        equipamentos[equipamento] += 1;
+    }
+}
+
+function incrementTipoIntervencaoCount(row: ProjetoRow) {
+    const tipoIntervencao = row.rel_tipo_intervencao_id?.trim();
+    if (tipoIntervencao) {
+        if (!tipo_intervencao[tipoIntervencao]) tipo_intervencao[tipoIntervencao] = 0;
+        tipo_intervencao[tipoIntervencao] += 1;
+    }
+}
+
+async function validaIniciativas() {
+    for (const metaCodigoOrCodigo in memIniciativa) {
+        const metaId = memMeta2id[metaCodigoOrCodigo];
+        if (!metaId) {
+            runImport = false;
+            continue;
+        }
+        const metaCod = memMeta2cod[metaCodigoOrCodigo];
+        const iniciativasNaApi = await iniciativaApi.iniciativaControllerFindAll({
+            meta_id: memMeta2id[metaCodigoOrCodigo],
+        });
+        for (const iniciativaCodigo in memIniciativa[metaCodigoOrCodigo]) {
+            const matchByCodigo = iniciativasNaApi.data.linhas.find((iniciativa) =>
+                matchStringFuzzy(iniciativa.codigo, metaCod + '.' + iniciativaCodigo)
+            );
+            if (matchByCodigo) {
+                memIniciativa2id[metaCodigoOrCodigo] = memIniciativa2id[metaCodigoOrCodigo] || {};
+                memIniciativa2id[metaCodigoOrCodigo][iniciativaCodigo] = (matchByCodigo as any).id;
+                continue;
+            }
+            console.log(
+                'Iniciativa',
+                iniciativaCodigo,
+                'não encontrado, necessário em',
+                memIniciativa[metaCodigoOrCodigo][iniciativaCodigo],
+                'registros'
+            );
+            runImport = false;
+        }
+    }
+}
+
+async function validaMetas() {
+    const metasNaApi = await metaApi.metaControllerFindAll({
+        pdm_id: 11,
+    });
+
+    for (const contentRaw in memMeta) {
+        let content = contentRaw;
+        if (content.includes('-')) {
+            content = content.split('-')[0].trim();
+        }
+
+        const metaByCodigo = metasNaApi.data.linhas.find((meta) => matchStringFuzzy(meta.codigo, content));
+        if (metaByCodigo) {
+            memMeta2id[contentRaw] = metaByCodigo.id!;
+            memMeta2cod[contentRaw] = metaByCodigo.codigo;
             continue;
         }
 
-        console.log(
-            'Grupo temático',
-            content,
-            'não encontrado, necessário em',
-            memory.grupo_tematico[content],
-            'registros'
-        );
+        const metaByDesc = metasNaApi.data.linhas.find((meta) => matchStringFuzzy(meta.titulo, content));
+        if (metaByDesc) {
+            memMeta2id[contentRaw] = metaByDesc.id!;
+            memMeta2cod[contentRaw] = metaByDesc.codigo;
+            continue;
+        }
+
+        console.log('Meta', content, 'não encontrado, necessário em', memMeta[contentRaw], 'registros');
+        runImport = false;
+    }
+}
+
+async function validaGrupoTematico() {
+    const grupoTematico = await grupoTematicoApi.grupoTematicoControllerFindAll();
+    for (const content in grupo_tematico) {
+        const matchByTitulo = grupoTematico.data.linhas.find((grupo) => matchStringFuzzy(grupo.nome, content));
+        if (matchByTitulo) {
+            grupo_tematico2id[content] = (matchByTitulo as any).id;
+            continue;
+        }
+
+        console.log('Grupo temático', content, 'não encontrado, necessário em', grupo_tematico[content], 'registros');
         runImport = false;
     }
 }
 
 async function validaEquipamento() {
-    const equipamentos = await equipamentoApi.equipamentoControllerFindAll();
-    for (const content in memory.equipamentos) {
-        const matchByTitulo = equipamentos.data.linhas.find((equip) => matchStringFuzzy(equip.nome, content));
+    const equipamentosRows = await equipamentoApi.equipamentoControllerFindAll();
+    for (const content in equipamentos) {
+        const matchByTitulo = equipamentosRows.data.linhas.find((equip) => matchStringFuzzy(equip.nome, content));
         if (matchByTitulo) {
-            memory.equipamento2id[content] = (matchByTitulo as any).id;
+            equipamento2id[content] = (matchByTitulo as any).id;
             continue;
         }
 
-        console.log('Equipamento', content, 'não encontrado, necessário em', memory.equipamentos[content], 'registros');
+        console.log('Equipamento', content, 'não encontrado, necessário em', equipamentos[content], 'registros');
         runImport = false;
     }
 }
 
 async function validaTipoIntervencao() {
     const tipoIntervencao = await tipoIntervencaoApi.tipoIntervencaoControllerFindAll();
-    for (const content in memory.tipo_intervencao) {
+    for (const content in tipo_intervencao) {
         const matchByTitulo = tipoIntervencao.data.linhas.find((tipo) => matchStringFuzzy(tipo.nome, content));
         if (matchByTitulo) {
-            memory.tipo_intervencao2id[content] = (matchByTitulo as any).id;
+            tipo_intervencao2id[content] = (matchByTitulo as any).id;
             continue;
         }
-        const pdmApi = new PDMApi(config);
 
         console.log(
             'Tipo de intervenção',
             content,
             'não encontrado, necessário em',
-            memory.tipo_intervencao[content],
+            tipo_intervencao[content],
             'registros'
         );
         runImport = false;
@@ -341,93 +623,93 @@ async function validaTipoIntervencao() {
 }
 
 async function validaPrograma() {
-    const programas = await programaApi.projetoProgramaMDOControllerFindAll();
-    for (const programa in memory.programas) {
-        const matchByTitulo = programas.data.linhas.find((prog) => matchStringFuzzy(prog.nome, programa));
+    const programasNoDb = await programaApi.projetoProgramaMDOControllerFindAll();
+    for (const programa in programas) {
+        const matchByTitulo = programasNoDb.data.linhas.find((prog) => matchStringFuzzy(prog.nome, programa));
 
         if (matchByTitulo) {
-            memory.programa2id[programa] = (matchByTitulo as any).id;
+            programa2id[programa] = (matchByTitulo as any).id;
             continue;
         }
 
-        console.log('Programa', programa, 'não encontrado, necessário em', memory.programas[programa], 'registros');
+        console.log('Programa', programa, 'não encontrado, necessário em', programas[programa], 'registros');
         runImport = false;
     }
 }
 
 async function validaRegioes() {
-    const regioes = await regiaoApi.regiaoControllerFindAll();
-    for (const regiao in memory.regioes) {
-        const matchByNome = regioes.data.linhas.find((reg) => matchStringFuzzy(reg.descricao, regiao));
+    const regioesNoDb = await regiaoApi.regiaoControllerFindAll();
+    for (const regiao in regioes) {
+        if (regiao == 'Várias') continue;
+
+        const matchByNome = regioesNoDb.data.linhas.find((reg) => matchStringFuzzy(reg.descricao, regiao));
 
         if (matchByNome) {
             if (matchByNome.nivel == 4) {
-                memory.regiao2id[regiao] = matchByNome.parente_id!;
+                regiao2id[regiao] = matchByNome.parente_id!;
                 continue;
             } else if (matchByNome.nivel == 3) {
-                memory.regiao2id[regiao] = matchByNome.id!;
+                regiao2id[regiao] = matchByNome.id!;
                 continue;
             }
         }
 
-        console.log('Região', regiao, 'não encontrado, necessário em', memory.regioes[regiao], 'registros');
+        console.log('Região', regiao, 'não encontrado, necessário em', regioes[regiao], 'registros');
         runImport = false;
     }
 }
 
 async function validaEtapas() {
-    const etapas = await etapaApi.projetoEtapaMDOControllerFindAll();
-    for (const content in memory.etapas) {
-        const matchByTitulo = etapas.data.linhas.find((etapa) => matchStringFuzzy(etapa.descricao, content));
+    const etapasNoDb = await etapaApi.projetoEtapaMDOControllerFindAll();
+    for (const content in etapas) {
+        const matchByTitulo = etapasNoDb.data.linhas.find((etapa) => matchStringFuzzy(etapa.descricao, content));
         if (matchByTitulo) {
-            memory.etapa2id[content] = (matchByTitulo as any).id;
+            etapa2id[content] = (matchByTitulo as any).id;
             continue;
         }
 
-        console.log('Etapa', content, 'não encontrado, necessário em', memory.etapas[content], 'registros');
+        console.log('Etapa', content, 'não encontrado, necessário em', etapas[content], 'registros');
         runImport = false;
     }
 }
 
 async function validaPortfolios() {
-    const portfolios = await portApi.portfolioMDOControllerFindAll();
-    for (const portifolio in memory.portfolios) {
-        const matchByTitulo = portfolios.data.linhas.find((port) => matchStringFuzzy(port.titulo, portifolio));
+    const portfoliosNoDb = await portApi.portfolioMDOControllerFindAll();
+    for (const portifolio in portfolios) {
+        const matchByTitulo = portfoliosNoDb.data.linhas.find((port) => matchStringFuzzy(port.titulo, portifolio));
 
         if (matchByTitulo) {
-            memory.portfolios[portifolio] = matchByTitulo.id!;
+            portfolios[portifolio] = matchByTitulo.id!;
             continue;
         }
 
-        console.log(
-            'Portifolio',
-            portifolio,
-            'não encontrado, necessário em',
-            memory.portfolios[portifolio],
-            'registros'
-        );
+        console.log('Portifolio', portifolio, 'não encontrado, necessário em', portfolios[portifolio], 'registros');
         runImport = false;
     }
 }
 
 async function validaOrgaos() {
-    const orgaos = await orgaoApi.orgaoControllerFindAll();
-    for (const content in memory.orgaos) {
-        const matchByCodigo = orgaos.data.linhas.find((orgao) => matchStringFuzzy(orgao.sigla, content));
-
+    const orgaosNoDb = await orgaoApi.orgaoControllerFindAll();
+    for (const contentRaw in orgaos) {
+        let content = contentRaw;
+        if (content.includes(' - ')) {
+            content = content.split(' - ')[0].trim();
+        }
+        const matchByCodigo = orgaosNoDb.data.linhas.find((orgao) => matchStringFuzzy(orgao.sigla, content));
         if (matchByCodigo) {
-            memory.orgao2id[content] = matchByCodigo.id!;
+            orgao2id[contentRaw] = matchByCodigo.id!;
             continue;
         }
 
-        const matchByNome = orgaos.data.linhas.find((orgao) => orgao.descricao === content);
-
+        const matchByNome = orgaosNoDb.data.linhas.find(
+            (orgao) => matchStringFuzzy(orgao.descricao, content) || matchStringFuzzy(orgao.descricao, contentRaw)
+        );
         if (matchByNome) {
-            memory.orgao2id[content] = matchByNome.id!;
+            orgao2id[contentRaw] = matchByNome.id!;
             continue;
         }
 
-        console.log('Órgão', content, 'não encontrado, necessário em', memory.orgaos[content], 'registros');
+        console.log('Órgão', contentRaw, 'não encontrado, necessário em', orgaos[contentRaw], 'registros');
         runImport = false;
     }
 }
@@ -452,37 +734,42 @@ async function buscaPessoas() {
 }
 
 function validaPessoas(pessoasCollabProjeto: Record<string, number>, pessoasGestorDeProjeto: Record<string, number>) {
-    for (const email in memory.rel_responsaveis_no_orgao_gestor_id) {
-        const count = memory.rel_responsaveis_no_orgao_gestor_id[email];
-        if (!pessoasCollabProjeto[email]) {
+    for (const email in rel_responsaveis_no_orgao_gestor_id) {
+        const count = rel_responsaveis_no_orgao_gestor_id[email];
+        if (!pessoasGestorDeProjeto[email]) {
             runImport = false;
-            console.log('Faltando rel_responsaveis_no_orgao_gestor_id', email, 'necessário em', count, 'registros');
+            console.log('Faltando pessoasGestorDeProjeto', email, 'necessário em', count, 'registros');
         }
     }
-    for (const email in memory.rel_responsavel_id) {
-        const count = memory.rel_responsavel_id[email];
-        if (!pessoasGestorDeProjeto[email]) {
+
+    for (const email in rel_responsavel_id) {
+        const count = rel_responsavel_id[email];
+        if (!pessoasCollabProjeto[email]) {
             runImport = false;
             console.log('Faltando rel_responsavel_id', email, 'necessário em', count, 'registros');
         }
     }
 }
 
-function matchStringFuzzy(str1: string | undefined | null, str2: string | undefined | null): boolean {
-    if (!str1 || !str2) {
-        return false;
+function normalizeProcesso(processo: string): string {
+    const cleanedProcesso = processo.replace(/[^0-9]/g, '');
+
+    if (cleanedProcesso.length === 16) {
+        // SEI format (DDDDDD.DDDD/DDDDDDD-D):
+        const part1 = cleanedProcesso.substring(0, 4);
+        const part2 = cleanedProcesso.substring(4, 8);
+        const part3 = cleanedProcesso.substring(8, 15);
+        const part4 = cleanedProcesso.substring(15, 16);
+        return `${part1}.${part2}/${part3}-${part4}`;
+    } else if (cleanedProcesso.length === 12) {
+        // SINPROC format (YYYY-D.DDD.DDD-D):
+        const year = cleanedProcesso.substring(0, 4);
+        const part2 = cleanedProcesso.substring(4, 5);
+        const part3 = cleanedProcesso.substring(5, 8);
+        const part4 = cleanedProcesso.substring(8, 11);
+        const part5 = cleanedProcesso.substring(11, 12);
+        return `${year}-${part2}.${part3}.${part4}-${part5}`;
+    } else {
+        return processo;
     }
-
-    const normalizeString = (str: string): string => {
-        let tmp = str
-            .toLocaleLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '');
-
-        tmp = tmp.replace(/\s+/g, ' ');
-        tmp = tmp.replace(/[^a-z0-9 ]/g, '');
-        return tmp;
-    };
-
-    return normalizeString(str1) === normalizeString(str2);
 }

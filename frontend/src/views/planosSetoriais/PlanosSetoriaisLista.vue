@@ -20,7 +20,7 @@ async function excluirPlano(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover o plano "${nome}"?`, async () => {
     if (await planosSetoriaisStore.excluirItem(id)) {
       planosSetoriaisStore.buscarTudo();
-      alertStore.success('Portfólio removido.');
+      alertStore.success('Plano removido.');
     }
   }, 'Remover');
 }

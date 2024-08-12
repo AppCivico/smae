@@ -103,6 +103,10 @@ export class FilterVariavelCategoricaDto {
         enumName: 'TipoVariavelCategorica',
     })
     tipo?: TipoVariavelCategorica;
+
+    @IsOptional()
+    @IsInt()
+    id?: number;
 }
 
 export class ListVariavelCategoricaDto {

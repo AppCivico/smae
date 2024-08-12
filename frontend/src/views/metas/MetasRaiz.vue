@@ -7,6 +7,8 @@ import { onMounted, onUnmounted } from 'vue';
 const PdmStore = usePdMStore();
 const { activePdm } = storeToRefs(PdmStore);
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 onMounted(async () => {
   if (!activePdm.value.id) {
     await PdmStore.getActive();
@@ -26,6 +28,20 @@ onUnmounted(() => {
       {{ activePdm.error }}
     </ErrorComponent>
 
-    <router-view v-if="activePdm?.id" />
+    <router-view
+      v-if="activePdm?.id"
+      v-slot="{ Component }"
+    >
+      <component :is="Component">
+        <template #icone>
+          <img
+            v-if="activePdm.logo"
+            class="título-da-página__ícone"
+            :src="`${baseUrl}/download/${activePdm.logo}?inline=true`"
+            width="100"
+          >
+        </template>
+      </component>
+    </router-view>
   </Dashboard>
 </template>

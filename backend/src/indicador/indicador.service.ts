@@ -1,8 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import {
@@ -11,13 +13,11 @@ import {
     ValorSerieExistente,
 } from '../variavel/entities/variavel.entity';
 import { VariavelService } from '../variavel/variavel.service';
-import { CreateIndicadorDto } from './dto/create-indicador.dto';
+import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
-import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
-import { MetaService } from '../meta/meta.service';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -446,6 +446,7 @@ export class IndicadorService {
                 recalculando: true,
                 recalculo_erro: true,
                 recalculo_tempo: true,
+                ha_avisos_data_fim: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -561,6 +562,9 @@ export class IndicadorService {
                         }),
                     ]);
                 }
+
+                // independente de ter ou não formula_variaveis, revalida as regras do PS
+                if (tipo === 'PS') await this.validaRegrasPS(id, prismaTx);
 
                 await this.recalcIndicador(prismaTx, indicador.id);
 
@@ -931,5 +935,250 @@ export class IndicadorService {
         });
 
         return [...variaveis.map((r) => r.referencia), ...formulaCompostas.map((r) => r.referencia)];
+    }
+
+    async linkVariavel(id: number, dto: LinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
+        const indicador = await this.prisma.indicador.findFirstOrThrow({
+            where: { id: id, removido_em: null },
+            select: {
+                meta_id: true,
+                atividade_id: true,
+                iniciativa_id: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+            },
+        });
+        const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
+            where: {
+                meta_id: indicador.meta_id ?? undefined,
+                atividade_id: indicador.atividade_id ?? undefined,
+                iniciativa_id: indicador.iniciativa_id ?? undefined,
+            },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PS', metaRow.meta_id, user, 'indicador');
+
+        const variaveisDb = await this.prisma.variavel.findMany({
+            where: {
+                id: { in: dto.variavel_ids },
+                tipo: {
+                    in: ['Calculada', 'Global'],
+                },
+                removido_em: null,
+            },
+            select: { id: true, inicio_medicao: true, fim_medicao: true, titulo: true, codigo: true },
+        });
+        const alreadyInIndicador = await this.prisma.indicadorVariavel.findMany({
+            where: {
+                variavel_id: { in: dto.variavel_ids },
+                indicador_id: id,
+                desativado: false,
+                indicador_origem_id: null,
+            },
+            select: { variavel_id: true },
+        });
+        const alreadyLinkedIds = new Set(alreadyInIndicador.map((item) => item.variavel_id));
+
+        for (const varId of dto.variavel_ids) {
+            // pula se já tem, nem valida os dados, isso é apenas para não compilar o frontend se caso venha duplicado
+            if (alreadyLinkedIds.has(varId)) continue;
+
+            const variavel = variaveisDb.find((e) => e.id == varId);
+            if (!variavel) throw new HttpException(`Variável ${varId} não encontrada`, 400);
+
+            if (variavel.inicio_medicao == null)
+                throw new HttpException(
+                    `Variável ${variavel.titulo} (${variavel.codigo}) não possui data de início de medição`,
+                    400
+                );
+
+            if (variavel.inicio_medicao && indicador.inicio_medicao < variavel.inicio_medicao)
+                throw new HttpException(
+                    `A variável ${variavel.titulo} (${variavel.codigo}) inicia a medição em ${
+                        variavel.inicio_medicao
+                    }, enquanto o indicador inicia em ${indicador.inicio_medicao}`,
+                    400
+                );
+
+            if (variavel.fim_medicao && indicador.fim_medicao > variavel.fim_medicao)
+                throw new HttpException(
+                    `A variável ${variavel.titulo} (${variavel.codigo}) termina a medição em ${
+                        variavel.fim_medicao
+                    }, enquanto o indicador termina em ${indicador.fim_medicao}`,
+                    400
+                );
+        }
+
+        const variableIdsToLink = dto.variavel_ids.filter((varId) => !alreadyLinkedIds.has(varId));
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<void> => {
+            await prisma.indicadorVariavel.createMany({
+                data: variableIdsToLink.map(
+                    (varId) =>
+                        ({
+                            variavel_id: varId,
+                            indicador_id: id,
+                            desativado: false,
+                            indicador_origem_id: null,
+                            aviso_data_fim: false,
+                        }) satisfies Prisma.IndicadorVariavelCreateManyInput
+                ),
+            });
+        });
+
+        return;
+    }
+
+    async unlinkVariavel(id: number, dto: UnlinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
+        const indicador = await this.prisma.indicador.findFirstOrThrow({
+            where: { id: id, removido_em: null },
+            select: {
+                meta_id: true,
+                atividade_id: true,
+                iniciativa_id: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+            },
+        });
+        const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
+            where: {
+                meta_id: indicador.meta_id ?? undefined,
+                atividade_id: indicador.atividade_id ?? undefined,
+                iniciativa_id: indicador.iniciativa_id ?? undefined,
+            },
+            select: { meta_id: true },
+        });
+        await this.metaService.assertMetaWriteOrThrow('PS', metaRow.meta_id, user, 'indicador');
+
+        const alreadyInIndicador = await this.prisma.indicadorVariavel.findFirst({
+            where: {
+                variavel_id: dto.variavel_id,
+                indicador_id: id,
+                desativado: false,
+                indicador_origem_id: null,
+            },
+            select: { variavel_id: true },
+        });
+        // se não existe, já ta desvinculado
+        if (!alreadyInIndicador) return;
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const emUso = await prismaTx.indicadorFormulaVariavel.count({
+                where: {
+                    variavel_id: dto.variavel_id,
+                    indicador_id: id,
+                },
+            });
+            if (emUso > 0) {
+                throw new HttpException(
+                    `A variável ${dto.variavel_id} está sendo usada em fórmulas do indicador ${id}`,
+                    400
+                );
+            }
+
+            await prismaTx.indicadorVariavel.deleteMany({
+                where: {
+                    variavel_id: dto.variavel_id,
+                    indicador_id: id,
+                    desativado: false,
+                    indicador_origem_id: null,
+                },
+            });
+        });
+
+        return;
+    }
+
+    private async validaRegrasPS(indicadorId: number, prismaTx: Prisma.TransactionClient) {
+        const indicador = await prismaTx.indicador.findUniqueOrThrow({
+            where: { id: indicadorId },
+            include: {
+                IndicadorVariavel: {
+                    include: {
+                        variavel: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                inicio_medicao: true,
+                                fim_medicao: true,
+                            },
+                        },
+                    },
+                },
+                formula_variaveis: {
+                    select: {
+                        variavel: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                periodicidade: true,
+                                inicio_medicao: true,
+                                fim_medicao: true,
+                                regiao_id: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const indicadorPeriodicidade = this.periodicidade2mes(indicador.periodicidade);
+
+        // se tem formula, valida as regras
+        if (indicador.formula_compilada?.trim()) {
+            const temPeriodoValido = indicador.formula_variaveis.some(
+                (iv) => this.periodicidade2mes(iv.variavel.periodicidade) <= indicadorPeriodicidade
+            );
+            if (!temPeriodoValido) {
+                throw new HttpException(
+                    'A fórmula do indicador deve ter ao menos 1 variável com periodicidade menor ou igual à periodicidade do indicador',
+                    400
+                );
+            }
+
+            if (indicador.regionalizavel) {
+                // aqui n importa o nivel, só se tem ou não
+                const temVariavelComRegiao = indicador.formula_variaveis.some((iv) => iv.variavel.regiao_id !== null);
+                if (!temVariavelComRegiao) {
+                    throw new HttpException(
+                        'A fórmula de indicador regionalizado deve ter ao menos 1 variável regionalizada',
+                        400
+                    );
+                }
+            }
+        }
+
+        // validar se é pra manter com a fazer parte das variaveis da formula ou não
+        for (const iv of indicador.IndicadorVariavel) {
+            // na teoria todas as variaveis tem inicio_medicao quando Global/Calculada, mas just in case
+            if (iv.variavel.inicio_medicao) {
+                if (
+                    iv.variavel.inicio_medicao > indicador.inicio_medicao ||
+                    (iv.variavel.fim_medicao && iv.variavel.fim_medicao < indicador.fim_medicao)
+                ) {
+                    throw new HttpException(
+                        `A variável ${iv.variavel.codigo} não cobre o período de medição do indicador. Requerido: ${Date2YMD.toStringOrNull(
+                            indicador.inicio_medicao
+                        )} a ${Date2YMD.toStringOrNull(indicador.fim_medicao)}, Variável: ${Date2YMD.toStringOrNull(
+                            iv.variavel.inicio_medicao ?? '-'
+                        )} a ${Date2YMD.toStringOrNull(iv.variavel.fim_medicao) ?? '-'}`,
+                        400
+                    );
+                }
+            }
+        }
+    }
+
+    private periodicidade2mes(periodicidade: Periodicidade): number {
+        // hardcoded pra n chamar o postgres
+        const periodicidadeMap: Record<Periodicidade, number> = {
+            Mensal: 1,
+            Bimestral: 2,
+            Trimestral: 3,
+            Quadrimestral: 4,
+            Semestral: 6,
+            Anual: 12,
+            Quinquenal: 60,
+            Secular: 1200,
+        };
+        return periodicidadeMap[periodicidade];
     }
 }

@@ -5,6 +5,7 @@ import { defineAsyncComponent } from 'vue';
 import acompanhamentos from './acompanhamentos';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
+import contratos from './projetos.contratos';
 import projetosOrcamentos from './projetos.orcamentos';
 import riscos from './riscos';
 import tarefas from './tarefas';
@@ -148,14 +149,20 @@ export default {
             título: 'Plano de projeto',
             rotas: [
               'projetosResumo',
+              'projetoTarefasListar',
+              'projetosEAP',
+              'projetosGantt',
             ],
           };
 
           const rotasDeAcompanhamento = {
             título: 'Acompanhamento',
             rotas: [
+              'acompanhamentosListar',
+              'riscosListar',
               'projetosDocumentos',
               'processosListar',
+              'contratosDoProjetoListar',
             ],
           };
 
@@ -174,20 +181,6 @@ export default {
               'ProjetoOrçamentoRealizado',
             ],
           };
-
-          rotasDeAcompanhamento.rotas.splice(
-            0,
-            0,
-            'acompanhamentosListar',
-            'riscosListar',
-          );
-          rotasDePlanoDeProjeto.rotas.splice(
-            1,
-            0,
-            'projetoTarefasListar',
-            'projetosEAP',
-            'projetosGantt',
-          );
 
           return [
             rotasDePlanoDeProjeto,
@@ -340,6 +333,8 @@ export default {
         processos,
 
         projetosOrcamentos,
+
+        contratos,
       ],
     },
   ],

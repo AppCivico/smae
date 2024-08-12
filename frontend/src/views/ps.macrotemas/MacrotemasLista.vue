@@ -72,7 +72,7 @@
 
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useMacrotemasStore } from '@/stores/macrotemasPs.store';
+import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { storeToRefs } from 'pinia';
 import { computed, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
@@ -86,7 +86,7 @@ const titulo = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
   : route?.meta?.título;
 const alertStore = useAlertStore();
-const macrotemasStore = useMacrotemasStore();
+const macrotemasStore = useMacrotemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(macrotemasStore);
 
 async function excluirMacrotema(id, descricao) {

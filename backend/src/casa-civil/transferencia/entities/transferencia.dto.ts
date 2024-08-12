@@ -27,6 +27,7 @@ export class TransferenciaDto {
     secretaria_concedente: string | null;
     andamento_etapa: string | null;
     andamento_fase: string | null;
+    fase_status: string | null;
 }
 
 export class ListTransferenciaDto {

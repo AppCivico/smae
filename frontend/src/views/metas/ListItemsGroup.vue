@@ -65,23 +65,43 @@ function groupSlug(s) {
 <template>
   <MigalhasDeMetas class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex g2 spacebetween center mb2">
     <img
       v-if="activePdm.logo"
       :src="`${baseUrl}/download/${activePdm.logo}?inline=true`"
       width="100"
-      class="ib mr1"
+      class="ib"
     >
     <h1 v-else>
       {{ activePdm.nome }}
     </h1>
-    <hr class="ml2 f1">
-    <div class="ml2 dropbtn">
+    <hr class="f1">
+
+    <SmaeLink
+      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm')"
+      class="btn big"
+      to="/metas/novo"
+    >
+      Nova Meta
+    </SmaeLink>
+
+    <div
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMacroTema.inserir',
+        'CadastroTema.inserir',
+        'CadastroSubTema.inserir',
+        'CadastroTag.inserir',
+      ])"
+      class="dropbtn"
+    >
       <span class="btn">Adicionar</span>
       <ul>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm'
+            ])"
             to="/metas/novo"
           >
             Nova Meta
@@ -89,7 +109,9 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMacroTema.inserir']) && activePdm.possui_macro_tema"
+            v-if="temPermissãoPara([
+              'CadastroMacroTema.inserir'
+            ]) && activePdm.possui_macro_tema"
             to="/metas/macrotemas/novo"
           >
             {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
@@ -97,7 +119,9 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroTema.inserir']) && activePdm.possui_tema"
+            v-if="temPermissãoPara([
+              'CadastroTema.inserir'
+            ]) && activePdm.possui_tema"
             to="/metas/temas/novo"
           >
             {{ activePdm.rotulo_tema ?? 'Tema' }}
@@ -105,7 +129,9 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroSubTema.inserir']) && activePdm.possui_sub_tema"
+            v-if="temPermissãoPara([
+              'CadastroSubTema.inserir'
+            ]) && activePdm.possui_sub_tema"
             to="/metas/subtemas/novo"
           >
             {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
@@ -113,7 +139,9 @@ function groupSlug(s) {
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroTag.inserir'])"
+            v-if="temPermissãoPara([
+              'CadastroTag.inserir'
+            ])"
             to="/metas/tags/novo"
           >
             Tag
@@ -121,7 +149,8 @@ function groupSlug(s) {
         </li>
       </ul>
     </div>
-  </div>
+  </header>
+
   <div class="mb2">
     <div class="label tc300">
       {{ activePdm['rotulo_' + filters.groupBy] }}
@@ -150,7 +179,10 @@ function groupSlug(s) {
               </div>
             </SmaeLink>
             <SmaeLink
-              v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               :to="`/metas/editar/${m.id}`"
               class="f0 tprimary ml1"
             >
@@ -163,7 +195,10 @@ function groupSlug(s) {
         </ul>
         <hr class="mt2 mb2">
         <div
-          v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm'
+          ])"
           class="tc bgc50 p1"
         >
           <SmaeLink

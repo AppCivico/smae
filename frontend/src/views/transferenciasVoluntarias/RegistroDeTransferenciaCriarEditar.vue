@@ -1,19 +1,21 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, FieldArray,
-} from 'vee-validate';
-import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import Big from 'big.js';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
+import {
+  computed, nextTick, watch,
+} from 'vue';
+import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
@@ -39,14 +41,11 @@ const props = defineProps({
 });
 
 const {
-  errors, isSubmitting, setFieldValue, values, handleSubmit,
+  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
 });
-
-console.log(itemParaEdição);
-console.log(schema);
 
 const alertStore = useAlertStore();
 
@@ -132,19 +131,20 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 partidoStore.buscarTudo();
 
-onMounted(() => {
+watch(itemParaEdição, async (novosValores) => {
+  resetForm({ values: novosValores });
+
+  await nextTick();
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
-});
+}, { immediate: true });
 </script>
-
 <template>
   <pre v-scrollLockDebug>
     transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
   </pre>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
-    <div>{{ values.parlamentares }}</div>
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -171,6 +171,7 @@ onMounted(() => {
             type="text"
             class="inputtext light mb1"
             converter-para="string"
+            :value="values.valor"
             @update:model-value="(newValue) =>
               updateValorTotal('valor', newValue, setFieldValue)"
           />
@@ -389,97 +390,67 @@ onMounted(() => {
       <hr class="ml2 f1">
     </div>
 
-    <div class="mb1">
-      <FieldArray
-        v-slot="{ fields, push, remove }"
-        name="parlamentares"
+    <!-- Esse FieldArray é desnecessário -->
+    <FieldArray
+      v-slot="{ fields }"
+      name="parlamentares"
+    >
+      <div
+        v-for="(field, idx) in fields"
+        :key="`parlamentares--${field.key}`"
+        class="mb2"
       >
-        <div
-          v-for="(field, idx) in fields"
-          :key="field.key"
-          class="flex flexwrap center g2 mb2"
-        >
-          <Field
-            :name="`parlamentares[${idx}].id`"
-            type="hidden"
-            class="inputtext light"
-          />
-          <div class="flex g2 mb1">
+        <Field
+          :name="`parlamentares[${idx}].id`"
+          type="hidden"
+        />
+
+        <div class="flex g2">
+          <div class="f1">
             <LabelFromYup
               name="parlamentar_id"
               :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].parlamentar.nome_popular`"
             />
-            <Field
-              :name="`parlamentares[${idx}].parlamentar_id`"
-              as="select"
+            <input
+              :name="`parlamentares[${idx}].parlamentar.nome_popular`"
               class="inputtext light mb1"
-              :class="{
-                error: errors.parlamentar_id,
-                loading: ParlamentaresStore.chamadasPendentes?.lista,
-              }"
-              :disabled="true"
+              type="text"
+              aria-readonly="true"
+              readonly
+              :value="values.parlamentares?.[idx]?.parlamentar?.nome_popular"
             >
-              <option
-                v-for="item in parlamentarComoLista"
-                :key="item"
-                :value="item.id"
-                :disabled="!item?.mandatos?.length"
-              >
-                {{ item.nome_popular }}
-              </option>
-            </Field>
-            <ErrorMessage
-              :name="`parlamentares[${idx}].parlamentar_id`"
-              class="error-msg"
-            />
+          </div>
+          <div class="f1">
             <LabelFromYup
               name="valor"
               :schema="schema.fields.parlamentares.innerType"
+              :for="`parlamentares[${idx}].valor`"
             />
             <MaskedFloatInput
               :name="`parlamentares[${idx}].valor`"
               type="text"
               class="inputtext light mb1"
-              :value="`values.parlamentares[${idx}].valor`"
               converter-para="string"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`parlamentares[${idx}].valor`"
-            />
-          </div>
-          <div class="flex g2 mb1">
-            <br>
-            <LabelFromYup
-              name="objeto"
-              :schema="schema.fields.parlamentares.innerType"
-            />
-            <Field
-              :name="`parlamentares[${idx}].objeto`"
-              as="textarea"
-              class="inputtext light mb1"
-              rows="5"
-              maxlength="1000"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`parlamentares[${idx}].objeto`"
+              :value="values.parlamentares?.[idx]?.valor"
             />
           </div>
         </div>
-
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="push({})"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar registro
-        </button>
-      </FieldArray>
-    </div>
+        <div>
+          <LabelFromYup
+            name="objeto"
+            :schema="schema.fields.parlamentares.innerType"
+            :for="`parlamentares[${idx}].objeto`"
+          />
+          <Field
+            :name="`parlamentares[${idx}].objeto`"
+            class="inputtext light mb1"
+            as="textarea"
+            rows="10"
+          />
+        </div>
+      </div>
+    </FieldArray>
 
     <div class="flex spacebetween center mb1">
       <h3 class="title">

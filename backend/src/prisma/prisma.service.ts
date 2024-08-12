@@ -52,7 +52,7 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
                     query !== 'BEGIN' &&
                     query !== 'COMMIT' &&
                     query !== 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED' &&
-                    /(?:pg_try_advisory_xact_lock|task_queue|org_device_activation_data_pending_sync_queue)/.test(
+                    /(?:pg_try_advisory_xact_lock|task_queue|org_device_activation_data_pending_sync_queue|formula_composta)/.test(
                         query
                     ) !== true
                 )

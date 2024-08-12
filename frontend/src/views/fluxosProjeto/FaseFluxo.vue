@@ -1,7 +1,6 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { etapasFluxo as schema } from '@/consts/formSchemas';
-import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFasesProjetosStore } from '@/stores/fasesProjeto.store';
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';

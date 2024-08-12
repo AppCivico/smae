@@ -77,6 +77,7 @@ const complemento = computed(() => {
         break;
 
       case 'pdm':
+      case 'planoSetorial':
         await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
         break;
 
@@ -502,7 +503,7 @@ export default {
         </tbody>
       </table>
 
-      <div v-if="$route.meta.entidadeMãe === 'pdm'">
+      <div v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe)">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <pre v-ScrollLockDebug>activePdm.nivel_orcamento: {{ activePdm.nivel_orcamento }}</pre>

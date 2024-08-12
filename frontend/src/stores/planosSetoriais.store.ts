@@ -1,5 +1,5 @@
 import type { DetalhePSDto } from '@/../../backend/src/pdm/dto/detalhe-pdm.dto';
-import type { ListPdmDto } from '@/../../backend/src/pdm/dto/list-pdm.dto';
+import type { ListPdmDto, OrcamentoConfig } from '@/../../backend/src/pdm/dto/list-pdm.dto';
 import type { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
 import type { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
 import type { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
@@ -22,9 +22,11 @@ interface Erros {
   arquivos: null | unknown;
 }
 
+type EmFoco = PlanoSetorialDto & { orcamento_config?: OrcamentoConfig[] | null };
+
 interface Estado {
   lista: Lista;
-  emFoco: PlanoSetorialDto & DetalhePSDto | null;
+  emFoco: EmFoco | null;
   arquivos: ListPdmDocument['linhas'] | [];
 
   chamadasPendentes: ChamadasPendentes;
@@ -54,10 +56,16 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.emFoco = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params);
-        this.emFoco = {
-          ...resposta,
-        };
+        const resposta: DetalhePSDto | PlanoSetorialDto = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params);
+
+        this.emFoco = 'pdm' in resposta
+          ? {
+            ...resposta.pdm,
+            orcamento_config: resposta.orcamento_config,
+          }
+          : {
+            ...resposta,
+          };
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
       }

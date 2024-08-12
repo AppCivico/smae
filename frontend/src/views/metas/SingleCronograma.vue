@@ -12,7 +12,7 @@ import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
 import {
-  computed, onMounted, onUpdated, reactive, ref,
+  computed, watch, reactive, ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
@@ -130,28 +130,32 @@ function start() {
   if (props.group == 'subfase') editModalStore.modal(AddEditFase, props);
   if (props.group == 'monitorar') editModalStore.modal(AddEditMonitorar, props);
 }
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
+
+watch(() => props.group, () => { start(); }, { immediate: true });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
 
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
+      <div class="t12 uc w700 tamarelo mb1">
         {{ parentLabel }}
       </div>
-      <h1
+      <TítuloDePágina
         :class="classeParaFarolDeAtraso(singleCronograma?.atraso_grau)"
         :title="textoParaFarolDeAtraso(singleCronograma?.atraso_grau)"
         style="padding-right: 8px;"
+        :ícone="activePdm?.logo"
       >
         Cronograma
-      </h1>
+      </TítuloDePágina>
     </div>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm'
+      ])
         && !singleCronograma?.loading
         && singleCronograma?.id"
       :to="`${parentlink}/cronograma/${singleCronograma?.id}`"
@@ -160,7 +164,10 @@ onUpdated(() => { start(); });
       Editar Cronograma
     </SmaeLink>
     <div
-      v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
+      v-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm'
+      ])
         && !singleCronograma?.loading && singleCronograma?.id
       "
       class="ml1 dropbtn"
@@ -169,7 +176,10 @@ onUpdated(() => { start(); });
       <ul>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >
             Etapa da {{ parentLabel }}
@@ -177,7 +187,10 @@ onUpdated(() => { start(); });
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])
               && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
           >
@@ -186,7 +199,10 @@ onUpdated(() => { start(); });
         </li>
         <li>
           <SmaeLink
-            v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])
               && activePdm.possui_atividade && meta_id && !atividade_id"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
           >
@@ -445,7 +461,10 @@ onUpdated(() => { start(); });
             style="flex-basis:20px; height: calc(20px + 1rem);"
           >
             <div
-              v-if="temPermissãoPara(['CadastroMeta.administrador_no_pdm'])"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               class="dropbtn right"
             >
               <span class=""><svg
@@ -567,12 +586,18 @@ onUpdated(() => { start(); });
             </div>
             <div class="ml1 f0" />
             <div
-              v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               class="ml1 f0"
               style="flex-basis:20px;"
             />
             <div
-              v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               class="ml1 f0"
               style="flex-basis:20px;"
             />
@@ -654,7 +679,10 @@ onUpdated(() => { start(); });
               </span>
             </div>
             <div
-              v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -675,7 +703,10 @@ onUpdated(() => { start(); });
             </div>
 
             <div
-              v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+              v-if="temPermissãoPara([
+                'CadastroMeta.administrador_no_pdm',
+                'CadastroMetaPS.administrador_no_pdm'
+              ])"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -725,12 +756,18 @@ onUpdated(() => { start(); });
               </div>
               <div class="ml1 f0" />
               <div
-                v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+                v-if="temPermissãoPara([
+                  'CadastroMeta.administrador_no_pdm',
+                  'CadastroMetaPS.administrador_no_pdm'
+                ])"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
               <div
-                v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+                v-if="temPermissãoPara([
+                  'CadastroMeta.administrador_no_pdm',
+                  'CadastroMetaPS.administrador_no_pdm'
+                ])"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
@@ -826,7 +863,10 @@ onUpdated(() => { start(); });
                   </span>
                 </div>
                 <div
-                  v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+                  v-if="temPermissãoPara([
+                    'CadastroMeta.administrador_no_pdm',
+                    'CadastroMetaPS.administrador_no_pdm'
+                  ])"
                   class="ml1 f0 flex center mr05"
                 >
                   <button
@@ -846,7 +886,10 @@ onUpdated(() => { start(); });
                 </div>
 
                 <div
-                  v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+                  v-if="temPermissãoPara([
+                    'CadastroMeta.administrador_no_pdm',
+                    'CadastroMetaPS.administrador_no_pdm'
+                  ])"
                   class="ml1 f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
                 >
@@ -866,7 +909,10 @@ onUpdated(() => { start(); });
             </template>
           </div>
           <div
-            v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+            v-if="temPermissãoPara([
+              'CadastroMeta.administrador_no_pdm',
+              'CadastroMetaPS.administrador_no_pdm'
+            ])"
             class="pl3"
           >
             <SmaeLink
@@ -884,7 +930,10 @@ onUpdated(() => { start(); });
           <hr class="mb1">
         </div>
         <div
-          v-if="temPermissãoPara('CadastroMeta.administrador_no_pdm')"
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm'
+          ])"
           class="pl1"
         >
           <SmaeLink

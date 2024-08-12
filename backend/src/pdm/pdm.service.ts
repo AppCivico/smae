@@ -496,8 +496,7 @@ export class PdmService {
         await this.verificarPrivilegiosEdicao({}, user, pdm);
 
         const now = new Date(Date.now());
-
-        async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
@@ -505,7 +504,7 @@ export class PdmService {
                     removido_em: now,
                 },
             });
-        };
+        });
     }
 
     async update(
@@ -988,7 +987,7 @@ export class PdmService {
                 const varsSuspensas = await this.variavelService.processVariaveisSuspensas(prismaTx);
 
                 if (varsSuspensas.length) {
-                    await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prismaTx);
+                    await this.variavelService.recalc_series_dependentes(varsSuspensas, prismaTx);
                     await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prismaTx);
                 }
 
@@ -1341,6 +1340,10 @@ export class PdmService {
                     data: {
                         ano_referencia: r.ano_referencia,
                         pdm_id: pdm_id,
+                        execucao_disponivel: pdmConfig.execucao_disponivel,
+                        execucao_disponivel_meses: pdmConfig.execucao_disponivel_meses,
+                        planejado_disponivel: pdmConfig.planejado_disponivel,
+                        previsao_custo_disponivel: pdmConfig.previsao_custo_disponivel,
                     },
                     select: { id: true },
                 });

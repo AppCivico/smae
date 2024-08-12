@@ -107,6 +107,7 @@ export class TransferenciaService {
                         interface: dto.interface,
                         esfera: dto.esfera,
                         identificador: identificador,
+                        identificador_nro: idParaAno,
                         clausula_suspensiva: dto.clausula_suspensiva,
                         clausula_suspensiva_vencimento: dto.clausula_suspensiva_vencimento,
                         ano: dto.ano,
@@ -473,6 +474,35 @@ export class TransferenciaService {
                                         },
                                     })
                                 );
+
+                                // Verificando se há linhas em distribuição de recurso.
+                                // E caso exista, atualizar os dados.
+                                const distribuicoesParlamentares = await prismaTxn.distribuicaoParlamentar.findMany({
+                                    where: {
+                                        distribuicao_recurso: {
+                                            transferencia_id: id,
+                                        },
+                                        parlamentar_id: row.parlamentar_id,
+                                        removido_em: null,
+                                    },
+                                    select: {
+                                        id: true,
+                                    },
+                                });
+
+                                for (const distribuicaoParlamentar of distribuicoesParlamentares) {
+                                    operations.push(
+                                        prismaTxn.distribuicaoParlamentar.update({
+                                            where: { id: distribuicaoParlamentar.id },
+                                            data: {
+                                                cargo: relParlamentar.cargo,
+                                                partido_id: relParlamentar.partido_id,
+                                                atualizado_em: agora,
+                                                atualizado_por: user.id,
+                                            },
+                                        })
+                                    );
+                                }
                             }
                         } else {
                             operations.push(
@@ -498,6 +528,23 @@ export class TransferenciaService {
                 );
                 if (parlamentaresRemovidos.length) {
                     for (const row of parlamentaresRemovidos) {
+                        // Verificando se parlamentar já está configurado em alguma distribuição desta transferência.
+                        // Caso esteja, não deixo deletar.
+                        const parlamentarDistribuicao = await prismaTxn.distribuicaoParlamentar.count({
+                            where: {
+                                distribuicao_recurso: {
+                                    transferencia_id: id,
+                                },
+                                parlamentar_id: row.parlamentar_id,
+                                removido_em: null,
+                            },
+                        });
+                        if (parlamentarDistribuicao)
+                            throw new HttpException(
+                                'parlamentar| Parlamentar já está configurado em distribuição de recurso. Remova-o primeiro na distribuição.',
+                                400
+                            );
+
                         operations.push(
                             prismaTxn.transferenciaParlamentar.update({
                                 where: { id: row.id },
@@ -614,7 +661,7 @@ export class TransferenciaService {
                 if (dto.parlamentares?.length) {
                     const sumValor = dto.parlamentares
                         .filter((e) => e.valor)
-                        .reduce((acc, curr) => acc + curr.valor!, 0);
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
 
                     if (+sumValor > +dto.valor!)
                         throw new HttpException(
@@ -632,6 +679,34 @@ export class TransferenciaService {
                                 row.valor?.toNumber() !== relParlamentar.valor ||
                                 row.parlamentar_id !== relParlamentar.parlamentar_id
                             ) {
+                                // Caso o valor seja modificado, deve ser verificado se o novo valor é, no mínimo, superior ao valor cadastrado em distribuições.
+                                if (relParlamentar.valor && row.valor?.toNumber() != relParlamentar.valor) {
+                                    const distribuicoes = await prismaTxn.distribuicaoParlamentar.findMany({
+                                        where: {
+                                            distribuicao_recurso: {
+                                                transferencia_id: id,
+                                            },
+                                            parlamentar_id: row.parlamentar_id,
+                                            removido_em: null,
+                                            valor: { not: null },
+                                        },
+                                        select: {
+                                            valor: true,
+                                        },
+                                    });
+
+                                    const sumDistribuicoes = distribuicoes.reduce(
+                                        (acc, curr) => acc + curr.valor!.toNumber(),
+                                        0
+                                    );
+
+                                    if (+sumDistribuicoes > +relParlamentar.valor)
+                                        throw new HttpException(
+                                            'valor| O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
+                                            400
+                                        );
+                                }
+
                                 operations.push(
                                     prismaTxn.transferenciaParlamentar.update({
                                         where: { id: relParlamentar.id },
@@ -874,7 +949,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
-            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'asc' }],
+            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'desc' }, { identificador_nro: 'desc' }],
             skip: offset,
             take: ipp + 1,
             select: {
@@ -900,6 +975,17 @@ export class TransferenciaService {
                 workflow_fase_atual: {
                     select: {
                         fase: true,
+                        transferenciaAndamento: {
+                            take: 1,
+                            where: { removido_em: null },
+                            select: {
+                                workflow_situacao: {
+                                    select: {
+                                        situacao: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
 
@@ -950,44 +1036,39 @@ export class TransferenciaService {
             token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
         }
 
-        const linhas = rows
-            .map((r) => {
-                return {
-                    id: r.id,
-                    ano: r.ano,
-                    identificador: r.identificador,
-                    valor: r.valor,
-                    partido: r.parlamentar
-                        .filter((e) => e.partido)
-                        .map((e) => {
-                            return { id: e.partido!.id, sigla: e.partido!.sigla };
-                        }),
-                    tipo: r.tipo,
-                    objeto: r.objeto,
-                    detalhamento: r.detalhamento,
-                    clausula_suspensiva: r.clausula_suspensiva,
-                    clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
-                    normativa: r.normativa,
-                    observacoes: r.observacoes,
-                    programa: r.programa,
-                    pendente_preenchimento_valores: r.pendente_preenchimento_valores,
-                    esfera: r.esfera,
-                    orgao_concedente: r.orgao_concedente,
-                    secretaria_concedente: r.secretaria_concedente_str,
-                    andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
-                    andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
-                };
-            })
-            .sort((a, b) => {
-                const [idA, yearA] = a.identificador.split('/').map(Number);
-                const [idB, yearB] = b.identificador.split('/').map(Number);
-
-                if (yearA !== yearB) {
-                    return yearA - yearB;
-                }
-
-                return idA - idB;
-            });
+        const linhas = rows.map((r) => {
+            return {
+                id: r.id,
+                ano: r.ano,
+                identificador: r.identificador,
+                valor: r.valor,
+                partido: r.parlamentar
+                    .filter((e) => e.partido)
+                    .map((e) => {
+                        return { id: e.partido!.id, sigla: e.partido!.sigla };
+                    }),
+                tipo: r.tipo,
+                objeto: r.objeto,
+                detalhamento: r.detalhamento,
+                clausula_suspensiva: r.clausula_suspensiva,
+                clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
+                normativa: r.normativa,
+                observacoes: r.observacoes,
+                programa: r.programa,
+                pendente_preenchimento_valores: r.pendente_preenchimento_valores,
+                esfera: r.esfera,
+                orgao_concedente: r.orgao_concedente,
+                secretaria_concedente: r.secretaria_concedente_str,
+                andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
+                andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
+                fase_status:
+                    r.workflow_fase_atual &&
+                    r.workflow_fase_atual.transferenciaAndamento.length &&
+                    r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
+                        ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
+                        : null,
+            };
+        });
 
         return {
             linhas: linhas,

@@ -1,21 +1,17 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref, unref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
-import { Dashboard } from '@/components';
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
-import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-
-AtividadeAtiva();
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { ref, unref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -69,7 +65,7 @@ if (atividade_id) {
 
   if (atividade_id) {
     if (singleAtividade.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0, orgaos_participantes.value.length);
+      orgaos_participantes.value.splice(0);
       singleAtividade.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;
@@ -127,7 +123,19 @@ async function onSubmit(values) {
     }
     if (r) {
       AtividadesStore.clear();
-      await router.push(rota);
+
+      if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: {
+            atividade_id: route.params.atividade_id || r,
+          },
+        });
+      } else if (route.meta.entidadeMãe === 'metas') {
+        await router.push(rota);
+      } else {
+        throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+      }
       alertStore.success(msg);
     }
   } catch (error) {
@@ -140,7 +148,14 @@ async function checkDelete(id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
         if (await AtividadesStore.delete(meta_id, id)) {
           AtividadesStore.clear();
-          await router.push(`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+
+          if (route.meta.rotaDeEscape) {
+            router.push({ name: route.meta.rotaDeEscape });
+          } else if (route.meta.entidadeMãe === 'pdm') {
+            await router.push(`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+          } else {
+            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+          }
           alertStore.success('Iniciativa removida.');
         }
       }, 'Remover');
@@ -148,7 +163,19 @@ async function checkDelete(id) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+      });
+    } else if (route.meta.entidadeMãe === 'pdm') {
+      router.push({
+        path: `/metas/${meta_id}/iniciativas/${iniciativa_id}`,
+      });
+    } else {
+      throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+    }
+  });
 }
 function addOrgao(obj, r) {
   obj.push({
@@ -169,7 +196,11 @@ function filterResponsible(orgao_id) {
 
   <div class="flex spacebetween center mb2">
     <div>
-      <h1>{{ title }} {{ activePdm.rotulo_atividade }}</h1>
+      <TítuloDePágina
+        :ícone="activePdm?.logo"
+      >
+        {{ title }} {{ activePdm.rotulo_atividade }}
+      </TítuloDePágina>
       <div class="t24">
         {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.titulo }}
       </div>
@@ -204,7 +235,7 @@ function filterResponsible(orgao_id) {
             type="text"
             class="inputtext light mb1"
             maxlength="30"
-            :class="{ 'error': errors.codigo }"
+            :class="{ error: errors.codigo }"
           />
           <div class="error-msg">
             {{ errors.codigo }}
@@ -216,7 +247,7 @@ function filterResponsible(orgao_id) {
             name="titulo"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.titulo }"
+            :class="{ error: errors.titulo }"
           />
           <div class="error-msg">
             {{ errors.titulo }}
@@ -231,7 +262,7 @@ function filterResponsible(orgao_id) {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.contexto }"
+            :class="{ error: errors.contexto }"
           />
           <div class="error-msg">
             {{ errors.contexto }}
@@ -248,7 +279,7 @@ function filterResponsible(orgao_id) {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.complemento }"
+            :class="{ error: errors.complemento }"
           />
           <div class="error-msg">
             {{ errors.complemento }}
@@ -256,7 +287,10 @@ function filterResponsible(orgao_id) {
         </div>
       </div>
 
-      <div class="mb1 mt1">
+      <div
+        v-show="route.meta.entidadeMãe === 'pdm' "
+        class="mb1 mt1"
+      >
         <label class="block">
           <Field
             v-model="compoe_indicador_iniciativa"
@@ -264,7 +298,7 @@ function filterResponsible(orgao_id) {
             type="checkbox"
             value="1"
             class="inputcheckbox"
-          /><span :class="{ 'error': errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
+          /><span :class="{ error: errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
         </label>
         <div class="error-msg">
           {{ errors.compoe_indicador_iniciativa }}

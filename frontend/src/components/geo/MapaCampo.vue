@@ -161,7 +161,7 @@ async function preencherFormulário(item) {
 async function buscarEndereço(valor) {
   erroNaBuscaDeEndereço.value = null;
   sugestãoSelecionada.value = null;
-  sugestõesDeEndereços.value.splice(0, sugestõesDeEndereços.value.length);
+  sugestõesDeEndereços.value.splice(0);
   buscandoEndereços.value = true;
 
   redefinirFormulário();
