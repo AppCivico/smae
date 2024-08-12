@@ -191,6 +191,24 @@ export class IndicadorPSController {
         return { linhas: await this.indicadorService.findAll(this.tipoPdm, filters, user) };
     }
 
+    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
+    @ApiTags('Indicador')
+    @Get('plano-setorial-indicador-variavel/:id/serie')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    @ApiOperation({
+        summary: 'Recebe o ID do indicador como parâmetro',
+        description:
+            'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)',
+    })
+    async getSeriePrevistoRealizado(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Query() filters: FilterIndicadorSerieDto
+    ): Promise<ListSeriesAgrupadas> {
+        return await this.indicadorService.getSeriesIndicador(this.tipoPdm, params.id, user, filters || {});
+    }
+
     @Patch('plano-setorial-indicador/:id/associar-variavel')
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.WritePerm)
@@ -234,21 +252,4 @@ export class IndicadorPSController {
         return '';
     }
 
-    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
-    @ApiTags('Indicador')
-    @Get('plano-setorial-indicador/:id/serie')
-    @ApiBearerAuth('access-token')
-    @Roles(MetaSetorialController.WritePerm)
-    @ApiOperation({
-        summary: 'Recebe o ID do indicador como parâmetro',
-        description:
-            'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)',
-    })
-    async getSeriePrevistoRealizado(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt,
-        @Query() filters: FilterIndicadorSerieDto
-    ): Promise<ListSeriesAgrupadas> {
-        return await this.indicadorService.getSeriesIndicador(this.tipoPdm, params.id, user, filters || {});
-    }
 }
