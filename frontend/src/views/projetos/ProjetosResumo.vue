@@ -412,6 +412,102 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </div>
     </div>
 
+    <div class="mb2">
+      <h2>{{ schema.fields.origens_extra.spec.label }}</h2>
+
+      <dl
+        v-for="origem in emFoco?.origens_extra"
+        :key="origem.id"
+        class="mb2"
+      >
+        <div class="mb1">
+          <dt
+            v-if="origem.pdm"
+            class="t12 uc w700 mb05 tamarelo"
+          >
+            Plano
+          </dt>
+
+          <dd
+            v-if="origem?.pdm?.nome"
+            class="t13"
+          >
+            {{ origem.pdm?.nome }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ origem.pdm }}
+          </dd>
+        </div>
+
+        <div class="mb1">
+          <dt
+            v-if="origem.meta"
+            class="t12 uc w700 mb05 tamarelo"
+          >
+            {{ schema.fields.origens_extra.innerType?.fields.meta_id.spec.label }}
+          </dt>
+
+          <dd
+            v-if="origem?.meta?.codigo && origem?.meta?.titulo"
+            class="t13"
+          >
+            {{ origem.meta?.codigo }} - {{ origem?.meta?.titulo }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ origem.meta }}
+          </dd>
+        </div>
+
+        <div
+          v-if="origem?.iniciativa"
+          class="f1 mb1"
+        >
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.origens_extra.innerType?.fields.iniciativa_id.spec.label }}
+          </dt>
+          <dd
+            v-if="origem?.iniciativa?.codigo && origem?.iniciativa?.titulo"
+            class="t13"
+          >
+            {{ origem.iniciativa?.codigo }} - {{ origem?.iniciativa?.titulo }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ origem.iniciativa }}
+          </dd>
+        </div>
+
+        <div
+          v-if="origem?.atividade"
+          class="f1 mb1"
+        >
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.origens_extra.innerType?.fields.atividade_id.spec.label }}
+          </dt>
+          <dd
+            v-if="origem?.atividade?.codigo && origem?.atividade?.titulo"
+            class="t13"
+          >
+            {{ origem.atividade?.codigo }} - {{ origem?.atividade?.titulo }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ origem.atividade }}
+          </dd>
+        </div>
+      </dl>
+    </div>
+
     <hr class="mt2 mb2 f1">
 
     <div class="flex g2 mb1 flexwrap">

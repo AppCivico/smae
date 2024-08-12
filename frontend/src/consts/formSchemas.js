@@ -2411,6 +2411,33 @@ export const projeto = object()
       .label('Origem')
       .required('O projeto precisa de uma origem de recursos.')
       .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
+
+    origens_extra: array()
+      .label('Origens extras de recursos')
+      .of(
+        object()
+          .shape({
+            atividade_id: number()
+              .label('Atividade')
+              .integer()
+              .nullable()
+              .positive(),
+            iniciativa_id: number()
+              .label('Iniciativa')
+              .integer()
+              .nullable()
+              .positive(),
+            meta_id: number()
+              .label('Meta')
+              .integer()
+              .positive(),
+            origem_tipo: mixed()
+              .label('Origem')
+              .required('Esse origem precisa de um Plano.')
+              .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
+          }),
+      ),
+
     portfolios_compartilhados: array()
       .label('Compartilhar com portfolios')
       .nullable(),

@@ -2,10 +2,12 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
+import tiposDePlanos from '@/consts/tiposDePlanos';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
@@ -46,7 +48,8 @@ const {
   itemParaEdição,
   pdmsSimplificados,
   pdmsPorId,
-  metaSimplificada,
+  planosAgrupadosPorTipo,
+  arvoreDeMetas,
 } = storeToRefs(projetosStore);
 const {
   órgãosComoLista,
@@ -109,10 +112,6 @@ const orgaosDisponiveisPorPortolio = computed(() => portfolioStore.lista.reduce(
   return acc;
 }, {}));
 
-const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
-  ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
-  : {}));
-
 const possíveisOrigens = [
   {
     texto: 'Programa de Metas',
@@ -128,21 +127,6 @@ const possíveisOrigens = [
   },
 ];
 
-async function buscarDadosParaOrigens(valorOuEvento) {
-  const valor = valorOuEvento.target?.value || valorOuEvento;
-
-  switch (valor) {
-    case 'PdmSistema':
-      if (!pdmsSimplificados.value.length) {
-        await projetosStore.buscarPdms();
-      }
-      break;
-
-    default:
-      break;
-  }
-}
-
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
@@ -151,11 +135,11 @@ function BuscarDotaçãoParaAno(valorOuEvento) {
   }
 }
 
-async function buscarMetaSimplificada(valorOuEvento) {
+async function buscarArvoreDeMetas(valorOuEvento) {
   const idDaMeta = valorOuEvento.target?.value || valorOuEvento;
 
-  if (idDaMeta) {
-    await projetosStore.buscarMetaSimplificada({ meta_ids: idDaMeta });
+  if (idDaMeta && !arvoreDeMetas.value?.[idDaMeta]) {
+    await projetosStore.buscarArvoreDeMetas({ meta_ids: idDaMeta });
   }
 }
 
@@ -249,6 +233,7 @@ async function onSubmit(valores) {
 function iniciar() {
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
+  projetosStore.buscarPdms({ apenas_pdm: false });
 
   if (emFoco.value?.portfolio_id) {
     observadoresStore.buscarTudo();
@@ -258,12 +243,8 @@ function iniciar() {
     chamadasPendentes.value.emFoco = false;
   });
 
-  if (emFoco.value?.origem_tipo) {
-    buscarDadosParaOrigens(emFoco.value.origem_tipo);
-  }
-
   if (emFoco.value?.meta_id) {
-    buscarMetaSimplificada(emFoco.value?.meta_id);
+    buscarArvoreDeMetas(emFoco.value?.meta_id);
   }
 
   montarCampoEstático.value = true;
@@ -909,8 +890,7 @@ watch(emFoco, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.origem_tipo }"
-            @change="($event) => {
-              buscarDadosParaOrigens($event);
+            @change="() => {
               setFieldValue('meta_id', null);
               setFieldValue('meta_codigo', null);
               setFieldValue('origem_outro', null);
@@ -981,7 +961,10 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.meta_id }"
             :disabled="!pdmsPorId[values.pdm_escolhido]?.metas?.length"
-            @change="buscarMetaSimplificada($event); setFieldValue('iniciativa_id', null)"
+            @change="($e) => {
+              buscarArvoreDeMetas($e.target.value);
+              setFieldValue('iniciativa_id', null);
+            }"
           >
             <option value="">
               Selecionar
@@ -1037,16 +1020,16 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{
               error: errors.iniciativa_id,
-              loading: chamadasPendentes.metaSimplificada
+              loading: chamadasPendentes.arvoreDeMetas
             }"
-            :disabled="!metaSimplificada.iniciativas?.length"
+            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas?.length"
             @change="setFieldValue('atividade_id', null)"
           >
             <option :value="null">
               Selecionar
             </option>
             <option
-              v-for="item in metaSimplificada.iniciativas"
+              v-for="item in arvoreDeMetas?.[values.meta_id]?.iniciativas"
               :key="item.id"
               :value="item.id"
               :title="item.titulo"
@@ -1072,15 +1055,15 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{
               error: errors.atividade_id,
-              loading: chamadasPendentes.metaSimplificada
+              loading: chamadasPendentes.arvoreDeMetas
             }"
-            :disabled="!iniciativasPorId[values.iniciativa_id]?.atividades.length"
+            :disabled="!arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades.length"
           >
             <option :value="null">
               Selecionar
             </option>
             <option
-              v-for="item in iniciativasPorId[values.iniciativa_id]?.atividades"
+              v-for="item in arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades"
               :key="item.id"
               :value="item.id"
               :title="item.titulo"
@@ -1124,6 +1107,219 @@ watch(emFoco, () => {
         </div>
       </div>
     </fieldset>
+
+    <FieldArray
+      v-if="projetoId"
+      v-slot="{ fields, push, remove }"
+      name="origens_extra"
+    >
+      <fieldset class="mb1">
+        <LabelFromYup
+          name="origens_extra"
+          :schema="schema"
+          as="legend"
+        />
+
+        <div
+          v-for="(field, idx) in fields"
+          :key="`origens_extra--${field.key}`"
+          class="flex flexwrap g2 mb1"
+        >
+          <Field
+            :name="`origens_extra[${idx}].id`"
+            type="hidden"
+          />
+          <Field
+            :name="`origens_extra[${idx}].origem_tipo`"
+            value="PdmSistema"
+            type="hidden"
+          />
+
+          <div class="f1 mb1 fb15em">
+            <label class="label tc300">
+              Programa de metas / Plano setorial&nbsp;<span class="tvermelho">*</span>
+            </label>
+            <Field
+              :name="`origens_extra[${idx}].pdm_escolhido`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors[`origens_extra[${idx}].pdm_escolhido`],
+                loading: chamadasPendentes.pdmsSimplificados
+              }"
+              :disabled="!pdmsSimplificados?.length"
+            >
+              <option
+                value=""
+                :selected="!values.origens_extra?.[idx]?.pdm_escolhido"
+              >
+                Selecionar
+              </option>
+
+              <optgroup
+                v-for="(grupo, chave) in planosAgrupadosPorTipo"
+                :key="chave"
+                :label="tiposDePlanos[chave]?.nome || chave"
+              >
+                <option
+                  v-for="item in grupo"
+                  :key="item.id"
+                  :value="item.id"
+                  :disabled="!pdmsPorId[item.id]?.metas?.length"
+                >
+                  {{ item.nome }}
+                  <template v-if="!pdmsPorId[item.id]?.metas?.length">
+                    (sem metas disponíveis)
+                  </template>
+                </option>
+              </optgroup>
+            </Field>
+            <ErrorMessage
+              :name="`origens_extra[${idx}].pdm_escolhido`"
+              class="error-msg"
+            />
+          </div>
+
+          <div class="f1 mb1 fb15em">
+            <LabelFromYup
+              name="origens_extra.meta_id"
+              :schema="schema"
+              class="tc300"
+            />
+
+            <Field
+              :name="`origens_extra[${idx}].meta_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{ 'error': errors[`origens_extra[${idx}].meta_id`] }"
+              :disabled="!pdmsPorId[values.origens_extra[idx]?.pdm_escolhido]?.metas?.length"
+              @change="($e) => {
+                buscarArvoreDeMetas($e.target.value);
+                setFieldValue(`origens_extra[${idx}].iniciativa_id`, null);
+              }"
+            >
+              <option value="">
+                Selecionar
+              </option>
+              <option
+                v-for="item in pdmsPorId[values.origens_extra[idx]?.pdm_escolhido]?.metas"
+                :key="item.id"
+                :value="item.id"
+                :title="item.titulo"
+              >
+                {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
+              </option>
+            </Field>
+
+            <ErrorMessage
+              :name="`origens_extra[${idx}].meta_id`"
+              class="error-msg"
+            />
+          </div>
+          <div class="f1 mb1 fb15em">
+            <LabelFromYup
+              name="origens_extra.iniciativa_id"
+              class="tc300"
+              :schema="schema"
+            />
+
+            <Field
+              :name="`origens_extra[${idx}].iniciativa_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors[`origens_extra[${idx}].iniciativa_id`],
+                loading: chamadasPendentes.arvoreDeMetas
+              }"
+              :disabled="!Object.keys(
+                arvoreDeMetas?.[values.origens_extra[idx].meta_id]?.iniciativas || {}
+              )?.length"
+              @change="setFieldValue(`origens_extra[${idx}].atividade_id`, null)"
+            >
+              <option :value="null">
+                Selecionar
+              </option>
+              <option
+                v-for="item in arvoreDeMetas?.[values.origens_extra[idx].meta_id]?.iniciativas"
+                :key="item.id"
+                :value="item.id"
+                :title="item.titulo"
+              >
+                {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
+              </option>
+            </Field>
+
+            <ErrorMessage
+              :name="`origens_extra[${idx}].iniciativa_id`"
+              class="error-msg"
+            />
+          </div>
+
+          <div class="f1 mb1 fb15em">
+            <LabelFromYup
+              name="origens_extra.atividade_id"
+              :schema="schema"
+              class="tc300"
+            />
+
+            <Field
+              :name="`origens_extra[${idx}].atividade_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors.atividade_id,
+                loading: chamadasPendentes.arvoreDeMetas
+              }"
+              :disabled="!Object.keys(arvoreDeMetas?.[values.origens_extra[idx].meta_id]
+                ?.iniciativas?.[values.origens_extra[idx].iniciativa_id]?.atividades
+                || {})?.length"
+            >
+              <option :value="null">
+                Selecionar
+              </option>
+              <option
+                v-for="item in arvoreDeMetas?.[values.origens_extra?.[idx].meta_id]
+                  ?.iniciativas?.[values.origens_extra?.[idx].iniciativa_id]?.atividades"
+                :key="item.id"
+                :value="item.id"
+                :title="item.titulo"
+              >
+                {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
+              </option>
+            </Field>
+
+            <ErrorMessage
+              :name="`origens_extra[${idx}].atividade_id`"
+              class="error-msg"
+            />
+          </div>
+
+          <button
+            class="like-a__text addlink mb1 mr0 mlauto"
+            arial-label="excluir"
+            title="excluir"
+            @click="remove(idx)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </div>
+        <button
+          class="like-a__text addlink"
+          type="button"
+          @click="push({
+            'origem_tipo': 'PdmSistema'
+          })"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>Adicionar origem
+        </button>
+      </fieldset>
+    </FieldArray>
 
     <fieldset>
       <div class="flex flexwrap g2">

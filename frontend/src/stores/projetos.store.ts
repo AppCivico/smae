@@ -1,14 +1,21 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/dto/create-meta.dto';
-import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
-import {
+import type {
+  DadosCodTituloAtividadeDto,
+  DadosCodTituloIniciativaDto,
+  DadosCodTituloMetaDto,
+  ListDadosMetaIniciativaAtividadesDto,
+} from '@/../../backend/src/meta/dto/create-meta.dto';
+import type { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
+import type {
   ListProjetoDocumento,
   ListProjetoDto,
   ProjetoDetailDto,
   ProjetoDto,
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
-import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
-import { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
+import type {
+  ListProjetoProxyPdmMetaDto,
+  ProjetoProxyPdmMetaDto,
+} from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+import type { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
@@ -24,6 +31,7 @@ interface ChamadasPendentes {
   emFoco: boolean;
   pdmsSimplificados: boolean;
   metaSimplificada: boolean;
+  arvoreDeMetas: boolean;
   mudarStatus: boolean;
   transferirDePortfolio: boolean;
   arquivos: boolean;
@@ -39,9 +47,32 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
 
   pdmsSimplificados: PdmsSimplificados;
+  arvoreDeMetas: { [k: number]: unknown };
   metaSimplificada: MetaSimplificada;
   erro: null | unknown;
+  erros: {
+    arvoreDeMetas: unknown;
+  };
 }
+
+const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): any => {
+  const result: { [k: number]: DadosCodTituloAtividadeDto } = {};
+  atividades.forEach((atividade: DadosCodTituloAtividadeDto) => {
+    result[atividade.id] = atividade;
+  });
+  return result;
+};
+
+const mapIniciativas = (iniciativas: DadosCodTituloIniciativaDto[]) => {
+  const result: { [k: number]: DadosCodTituloIniciativaDto } = {};
+  iniciativas.forEach((iniciativa:DadosCodTituloIniciativaDto) => {
+    result[iniciativa.id] = {
+      ...iniciativa,
+      atividades: mapAtividades(iniciativa.atividades),
+    };
+  });
+  return result;
+};
 
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
@@ -55,15 +86,20 @@ export const useProjetosStore = defineStore('projetos', {
       emFoco: true,
       pdmsSimplificados: false,
       metaSimplificada: false,
+      arvoreDeMetas: false,
       mudarStatus: false,
       transferirDePortfolio: false,
       arquivos: false,
       diretórios: true,
     },
 
+    arvoreDeMetas: {},
     pdmsSimplificados: [],
     metaSimplificada: [],
     erro: null,
+    erros: {
+      arvoreDeMetas: null,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}): Promise<void> {
@@ -93,6 +129,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.pdmsSimplificados = false;
     },
 
+    // Obsoleta! Substituir por `buscarArvoreDeMetas()`
     async buscarMetaSimplificada(params = {}): Promise<void> {
       this.chamadasPendentes.metaSimplificada = true;
       this.metaSimplificada = [];
@@ -105,6 +142,27 @@ export const useProjetosStore = defineStore('projetos', {
         this.erro = erro;
       }
       this.chamadasPendentes.metaSimplificada = false;
+    },
+
+    async buscarArvoreDeMetas(params = {}): Promise<void> {
+      this.chamadasPendentes.arvoreDeMetas = true;
+      this.erros.arvoreDeMetas = null;
+
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
+
+        if (Array.isArray(linhas)) {
+          linhas.forEach((cur:DadosCodTituloMetaDto) => {
+            this.arvoreDeMetas[cur.id] = {
+              ...cur,
+              iniciativas: mapIniciativas(cur.iniciativas),
+            };
+          });
+        }
+      } catch (erro: unknown) {
+        this.erros.arvoreDeMetas = erro;
+      }
+      this.chamadasPendentes.arvoreDeMetas = false;
     },
 
     async buscarTudo(params = {}): Promise<void> {
@@ -286,6 +344,15 @@ export const useProjetosStore = defineStore('projetos', {
       meta_codigo: emFoco?.meta_codigo || '',
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       origem_outro: emFoco?.origem_outro || '',
+      origens_extra: Array.isArray(emFoco?.origens_extra)
+        ? emFoco.origens_extra.map((origem) => ({
+          atividade_id: origem?.atividade?.id || null,
+          id: origem?.id || null,
+          iniciativa_id: origem?.iniciativa?.id || null,
+          meta_id: origem?.meta?.id || null,
+          pdm_escolhido: origem?.pdm?.id || null,
+        }))
+        : [],
       pdm_escolhido: emFoco?.meta?.pdm_id || null,
       portfolios_compartilhados: emFoco?.portfolios_compartilhados?.map((x) => x.id) || null,
       previsao_custo: emFoco?.previsao_custo || 0,
@@ -315,6 +382,30 @@ export const useProjetosStore = defineStore('projetos', {
 
     pdmsPorId: ({ pdmsSimplificados }: Estado) => pdmsSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    planosAgrupadosPorTipo: ({ pdmsSimplificados }) => {
+      const grupos = pdmsSimplificados.reduce((acc, cur) => {
+        if (!acc[cur.tipo]) {
+          acc[cur.tipo] = [];
+        }
+        acc[cur.tipo].push(cur);
+        return acc;
+      }, {} as { [key: string]: ProjetoProxyPdmMetaDto[] });
+
+      const chaves = Object.keys(grupos).sort((a, b) => a.localeCompare(b));
+      let i = 0;
+      const resultado: { [key: string]: ProjetoProxyPdmMetaDto[] } = {};
+
+      while (i < chaves.length) {
+        const chave = chaves[i];
+        resultado[chave] = grupos[chave]
+          .sort((a:ProjetoProxyPdmMetaDto, b:ProjetoProxyPdmMetaDto) => a.nome
+            .localeCompare(b.nome));
+        i += 1;
+      }
+
+      return resultado;
+    },
 
     projetosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
