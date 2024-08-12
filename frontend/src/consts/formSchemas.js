@@ -1,7 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
-import tipoDeVariaveisCategorigacas from '@/consts/tipoDeVariaveisCategorigacas';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -33,6 +32,7 @@ import {
   setLocale,
   string,
 } from 'yup';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -3312,6 +3312,7 @@ export const variável = (singleIndicadores) => object()
       .required('Preencha o valor base'),
   });
 
+//
 export const variávelCategórica = object({
   descricao: string()
     .label('Descrição')
@@ -3322,7 +3323,7 @@ export const variávelCategórica = object({
   tipo: mixed()
     .label('Tipo')
     .required('Tipo invalido')
-    .oneOf(Object.keys(tipoDeVariaveisCategorigacas)),
+    .oneOf(Object.keys(tipoDeVariaveisCategoricas)),
   valores: array()
     .label('Valores')
     .of(

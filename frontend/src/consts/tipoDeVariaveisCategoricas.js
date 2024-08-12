@@ -1,6 +1,6 @@
 export default {
   Binaria: {
-    nome: 'Binaria',
+    nome: 'Binária',
     valor: 'Binaria',
   },
   Cronograma: {

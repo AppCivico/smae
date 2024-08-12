@@ -14,28 +14,28 @@
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="tipo"
+          name="titulo"
           :schema="schema"
         />
         <Field
-          name="tipo"
+          name="titulo"
           type="text"
           min="3"
-          max="250"
+          max="256"
           class="inputtext light mb1"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="tipo"
+          name="titulo"
         />
       </div>
       <div class="f1">
         <LabelFromYup
-          name="valores"
+          name="tipo"
           :schema="schema"
         />
         <Field
-          name="valores"
+          name="tipo"
           as="select"
           min="3"
           max="250"
@@ -45,7 +45,7 @@
             Selecionar
           </option>
           <option
-            v-for="item, index in tipoDeVariaveisCategorigacas"
+            v-for="item, index in tipoDeVariaveisCategoricas"
             :key="index"
             :value="item.valor"
           >
@@ -55,9 +55,26 @@
 
         <ErrorMessage
           class="error-msg mb1"
-          name="valores"
+          name="tipo"
         />
       </div>
+    </div>
+    <div>
+      <LabelFromYup
+        name="descricao"
+        :schema="schema"
+      />
+      <Field
+        name="descricao"
+        type="text"
+        min="3"
+        max="2048"
+        class="inputtext light mb1"
+      />
+      <ErrorMessage
+        class="error-msg mb1"
+        name="descricao"
+      />
     </div>
     <FormErrorsList :errors="errors" />
 
@@ -97,10 +114,10 @@
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import tipoDeVariaveisCategorigacas from '@/consts/tipoDeVariaveisCategorigacas';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { variávelCategórica as schema } from '@/consts/formSchemas';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
 
 const router = useRouter();
 const route = useRoute();
