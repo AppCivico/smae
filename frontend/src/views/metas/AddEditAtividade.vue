@@ -65,7 +65,7 @@ if (atividade_id) {
 
   if (atividade_id) {
     if (singleAtividade.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0, orgaos_participantes.value.length);
+      orgaos_participantes.value.splice(0);
       singleAtividade.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;

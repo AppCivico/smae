@@ -85,7 +85,7 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
     if (singleMeta.value?.sub_tema?.id) singleMeta.value.sub_tema_id = singleMeta.value.sub_tema.id;
 
     if (singleMeta.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0, orgaos_participantes.value.length);
+      orgaos_participantes.value.splice(0);
       singleMeta.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;

@@ -83,7 +83,7 @@ if (iniciativa_id) {
   });
   if (iniciativa_id) {
     if (singleIniciativa.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0, orgaos_participantes.value.length);
+      orgaos_participantes.value.splice(0);
       singleIniciativa.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;

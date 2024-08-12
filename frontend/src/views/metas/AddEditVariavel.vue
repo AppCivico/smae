@@ -103,7 +103,7 @@ const estãoTodasAsRegiõesSelecionadas = computed({
       regiõesSelecionadas.value
         .splice(0, regiõesSelecionadas.value.length, ...idsDasRegiõesVálidas.value);
     } else {
-      regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
+      regiõesSelecionadas.value.splice(0);
     }
   },
 });
@@ -544,7 +544,7 @@ export default {
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_id }"
-          @change="responsaveisArr.participantes.splice(0,responsaveisArr.participantes.length)"
+          @change="responsaveisArr.participantes.splice(0)"
         >
           <option
             v-for="a in lastParent.orgaos_participantes"

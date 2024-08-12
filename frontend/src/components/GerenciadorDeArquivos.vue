@@ -117,7 +117,7 @@ watchEffect(async () => {
       chamadasPendentes.value.diretórios = false;
     }
   } else {
-    diretórios.value.splice(0, diretórios.value.length);
+    diretórios.value.splice(0);
   }
 });
 </script>
