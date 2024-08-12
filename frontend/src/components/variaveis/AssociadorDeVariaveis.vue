@@ -11,11 +11,7 @@
 
   <FiltroDeDeVariaveis
     :aria-busy="chamadasPendentes.lista"
-    :valores-iniciais="{
-      ipp: 100,
-      ordem_coluna: 'codigo',
-      ordem_direcao: 'crescente',
-    }"
+    :valores-iniciais="valoresIniciais"
     @submit="($v) => dispararBuscaDeVariaveis($v)"
   />
 
@@ -228,6 +224,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const valoresIniciais = {
+  ipp: 100,
+  ordem_coluna: 'codigo',
+  ordem_direcao: 'asc',
+};
+
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 const {
   lista, chamadasPendentes, erros, paginacao,
@@ -280,5 +282,8 @@ async function associar(encerrar = false) {
   });
 }
 
-variaveisGlobaisStore.buscarTudo();
+variaveisGlobaisStore.buscarTudo({
+  ...valoresIniciais,
+  not_indicador_id: props.indicador?.id,
+});
 </script>
