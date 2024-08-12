@@ -76,7 +76,125 @@
         name="descricao"
       />
     </div>
-    <FormErrorsList :errors="errors" />
+
+    <FieldArray
+      v-slot="{ fields, push, remove }"
+      name="valores"
+    >
+      <div
+        v-for="(field, idx) in fields"
+        :key="field.key"
+      >
+        <div class="flex g2 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="descricao"
+              class="tc300"
+              :schema="schema.fields.valores.innerType"
+            />
+            <Field
+              :name="`valores[${idx}].descricao`"
+              type="text"
+              min="3"
+              max="2048"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb2"
+              :name="`valores[${idx}].descricao`"
+            />
+          </div>
+
+          <div class="f1">
+            <LabelFromYup
+              name="ordem"
+              class="tc300"
+              :schema="schema.fields.valores.innerType"
+            />
+            <Field
+              :name="`valores[${idx}].ordem`"
+              type="number"
+              min="3"
+              max="2048"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb2"
+              :name="`valores[${idx}].ordem`"
+            />
+          </div>
+        </div>
+
+        <div class="flex g2 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="titulo"
+              class="tc300"
+              :schema="schema.fields.valores.innerType"
+            />
+            <Field
+              :name="`valores[${idx}].titulo`"
+              type="text"
+              min="3"
+              max="2048"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb2"
+              :name="`valores[${idx}].titulo`"
+            />
+          </div>
+
+          <div class="f1">
+            <LabelFromYup
+              name="valor_variavel"
+              class="tc300"
+              :schema="schema.fields.valores.innerType"
+            />
+            <Field
+              :name="`valores[${idx}].valor_variavel`"
+              type="text"
+              min="3"
+              max="2048"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb2"
+              :name="`valores[${idx}].valor_variavel`"
+            />
+          </div>
+        </div>
+
+        <button
+          class="like-a__text addlink"
+          arial-label="excluir"
+          title="excluir"
+          @click="remove(idx)"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_remove" /></svg>
+        </button>
+      </div>
+
+      <button
+        class="like-a__text addlink"
+        type="button"
+        @click="
+          push({
+            orgao_enderecado_id: null,
+            pessoa_enderecado_id: null,
+          })
+        "
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg>
+        Adicionar valor
+      </button>
+    </FieldArray>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
@@ -113,7 +231,9 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage, Field, Form, FieldArray,
+} from 'vee-validate';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { variávelCategórica as schema } from '@/consts/formSchemas';
