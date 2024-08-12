@@ -76,41 +76,42 @@ function permitirEdição(indicadorVariavel) {
 <template>
   <nav>
     <ul class="flex justifyleft mb1">
-      <li
-        v-if="indicadorId"
-        class="mr1"
-      >
-        <SmaeLink
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo`,
-            query: $route.query,
-          }"
-          class="addlink"
+      <template v-if="!$props.saoGlobais">
+        <li
+          v-if="indicadorId"
+          class="mr1"
         >
-          <span>Adicionar variável</span>
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>
-        </SmaeLink>
-      </li>
-
-      <li class="mr1">
-        <SmaeLink
-          v-if="indicadorRegionalizavel"
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/gerar`,
-            query: $route.query,
-          }"
-          class="addlink"
-        >
-          <span>Gerar variáveis</span>
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>
-        </SmaeLink>
-      </li>
+          <SmaeLink
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo`,
+              query: $route.query,
+            }"
+            class="addlink"
+          >
+            <span>Adicionar variável</span>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>
+          </SmaeLink>
+        </li>
+        <li class="mr1">
+          <SmaeLink
+            v-if="indicadorRegionalizavel"
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis/gerar`,
+              query: $route.query,
+            }"
+            class="addlink"
+          >
+            <span>Gerar variáveis</span>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>
+          </SmaeLink>
+        </li>
+      </template>
 
       <slot name="dentro-do-menu" />
     </ul>
