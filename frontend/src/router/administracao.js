@@ -779,7 +779,7 @@ export default [
     component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasRaiz.vue'),
     meta: {
       limitarÀsPermissões: 'CadastroVariavelCategorica.',
-      título: 'Tipo de variável categórica',
+      título: 'Tipos de variáveis categóricas',
       rotasParaMenuSecundário,
     },
     children: [
@@ -788,7 +788,7 @@ export default [
         path: '',
         component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasLista.vue'),
         meta: {
-          título: 'Tipo de variável categórica',
+          título: 'Tipos de variáveis categóricas',
         },
       },
       {

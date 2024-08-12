@@ -20,7 +20,7 @@
     <thead>
       <tr>
         <th> Titulo </th>
-        <th> Tipo </th>
+        <th> Espécie </th>
         <th> Descrição </th>
         <th> Valores </th>
         <th />
