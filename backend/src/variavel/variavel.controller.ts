@@ -231,4 +231,16 @@ export class VariavelGlobalController {
     ): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
     }
+
+    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
+    @Get('plano-setorial-indicador-variavel/:id/serie')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
+    async getSeriePrevistoRealizadoTest(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterSVNPeriodoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListSeriesAgrupadas> {
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
+    }
 }
