@@ -14,6 +14,7 @@
     <col>
     <col>
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -33,6 +34,7 @@
       >
         <td>{{ item.titulo }}</td>
         <td>{{ item.tipo }}</td>
+        <td>{{ item.descricao }}</td>
         <td>
           {{
             item.valores.map((valor) => valor.descricao).filter(descricao => descricao)
