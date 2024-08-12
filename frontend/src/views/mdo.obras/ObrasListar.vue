@@ -11,7 +11,26 @@
       </router-link>
     </header>
 
-    <FiltroDeListagemDeObras :aria-busy="chamadasPendentes.lista" />
+    <FormularioQueryString
+      v-slot="{ capturarEnvio }"
+      :valores-iniciais="{
+        ordem_direcao: 'asc',
+        ipp: gblIpp,
+        pagina: 1,
+        token_paginacao: undefined,
+      }"
+    >
+      <FiltroDeListagemDeObras
+        :aria-busy="chamadasPendentes.lista"
+        :valores-iniciais="{
+          ipp: $route.query.ipp || 100,
+          ordem_coluna: $route.query.codigo || 'codigo',
+          ordem_direcao: $route.query.ordem_direcao || 'crescente',
+          regiao_id: $route.query.regiao_id,
+        }"
+        @submit="capturarEnvio"
+      />
+    </FormularioQueryString>
 
     <div
       role="region"
@@ -139,6 +158,7 @@
   </div>
 </template>
 <script setup>
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';
