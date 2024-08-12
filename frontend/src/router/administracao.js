@@ -775,7 +775,7 @@ export default [
     ],
   },
   {
-    path: '/variaveis',
+    path: '/variaveis-categoricas',
     component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasRaiz.vue'),
     meta: {
       limitarÀsPermissões: 'CadastroVariavelCategorica.',
