@@ -87,7 +87,7 @@ const estãoTodasAsRegiõesSelecionadas = computed({
       regiõesSelecionadas.value
         .splice(0, regiõesSelecionadas.value.length, ...idsDasRegiõesVálidas);
     } else {
-      regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
+      regiõesSelecionadas.value.splice(0);
     }
   },
 });
