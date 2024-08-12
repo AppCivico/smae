@@ -3312,7 +3312,6 @@ export const variável = (singleIndicadores) => object()
       .required('Preencha o valor base'),
   });
 
-//
 export const variávelCategórica = object({
   descricao: string()
     .label('Descrição')
