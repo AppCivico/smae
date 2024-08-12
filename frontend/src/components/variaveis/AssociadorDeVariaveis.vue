@@ -259,12 +259,8 @@ async function associar(encerrar = false) {
     return;
   }
 
-  console.debug('associar', encerrar);
-
   erro.value = null;
   envioPendente.value = true;
-
-  await new Promise((resolve) => { setTimeout(resolve, 5000); });
 
   requestS.patch(`${baseUrl}/plano-setorial-indicador/${props.indicador.id}/associar-variavel`, {
     variavel_ids: variaveisSelecionadas.value,
@@ -273,7 +269,6 @@ async function associar(encerrar = false) {
       emit('close');
     }
 
-    // formularioDeAssociacao.value?.reset();
     variaveisSelecionadas.value.splice(0);
   }).catch((err) => {
     erro.value = err.message;
