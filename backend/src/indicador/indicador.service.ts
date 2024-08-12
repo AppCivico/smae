@@ -682,7 +682,7 @@ export class IndicadorService {
 
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
-                valor_nominal: serieValor.valor_nominal.toPrecision(),
+                valor_nominal: serieValor.valor_nominal.toString(),
                 ha_conferencia_pendente: serieValor.ha_conferencia_pendente,
             };
         }
