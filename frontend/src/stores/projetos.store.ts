@@ -415,13 +415,13 @@ export const useProjetosStore = defineStore('projetos', {
       : {}),
 
     projetosPorPortfolio: ({ lista }: Estado): { [k: number | string]: ProjetoDto[] } => lista
-      .reduce((acc: any, cur: ProjetoDto) => {
+      .reduce((acc, cur: ProjetoDto) => {
         if (!acc[cur.portfolio.id]) {
           acc[cur.portfolio.id] = [];
         }
         acc[cur.portfolio.id].push(cur);
         return acc;
-      }, {}),
+      }, {} as { [key: string]: ProjetoDto[] }),
 
     projetosPortfolioModeloClonagem: ({ lista }: Estado): ProjetoDto[] => lista
       .filter((e) => e.portfolio.modelo_clonagem == true),
