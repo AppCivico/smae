@@ -94,6 +94,8 @@ function permitirEdição(indicadorVariavel) {
           ><use xlink:href="#i_+" /></svg>
         </SmaeLink>
       </li>
+
+      <slot name="dentro-do-menu" />
     </ul>
   </nav>
 

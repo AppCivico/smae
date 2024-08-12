@@ -7,6 +7,7 @@ import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
+import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
@@ -91,6 +92,7 @@ if (route.meta.entidadeMãe === 'pdm') {
 const formula = ref('');
 const variaveisFormula = ref([]);
 const errFormula = ref('');
+const AssociadorDeVariaveisEstaAberto = ref(false);
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -281,6 +283,10 @@ if (indicador_id) {
 } else {
   IndicadoresStore.getAll(meta_id, 'meta_id');
 }
+
+watch(AssociadorDeVariaveisEstaAberto.value, () => {
+  VariaveisStore.getAll(indicador_id);
+});
 
 watch(() => props.group, () => {
   start();
@@ -737,7 +743,26 @@ export default {
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
         :variáveis="Variaveis[indicador_id]"
         :parentlink="parentlink"
-      />
+      >
+        <template #dentro-do-menu>
+          <li
+            v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+            class="mr1"
+          >
+            <button
+              type="button"
+              class="addlink"
+              @click="AssociadorDeVariaveisEstaAberto = true"
+            >
+              <span>Associar variável</span>
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_+" /></svg>
+            </button>
+          </li>
+        </template>
+      </TabelaDeVariaveis>
     </template>
 
     <template
@@ -772,6 +797,18 @@ export default {
       />
     </template>
   </EnvelopeDeAbas>
+
+  <template v-if="indicador_id && $route.meta.entidadeMãe === 'planoSetorial'">
+    <SmallModal
+      v-if="AssociadorDeVariaveisEstaAberto"
+      class="largura-total"
+    >
+      <AssociadorDeVariaveis
+        :indicador="singleIndicadores"
+        @close="AssociadorDeVariaveisEstaAberto = false"
+      />
+    </SmallModal>
+  </template>
 
   <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
     <hr class="mt2 mb2">
