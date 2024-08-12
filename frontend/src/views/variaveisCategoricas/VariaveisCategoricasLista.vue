@@ -21,6 +21,7 @@
         <th> Titulo </th>
         <th> Tipo </th>
         <th> Descrição </th>
+        <th> Valores </th>
         <th />
         <th />
       </tr>
@@ -32,7 +33,16 @@
       >
         <td>{{ item.titulo }}</td>
         <td>{{ item.tipo }}</td>
-        <td>{{ item.descricao }}</td>
+        <td>
+          {{
+            item.valores.map((valor) => valor.descricao).filter(descricao => descricao)
+              .map((descricao, index, array) => {
+                return descricao + (index < array.length - 1 ? ', ' : '');
+              })
+              .join('')
+              || '-'
+          }}
+        </td>
         <td>
           <router-link
             :to="{ name: 'variaveisCategoricasCriar', params: { variavelId: item.id } }"
