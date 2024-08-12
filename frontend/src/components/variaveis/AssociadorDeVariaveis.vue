@@ -162,7 +162,7 @@
       <template v-else>
         variáveis selecionadas
       </template>
-      de {{ paginacao.totalRegistros }}.
+      de {{ lista.length }}.
     </p>
 
     <LoadingComponent
