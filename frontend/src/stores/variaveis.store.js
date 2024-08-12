@@ -68,7 +68,7 @@ export const useVariaveisStore = defineStore({
           this.variáveisCompostas[indicadorId] = { loading: true };
         }
         const r = await this.requestS.get(`${baseUrl}/indicador/${indicadorId}/formula-composta`);
-        this.variáveisCompostas[indicadorId] = r.rows;
+        this.variáveisCompostas[indicadorId] = r.linhas;
       } catch (error) {
         this.variáveisCompostas[indicadorId] = { error };
       }
@@ -83,7 +83,7 @@ export const useVariaveisStore = defineStore({
           this.variáveisCompostasEmUso[indicadorId] = { loading: true };
         }
         const r = await this.requestS.get(`${baseUrl}/indicador/${indicadorId}/formula-composta-em-uso`);
-        this.variáveisCompostasEmUso[indicadorId] = r.rows;
+        this.variáveisCompostasEmUso[indicadorId] = r.linhas;
       } catch (error) {
         this.variáveisCompostasEmUso[indicadorId] = { error };
       }
