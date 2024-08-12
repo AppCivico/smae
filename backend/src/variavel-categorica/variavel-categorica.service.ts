@@ -87,6 +87,7 @@ export class VariavelCategoricaService {
     async findAll(filters: FilterVariavelCategoricaDto): Promise<VariavelCategoricaItem[]> {
         const listActive = await this.prisma.variavelCategorica.findMany({
             where: {
+                id: filters.id,
                 removido_em: null,
                 tipo: filters.tipo,
             },
