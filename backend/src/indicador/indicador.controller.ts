@@ -109,7 +109,7 @@ export class IndicadorController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIndicadorFormulaCompostaItemDto> {
-        return { rows: await this.indicadorFormulaCompostaService.findAll(this.tipoPdm, params.id, user) };
+        return { linhas: await this.indicadorFormulaCompostaService.findAll(this.tipoPdm, params.id, user) };
     }
 
     @Get('indicador/:id/formula-composta-em-uso')
@@ -119,7 +119,7 @@ export class IndicadorController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIndicadorFormulaCompostaEmUsoDto> {
-        return { rows: await this.indicadorService.listFormulaCompostaEmUso(params.id, user) };
+        return { linhas: await this.indicadorService.listFormulaCompostaEmUso(params.id, user) };
     }
 
     @Patch('indicador/:id/formula-composta/:id2')
