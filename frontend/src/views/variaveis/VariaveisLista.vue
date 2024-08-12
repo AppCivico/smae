@@ -96,7 +96,7 @@ watchEffect(() => {
         ipp: $route.query.ipp || 100,
         nivel_regionalizacao: $route.query.nivel_regionalizacao,
         ordem_coluna: $route.query.codigo || 'codigo',
-        ordem_direcao: $route.query.ordem_direcao || 'crescente',
+        ordem_direcao: $route.query.ordem_direcao || 'asc',
         regiao_id: $route.query.regiao_id,
       }"
       @submit="capturarEnvio"

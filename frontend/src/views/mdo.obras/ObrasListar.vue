@@ -25,7 +25,7 @@
         :valores-iniciais="{
           ipp: $route.query.ipp || 100,
           ordem_coluna: $route.query.codigo || 'codigo',
-          ordem_direcao: $route.query.ordem_direcao || 'crescente',
+          ordem_direcao: $route.query.ordem_direcao || 'asc',
           regiao_id: $route.query.regiao_id,
         }"
         @submit="capturarEnvio"
