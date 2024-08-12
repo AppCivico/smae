@@ -1453,7 +1453,7 @@ export class ProjetoService {
                         meta_codigo: true,
                         atividade: { select: { id: true, codigo: true, titulo: true } },
                         iniciativa: { select: { id: true, codigo: true, titulo: true } },
-                        meta: { select: { id: true, codigo: true, titulo: true } },
+                        meta: { select: { id: true, codigo: true, titulo: true, pdm_id: true } },
                     },
                 },
             },

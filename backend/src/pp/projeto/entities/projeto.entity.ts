@@ -141,11 +141,13 @@ export class ListProjetoSeiDto {
 
 export class OrigemDetailItem {
     id: number;
-    meta: IdCodTituloDto | null;
+    meta: ProjetoMetaDetailDto | null;
     atividade: IdCodTituloDto | null;
     iniciativa: IdCodTituloDto | null;
-    meta_codigo: string | null;
+
     origem_tipo: ProjetoOrigemTipo;
+    @ApiProperty({ deprecated: true,  description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
+    meta_codigo: string | null;
 }
 export class IdTituloNivelMaxRegDto {
     id: number;
