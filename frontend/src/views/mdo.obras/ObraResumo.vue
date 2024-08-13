@@ -1,6 +1,6 @@
 <script setup>
 import MapaExibir from '@/components/geo/MapaExibir.vue';
-import ListaAninhada from '@/components/listaAninhada.vue';
+import ListaAninhada from '@/components/ListaAninhada.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
 import statusesObras from '@/consts/statusObras';
