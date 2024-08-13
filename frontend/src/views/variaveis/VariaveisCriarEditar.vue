@@ -16,6 +16,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
+import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useResourcesStore } from '@/stores/resources.store';
@@ -57,6 +58,12 @@ const {
   lista: listaDeFontes,
   chamadasPendentes: chamadasPendentesDeFontes,
 } = storeToRefs(fontesStore);
+
+const gruposStore = useGrupoDeVariaveisStore();
+const {
+  lista: listaDeGrupos,
+  chamadasPendentes: chamadasPendentesDeGrupos,
+} = storeToRefs(gruposStore);
 
 const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -175,23 +182,20 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 const formulárioSujo = useIsFormDirty();
 
 async function iniciar() {
-  const requisições = [
-    ÓrgãosStore.getAll(),
-    assuntosStore.buscarTudo(),
-    fontesStore.buscarTudo(),
-    usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true }),
-    variaveisCategoricasStore.buscarTudo(),
-  ];
+  ÓrgãosStore.getAll();
+  assuntosStore.buscarTudo();
+  fontesStore.buscarTudo();
+  gruposStore.buscarTudo();
+  usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true });
+  variaveisCategoricasStore.buscarTudo();
 
   if (!regions.length) {
-    requisições.push(RegionsStore.getAll());
+    RegionsStore.getAll();
   }
 
   if (!resources.length) {
-    requisições.push(resourcesStore.getAll());
+    resourcesStore.getAll();
   }
-
-  await Promise.allSettled(requisições);
 }
 
 iniciar();
@@ -789,6 +793,82 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           <ErrorMessage
             class="error-msg"
             name="orgao_id"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb25em">
+          <LabelFromYup
+            name="medicao_grupo_ids"
+            :schema="schema"
+          />
+          <AutocompleteField
+            name="medicao_grupo_ids"
+            :controlador="{
+              busca: '',
+              participantes: values.medicao_grupo_ids || []
+            }"
+            :grupo="listaDeGrupos || []"
+            :aria-busy="chamadasPendentesDeGrupos.lista"
+            :class="{
+              error: errors.medicao_grupo_ids
+            }"
+            label="titulo"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="medicao_grupo_ids"
+          />
+        </div>
+
+        <div class="f1 fb25em">
+          <LabelFromYup
+            name="validacao_grupo_ids"
+            :schema="schema"
+          />
+          <AutocompleteField
+            name="validacao_grupo_ids"
+            :controlador="{
+              busca: '',
+              participantes: values.validacao_grupo_ids || []
+            }"
+            :grupo="listaDeGrupos || []"
+            :aria-busy="chamadasPendentesDeGrupos.lista"
+            :class="{
+              error: errors.validacao_grupo_ids
+            }"
+            label="titulo"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="validacao_grupo_ids"
+          />
+        </div>
+
+        <div class="f1 fb25em">
+          <LabelFromYup
+            name="liberacao_grupo_ids"
+            :schema="schema"
+          />
+          <AutocompleteField
+            name="liberacao_grupo_ids"
+            :controlador="{
+              busca: '',
+              participantes: values.liberacao_grupo_ids || []
+            }"
+            :grupo="listaDeGrupos || []"
+            :aria-busy="chamadasPendentesDeGrupos.lista"
+            :class="{
+              error: errors.liberacao_grupo_ids
+            }"
+            label="titulo"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="liberacao_grupo_ids"
           />
         </div>
       </div>
