@@ -114,7 +114,7 @@ async function excluirAditivo(id, descricao) {
 }
 
 watch(exibirDialogo, (novoValor) => {
-  if (novoValor) {
+  if (!novoValor) {
     if (!listaDeTiposDeAditivos.value.length) {
       aditivosStore.buscarTudo();
     }
