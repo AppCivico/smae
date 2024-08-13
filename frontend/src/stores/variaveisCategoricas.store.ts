@@ -18,7 +18,7 @@ interface Erros {
 
 interface Estado {
   lista: Lista;
-
+  emFoco: Record<string, unknown>; // deveria usar os tipos do backend
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 
@@ -34,6 +34,7 @@ interface Estado {
 export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', {
   state: (): Estado => ({
     lista: [],
+    emFoco: {},
 
     chamadasPendentes: {
       lista: false,
@@ -79,6 +80,20 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
     },
+    async buscarItem(id = 0, params = {}): Promise<void> {
+      this.chamadasPendentes.emFoco = true;
+      this.erros.emFoco = null;
+
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/variavel-categorica/`, params);
+        this.emFoco = {
+          ...resposta,
+        };
+      } catch (erro: unknown) {
+        this.erros.emFoco = erro;
+      }
+      this.chamadasPendentes.emFoco = false;
+    },
 
     async excluirItem(variavelCategoricaId: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
@@ -121,5 +136,9 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
     variaveisPositivas: ({ lista }: Estado) => lista.filter((variavel) => variavel.id > 0),
     variaveisPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    itemParaEdição({ emFoco }: { emFoco: Record<string, unknown> }): Record<string, unknown> { // está feio pq n usei os tipos do backend
+      return { ...emFoco };
+    },
   },
+
 });

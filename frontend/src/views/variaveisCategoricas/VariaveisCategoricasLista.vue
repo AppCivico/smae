@@ -47,7 +47,7 @@
         </td>
         <td>
           <router-link
-            :to="{ name: 'variaveisCategoricasCriar', params: { variavelId: item.id } }"
+            :to="{ name: 'variaveisCategoricasEditar', params: { variavelId: item.id } }"
             class="tprimary"
           >
             <svg
