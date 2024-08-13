@@ -37,7 +37,7 @@ const projetosStore = useProjetosStore();
 const {
   lista: gruposDeObservadores,
   chamadasPendentes: gruposDeObservadoresPendentes,
-  erro: erroNosDadosDeObservadores,
+  erro: erroNosGruposDeObservadores,
 } = storeToRefs(observadoresStore);
 
 const {
@@ -1744,7 +1744,7 @@ watch(emFoco, () => {
             participantes: values.grupo_portfolio || []
           }"
           :class="{
-            error: erroNosDadosDeObservadores,
+            error: erroNosGruposDeObservadores,
             loading: gruposDeObservadoresPendentes.lista
           }"
           :grupo="gruposDeObservadores"
@@ -1754,19 +1754,13 @@ watch(emFoco, () => {
           name="grupo_portfolio"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroNosGruposDeObservadores"
+        />
       </div>
     </div>
 
     <pre v-ScrollLockDebug>values.grupo_portfolio:{{ values.grupo_portfolio }}</pre>
-
-    <div
-      v-if="erroNosDadosDeObservadores"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erroNosDadosDeObservadores }}
-      </div>
-    </div>
 
     <FormErrorsList :errors="errors" />
 
