@@ -566,7 +566,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
       </div>
 
       <div class="flex flexwrap g2 mb1">
-        <div class="f1">
+        <div class="f1 fb15em">
           <LabelFromYup
             name="valor_base"
             :schema="schema"
@@ -586,7 +586,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="valor_base"
           />
         </div>
-        <div class="f1">
+        <div class="f1 fb15em">
           <LabelFromYup
             name="ano_base"
             :schema="schema"
@@ -612,9 +612,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="ano_base"
           />
         </div>
-      </div>
 
-      <div class="flex flexwrap g2 mb1">
         <div class="f1 fb15em">
           <LabelFromYup
             name="inicio_medicao"
