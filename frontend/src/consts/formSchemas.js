@@ -13,6 +13,7 @@ import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import statusObras from '@/consts/statusObras';
 import tipoDePerfil from '@/consts/tipoDePerfil';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposDeOrigens from '@/consts/tiposDeOrigens';
@@ -32,7 +33,6 @@ import {
   setLocale,
   string,
 } from 'yup';
-import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
