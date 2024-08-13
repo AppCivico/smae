@@ -1,8 +1,10 @@
 <script setup>
 import MapaExibir from '@/components/geo/MapaExibir.vue';
+import ListaAninhada from '@/components/listaAninhada.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
 import statusesObras from '@/consts/statusObras';
+import createDataTree from '@/helpers/createDataTree';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
@@ -360,10 +362,23 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.regioes.spec.label }}
         </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.regioes?.map((r) => r.descricao).join(', ') || '-'"
-        />
+
+        <dd class="t13 contentStyle">
+          <ListaAninhada
+            v-if="emFoco?.regioes?.length"
+            v-slot="{ item, nivel }"
+            :lista="createDataTree(emFoco?.regioes, 'parente_id', 'filhas')"
+            nome-das-filhas="filhas"
+            nome-do-texto="descricao"
+          >
+            <strong v-if="nivel === 1">
+              {{ item.descricao }}
+            </strong>
+            <template v-else>
+              {{ item.descricao }}
+            </template>
+          </ListaAninhada>
+        </dd>
       </dl>
     </div>
 
