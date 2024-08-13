@@ -278,7 +278,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             name="macro_tema_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.macro_tema_id }"
+            :class="{ erro: errors.macro_tema_id }"
           >
             <option value="">
               Selecionar
@@ -309,7 +309,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             name="tema_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.tema_id }"
+            :class="{ erro: errors.tema_id }"
           >
             <option value="">
               Selecionar
@@ -338,7 +338,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             name="sub_tema_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.sub_tema_id }"
+            :class="{ erro: errors.sub_tema_id }"
           >
             <option value="">
               Selecionar
@@ -357,7 +357,6 @@ watch(() => activePdm.value.id, async (novoValor) => {
           </div>
         </div>
       </div>
-
       <div v-if="tempTags.length">
         <legend class="legend mb1">
           Tags
@@ -382,7 +381,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             type="text"
             class="inputtext light mb1"
             maxlength="30"
-            :class="{ 'error': errors.codigo }"
+            :class="{ error: errors.codigo }"
           />
           <div class="error-msg">
             {{ errors.codigo }}
@@ -394,7 +393,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             name="titulo"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.titulo }"
+            :class="{ erro: errors.titulo }"
           />
           <div class="error-msg">
             {{ errors.titulo }}
@@ -414,7 +413,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.contexto }"
+            :class="{ erro: errors.contexto }"
           />
           <div class="error-msg">
             {{ errors.contexto }}
@@ -432,7 +431,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             as="textarea"
             rows="3"
             class="inputtext light mb1"
-            :class="{ 'error': errors.complemento }"
+            :class="{ erro: errors.complemento }"
           />
           <div class="error-msg">
             {{ errors.complemento }}
