@@ -88,6 +88,9 @@
       v-slot="{ fields, push, remove }"
       name="valores"
     >
+      <h2 class="mb1">
+        Valores
+      </h2>
       <div
         v-for="(field, idx) in fields"
         :key="field.key"
@@ -203,7 +206,10 @@
         Adicionar valor
       </button>
     </FieldArray>
-
+    <FormErrorsList
+      :errors="errors"
+      class="mt1"
+    />
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
