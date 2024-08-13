@@ -1,6 +1,4 @@
 import type {
-  DadosCodTituloAtividadeDto,
-  DadosCodTituloIniciativaDto,
   DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
 } from '@/../../backend/src/meta/dto/create-meta.dto';
@@ -19,6 +17,7 @@ import type { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
+import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -54,25 +53,6 @@ interface Estado {
     arvoreDeMetas: unknown;
   };
 }
-
-const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): any => {
-  const result: { [k: number]: DadosCodTituloAtividadeDto } = {};
-  atividades.forEach((atividade: DadosCodTituloAtividadeDto) => {
-    result[atividade.id] = atividade;
-  });
-  return result;
-};
-
-const mapIniciativas = (iniciativas: DadosCodTituloIniciativaDto[]) => {
-  const result: { [k: number]: DadosCodTituloIniciativaDto } = {};
-  iniciativas.forEach((iniciativa:DadosCodTituloIniciativaDto) => {
-    result[iniciativa.id] = {
-      ...iniciativa,
-      atividades: mapAtividades(iniciativa.atividades),
-    };
-  });
-  return result;
-};
 
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({

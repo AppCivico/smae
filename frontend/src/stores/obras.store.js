@@ -1,6 +1,7 @@
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
+import mapIniciativas from './helpers/mapIniciativas.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -12,12 +13,14 @@ export const useObrasStore = defineStore('obrasStore', {
 
     pdmsSimplificados: [],
     metaSimplificada: [],
+    arvoreDeMetas: {},
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
       pdmsSimplificados: false,
       metaSimplificada: false,
+      arvoreDeMetas: false,
       mudarStatus: false,
       transferirDePortfolio: false,
       arquivos: false,
@@ -27,6 +30,7 @@ export const useObrasStore = defineStore('obrasStore', {
       arquivos: null,
       pdmsSimplificados: null,
       metaSimplificada: null,
+      arvoreDeMetas: null,
     },
     paginacao: {
       tokenPaginacao: '',
@@ -66,6 +70,7 @@ export const useObrasStore = defineStore('obrasStore', {
       this.chamadasPendentes.pdmsSimplificados = false;
     },
 
+    // Obsoleta! Substituir por `buscarArvoreDeMetas()`
     async buscarMetaSimplificada(params = {}) {
       this.chamadasPendentes.metaSimplificada = true;
       this.metaSimplificada = [];
@@ -78,6 +83,27 @@ export const useObrasStore = defineStore('obrasStore', {
         this.erros.metaSimplificada = erro;
       }
       this.chamadasPendentes.metaSimplificada = false;
+    },
+
+    async buscarArvoreDeMetas(params = {}) {
+      this.chamadasPendentes.arvoreDeMetas = true;
+      this.erros.arvoreDeMetas = null;
+
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-mdo/proxy/iniciativas-atividades`, params);
+
+        if (Array.isArray(linhas)) {
+          linhas.forEach((cur) => {
+            this.arvoreDeMetas[cur.id] = {
+              ...cur,
+              iniciativas: mapIniciativas(cur.iniciativas),
+            };
+          });
+        }
+      } catch (erro) {
+        this.erros.arvoreDeMetas = erro;
+      }
+      this.chamadasPendentes.arvoreDeMetas = false;
     },
 
     async buscarTudo(params = {}) {
@@ -218,6 +244,15 @@ export const useObrasStore = defineStore('obrasStore', {
         orgao_origem_id: emFoco?.orgao_origem ? emFoco?.orgao_origem.id : null, // não editável
         orgao_colaborador_id: emFoco?.orgao_colaborador?.id || null,
         orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
+        origens_extra: Array.isArray(emFoco?.origens_extra)
+          ? emFoco.origens_extra.map((origem) => ({
+            atividade_id: origem?.atividade?.id || null,
+            id: origem?.id || null,
+            iniciativa_id: origem?.iniciativa?.id || null,
+            meta_id: origem?.meta?.id || null,
+            pdm_escolhido: origem?.pdm?.id || null,
+          }))
+          : [],
         pdm_escolhido: emFoco?.meta?.pdm_id || null,
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
@@ -262,6 +297,30 @@ export const useObrasStore = defineStore('obrasStore', {
 
     pdmsPorId: ({ pdmsSimplificados }) => pdmsSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    planosAgrupadosPorTipo: ({ pdmsSimplificados }) => {
+      const grupos = pdmsSimplificados.reduce((acc, cur) => {
+        if (!acc[cur.tipo]) {
+          acc[cur.tipo] = [];
+        }
+        acc[cur.tipo].push(cur);
+        return acc;
+      }, {});
+
+      const chaves = Object.keys(grupos).sort((a, b) => a.localeCompare(b));
+      let i = 0;
+      const resultado = {};
+
+      while (i < chaves.length) {
+        const chave = chaves[i];
+        resultado[chave] = grupos[chave]
+          .sort((a, b) => a.nome
+            .localeCompare(b.nome));
+        i += 1;
+      }
+
+      return resultado;
+    },
 
     permissõesDaObraEmFoco: ({ emFoco }) => (typeof emFoco?.permissoes === 'object'
       ? emFoco.permissoes
