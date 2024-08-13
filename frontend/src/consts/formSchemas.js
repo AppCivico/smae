@@ -1220,6 +1220,31 @@ export const obras = object({
     .label('Origem')
     .oneOf(Object.keys(tiposDeOrigens))
     .required(),
+  origens_extra: array()
+    .label('Outras associações com PdM/Plano Setorial')
+    .of(
+      object()
+        .shape({
+          atividade_id: number()
+            .label('Atividade')
+            .integer()
+            .nullable()
+            .positive(),
+          iniciativa_id: number()
+            .label('Iniciativa')
+            .integer()
+            .nullable()
+            .positive(),
+          meta_id: number()
+            .label('Meta')
+            .integer()
+            .positive(),
+          origem_tipo: mixed()
+            .label('Origem')
+            .required('Esse origem precisa de um Plano.')
+            .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
+        }),
+    ),
   ponto_focal_colaborador: string()
     .label('Ponto focal colaborador')
     .nullable(),
@@ -2413,7 +2438,7 @@ export const projeto = object()
       .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
 
     origens_extra: array()
-      .label('Origens extras de recursos')
+      .label('Outras associações com PdM/Plano Setorial')
       .of(
         object()
           .shape({
