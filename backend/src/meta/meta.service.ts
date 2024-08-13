@@ -1057,25 +1057,29 @@ export class MetaService {
             where: {
                 removido_em: null,
 
-                AND: [
-                    dto.meta_id
-                        ? {
-                              meta_id: dto.meta_id,
-                              iniciativa_id: null,
-                              atividade_id: null,
-                          }
-                        : {},
-                    dto.iniciativa_id
-                        ? {
-                              iniciativa_id: dto.iniciativa_id,
-                              atividade_id: null,
-                          }
-                        : {},
-                    dto.atividade_id
-                        ? {
-                              atividade_id: dto.atividade_id,
-                          }
-                        : {},
+                OR: [
+                    {
+                        AND: [
+                            dto.meta_id
+                                ? {
+                                      meta_id: dto.meta_id,
+                                      iniciativa_id: null,
+                                      atividade_id: null,
+                                  }
+                                : {},
+                            dto.iniciativa_id
+                                ? {
+                                      iniciativa_id: dto.iniciativa_id,
+                                      atividade_id: null,
+                                  }
+                                : {},
+                            dto.atividade_id
+                                ? {
+                                      atividade_id: dto.atividade_id,
+                                  }
+                                : {},
+                        ],
+                    },
                     // projetos extras
                     {
                         ProjetoOrigem: {
