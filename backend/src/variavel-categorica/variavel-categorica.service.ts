@@ -264,6 +264,17 @@ export class VariavelCategoricaService {
             });
 
         const operations = [];
+        if (deleted.length > 0) {
+            operations.push(
+                prismaTx.variavelCategoricaValor.deleteMany({
+                    where: {
+                        id: { in: deleted },
+                        variavel_categorica_id: variavel_categorica_id,
+                        removido_em: null,
+                    },
+                })
+            );
+        }
 
         for (const r of updated) {
             if (r.id === null) throw new BadRequestException('ID não pode ser nulo na atualização.');
@@ -318,18 +329,6 @@ export class VariavelCategoricaService {
                         variavel_categorica_id: variavel_categorica_id,
                         criado_em: now,
                         criado_por: user.id,
-                    },
-                })
-            );
-        }
-
-        if (deleted.length > 0) {
-            operations.push(
-                prismaTx.variavelCategoricaValor.deleteMany({
-                    where: {
-                        id: { in: deleted },
-                        variavel_categorica_id: variavel_categorica_id,
-                        removido_em: null,
                     },
                 })
             );
