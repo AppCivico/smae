@@ -100,9 +100,8 @@ export const useTemasStore = defineStore({
     async filterByPdm(pdm_id) {
       this.tempTemas = { loading: true };
       try {
-        if (!this.Temas.length) {
-          await this.getAllSimple();
-        }
+        await this.getAllSimple();
+
         this.tempTemas = this.Temas.filter((u) => u.pdm_id == pdm_id);
       } catch (error) {
         this.tempTemas = { error };

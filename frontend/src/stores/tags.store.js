@@ -113,9 +113,8 @@ export const useTagsStore = defineStore({
     async filterByPdm(pdm_id) {
       this.tempTags = { loading: true };
       try {
-        if (!this.Tags.length) {
-          await this.getAll();
-        }
+        await this.getAll();
+
         this.tempTags = this.Tags.length ? this.Tags.filter((u) => u.pdm_id == pdm_id) : [];
       } catch (error) {
         this.tempTags = { error };

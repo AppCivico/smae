@@ -104,9 +104,8 @@ export const useSubtemasStore = defineStore({
     async filterByPdm(pdm_id) {
       this.tempSubtemas = { loading: true };
       try {
-        if (!this.Subtemas.length) {
-          await this.getAllSimple();
-        }
+        await this.getAllSimple();
+
         this.tempSubtemas = this.Subtemas.filter((u) => u.pdm_id == pdm_id);
       } catch (error) {
         this.tempSubtemas = { error };

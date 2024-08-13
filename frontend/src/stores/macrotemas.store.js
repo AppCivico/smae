@@ -104,9 +104,8 @@ export const useMacrotemasStore = defineStore({
     async filterByPdm(pdm_id) {
       this.tempMacrotemas = { loading: true };
       try {
-        if (!this.Macrotemas.length) {
-          await this.getAllSimple();
-        }
+        await this.getAllSimple();
+
         this.tempMacrotemas = this.Macrotemas.filter((u) => u.pdm_id == pdm_id);
       } catch (error) {
         this.tempMacrotemas = { error };
