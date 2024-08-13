@@ -563,7 +563,7 @@ watch(itemParaEdição, (novoValor) => {
           </option>
         </Field>
         <ErrorMessage
-          name="origem_tipo"
+          name="grupo_tematico_id"
           class="error-msg"
         />
       </div>
@@ -591,7 +591,7 @@ watch(itemParaEdição, (novoValor) => {
           </option>
         </Field>
         <ErrorMessage
-          name="origem_tipo"
+          name="tipo_intervencao_id"
           class="error-msg"
         />
       </div>
@@ -619,7 +619,7 @@ watch(itemParaEdição, (novoValor) => {
           </option>
         </Field>
         <ErrorMessage
-          name="origem_tipo"
+          name="equipamento_id"
           class="error-msg"
         />
       </div>
