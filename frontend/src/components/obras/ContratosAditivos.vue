@@ -50,6 +50,7 @@ const itemParaEdição = computed(() => {
 
   return {
     ...aditivoEmFoco,
+    numero: aditivoEmFoco?.numero || null,
     contrato_id: contratoEmFoco.value?.id,
     data_termino_atualizada: aditivoEmFoco?.data_termino_atualizada
       ? dateTimeToDate(aditivoEmFoco.data_termino_atualizada)
