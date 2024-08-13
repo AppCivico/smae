@@ -61,7 +61,7 @@ const {
 
 const gruposStore = useGrupoDeVariaveisStore();
 const {
-  lista: listaDeGrupos,
+  gruposPorOrgaoIdPorPerfil,
   chamadasPendentes: chamadasPendentesDeGrupos,
 } = storeToRefs(gruposStore);
 
@@ -809,7 +809,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.medicao_grupo_ids || []
             }"
-            :grupo="listaDeGrupos || []"
+            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_proprietario_id]?.Medicao || []"
             :aria-busy="chamadasPendentesDeGrupos.lista"
             :class="{
               error: errors.medicao_grupo_ids
@@ -833,7 +833,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.validacao_grupo_ids || []
             }"
-            :grupo="listaDeGrupos || []"
+            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_proprietario_id]?.Validacao || []"
             :aria-busy="chamadasPendentesDeGrupos.lista"
             :class="{
               error: errors.validacao_grupo_ids
@@ -857,7 +857,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.liberacao_grupo_ids || []
             }"
-            :grupo="listaDeGrupos || []"
+            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_proprietario_id]?.Liberacao || []"
             :aria-busy="chamadasPendentesDeGrupos.lista"
             :class="{
               error: errors.liberacao_grupo_ids

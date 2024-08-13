@@ -84,5 +84,18 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
         colaboradores: emFoco?.colaboradores?.map((colaborador) => colaborador.id) || [],
       };
     },
+
+    gruposPorOrgaoIdPorPerfil: ({ lista }) => lista.reduce((acc, grupo) => {
+      if (!acc[grupo.orgao_id]) {
+        acc[grupo.orgao_id] = {};
+      }
+
+      if (!acc[grupo.orgao_id][grupo.perfil]) {
+        acc[grupo.orgao_id][grupo.perfil] = [];
+      }
+
+      acc[grupo.orgao_id][grupo.perfil].push(grupo);
+      return acc;
+    }, {}),
   },
 });
