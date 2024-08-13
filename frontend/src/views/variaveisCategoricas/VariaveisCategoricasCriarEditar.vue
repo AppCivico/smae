@@ -11,6 +11,7 @@
     <CheckClose />
   </div>
   <Form
+    v-if="!chamadasPendentes?.emFoco"
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
