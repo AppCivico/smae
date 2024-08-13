@@ -648,7 +648,6 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
-        await ctx.progress(99);
 
         if (dados.aditivos.length) {
             const json2csvParser = new Parser({
@@ -661,7 +660,6 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
-        await ctx.progress(99);
 
         if (dados.origens.length) {
             const json2csvParser = new Parser({
@@ -674,7 +672,6 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
-        await ctx.progress(99);
 
         return [
             {

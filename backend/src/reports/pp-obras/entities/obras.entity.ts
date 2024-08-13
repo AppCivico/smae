@@ -154,6 +154,18 @@ export class RelObrasAditivosDto {
     data_termino_atual: Date | null;
 }
 
+export class RelObrasOrigemDto {
+    projeto_id: number;
+    pdm_id: number | null;
+    pdm_titulo: string | null;
+    meta_id: number | null;
+    meta_titulo: string | null;
+    iniciativa_id: number | null;
+    iniciativa_titulo: string | null;
+    atividade_id: number | null;
+    atividade_titulo: string | null;
+}
+
 export class PPObrasRelatorioDto {
     linhas: RelObrasDto[];
     cronograma: RelObrasCronogramaDto[];
@@ -162,4 +174,5 @@ export class PPObrasRelatorioDto {
     fontes_recurso: RelObrasFontesRecursoDto[];
     contratos: RelObrasContratosDto[];
     aditivos: RelObrasAditivosDto[];
+    origens: RelObrasOrigemDto[];
 }
