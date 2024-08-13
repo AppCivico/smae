@@ -19,6 +19,7 @@ import {
     RelProjetosCronogramaDto,
     RelProjetosDto,
     RelProjetosLicoesAprendidasDto,
+    RelProjetosOrigemDto,
     RelProjetosPlanoAcaoDto,
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
@@ -230,6 +231,18 @@ class RetornoDbContratos {
     fontes_recurso: string | null;
 }
 
+class RetornoDbOrigens {
+    projeto_id: number;
+    pdm_id: number | null;
+    pdm_titulo: string | null;
+    meta_id: number | null;
+    meta_titulo: string | null;
+    iniciativa_id: number | null;
+    iniciativa_titulo: string | null;
+    atividade_id: number | null;
+    atividade_titulo: string | null;
+}
+
 @Injectable()
 export class PPProjetosService implements ReportableService {
     constructor(
@@ -249,6 +262,7 @@ export class PPProjetosService implements ReportableService {
         const out_acompanhamentos: RelProjetosAcompanhamentosDto[] = [];
         const out_contratos: RelProjetosContratosDto[] = [];
         const out_aditivos: RelProjetosAditivosDto[] = [];
+        const out_origens: RelProjetosOrigemDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
 
@@ -261,6 +275,7 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataAcompanhamentos(whereCond, out_acompanhamentos);
         await this.queryDataContratos(whereCond, out_contratos);
         await this.queryDataAditivos(whereCond, out_aditivos);
+        await this.queryDataOrigens(whereCond, out_origens);
 
         return {
             linhas: out_projetos,
@@ -272,6 +287,7 @@ export class PPProjetosService implements ReportableService {
             acompanhamentos: out_acompanhamentos,
             contratos: out_contratos,
             aditivos: out_aditivos,
+            origens: out_origens,
         };
     }
 
@@ -365,6 +381,42 @@ export class PPProjetosService implements ReportableService {
             const linhas = json2csvParser.parse(dados.acompanhamentos);
             out.push({
                 name: 'acompanhamentos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.contratos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.contratos);
+            out.push({
+                name: 'contratos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.aditivos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.aditivos);
+            out.push({
+                name: 'aditivos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.origens.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.origens);
+            out.push({
+                name: 'origens.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
@@ -1133,6 +1185,48 @@ export class PPProjetosService implements ReportableService {
                 valor_com_reajuste: db.valor_com_reajuste ?? null,
                 percentual_medido: db.percentual_medido ?? null,
                 data_termino_atual: db.data_termino_atual ?? null,
+            };
+        });
+    }
+
+    private async queryDataOrigens(whereCond: WhereCond, out: RelProjetosOrigemDto[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            meta.pdm_id,
+            pdm.nome AS pdm_nome,
+            meta.id as meta_id,
+            meta.titulo as meta_titulo,
+            iniciativa.id iniciativa_id,
+            iniciativa.titulo as iniciativa_titulo,
+            atividade.id atividade_id,
+            atividade.titulo as atividade_titulo
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
+          LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
+          LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
+          LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
+          LEFT JOIN pdm ON pdm.id = meta.pdm_id
+        ${whereCond.whereString}
+        `;
+
+        const data: RetornoDbOrigens[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsOrigens(data));
+    }
+
+    private convertRowsOrigens(input: RetornoDbOrigens[]): RelProjetosOrigemDto[] {
+        return input.map((db) => {
+            return {
+                projeto_id: db.projeto_id,
+                pdm_id: db.pdm_id ?? null,
+                pdm_titulo: db.pdm_titulo ?? null,
+                meta_id: db.meta_id ?? null,
+                meta_titulo: db.meta_titulo ?? null,
+                iniciativa_id: db.iniciativa_id ?? null,
+                iniciativa_titulo: db.iniciativa_titulo ?? null,
+                atividade_id: db.atividade_id ?? null,
+                atividade_titulo: db.atividade_titulo ?? null,
             };
         });
     }

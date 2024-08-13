@@ -1,5 +1,6 @@
 import { PartialType, OmitType } from '@nestjs/mapped-types';
 import { ProjetoDetailDto } from '../../../pp/projeto/entities/projeto.entity';
+import { RelProjetosAditivosDto, RelProjetosContratosDto } from 'src/reports/pp-projetos/entities/projetos.entity';
 
 export class RelProjetoRelatorioDto extends PartialType(
     OmitType(ProjetoDetailDto, [
@@ -103,6 +104,18 @@ export class RelProjetoEncaminhamentoDto {
     prazo_realizado: string | null;
 }
 
+export class RelProjetoOrigemDto {
+    projeto_id: number;
+    pdm_id: number | null;
+    pdm_titulo: string | null;
+    meta_id: number | null;
+    meta_titulo: string | null;
+    iniciativa_id: number | null;
+    iniciativa_titulo: string | null;
+    atividade_id: number | null;
+    atividade_titulo: string | null;
+}
+
 export class PPProjetoRelatorioDto {
     detail: RelProjetoRelatorioDto;
     cronograma: RelProjetoCronogramaDto[];
@@ -110,4 +123,7 @@ export class PPProjetoRelatorioDto {
     planos_acao: RelProjetoPlanoAcaoDto[];
     acompanhamentos: RelProjetoAcompanhamentoDto[];
     encaminhamentos: RelProjetoEncaminhamentoDto[];
+    contratos: RelProjetosContratosDto[];
+    aditivos: RelProjetosAditivosDto[];
+    origens: RelProjetoOrigemDto[];
 }

@@ -16,17 +16,74 @@ import {
     RelProjetoAcompanhamentoDto,
     RelProjetoCronogramaDto,
     RelProjetoEncaminhamentoDto,
+    RelProjetoOrigemDto,
     RelProjetoPlanoAcaoDto,
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
 import { Stream2Buffer } from '../../common/helpers/Streaming';
+import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
+import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
 
 const {
     Parser,
     transforms: { flatten },
 } = require('json2csv');
 const defaultTransform = [flatten({ paths: [] })];
+
+class RetornoDbAditivos {
+    aditivo_id: number;
+    contrato_id: number;
+    numero: number;
+    tipo_aditivo_id: number;
+    tipo_aditivo_nome: string;
+    data: Date | null;
+    data_termino_atual: Date | null;
+    valor_com_reajuste: number | null;
+    percentual_medido: number | null;
+}
+
+class RetornoDbContratos {
+    id: number;
+    projeto_id: number;
+    numero: string;
+    exclusivo: boolean;
+    status: StatusContrato;
+    objeto: string | null;
+    descricao_detalhada: string | null;
+    contratante: string | null;
+    empresa_contratada: string | null;
+    prazo: number | null;
+    unidade_prazo: ContratoPrazoUnidade | null;
+    data_inicio: Date | null;
+    data_termino: Date | null;
+    valor: number | null;
+    valor_reajustado: number | null;
+    observacoes: string | null;
+    data_base: string | null;
+    modalidade_contratacao_id: number | null;
+    modalidade_contratacao_nome: string | null;
+    orgao_id: number | null;
+    orgao_sigla: string | null;
+    orgao_descricao: string | null;
+    valor_com_reajuste: number | null;
+    data_termino_atualizada: Date | null;
+    percentual_medido: number | null;
+    processos_sei: string | null;
+    fontes_recurso: string | null;
+}
+
+class RetornoDbOrigens {
+    projeto_id: number;
+    pdm_id: number | null;
+    pdm_titulo: string | null;
+    meta_id: number | null;
+    meta_titulo: string | null;
+    iniciativa_id: number | null;
+    iniciativa_titulo: string | null;
+    atividade_id: number | null;
+    atividade_titulo: string | null;
+}
 
 @Injectable()
 export class PPProjetoService implements ReportableService {
@@ -224,6 +281,13 @@ export class PPProjetoService implements ReportableService {
             });
         });
 
+        const out_contratos: RelProjetosContratosDto[] = [];
+        const out_aditivos: RelProjetosAditivosDto[] = [];
+        const out_origens: RelProjetoOrigemDto[] = [];
+        await this.queryDataContratos(projetoRow.id, out_contratos);
+        await this.queryDataAditivos(projetoRow.id, out_aditivos);
+        await this.queryDataOrigens(projetoRow.id, out_origens);
+
         return {
             detail: detail,
             cronograma: tarefasOut,
@@ -231,7 +295,185 @@ export class PPProjetoService implements ReportableService {
             planos_acao: planoAcaoOut,
             acompanhamentos: acompanhamentoOut,
             encaminhamentos: encaminhamentoOut,
+            contratos: out_contratos,
+            aditivos: out_aditivos,
+            origens: out_origens,
         };
+    }
+
+    private async queryDataContratos(projetoId: number, out: RelProjetosContratosDto[]) {
+        const sql = `SELECT
+            contrato.id AS id,
+            projeto.id AS obra_id,
+            contrato.numero AS numero,
+            contrato.contrato_exclusivo AS exclusivo,
+            contrato.status AS status,
+            contrato.objeto_resumo AS objeto,
+            contrato.objeto_detalhado AS descricao_detalhada,
+            contrato.contratante AS contratante,
+            contrato.empresa_contratada AS empresa_contratada,
+            contrato.prazo_numero AS prazo,
+            contrato.prazo_unidade AS unidade_prazo,
+            contrato.data_inicio AS data_inicio,
+            contrato.data_termino AS data_termino,
+            contrato.observacoes AS observacoes,
+            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            modalidade_contratacao.id AS modalidade_contratacao_id,
+            modalidade_contratacao.nome AS modalidade_contratacao_nome,
+            orgao.id AS orgao_id,
+            orgao.sigla AS orgao_sigla,
+            orgao.descricao AS orgao_descricao,
+            contrato.valor AS valor,
+            (
+                SELECT max(valor)
+                FROM contrato_aditivo
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
+            ) AS valor_reajustado,
+            (
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+            ) AS valor_com_reajuste,
+            (
+                SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+            ) AS data_termino_atualizada,
+            (
+                SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+            ) AS percentual_medido,
+            (
+                SELECT string_agg(contrato_sei.numero_sei::text, '|')
+                FROM contrato_sei
+                WHERE contrato_sei.contrato_id = contrato.id
+            ) AS processos_sei,
+            (
+                SELECT string_agg(cod_sof::text, '|')
+                FROM contrato_fonte_recurso
+                WHERE contrato_id = contrato.id
+            ) AS fontes_recurso
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+          LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
+          LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
+        WHERE projeto.id = $1
+        `;
+
+        const data: RetornoDbContratos[] = await this.prisma.$queryRawUnsafe(sql, projetoId);
+
+        out.push(...this.convertRowsContratos(data));
+    }
+
+    private convertRowsContratos(input: RetornoDbContratos[]): RelProjetosContratosDto[] {
+        return input.map((db) => {
+            return {
+                id: db.id,
+                projeto_id: db.projeto_id,
+                numero: db.numero,
+                exclusivo: db.exclusivo,
+                processos_SEI: db.processos_sei,
+                status: db.status,
+                modalidade_licitacao: db.modalidade_contratacao_id
+                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
+                    : null,
+                fontes_recurso: db.fontes_recurso,
+                area_gestora: db.orgao_id
+                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
+                    : null,
+                objeto: db.objeto,
+                descricao_detalhada: db.descricao_detalhada,
+                contratante: db.contratante,
+                empresa_contratada: db.empresa_contratada,
+                prazo: db.prazo,
+                unidade_prazo: db.unidade_prazo,
+                data_base: db.data_base,
+                data_inicio: db.data_inicio,
+                data_termino: db.data_termino,
+                data_termino_atualizada: db.data_termino_atualizada,
+                valor: db.valor,
+                valor_reajustado: db.valor_reajustado,
+                percentual_medido: db.percentual_medido,
+                observacoes: db.observacoes,
+            };
+        });
+    }
+
+    private async queryDataAditivos(projetoId: number, out: RelProjetosAditivosDto[]) {
+        const sql = `SELECT
+            contrato_aditivo.id AS aditivo_id,
+            contrato.id AS contrato_id,
+            contrato_aditivo.numero AS numero,
+            tipo_aditivo.id AS tipo_aditivo_id,
+            tipo_aditivo.nome AS tipo_aditivo_nome,
+            contrato_aditivo.data,
+            contrato_aditivo.data_termino_atualizada AS data_termino_atual,
+            contrato_aditivo.valor AS valor_com_reajuste,
+            contrato_aditivo.percentual_medido
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+          JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+          JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
+        WHERE projeto.id = $1
+        `;
+
+        const data: RetornoDbAditivos[] = await this.prisma.$queryRawUnsafe(sql, projetoId);
+
+        out.push(...this.convertRowsAditivos(data));
+    }
+
+    private convertRowsAditivos(input: RetornoDbAditivos[]): RelProjetosAditivosDto[] {
+        return input.map((db) => {
+            return {
+                id: db.aditivo_id,
+                contrato_id: db.contrato_id,
+                tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
+                data: db.data ?? null,
+                valor_com_reajuste: db.valor_com_reajuste ?? null,
+                percentual_medido: db.percentual_medido ?? null,
+                data_termino_atual: db.data_termino_atual ?? null,
+            };
+        });
+    }
+
+    private async queryDataOrigens(projetoId: number, out: RelProjetoOrigemDto[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            meta.pdm_id,
+            pdm.nome AS pdm_nome,
+            meta.id as meta_id,
+            meta.titulo as meta_titulo,
+            iniciativa.id iniciativa_id,
+            iniciativa.titulo as iniciativa_titulo,
+            atividade.id atividade_id,
+            atividade.titulo as atividade_titulo
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
+          LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
+          LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
+          LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
+          LEFT JOIN pdm ON pdm.id = meta.pdm_id
+        WHERE projeto.id = $1
+        `;
+
+        const data: RetornoDbOrigens[] = await this.prisma.$queryRawUnsafe(sql, projetoId);
+
+        out.push(...this.convertRowsOrigens(data));
+    }
+
+    private convertRowsOrigens(input: RetornoDbOrigens[]): RelProjetoOrigemDto[] {
+        return input.map((db) => {
+            return {
+                projeto_id: db.projeto_id,
+                pdm_id: db.pdm_id ?? null,
+                pdm_titulo: db.pdm_titulo ?? null,
+                meta_id: db.meta_id ?? null,
+                meta_titulo: db.meta_titulo ?? null,
+                iniciativa_id: db.iniciativa_id ?? null,
+                iniciativa_titulo: db.iniciativa_titulo ?? null,
+                atividade_id: db.atividade_id ?? null,
+                atividade_titulo: db.atividade_titulo ?? null,
+            };
+        });
     }
 
     async toFileOutput(params: CreateRelProjetoDto, ctx: ReportContext): Promise<FileOutput[]> {
@@ -392,6 +634,45 @@ export class PPProjetoService implements ReportableService {
                     buffer: await Stream2Buffer(eap),
                 });
             }
+        }
+        await ctx.progress(99);
+
+        if (dados.contratos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.contratos);
+            out.push({
+                name: 'contratos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+        await ctx.progress(99);
+
+        if (dados.aditivos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.aditivos);
+            out.push({
+                name: 'aditivos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+        await ctx.progress(99);
+
+        if (dados.origens.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.origens);
+            out.push({
+                name: 'origens.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
         }
         await ctx.progress(99);
 

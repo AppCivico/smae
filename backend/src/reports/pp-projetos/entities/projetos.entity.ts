@@ -181,6 +181,18 @@ export class RelProjetosAditivosDto {
     data_termino_atual: Date | null;
 }
 
+export class RelProjetosOrigemDto {
+    projeto_id: number;
+    pdm_id: number | null;
+    pdm_titulo: string | null;
+    meta_id: number | null;
+    meta_titulo: string | null;
+    iniciativa_id: number | null;
+    iniciativa_titulo: string | null;
+    atividade_id: number | null;
+    atividade_titulo: string | null;
+}
+
 export class PPProjetosRelatorioDto {
     linhas: RelProjetosDto[];
     cronograma: RelProjetosCronogramaDto[];
@@ -191,4 +203,5 @@ export class PPProjetosRelatorioDto {
     acompanhamentos: RelProjetosAcompanhamentosDto[];
     contratos: RelProjetosContratosDto[];
     aditivos: RelProjetosAditivosDto[];
+    origens: RelProjetosOrigemDto[];
 }
