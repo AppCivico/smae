@@ -1,4 +1,13 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { aditivoDeContrato as schema } from '@/consts/formSchemas';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
+import { useAlertStore } from '@/stores/alert.store';
+import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -11,15 +20,6 @@ import {
   ref,
   watch,
 } from 'vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import SmallModal from '@/components/SmallModal.vue';
-import { aditivoDeContrato as schema } from '@/consts/formSchemas';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dinheiro from '@/helpers/dinheiro';
-import { useAlertStore } from '@/stores/alert.store';
-import { useContratosStore } from '@/stores/contratos.store.ts';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
 const emit = defineEmits(['salvo', 'excluido']);
 
