@@ -117,6 +117,7 @@ export class GrupoRespVariavelService {
         const rows = await this.prisma.grupoResponsavelVariavel.findMany({
             where: {
                 id: filter.id,
+                orgao_id: filter.orgao_id,
                 removido_em: null,
             },
             include: {
