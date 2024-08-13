@@ -97,12 +97,12 @@
         <div class="flex g2 mb1">
           <div class="f1">
             <LabelFromYup
-              name="descricao"
+              name="titulo"
               class="tc300"
               :schema="schema.fields.valores.innerType"
             />
             <Field
-              :name="`valores[${idx}].descricao`"
+              :name="`valores[${idx}].titulo`"
               type="text"
               min="3"
               max="2048"
@@ -110,7 +110,7 @@
             />
             <ErrorMessage
               class="error-msg mb2"
-              :name="`valores[${idx}].descricao`"
+              :name="`valores[${idx}].titulo`"
             />
           </div>
 
@@ -137,12 +137,12 @@
         <div class="flex g2 mb1">
           <div class="f1">
             <LabelFromYup
-              name="titulo"
+              name="descricao"
               class="tc300"
               :schema="schema.fields.valores.innerType"
             />
             <Field
-              :name="`valores[${idx}].titulo`"
+              :name="`valores[${idx}].descricao`"
               type="text"
               min="3"
               max="2048"
@@ -150,7 +150,7 @@
             />
             <ErrorMessage
               class="error-msg mb2"
-              :name="`valores[${idx}].titulo`"
+              :name="`valores[${idx}].descricao`"
             />
           </div>
 
@@ -176,8 +176,8 @@
 
         <button
           class="like-a__text addlink"
-          arial-label="excluir"
-          title="excluir"
+          arial-label="Remover valores"
+          title="Remover valores"
           @click="remove(idx)"
         >
           <svg

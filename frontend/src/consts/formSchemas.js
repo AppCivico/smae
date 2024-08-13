@@ -3382,7 +3382,7 @@ export const variávelCategórica = object({
         id: number()
           .nullable(),
         descricao: string()
-          .label('Descrição')
+          .label('Observações')
           .required('Descrição inválida'),
         ordem: number()
           .label('Ordem')
