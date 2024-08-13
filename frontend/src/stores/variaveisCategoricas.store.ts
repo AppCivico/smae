@@ -86,9 +86,7 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/variavel-categorica/`, params);
-        this.emFoco = {
-          ...resposta,
-        };
+        this.emFoco = resposta.linhas.find((item) => item.id === Number(id));
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
       }

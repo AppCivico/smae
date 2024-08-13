@@ -13,7 +13,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição?.linhas?.[0]"
+    :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
