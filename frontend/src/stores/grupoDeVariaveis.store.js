@@ -19,7 +19,7 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel/`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel`, params);
         this.emFoco = resposta?.linhas?.[0] || null;
       } catch (erro) {
         this.erro = erro;
