@@ -3379,6 +3379,8 @@ export const variávelCategórica = object({
     .label('Valores')
     .of(
       object().shape({
+        id: number()
+          .nullable(),
         descricao: string()
           .label('Descrição')
           .required('Descrição inválida'),

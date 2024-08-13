@@ -90,6 +90,10 @@
         v-for="(field, idx) in fields"
         :key="field.key"
       >
+        <Field
+          type="hidden"
+          :name="`valores[${idx}].id`"
+        />
         <div class="flex g2 mb1">
           <div class="f1">
             <LabelFromYup
