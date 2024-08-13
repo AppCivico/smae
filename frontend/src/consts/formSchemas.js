@@ -3373,7 +3373,7 @@ export const variávelCategórica = object({
     .required('Título inválido'),
   tipo: mixed()
     .label('Espécie')
-    .required('Espécie invalida')
+    .required('Espécie inválida')
     .oneOf(Object.keys(tipoDeVariaveisCategoricas)),
   valores: array()
     .label('Valores')
