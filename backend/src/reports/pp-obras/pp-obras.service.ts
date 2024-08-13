@@ -985,7 +985,7 @@ export class PPObrasService implements ReportableService {
         const sql = `SELECT
             projeto.id AS projeto_id,
             meta.pdm_id,
-            pdm.nome AS pdm_nome,
+            pdm.nome AS pdm_titulo,
             meta.id as meta_id,
             meta.titulo as meta_titulo,
             iniciativa.id iniciativa_id,
