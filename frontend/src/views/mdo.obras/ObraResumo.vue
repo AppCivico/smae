@@ -1,6 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
@@ -10,6 +8,8 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
@@ -208,7 +208,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             v-if="origem.pdm"
             class="t12 uc w700 mb05 tamarelo"
           >
-            Plano
+            PdM/Plano Setorial
           </dt>
 
           <dd

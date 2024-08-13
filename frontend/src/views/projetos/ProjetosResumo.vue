@@ -425,7 +425,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             v-if="origem.pdm"
             class="t12 uc w700 mb05 tamarelo"
           >
-            Plano
+            Pdm/Plano Setorial
           </dt>
 
           <dd
