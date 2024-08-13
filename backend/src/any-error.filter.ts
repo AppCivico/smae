@@ -32,6 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
 
         if (ehAdmin) {
+            console.log(exception);
             responseBody = {
                 ...responseBody,
                 exception: {
