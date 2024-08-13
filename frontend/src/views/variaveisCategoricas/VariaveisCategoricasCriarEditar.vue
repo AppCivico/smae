@@ -183,7 +183,10 @@
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_remove" /></svg>
+          >
+            <use xlink:href="#i_remove" />
+          </svg>
+          Remover valor
         </button>
       </div>
 
@@ -195,7 +198,9 @@
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg>
+        >
+          <use xlink:href="#i_+" />
+        </svg>
         Adicionar valor
       </button>
     </FieldArray>
