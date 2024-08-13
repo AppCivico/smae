@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
 import { usePdMStore } from '@/stores/pdm.store';
+import { defineStore } from 'pinia';
 import { usePlanosSetoriaisStore } from './planosSetoriais.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -87,7 +87,7 @@ export const useMetasStore = defineStore({
     async getRelacionados(params) {
       try {
         if (params.meta_id && params.pdm_id) {
-          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
           this.relacionadosMeta = response;
           return true;
         }

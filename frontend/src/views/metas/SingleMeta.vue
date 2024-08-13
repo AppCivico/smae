@@ -46,12 +46,10 @@ async function iniciar() {
     await Promise.allSettled(promessas);
   }
 
-  if (route.meta.entidadeMãe === 'pdm') {
-    if (meta_id && activePdm.value.id) {
-      MetasStore.getRelacionados({
-        meta_id, pdm_id: activePdm.value.id,
-      });
-    }
+  if (meta_id && activePdm.value.id) {
+    MetasStore.getRelacionados({
+      meta_id, pdm_id: activePdm.value.id,
+    });
   }
 
   nextTick().then(() => {
