@@ -37,12 +37,10 @@
         <td>{{ item.descricao }}</td>
         <td>
           {{
-            item.valores.map((valor) => valor.descricao).filter(descricao => descricao)
-              .map((descricao, index, array) => {
-                return descricao + (index < array.length - 1 ? ', ' : '');
-              })
-              .join('')
-              || '-'
+            item.valores
+              .filter(valor => valor.valor_variavel !== null && valor.valor_variavel !== undefined)
+              .map((valor, index, array) => `${valor.valor_variavel}${index < array.length - 1 ? ', ' : ''}`)
+              .join('') || '-'
           }}
         </td>
         <td>
