@@ -31,7 +31,6 @@ const {
   chamadasPendentes,
   emFoco: contratoEmFoco,
   erro,
-  listaDeDependencias,
 } = storeToRefs(contratosStore);
 
 const {
@@ -123,6 +122,10 @@ watch(exibirDialogo, (novoValor) => {
 }, { once: true });
 </script>
 <template>
+  <LoadingComponent v-if="chamadasPendentes.aditivo">
+    Carregando aditivos
+  </LoadingComponent>
+
   <table class="tablemain mb2">
     <col class="col--minimum">
     <col>
@@ -232,7 +235,10 @@ watch(exibirDialogo, (novoValor) => {
       />
     </div>
 
-    <form @submit.prevent="onSubmit">
+    <form
+      :aria-busy="chamadasPendentes.aditivo"
+      @submit.prevent="onSubmit"
+    >
       <Field
         v-if="contratoEmFoco?.id"
         name="contrato_id"
@@ -253,6 +259,10 @@ watch(exibirDialogo, (novoValor) => {
             maxlength="500"
             class="inputtext light"
           />
+          <ErrorMessage
+            name="valor"
+            class="error-msg"
+          />
         </div>
         <div class="f1 fb15em">
           <LabelFromYup
@@ -266,6 +276,10 @@ watch(exibirDialogo, (novoValor) => {
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('data', $v || null); }"
           />
+          <ErrorMessage
+            name="valor"
+            class="error-msg"
+          />
         </div>
         <div class="f1 fb20em">
           <LabelFromYup
@@ -276,6 +290,7 @@ watch(exibirDialogo, (novoValor) => {
             name="tipo_aditivo_id"
             as="select"
             class="inputtext light mb1"
+            :aria-busy="chamadasPendentesDeTiposDeAditivos.lista"
           >
             <option value>
               Selecionar
@@ -288,6 +303,13 @@ watch(exibirDialogo, (novoValor) => {
               {{ item.nome }}
             </option>
           </Field>
+          <ErrorMessage
+            name="valor"
+            class="error-msg"
+          />
+          <ErrorComponent
+            :erro="erroDeTiposDeAditivos"
+          />
         </div>
         <div
           v-if="tipoDeAditivoPorId[carga.tipo_aditivo_id]?.habilita_valor_data_termino"
@@ -305,6 +327,10 @@ watch(exibirDialogo, (novoValor) => {
             @update:model-value="($v) => {
               setFieldValue('data_termino_atualizada', $v || null);
             }"
+          />
+          <ErrorMessage
+            name="valor"
+            class="error-msg"
           />
         </div>
         <div
@@ -324,6 +350,10 @@ watch(exibirDialogo, (novoValor) => {
             @update:model-value="($v) => {
               setFieldValue('percentual_medido', Number($v) || null);
             }"
+          />
+          <ErrorMessage
+            name="valor"
+            class="error-msg"
           />
         </div>
         <div
