@@ -90,7 +90,13 @@ export const useMacrotemasStore = defineStore({
         if (!this.Macrotemas.length) {
           await this.getAll();
         }
-        this.tempMacrotemas = f ? this.Macrotemas.filter((u) => (f.textualSearch ? (u.descricao + u.titulo + u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1)) : this.Macrotemas;
+        this.tempMacrotemas = f
+          ? this.Macrotemas.filter((u) => (f.textualSearch
+            ? (u.descricao + u.titulo + u.numero)
+              .toLowerCase()
+              .includes(f.textualSearch.toLowerCase())
+            : 1))
+          : this.Macrotemas;
       } catch (error) {
         this.tempMacrotemas = { error };
       }

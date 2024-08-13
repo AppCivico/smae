@@ -86,7 +86,13 @@ export const useTemasStore = defineStore({
         if (!this.Temas.length) {
           await this.getAll();
         }
-        this.tempTemas = f ? this.Temas.filter((u) => (f.textualSearch ? (u.descricao + u.titulo + u.codigo + u.extensoes).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1)) : this.Temas;
+        this.tempTemas = f
+          ? this.Temas.filter((u) => (f.textualSearch
+            ? (u.descricao + u.titulo + u.codigo + u.extensoes)
+              .toLowerCase()
+              .includes(f.textualSearch.toLowerCase())
+            : 1))
+          : this.Temas;
       } catch (error) {
         this.tempTemas = { error };
       }

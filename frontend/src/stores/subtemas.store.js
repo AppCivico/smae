@@ -90,7 +90,13 @@ export const useSubtemasStore = defineStore({
         if (!this.Subtemas.length) {
           await this.getAll();
         }
-        this.tempSubtemas = f ? this.Subtemas.filter((u) => (f.textualSearch ? (u.descricao + u.titulo + u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1)) : this.Subtemas;
+        this.tempSubtemas = f
+          ? this.Subtemas.filter((u) => (f.textualSearch
+            ? (u.descricao + u.titulo + u.numero)
+              .toLowerCase()
+              .includes(f.textualSearch.toLowerCase())
+            : 1))
+          : this.Subtemas;
       } catch (error) {
         this.tempSubtemas = { error };
       }

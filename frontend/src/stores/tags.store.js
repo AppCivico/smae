@@ -101,7 +101,9 @@ export const useTagsStore = defineStore({
         }
         this.tempTags = f && this.Tags.length
           ? this.Tags.filter((u) => (f.textualSearch
-            ? (u.descricao + u.titulo + u.numero).toLowerCase().includes(f.textualSearch.toLowerCase())
+            ? (u.descricao + u.titulo + u.numero)
+              .toLowerCase()
+              .includes(f.textualSearch.toLowerCase())
             : 1))
           : this.Tags;
       } catch (error) {
