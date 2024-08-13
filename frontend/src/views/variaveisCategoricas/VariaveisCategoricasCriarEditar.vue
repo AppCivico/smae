@@ -72,7 +72,8 @@
       />
       <Field
         name="descricao"
-        type="text"
+        as="textarea"
+        rows="5"
         min="3"
         max="2048"
         class="inputtext light mb1"
@@ -95,8 +96,8 @@
           type="hidden"
           :name="`valores[${idx}].id`"
         />
-        <div class="flex g2 mb1">
-          <div class="f1">
+        <div class="flex flexwrap g2 mb1">
+          <div class="f1 fb25em">
             <LabelFromYup
               name="titulo"
               class="tc300"
@@ -115,7 +116,7 @@
             />
           </div>
 
-          <div class="f1">
+          <div class="f1 fb5em">
             <LabelFromYup
               name="ordem"
               class="tc300"
@@ -133,29 +134,7 @@
               :name="`valores[${idx}].ordem`"
             />
           </div>
-        </div>
-
-        <div class="flex g2 mb1">
-          <div class="f1">
-            <LabelFromYup
-              name="descricao"
-              class="tc300"
-              :schema="schema.fields.valores.innerType"
-            />
-            <Field
-              :name="`valores[${idx}].descricao`"
-              type="text"
-              min="3"
-              max="2048"
-              class="inputtext light mb1"
-            />
-            <ErrorMessage
-              class="error-msg mb2"
-              :name="`valores[${idx}].descricao`"
-            />
-          </div>
-
-          <div class="f1">
+          <div class="f1 fb5em">
             <LabelFromYup
               name="valor_variavel"
               class="tc300"
@@ -175,6 +154,25 @@
           </div>
         </div>
 
+        <div class="f1">
+          <LabelFromYup
+            name="descricao"
+            class="tc300"
+            :schema="schema.fields.valores.innerType"
+          />
+          <Field
+            :name="`valores[${idx}].descricao`"
+            as="textarea"
+            rows="5"
+            min="3"
+            max="2048"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb2"
+            :name="`valores[${idx}].descricao`"
+          />
+        </div>
         <button
           class="like-a__text addlink mb1"
           arial-label="Remover valores"
