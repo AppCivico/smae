@@ -22,6 +22,7 @@ const erro = ref(null);
 if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
   onErrorCaptured((err) => {
     erro.value = err;
+    console.trace(err);
   });
 }
 </script>
