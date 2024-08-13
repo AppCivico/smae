@@ -224,27 +224,6 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
     <CheckClose :formulário-sujo="formulárioSujo" />
   </header>
 
-  <div
-    v-ScrollLockDebug
-    class="flex flexwrap g2 mb1"
-  >
-    <textarea
-      readonly
-      class="f1"
-      rows="20"
-    >emFoco: {{ emFoco }}</textarea>
-    <textarea
-      readonly
-      class="f1"
-      rows="20"
-    >values: {{ values }}</textarea>
-    <textarea
-      readonly
-      class="f1"
-      rows="20"
-    >controlledValues: {{ controlledValues }}</textarea>
-  </div>
-
   <form
     :aria-busy="chamadasPendentes.emFoco && !emFoco"
     @submit="onSubmit"
