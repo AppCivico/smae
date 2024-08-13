@@ -329,6 +329,7 @@ function filterResponsible(orgao_id) {
           v-model="values.tags"
           name="tags"
           :valores-iniciais="valoresIniciais.tags || []"
+          :pdm-id="activePdm.id"
         />
       </div>
 

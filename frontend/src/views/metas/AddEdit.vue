@@ -366,6 +366,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
           v-model="values.tags"
           name="tags"
           :valores-iniciais="valoresIniciais.tags || []"
+          :pdm-id="activePdm.id"
         />
       </div>
 
