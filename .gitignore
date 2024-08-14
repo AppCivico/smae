@@ -1,5 +1,6 @@
 .vstags
 .env
+.env.*
 .vscode
 .~lock*
 utils/sync-proxy.sh
