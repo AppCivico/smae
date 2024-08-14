@@ -90,6 +90,9 @@ export class VariavelCategoricaService {
                 id: filters.id,
                 removido_em: null,
                 tipo: filters.tipo,
+                AND: {
+                    NOT: { tipo: 'Cronograma' },
+                }
             },
             orderBy: { titulo: 'asc' },
             select: {
