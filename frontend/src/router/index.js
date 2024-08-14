@@ -71,6 +71,14 @@ export const router = createRouter({
     panoramaTransferencias,
     variaveis,
 
+    {
+      path: '/lista-de-icones',
+      component: () => import('@/views/ListaDeIcones.vue'),
+      meta: {
+        título: 'Lista de ícones',
+      },
+    },
+
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   parseQuery(query) {
