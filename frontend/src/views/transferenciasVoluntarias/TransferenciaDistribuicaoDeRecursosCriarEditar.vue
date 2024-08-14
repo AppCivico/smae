@@ -726,7 +726,7 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
-    <div class="mb1">
+    <div class="mb2">
       <LabelFromYup
         :schema="schema"
         name="registros_sei"
@@ -791,19 +791,17 @@ const isSomaCorreta = computed(() => {
             />
           </div>
 
-          <div class="align-end">
-            <button
-              class="like-a__text addlink"
-              arial-label="excluir"
-              title="excluir"
-              @click="remove(idx)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg>
-            </button>
-          </div>
+          <button
+            class="like-a__text addlink mt1"
+            arial-label="excluir"
+            title="excluir"
+            @click="remove(idx)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
         </div>
 
         <button
