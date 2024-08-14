@@ -1,8 +1,6 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent, ref, nextTick, onMounted } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToDate, { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -10,6 +8,12 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  computed, defineAsyncComponent,
+  nextTick, onMounted,
+  ref,
+} from 'vue';
 
 const AndamentoDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
@@ -735,26 +739,62 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
 
     <div>
-      <div class="flex g2 flexwrap mb1">
-        <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
-            Número SEI
-          </dt>
+      <table
+        v-if="distribuição.registros_sei?.length"
+        class="tablemain no-zebra horizontal-lines mb1"
+      >
+        <caption class="t16 w700 mb05 tc500 tl">
+          Números SEI
+        </caption>
+        <col>
+        <col class="col--dataHora">
+        <col class="col--dataHora">
+        <col class="col--dataHora">
+        <col>
+        <col>
+        <col class="col--botão-de-ação">
 
-          <dd v-if="distribuição.registros_sei?.length">
-            <ul>
-              <li
-                v-for="(registro, i) in distribuição.registros_sei"
-                :key="i"
+        <thead>
+          <th>Código</th>
+          <th>Sincronização</th>
+          <th>Alteração</th>
+          <th>Andamento</th>
+          <th>Unidade</th>
+          <th>Usuário</th>
+          <th />
+        </thead>
+
+        <tbody>
+          <tr
+            v-for="registro, idx in distribuição.registros_sei"
+            :key="idx"
+          >
+            <th>{{ registro?.processo_sei }}</th>
+            <td>{{ dateToDate(registro?.integracao_sei?.atualizado_em) }}</td>
+            <td>{{ dateToDate(registro?.integracao_sei?.sei_atualizado_em) }}</td>
+            <td>{{ dateToDate(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
+            <td>
+              {{ registro?.procesado?.ultimo_andamento_unidade?.descricao }}
+              -
+              {{ registro?.procesado?.ultimo_andamento_unidade?.sigla }}
+            </td>
+            <td>{{ registro?.processado?.ultimo_andamento_por?.nome }}</td>
+            <td>
+              <SmaeLink
+                v-if="registro?.integracao_sei?.link"
+                :to="registro?.integracao_sei?.link"
+                class="tlink"
               >
-                {{ registro.processo_sei || '-' }}
-              </li>
-            </ul>
-          </dd>
-          <dd v-else>
-            -
-          </dd>
-        </dl>
+                <span>Abrir no site do SEI</span> <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_link" /></svg>
+              </SmaeLink>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex g2 flexwrap mb1">
         <dl class="f1">
           <dt class="t16 w700 mb05 tc500">
             Número proposta
