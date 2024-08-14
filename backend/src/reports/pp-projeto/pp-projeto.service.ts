@@ -661,17 +661,17 @@ export class PPProjetoService implements ReportableService {
             });
         }
 
-        if (dados.origens.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.origens);
-            out.push({
-                name: 'origens.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+       // if (dados.origens.length) {
+       //     const json2csvParser = new Parser({
+       //         ...DefaultCsvOptions,
+       //         transforms: defaultTransform,
+       //     });
+       //     const linhas = json2csvParser.parse(dados.origens);
+       //     out.push({
+       //         name: 'origens.csv',
+       //         buffer: Buffer.from(linhas, 'utf8'),
+       //     });
+       // }
         await ctx.progress(99);
 
         return [
