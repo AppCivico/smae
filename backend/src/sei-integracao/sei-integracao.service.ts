@@ -226,6 +226,9 @@ export class SeiIntegracaoService {
                 processo_sei: {
                     in: normalizedProcessos,
                 },
+                NOT: {
+                    ativo: ativo,
+                },
             },
             data: {
                 ativo: ativo,

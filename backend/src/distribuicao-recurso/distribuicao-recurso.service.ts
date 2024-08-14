@@ -1380,8 +1380,10 @@ export class DistribuicaoRecursoService {
             });
 
         const operations = [];
+        const processoAtivar: string[] = created.map((r) => r.processo_sei);
 
         for (const updatedRow of updated) {
+            processoAtivar.push(updatedRow.processo_sei);
             operations.push(
                 prismaTx.distribuicaoRecursoSei.update({
                     where: {
@@ -1413,7 +1415,22 @@ export class DistribuicaoRecursoService {
             );
         }
 
+        await this.seiService.atualizaStatusAtivo(processoAtivar, true);
+
         if (deleted.length > 0) {
+            const removidos = await prismaTx.distribuicaoRecursoSei.findMany({
+                where: {
+                    id: { in: deleted },
+                    distribuicao_recurso_id: distribuicaoRecursoId,
+                    removido_em: null,
+                },
+                select: {
+                    processo_sei: true,
+                },
+            });
+            const processosRemover = removidos.map((r) => r.processo_sei);
+            await this.seiService.atualizaStatusAtivo(processosRemover, false);
+
             operations.push(
                 prismaTx.distribuicaoRecursoSei.deleteMany({
                     where: {
