@@ -7,35 +7,31 @@ from typing import List
 
 import core.dao.basic as dao
 import core.schemas.basic as schemas
-
+from core.parsers.basic import parser_unidade, parse_tipo_doc
 
 app = APIRouter()
 
-@app.get("/unidades", response_model=Page[schemas.Unidade], tags=['parametros_do_processo'])
+@app.get("/unidades", response_model=Page[schemas.Unidade], tags=['categorias'])
 def get_unidades():
 
     unidades = dao.lst_unidades()
-    return paginate(unidades)
+    unidades_parsed = [parser_unidade(unidade) for unidade in unidades]
+    return paginate(unidades_parsed)
 
-@app.get("/processo/tipos", response_model=Page[schemas.TipoProcesso], tags=['parametros_do_processo'])
+@app.get("/processos/tipos", response_model=Page[schemas.TipoProcesso], tags=['categorias', 'processo'])
 def get_tipos_processo():
 
     tipos = dao.lst_tipos_processo()
     return paginate(tipos)
 
-@app.get("/documento/tipos", response_model=Page[schemas.TipoDocumento], tags=['parametros_do_processo'])
+@app.get("/documentos/tipos", response_model=Page[schemas.TipoDocumento], tags=['categorias', 'documento'])
 def get_tipos_doc():
 
     tipos = dao.lst_tipos_documento()
-    return paginate(tipos)
 
-app = add_pagination(app)
+    tipos_parsed = [parse_tipo_doc(tipo) for tipo in tipos]
 
-@app.get("/documento/hipoteses_legais_acesso_restrito", response_model=Page[schemas.HipoteseLegal], tags=['parametros_do_processo'])
-def get_tipos_doc():
-
-    hipoteses = dao.lst_hipoteses_legais_acesso_restrito()
-    return paginate(hipoteses)
+    return paginate(tipos_parsed)
 
 app = add_pagination(app)
 

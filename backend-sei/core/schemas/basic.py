@@ -1,25 +1,33 @@
 from pydantic import BaseModel, validator
 from typing import Literal
+from core.exceptions.basic import DadosForaDoPadrao
+from .validators import regex_link_web
 
-from .validators import s_n_to_bool
+class Link(BaseModel):
+
+    link : str
+
+    #validators
+    _link_processo = validator('link',
+                               allow_reuse=True, pre=True, always=True)(regex_link_web)
 
 class Unidade(BaseModel):
 
     id_unidade : str
     sigla : str
     descricao : str
-    sin_protocolo : bool
-    sin_arquivamento : bool
-    sin_ouvidoria : bool
+    tipo_unidade : Literal[
+                            'protocolo',
+                            'arquivo',
+                            'ouvidoria',
+                            'regular'
+                        ]
+    
+class Usuario(BaseModel):
 
-    #validators
-
-    _protocolo_to_bool = validator('sin_protocolo', 
-                                   allow_reuse=True, pre=True, always=True)(s_n_to_bool)
-    _arquivamento_to_bool = validator('sin_arquivamento', 
-                                      allow_reuse=True, pre=True, always=True)(s_n_to_bool)
-    _ouvidoria_to_bool = validator('sin_ouvidoria', 
-                                   allow_reuse=True, pre=True, always=True)(s_n_to_bool)
+    id : str
+    nome : str
+    rf : str
     
 class TipoProcesso(BaseModel):
 
@@ -28,17 +36,21 @@ class TipoProcesso(BaseModel):
 
 class TipoDocumento(BaseModel):
 
-    id_serie : str
-    nome : str
+    id : str
     aplicabilidade : Literal[
                             'internos_e_externos',
                             'internos',
                             'externos',
-                            'formularios'
+                            'formularios',
+                            'nao_informado'
                         ]
+    tipo : str
 
     @validator('aplicabilidade', pre=True, always=True)
     def padronizar_aplicabilidade(cls, value, values)->str:
+
+        if value is None:
+            return 'nao_informado'
 
         val = str(value).lower().strip()
 
@@ -63,15 +75,7 @@ class TipoDocumento(BaseModel):
         try:
             return mapper[val]
         except KeyError:
-            raise ValueError(f'Valor fora do padrão: {val}. Opções: {mapper}')
-        
-
-class HipoteseLegal(BaseModel):
-
-    id_hipotese_legal : str
-    nome : str
-    base_legal : str
-    nivel_acesso : str
+            raise DadosForaDoPadrao(500, f'Valor para aplicabilidade do doc. fora do padrão: {val}. Opções: {mapper}')
 
 
 

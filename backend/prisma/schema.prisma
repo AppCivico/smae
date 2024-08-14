@@ -6803,9 +6803,9 @@ model StatusSEI {
     //     const sortedJson = convertToJsonString(obj);
     //     return notWebCrypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
     // }
-    sei_hash      String?
-    resumo_hash   String?
-    arquivos_hash String?
+    sei_hash      String
+    resumo_hash   String
+    arquivos_hash String
 
     criado_em               DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_em           DateTime? @db.Timestamptz(6)

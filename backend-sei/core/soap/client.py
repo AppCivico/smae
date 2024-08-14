@@ -5,13 +5,23 @@ from core.utils.string import snake_to_camel_case
 from .data_parsing import zeep_obj_to_dict, zeep_obj_array_to_dict_array
 from core.config import WSDL, USER, PASSW
 
-from typing import Callable
+from typing import Callable, List
 
 class SEISoap:
 
     def __init__(self):
 
         self.client = Client(WSDL)
+
+
+    @property
+    def service_lst(self)->List[str]:
+
+        methods =  dir(self.client.service)
+        services = [method for method in methods 
+                    if not method.startswith('__')]
+        
+        return services
 
     def __get_service(self, service_name:str)->Callable:
 

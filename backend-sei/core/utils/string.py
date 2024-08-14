@@ -1,4 +1,5 @@
-
+import re
+from typing import Optional
 
 def letra_minuscula_comeco(txt:str)->str:
     if txt[0].isupper():
@@ -41,5 +42,14 @@ def camel_to_snake_case(text:str)->str:
     return ''.join(new_text)
     
 
+def match_erro_processo_nao_encontrado(error_msg:str)->Optional[str]:
 
+    patt = r'Processo \[[a-zA-Z0-9./-]+] não encontrado'
+    if re.search(patt, error_msg):
+        num_proc = re.search(r'\[[a-zA-Z0-9./-]+]', error_msg)
+        num_proc = num_proc.group()[1:-1]
+
+        return num_proc
+    
+    return None
     
