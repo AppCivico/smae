@@ -158,22 +158,24 @@ services:
         max-file: "2"
         max-size: 100MB
 
-#  smae_sei:
-#    container_name: "${API_CONTAINER_NAME}_sei"
-#    build:
-#      context: ./backend-sei/
-#      dockerfile: Dockerfile
-#    restart: unless-stopped
-#    environment:
-#      SEI_API_TOKEN: "${SEI_API_TOKEN}"
-#      PORT: 80
-#    networks:
-#      - api_sei
-#    logging:
-#      driver: "json-file"
-#      options:
-#        max-file: "2"
-#        max-size: 100MB
+  smae_sei:
+    container_name: "${API_CONTAINER_NAME}_sei"
+    build:
+      context: ./backend-sei/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      host_sei: "${SEI_HOST}"
+      endpoint_wsdl: "${SEI_ENDPOINT_WSDL}"
+      sigla_sistema: "${SEI_SIGLA_SISTEMA}"
+      identificacao_servico: "${SEI_API_TOKEN}"
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
 
   # RAM 250mb RAM max
   email_service:
