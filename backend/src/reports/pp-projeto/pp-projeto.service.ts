@@ -635,7 +635,7 @@ export class PPProjetoService implements ReportableService {
                 });
             }
         }
-        await ctx.progress(99);
+        await ctx.progress(95);
 
         if (dados.contratos.length) {
             const json2csvParser = new Parser({
@@ -672,6 +672,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(99);
 
         return [
             {
