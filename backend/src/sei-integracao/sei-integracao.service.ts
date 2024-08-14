@@ -16,6 +16,13 @@ export class SeiIntegracaoService {
         private readonly sei: SeiApiService
     ) {}
 
+    /**
+     * Remove não dígitos de uma string.
+     */
+    private normalizaProcessoSei(str: string): string {
+        return str.replace(/\D/g, '');
+    }
+
     private jsonFlatHash(obj: any): string {
         const sortedJson = convertToJsonString(obj);
         return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
@@ -40,6 +47,8 @@ export class SeiIntegracaoService {
     }
 
     async buscaSeiRelatorio(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
+        params.processo_sei = this.normalizaProcessoSei(params.processo_sei);
+
         const now = new Date();
         let statusSei = await this.prisma.statusSEI.findUnique({
             where: { processo_sei: params.processo_sei },
@@ -113,6 +122,8 @@ export class SeiIntegracaoService {
     }
 
     async buscaSeiResumo(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
+        params.processo_sei = this.normalizaProcessoSei(params.processo_sei);
+
         const now = new Date();
         let statusSei = await this.prisma.statusSEI.findUnique({
             where: { processo_sei: params.processo_sei },
@@ -181,8 +192,10 @@ export class SeiIntegracaoService {
     }
 
     async buscaSeiStatus(processos: string[]): Promise<SeiIntegracaoDto[]> {
+        const normalizedProcessos = processos.map(this.normalizaProcessoSei);
+
         const statusSeiDb = await this.prisma.statusSEI.findMany({
-            where: { processo_sei: { in: processos } },
+            where: { processo_sei: { in: normalizedProcessos } },
         });
 
         return statusSeiDb.map((statusSei) => {
@@ -206,10 +219,12 @@ export class SeiIntegracaoService {
     }
 
     async atualizaStatusAtivo(processos: string[], ativo: boolean): Promise<void> {
+        const normalizedProcessos = processos.map(this.normalizaProcessoSei);
+
         await this.prisma.statusSEI.updateMany({
             where: {
                 processo_sei: {
-                    in: processos,
+                    in: normalizedProcessos,
                 },
             },
             data: {
