@@ -18,7 +18,7 @@ export class SeiProcessadoDto {
 }
 
 export class SeiIntegracaoDto {
-    id?: number;
+    id: number;
     processo_sei: string;
     ativo: boolean;
     link: string;
@@ -26,8 +26,8 @@ export class SeiIntegracaoDto {
     sei_atualizado_em: Date;
     resumo_atualizado_em: Date;
     status_code: number | null;
-    json_resposta: any;
-
+    json_resposta?: any;
+    resumo_json_resposta?: any;
     processado: SeiProcessadoDto | null;
 }
 //7610.2019/0001393-8

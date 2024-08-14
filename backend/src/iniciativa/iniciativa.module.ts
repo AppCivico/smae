@@ -6,7 +6,7 @@ import { IniciativaController, IniciativaSetorialController } from './iniciativa
 import { IniciativaService } from './iniciativa.service';
 
 @Module({
-    imports: [PrismaModule, MetaModule, VariavelModule],
+    imports: [PrismaModule, MetaModule, IniciativaModule, VariavelModule],
     controllers: [IniciativaController, IniciativaSetorialController],
     providers: [IniciativaService],
 })
