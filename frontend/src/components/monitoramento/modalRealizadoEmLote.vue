@@ -45,8 +45,8 @@ const {
 
 const linhasAbertas = ref([]);
 const valorPadrãoParaAnáliseQualitativa = ref('');
-const valorPadrãoParaRealizado = ref(null);
-const valorPadrãoParaRealizadoAcumulado = ref(null);
+const valorPadrãoParaRealizado = ref('');
+const valorPadrãoParaRealizadoAcumulado = ref('');
 
 const variáveisComSuasDatas = computed(() => (Array.isArray(props.variávelComposta?.variaveis)
   ? props.variávelComposta.variaveis.reduce((acc, cur) => acc.concat(
@@ -168,10 +168,10 @@ function preencher(quais) {
       if (!!valorPadrãoParaAnáliseQualitativa.value && !x.analise_qualitativa) {
         setFieldValue(`linhas[${i}].analise_qualitativa`, valorPadrãoParaAnáliseQualitativa.value);
       }
-      if (!!valorPadrãoParaRealizado.value && !x.valor_realizado) {
+      if (valorPadrãoParaRealizado.value !== '' && !x.valor_realizado) {
         setFieldValue(`linhas[${i}].valor_realizado`, valorPadrãoParaRealizado.value);
       }
-      if (!!valorPadrãoParaRealizadoAcumulado.value && !x.valor_realizado_acumulado) {
+      if (valorPadrãoParaRealizadoAcumulado.value !== '' && !x.valor_realizado_acumulado) {
         setFieldValue(`linhas[${i}].valor_realizado_acumulado`, valorPadrãoParaRealizadoAcumulado.value);
       }
     });
@@ -397,7 +397,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         <div class="f1">
           <label class="label">Valores realizados</label>
           <input
-            v-model="valorPadrãoParaRealizado"
+            v-model.number="valorPadrãoParaRealizado"
             type="number"
             class="inputtext light mb1"
           >
@@ -405,7 +405,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         <div class="f1">
           <label class="label">Valores realizados acumulados</label>
           <input
-            v-model="valorPadrãoParaRealizadoAcumulado"
+            v-model.number="valorPadrãoParaRealizadoAcumulado"
             type="number"
             class="inputtext light mb1"
           >
