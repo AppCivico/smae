@@ -281,12 +281,12 @@ export class PPProjetoService implements ReportableService {
             });
         });
 
-        const out_contratos: RelProjetosContratosDto[] = [];
-        const out_aditivos: RelProjetosAditivosDto[] = [];
-        const out_origens: RelProjetoOrigemDto[] = [];
-        await this.queryDataContratos(projetoRow.id, out_contratos);
-        await this.queryDataAditivos(projetoRow.id, out_aditivos);
-        await this.queryDataOrigens(projetoRow.id, out_origens);
+        //const out_contratos: RelProjetosContratosDto[] = [];
+        //const out_aditivos: RelProjetosAditivosDto[] = [];
+        //const out_origens: RelProjetoOrigemDto[] = [];
+        //await this.queryDataContratos(projetoRow.id, out_contratos);
+        //await this.queryDataAditivos(projetoRow.id, out_aditivos);
+        //await this.queryDataOrigens(projetoRow.id, out_origens);
 
         return {
             detail: detail,
@@ -295,9 +295,9 @@ export class PPProjetoService implements ReportableService {
             planos_acao: planoAcaoOut,
             acompanhamentos: acompanhamentoOut,
             encaminhamentos: encaminhamentoOut,
-            contratos: out_contratos,
-            aditivos: out_aditivos,
-            origens: out_origens,
+            contratos: [],
+            aditivos: [],
+            origens: [],
         };
     }
 
