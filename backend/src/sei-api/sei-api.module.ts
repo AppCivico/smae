@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { SeiApiService } from './sof-api.service';
+import { SeiApiService } from './sei-api.service';
 
 @Module({
     providers: [SeiApiService],

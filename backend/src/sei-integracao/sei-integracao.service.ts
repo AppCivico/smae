@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
 import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
-import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService } from '../sei-api/sof-api.service';
+import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService } from '../sei-api/sei-api.service';
 import { FilterSeiParams, SeiIntegracaoDto, SeiProcessadoDto } from './entities/sei-entidade.entity';
 const convertToJsonString = require('fast-json-stable-stringify');
 
