@@ -637,17 +637,17 @@ export class PPProjetoService implements ReportableService {
         }
         await ctx.progress(95);
 
-        if (dados.contratos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.contratos);
-            out.push({
-                name: 'contratos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        //if (dados.contratos.length) {
+        //    const json2csvParser = new Parser({
+        //        ...DefaultCsvOptions,
+        //        transforms: defaultTransform,
+        //    });
+        //    const linhas = json2csvParser.parse(dados.contratos);
+        //    out.push({
+        //        name: 'contratos.csv',
+        //        buffer: Buffer.from(linhas, 'utf8'),
+        //    });
+        //}
 
         //if (dados.aditivos.length) {
         //    const json2csvParser = new Parser({
