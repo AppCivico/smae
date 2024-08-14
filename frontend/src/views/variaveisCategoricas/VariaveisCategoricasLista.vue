@@ -38,13 +38,14 @@
         <td>
           {{
             item.valores
-              .map(valor => valor.valor_variavel)
+              .map(valor => valor.titulo)
               .join(', ')
               || '-'
           }}
         </td>
         <td>
           <router-link
+            v-if="item.pode_editar"
             :to="{ name: 'variaveisCategoricasEditar', params: { variavelId: item.id } }"
             class="tprimary"
           >
@@ -56,6 +57,7 @@
         </td>
         <td>
           <button
+            v-if="item.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"

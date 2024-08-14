@@ -3367,7 +3367,7 @@ export const variável = (singleIndicadores) => object()
 export const variávelCategórica = object({
   descricao: string()
     .label('Descrição')
-    .required('Descrição inválida'),
+    .nullable(),
   titulo: string()
     .label('Título')
     .required('Título inválido'),
@@ -3383,8 +3383,9 @@ export const variávelCategórica = object({
           .nullable(),
         descricao: string()
           .label('Observações')
-          .required('Descrição inválida'),
+          .nullable(),
         ordem: number()
+          .positive()
           .label('Ordem')
           .required('Ordem inválida'),
         titulo: string()

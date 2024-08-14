@@ -128,8 +128,7 @@
             <Field
               :name="`valores[${idx}].ordem`"
               type="number"
-              min="3"
-              max="2048"
+              min="0"
               class="inputtext light mb1"
             />
             <ErrorMessage
