@@ -221,6 +221,19 @@ export class SeiIntegracaoService {
     async atualizaStatusAtivo(processos: string[], ativo: boolean): Promise<void> {
         const normalizedProcessos = processos.map(this.normalizaProcessoSei);
 
+        for (const processo of normalizedProcessos) {
+            if (!ativo) continue;
+
+            // pelo menos uma vez, atualiza o status do processo já que no momento não temos um trigger na web
+            const exists = await this.prisma.statusSEI.count({
+                where: { processo_sei: processo },
+            });
+
+            if (!exists) {
+                await this.buscaSeiRelatorio({ processo_sei: processo });
+            }
+        }
+
         await this.prisma.statusSEI.updateMany({
             where: {
                 processo_sei: {
