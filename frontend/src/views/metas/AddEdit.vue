@@ -78,12 +78,6 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
   await Promise.allSettled(promessas);
 
   if (singleMeta.value.id) {
-    if (singleMeta.value?.tema?.id) singleMeta.value.tema_id = singleMeta.value.tema.id;
-    if (singleMeta.value?.macro_tema?.id) {
-      singleMeta.value.macro_tema_id = singleMeta.value.macro_tema.id;
-    }
-    if (singleMeta.value?.sub_tema?.id) singleMeta.value.sub_tema_id = singleMeta.value.sub_tema.id;
-
     if (singleMeta.value.orgaos_participantes) {
       orgaos_participantes.value.splice(0);
       singleMeta.value.orgaos_participantes.forEach((x) => {
@@ -108,9 +102,9 @@ const schema = computed(() => metaSchema(activePdm.value));
 const valoresIniciais = computed(() => ({
   ...singleMeta.value,
 
-  macro_tema_id: singleMeta.value.macro_tema_id || route.params.macro_tema_id,
-  sub_tema_id: singleMeta.value.sub_tema_id || route.params.sub_tema_id,
-  tema_id: singleMeta.value.tema_id || route.params.tema_id,
+  macro_tema_id: singleMeta.value.macro_tema?.id || route.params.macro_tema_id,
+  sub_tema_id: singleMeta.value.sub_tema?.id || route.params.sub_tema_id,
+  tema_id: singleMeta.value.tema?.id || route.params.tema_id,
 
   tags: Array.isArray(singleMeta.value?.tags)
     ? singleMeta.value.tags.map((tag) => tag.id)
@@ -214,7 +208,7 @@ function filterResponsible(orgao_id) {
 }
 
 watch(() => activePdm.value.id, async (novoValor) => {
-  if (activePdm.value.id) {
+  if (novoValor) {
     // usando essa flag porque a montagem do formulário está síncrona.
     // PRA-FAZER: montar o formulário de forma assíncrona.
     oktogo.value = false;
@@ -287,7 +281,6 @@ watch(() => activePdm.value.id, async (novoValor) => {
               v-for="item in tempMacrotemas"
               :key="item.id"
               :value="item.id"
-              :selected="values.macro_tema_id && item.id == values.macro_tema_id"
             >
               {{ item['descricao'] }}
             </option>
@@ -318,7 +311,6 @@ watch(() => activePdm.value.id, async (novoValor) => {
               v-for="item in tempTemas"
               :key="item.id"
               :value="item.id"
-              :selected="values.tema_id && item.id == values.tema_id"
             >
               {{ item.descricao }}
             </option>
@@ -347,7 +339,6 @@ watch(() => activePdm.value.id, async (novoValor) => {
               v-for="item in tempSubtemas"
               :key="item.id"
               :value="item.id"
-              :selected="values.sub_tema_id && item.id == values.sub_tema_id"
             >
               {{ item.descricao }}
             </option>
