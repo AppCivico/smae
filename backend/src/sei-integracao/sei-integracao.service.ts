@@ -230,7 +230,11 @@ export class SeiIntegracaoService {
             });
 
             if (!exists) {
-                await this.buscaSeiRelatorio({ processo_sei: processo });
+                try {
+                    await this.buscaSeiRelatorio({ processo_sei: processo });
+                } catch (error) {
+                    this.logger.error(`Erro ao buscar SEI ${processo}: ${error?.message}`);
+                }
             }
         }
 
