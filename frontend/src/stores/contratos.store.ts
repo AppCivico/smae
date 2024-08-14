@@ -121,14 +121,12 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
-      console.log('segmentoIdentificador');
       this.chamadasPendentes.emFoco = true;
       try {
         const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
         if (resposta.orgao) {
           resposta.orgao_id = resposta.orgao.id;
         }
-        console.log('RESPONSE', resposta);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -137,7 +135,6 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async buscarTudo(params = {}, mãeComId: MãeComId = undefined): Promise<void> {
-      console.log(this.route.params, mãeComId);
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
 
@@ -152,7 +149,6 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async excluirItem(id: number, mãeComId: MãeComId = undefined): Promise<boolean> {
-      console.log(mãeComId);
       this.chamadasPendentes.lista = true;
 
       try {
@@ -168,12 +164,10 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async salvarItem(params: any = {}, id = 0, mãeComId: MãeComId = undefined): Promise<boolean> {
-      console.log(mãeComId);
       this.chamadasPendentes.emFoco = true;
 
       try {
         let resposta;
-        console.log('PAYLOAD', params);
         if (id) {
           resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
         } else {
