@@ -44,7 +44,7 @@ async function processCsvToXlsx(csvFile: string, outputXlsx: string) {
 
     LogMemoryUsage('after loading spatial extension');
     console.log(`Loading CSV file: ${csvFile}`);
-    await db.all(`CREATE TABLE tbl AS SELECT * FROM read_csv_auto('${csvFile}')`);
+    await db.all(`CREATE TABLE tbl AS SELECT * FROM read_csv_auto('${csvFile}', all_varchar='true')`);
     LogMemoryUsage('after importing CSV file');
 
     console.log(`Exporting to XLSX file: ${outputXlsx}`);
