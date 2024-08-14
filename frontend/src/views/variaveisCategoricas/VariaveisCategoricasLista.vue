@@ -38,9 +38,9 @@
         <td>
           {{
             item.valores
-              .filter(valor => valor.valor_variavel !== null && valor.valor_variavel !== undefined)
-              .map((valor, index, array) => `${valor.valor_variavel}${index < array.length - 1 ? ', ' : ''}`)
-              .join('') || '-'
+              .map(valor => valor.valor_variavel)
+              .join(', ')
+              || '-'
           }}
         </td>
         <td>
