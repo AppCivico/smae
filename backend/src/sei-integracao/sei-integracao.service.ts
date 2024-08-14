@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
+import * as crypto from 'crypto';
+import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
-import { SeiApiService } from '../sei-api/sof-api.service';
+import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService } from '../sei-api/sof-api.service';
 import { FilterSeiParams, SeiIntegracaoDto, SeiProcessadoDto } from './entities/sei-entidade.entity';
+const convertToJsonString = require('fast-json-stable-stringify');
 
 @Injectable()
 export class SeiIntegracaoService {
@@ -11,26 +16,15 @@ export class SeiIntegracaoService {
         private readonly sei: SeiApiService
     ) {}
 
-    async buscaSeiResumo(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
-        const dados = await this.sei.getResumoProcesso(params.processo_sei);
-
-        return {
-            ativo: false,
-            atualizado_em: new Date(Date.now()),
-            json_resposta: dados,
-            processado: null,
-            processo_sei: dados.numero_processo,
-            resumo_atualizado_em: new Date(Date.now()),
-            sei_atualizado_em: new Date(Date.now()),
-            status_code: 200,
-            link: dados.link,
-        };
+    private jsonFlatHash(obj: any): string {
+        const sortedJson = convertToJsonString(obj);
+        return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
     }
 
-    async buscaSeiRelatorio(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
-        const dados = await this.sei.getRelatorioProcesso(params.processo_sei);
+    private createProcessado(dados: RetornoRelatorioProcesso): SeiProcessadoDto | null {
+        if (!dados || !dados.ultimo_andamento) return null;
 
-        const processado: SeiProcessadoDto = {
+        return {
             ultimo_andamento_em: dados.ultimo_andamento.data,
             ultimo_andamento_por: {
                 nome: dados.ultimo_andamento.usuario.nome,
@@ -43,110 +37,235 @@ export class SeiIntegracaoService {
                 tipo_unidade: dados.ultimo_andamento.unidade.tipo_unidade,
             },
         };
+    }
+
+    async buscaSeiRelatorio(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
+        const now = new Date();
+        let statusSei = await this.prisma.statusSEI.findUnique({
+            where: { processo_sei: params.processo_sei },
+        });
+
+        const needsUpdate =
+            !statusSei ||
+            !statusSei.atualizado_em ||
+            now.getTime() - statusSei.atualizado_em.getTime() > 60 * 60 * 1000; // 1 hour
+
+        let dados;
+        if (needsUpdate) {
+            this.logger.log(`Buscando dados do SEI para ${params.processo_sei}`);
+            dados = await this.sei.getRelatorioProcesso(params.processo_sei);
+            const newHash = this.jsonFlatHash(dados);
+
+            if (!statusSei) {
+                statusSei = await this.prisma.statusSEI.create({
+                    data: {
+                        processo_sei: params.processo_sei,
+                        link: dados.link,
+                        status_code: 200,
+                        json_resposta: dados as any,
+                        sei_hash: newHash,
+                        resumo_hash: '',
+                        ativo: false, // não é ativo por padrão
+                        sei_atualizado_em: now,
+                        atualizado_em: now,
+                    },
+                });
+            } else {
+                const updateData: any = {
+                    atualizado_em: now,
+                    link: dados.link,
+                    status_code: 200,
+                };
+
+                if (statusSei.sei_hash !== newHash) {
+                    updateData.sei_atualizado_em = now;
+                    updateData.json_resposta = JSON.stringify(dados);
+                    updateData.sei_hash = newHash;
+                }
+
+                this.logger.verbose(`Atualizando dados do SEI para ${params.processo_sei}`);
+                statusSei = await this.prisma.statusSEI.update({
+                    where: { id: statusSei.id },
+                    data: updateData,
+                });
+            }
+        } else {
+            console.log(statusSei);
+
+            dados = statusSei?.json_resposta?.valueOf() as any as RetornoRelatorioProcesso;
+        }
+        if (!dados || !statusSei) throw new Error('Erro ao salvar dados do SEI no banco de dados');
+
+        const processado = this.createProcessado(dados);
+
         return {
-            ativo: false,
-            atualizado_em: new Date(Date.now()),
+            id: statusSei.id,
+            ativo: statusSei.ativo,
+            atualizado_em: statusSei.atualizado_em ?? new Date(),
             json_resposta: dados,
             processado: processado,
             processo_sei: dados.numero_processo,
-            resumo_atualizado_em: new Date(Date.now()),
-            sei_atualizado_em: new Date(Date.now()),
-            status_code: 200,
+            resumo_atualizado_em: statusSei.resumo_atualizado_em ?? new Date(),
+            sei_atualizado_em: statusSei.sei_atualizado_em ?? new Date(),
+            status_code: statusSei.status_code,
             link: dados.link,
         };
     }
 
-    async buscaSeiStatus(_processos: string[]): Promise<SeiIntegracaoDto[]> {
-        return [];
+    async buscaSeiResumo(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
+        const now = new Date();
+        let statusSei = await this.prisma.statusSEI.findUnique({
+            where: { processo_sei: params.processo_sei },
+        });
+
+        const needsUpdate =
+            !statusSei ||
+            !statusSei.atualizado_em ||
+            now.getTime() - statusSei.atualizado_em.getTime() > 60 * 60 * 1000; // 1 hour
+
+        let dadosResumo;
+        if (needsUpdate) {
+            this.logger.log(`Buscando dados do SEI para ${params.processo_sei}`);
+            dadosResumo = await this.sei.getResumoProcesso(params.processo_sei);
+            const newHash = this.jsonFlatHash(dadosResumo);
+
+            if (!statusSei) {
+                statusSei = await this.prisma.statusSEI.create({
+                    data: {
+                        processo_sei: params.processo_sei,
+                        link: dadosResumo.link,
+                        status_code: 0,
+                        sei_hash: '',
+                        resumo_hash: newHash,
+                        resumo_json_resposta: dadosResumo as any,
+                        resumo_status_code: 200,
+                        ativo: false,
+                        resumo_atualizado_em: now,
+                        atualizado_em: now,
+                    },
+                });
+            } else {
+                const updateData: any = {
+                    atualizado_em: now,
+                    url: dadosResumo.link,
+                    status_code: 200,
+                };
+
+                if (statusSei.resumo_hash !== newHash) {
+                    updateData.resumo_atualizado_em = now;
+                    updateData.resumo_hash = newHash;
+                }
+
+                statusSei = await this.prisma.statusSEI.update({
+                    where: { id: statusSei.id },
+                    data: updateData,
+                });
+            }
+        } else {
+            dadosResumo = statusSei?.resumo_json_resposta?.valueOf() as any as RetornoResumoProcesso;
+        }
+        if (!dadosResumo || !statusSei) throw new Error('Erro ao salvar dados do SEI no banco de dados');
+
+        return {
+            id: statusSei.id,
+            ativo: statusSei.ativo,
+            atualizado_em: statusSei.atualizado_em ?? new Date(),
+            resumo_json_resposta: dadosResumo,
+            processado: null,
+            processo_sei: dadosResumo.numero_processo,
+            resumo_atualizado_em: statusSei.resumo_atualizado_em ?? new Date(),
+            sei_atualizado_em: statusSei.sei_atualizado_em ?? new Date(),
+            status_code: statusSei.status_code,
+            link: dadosResumo.link,
+        };
     }
 
-    //
-    //    @Cron(process.env['SOF_CRONTAB_STRING'] || '*/5 * * * *')
-    //    async handleListaSofCron() {
-    //        if (process.env['DISABLE_SOF_CRONTAB']) return;
-    //
-    //        await this.prisma.$transaction(
-    //            async (prisma: Prisma.TransactionClient) => {
-    //                const jobs: {
-    //                    ano: number;
-    //                }[] = await prisma.$queryRaw`
-    //                select ano
-    //                from (
-    //                    select extract('year' from dt)::int as ano,
-    //                    case when dt.dt > now() - '1 year'::interval then
-    //                        se.ano is null or now() - se.atualizado_em > '24 hours'::interval
-    //                    else
-    //                        se.ano is null or false
-    //                    end as needs_update
-    //                    from generate_series('2003-01-01', (select now()), '1 year') dt
-    //                    left join sof_entidade se on se.ano = extract('year' from dt.dt)::int
-    //                ) x
-    //                where needs_update
-    //                ORDER BY 1 DESC LIMIT 2;
-    //            `;
-    //                if (jobs.length == 0) return;
-    //
-    //                const locked: {
-    //                    locked: boolean;
-    //                    now_ymd: DateYMD;
-    //                }[] = await prisma.$queryRaw`SELECT
-    //                pg_try_advisory_xact_lock(${JOB_LISTA_SOF_LOCK}) as locked,
-    //                (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
-    //            `;
-    //                if (!locked[0].locked) {
-    //                    return;
-    //                }
-    //
-    //                // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
-    //                for (const job of jobs) {
-    //                    await this.atualizaListasSof(job.ano);
-    //                }
-    //            },
-    //            {
-    //                maxWait: 30000,
-    //                timeout: 60 * 1000 * 15,
-    //                isolationLevel: 'Serializable',
-    //            }
-    //        );
-    //    }
+    async buscaSeiStatus(processos: string[]): Promise<SeiIntegracaoDto[]> {
+        const statusSeiDb = await this.prisma.statusSEI.findMany({
+            where: { processo_sei: { in: processos } },
+        });
 
-    //    async atualizaListasSof(ano: number) {
-    //        ano = Number(ano);
-    //        const before = Date.now();
-    //        this.logger.log(`Atualizando SOF -- ${ano}`);
-    //        const data = await this.sei.entidades(ano);
-    //        await this.prisma.sofEntidade.upsert({
-    //            where: { ano: ano },
-    //            create: {
-    //                ano: ano,
-    //                atualizado_em: new Date(Date.now()),
-    //                dados: data,
-    //            },
-    //            update: {
-    //                atualizado_em: new Date(Date.now()),
-    //                dados: data,
-    //            },
-    //        });
-    //        this.logger.log(
-    //            `Atualização SOF concluída em ${Math.round(
-    //                (Date.now() - before) / 1000
-    //            )} segundos, atualizando MV sof_entidades_linhas`
-    //        );
-    //
-    //        try {
-    //            await this.prisma.$queryRaw`refresh materialized view sof_entidades_linhas;`;
-    //            this.logger.log(`MV sof_entidades_linhas atualizada com sucesso.`);
-    //        } catch (error) {
-    //            const errmsg = `Erro ao atualizar materialized view sof_entidades_linhas após atualização deste ano: ${error.toString()}`;
-    //            this.logger.error(errmsg);
-    //
-    //            await this.prisma.sofEntidade.updateMany({
-    //                where: { ano: ano },
-    //                data: {
-    //                    errmsg: errmsg,
-    //                },
-    //            });
-    //            console.log(error);
-    //        }
-    //    }
+        return statusSeiDb.map((statusSei) => {
+            const dados = statusSei.json_resposta?.valueOf() as any as RetornoRelatorioProcesso;
+
+            const processado = this.createProcessado(dados);
+
+            return {
+                id: statusSei.id,
+                ativo: statusSei.ativo,
+                atualizado_em: statusSei.atualizado_em ?? new Date(),
+                json_resposta: dados,
+                processado: processado,
+                processo_sei: statusSei.processo_sei,
+                resumo_atualizado_em: statusSei.resumo_atualizado_em ?? new Date(),
+                sei_atualizado_em: statusSei.sei_atualizado_em ?? new Date(),
+                status_code: statusSei.status_code,
+                link: statusSei.link,
+            };
+        });
+    }
+
+    async atualizaStatusAtivo(processos: string[], ativo: boolean): Promise<void> {
+        await this.prisma.statusSEI.updateMany({
+            where: {
+                processo_sei: {
+                    in: processos,
+                },
+            },
+            data: {
+                ativo: ativo,
+                atualizado_em: new Date(),
+            },
+        });
+    }
+
+    @Cron(process.env['SEI_CRONTAB_STRING'] || '*/5 * * * *')
+    async handleListaSeiCron() {
+        if (process.env['DISABLE_SEI_CRONTAB']) return;
+
+        this.logger.log('Iniciando Sync SEI');
+
+        try {
+            await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                const locked: {
+                    locked: boolean;
+                }[] = await prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LISTA_SEI_LOCK}) as locked
+            `;
+                if (!locked[0].locked) {
+                    return;
+                }
+
+                await this.syncSEIRecords();
+            });
+        } catch (error) {
+            this.logger.error(`Erro ao buscar SEIs para atualizar: ${error.message}`);
+        }
+    }
+
+    private async syncSEIRecords() {
+        // meu mercúrio esta retrógrado, nao consigo adicionar paginação sem o prisma ficar maluco
+        // fica pra proxima...
+        const activeRecords = await this.prisma.statusSEI.findMany({
+            where: {
+                ativo: true,
+                atualizado_em: {
+                    lte: new Date(new Date().getTime() - 60 * 60 * 1000),
+                },
+            },
+            orderBy: { atualizado_em: 'asc' },
+            select: { processo_sei: true },
+        });
+
+        for (const record of activeRecords) {
+            try {
+                await this.buscaSeiRelatorio({ processo_sei: record.processo_sei });
+
+                this.logger.log(`Atualizou SEI record: ${record.processo_sei}`);
+            } catch (error) {
+                this.logger.error(`Erro ao atualizar SEI ${record.processo_sei}: ${error.message}`);
+            }
+        }
+
+        this.logger.log('Fim do Sync do SEI');
+    }
 }
