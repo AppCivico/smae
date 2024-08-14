@@ -8,9 +8,17 @@ import { AvisoEmailModule } from '../aviso-email/aviso-email.module';
 import { DistribuicaoRecursoStatusService } from './distribuicao-recurso-status.service';
 import { DistribuicaoRecursoStatusController } from './distribuicao-recurso-status.controller';
 import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
+import { SeiIntegracaoModule } from '../sei-integracao/sei-integracao.module';
 
 @Module({
-    imports: [PrismaModule, BlocoNotaModule, NotaModule, AvisoEmailModule, forwardRef(() => TarefaModule)],
+    imports: [
+        PrismaModule,
+        BlocoNotaModule,
+        NotaModule,
+        AvisoEmailModule,
+        forwardRef(() => TarefaModule),
+        SeiIntegracaoModule,
+    ],
     controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController],
     providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],
     exports: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],

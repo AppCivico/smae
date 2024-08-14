@@ -8,6 +8,7 @@ import {
     DistribuicaoHistoricoStatusDto,
     DistribuicaoRecursoDetailDto,
     DistribuicaoRecursoDto,
+    DistribuicaoRecursoSeiDto,
 } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
@@ -18,6 +19,7 @@ import { AvisoEmailService } from '../aviso-email/aviso-email.service';
 import { DateTime } from 'luxon';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { SeiIntegracaoService } from '../sei-integracao/sei-integracao.service';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -33,7 +35,8 @@ export class DistribuicaoRecursoService {
         private readonly notaService: NotaService,
         private readonly avisoEmailService: AvisoEmailService,
         @Inject(forwardRef(() => TarefaService))
-        private readonly tarefaService: TarefaService
+        private readonly tarefaService: TarefaService,
+        private readonly seiService: SeiIntegracaoService
     ) {}
 
     async create(
@@ -465,6 +468,9 @@ export class DistribuicaoRecursoService {
             },
         });
 
+        const processo_seis = rows.map((r) => r.registros_sei.map((s) => s.processo_sei));
+        const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
+
         return rows.map((r) => {
             let pode_registrar_status: boolean = true;
             if (r.status.length) {
@@ -478,6 +484,10 @@ export class DistribuicaoRecursoService {
                     (r.valor_total.toNumber() / transferencia.valor_total.toNumber()) * 100
                 );
             }
+
+            const integracoes_sei = integracoes.filter((i) =>
+                r.registros_sei.map((s) => s.processo_sei).includes(i.processo_sei)
+            );
 
             return {
                 id: r.id,
@@ -512,6 +522,7 @@ export class DistribuicaoRecursoService {
                         id: s.id,
                         nome: s.nome,
                         processo_sei: formataSEI(s.processo_sei),
+                        integracao_sei: integracoes_sei.find((i) => i.processo_sei == s.processo_sei) ?? null,
                     };
                 }),
                 historico_status: r.status.map((status, idx) => {
@@ -560,7 +571,7 @@ export class DistribuicaoRecursoService {
                             : null,
                     };
                 }),
-            };
+            } satisfies DistribuicaoRecursoDto;
         });
     }
 
@@ -727,6 +738,9 @@ export class DistribuicaoRecursoService {
             );
         }
 
+        const processo_seis = row.registros_sei.map((s) => s.processo_sei);
+        const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
+
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
@@ -770,10 +784,11 @@ export class DistribuicaoRecursoService {
                     id: s.id,
                     nome: s.nome,
                     processo_sei: formataSEI(s.processo_sei),
-                };
+                    integracao_sei: integracoes.find((i) => i.processo_sei == s.processo_sei) ?? null,
+                } satisfies DistribuicaoRecursoSeiDto;
             }),
             parlamentares: row.parlamentares,
-        };
+        } satisfies DistribuicaoRecursoDetailDto;
     }
 
     async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {

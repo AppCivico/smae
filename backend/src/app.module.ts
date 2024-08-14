@@ -50,6 +50,8 @@ import { WorkflowSituacaoModule } from './workflow/configuracao/situacao/workflo
 import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowModule } from './workflow/configuracao/workflow.module';
 import { TaskModule } from './task/task.module';
+import { SeiApiModule } from './sei-api/sof-api.module';
+import { SeiIntegracaoModule } from './sei-integracao/sei-integracao.module';
 
 // Hacks pro JS
 /*
@@ -103,6 +105,8 @@ import { TaskModule } from './task/task.module';
         PessoaPrivilegioModule,
         CommonBaseModule,
         TaskModule,
+        SeiApiModule ,
+        SeiIntegracaoModule
     ],
     controllers: [AppController],
     providers: [

@@ -3,6 +3,7 @@ import { DistribuicaoStatusTipo, ParlamentarCargo } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
+import { SeiIntegracaoDto } from '../../sei-integracao/entities/sei-entidade.entity';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -67,6 +68,7 @@ export class DistribuicaoRecursoSeiDto {
     id: number;
     nome: string | null;
     processo_sei: string;
+    integracao_sei: SeiIntegracaoDto | null;
 }
 
 export class DistribuicaoHistoricoStatusDto {
