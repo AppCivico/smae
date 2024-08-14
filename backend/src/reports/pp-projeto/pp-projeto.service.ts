@@ -281,12 +281,12 @@ export class PPProjetoService implements ReportableService {
             });
         });
 
-        //const out_contratos: RelProjetosContratosDto[] = [];
-        //const out_aditivos: RelProjetosAditivosDto[] = [];
-        //const out_origens: RelProjetoOrigemDto[] = [];
-        //await this.queryDataContratos(projetoRow.id, out_contratos);
-        //await this.queryDataAditivos(projetoRow.id, out_aditivos);
-        //await this.queryDataOrigens(projetoRow.id, out_origens);
+        const out_contratos: RelProjetosContratosDto[] = [];
+        const out_aditivos: RelProjetosAditivosDto[] = [];
+        const out_origens: RelProjetoOrigemDto[] = [];
+        await this.queryDataContratos(projetoRow.id, out_contratos);
+        await this.queryDataAditivos(projetoRow.id, out_aditivos);
+        await this.queryDataOrigens(projetoRow.id, out_origens);
 
         return {
             detail: detail,
@@ -295,9 +295,9 @@ export class PPProjetoService implements ReportableService {
             planos_acao: planoAcaoOut,
             acompanhamentos: acompanhamentoOut,
             encaminhamentos: encaminhamentoOut,
-            contratos: [],
-            aditivos: [],
-            origens: [],
+            contratos: out_contratos,
+            aditivos: out_aditivos,
+            origens: out_origens,
         };
     }
 
@@ -501,17 +501,20 @@ export class PPProjetoService implements ReportableService {
         });
         await ctx.progress(50);
 
-        if (dados.cronograma.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.cronograma);
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        console.log('\n==========================\n');
+        console.log(dados.cronograma);
+        console.log('\n==========================\n');
+        //if (dados.cronograma.length) {
+        //    const json2csvParser = new Parser({
+        //        ...DefaultCsvOptions,
+        //        transforms: defaultTransform,
+        //    });
+        //    const linhas = json2csvParser.parse(dados.cronograma);
+        //    out.push({
+        //        name: 'cronograma.csv',
+        //        buffer: Buffer.from(linhas, 'utf8'),
+        //    });
+        //}
         await ctx.progress(55);
 
         if (dados.acompanhamentos.length) {
@@ -637,41 +640,41 @@ export class PPProjetoService implements ReportableService {
         }
         await ctx.progress(95);
 
-        //if (dados.contratos.length) {
-        //    const json2csvParser = new Parser({
-        //        ...DefaultCsvOptions,
-        //        transforms: defaultTransform,
-        //    });
-        //    const linhas = json2csvParser.parse(dados.contratos);
-        //    out.push({
-        //        name: 'contratos.csv',
-        //        buffer: Buffer.from(linhas, 'utf8'),
-        //    });
-        //}
+        if (dados.contratos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.contratos);
+            out.push({
+                name: 'contratos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
 
-        //if (dados.aditivos.length) {
-        //    const json2csvParser = new Parser({
-        //        ...DefaultCsvOptions,
-        //        transforms: defaultTransform,
-        //    });
-        //    const linhas = json2csvParser.parse(dados.aditivos);
-        //    out.push({
-        //        name: 'aditivos.csv',
-        //        buffer: Buffer.from(linhas, 'utf8'),
-        //    });
-        //}
+        if (dados.aditivos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.aditivos);
+            out.push({
+                name: 'aditivos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
 
-       // if (dados.origens.length) {
-       //     const json2csvParser = new Parser({
-       //         ...DefaultCsvOptions,
-       //         transforms: defaultTransform,
-       //     });
-       //     const linhas = json2csvParser.parse(dados.origens);
-       //     out.push({
-       //         name: 'origens.csv',
-       //         buffer: Buffer.from(linhas, 'utf8'),
-       //     });
-       // }
+        if (dados.origens.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.origens);
+            out.push({
+                name: 'origens.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
         await ctx.progress(99);
 
         return [
