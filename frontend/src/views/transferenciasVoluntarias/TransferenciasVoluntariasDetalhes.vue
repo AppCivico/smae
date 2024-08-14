@@ -214,7 +214,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </div>
       <div class="f1 fb10em fg999">
         <dt class="t16 w700 mb05 tc500">
-          Valor 
+          Valor
         </dt>
         <dd>
           {{ transferênciaEmFoco?.valor
@@ -323,8 +323,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               : '' }}
           </h4>
           <h5
-            class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16
-          w700 tc500"
+            class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16 w700 tc500"
           >
             {{ distribuição.pct_valor_transferencia }}%
           </h5>
@@ -516,7 +515,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar recursos financeiros"
       class="btn with-icon bgnone tcprimary p0"
     >
-      <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -638,7 +640,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"
     >
-      <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -888,7 +893,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </section>
 </template>
 <style scoped lang="less">
-
 .parlamentares{
   border-left: solid 2px #B8C0CC;
   border-radius: 12px;
