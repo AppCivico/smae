@@ -503,18 +503,19 @@ export class PPProjetoService implements ReportableService {
 
         console.log('\n==========================\n');
         console.log(dados.cronograma);
+        if (dados.cronograma.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.cronograma);
+            console.log(linhas);
+            out.push({
+                name: 'cronograma.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
         console.log('\n==========================\n');
-        //if (dados.cronograma.length) {
-        //    const json2csvParser = new Parser({
-        //        ...DefaultCsvOptions,
-        //        transforms: defaultTransform,
-        //    });
-        //    const linhas = json2csvParser.parse(dados.cronograma);
-        //    out.push({
-        //        name: 'cronograma.csv',
-        //        buffer: Buffer.from(linhas, 'utf8'),
-        //    });
-        //}
         await ctx.progress(55);
 
         if (dados.acompanhamentos.length) {
