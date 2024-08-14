@@ -17,6 +17,8 @@ export function TaskValidatorOf(property: string, validationOptions?: Validation
             },
             validator: {
                 async validate(value: any, args: ValidationArguments) {
+                    if (!value || typeof value !== 'object') throw new BadRequestException('Informe os parâmetros da tarefa');
+
                     const [fieldName] = args.constraints;
                     const taskType = (args.object as any)[fieldName] as task_type;
 

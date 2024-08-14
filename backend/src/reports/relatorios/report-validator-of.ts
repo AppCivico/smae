@@ -17,6 +17,8 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
             },
             validator: {
                 async validate(value: any, args: ValidationArguments) {
+                    if (!value || typeof value !== 'object') throw new BadRequestException('Informe os parâmetros da fonte');
+
                     const [fonteNome] = args.constraints;
                     const fonte = (args.object as any)[fonteNome] as FonteRelatorio;
 
