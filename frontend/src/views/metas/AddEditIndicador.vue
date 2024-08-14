@@ -752,7 +752,7 @@ export default {
           >
             <button
               type="button"
-              class="addlink"
+              class="like-a__text addlink"
               @click="AssociadorDeVariaveisEstaAberto = true"
             >
               <span>Associar variável</span>
