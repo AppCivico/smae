@@ -149,7 +149,8 @@ iniciar();
               <img
                 :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
                 width="15"
-                class="ib mr1"
+                class=" mr1"
+                :style="{ maxWidth: '250px' }"
               >
             </a>
             <strong v-else>
