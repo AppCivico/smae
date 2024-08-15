@@ -894,13 +894,10 @@ export class ProjetoService {
         const offset = (page - 1) * ipp;
 
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters);
+        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave);
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
                 // Filtro por palavras-chave com tsvector
-                id: {
-                    in: palavrasChave != undefined ? palavrasChave : undefined,
-                },
                 projeto: {
                     registrado_em: { lte: now },
                     AND: [...permissionsSet, ...filterSet],
@@ -919,7 +916,7 @@ export class ProjetoService {
             retToken = filterToken;
             tem_mais = offset + linhas.length < total_registros;
         } else {
-            const info = await this.encodeNextPageToken(filters, now, user);
+            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
             tem_mais = offset + linhas.length < total_registros;
@@ -3161,9 +3158,10 @@ export class ProjetoService {
         }
     }
 
-    private getProjetoMDOWhereSet(filters: FilterProjetoMDODto) {
+    private getProjetoMDOWhereSet(filters: FilterProjetoMDODto, ids: number[] | undefined): Prisma.ProjetoWhereInput[] {
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
+                id: { in: ids != undefined ? ids : undefined },
                 portfolio_id: filters.portfolio_id,
                 ProjetoRegiao: filters.regioes
                     ? {
@@ -3209,16 +3207,20 @@ export class ProjetoService {
     private async encodeNextPageToken(
         filters: FilterProjetoMDODto,
         issued_at: Date,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        ids: number[] | undefined
     ): Promise<{
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters);
+        const filterSet = this.getProjetoMDOWhereSet(filters, ids);
         const total_rows = await this.prisma.projeto.count({
             where: {
                 AND: [...permissionsSet, ...filterSet],
+                id: {
+                    in: ids != undefined ? ids : undefined,
+                },
             },
         });
 
