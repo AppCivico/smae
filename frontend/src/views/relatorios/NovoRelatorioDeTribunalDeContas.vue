@@ -23,7 +23,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'Transferencias',
+  fonte: 'TribunalDeContas',
   parametros:{
     esfera: null,
     ano_inicio: null,
@@ -53,6 +53,10 @@ const tiposDisponíveis = computed(() => (values.parametros.esfera
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = 'Dados salvos com sucesso!';
+
+    // Converte os valores dos anos de string para number, atendendo o que a API espera
+    valoresControlados.parametros.ano_inicio = parseInt(valoresControlados.parametros.ano_inicio);
+    valoresControlados.parametros.ano_fim = parseInt(valoresControlados.parametros.ano_fim);
 
     if (await relatoriosStore.insert(valoresControlados)) {
       alertStore.success(msg);
@@ -89,7 +93,7 @@ const formulárioSujo = useIsFormDirty();
     <Field
       name="fonte"
       type="hidden"
-      value="Transferencias"
+      value="TribunalDeContas"
     />
     <div class="flex flexwrap g2 mb2">
       <div class="f1">

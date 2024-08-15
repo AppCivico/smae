@@ -8,6 +8,7 @@ import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const ÓrgãosStore = useOrgansStore();
 const partidosStore = usePartidosStore();
@@ -16,6 +17,7 @@ const portfolioStore = usePortfolioStore();
 const portfolioObrasStore = usePortfolioObraStore();
 const projetosStore = useProjetosStore();
 const TagsStore = useTagsStore();
+const tipoTransferenciaStore = useTipoDeTransferenciaStore();
 
 export const prepararEsferaDeTransferência = () => Object.values(esferasDeTransferencia)
   .reduce((acc, cur) => ({ ...acc, [cur.valor]: cur.nome }), {});
@@ -99,3 +101,18 @@ export const prepararTags = () => TagsStore.getAll()
   .catch((error) => {
     throw new Error(error);
   });
+
+// Busca na API a lista de Tipo de Transferência
+export const prepararTipoTransferencia = async () => {
+  try {
+    if (!tipoTransferenciaStore.lista.length) {
+      await tipoTransferenciaStore.buscarTudo();
+    }
+    return tipoTransferenciaStore.lista.reduce((acc, cur) => ({
+      ...acc,
+      [cur.id]: cur.nome,
+    }), {});
+  } catch (error) {
+    throw new Error(error);
+  }
+};
