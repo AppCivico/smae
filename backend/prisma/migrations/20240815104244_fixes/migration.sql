@@ -81,3 +81,43 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION f_etapa_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    FOR v_meta_id IN (SELECT DISTINCT meta_id FROM view_etapa_rel_meta WHERE etapa_id = NEW.id) LOOP
+        PERFORM f_add_refresh_meta_task(v_meta_id);
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION f_meta_refresh_serie_variavel_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        FOR v_meta_id IN (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
+    ELSE
+        FOR v_meta_id IN (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
+    END IF;
+
+    -- For INSERT or UPDATE, return NEW
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;

@@ -34,11 +34,9 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_meta_id INTEGER;
 BEGIN
-
-    select meta_id into v_meta_id
-    from view_etapa_rel_meta where etapa_id = NEW.id;
-
-    CALL add_refresh_meta_task(v_meta_id);
+    FOR v_meta_id IN (SELECT DISTINCT meta_id FROM view_etapa_rel_meta WHERE etapa_id = NEW.id) LOOP
+        PERFORM f_add_refresh_meta_task(v_meta_id);
+    END LOOP;
 
     RETURN NEW;
 END;
@@ -68,13 +66,15 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_meta_id INTEGER;
 BEGIN
-     IF TG_OP = 'DELETE' THEN
-        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id);
+    IF TG_OP = 'DELETE' THEN
+        FOR v_meta_id IN (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
     ELSE
-        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
+        FOR v_meta_id IN (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
     END IF;
-
-    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
