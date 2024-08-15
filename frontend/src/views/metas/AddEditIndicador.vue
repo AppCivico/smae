@@ -288,8 +288,10 @@ if (indicador_id) {
   IndicadoresStore.getAll(meta_id, 'meta_id');
 }
 
-watch(AssociadorDeVariaveisEstaAberto.value, () => {
-  VariaveisStore.getAll(indicador_id);
+watch(AssociadorDeVariaveisEstaAberto, (novoValor) => {
+  if (!novoValor) {
+    VariaveisStore.getAll(indicador_id);
+  }
 });
 
 watch(() => props.group, () => {
@@ -802,6 +804,7 @@ watch(() => props.group, () => {
     <SmallModal
       v-if="AssociadorDeVariaveisEstaAberto"
       class="largura-total"
+      @close="AssociadorDeVariaveisEstaAberto = false"
     >
       <AssociadorDeVariaveis
         :indicador="singleIndicadores"
