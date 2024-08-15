@@ -354,7 +354,7 @@ export class DistribuicaoRecursoService {
                 id: filters.transferencia_id,
             },
             select: {
-                valor_total: true,
+                valor: true,
             },
         });
 
@@ -479,10 +479,8 @@ export class DistribuicaoRecursoService {
             }
 
             let pct_valor_transferencia: number = 0;
-            if (transferencia.valor_total && r.valor_total) {
-                pct_valor_transferencia = Math.round(
-                    (r.valor_total.toNumber() / transferencia.valor_total.toNumber()) * 100
-                );
+            if (transferencia.valor && r.valor) {
+                pct_valor_transferencia = Math.round((r.valor.toNumber() / transferencia.valor.toNumber()) * 100);
             }
 
             const integracoes_sei = integracoes.filter((i) =>
