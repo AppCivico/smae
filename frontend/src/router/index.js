@@ -118,13 +118,16 @@ router.afterEach((to, from, failure) => {
     document.title = 'SMAE';
   }
 
-  if (failure?.message?.includes('Failed to fetch')) {
+  if (failure) {
     console.error('to:', to, 'from:', from, 'failure:', failure);
-    const alertStore = useAlertStore();
 
-    alertStore.confirmAction('Versão indisponível. Recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
-      window.location.reload();
-    });
+    if (failure?.message?.includes('Failed to fetch')) {
+      const alertStore = useAlertStore();
+
+      alertStore.confirmAction('Versão indisponível. Recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
+        window.location.reload();
+      });
+    }
   }
 });
 
