@@ -377,13 +377,18 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               </div>
             </li>
           </ul>
-          <dd class="parlamentares">
+          <dd
+            v-if="distribuição.parlamentares.length"
+            class="parlamentares"
+          >
             <div
               v-for="parlamentar, index in distribuição.parlamentares"
               :key="parlamentar.id"
               :class="['flex spacebetween center g2', { 'mt1': index > 0}]"
             >
-              <dl class="f1">
+              <dl
+                class="f1"
+              >
                 <dt class="t16 w700 mb05 tc500">
                   Parlamentar
                 </dt>
