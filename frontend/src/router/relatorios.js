@@ -122,6 +122,7 @@ export default {
       /// CasaCivil
       'RelatóriosDeParlamentares',
       'RelatóriosDeTransferênciasVoluntárias',
+      'RelatóriosDeTribunalDeContas',
 
       // MDO
       'RelatóriosDePortfolioObras',
@@ -281,6 +282,31 @@ export default {
           meta: {
             título: 'Novo relatório de transferências voluntárias',
             rotaDeEscape: 'RelatóriosDeTransferênciasVoluntárias',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'tribunal-de-contas',
+      meta: {
+        título: 'Relatórios de tribunal de contas',
+        títuloParaMenu: 'Tribunal de contas',
+        limitarÀsPermissões: 'Reports.executar.CasaCivil',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDeTribunalDeContas',
+          component: () => import('@/views/relatorios/RelatoriosDeTribunalDeContas.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/NovoRelatorioDeTribunalDeContas.vue'),
+          path: 'novo',
+          name: 'novoRelatórioDeTribunalDeContas',
+          meta: {
+            título: 'Novo relatório do tribunal de contas',
+            rotaDeEscape: 'RelatóriosDeTribunalDeContas',
           },
         },
       ],
