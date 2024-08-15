@@ -54,6 +54,9 @@ export const useRelatoriosStore = defineStore('relatorios', {
       this.loading = false;
     },
     async insert(params: {}) {
+
+console.log(params);
+
       if (await this.requestS.post(`${baseUrl}/relatorios`, params)) return true;
       return false;
     },

@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import {
   prepararEsferaDeTransferência,
+  prepararTipoTransferencia,
   prepararEtiquetas,
 } from './helpers/preparadorDeColunaParametros';
 
@@ -16,6 +17,7 @@ const { temPermissãoPara } = storeToRefs(useAuthStore());
 const fonte = 'TribunalDeContas';
 const etiquetasParaValoresDeParâmetros = ref({
   esfera: {},
+  tipoTransferencia: {},
 });
 
 const etiquetasParaParâmetros = prepararEtiquetas(schema);
@@ -24,6 +26,11 @@ async function iniciar() {
   relatóriosStore.$reset();
   relatóriosStore.getAll({ fonte });
   etiquetasParaValoresDeParâmetros.value.esfera = prepararEsferaDeTransferência();
+  etiquetasParaValoresDeParâmetros.value.tipoTransferencia = prepararTipoTransferencia().getAll;
+
+
+console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+  console.log(etiquetasParaValoresDeParâmetros);
 }
 
 iniciar();
