@@ -761,6 +761,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
         <thead>
           <th>Código</th>
+          <th>Nome</th>
           <th>Sincronização</th>
           <th>Alteração</th>
           <th>Andamento</th>
@@ -775,19 +776,20 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             :key="idx"
           >
             <th>{{ registro?.processo_sei }}</th>
+            <th>{{ registro?.nome }}</th>
             <td>
-              {{ localizarDataHorario(registro?.integracao_sei?.atualizado_em) }}
+              {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
             </td>
             <td>
               {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
             </td>
             <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
             <td>
-              {{ registro?.procesado?.ultimo_andamento_unidade?.descricao }}
+              {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
               -
-              {{ registro?.procesado?.ultimo_andamento_unidade?.sigla }}
+              {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.sigla }}
             </td>
-            <td>{{ registro?.processado?.ultimo_andamento_por?.nome }}</td>
+            <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
             <td>
               <SmaeLink
                 v-if="registro?.integracao_sei?.link"
