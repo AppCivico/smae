@@ -46,14 +46,14 @@ const {
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const totalDistribuído = computed(() => listaDeDistribuição.value
-  .reduce((acc, cur) => acc + (Number(cur.valor_total) || 0), 0));
+  .reduce((acc, cur) => acc + (Number(cur.valor) || 0), 0));
 
 const listaDeStatus = ref(null);
 
 function rolarParaStatusCorrente() {
   if (listaDeStatus.value && Array.isArray(distribuição.historico_status)) {
     const índiceDoStatusCorrente = distribuição.historico_status.findIndex(
-      (status) => status.concluida === false
+      (status) => status.concluida === false,
     );
 
     nextTick(() => {
@@ -194,6 +194,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <dl class="f0 fg999 fb10em flex g2 flexwrap align-start">
       <div class="f1 fb10em fg999">
         <dt class="t16 w700 mb05 tc500">
+          Valor do repasse
+        </dt>
+        <dd>
+          {{ transferênciaEmFoco?.valor
+            ? `R$${dinheiro(transferênciaEmFoco.valor)}`
+            : '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb10em fg999">
+        <dt class="t16 w700 mb05 tc500">
           Valor total
         </dt>
         <dd>
@@ -212,16 +222,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             : '-' }}
         </dd>
       </div>
-      <div class="f1 fb10em fg999">
-        <dt class="t16 w700 mb05 tc500">
-          Valor
-        </dt>
-        <dd>
-          {{ transferênciaEmFoco?.valor
-            ? `R$${dinheiro(transferênciaEmFoco.valor)}`
-            : '-' }}
-        </dd>
-      </div>
       <div class="f1 fb10em fg999 align-end">
         <dt class="sr-only">
           Progresso da distribuição de recursos
@@ -229,11 +229,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <dd>
           <progress
             id="file"
-            :max="transferênciaEmFoco?.valor_total"
+            :max="transferênciaEmFoco?.valor"
             :value="totalDistribuído"
-          >
-            70%
-          </progress>
+          />
         </dd>
       </div>
     </dl>
@@ -318,8 +316,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </abbr>
           </h3>
           <h4 class="mlauto mr0 t16 w700 tc300">
-            {{ distribuição.valor_total
-              ? `R$${dinheiro(distribuição.valor_total)}`
+            {{ distribuição.valor
+              ? `R$${dinheiro(distribuição.valor)}`
               : '' }}
           </h4>
           <h5
@@ -383,7 +381,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             <div
               v-for="parlamentar, index in distribuição.parlamentares"
               :key="parlamentar.id"
-              :class="['flex spacebetween center g2', { 'mt1': index  > 0}]"
+              :class="['flex spacebetween center g2', { 'mt1': index > 0}]"
             >
               <dl class="f1">
                 <dt class="t16 w700 mb05 tc500">
