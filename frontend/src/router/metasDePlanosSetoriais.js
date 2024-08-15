@@ -322,6 +322,7 @@ export default [
   {
     path: ':meta_id/evolucao/:indicador_id',
     component: SingleEvolucao,
+    name: 'planoSetorial:evolucaoDoIndicador',
     meta: {
       rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
@@ -355,6 +356,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'valores' },
     meta: {
+      rotaDeEscape: 'planoSetorial:evolucaoDoIndicador',
       rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
@@ -363,6 +365,7 @@ export default [
     component: SingleEvolucao,
     props: { group: 'retroativos' },
     meta: {
+      rotaDeEscape: 'planoSetorial:evolucaoDoIndicador',
       rotasParaMenuSecundário: () => rotasParaMenuSecundário('meta', usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco),
     },
   },
@@ -770,6 +773,7 @@ export default [
       {
         path: ':iniciativa_id/evolucao/:indicador_id',
         component: SingleEvolucao,
+        name: 'planoSetorial:evoluçãoDoIndicadorDaIniciativa',
         meta: {
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
@@ -803,6 +807,7 @@ export default [
         component: SingleEvolucao,
         props: { group: 'valores' },
         meta: {
+          rotaDeEscape: 'planoSetorial:evoluçãoDoIndicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -811,6 +816,7 @@ export default [
         component: SingleEvolucao,
         props: { group: 'retroativos' },
         meta: {
+          rotaDeEscape: 'planoSetorial:evoluçãoDoIndicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -1086,6 +1092,7 @@ export default [
           {
             path: ':atividade_id/evolucao/:indicador_id',
             component: SingleEvolucao,
+            name: 'planoSetorial:evoluçãoDoIndicadorDaAtividade',
             meta: {
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
@@ -1119,6 +1126,7 @@ export default [
             component: SingleEvolucao,
             props: { group: 'valores' },
             meta: {
+              rotaDeEscape: 'planoSetorial:evoluçãoDoIndicadorDaAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
           },
@@ -1127,6 +1135,7 @@ export default [
             component: SingleEvolucao,
             props: { group: 'retroativos' },
             meta: {
+              rotaDeEscape: 'planoSetorial:evoluçãoDoIndicadorDaAtividade',
               rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
             },
           },
