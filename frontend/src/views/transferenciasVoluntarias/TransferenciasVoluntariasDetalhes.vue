@@ -1,6 +1,6 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import dateToDate, { dateToShortDate } from '@/helpers/dateToDate';
+import { localizarDataHorario, localizarData, dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -754,7 +754,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <col>
         <col class="col--dataHora">
         <col class="col--dataHora">
-        <col class="col--dataHora">
+        <col class="col--data">
         <col>
         <col>
         <col class="col--botão-de-ação">
@@ -775,9 +775,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             :key="idx"
           >
             <th>{{ registro?.processo_sei }}</th>
-            <td>{{ dateToDate(registro?.integracao_sei?.atualizado_em) }}</td>
-            <td>{{ dateToDate(registro?.integracao_sei?.sei_atualizado_em) }}</td>
-            <td>{{ dateToDate(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
+            <td>
+              {{ localizarDataHorario(registro?.integracao_sei?.atualizado_em) }}
+            </td>
+            <td>
+              {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
+            </td>
+            <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
             <td>
               {{ registro?.procesado?.ultimo_andamento_unidade?.descricao }}
               -
@@ -788,9 +792,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               <SmaeLink
                 v-if="registro?.integracao_sei?.link"
                 :to="registro?.integracao_sei?.link"
-                class="tlink"
+                title="Abrir no site do SEI"
               >
-                <span>Abrir no site do SEI</span> <svg
+                <svg
                   width="20"
                   height="20"
                 ><use xlink:href="#i_link" /></svg>
