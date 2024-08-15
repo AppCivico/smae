@@ -169,7 +169,20 @@ export const useVariaveisStore = defineStore({
       }
     },
     async updateValores(params) {
-      if (await this.requestS.patch(`${baseUrl}/indicador-variavel-serie`, params)) return true;
+      let segmento;
+
+      switch (this.route.meta.entidadeMãe) {
+        case 'pdm':
+          segmento = 'indicador-variavel-serie';
+          break;
+        case 'planoSetorial':
+          segmento = 'variavel-serie';
+          break;
+        default:
+          throw new Error('Módulo não pôde ser reconhecido.');
+      }
+
+      if (await this.requestS.patch(`${baseUrl}/${segmento}`, params)) return true;
       return false;
     },
 
