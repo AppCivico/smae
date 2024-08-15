@@ -20,6 +20,18 @@ export const dateToMonthYear = (date) => {
   return `${month}/${year}`;
 };
 
+export const localizarData = (date) => dateToDate(date, {
+  dateStyle: 'short',
+  timeStyle: undefined,
+  timeZone: 'UTC',
+});
+
+export const localizarDataHorario = (date) => dateToDate(date, {
+  dateStyle: 'short',
+  timeZone: 'America/Sao_Paulo',
+  timeStyle: 'short',
+});
+
 export const dateToShortDate = (date) => dateToDate(date, {
   year: 'numeric',
   month: 'numeric',
