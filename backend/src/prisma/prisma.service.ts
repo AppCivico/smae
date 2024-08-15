@@ -38,7 +38,7 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
         this.$on('query', async (e: any) => {
             // se ta diferente de 1, entao ta ligado sempre
             // já faz o log
-            if (process.env.INTERNAL_DISABLE_QUERY_LOG !== '1') {
+            if (process.env.INTERNAL_DISABLE_QUERY_LOG !== '1' && e.query != 'SELECT 1') {
                 console.log(`${e.query} ${e.params} took ${e.duration}ms`);
             } else {
                 // aqui apenas algumas queries que não queremos o log
