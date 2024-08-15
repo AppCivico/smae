@@ -51,12 +51,14 @@ BEGIN
 
     IF TG_OP = 'DELETE' THEN
         REFRESH MATERIALIZED VIEW mv_variavel_pdm;
-        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id);
+        FOR v_meta_id IN (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
     ELSE
-        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
+        FOR v_meta_id IN (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
     END IF;
-
-    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
@@ -84,13 +86,20 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_meta_id INTEGER;
 BEGIN
-  IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
-    REFRESH MATERIALIZED VIEW mv_variavel_pdm;
-    v_meta_id := (SELECT me.meta_id FROM iniciativa me WHERE me.id = NEW.iniciativa_id);
-    CALL add_refresh_meta_task(v_meta_id);
-  END IF;
+    IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
+        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
 
-  RETURN NEW;
+        FOR v_meta_id IN (
+            SELECT DISTINCT me.meta_id
+            FROM iniciativa me
+            JOIN mv_variavel_pdm mvp ON mvp.iniciativa_id = me.id
+            WHERE me.id = NEW.iniciativa_id
+        ) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
+    END IF;
+
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -127,14 +136,15 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_meta_id INTEGER;
 BEGIN
-  IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
-    REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+    IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
+        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
 
-    v_meta_id := (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE indicador_id = NEW.id);
-    CALL add_refresh_meta_task(v_meta_id);
+        FOR v_meta_id IN (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE indicador_id = NEW.id) LOOP
+            PERFORM f_add_refresh_meta_task(v_meta_id);
+        END LOOP;
+    END IF;
 
-  END IF;
-  RETURN NEW;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
