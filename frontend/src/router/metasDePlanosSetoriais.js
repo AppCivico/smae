@@ -643,7 +643,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'variaveis' },
         meta: {
-          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -652,7 +652,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'variaveis' },
         meta: {
-          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -673,7 +673,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'variaveis' },
         meta: {
-          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -682,7 +682,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'valores' },
         meta: {
-          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
@@ -691,7 +691,7 @@ export default [
         component: AddEditIndicador,
         props: { group: 'retroativos' },
         meta: {
-          rodaDeEscape: 'planoSetorial:indicadorDaIniciativa',
+          rotaDeEscape: 'planoSetorial:indicadorDaIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },
