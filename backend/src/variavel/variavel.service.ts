@@ -1760,7 +1760,7 @@ export class VariavelService {
             for (const grupoId of dto.medicao_grupo_ids) {
                 const grupo = grupoPrefetch.find((g) => g.id === grupoId);
                 if (!grupo) {
-                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Proprietário.`, 400);
+                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Responsável.`, 400);
                 }
                 if (grupo.perfil !== 'Medicao') {
                     throw new HttpException(`Grupo ${grupoId} não é de medição.`, 400);
@@ -1772,7 +1772,7 @@ export class VariavelService {
             for (const grupoId of dto.validacao_grupo_ids) {
                 const grupo = grupoPrefetch.find((g) => g.id === grupoId);
                 if (!grupo) {
-                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Proprietário.`, 400);
+                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Responsável.`, 400);
                 }
                 if (grupo.perfil !== 'Validacao') {
                     throw new HttpException(`Grupo ${grupoId} não é de validação`, 400);
@@ -1784,7 +1784,7 @@ export class VariavelService {
             for (const grupoId of dto.liberacao_grupo_ids) {
                 const grupo = grupoPrefetch.find((g) => g.id === grupoId);
                 if (!grupo) {
-                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Proprietário.`, 400);
+                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Responsável.`, 400);
                 }
                 if (grupo.perfil !== 'Liberacao') {
                     throw new HttpException(`Grupo ${grupoId} não é de liberação`, 400);
