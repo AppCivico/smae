@@ -51,7 +51,7 @@ const totalDistribuído = computed(() => listaDeDistribuição.value
 const listaDeStatus = ref(null);
 
 function rolarParaStatusCorrente() {
-  if (listaDeStatus.value && Array.isArray(distribuição.historico_status)) {
+  if (listaDeStatus.value && Array.isArray(distribuição?.historico_status)) {
     const índiceDoStatusCorrente = distribuição.historico_status.findIndex(
       (status) => status.concluida === false,
     );
@@ -69,7 +69,7 @@ function rolarParaStatusCorrente() {
 }
 
 onMounted(() => {
-  rolarParaStatusCorrente();
+  // rolarParaStatusCorrente();
 });
 
 function iniciarFase(idDaFase) {
