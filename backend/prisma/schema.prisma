@@ -3389,8 +3389,8 @@ model ProjetoRegistroSei {
     observacoes String?
 
     // Link, descrição, metadados
-    registro_sei_info   Json    @default("{}")
-    registro_sei_errmsg String?
+    registro_sei_info   Json    @default("{}") @ignore
+    registro_sei_errmsg String? @ignore
 
     criado_em  DateTime?
     criado_por Int?
@@ -5645,8 +5645,8 @@ model DistribuicaoRecursoSei {
     nome         String?
     processo_sei String
 
-    registro_sei_info   Json    @default("{}")
-    registro_sei_errmsg String?
+    registro_sei_info   Json    @default("{}") @ignore
+    registro_sei_errmsg String? @ignore
 
     criado_em  DateTime?
     criado_por Int?
@@ -6802,8 +6802,13 @@ model StatusSEI {
     sei_hash    String
     resumo_hash String
 
-    criado_em            DateTime  @default(now()) @db.Timestamptz(6)
-    atualizado_em        DateTime? @db.Timestamptz(6)
+    criado_em                 DateTime  @default(now()) @db.Timestamptz(6)
+    resumo_sincronizado_em    DateTime? @db.Timestamptz(6)
+    relatorio_sincronizado_em DateTime? @db.Timestamptz(6)
+
+    proxima_sincronizacao DateTime @default(now())
+    sincronizacao_errmsg  String?
+
     sei_atualizado_em    DateTime? @db.Timestamptz(6)
     resumo_atualizado_em DateTime? @db.Timestamptz(6)
 

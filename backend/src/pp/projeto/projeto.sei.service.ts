@@ -35,7 +35,6 @@ export class ProjetoSeiService {
             data: {
                 projeto_id: projeto.id,
                 ...dto,
-                registro_sei_info: '{}',
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
                 categoria: 'Manual',

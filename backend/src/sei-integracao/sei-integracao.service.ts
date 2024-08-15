@@ -1,19 +1,32 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
 import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
+import { PaginatedDto } from '../common/dto/paginated.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService } from '../sei-api/sei-api.service';
-import { FilterSeiParams, SeiIntegracaoDto, SeiProcessadoDto } from './entities/sei-entidade.entity';
+import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService, SeiError } from '../sei-api/sei-api.service';
+import {
+    FilterSeiListParams,
+    FilterSeiParams,
+    SeiIntegracaoDto,
+    SeiProcessadoDto,
+} from './entities/sei-entidade.entity';
+import { JwtService } from '@nestjs/jwt';
+import { DateTime } from 'luxon';
 const convertToJsonString = require('fast-json-stable-stringify');
 
+class NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
 @Injectable()
 export class SeiIntegracaoService {
     private readonly logger = new Logger(SeiIntegracaoService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly sei: SeiApiService
+        private readonly sei: SeiApiService,
+        private readonly jwtService: JwtService
     ) {}
 
     /**
@@ -28,7 +41,7 @@ export class SeiIntegracaoService {
         return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
     }
 
-    private createProcessado(dados: RetornoRelatorioProcesso): SeiProcessadoDto | null {
+    private createProcessado(dados: RetornoRelatorioProcesso | null | undefined): SeiProcessadoDto | null {
         if (!dados || !dados.ultimo_andamento) return null;
 
         return {
@@ -56,8 +69,10 @@ export class SeiIntegracaoService {
 
         const needsUpdate =
             !statusSei ||
-            !statusSei.atualizado_em ||
-            now.getTime() - statusSei.atualizado_em.getTime() > 60 * 60 * 1000; // 1 hour
+            !statusSei.relatorio_sincronizado_em ||
+            statusSei.sei_hash == '' ||
+            statusSei.status_code !== 200 ||
+            now.getTime() - statusSei.relatorio_sincronizado_em.getTime() > 60 * 60 * 1000; // 1 hour
 
         let dados;
         if (needsUpdate) {
@@ -75,15 +90,17 @@ export class SeiIntegracaoService {
                         sei_hash: newHash,
                         resumo_hash: '',
                         ativo: false, // não é ativo por padrão
-                        sei_atualizado_em: now,
-                        atualizado_em: now,
+                        sei_atualizado_em: null,
+                        relatorio_sincronizado_em: now,
+                        proxima_sincronizacao: this.calculaProximaSync(),
                     },
                 });
             } else {
-                const updateData: any = {
-                    atualizado_em: now,
+                const updateData: Prisma.StatusSEIUpdateInput = {
+                    relatorio_sincronizado_em: now,
                     link: dados.link,
                     status_code: 200,
+                    proxima_sincronizacao: this.calculaProximaSync(),
                 };
 
                 if (statusSei.sei_hash !== newHash) {
@@ -92,7 +109,9 @@ export class SeiIntegracaoService {
                     updateData.sei_hash = newHash;
                 }
 
-                this.logger.verbose(`Atualizando dados do SEI para ${params.processo_sei}`);
+                this.logger.verbose(
+                    `Atualizando dados do SEI para ${params.processo_sei} ${JSON.stringify(updateData)}`
+                );
                 statusSei = await this.prisma.statusSEI.update({
                     where: { id: statusSei.id },
                     data: updateData,
@@ -110,14 +129,16 @@ export class SeiIntegracaoService {
         return {
             id: statusSei.id,
             ativo: statusSei.ativo,
-            atualizado_em: statusSei.atualizado_em ?? new Date(),
+            link: dados.link,
+            resumo_sincronizado_em: statusSei.resumo_sincronizado_em,
+            resumo_status_code: statusSei.resumo_status_code,
+            relatorio_sincronizado_em: statusSei.relatorio_sincronizado_em,
             json_resposta: dados,
             processado: processado,
             processo_sei: dados.numero_processo,
-            resumo_atualizado_em: statusSei.resumo_atualizado_em ?? new Date(),
-            sei_atualizado_em: statusSei.sei_atualizado_em ?? new Date(),
+            resumo_atualizado_em: statusSei.resumo_atualizado_em,
+            sei_atualizado_em: statusSei.sei_atualizado_em,
             status_code: statusSei.status_code,
-            link: dados.link,
         };
     }
 
@@ -131,12 +152,14 @@ export class SeiIntegracaoService {
 
         const needsUpdate =
             !statusSei ||
-            !statusSei.atualizado_em ||
-            now.getTime() - statusSei.atualizado_em.getTime() > 60 * 60 * 1000; // 1 hour
+            !statusSei.resumo_atualizado_em ||
+            statusSei.resumo_hash == '' ||
+            statusSei.resumo_status_code !== 200 ||
+            now.getTime() - statusSei.resumo_atualizado_em.getTime() > 60 * 60 * 1000; // 1 hour
 
         let dadosResumo;
         if (needsUpdate) {
-            this.logger.log(`Buscando dados do SEI para ${params.processo_sei}`);
+            this.logger.log(`Buscando dados do resumo SEI para ${params.processo_sei}`);
             dadosResumo = await this.sei.getResumoProcesso(params.processo_sei);
             const newHash = this.jsonFlatHash(dadosResumo);
 
@@ -151,15 +174,17 @@ export class SeiIntegracaoService {
                         resumo_json_resposta: dadosResumo as any,
                         resumo_status_code: 200,
                         ativo: false,
-                        resumo_atualizado_em: now,
-                        atualizado_em: now,
+                        resumo_atualizado_em: null,
+                        resumo_sincronizado_em: now,
+                        proxima_sincronizacao: this.calculaProximaSync(),
                     },
                 });
             } else {
-                const updateData: any = {
-                    atualizado_em: now,
-                    url: dadosResumo.link,
-                    status_code: 200,
+                const updateData: Prisma.StatusSEIUpdateInput = {
+                    resumo_sincronizado_em: now,
+                    link: dadosResumo.link,
+                    resumo_status_code: 200,
+                    proxima_sincronizacao: this.calculaProximaSync(),
                 };
 
                 if (statusSei.resumo_hash !== newHash) {
@@ -180,15 +205,34 @@ export class SeiIntegracaoService {
         return {
             id: statusSei.id,
             ativo: statusSei.ativo,
-            atualizado_em: statusSei.atualizado_em ?? new Date(),
+            relatorio_sincronizado_em: statusSei.relatorio_sincronizado_em,
+            resumo_sincronizado_em: statusSei.resumo_sincronizado_em,
+            resumo_status_code: statusSei.resumo_status_code,
             resumo_json_resposta: dadosResumo,
             processado: null,
             processo_sei: dadosResumo.numero_processo,
-            resumo_atualizado_em: statusSei.resumo_atualizado_em ?? new Date(),
-            sei_atualizado_em: statusSei.sei_atualizado_em ?? new Date(),
+            resumo_atualizado_em: statusSei.resumo_atualizado_em,
+            sei_atualizado_em: statusSei.sei_atualizado_em,
             status_code: statusSei.status_code,
             link: dadosResumo.link,
         };
+    }
+
+    private calculaProximaSync(): Date {
+        const now = DateTime.now();
+        let next5AM = now.set({ hour: 5, minute: 0, second: 0, millisecond: 0 });
+
+        // Se já passou das 5 da manhã, defina para 5 da manhã do dia seguinte
+        if (now > next5AM) {
+            next5AM = next5AM.plus({ days: 1 });
+        }
+
+        // Se estivermos a menos de 1 hora das próximas 5 da manhã, adicione mais um dia
+        if (next5AM.diff(now, 'hours').hours < 1) {
+            next5AM = next5AM.plus({ days: 1 });
+        }
+
+        return next5AM.toJSDate();
     }
 
     async buscaSeiStatus(processos: string[]): Promise<SeiIntegracaoDto[]> {
@@ -206,15 +250,18 @@ export class SeiIntegracaoService {
             return {
                 id: statusSei.id,
                 ativo: statusSei.ativo,
-                atualizado_em: statusSei.atualizado_em ?? new Date(),
+                relatorio_sincronizado_em: statusSei.relatorio_sincronizado_em,
+                resumo_sincronizado_em: statusSei.resumo_sincronizado_em,
+                resumo_status_code: statusSei.resumo_status_code,
                 json_resposta: dados,
+                resumo_json_resposta: statusSei.resumo_json_resposta?.valueOf() as any,
                 processado: processado,
                 processo_sei: statusSei.processo_sei,
                 resumo_atualizado_em: statusSei.resumo_atualizado_em ?? new Date(),
                 sei_atualizado_em: statusSei.sei_atualizado_em ?? new Date(),
                 status_code: statusSei.status_code,
                 link: statusSei.link,
-            };
+            } satisfies SeiIntegracaoDto;
         });
     }
 
@@ -247,10 +294,7 @@ export class SeiIntegracaoService {
                     ativo: ativo,
                 },
             },
-            data: {
-                ativo: ativo,
-                atualizado_em: new Date(),
-            },
+            data: { ativo: ativo },
         });
     }
 
@@ -283,24 +327,119 @@ export class SeiIntegracaoService {
         const activeRecords = await this.prisma.statusSEI.findMany({
             where: {
                 ativo: true,
-                atualizado_em: {
+                relatorio_sincronizado_em: {
                     lte: new Date(new Date().getTime() - 60 * 60 * 1000),
                 },
+                proxima_sincronizacao: {
+                    lte: new Date(),
+                },
             },
-            orderBy: { atualizado_em: 'asc' },
+            orderBy: { relatorio_sincronizado_em: 'asc' },
             select: { processo_sei: true },
+            take: 1000,
         });
 
         for (const record of activeRecords) {
             try {
                 await this.buscaSeiRelatorio({ processo_sei: record.processo_sei });
-
-                this.logger.log(`Atualizou SEI record: ${record.processo_sei}`);
             } catch (error) {
-                this.logger.error(`Erro ao atualizar SEI ${record.processo_sei}: ${error.message}`);
+                const updateData: Prisma.StatusSEIUpdateInput = {
+                    status_code: 500,
+                    sincronizacao_errmsg: 'message' in error ? error.message : 'Erro desconhecido: ' + error.toString(),
+                };
+
+                if (error instanceof HttpException) {
+                    updateData.status_code = error.getStatus();
+                    updateData.sincronizacao_errmsg = error.getResponse();
+                } else if (error instanceof SeiError) {
+                    updateData.status_code = 500;
+                    updateData.sincronizacao_errmsg = error.message;
+                }
+
+                await this.prisma.statusSEI.update({
+                    where: {
+                        processo_sei: record.processo_sei,
+                        proxima_sincronizacao: DateTime.now().plus({ hour: 8 }).toJSDate(),
+                    },
+                    data: updateData,
+                });
+
+                this.logger.error(
+                    `Erro ao atualizar SEI ${record.processo_sei}: ${error.message} // ${updateData.sincronizacao_errmsg}`
+                );
             }
         }
 
         this.logger.log('Fim do Sync do SEI');
+    }
+
+    async listaProcessos(filters: FilterSeiListParams): Promise<PaginatedDto<SeiIntegracaoDto>> {
+        const { relatorio_sincronizado_de: data_inicio, relatorio_sincronizado_ate: data_fim } = filters;
+
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
+        }
+
+        const dbRows = await this.prisma.statusSEI.findMany({
+            where: {
+                relatorio_sincronizado_em: {
+                    gte: data_inicio,
+                    lte: data_fim,
+                },
+            },
+            skip: offset,
+            take: ipp + 1,
+            orderBy: { relatorio_sincronizado_em: 'desc' },
+        });
+
+        const linhas: SeiIntegracaoDto[] = dbRows.map((item) => ({
+            id: item.id,
+            processo_sei: item.processo_sei,
+            ativo: item.ativo,
+            link: item.link,
+            relatorio_sincronizado_em: item.relatorio_sincronizado_em,
+            resumo_sincronizado_em: item.resumo_sincronizado_em,
+            resumo_status_code: item.resumo_status_code,
+            sei_atualizado_em: item.sei_atualizado_em,
+            resumo_atualizado_em: item.resumo_atualizado_em,
+            status_code: item.status_code,
+            json_resposta: item.json_resposta,
+            resumo_json_resposta: item.resumo_json_resposta,
+            processado: this.createProcessado(item.json_resposta?.valueOf() as RetornoRelatorioProcesso),
+        }));
+
+        if (linhas.length > ipp) {
+            tem_mais = true;
+            linhas.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        }
+
+        return {
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
+            linhas,
+        };
+    }
+
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
     }
 }

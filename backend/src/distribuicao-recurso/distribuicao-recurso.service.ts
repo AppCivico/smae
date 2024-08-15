@@ -1407,7 +1407,6 @@ export class DistribuicaoRecursoService {
                         distribuicao_recurso_id: distribuicaoRecursoId,
                         nome: createdRow.nome,
                         processo_sei: createdRow.processo_sei.replace(/\D/g, ''),
-                        registro_sei_info: '{}',
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                     },
