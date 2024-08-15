@@ -148,5 +148,15 @@ export const usePsMetasStore = defineStore('psMetas', {
 
     metasPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    metasPorPlano: ({ lista }: Estado) => lista
+      .reduce((acc, cur) => {
+        if (!acc[cur.pdm_id]) {
+          acc[cur.pdm_id] = [];
+        }
+        acc[cur.pdm_id].push(cur);
+
+        return acc;
+      }, {} as Record<number, Meta[]>),
   },
 });

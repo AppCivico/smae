@@ -83,6 +83,7 @@
         </label>
         <select
           id="plano-setorial-id"
+          v-model.number="planoSetorialId"
           name="plano_setorial_id"
           class="inputtext light"
           :aria-busy="chamadasPendentesDePlanosSetoriais.lista"
@@ -115,10 +116,11 @@
           class="inputtext light"
           :aria-busy="chamadasPendentesDeMetas.lista"
           :class="{ error: errosDeMetas.lista }"
+          :disabled="!metasDisponiveis.length"
         >
           <option value="" />
           <option
-            v-for="meta in listaDeMetas"
+            v-for="meta in metasDisponiveis"
             :key="meta.id"
             :value="meta.id"
             :selected="Number($props.valoresIniciais.meta_id) === meta.id"
@@ -355,7 +357,7 @@ import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import {
-  nextTick, onUnmounted, ref, watch,
+  computed, nextTick, onUnmounted, ref, watch,
 } from 'vue';
 
 const props = defineProps({
@@ -432,6 +434,7 @@ const {
 const {
   lista: listaDeMetas,
   chamadasPendentes: chamadasPendentesDeMetas,
+  metasPorPlano,
   erros: errosDeMetas,
 } = storeToRefs(MetasStore);
 
@@ -455,7 +458,15 @@ const pronto = ref(false);
 const nivelRegionalizacao = ref(null);
 const regiaoId = ref(null);
 
+const planoSetorialId = ref(null);
+
+const metasDisponiveis = computed(() => (!planoSetorialId.value
+  ? listaDeMetas.value
+  : metasPorPlano.value[planoSetorialId.value]
+  || []));
+
 async function iniciar() {
+  const planoSelecionado = Number(props.valoresIniciais.plano_setorial_id || 0);
   const regiaoSelecionada = Number(props.valoresIniciais.regiao_id || 0);
   const nivelSelecionado = Number(props.valoresIniciais.nivel_regionalizacao || 0);
 
@@ -468,6 +479,8 @@ async function iniciar() {
     planosSetoriaisStore.buscarTudo(),
     cargaDeRegioes,
   ];
+
+  planoSetorialId.value = planoSelecionado;
 
   cargaDeRegioes.then(async () => {
     if (nivelSelecionado) {
