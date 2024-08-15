@@ -661,7 +661,7 @@ export class DistribuicaoRecursoService {
 
                 transferencia: {
                     select: {
-                        valor_total: true,
+                        valor: true,
                     },
                 },
 
@@ -730,9 +730,9 @@ export class DistribuicaoRecursoService {
         }
 
         let pct_valor_transferencia: number = 0;
-        if (row.transferencia.valor_total && row.valor_total) {
+        if (row.transferencia.valor && row.valor) {
             pct_valor_transferencia = Math.round(
-                (row.valor_total.toNumber() / row.transferencia.valor_total.toNumber()) * 100
+                (row.valor.toNumber() / row.transferencia.valor.toNumber()) * 100
             );
         }
 
