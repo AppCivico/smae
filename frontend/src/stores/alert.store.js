@@ -6,8 +6,7 @@ export const useAlertStore = defineStore({
     alertas: [],
   }),
   actions: {
-    success(message, ignorarDuplicadas = true) {
-      if (ignorarDuplicadas && this.alertas.some((v) => v.message === message && v.type === 'alert-success')) return;
+    success(message) {
       this.alertas.push({ message, type: 'alert-success' });
     },
     error(message, ignorarDuplicadas = true) {
