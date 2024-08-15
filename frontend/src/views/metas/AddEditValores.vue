@@ -8,6 +8,10 @@ import { storeToRefs } from 'pinia';
 import { nextTick, ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
@@ -31,6 +35,8 @@ const envelopeDeValores = ref(null);
 const modoDePreenchimento = ref('valor_nominal'); // ou `valor_acumulado`
 const valorPadrão = ref(0);
 
+const isSubmitting = ref(false);
+
 (async () => {
   await VariaveisStore.getValores(var_id);
   Previsto.value = Valores.value[var_id]?.ordem_series.indexOf('Previsto');
@@ -39,8 +45,8 @@ const valorPadrão = ref(0);
 })();
 
 async function onSubmit(el) {
-  event.preventDefault();
-  event.stopPropagation();
+  isSubmitting.value = true;
+
   try {
     let msg;
     let r;
@@ -80,6 +86,7 @@ async function onSubmit(el) {
   } catch (error) {
     alertStore.error(error);
   }
+  isSubmitting.value = false;
 }
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
@@ -249,7 +256,7 @@ function limparFormulário() {
 
     <form
       id="form"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <div
         v-if="Valores[var_id]?.linhas"
