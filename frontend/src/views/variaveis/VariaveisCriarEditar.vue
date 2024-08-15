@@ -111,7 +111,7 @@ const schema = computed(() => (gerarMultiplasVariaveis.value
 ));
 
 const {
-  errors, handleSubmit, resetForm, resetField, values, controlledValues,
+  errors, handleSubmit, resetForm, resetField, values,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema.value,
@@ -788,7 +788,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.medicao_grupo_ids || []
             }"
-            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_proprietario_id]?.Medicao || []"
+            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_id]?.Medicao || []"
             :aria-busy="chamadasPendentesDeGrupos.lista"
             :class="{
               error: errors.medicao_grupo_ids
@@ -812,7 +812,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.validacao_grupo_ids || []
             }"
-            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_proprietario_id]?.Validacao || []"
+            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_id]?.Validacao || []"
             :aria-busy="chamadasPendentesDeGrupos.lista"
             :class="{
               error: errors.validacao_grupo_ids
@@ -836,7 +836,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.liberacao_grupo_ids || []
             }"
-            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_proprietario_id]?.Liberacao || []"
+            :grupo="gruposPorOrgaoIdPorPerfil[values.orgao_id]?.Liberacao || []"
             :aria-busy="chamadasPendentesDeGrupos.lista"
             :class="{
               error: errors.liberacao_grupo_ids
