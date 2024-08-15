@@ -994,17 +994,17 @@ export class IndicadorService {
 
             if (variavel.inicio_medicao && indicador.inicio_medicao < variavel.inicio_medicao)
                 throw new HttpException(
-                    `A variável ${variavel.titulo} (${variavel.codigo}) inicia a medição em ${
+                    `A variável ${variavel.titulo} (${variavel.codigo}) inicia a medição em ${Date2YMD.dbDateToDMY(
                         variavel.inicio_medicao
-                    }, enquanto o indicador inicia em ${indicador.inicio_medicao}`,
+                    )}, enquanto o indicador inicia em ${Date2YMD.dbDateToDMY(indicador.inicio_medicao)}`,
                     400
                 );
 
             if (variavel.fim_medicao && indicador.fim_medicao > variavel.fim_medicao)
                 throw new HttpException(
-                    `A variável ${variavel.titulo} (${variavel.codigo}) termina a medição em ${
+                    `A variável ${variavel.titulo} (${variavel.codigo}) termina a medição em ${Date2YMD.dbDateToDMY(
                         variavel.fim_medicao
-                    }, enquanto o indicador termina em ${indicador.fim_medicao}`,
+                    )}, enquanto o indicador termina em ${Date2YMD.dbDateToDMY(indicador.fim_medicao)}`,
                     400
                 );
         }
@@ -1155,11 +1155,11 @@ export class IndicadorService {
                     (iv.variavel.fim_medicao && iv.variavel.fim_medicao < indicador.fim_medicao)
                 ) {
                     throw new HttpException(
-                        `A variável ${iv.variavel.codigo} não cobre o período de medição do indicador. Requerido: ${Date2YMD.toStringOrNull(
+                        `A variável ${iv.variavel.codigo} não cobre o período de medição do indicador. Requerido: ${Date2YMD.dbDateToDMY(
                             indicador.inicio_medicao
-                        )} a ${Date2YMD.toStringOrNull(indicador.fim_medicao)}, Variável: ${Date2YMD.toStringOrNull(
+                        )} a ${Date2YMD.dbDateToDMY(indicador.fim_medicao)}, Variável: ${Date2YMD.dbDateToDMY(
                             iv.variavel.inicio_medicao ?? '-'
-                        )} a ${Date2YMD.toStringOrNull(iv.variavel.fim_medicao) ?? '-'}`,
+                        )} a ${Date2YMD.dbDateToDMY(iv.variavel.fim_medicao) ?? '-'}`,
                         400
                     );
                 }
