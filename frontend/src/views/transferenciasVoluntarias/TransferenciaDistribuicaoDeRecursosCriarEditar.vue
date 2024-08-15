@@ -360,7 +360,7 @@ const isSomaCorreta = computed(() => {
       <svg
         width="20"
         height="20"
-      ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso x
+      ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso
     </button>
   </div>
 
