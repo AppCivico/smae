@@ -58,7 +58,7 @@ defineProps({
             </span>
           </dt>
           <dd class="f2 t12 w700 tprimary calendario__evento">
-            {{ fase.ciclo_fase }}
+            {{ fase.ciclo_fase === 'Analise' ? 'Análise' : fase.ciclo_fase }}
           </dd>
         </div>
       </template>
