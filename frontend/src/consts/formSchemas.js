@@ -100,7 +100,7 @@ setLocale({
     integer: ({ label }) => (label ? `${label} deve ser um número inteiro` : 'Deve ser um número inteiro'),
     max: ({ label, max }) => (label ? `${label} deve ser no máximo ${max}` : 'Deve ser no máximo ${max}'),
     min: ({ label, min }) => (label ? `${label} deve ser no mínimo ${min}` : 'Deve ser no mínimo ${min}'),
-    positive: ({ label }) => (label ? `${label} deve ser positivo` : 'Deve ser positivo'),
+    positive: ({ label }) => (label ? `${label} deve ser maior do que zero` : 'Deve ser maior do que zero'),
   },
   string: {
     email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
