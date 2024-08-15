@@ -32,6 +32,10 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -291,12 +295,6 @@ watch(AssociadorDeVariaveisEstaAberto.value, () => {
 watch(() => props.group, () => {
   start();
 }, { immediate: true });
-</script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
