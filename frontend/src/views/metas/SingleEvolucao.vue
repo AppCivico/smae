@@ -1,27 +1,24 @@
 <script setup>
+import SmallModal from '@/components/SmallModal.vue';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import dateToField from '@/helpers/dateToField';
-import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
-import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
-import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
+import AddEditValores from '@/views/metas/AddEditValores.vue';
+import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import { storeToRefs } from 'pinia';
-import { onMounted, onUpdated, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-const alertStore = useAlertStore();
+const props = defineProps(['group']);
+
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
-const editModalStore = useEditModalStore();
-
-const props = defineProps(['group']);
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -34,6 +31,19 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/ini
 const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
+
+const dialogoAtivo = computed(() => {
+  switch (props.group) {
+    case 'variaveis':
+      return AddEditVariavel;
+    case 'valores':
+      return AddEditValores;
+    case 'retroativos':
+      return AddEditRealizado;
+    default:
+      return null;
+  }
+});
 
 (async () => {
   await MetasStore.getPdM();
@@ -60,24 +70,6 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
     });
   }
 })();
-
-function start() {
-  if (props.group == 'variaveis') editModalStore.modal(AddEditVariavel, props);
-  if (props.group == 'valores') {
-    editModalStore.modal(AddEditValores, {
-      ...props,
-      checkClose: () => {
-        alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
-          editModalStore.clear();
-          alertStore.clear();
-        });
-      },
-    });
-  }
-  if (props.group == 'retroativos') editModalStore.modal(AddEditRealizado, props);
-}
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
@@ -386,4 +378,12 @@ onUpdated(() => { start(); });
       </div>
     </div>
   </div>
+
+  <SmallModal
+    v-if="dialogoAtivo"
+  >
+    <component
+      :is="dialogoAtivo"
+    />
+  </SmallModal>
 </template>
