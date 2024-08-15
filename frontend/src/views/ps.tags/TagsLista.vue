@@ -13,12 +13,14 @@
   <table class="tablemain">
     <col>
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th>Tags</th>
-        <th>Possui ícone</th>
+        <th>Categoria</th>
+        <th>Ícone</th>
         <th />
         <th />
       </tr>
@@ -29,7 +31,21 @@
         :key="item.id"
       >
         <td>{{ item.descricao }}</td>
-        <td>{{ item.icone ? 'Sim' : 'Não' }}</td>
+        <td>{{ item.ods.titulo }}</td>
+        <td>
+          <a
+            v-if="item.icone"
+            :href="baseUrl + '/download/' + item?.icone"
+            download
+          >
+            <img
+              :src="`${baseUrl}/download/${item.icone}?inline=true`"
+              width="15"
+              class="ib mr1"
+            >
+          </a>
+          <span v-else>-</span>
+        </td>
         <td>
           <router-link
             :to="{ name: 'planosSetoriaisEditarTag', params: { tagId: item.id } }"
@@ -88,6 +104,7 @@ defineOptions({
 const route = useRoute();
 const alertStore = useAlertStore();
 const tagsStore = useTagsPsStore();
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
 
