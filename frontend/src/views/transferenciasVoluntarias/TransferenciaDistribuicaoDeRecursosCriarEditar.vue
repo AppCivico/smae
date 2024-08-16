@@ -1158,7 +1158,7 @@ const isSomaCorreta = computed(() => {
           <td>{{ item.dias_no_status }}</td>
           <td>
             <button
-              v-if="item.id === distribuiçãoEmFoco.historico_status[0].id"
+              v-if="item.id === distribuiçãoEmFoco.historico_status[distribuiçãoEmFoco.historico_status.length - 1].id"
               class="like-a__text"
               arial-label="editar"
               title="editar"
