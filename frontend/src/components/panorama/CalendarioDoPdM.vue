@@ -30,7 +30,7 @@ defineProps({
 
     <dl class="calendario__lista">
       <template
-        v-for="fase in pdm.ciclo_fisico_ativo.fases "
+        v-for="fase in pdm.ciclo_fisico_ativo.fases"
         :key="fase.id"
       >
         <div
