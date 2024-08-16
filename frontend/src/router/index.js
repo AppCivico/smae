@@ -124,7 +124,11 @@ router.afterEach((to, from, failure) => {
     console.error('failure.name:', failure?.name);
 
     try {
+      console.error('Object.keys(failure)', Object.keys(failure));
       console.error('failure.toString():', failure.toString());
+      console.error('failure.from:', failure.from);
+      console.error('failure.to:', failure.to);
+      console.error('failure.type:', failure.type);
     } catch (error) {
       console.error('error:', error);
     }
