@@ -231,7 +231,7 @@ watch([
       <div class="mb1 card-shadow f1 p15">
         <LoadingComponent v-if="activePdm?.loading || !perfil" />
         <CalendárioDoPdM
-          v-else
+          v-else-if="activePdm?.ciclo_fisico_ativo"
           :pdm="activePdm"
           :perfil="perfil"
         />
