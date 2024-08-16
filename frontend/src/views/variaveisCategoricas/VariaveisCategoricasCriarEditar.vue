@@ -179,6 +179,7 @@
           class="like-a__text addlink mb1"
           arial-label="Remover valores"
           title="Remover valores"
+          type="button"
           @click="remove(idx)"
         >
           <svg
