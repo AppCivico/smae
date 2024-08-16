@@ -93,87 +93,92 @@ function permitirEdição(indicadorVariavel) {
       </li>
     </ul>
   </nav>
-
-  <table class="tablemain mb1">
-    <thead>
-      <tr>
-        <th style="width:13.3%;">
-          Título
-        </th>
-        <th style="width:13.3%;">
-          Nível de regionalização
-        </th>
-        <th style="width:13.3%;">
-          Mostra monitoramento
-        </th>
-        <th style="width:20%" />
+  <div
+    role="region"
+    aria-label="Variáveis compostas"
+    tabindex="0"
+  >
+    <table class="tablemain mb1">
+      <thead>
+        <tr>
+          <th style="width:13.3%;">
+            Título
+          </th>
+          <th style="width:13.3%;">
+            Nível de regionalização
+          </th>
+          <th style="width:13.3%;">
+            Mostra monitoramento
+          </th>
+          <th style="width:20%" />
+        </tr>
+      </thead>
+      <tr
+        v-for="v in variáveisCompostas"
+        :key="v.id"
+      >
+        <td>{{ v.titulo }}</td>
+        <td>
+          {{ v.nivel_regionalizacao
+            ? níveisRegionalização.find(e => e.id == v.nivel_regionalizacao).nome
+            : '-' }}
+        </td>
+        <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
+        <td style="white-space: nowrap; text-align: right;">
+          <button
+            class="like-a__link tipinfo tprimary"
+            :disabled="!permitirEdição(v.indicador_variavel)"
+            @click="apagarVariável(v.id)"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_remove" />
+            </svg>
+            <div>Apagar</div>
+          </button>
+          <SmaeLink
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_edit" />
+            </svg>
+            <div>Editar</div>
+          </SmaeLink>
+          <SmaeLink
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/valores`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
+          </SmaeLink>
+          <SmaeLink
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/retroativos`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
+          </SmaeLink>
+        </td>
       </tr>
-    </thead>
-    <tr
-      v-for="v in variáveisCompostas"
-      :key="v.id"
-    >
-      <td>{{ v.titulo }}</td>
-      <td>
-        {{ v.nivel_regionalizacao
-          ? níveisRegionalização.find(e => e.id == v.nivel_regionalizacao).nome
-          : '-' }}
-      </td>
-      <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
-      <td style="white-space: nowrap; text-align: right;">
-        <button
-          class="like-a__link tipinfo tprimary"
-          :disabled="!permitirEdição(v.indicador_variavel)"
-          @click="apagarVariável(v.id)"
-        >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_remove" />
-          </svg>
-          <div>Apagar</div>
-        </button>
-        <SmaeLink
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_edit" />
-          </svg>
-          <div>Editar</div>
-        </SmaeLink>
-        <SmaeLink
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/valores`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-        </SmaeLink>
-        <SmaeLink
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/retroativos`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-        </SmaeLink>
-      </td>
-    </tr>
-  </table>
+    </table>
+  </div>
 </template>

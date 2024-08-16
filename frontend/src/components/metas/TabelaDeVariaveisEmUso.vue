@@ -62,134 +62,140 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
-  <table
-    class="tablemain mb1"
+  <div
+    role="region"
+    aria-label="Variáveis em uso"
+    tabindex="0"
   >
-    <thead>
-      <tr>
-        <th style="width:13.3%;">
-          Código
-        </th>
-        <th style="width:13.3%;">
-          Título
-        </th>
-        <th style="width:13.3%;">
-          Nível de regionalização
-        </th>
-        <th style="width:13.3%;">
-          Valor base
-        </th>
-        <th style="width:13.3%;">
-          Periodicidade
-        </th>
-        <th style="width:13.3%;">
-          Unidade
-        </th>
-        <th style="width:13.3%;">
-          Casas decimais
-        </th>
-        <th style="width:13.3%;">
-          Atraso meses
-        </th>
-        <th style="width:13.3%;">
-          Acumulativa
-        </th>
-        <th
-          v-if="!$props.saoGlobais"
-          style="width:20%"
-        />
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="v in variáveisConsolidadas"
-        :key="v.id"
-      >
-        <td>{{ v.codigo }}</td>
-        <td>{{ v.titulo }}</td>
-        <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
-        <td>{{ v.valor_base }}</td>
-        <td>{{ v.periodicidade }}</td>
-        <td>{{ v.unidade_medida?.sigla }}</td>
-        <td>{{ v.casas_decimais }}</td>
-        <td>{{ v.atraso_meses }}</td>
-        <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
-        <td
-          v-if="!$props.saoGlobais"
-          style="white-space: nowrap; text-align: right;"
+    <table
+      class="tablemain mb1"
+    >
+      <thead>
+        <tr>
+          <th style="width:13.3%;">
+            Código
+          </th>
+          <th style="width:13.3%;">
+            Título
+          </th>
+          <th style="width:13.3%;">
+            Nível de regionalização
+          </th>
+          <th style="width:13.3%;">
+            Valor base
+          </th>
+          <th style="width:13.3%;">
+            Periodicidade
+          </th>
+          <th style="width:13.3%;">
+            Unidade
+          </th>
+          <th style="width:13.3%;">
+            Casas decimais
+          </th>
+          <th style="width:13.3%;">
+            Atraso meses
+          </th>
+          <th style="width:13.3%;">
+            Acumulativa
+          </th>
+          <th
+            v-if="!$props.saoGlobais"
+            style="width:20%"
+          />
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="v in variáveisConsolidadas"
+          :key="v.id"
         >
-          <button
-            class="like-a__link tipinfo tprimary"
-            :disabled="!permitirEdição(v.indicador_variavel)"
-            @click="apagarVariável(v.id)"
+          <td>{{ v.codigo }}</td>
+          <td>{{ v.titulo }}</td>
+          <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
+          <td>{{ v.valor_base }}</td>
+          <td>{{ v.periodicidade }}</td>
+          <td>{{ v.unidade_medida?.sigla }}</td>
+          <td>{{ v.casas_decimais }}</td>
+          <td>{{ v.atraso_meses }}</td>
+          <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
+          <td
+            v-if="!$props.saoGlobais"
+            style="white-space: nowrap; text-align: right;"
           >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
-          </button>
-          <SmaeLink
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-          </SmaeLink>
-          <SmaeLink
-            v-if="permitirEdição(v.indicador_variavel)"
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-          </SmaeLink>
-          <button
-            v-else
-            disabled
-            class="like-a__link tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-          </button>
-          <SmaeLink
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-          </SmaeLink>
-          <SmaeLink
-            v-if="permissions.CadastroPessoa?.administrador"
-            :to="{
-              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
-              query: $route.query,
-            }"
-            class="tipinfo tprimary ml1"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-          </SmaeLink>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+            <button
+              class="like-a__link tipinfo tprimary"
+              :disabled="!permitirEdição(v.indicador_variavel)"
+              @click="apagarVariável(v.id)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
+            </button>
+            <SmaeLink
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
+            </SmaeLink>
+            <SmaeLink
+              v-if="permitirEdição(v.indicador_variavel)"
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+            </SmaeLink>
+            <button
+              v-else
+              disabled
+              class="like-a__link tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+            </button>
+            <SmaeLink
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
+            </SmaeLink>
+            <SmaeLink
+              v-if="permissions.CadastroPessoa?.administrador"
+              :to="{
+                path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
+                query: $route.query,
+              }"
+              class="tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
+            </SmaeLink>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
