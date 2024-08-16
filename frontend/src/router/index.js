@@ -118,31 +118,17 @@ router.afterEach((to, from, failure) => {
     document.title = 'SMAE';
   }
 
-  if (failure) {
-    console.error('to:', to, 'from:', from, 'failure:', failure);
-    console.error('failure.message:', failure?.message);
-    console.error('failure.name:', failure?.name);
+  if (
+    failure?.message?.includes('Failed to fetch dynamically imported module')
+    || failure?.message?.includes('error loading dynamically imported module')
+    || failure?.type === 'NAVIGATION_ABORTED'
+    || failure?.type === 4
+  ) {
+    const alertStore = useAlertStore();
 
-    try {
-      console.error('Object.keys(failure)', Object.keys(failure));
-      console.error('failure.toString():', failure.toString());
-      console.error('failure.from:', failure.from);
-      console.error('failure.to:', failure.to);
-      console.error('failure.type:', failure.type);
-    } catch (error) {
-      console.error('error:', error);
-    }
-
-    if (
-      failure?.message?.includes('Failed to fetch dynamically imported module')
-      && failure?.message?.includes('error loading dynamically imported module')
-    ) {
-      const alertStore = useAlertStore();
-
-      alertStore.confirmAction('Versão indisponível. Recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
-        window.location.reload();
-      });
-    }
+    alertStore.confirmAction('Navegação abortada. Quer tentar recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
+      window.location.reload();
+    });
   }
 });
 
