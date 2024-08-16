@@ -66,6 +66,7 @@ export class TribunalDeContasService implements ReportableService {
                 ano: distribuicao.transferencia.ano,
                 parlamentar: distribuicao.parlamentares.map((p) => p.parlamentar.nome_popular).join('|'),
                 valor_repasse: distribuicao.valor.toNumber(),
+                emenda: distribuicao.transferencia.emenda,
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
                 prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
