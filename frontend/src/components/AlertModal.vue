@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const { alertas } = storeToRefs(alertStore);
+
 async function callbackFn(i) {
   await alertas.value[i].callback();
 
