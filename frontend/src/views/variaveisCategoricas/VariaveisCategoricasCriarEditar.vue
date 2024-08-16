@@ -11,7 +11,6 @@
     <CheckClose />
   </div>
   <Form
-    v-if="!chamadasPendentes?.emFoco"
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
@@ -268,7 +267,6 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(variaveisCateg
 
 async function onSubmit(values) {
   try {
-    let response;
     const msg = props.variavelId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
@@ -282,17 +280,10 @@ async function onSubmit(values) {
       })),
     };
 
-    if (route.params?.variavelId) {
-      response = await variaveisCategoricasStore.salvarItem(
-        dataToSend,
-        route.params.variavelId,
-      );
-    } else {
-      response = await variaveisCategoricasStore.salvarItem(dataToSend);
-    }
+    const response = await variaveisCategoricasStore.salvarItem(dataToSend, route.params.variavelId);
+
     if (response) {
       alertStore.success(msg);
-      variaveisCategoricasStore.$reset();
       router.push({ name: 'variaveisCategoricasListar' });
     }
   } catch (error) {
@@ -300,7 +291,6 @@ async function onSubmit(values) {
   }
 }
 
-variaveisCategoricasStore.$reset();
 // não foi usada a prop.variavelId pois estava vazando do edit na hora de criar uma nova
 if (route.params?.variavelId) {
   variaveisCategoricasStore.buscarItem(route.params?.variavelId);
