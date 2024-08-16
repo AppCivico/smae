@@ -124,7 +124,7 @@ router.afterEach((to, from, failure) => {
     console.error('failure.name:', failure?.name);
 
     try {
-      console.error('JSON.stringfy(failure):', JSON.stringify(failure));
+      console.error('failure.toString():', failure.toString());
     } catch (error) {
       console.error('error:', error);
     }
