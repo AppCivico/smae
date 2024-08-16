@@ -120,6 +120,8 @@ router.afterEach((to, from, failure) => {
 
   if (failure) {
     console.error('to:', to, 'from:', from, 'failure:', failure);
+    console.error('failure.message:', failure?.message);
+    console.error('failure.name:', failure?.name);
 
     if (
       failure?.message?.includes('Failed to fetch dynamically imported module')
