@@ -2011,18 +2011,55 @@ progress,
 
   color: @primary;
 
-  background: @laranja;
+  background: transparent;
   border: 0;
 
   appearance: none;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: @laranja;
+    background-image: url('@{u}progress.png');
+    background-size: contain;
+    background-repeat: repeat-x;
+    mix-blend-mode: multiply;
+  }
 
   .progress-bar-fg({
-    background: @primary 50%;
+    background-color: @primary;
+    background-image: url('@{u}progress.png');
+    background-size: contain;
+    background-repeat: repeat-x;
+    position: relative;
+    z-index: 2;
   });
 
   .progress-bar-bg({
-    background: @laranja 50%;
+    background-color: transparent;
   });
+
+  > div {
+    background-color: @primary;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+  }
 }
 
 .link {
