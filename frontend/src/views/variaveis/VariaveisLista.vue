@@ -103,6 +103,10 @@ watchEffect(() => {
     />
   </FormularioQueryString>
 
+  <p v-if="!chamadasPendentes.lista">
+    Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
+  </p>
+
   <div
     role="region"
     aria-labelledby="titulo-da-pagina"
