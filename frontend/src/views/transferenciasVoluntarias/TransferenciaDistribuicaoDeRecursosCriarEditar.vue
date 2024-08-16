@@ -795,6 +795,7 @@ const isSomaCorreta = computed(() => {
             class="like-a__text addlink mt1"
             arial-label="excluir"
             title="excluir"
+            type="button"
             @click="remove(idx)"
           >
             <svg
