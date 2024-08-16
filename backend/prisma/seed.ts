@@ -34,7 +34,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
 
     CadastroPdm: ['Programa de Metas', 'PDM'],
-    CadastroOds: ['Categorias', 'PDM'],
+    CadastroOds: ['Categorias', ['PDM', 'PlanoSetorial']],
     CadastroTag: ['Tags', 'PDM'],
     CadastroMacroTema: ['Macro Temas', 'PDM'],
     CadastroSubTema: ['Sub Temas', 'PDM'],
