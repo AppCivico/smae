@@ -52,11 +52,11 @@
   >Carregando</span>
 
   <div
-    v-if="erro"
+    v-if="erro.emfoco"
     class="error p1"
   >
     <div class="error-msg">
-      {{ erro }}
+      {{ erro.emfoco }}
     </div>
   </div>
 </template>
