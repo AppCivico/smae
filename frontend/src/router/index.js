@@ -121,7 +121,10 @@ router.afterEach((to, from, failure) => {
   if (failure) {
     console.error('to:', to, 'from:', from, 'failure:', failure);
 
-    if (failure?.message?.includes('Failed to fetch')) {
+    if (
+      failure?.message?.includes('Failed to fetch dynamically imported module')
+      && failure?.message?.includes('error loading dynamically imported module')
+    ) {
       const alertStore = useAlertStore();
 
       alertStore.confirmAction('Versão indisponível. Recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
