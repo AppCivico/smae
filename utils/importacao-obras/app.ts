@@ -156,6 +156,20 @@ async function main() {
     }: { pessoasCollabProjeto: Record<string, number>; pessoasGestorDeProjeto: Record<string, number> } =
         await buscaPessoas();
 
+    const todasPessoas = await pessoaApi.pessoaControllerFindAll({});
+    const pessoaNomeByEmail: Record<string, string> = {};
+    for (const pessoa of todasPessoas.data.linhas) {
+        pessoaNomeByEmail[pessoa.email] = pessoa.nome_exibicao;
+    }
+
+    const getNome = (email: string | undefined) => (email ? pessoaNomeByEmail[email] || email : null);
+
+    const ensureIdExists = (id: number | undefined) => {
+        if (!id) throw new Error('ID faltando');
+
+        return id;
+    };
+
     //console.log(pessoasCollabProjeto, pessoasGestorDeProjeto);
 
     const db = await Database.create(process.env.DB_PATH!);
@@ -194,14 +208,12 @@ async function main() {
     await validaGrupoTematico();
     await validaMetas();
     await validaIniciativas();
-    console.log(orgao2id);
-
     if (!runImport) {
         console.log('Importação não pode ser realizada');
         return;
     }
-
     const empreendimento2id: Record<string, number> = {};
+    /*
     const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
     const empreendimentosMap: Record<string, number> = {};
     for (const emp of empreendimentos.data.linhas) {
@@ -225,7 +237,7 @@ async function main() {
             console.log('Erro ao criar empreendimento', row.projeto_nome, row.rel_empreendimento_id);
             console.error(row.rel_empreendimento_id, (error as any).response?.data);
         }
-    }
+    }*/
 
     for (const row of rows) {
         let origem_tipo: ProjetoOrigemTipo = 'Outro';
@@ -255,19 +267,30 @@ async function main() {
                 : row.rel_subprefeitura_id
                 ? regiao2id[row.rel_subprefeitura_id]
                 : undefined;
+        const regiao = regiao_id ? [ensureIdExists(regiao_id)] : undefined;
 
-        const regiao = regiao_id ? regiao2id[regiao_id] : undefined;
+        if (row.rel_responsavel_id && !pessoasCollabProjeto[row.rel_responsavel_id])
+            throw new Error('Responsável não encontrado');
+        if (row.rel_responsaveis_no_orgao_gestor_id && !pessoasGestorDeProjeto[row.rel_responsaveis_no_orgao_gestor_id])
+            throw new Error('Responsável no órgão gestor não encontrado');
+
+        if (row.rel_colaboradores_no_orgao && !pessoasCollabProjeto[row.rel_colaboradores_no_orgao])
+            throw new Error('Colaborador no órgão não encontrado');
 
         const info: CreateProjetoDto = {
             nome: row.projeto_nome,
             status: row.projeto_status as ProjetoStatus,
-            grupo_tematico_id: row.rel_grupo_tematico_id ? grupo_tematico2id[row.rel_grupo_tematico_id] : undefined,
-            tipo_intervencao_id: row.rel_tipo_intervencao_id
-                ? tipo_intervencao2id[row.rel_tipo_intervencao_id]
+            grupo_tematico_id: row.rel_grupo_tematico_id
+                ? ensureIdExists(grupo_tematico2id[row.rel_grupo_tematico_id])
                 : undefined,
-            equipamento_id: row.rel_equipamento_id ? equipamento2id[row.rel_equipamento_id] : undefined,
-            orgao_origem_id: row.rel_orgao_origem_id ? orgao2id[row.rel_orgao_origem_id] : undefined,
-            orgao_executor_id: row.rel_orgao_executor_id ? orgao2id[row.rel_orgao_executor_id] : undefined,
+            tipo_intervencao_id: row.rel_tipo_intervencao_id
+                ? ensureIdExists(tipo_intervencao2id[row.rel_tipo_intervencao_id])
+                : undefined,
+            equipamento_id: row.rel_equipamento_id ? ensureIdExists(equipamento2id[row.rel_equipamento_id]) : undefined,
+            orgao_origem_id: row.rel_orgao_origem_id ? ensureIdExists(orgao2id[row.rel_orgao_origem_id]) : undefined,
+            orgao_executor_id: row.rel_orgao_executor_id
+                ? ensureIdExists(orgao2id[row.rel_orgao_executor_id])
+                : undefined,
             empreendimento_id: empreendimento2id[row.rel_empreendimento_id],
             mdo_detalhamento: row.mdo_detalhamento ?? '',
 
@@ -285,26 +308,28 @@ async function main() {
                     ? `${row.mdo_observacoes ?? ''} - Várias regiões`
                     : row.mdo_observacoes ?? '',
 
-            orgao_gestor_id: orgao2id[row.rel_orgao_gestor_id],
-            responsaveis_no_orgao_gestor: [pessoasCollabProjeto[row.rel_responsaveis_no_orgao_gestor_id]],
-            secretario_executivo: row.secretario_executivo?.toLowerCase() ?? null,
+            orgao_gestor_id: ensureIdExists(orgao2id[row.rel_orgao_gestor_id]),
+            responsaveis_no_orgao_gestor: [
+                ensureIdExists(pessoasGestorDeProjeto[row.rel_responsaveis_no_orgao_gestor_id]),
+            ],
+            secretario_executivo: getNome(row.secretario_executivo?.toLowerCase()) ?? null,
 
-            orgao_responsavel_id: orgao2id[row.orgao_responsavel_id],
-            responsavel_id: pessoasGestorDeProjeto[row.rel_responsavel_id],
-            secretario_responsavel: row.secretario_responsavel?.toLowerCase(),
+            orgao_responsavel_id: ensureIdExists(orgao2id[row.orgao_responsavel_id]),
+            responsavel_id: ensureIdExists(pessoasCollabProjeto[row.rel_responsavel_id]),
+            secretario_responsavel: getNome(row.secretario_responsavel?.toLowerCase()),
 
             orgao_colaborador_id: row.rel_orgao_colaborador_id ? orgao2id[row.rel_orgao_colaborador_id] : undefined,
 
             colaboradores_no_orgao: row.rel_colaboradores_no_orgao
                 ? [pessoasCollabProjeto[row.rel_colaboradores_no_orgao]]
                 : undefined,
-            secretario_colaborador: row.secretario_colaborador?.toLowerCase() ?? null,
+            secretario_colaborador: getNome(row.secretario_colaborador?.toLowerCase()) ?? null,
 
-            portfolio_id: portfolios[row.rel_portfolio_id],
+            portfolio_id: ensureIdExists(portfolios[row.rel_portfolio_id]),
             mdo_n_familias_beneficiadas: row.mdo_n_familias_beneficiadas,
             mdo_n_unidades_habitacionais: row.mdo_n_unidades_habitacionais,
-            programa_id: row.rel_programa_id ? programa2id[row.rel_programa_id] : undefined,
-            regiao_ids: regiao ? [regiao] : undefined,
+            programa_id: row.rel_programa_id ? ensureIdExists(programa2id[row.rel_programa_id]) : undefined,
+            regiao_ids: regiao,
             origem_tipo,
             origem_outro: origem_outro,
             iniciativa_id,
@@ -313,7 +338,6 @@ async function main() {
             orgaos_participantes: [],
             geolocalizacao: [],
         };
-
         if (!row.projeto_id) {
             try {
                 const projetoId = await projetoApi.projetoMDOControllerCreate({
@@ -341,8 +365,34 @@ async function main() {
             }
         }
         if (!row.projeto_id) continue;
-        const can_associate = row.parsed_processos_sei.length == 1 && row.parsed_contratos.length == 1;
 
+        // update projeto
+        try {
+            await projetoApi.projetoMDOControllerUpdate({
+                id: row.projeto_id,
+                UpdateProjetoDto: {
+                    regiao_ids: info.regiao_ids,
+                    previsao_inicio: info.previsao_inicio,
+                    previsao_termino: info.previsao_termino,
+                    responsaveis_no_orgao_gestor: info.responsaveis_no_orgao_gestor,
+                    responsavel_id: info.responsavel_id,
+                    secretario_colaborador: info.secretario_colaborador,
+                    secretario_executivo: info.secretario_executivo,
+                    secretario_responsavel: info.secretario_responsavel,
+                    colaboradores_no_orgao: info.colaboradores_no_orgao,
+                },
+            });
+            console.log(`Projeto ${row.projeto_nome} atualizado com sucesso!`);
+        } catch (error) {
+            console.log(`Erro ao atualizar projeto ${row.projeto_nome}`);
+            console.error((error as any).response?.data);
+        }
+
+
+
+
+        /*
+        const can_associate = row.parsed_processos_sei.length == 1 && row.parsed_contratos.length == 1;
         if (row.parsed_contratos.length) {
             for (const contrato of row.parsed_contratos) {
                 try {
@@ -394,6 +444,7 @@ async function main() {
                 }
             }
         }
+        */
     }
 }
 
