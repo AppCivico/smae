@@ -760,6 +760,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <caption class="t16 w700 mb05 tc500 tl">
           Números SEI
         </caption>
+        <col class="col--botão-de-ação">
         <col>
         <col class="col--dataHora">
         <col class="col--dataHora">
@@ -769,9 +770,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <col class="col--botão-de-ação">
 
         <thead>
-          <th>Código</th>
-          <th>Nome</th>
-          <th>Sincronização</th>
+          <th />
+          <th class="cell--nowrap">
+            Código
+          </th>
+          <th>Tipo</th>
+          <th>Especificação</th>
           <th>Alteração</th>
           <th>Andamento</th>
           <th>Unidade</th>
@@ -784,11 +788,30 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             v-for="registro, idx in distribuição.registros_sei"
             :key="idx"
           >
-            <th>{{ registro?.processo_sei }}</th>
-            <th>{{ registro?.nome }}</th>
             <td>
-              {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
+              <span
+                v-if="registro?.integracao_sei?.relatorio_sincronizado_em"
+                class="tipinfo right"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  color="#F2890D"
+                >
+                  <use xlink:href="#i_i" />
+                </svg>
+
+                <div>
+                  Sincronização:
+                  {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
+                </div>
+              </span>
             </td>
+            <th class="cell--nowrap">
+              {{ registro?.processo_sei }}
+            </th>
+            <th>{{ registro?.integracao_sei?.json_resposta?.tipo }}</th>
+            <th>{{ registro?.integracao_sei?.json_resposta?.especificacao }}</th>
             <td>
               {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
             </td>
