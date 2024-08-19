@@ -122,7 +122,8 @@ export default {
 };
 </script>
 <template>
-  <div class="flex spacebetween center mb2 g2">
+  <MigalhasDePão />
+  <div class="flex spacebetween center mb2 mt2 g2">
     <TítuloDePágina id="titulo-da-pagina">
       Cronograma
     </TítuloDePágina>

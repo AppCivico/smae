@@ -249,6 +249,7 @@ function fecharForm() {
 
 </script>
 <template>
+  <MigalhasDePão />
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
@@ -261,7 +262,7 @@ function fecharForm() {
 
   <div class="flex spacebetween center mb2">
     <h3 class="title">
-      Distribuição de Recursos
+      Distribuição de Recursos x
     </h3>
     <hr class="ml2 f1">
   </div>

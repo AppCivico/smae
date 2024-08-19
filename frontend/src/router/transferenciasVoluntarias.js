@@ -79,6 +79,9 @@ export default {
       meta: {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+        ],
       },
     },
     {
@@ -196,6 +199,9 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+        ],
       },
     },
     {
@@ -275,8 +281,6 @@ export default {
             rotasParaMenuSecundário,
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
-              'TransferenciasVoluntariasDetalhes',
-              'TransferenciasVoluntariasTarefasListar',
             ],
           },
           props: ({ params }) => ({

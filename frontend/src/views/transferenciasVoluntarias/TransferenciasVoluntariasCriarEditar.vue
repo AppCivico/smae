@@ -135,7 +135,8 @@ watch(itemParaEdição, (novosValores) => {
 });
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
+  <MigalhasDePão />
+  <div class="flex spacebetween center mb2 mt2">
     <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
