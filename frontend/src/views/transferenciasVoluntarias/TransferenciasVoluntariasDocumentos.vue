@@ -1,9 +1,9 @@
 <script setup>
-import DocumentosDaTransferencia from "@/components/transferencia/DocumentosDaTransferencia.vue";
+import DocumentosDaTransferencia from '@/components/transferencia/DocumentosDaTransferencia.vue';
 
 const props = defineProps({
   transferenciaId: {
-    type: [Number,String],
+    type: [Number, String],
     default: 0,
   },
 });
@@ -16,9 +16,10 @@ export default {
 };
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
+  <MigalhasDePão />
+  <div class="flex spacebetween center mb2 mt2">
     <TítuloDePágina> Documentos </TítuloDePágina>
-    <hr class="ml2 f1" />
+    <hr class="ml2 f1">
     <router-link
       :to="{
         name: 'TransferenciasVoluntariasEnviarArquivo',

@@ -209,6 +209,9 @@ export default {
       meta: {
         título: 'Documentos',
         rotasParaMenuSecundário,
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+        ],
       },
       children: [
         {
