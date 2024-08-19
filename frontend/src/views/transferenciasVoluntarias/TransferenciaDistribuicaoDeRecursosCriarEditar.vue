@@ -250,7 +250,7 @@ function fecharForm() {
 </script>
 <template>
   <MigalhasDePão />
-  <div class="flex spacebetween center mb2">
+  <div class="flex spacebetween center mb2 mt2">
     <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
