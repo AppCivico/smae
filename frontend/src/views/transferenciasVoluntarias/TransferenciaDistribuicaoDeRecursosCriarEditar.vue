@@ -241,6 +241,12 @@ const isSomaCorreta = computed(() => {
 
   return soma === parseFloat(values.valor_total);
 });
+
+function fecharForm() {
+  mostrarDistribuicaoRegistroForm.value = false;
+  distribuiçãoEmFoco.value = null;
+}
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -248,6 +254,8 @@ const isSomaCorreta = computed(() => {
     <hr class="ml2 f1">
     <CheckClose
       :formulário-sujo="formulárioSujo"
+      :apenas-emitir="mostrarDistribuicaoRegistroForm"
+      @close="fecharForm"
     />
   </div>
 
