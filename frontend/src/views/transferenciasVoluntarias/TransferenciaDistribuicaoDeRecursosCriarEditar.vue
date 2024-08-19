@@ -262,7 +262,7 @@ function fecharForm() {
 
   <div class="flex spacebetween center mb2">
     <h3 class="title">
-      Distribuição de Recursos x
+      Distribuição de Recursos
     </h3>
     <hr class="ml2 f1">
   </div>
