@@ -90,8 +90,13 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Recurso financeiro',
+        título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
+          ? `Recurso financeiro ${useTransferenciasVoluntariasStore()?.emFoco?.identificador}`
+          : 'Recurso financeiro'),
         rotasParaMenuSecundário,
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+        ],
       },
     },
     {

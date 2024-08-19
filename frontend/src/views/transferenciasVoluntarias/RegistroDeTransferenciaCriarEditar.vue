@@ -143,8 +143,9 @@ watch(itemParaEdição, async (novosValores) => {
   <pre v-scrollLockDebug>
     transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
   </pre>
-  <div class="flex spacebetween center mb2">
-    <h1>Formulário de registro</h1>
+  <MigalhasDePão />
+  <div class="flex spacebetween center mb2 mt2">
+    <h1>Recursos Financeiros</h1>
     <hr class="ml2 f1">
     <CheckClose />
   </div>
