@@ -92,7 +92,8 @@ export default {
       meta: {
         título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
           ? `Recurso financeiro ${useTransferenciasVoluntariasStore()?.emFoco?.identificador}`
-          : 'Recurso financeiro'),
+          : 'Recurso financeiro'), ///
+        títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
