@@ -1,5 +1,5 @@
 from pydantic import BaseModel, validator
-from typing import Literal
+from typing import Literal, Optional
 from core.exceptions.basic import DadosForaDoPadrao
 from .validators import regex_link_web
 
@@ -25,7 +25,7 @@ class Unidade(BaseModel):
     
 class Usuario(BaseModel):
 
-    id : str
+    id : Optional[str] #pois eh, aparentemente ha usuarios com id null...
     nome : str
     rf : str
     
