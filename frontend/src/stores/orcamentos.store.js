@@ -157,7 +157,7 @@ export const useOrcamentosStore = defineStore({
 
     // projetos & obras
     // eslint-disable-next-line max-len, default-param-last
-    async buscarOrçamentosPrevistosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams) {
+    async buscarOrçamentosPrevistosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams = {}) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
 
@@ -180,7 +180,7 @@ export const useOrcamentosStore = defineStore({
     },
 
     // eslint-disable-next-line max-len, default-param-last
-    async buscarOrçamentosPlanejadosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams) {
+    async buscarOrçamentosPlanejadosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams = {}) {
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
 
@@ -193,7 +193,7 @@ export const useOrcamentosStore = defineStore({
     },
 
     // eslint-disable-next-line max-len, default-param-last
-    async buscarOrçamentosRealizadosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams) {
+    async buscarOrçamentosRealizadosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams = {}) {
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
 
