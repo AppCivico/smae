@@ -58,13 +58,30 @@ export class TribunalDeContasService implements ReportableService {
                         descricao: true,
                     },
                 },
+                status: {
+                    where: { removido_em: null },
+                    orderBy: { data_troca: 'desc' },
+                    take: 1,
+                    select: {
+                        status: true,
+                        status_base: true,
+                    },
+                }
             },
         });
 
+        
         const out: RelTribunalDeContasDto[] = distribuicoes.map((distribuicao) => {
+            const distribuicaoStatusRow = distribuicao.status[0] ? distribuicao.status[0] : null;
+            let statusReport: string | undefined;
+            if (distribuicaoStatusRow) {
+                statusReport = distribuicaoStatusRow.status ? distribuicaoStatusRow.status.nome : distribuicaoStatusRow.status_base?.nome;
+            }
+
             return {
                 ano: distribuicao.transferencia.ano,
                 parlamentar: distribuicao.parlamentares.map((p) => p.parlamentar.nome_popular).join('|'),
+                status: statusReport ?? null,
                 valor_repasse: distribuicao.valor.toNumber(),
                 emenda: distribuicao.transferencia.emenda,
                 acao: distribuicao.objeto,

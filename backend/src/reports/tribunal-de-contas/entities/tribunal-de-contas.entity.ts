@@ -1,6 +1,9 @@
+import { DistribuicaoStatusBase, DistribuicaoStatus } from "@prisma/client";
+
 export class RelTribunalDeContasDto {
     ano: number | null;
     parlamentar: string;
+    status: string | null;
     valor_repasse: number;
     acao: string;
     gestor_municipal: string;
