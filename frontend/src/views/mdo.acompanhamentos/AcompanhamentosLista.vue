@@ -37,6 +37,15 @@ const grauVisível = ref(0);
 const statusVisível = ref(0);
 
 async function iniciar() {
+  if (!route.query.ordenar_por) {
+    router.replace({
+      query: {
+        ...route.query,
+        ordenar_por: 'criado_em',
+        ordem: 'decrescente',
+      },
+    });
+  }
   acompanhamentosStore.$reset();
 
   await acompanhamentosStore.buscarTudo();
