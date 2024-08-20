@@ -29,6 +29,16 @@ const statusVisível = ref(0);
 async function iniciar() {
   acompanhamentosStore.$reset();
 
+  if (!route.query.ordenar_por) {
+    router.replace({
+      query: {
+        ...route.query,
+        ordenar_por: 'data_registro',
+        ordem: 'decrescente',
+      },
+    });
+  }
+
   await acompanhamentosStore.buscarTudo();
 }
 
@@ -223,19 +233,18 @@ vue/singleline-html-element-content-newline -->
     v-if="listaFiltrada.length"
     class="tabela-de-etapas"
   >
-    <colgroup>
-      <col class="col--number">
-      <col class="col--data">
-      <col>
-      <col>
-      <col class="col--number">
-      <col>
-      <col
-        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-          || permissõesDoProjetoEmFoco.sou_responsavel"
-        class="col--botão-de-ação"
-      >
-    </colgroup>
+    <col class="col--number">
+    <col class="col--data">
+    <col>
+    <col>
+    <col class="col--number">
+    <col>
+    <col class="col--botão-de-ação">
+    <col
+      v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+        || permissõesDoProjetoEmFoco.sou_responsavel"
+      class="col--botão-de-ação"
+    >
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
@@ -270,30 +279,10 @@ vue/singleline-html-element-content-newline -->
         :key="linha.id"
       >
         <th class="cell--number">
-          <router-link
-            :to="{
-              name: 'acompanhamentosResumo',
-              params: {
-                projetoId: projetoId,
-                acompanhamentoId: linha.id,
-              }
-            }"
-          >
-            {{ linha.ordem }}
-          </router-link>
+          {{ linha.ordem }}
         </th>
         <th class="cell--data">
-          <router-link
-            :to="{
-              name: 'acompanhamentosResumo',
-              params: {
-                projetoId: projetoId,
-                acompanhamentoId: linha.id,
-              }
-            }"
-          >
-            {{ dateToField(linha.data_registro) }}
-          </router-link>
+          {{ dateToField(linha.data_registro) }}
         </th>
         <td>
           {{ linha.acompanhamento_tipo?.nome ? linha.acompanhamento_tipo.nome : '-' }}
@@ -319,6 +308,22 @@ vue/singleline-html-element-content-newline -->
               {{ schema.fields.apresentar_no_relatorio.spec.label }}
             </div>
           </span>
+        </td>
+        <td>
+          <router-link
+            :to="{
+              name: 'acompanhamentosResumo',
+              params: {
+                projetoId: projetoId,
+                acompanhamentoId: linha.id,
+              }
+            }"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_eye" /></svg>
+          </router-link>
         </td>
         <td
           v-if="!permissõesDoProjetoEmFoco.apenas_leitura
