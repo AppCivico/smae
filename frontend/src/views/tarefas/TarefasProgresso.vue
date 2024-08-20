@@ -200,7 +200,7 @@ iniciar();
           name="inicio_real"
           :schema="schema"
         >
-          {{ schema.fields.inicio_real.spec.label }}&nbsp;<span class="tvermelho">*</span>
+          {{ schema.fields.inicio_real.spec.label }}
         </LabelFromYup>
         <Field
           name="inicio_real"

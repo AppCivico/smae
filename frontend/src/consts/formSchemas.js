@@ -2826,7 +2826,7 @@ export const relatórioDeTribunalDeContas = object({
     tipo_id: mixed()
       .label('Tipo de Transferência')
       .required(),
-      //.oneOf([...Object.keys(tiposTransferências), null]),
+    // .oneOf([...Object.keys(tiposTransferências), null]),
     tipo: mixed()
       .label('Tipo')
       .oneOf([
@@ -3190,9 +3190,7 @@ export const tarefa = object()
       .label('Data de início real')
       .max(dataMax)
       .min(dataMin)
-      .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
-        ? field.required()
-        : field.nullable())),
+      .nullable(),
     nivel: number()
       .min(1)
       .nullable(),
