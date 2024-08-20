@@ -232,19 +232,18 @@ vue/singleline-html-element-content-newline -->
   <table
     class="tabela-de-etapas"
   >
-    <colgroup>
-      <col class="col--number">
-      <col class="col--data">
-      <col>
-      <col>
-      <col class="col--number">
-      <col>
-      <col
-        v-if="!permissõesDaObraEmFoco.apenas_leitura
-          || permissõesDaObraEmFoco.sou_responsavel"
-        class="col--botão-de-ação"
-      >
-    </colgroup>
+    <col class="col--number">
+    <col class="col--data">
+    <col>
+    <col>
+    <col class="col--number">
+    <col class="col--botão-de-ação">
+    <col class="col--botão-de-ação">
+    <col
+      v-if="!permissõesDaObraEmFoco.apenas_leitura
+        || permissõesDaObraEmFoco.sou_responsavel"
+      class="col--botão-de-ação"
+    >
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
@@ -265,6 +264,9 @@ vue/singleline-html-element-content-newline -->
         </th>
         <th :aria-label="schema.fields.apresentar_no_relatorio.spec.label" />
         <th
+          v-if="permissõesDaObraEmFoco.apenas_leitura"
+        />
+        <th
           v-if="!permissõesDaObraEmFoco.apenas_leitura
             || permissõesDaObraEmFoco.sou_responsavel"
         />
@@ -279,30 +281,10 @@ vue/singleline-html-element-content-newline -->
         :key="linha.id"
       >
         <th class="cell--number">
-          <router-link
-            :to="{
-              name: 'acompanhamentosDeObrasResumo',
-              params: {
-                obraId: obraId,
-                acompanhamentoId: linha.id,
-              }
-            }"
-          >
-            {{ linha.ordem }}
-          </router-link>
+          {{ linha.ordem }}
         </th>
         <th class="cell--data">
-          <router-link
-            :to="{
-              name: 'acompanhamentosDeObrasResumo',
-              params: {
-                obraId: obraId,
-                acompanhamentoId: linha.id,
-              }
-            }"
-          >
-            {{ dateToField(linha.data_registro) }}
-          </router-link>
+          {{ dateToField(linha.data_registro) }}
         </th>
         <td>
           {{ linha.acompanhamento_tipo?.nome ? linha.acompanhamento_tipo.nome : '-' }}
@@ -328,6 +310,24 @@ vue/singleline-html-element-content-newline -->
               {{ schema.fields.apresentar_no_relatorio.spec.label }}
             </div>
           </span>
+        </td>
+        <td>
+          <router-link
+            :to="{
+              name: 'acompanhamentosDeObrasResumo',
+              params: {
+                obraId: obraId,
+                acompanhamentoId: linha.id,
+              }
+            }"
+          >
+            <svg
+              width="16"
+              height="16"
+            >
+              <use xlink:href="#i_eye" />
+            </svg>
+          </router-link>
         </td>
         <td
           v-if="!permissõesDaObraEmFoco.apenas_leitura
@@ -355,8 +355,8 @@ vue/singleline-html-element-content-newline -->
         <td
           :colspan="!permissõesDaObraEmFoco.apenas_leitura
             || permissõesDaObraEmFoco.sou_responsavel
-            ? 9
-            : 8"
+            ? 8
+            : 7"
         >
           Carregando
         </td>
@@ -365,8 +365,8 @@ vue/singleline-html-element-content-newline -->
         <td
           :colspan="!permissõesDaObraEmFoco.apenas_leitura
             || permissõesDaObraEmFoco.sou_responsavel
-            ? 9
-            : 8"
+            ? 8
+            : 7"
         >
           Erro: {{ erro }}
         </td>
@@ -375,8 +375,8 @@ vue/singleline-html-element-content-newline -->
         <td
           :colspan="!permissõesDaObraEmFoco.apenas_leitura
             || permissõesDaObraEmFoco.sou_responsavel
-            ? 9
-            : 8"
+            ? 8
+            : 7"
         >
           Nenhum resultado encontrado.
         </td>
