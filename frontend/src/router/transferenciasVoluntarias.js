@@ -93,9 +93,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
-          ? `Recurso financeiro ${useTransferenciasVoluntariasStore()?.emFoco?.identificador}`
-          : 'Recurso financeiro'),
+        título: 'Recurso financeiro',
         títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
@@ -276,7 +274,7 @@ export default {
           path: '',
           component: TarefasLista,
           meta: {
-            título: 'Cronograma de transferência voluntária',
+            título: 'Cronograma',
             títuloParaMenu: 'Cronograma',
             rotasParaMenuSecundário,
             rotasParaMigalhasDePão: [
