@@ -41,7 +41,7 @@ async function iniciar() {
     router.replace({
       query: {
         ...route.query,
-        ordenar_por: 'criado_em',
+        ordenar_por: 'data_registro',
         ordem: 'decrescente',
       },
     });
