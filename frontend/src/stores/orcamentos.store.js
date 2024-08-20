@@ -1,4 +1,5 @@
 import toFloat from '@/helpers/toFloat';
+import Big from 'big.js';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -22,6 +23,37 @@ function caminhoParaApi(parametrosDeModulo = this.route.params) {
       console.trace('Caminho para orçamentos não pôde ser identificado:', parametrosDeModulo);
       throw new Error('Caminho para orçamentos não pôde ser identificado');
   }
+}
+
+function totalizador(anos, campo) {
+  const total = {
+    anoDeInicio: 0,
+    anoDeConclusao: 0,
+    valor: new Big(0),
+  };
+
+  let i = 0;
+
+  while (i < anos.length) {
+    const ano = anos[i];
+    let j = 0;
+    while (j < ano.length) {
+      const dotacao = ano[j];
+      if (dotacao[campo]) {
+        total.valor = total.valor.plus(new Big(dotacao[campo]));
+      }
+      j += 1;
+    }
+
+    total.anoDeInicio = Math.min(total.anoDeInicio || Infinity, ano[0]?.ano_referencia);
+    total.anoDeConclusao = Math.max(total.anoDeConclusao || -Infinity, ano[0]?.ano_referencia);
+
+    i += 1;
+  }
+
+  total.valor = total.valor.toString();
+
+  return total;
 }
 
 export const useOrcamentosStore = defineStore({
@@ -279,5 +311,11 @@ export const useOrcamentosStore = defineStore({
         liquidação: toFloat(smae_soma_valor_liquidado) - toFloat(soma_valor_liquidado),
       };
     },
+
+    custeioConsolidado: ({ OrcamentoCusteio }) => totalizador(Object.values(OrcamentoCusteio), 'custo_previsto'),
+
+    planejadoConsolidado: ({ OrcamentoPlanejado }) => totalizador(Object.values(OrcamentoPlanejado), 'valor_planejado'),
+
+    realizadoConsolidado: ({ OrcamentoRealizado }) => totalizador(Object.values(OrcamentoRealizado), 'valor_liquidado'),
   },
 });

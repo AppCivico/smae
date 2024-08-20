@@ -5,7 +5,7 @@ import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoReal
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { computed, defineOptions, watch } from 'vue';
+import { computed, toRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 // PRA-FAZER: esse arquivo é quase igual ao de obras. Pode-se melhorar.
@@ -29,11 +29,24 @@ const { area } = route.meta;
 const portfolioId = computed(() => ProjetosStore?.emFoco?.portfolio_id);
 const rotaParaAdição = { name: '' };
 
-const SimpleOrcamento = area === 'Realizado'
-  ? SimpleOrcamentoRealizado
-  : area === 'Planejado'
-    ? SimpleOrcamentoPlanejado
-    : SimpleOrcamentoCusteio;
+let SimpleOrcamento;
+
+let consolidado = null;
+
+switch (area) {
+  case 'Realizado':
+    SimpleOrcamento = SimpleOrcamentoRealizado;
+    consolidado = toRef(OrcamentosStore, 'realizadoConsolidado');
+    break;
+  case 'Planejado':
+    SimpleOrcamento = SimpleOrcamentoPlanejado;
+    consolidado = toRef(OrcamentosStore, 'planejadoConsolidado');
+    break;
+  default:
+    SimpleOrcamento = SimpleOrcamentoCusteio;
+    consolidado = toRef(OrcamentosStore, 'custeioConsolidado');
+    break;
+}
 
 const anosNaDuraçãoDoProjeto = computed(() => ProjetosStore.emFoco?.ano_orcamento || []);
 
