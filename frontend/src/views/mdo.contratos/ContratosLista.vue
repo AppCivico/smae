@@ -1,7 +1,4 @@
 <script setup>
-import Big from 'big.js';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { contratoDeObras as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
@@ -11,6 +8,10 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineProps({
   obraId: {
@@ -23,12 +24,14 @@ defineProps({
   },
 });
 
+const route = useRoute();
+
 const alertStore = useAlertStore();
 
-const processosStore = useContratosStore();
+const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
 const {
   chamadasPendentes, erro, lista,
-} = storeToRefs(processosStore);
+} = storeToRefs(contratosStore);
 
 const obrasStore = useObrasStore();
 
@@ -41,9 +44,9 @@ const grauVisível = ref(0);
 const statusVisível = ref(0);
 
 async function iniciar() {
-  processosStore.$reset();
+  contratosStore.$reset();
 
-  await processosStore.buscarTudo();
+  await contratosStore.buscarTudo();
 }
 
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
@@ -76,10 +79,10 @@ const exibirColunasDeAção = computed(() => !permissõesDaObraEmFoco.value.apen
 
 function excluirProcesso(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
-    if (await useContratosStore().excluirItem(id)) {
+    if (await contratosStore.excluirItem(id)) {
       alertStore.success('Contrato removido.');
 
-      await processosStore.buscarTudo();
+      await contratosStore.buscarTudo();
     }
   }, 'Remover');
 }

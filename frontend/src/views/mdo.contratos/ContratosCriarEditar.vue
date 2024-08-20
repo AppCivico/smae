@@ -22,12 +22,13 @@ import {
 
 import { useRoute, useRouter } from 'vue-router';
 
-const alertStore = useAlertStore();
-const contratosStore = useContratosStore();
-const tarefasStore = useTarefasStore();
-const DotaçãoStore = useDotaçãoStore();
 const router = useRouter();
 const route = useRoute();
+
+const alertStore = useAlertStore();
+const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
+const tarefasStore = useTarefasStore();
+const DotaçãoStore = useDotaçãoStore();
 
 const fontesRecurso = ref({ participantes: [], busca: '' });
 
@@ -96,7 +97,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 function excluirProcesso(id) {
   useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await useContratosStore().excluirItem(id)) {
+    if (await contratosStore.excluirItem(id)) {
       useAlertStore().success('Processo removido.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;

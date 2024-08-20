@@ -1,20 +1,19 @@
 <script setup>
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS.ts';
+import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useAuthStore } from '@/stores/auth.store';
+import { useMacrotemasStore } from '@/stores/macrotemas.store';
+import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { usePsMetasStore } from '@/stores/metasPs.store.ts';
+import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useUsersStore } from '@/stores/users.store';
-import { useContratosStore } from '@/stores/contratos.store.ts';
-import { useProcessosStore } from '@/stores/processos.store.ts';
-import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
-import { useMacrotemasStore } from '@/stores/macrotemas.store';
-import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
-import { usePsMetasStore } from '@/stores/metasPs.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -62,7 +61,6 @@ async function escolher(opção) {
       useTarefasStore().$reset();
       usePsMetasStore().$reset();
       useMetasStore().$reset();
-      useContratosStore().$reset();
       useProcessosStore().$reset();
       useAcompanhamentosStore().$reset();
       useMacrotemasStore().$reset();

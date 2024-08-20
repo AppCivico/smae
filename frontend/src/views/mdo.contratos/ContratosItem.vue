@@ -1,7 +1,11 @@
 <script setup>
 import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useRoute } from 'vue-router';
 
-const contratosStore = useContratosStore();
+const route = useRoute();
+
+const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
+
 const props = defineProps({
   contratoId: {
     type: Number,

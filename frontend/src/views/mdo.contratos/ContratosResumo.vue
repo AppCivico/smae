@@ -9,10 +9,13 @@ import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
-const contratosStore = useContratosStore();
+const route = useRoute();
+
+const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
 const {
   chamadasPendentes,
   emFoco,
