@@ -144,17 +144,10 @@ watch(itemParaEdição, async (novosValores) => {
     transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
   </pre>
   <MigalhasDePão />
-  <div class="flex spacebetween center mb2 mt2">
+  <div class="flex spacebetween center mt2">
     <h1>Recursos Financeiros</h1>
     <hr class="ml2 f1">
     <CheckClose />
-  </div>
-
-  <div class="flex spacebetween center mb1">
-    <h3 class="title">
-      Recurso Financeiro
-    </h3>
-    <hr class="ml2 f1">
   </div>
 
   <form

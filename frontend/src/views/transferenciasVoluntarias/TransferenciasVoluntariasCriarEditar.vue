@@ -144,12 +144,6 @@ watch(itemParaEdição, (novosValores) => {
     />
   </div>
 
-  <div class="flex spacebetween center mb1">
-    <h3 class="title">
-      Identificação
-    </h3>
-    <hr class="ml2 f1">
-  </div>
   <form @submit.prevent="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">

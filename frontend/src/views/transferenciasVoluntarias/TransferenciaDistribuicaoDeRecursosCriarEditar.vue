@@ -260,13 +260,6 @@ function fecharForm() {
     />
   </div>
 
-  <div class="flex spacebetween center mb2">
-    <h3 class="title">
-      Distribuição de Recursos
-    </h3>
-    <hr class="ml2 f1">
-  </div>
-
   <div class="mb2">
     <div
       role="region"
