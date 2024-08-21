@@ -46,11 +46,6 @@ BEGIN
 END
 $$ LANGUAGE 'plpgsql';
 
-CREATE TRIGGER trigger_transferencia_parlamentar_update_tsvector_insert
-BEFORE INSERT ON transferencia_parlamentar
-FOR EACH ROW
-EXECUTE PROCEDURE f_transferencia_update_tsvector();
-
 CREATE OR REPLACE VIEW view_meta_responsavel_orcamento AS
 SELECT
     mr.meta_id, mr.pessoa_id
