@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
@@ -27,7 +27,10 @@ export class IndicadorService {
 
     constructor(
         private readonly prisma: PrismaService,
+
+        @Inject(forwardRef(() => MetaService))
         private readonly metaService: MetaService,
+        @Inject(forwardRef(() => VariavelService))
         private readonly variavelService: VariavelService
     ) {}
 
@@ -278,18 +281,14 @@ export class IndicadorService {
     // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador
     async validateVariaveis(
         formula_variaveis: FormulaVariaveis[] | null | undefined,
-        indicador_id: number,
-        formula: string
+        indicador_id: number | null,
+        formula?: string
     ): Promise<string> {
         let formula_compilada = '';
         const neededRefs: Record<string, number> = {};
         const neededFCs: Record<number, number> = {};
         if (formula) {
-            try {
-                formula_compilada = FP.parse(formula.toLocaleUpperCase());
-            } catch (error) {
-                throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
-            }
+            formula_compilada = this.compilaFormula(formula);
 
             this.extractVariavelFromFormula(formula_compilada, neededRefs);
             this.extractFormulaCompostaFromFormula(formula_compilada, neededFCs);
@@ -312,31 +311,33 @@ export class IndicadorService {
                 if (variables.includes(fv.variavel_id) == false) variables.push(+fv.variavel_id);
             }
 
-            const count = await this.prisma.indicadorVariavel.count({
-                where: {
-                    desativado: false,
-                    indicador_id: indicador_id,
-                    variavel_id: {
-                        in: variables,
-                    },
-                },
-            });
-
-            if (count !== variables.length) {
-                const found = await this.prisma.indicadorVariavel.findMany({
+            if (indicador_id) {
+                const count = await this.prisma.indicadorVariavel.count({
                     where: {
-                        indicador_id: indicador_id,
                         desativado: false,
+                        indicador_id: indicador_id,
+                        variavel_id: {
+                            in: variables,
+                        },
                     },
-                    select: { variavel_id: true },
                 });
 
-                throw new HttpException(
-                    `formula_variaveis| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(
-                        variables
-                    )}, Existentes: ${JSON.stringify(found.map((e) => e.variavel_id))}`,
-                    400
-                );
+                if (count !== variables.length) {
+                    const found = await this.prisma.indicadorVariavel.findMany({
+                        where: {
+                            indicador_id: indicador_id,
+                            desativado: false,
+                        },
+                        select: { variavel_id: true },
+                    });
+
+                    throw new HttpException(
+                        `formula_variaveis| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(
+                            variables
+                        )}, Existentes: ${JSON.stringify(found.map((e) => e.variavel_id))}`,
+                        400
+                    );
+                }
             }
         }
 
@@ -350,17 +351,26 @@ export class IndicadorService {
         }
 
         for (const formulaCompostaId of Object.keys(neededFCs)) {
-            const formulaCompostaCount = await this.prisma.formulaComposta.count({
-                where: {
-                    removido_em: null,
-                    id: +formulaCompostaId,
-                    IndicadorFormulaComposta: { some: { indicador_id: indicador_id } },
-                },
-            });
+            // confere que cada @_XXX tem existe no indicador
+            // quando não tem indicador, não pode usar nenhuma outra formula composta at-all, nem variavel calculada
+            if (indicador_id) {
+                const formulaCompostaCount = await this.prisma.formulaComposta.count({
+                    where: {
+                        removido_em: null,
+                        id: +formulaCompostaId,
+                        IndicadorFormulaComposta: { some: { indicador_id: indicador_id } },
+                    },
+                });
 
-            if (!formulaCompostaCount) {
+                if (!formulaCompostaCount) {
+                    throw new HttpException(
+                        `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
+                        400
+                    );
+                }
+            }else{
                 throw new HttpException(
-                    `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
+                    `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não pode ser usada em Fórmula Composta (Plano Setorial)`,
                     400
                 );
             }
@@ -368,6 +378,16 @@ export class IndicadorService {
 
         // TODO adicionar limpeza de formula_variaveis que não tiveram as referencias usadas
 
+        return formula_compilada;
+    }
+
+    compilaFormula(formula: string) {
+        let formula_compilada: string;
+        try {
+            formula_compilada = FP.parse(formula.toLocaleUpperCase());
+        } catch (error) {
+            throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
+        }
         return formula_compilada;
     }
 

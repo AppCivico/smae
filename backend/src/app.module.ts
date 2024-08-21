@@ -39,6 +39,9 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
+import { SeiApiModule } from './sei-api/sei-api.module';
+import { SeiIntegracaoModule } from './sei-integracao/sei-integracao.module';
+import { TaskModule } from './task/task.module';
 import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-andamento-fase.module';
 import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
 import { WorkflowEtapaModule } from './workflow/configuracao/etapa/workflow-etapa.module';
@@ -49,9 +52,6 @@ import { WorkflowFluxoModule } from './workflow/configuracao/fluxo/workflow-flux
 import { WorkflowSituacaoModule } from './workflow/configuracao/situacao/workflow-situacao.module';
 import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowModule } from './workflow/configuracao/workflow.module';
-import { TaskModule } from './task/task.module';
-import { SeiApiModule } from './sei-api/sei-api.module';
-import { SeiIntegracaoModule } from './sei-integracao/sei-integracao.module';
 
 // Hacks pro JS
 /*

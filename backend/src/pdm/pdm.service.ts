@@ -1,4 +1,12 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    HttpException,
+    Inject,
+    Injectable,
+    Logger,
+    forwardRef,
+} from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CicloFisicoFase, PdmPerfilTipo, Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -48,8 +56,11 @@ export class PdmService {
     private readonly logger = new Logger(PdmService.name);
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => UploadService))
         private readonly uploadService: UploadService,
+        @Inject(forwardRef(() => VariavelService))
         private readonly variavelService: VariavelService,
+        @Inject(forwardRef(() => PessoaPrivilegioService))
         private readonly pessoaPrivService: PessoaPrivilegioService
     ) {}
 
