@@ -395,7 +395,7 @@ export const contratoDeObras = object()
       .required(),
     contrato_exclusivo: boolean()
       .nullable()
-      .label('Contrato exclusivo dessa obra'),
+      .label('Contrato exclusivo desse Projeto'),
     status: string()
       .label('Status')
       .required(),
