@@ -177,7 +177,7 @@ import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
+import { useGrupoDeVariaveisStore } from '@/stores/equipes.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useAlertStore } from '@/stores/alert.store';
 import tipoDePerfil from '@/consts/tipoDePerfil';

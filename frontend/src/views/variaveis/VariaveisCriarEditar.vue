@@ -1,4 +1,16 @@
 <script setup>
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
@@ -16,24 +28,13 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
-import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useGrupoDeVariaveisStore } from '@/stores/equipes.store';
 
 const opcoesFormatacaoCampoData = {
   format: 'MMM/yyyy',

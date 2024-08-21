@@ -98,7 +98,7 @@ import { useRoute } from 'vue-router';
 import { computed } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
 
-import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
+import { useGrupoDeVariaveisStore } from '@/stores/equipes.store';
 
 const route = useRoute();
 const titulo = typeof route?.meta?.título === 'function'
