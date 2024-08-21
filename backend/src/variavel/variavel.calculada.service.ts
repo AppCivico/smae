@@ -46,6 +46,7 @@ export class VariavelCalculadaService {
                 calc_periodicidade: true,
                 calc_regionalizavel: true,
                 calc_codigo: true,
+                // esse é o órgão proprietário afinal, não tem responsável ja que o calculado é automatic
                 calc_orgao_id: true,
                 autogerenciavel: true,
                 calc_unidade_medida_id: true,
@@ -81,7 +82,6 @@ export class VariavelCalculadaService {
                 { key: 'unidade_medida_id', label: 'Unidade de Medida' },
             ];
 
-            let orgaoIds = getUniqueValues('orgao_id');
             const inicioMedicao = variaveis.map((v) => v.inicio_medicao);
             const fimMedicao = variaveis.map((v) => v.fim_medicao);
             let inicioMedicaoMinDate = inicioMedicao.includes(null)
@@ -92,8 +92,11 @@ export class VariavelCalculadaService {
             let codigo: string;
             let titulo: string;
             let erro: string | undefined = undefined;
+            let orgao_id: number | null = null;
             if (autogerenciavel) {
                 titulo = getUniqueValues('titulo')[0];
+                const orgaoIds = getUniqueValues('orgao_proprietario_id');
+                orgao_id = orgaoIds[0];
                 erro = uniqueChecks.find((check) => getUniqueValues(check.key).length !== 1)?.label;
                 if (!erro) {
                     if (orgaoIds.length !== 1) erro = 'Deve ter apenas Órgão: ' + orgaoIds.join(', ');
@@ -107,19 +110,19 @@ export class VariavelCalculadaService {
                 if (exists) erro = `Variável com código ${codigo} já existente`;
             } else {
                 if (!fc.calc_codigo) erro = 'Código da variável calculada não informado';
-                if (!fc.calc_orgao_id) erro = 'Órgão da variável calculada não informado';
                 if (!fc.calc_inicio_medicao) erro = 'Início de Medição da variável calculada não informado';
                 if (!fc.calc_fim_medicao) erro = 'Fim de Medição da variável calculada não informado';
                 if (!fc.calc_unidade_medida_id) erro = 'Unidade de Medida da variável calculada não informado';
                 titulo = 'Calculada ' + fc.titulo;
+                orgao_id = fc.calc_orgao_id;
 
                 if (!erro) {
                     codigo = fc.calc_codigo!;
-                    orgaoIds = [fc.calc_orgao_id!];
                     inicioMedicaoMinDate = fc.calc_inicio_medicao;
                     fimMedicaoMaxDate = fc.calc_fim_medicao;
                 }
             }
+            if (!orgao_id) erro = 'Não foi resolver um Órgão Proprietários';
 
             if (erro) {
                 await this.prisma.formulaComposta.update({
@@ -134,7 +137,6 @@ export class VariavelCalculadaService {
             }
 
             try {
-                const orgao_prop = getUniqueValues('orgao_proprietario_id');
                 const dado_aberto = getUniqueValues('dado_aberto');
                 const fonte_id = getUniqueValues('fonte_id');
                 const unidade_medida_id = fc.calc_unidade_medida_id ?? getUniqueValues('unidade_medida_id')[0];
@@ -158,9 +160,9 @@ export class VariavelCalculadaService {
                         periodicidade: fc.calc_periodicidade ?? getUniqueValues('periodicidade')[0],
                         unidade_medida_id: unidade_medida_id,
                         fonte_id: fonte_id.length === 1 && fonte_id[0] ? fonte_id[0] : null,
-                        orgao_proprietario_id: orgao_prop.length === 1 && orgao_prop[0] ? orgao_prop[0] : null,
+                        orgao_proprietario_id: orgao_id,
+                        orgao_id: orgao_id!, // not really, mas é required
                         dado_aberto: dado_aberto.find((v) => v == false) ? false : true,
-                        orgao_id: orgaoIds[0],
                         inicio_medicao: inicioMedicaoMinDate,
                         fim_medicao: fimMedicaoMaxDate,
                         criado_por: CONST_BOT_USER_ID,

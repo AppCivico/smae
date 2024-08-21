@@ -1535,6 +1535,7 @@ model VariavelNumeroSequencial {
     @@map("variavel_numero_sequencial")
 }
 
+// variavel "quantos alunos XX" = orgao_proprietario=saúde|anyother, resp=secretaria-educação
 model Variavel {
     id                Int           @id @default(autoincrement())
     orgao_id          Int
