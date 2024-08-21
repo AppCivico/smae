@@ -1,0 +1,19 @@
+{
+  "name": "smae",
+  "version": "1.0.0",
+  "description": "Pasta de origem do repositório do SMAE",
+  "scripts": {
+    "frontend": "cd ./frontend && npm run dev",
+    "backend": "cd ./backend && npm run start:dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AppCivico/smae.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AppCivico/smae/issues"
+  },
+  "homepage": "https://github.com/AppCivico/smae#readme"
+}

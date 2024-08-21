@@ -2,15 +2,13 @@
   <MigalhasDePão class="mb1" />
 
   <div class="flex spacebetween center mb2">
-    <h1> {{ titulo || "Grupo de variáveis" }}</h1>
+    <h1>{{ titulo || "Equipes" }}</h1>
     <hr class="ml2 f1">
 
     <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
 
-  <form
-    @submit.prevent="onSubmit"
-  >
+  <form @submit.prevent="onSubmit">
     <div class="f1">
       <LabelFromYup
         name="titulo"
@@ -41,11 +39,12 @@
             error: errors.orgao_id,
             loading: ÓrgãosStore.chamadasPendentes?.lista,
           }"
-          :disabled="!órgãosComoLista?.length || !temPermissãoPara('CadastroGrupoVariavel.administrador') "
+          :disabled="
+            !órgãosComoLista?.length ||
+              !temPermissãoPara('CadastroGrupoVariavel.administrador')
+          "
         >
-          <option>
-            Selecionar
-          </option>
+          <option>Selecionar</option>
 
           <option
             v-for="item in órgãosComoLista"
@@ -72,16 +71,16 @@
           class="inputtext light mb1"
           :class="{ error: errors.perfil }"
         >
-          <option
-            value=""
-          >
+          <option value="">
             Selecionar
           </option>
           <option
             v-for="item in tipoDePerfil"
             :key="item.valor"
             :value="item.valor"
-            :disabled="emFoco?.permissoes.status_permitidos?.indexOf(item.valor) === -1"
+            :disabled="
+              emFoco?.permissoes.status_permitidos?.indexOf(item.valor) === -1
+            "
           >
             {{ item.nome }}
           </option>
@@ -101,7 +100,10 @@
         <AutocompleteField
           id="colaboradores"
           name="colaboradores"
-          :controlador="{ busca: '', participantes: carga?.colaboradores || [] }"
+          :controlador="{
+            busca: '',
+            participantes: carga?.colaboradores || [],
+          }"
           :grupo="colaboradores[orgao] || []"
           label="nome_exibicao"
         />
@@ -118,7 +120,10 @@
         />
         <AutocompleteField
           name="participantes"
-          :controlador="{ busca: '', participantes: carga?.participantes || [] }"
+          :controlador="{
+            busca: '',
+            participantes: carga?.participantes || [],
+          }"
           :grupo="participantes[orgao]"
           label="nome_exibicao"
         />
@@ -145,7 +150,7 @@
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
@@ -166,10 +171,7 @@
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
+  ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
@@ -177,11 +179,11 @@ import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useAlertStore } from '@/stores/alert.store';
 import tipoDePerfil from '@/consts/tipoDePerfil';
-import { grupoDeVariaveis as schema } from '@/consts/formSchemas';
+import { equipes as schema } from '@/consts/formSchemas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -206,12 +208,20 @@ const titulo = typeof route?.meta?.título === 'function'
 const alertStore = useAlertStore();
 const usersStore = useUsersStore();
 const ÓrgãosStore = useOrgansStore();
-const grupoDeVariaveisStore = useGrupoDeVariaveisStore();
+const equipesStore = useEquipesStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(grupoDeVariaveisStore);
+const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(
+  equipesStore,
+);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, resetField, setFieldValue, values: carga,
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  resetField,
+  setFieldValue,
+  values: carga,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -228,18 +238,18 @@ const onSubmit = handleSubmit.withControlled(async () => {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (route.params?.grupoDeVariaveisId) {
-      response = await grupoDeVariaveisStore.salvarItem(
+    if (route.params?.equipeId) {
+      response = await equipesStore.salvarItem(
         carga,
-        route.params.grupoDeVariaveisId,
+        route.params.equipeId,
       );
     } else {
-      response = await grupoDeVariaveisStore.salvarItem(carga);
+      response = await equipesStore.salvarItem(carga);
     }
     if (response) {
       alertStore.success(msg);
-      grupoDeVariaveisStore.$reset();
-      router.push({ name: 'grupoDeVariaveisListar' });
+      equipesStore.$reset();
+      router.push({ name: 'equipesListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -248,10 +258,13 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function buscarPessoasSimplificadas() {
   if (!participantes.value[orgao.value]) {
-    const { linhas: linhasParticipantes } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
-      participante_grupo_variavel: true,
-      orgao_id: orgao.value,
-    });
+    const { linhas: linhasParticipantes } = await requestS.get(
+      `${baseUrl}/pessoa/reduzido`,
+      {
+        participante_grupo_variavel: true,
+        orgao_id: orgao.value,
+      },
+    );
 
     if (Array.isArray(linhasParticipantes)) {
       participantes.value[orgao.value] = linhasParticipantes;
@@ -261,10 +274,13 @@ async function buscarPessoasSimplificadas() {
   }
 
   if (!colaboradores.value[orgao.value]) {
-    const { linhas: linhasColaboradores } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
-      colaborador_grupo_variavel: true,
-      orgao_id: orgao.value,
-    });
+    const { linhas: linhasColaboradores } = await requestS.get(
+      `${baseUrl}/pessoa/reduzido`,
+      {
+        colaborador_grupo_variavel: true,
+        orgao_id: orgao.value,
+      },
+    );
 
     if (Array.isArray(linhasColaboradores)) {
       colaboradores.value[orgao.value] = linhasColaboradores;
@@ -292,10 +308,10 @@ watch(orgao, () => {
 
 iniciar();
 
-grupoDeVariaveisStore.$reset();
-// não foi usada a prop.grupoDeVariaveisId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.grupoDeVariaveisId) {
-  grupoDeVariaveisStore.buscarItem({ id: route.params.grupoDeVariaveisId });
+equipesStore.$reset();
+// não foi usada a prop.equipeId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.equipeId) {
+  equipesStore.buscarItem({ id: route.params.equipeId });
 }
 </script>
 

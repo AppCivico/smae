@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'grupoDeVariaveisCriar' }"
+      :to="{ name: 'equipesCriar' }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -50,7 +50,7 @@
         </td>
         <td>
           <router-link
-            :to="{ name: 'grupoDeVariaveisEditar', params: { grupoDeVariaveisId: item.id } }"
+            :to="{ name: 'equipesEditar', params: { equipeId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -98,24 +98,24 @@ import { useRoute } from 'vue-router';
 import { computed } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
 
-import { useGrupoDeVariaveisStore } from '@/stores/grupoDeVariaveis.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 
 const route = useRoute();
 const titulo = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
   : route?.meta?.título;
 const alertStore = useAlertStore();
-const grupoDeVariaveisStore = useGrupoDeVariaveisStore();
+const equipesStore = useEquipesStore();
 
-const { lista, chamadasPendentes, erro } = storeToRefs(grupoDeVariaveisStore);
+const { lista, chamadasPendentes, erro } = storeToRefs(equipesStore);
 
 async function excluirGrupo(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
-      if (await grupoDeVariaveisStore.excluirItem(id)) {
-        grupoDeVariaveisStore.$reset();
-        grupoDeVariaveisStore.buscarTudo({});
+      if (await equipesStore.excluirItem(id)) {
+        equipesStore.$reset();
+        equipesStore.buscarTudo({});
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -123,8 +123,8 @@ async function excluirGrupo(id, descricao) {
   );
 }
 
-grupoDeVariaveisStore.$reset();
-grupoDeVariaveisStore.buscarTudo({ });
+equipesStore.$reset();
+equipesStore.buscarTudo({ });
 </script>
 
 <style></style>

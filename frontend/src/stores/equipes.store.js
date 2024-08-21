@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const baseUrl = `${import.meta.env.VITE_API_URL}/equipe-responsavel`;
 
-export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
+export const useEquipesStore = defineStore('equipesStore', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -19,7 +19,7 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel`, params);
+        const resposta = await this.requestS.get(`${baseUrl}`, params);
         this.emFoco = resposta?.linhas?.[0] || null;
       } catch (erro) {
         this.erro = erro;
@@ -32,7 +32,7 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/grupo-variavel-responsavel`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -45,7 +45,7 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/grupo-variavel-responsavel/${id}`);
+        await this.requestS.delete(`${baseUrl}/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -61,9 +61,9 @@ export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/grupo-variavel-responsavel/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/grupo-variavel-responsavel`, params);
+          await this.requestS.post(`${baseUrl}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

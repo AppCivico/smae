@@ -896,20 +896,20 @@ export const gruposTematicos = object({
     .nullable(),
 });
 
-export const grupoDeVariaveis = object({
+export const equipes = object({
   colaboradores: array()
-    .label('Responsáveis pelo grupo')
+    .label('Responsáveis pela equipe')
     .nullable('Responsáveis inválidos'),
   orgao_id: number()
     .label('Órgão responsável')
     .nullable(),
   participantes: array()
-    .label('Participantes alocados ao grupo')
+    .label('Participantes alocados à equipe')
     .required('Participantes inválidos'),
   perfil: mixed()
-    .label('Tipo de grupo')
+    .label('Tipo de equipe')
     .oneOf(Object.keys(tipoDePerfil))
-    .required('Tipo de grupo inválido'),
+    .required('Tipo de equipe inválido'),
   titulo: string()
     .label('Nome')
     .min(3)

@@ -97,7 +97,7 @@ const rotasParaMenuPrincipal = [
   'mdoEmpreendimentosListar',
   'parlamentaresListar',
   'paineisExternosListar',
-  'grupoDeVariaveisListar',
+  'equipesListar',
   'Workflow',
 ];
 
@@ -281,10 +281,10 @@ export default [
         ],
       },
       {
-        path: '/grupo-de-variaveis',
-        component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisRaiz.vue'),
+        path: '/equipes',
+        component: () => import('@/views/equipes/EquipesRaiz.vue'),
         meta: {
-          título: 'Grupos de Variáveis',
+          título: 'Equipe',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroGrupoVariavel.',
           // rotasParaMenuSecundário: [
@@ -293,38 +293,38 @@ export default [
         },
         children: [
           {
-            name: 'grupoDeVariaveisListar',
+            name: 'equipesListar',
             path: '',
-            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisLista.vue'),
+            component: () => import('@/views/equipes/EquipesLista.vue'),
             meta: {
-              título: 'Grupos de Variáveis',
+              título: 'Equipe',
             },
           },
           {
-            name: 'grupoDeVariaveisCriar',
+            name: 'equipesCriar',
             path: 'novo',
-            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
+            component: () => import('@/views/equipes/EquipesCriarEditar.vue'),
             meta: {
-              título: 'Novo Grupo de Variáveis',
-              rotaDeEscape: 'grupoDeVariaveisListar',
+              título: 'Nova Equipe',
+              rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: [
-                'grupoDeVariaveisListar',
+                'equipesListar',
               ],
             },
           },
           {
-            path: ':grupoDeVariaveisId',
-            name: 'grupoDeVariaveisEditar',
-            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
+            path: ':equipeId',
+            name: 'equipesEditar',
+            component: () => import('@/views/equipes/EquipesCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
-              ...{ grupoDeVariaveisId: Number.parseInt(params.grupoDeVariaveisId, 10) || undefined },
+              ...{ equipeId: Number.parseInt(params.equipeId, 10) || undefined },
             }),
             meta: {
-              título: 'Editar Grupo de Variáveis',
-              rotaDeEscape: 'grupoDeVariaveisListar',
+              título: 'Editar Equipe',
+              rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: [
-                'grupoDeVariaveisListar',
+                'equipesListar',
               ],
             },
           },
