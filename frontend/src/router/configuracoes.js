@@ -281,7 +281,6 @@ export default [
         ],
       },
       {
-        // @see
         path: '/equipes',
         component: () => import('@/views/equipes/EquipesRaiz.vue'),
         meta: {
