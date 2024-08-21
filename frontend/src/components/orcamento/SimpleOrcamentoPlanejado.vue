@@ -9,7 +9,20 @@ import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 
-const props = defineProps(['parentlink', 'config']);
+const props = defineProps({
+  parentlink: {
+    type: String,
+    default: '',
+  },
+  config: {
+    type: Object,
+    default: () => ({}),
+  },
+  etiquetaDosTotais: {
+    type: String,
+    default: 'Totais',
+  },
+});
 // eslint-disable-next-line vue/no-setup-props-destructure
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
@@ -111,9 +124,9 @@ const somaDasLinhas = computed(() => ({
             <th style="width: 50px" />
           </tr>
           <template v-if="linhasFiltradas?.length">
-            <td class="tc600 w700 pl1">
-              <strong>Totais da meta</strong>
-            </td>
+            <th class="tc600 w700 pl1">
+              {{ $props.etiquetaDosTotais }}
+            </th>
             <td class="w700">
               {{ somasDaMeta.valor_planejado
                 ? formataValor(somasDaMeta.valor_planejado)

@@ -4,12 +4,24 @@ import {
   computed,
 } from 'vue';
 
-const ProjetoStore = useProjetosStore();
+const ProjetosStore = useProjetosStore();
 
 const parametrosParaValidacao = computed(() => ({
-  portfolio_id: ProjetoStore.emFoco?.portfolio_id,
+  portfolio_id: ProjetosStore.emFoco?.portfolio_id,
 }));
 </script>
 <template>
-  <router-view :parametros-para-validacao="parametrosParaValidacao" />
+  <router-view
+    :parametros-para-validacao="parametrosParaValidacao"
+    :anos-do-orcamento="ProjetosStore.emFoco?.ano_orcamento || []"
+    :parametros-de-consulta="{
+      portfolio_id: ProjetosStore.emFoco?.portfolio_id,
+      previsao_custo_disponivel: true,
+      planejado_disponivel: true,
+      execucao_disponivel: true,
+    }"
+  />
+
+  <LoadingComponent v-if="ProjetosStore.chamadasPendentes.emFoco" />
+  <ErrorComponent v-else-if="ProjetosStore.erro" />
 </template>
