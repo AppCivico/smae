@@ -283,7 +283,7 @@ export default [
       {
         // @see
         path: '/equipes',
-        component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisRaiz.vue'),
+        component: () => import('@/views/equipes/EquipesRaiz.vue'),
         meta: {
           título: 'Equipe',
           rotaPrescindeDeChave: true,
@@ -296,7 +296,7 @@ export default [
           {
             name: 'equipesListar',
             path: '',
-            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisLista.vue'),
+            component: () => import('@/views/equipes/EquipesLista.vue'),
             meta: {
               título: 'Equipe',
             },
@@ -304,7 +304,7 @@ export default [
           {
             name: 'equipesCriar',
             path: 'novo',
-            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
+            component: () => import('@/views/equipes/EquipesCriarEditar.vue'),
             meta: {
               título: 'Nova Equipe',
               rotaDeEscape: 'equipesListar',
@@ -315,8 +315,8 @@ export default [
           },
           {
             path: ':equipeId',
-            name: 'grupoDeVariaveisEditar',
-            component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
+            name: 'equipesEditar',
+            component: () => import('@/views/equipes/EquipesCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
               ...{ equipeId: Number.parseInt(params.equipeId, 10) || undefined },

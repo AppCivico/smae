@@ -50,7 +50,7 @@
         </td>
         <td>
           <router-link
-            :to="{ name: 'grupoDeVariaveisEditar', params: { equipeId: item.id } }"
+            :to="{ name: 'equipesEditar', params: { equipeId: item.id } }"
             class="tprimary"
           >
             <svg
