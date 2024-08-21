@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PessoaPrivilegioModule } from '../auth/pessoaPrivilegio.module';
 import { MacroTemaModule } from '../macro-tema/macro-tema.module';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -13,13 +13,13 @@ import { PdmService } from './pdm.service';
 @Module({
     imports: [
         PrismaModule,
-        SubTemaModule,
-        MacroTemaModule,
-        TagModule,
-        TemaModule,
-        VariavelModule,
-        UploadModule,
-        PessoaPrivilegioModule,
+        forwardRef(() => SubTemaModule),
+        forwardRef(() => MacroTemaModule),
+        forwardRef(() => TagModule),
+        forwardRef(() => TemaModule),
+        forwardRef(() => VariavelModule),
+        forwardRef(() => UploadModule),
+        forwardRef(() => PessoaPrivilegioModule),
     ],
     controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],

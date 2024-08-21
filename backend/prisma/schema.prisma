@@ -570,6 +570,7 @@ model Orgao {
     ViewVariavelGlobalQSouResp          ViewVariavelGlobal[]                  @relation("resp")
     ViewVariavelGlobalQSouProp          ViewVariavelGlobal[]                  @relation("prop")
     GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
+    FormulaComposta                     FormulaComposta[]
 
     @@map("orgao")
 }
@@ -1415,9 +1416,10 @@ model UnidadeMedida {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    removedor       Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    FormulaComposta FormulaComposta[]
 
     @@map("unidade_medida")
 }
@@ -1456,6 +1458,22 @@ model FormulaComposta {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
+    autogerenciavel Boolean @default(false)
+
+    calc_casas_decimais Int @default(0) @db.SmallInt
+
+    calc_periodicidade     Periodicidade?
+    calc_regionalizavel    Boolean        @default(false)
+    calc_inicio_medicao    DateTime?      @db.Date()
+    calc_fim_medicao       DateTime?      @db.Date()
+    calc_orgao_id          Int?
+    calc_orgao             Orgao?         @relation(fields: [calc_orgao_id], references: [id])
+    calc_codigo            String?
+    calc_unidade_medida_id Int?
+    calc_unidade_medida    UnidadeMedida? @relation(fields: [calc_unidade_medida_id], references: [id])
+    atualizar_calc         Boolean        @default(false)
+    tipo_pdm               TipoPdm        @default(PDM)
+
     criar_variavel     Boolean   @default(false)
     variavel_calc_erro String?
     variavel_calc_id   Int?
@@ -1469,8 +1487,22 @@ model FormulaComposta {
     IndicadorFormulaCompostaEmUso         IndicadorFormulaCompostaEmUso[]
     FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
     FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
+    FormulaCompostaRelVariavel            FormulaCompostaRelVariavel[]
 
     @@map("formula_composta")
+}
+
+// PS: Se não fosse por motivos históricos, eu teria chamado essa tabela de "FormulaCompostaVariavel"
+// assim seguiria o padrão de nomenclatura do indicador
+model FormulaCompostaRelVariavel {
+    id                  Int             @id @default(autoincrement())
+    formula_composta_id Int
+    formula_composta    FormulaComposta @relation(fields: [formula_composta_id], references: [id])
+    variavel_id         Int
+    variavel            Variavel        @relation(fields: [variavel_id], references: [id])
+
+    @@index([variavel_id])
+    @@map("formula_composta_rel_variavel")
 }
 
 model FormulaCompostaVariavel {
@@ -1604,6 +1636,7 @@ model Variavel {
     VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
     ViewVariavelGlobal               ViewVariavelGlobal[]
     FormulaComposta                  FormulaComposta[]
+    FormulaCompostaRelVariavel       FormulaCompostaRelVariavel[]
 
     @@index([regiao_id])
     @@map("variavel")

@@ -45,7 +45,7 @@ export class AppController {
         await this.prisma.$transaction(async (prismaTx) => {
             while (Date.now() - start < 10000) {
                 const queryStart = Date.now();
-                await prismaTx.$queryRaw`select 1`;
+                await prismaTx.$queryRaw`SELECT 1`;
                 executionTimes.push(Date.now() - queryStart);
 
                 if (delayTime) {

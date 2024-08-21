@@ -58,6 +58,11 @@ export class FilterVariavelDto {
     id?: number;
 
     @IsOptional()
+    @IsInt({ message: 'id' })
+    @Transform(NumberTransform)
+    formula_composta_id?: number;
+
+    @IsOptional()
     @IsArray({ message: 'assuntos(s): precisa ser uma array.' })
     @ArrayMaxSize(1000, { message: 'assuntos(s): precisa ter no máximo 1000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })

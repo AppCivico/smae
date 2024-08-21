@@ -480,6 +480,8 @@ export class VariavelService {
                     formula: formula,
                     formula_compilada: formula,
                     criar_variavel: true,
+                    autogerenciavel: true,
+                    tipo_pdm: 'PS',
                     FormulaCompostaVariavel: {
                         create: varEscopo.map((vid) => ({
                             variavel_id: vid,
@@ -850,10 +852,11 @@ export class VariavelService {
             !filters.atividade_id &&
             !filters.regiao_id &&
             !filters.assuntos &&
+            !filters.formula_composta_id &&
             !filters.id
         ) {
             throw new BadRequestException(
-                'Use ao menos um dos filtros: id, indicador_id, meta_id, iniciativa_id, atividade_id, regiao_id ou assuntos'
+                'Use ao menos um dos filtros: id, indicador_id, meta_id, iniciativa_id, atividade_id, regiao_id, formula_composta_id ou assuntos'
             );
         }
 
@@ -1223,6 +1226,15 @@ export class VariavelService {
                         },
                     },
                 });
+            if (filters.formula_composta_id) {
+                firstSet.push({
+                    FormulaCompostaRelVariavel: {
+                        some: {
+                            formula_composta_id: filters.formula_composta_id,
+                        },
+                    },
+                });
+            }
         }
 
         const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
@@ -1941,6 +1953,10 @@ export class VariavelService {
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         const logger = LoggerWithLog('Remoção de variável');
         logger.debug(`Removendo variável ${variavelId}`);
+
+        // TODO: pensar se quando apagar uma calculada, ou seja por side-effect talvez, precisa apagar a formula-composta
+        // do autogerenciavel
+
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfVariavel = await this.prisma.variavel.findFirst({
             where: {

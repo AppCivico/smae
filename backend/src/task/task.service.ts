@@ -426,6 +426,7 @@ export class TaskService {
             refresh_meta: true, // tbm só chama função no banco
             refresh_indicador: true, // tbm só chama função no banco
             refresh_transferencia: true, // tbm só chama função no banco
+            refresh_variavel: true, // tbm só chama função no banco
             aviso_email: true, // tbm só chama função no banco
             aviso_email_cronograma_tp: true, // tbm só chama função no banco
             aviso_email_nota: true, // tbm só chama função no banco

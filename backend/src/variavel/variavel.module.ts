@@ -3,10 +3,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../prisma/prisma.module';
 import { IndicadorVariavelPDMController, VariavelGlobalController } from './variavel.controller';
 import { VariavelService } from './variavel.service';
-import { VariavelFormulaCompostaController } from './variavel.formula-composta.controller';
+import { VariavelFormulaCompostaController, VariavelGlobalFCController } from './variavel.formula-composta.controller';
 import { VariavelFormulaCompostaService } from './variavel.formula-composta.service';
 import { VariavelCalculadaService } from './variavel.calculada.service';
 import { MetaModule } from '../meta/meta.module';
+import { IndicadorModule } from '../indicador/indicador.module';
 
 @Module({
     imports: [
@@ -15,9 +16,15 @@ import { MetaModule } from '../meta/meta.module';
             secret: process.env.SESSION_JWT_SECRET + 'for-variables',
             signOptions: { expiresIn: '1d' },
         }),
-        forwardRef(() => MetaModule)
+        forwardRef(() => MetaModule),
+        forwardRef(() => IndicadorModule),
     ],
-    controllers: [IndicadorVariavelPDMController, VariavelFormulaCompostaController, VariavelGlobalController],
+    controllers: [
+        IndicadorVariavelPDMController,
+        VariavelFormulaCompostaController,
+        VariavelGlobalController,
+        VariavelGlobalFCController,
+    ],
     providers: [VariavelService, VariavelFormulaCompostaService, VariavelCalculadaService],
     exports: [VariavelService],
 })
