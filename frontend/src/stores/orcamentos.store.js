@@ -32,21 +32,32 @@ function totalizador(anos, campo) {
     valor: new Big(0),
   };
 
+  if (typeof anos !== 'object' || anos === null) {
+    return total;
+  }
+
   let i = 0;
 
-  while (i < anos.length) {
-    const ano = anos[i];
+  const listaDeAnos = Object.keys(anos);
+
+  while (i < listaDeAnos.length) {
+    const dotacoesDoAno = anos[listaDeAnos[i]];
+    const ano = Number(listaDeAnos[i]);
+
     let j = 0;
-    while (j < ano.length) {
-      const dotacao = ano[j];
+
+    while (j < dotacoesDoAno.length) {
+      const dotacao = dotacoesDoAno[j];
+
       if (dotacao[campo]) {
         total.valor = total.valor.plus(new Big(dotacao[campo]));
       }
+
       j += 1;
     }
 
-    total.anoDeInicio = Math.min(total.anoDeInicio || Infinity, ano[0]?.ano_referencia);
-    total.anoDeConclusao = Math.max(total.anoDeConclusao || -Infinity, ano[0]?.ano_referencia);
+    total.anoDeInicio = Math.min(total.anoDeInicio || Infinity, ano) || 0;
+    total.anoDeConclusao = Math.max(total.anoDeConclusao || -Infinity, ano) || 0;
 
     i += 1;
   }
@@ -312,10 +323,10 @@ export const useOrcamentosStore = defineStore({
       };
     },
 
-    custeioConsolidado: ({ OrcamentoCusteio }) => totalizador(Object.values(OrcamentoCusteio), 'custo_previsto'),
+    custeioConsolidado: ({ OrcamentoCusteio }) => totalizador(OrcamentoCusteio, 'custo_previsto'),
 
-    planejadoConsolidado: ({ OrcamentoPlanejado }) => totalizador(Object.values(OrcamentoPlanejado), 'valor_planejado'),
+    planejadoConsolidado: ({ OrcamentoPlanejado }) => totalizador(OrcamentoPlanejado, 'valor_planejado'),
 
-    realizadoConsolidado: ({ OrcamentoRealizado }) => totalizador(Object.values(OrcamentoRealizado), 'valor_liquidado'),
+    realizadoConsolidado: ({ OrcamentoRealizado }) => totalizador(OrcamentoRealizado, 'valor_liquidado'),
   },
 });
