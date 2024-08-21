@@ -28,7 +28,7 @@ const route = useRoute();
 
 const alertStore = useAlertStore();
 
-const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
+const contratosStore = useContratosStore(route.meta.entidadeMãe);
 const {
   chamadasPendentes, erro, lista,
 } = storeToRefs(contratosStore);

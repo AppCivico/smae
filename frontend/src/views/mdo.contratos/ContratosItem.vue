@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
-const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
+const contratosStore = useContratosStore(route.meta.entidadeMãe);
 
 const props = defineProps({
   contratoId: {

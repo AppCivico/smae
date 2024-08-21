@@ -15,7 +15,7 @@ defineOptions({ inheritAttrs: false });
 
 const route = useRoute();
 
-const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
+const contratosStore = useContratosStore(route.meta.entidadeMãe);
 const {
   chamadasPendentes,
   emFoco,

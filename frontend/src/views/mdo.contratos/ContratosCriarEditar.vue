@@ -26,7 +26,7 @@ const router = useRouter();
 const route = useRoute();
 
 const alertStore = useAlertStore();
-const contratosStore = useContratosStore(() => route.meta.entidadeMãe);
+const contratosStore = useContratosStore(route.meta.entidadeMãe);
 const tarefasStore = useTarefasStore();
 const DotaçãoStore = useDotaçãoStore();
 
