@@ -1177,6 +1177,7 @@ export class VariavelService {
                     periodicidade: r.periodicidade,
                     pode_editar: perm,
                     pode_excluir: perm && r.planos.length == 0,
+                    possui_variaveis_filhas: r.possui_variaveis_filhas,
                 };
             }),
         };

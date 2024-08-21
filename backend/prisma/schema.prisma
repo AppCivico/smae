@@ -3731,23 +3731,24 @@ view ViewProjetoMDO {
 }
 
 view ViewVariavelGlobal {
-    id                    Int           @id
-    variavel              Variavel      @relation(fields: [id], references: [id])
-    titulo                String
-    codigo                String
-    orgao_id              Int?
-    orgao                 Orgao?        @relation("resp", fields: [orgao_id], references: [id])
-    orgao_proprietario_id Int?
-    orgao_proprietario    Orgao?        @relation("prop", fields: [orgao_proprietario_id], references: [id])
-    planos                Int[]
-    periodicidade         Periodicidade
-    inicio_medicao        DateTime?
-    fim_medicao           DateTime?
-    criado_em             DateTime
-    assunto_ids           Int[]
-    tipo                  TipoVariavel
-    fonte_id              Int?
-    fonte_nome            String?
+    id                      Int           @id
+    variavel                Variavel      @relation(fields: [id], references: [id])
+    titulo                  String
+    codigo                  String
+    orgao_id                Int?
+    orgao                   Orgao?        @relation("resp", fields: [orgao_id], references: [id])
+    orgao_proprietario_id   Int?
+    orgao_proprietario      Orgao?        @relation("prop", fields: [orgao_proprietario_id], references: [id])
+    planos                  Int[]
+    periodicidade           Periodicidade
+    inicio_medicao          DateTime?
+    fim_medicao             DateTime?
+    criado_em               DateTime
+    assunto_ids             Int[]
+    tipo                    TipoVariavel
+    fonte_id                Int?
+    fonte_nome              String?
+    possui_variaveis_filhas Boolean
 
     @@map("view_variavel_global")
 }
