@@ -91,7 +91,7 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <TítuloDePágina>
+    <TítuloDePágina id="titulo-da-pagina">
       Contratos
     </TítuloDePágina>
 
@@ -116,201 +116,207 @@ iniciar();
     />
   </div>
 
-  <table
-    class="tablemain tbody-zebra"
+  <div
+    role="region"
+    aria-labelledby="titulo-da-pagina"
+    tabindex="0"
   >
-    <colgroup>
-      <col>
-      <col class="col--minimum">
-      <col class="col--data">
-      <col class="col--data">
-      <col class="col--minimum">
-      <col>
-      <col class="col--minimum">
-      <col
-        v-if="exibirColunasDeAção"
-        class="col--botão-de-ação"
-      >
-      <col
-        v-if="exibirColunasDeAção"
-        class="col--botão-de-ação"
-      >
-    </colgroup>
-
-    <thead>
-      <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th>
-          {{ schema.fields.numero.spec.label }}
-        </th>
-        <th>
-          {{ schema.fields.status.spec.label }}
-        </th>
-        <th class="cell--data">
-          Término planejado
-        </th>
-        <th class="cell--data">
-          Término atual
-        </th>
-        <th class="cell--number">
-          {{ schema.fields.valor.spec.label }}
-        </th>
-        <th>
-          {{ schema.fields.processos_sei.spec.label }}
-        </th>
-        <th class="cell--number">
-          Quantidade de Aditivos
-        </th>
-        <th
-          v-if="exibirColunasDeAção"
-        />
-        <th
-          v-if="exibirColunasDeAção"
-        />
-      </tr>
-    </thead>
-
-    <tbody
-      v-for="linha in listaFiltrada"
-      :key="linha.id"
+    <table
+      class="tablemain tbody-zebra"
     >
-      <tr>
-        <th class="">
-          <router-link
-            :to="{
-              name: $route.params.obraId ? 'contratosDaObraResumo' : 'contratosDoProjetoResumo',
-              params: {
-                obraId: obraId,
-                contratoId: linha.id,
-                projetoId: projetoId
-              }
-            }"
-          >
-            {{ linha.numero }}
-          </router-link>
-        </th>
-        <td>{{ linha.status }}</td>
+      <colgroup>
+        <col>
+        <col class="col--minimum">
+        <col class="col--data">
+        <col class="col--data">
+        <col class="col--minimum">
+        <col>
+        <col class="col--minimum">
+        <col
+          v-if="exibirColunasDeAção"
+          class="col--botão-de-ação"
+        >
+      </colgroup><colgroup
+        v-if="exibirColunasDeAção"
+        class="col--botão-de-ação"
+      />
 
-        <td class="cell--data">
-          {{ dateToShortDate(linha.data_termino_inicial) }}
-        </td>
-        <td class="cell--data">
-          {{ dateToShortDate(linha.data_termino_atual) }}
-        </td>
+      <thead>
+        <tr class="pl3 center mb05 tc300 w700 t12 uc">
+          <th>
+            {{ schema.fields.numero.spec.label }}
+          </th>
+          <th>
+            {{ schema.fields.status.spec.label }}
+          </th>
+          <th class="cell--data">
+            Término planejado
+          </th>
+          <th class="cell--data">
+            Término atual
+          </th>
+          <th class="cell--number">
+            {{ schema.fields.valor.spec.label }}
+          </th>
+          <th>
+            {{ schema.fields.processos_sei.spec.label }}
+          </th>
+          <th class="cell--number">
+            Quantidade de Aditivos
+          </th>
+          <th
+            v-if="exibirColunasDeAção"
+          />
+          <th
+            v-if="exibirColunasDeAção"
+          />
+        </tr>
+      </thead>
 
-        <td class="cell--number">
-          R$ {{ dinheiro(linha.valor) }}
-        </td>
-        <td class="contentStyle">
-          <ul v-if="linha.processos_sei.length">
-            <li
-              v-for="processoSei in linha.processos_sei"
-              :key="processoSei"
+      <tbody
+        v-for="linha in listaFiltrada"
+        :key="linha.id"
+      >
+        <tr>
+          <th class="">
+            <router-link
+              :to="{
+                name: $route.params.obraId ? 'contratosDaObraResumo' : 'contratosDoProjetoResumo',
+                params: {
+                  obraId: obraId,
+                  contratoId: linha.id,
+                  projetoId: projetoId
+                }
+              }"
             >
-              {{ formatProcesso(processoSei) }} <br>
-            </li>
-          </ul>
-        </td>
-        <td class="cell--number">
-          {{ linha.quantidade_aditivos }}
-        </td>
-        <td
-          v-if="exibirColunasDeAção"
-          class="center"
-        >
-          <router-link
-            :to="{
-              name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
-              params: {
-                obraId: obraId,
-                contratoId: linha.id,
-                projetoId: projetoId,
-              }
-            }"
-            title="Editar contrato"
+              {{ linha.numero }}
+            </router-link>
+          </th>
+          <td>{{ linha.status }}</td>
+
+          <td class="cell--data">
+            {{ dateToShortDate(linha.data_termino_inicial) }}
+          </td>
+          <td class="cell--data">
+            {{ dateToShortDate(linha.data_termino_atual) }}
+          </td>
+
+          <td class="cell--number">
+            R$ {{ dinheiro(linha.valor) }}
+          </td>
+          <td class="contentStyle">
+            <ul v-if="linha.processos_sei.length">
+              <li
+                v-for="processoSei in linha.processos_sei"
+                :key="processoSei"
+                class="nowrap"
+              >
+                {{ formatProcesso(processoSei) }} <br>
+              </li>
+            </ul>
+          </td>
+          <td class="cell--number">
+            {{ linha.quantidade_aditivos }}
+          </td>
+          <td
+            v-if="exibirColunasDeAção"
+            class="center"
           >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
-        <td
-          v-if="exibirColunasDeAção"
-          class="center"
-        >
-          <button
-            class="like-a__text"
-            arial-label="excluir"
-            title="excluir"
-            @click="excluirProcesso(linha.id, linha.numero)"
+            <router-link
+              :to="{
+                name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
+                params: {
+                  obraId: obraId,
+                  contratoId: linha.id,
+                  projetoId: projetoId,
+                }
+              }"
+              title="Editar contrato"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </router-link>
+          </td>
+          <td
+            v-if="exibirColunasDeAção"
+            class="center"
           >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg>
-          </button>
-        </td>
-      </tr>
-      <tr>
+            <button
+              class="like-a__text"
+              arial-label="excluir"
+              title="excluir"
+              @click="excluirProcesso(linha.id, linha.numero)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td :colspan="exibirColunasDeAção ? 10 : 8">
+            {{ linha.objeto_resumo ? truncate(linha.objeto_resumo, 100) : '-' }}
+          </td>
+        </tr>
+      </tbody>
+      <tr v-if="chamadasPendentes.lista">
         <td :colspan="exibirColunasDeAção ? 10 : 8">
-          {{ linha.objeto_resumo ? truncate(linha.objeto_resumo, 100) : '-' }}
+          Carregando
         </td>
       </tr>
-    </tbody>
-    <tr v-if="chamadasPendentes.lista">
-      <td :colspan="exibirColunasDeAção ? 10 : 8">
-        Carregando
-      </td>
-    </tr>
-    <tr v-else-if="erro">
-      <td :colspan="exibirColunasDeAção ? 10 : 8">
-        Erro: {{ erro }}
-      </td>
-    </tr>
-    <tr v-else-if="!lista.length">
-      <td :colspan="exibirColunasDeAção ? 10 : 8">
-        Nenhum resultado encontrado.
-      </td>
-    </tr>
-    <tfoot>
-      <tr v-if="lista.length && lista.length > listaFiltrada.length">
-        <th>Total dos contratos visiveis</th>
-        <td />
-        <td />
-        <td />
-        <td class="cell--number">
-          {{ `R$ ${dinheiro(totalDeContratosFiltrados.valor)}` }}
+      <tr v-else-if="erro">
+        <td :colspan="exibirColunasDeAção ? 10 : 8">
+          Erro: {{ erro }}
         </td>
-        <td />
-        <td class="cell--number">
-          {{ totalDeContratosFiltrados.aditivos }}
-        </td>
-        <th
-          v-if="exibirColunasDeAção"
-        />
-        <th
-          v-if="exibirColunasDeAção"
-        />
       </tr>
-      <tr>
-        <th>Total dos contratos</th>
-        <td />
-        <td />
-        <td />
-        <td class="cell--number">
-          {{ `R$ ${dinheiro(totalDeContratos.valor)}` }}
+      <tr v-else-if="!lista.length">
+        <td :colspan="exibirColunasDeAção ? 10 : 8">
+          Nenhum resultado encontrado.
         </td>
-        <td />
-        <td class="cell--number">
-          {{ totalDeContratos.aditivos }}
-        </td>
-        <th
-          v-if="exibirColunasDeAção"
-        />
-        <th
-          v-if="exibirColunasDeAção"
-        />
       </tr>
-    </tfoot>
-  </table>
+      <tfoot>
+        <tr v-if="lista.length && lista.length > listaFiltrada.length">
+          <th>Total dos contratos visiveis</th>
+          <td />
+          <td />
+          <td />
+          <td class="cell--number">
+            {{ `R$ ${dinheiro(totalDeContratosFiltrados.valor)}` }}
+          </td>
+          <td />
+          <td class="cell--number">
+            {{ totalDeContratosFiltrados.aditivos }}
+          </td>
+          <th
+            v-if="exibirColunasDeAção"
+          />
+          <th
+            v-if="exibirColunasDeAção"
+          />
+        </tr>
+        <tr>
+          <th>Total dos contratos</th>
+          <td />
+          <td />
+          <td />
+          <td class="cell--number">
+            {{ `R$ ${dinheiro(totalDeContratos.valor)}` }}
+          </td>
+          <td />
+          <td class="cell--number">
+            {{ totalDeContratos.aditivos }}
+          </td>
+          <th
+            v-if="exibirColunasDeAção"
+          />
+          <th
+            v-if="exibirColunasDeAção"
+          />
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 </template>
