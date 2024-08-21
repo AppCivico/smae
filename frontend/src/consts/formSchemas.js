@@ -1286,7 +1286,7 @@ export const obras = object({
     .min(1, 'Responsável inválido')
     .nullable(),
   responsaveis_no_orgao_gestor: array()
-    .label('Assessor do monitoramento')
+    .label('Ponto Focal de Monitoramento')
     .of(
       number()
         .min(1),
