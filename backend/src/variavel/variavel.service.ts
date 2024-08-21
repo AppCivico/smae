@@ -407,7 +407,8 @@ export class VariavelService {
                         indicador,
                         responsaveis,
                         logger,
-                        prefixo + regiao.pdm_codigo_sufixo
+                        prefixo + regiao.pdm_codigo_sufixo,
+                        variavelMae.id
                     );
                     ids.push(variavel.id);
                 }
