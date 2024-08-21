@@ -335,7 +335,7 @@ export class SeiIntegracaoService {
                 },
             },
             orderBy: { relatorio_sincronizado_em: 'asc' },
-            select: { processo_sei: true },
+            select: { processo_sei: true, id: true },
             take: 1000,
         });
 
@@ -357,10 +357,7 @@ export class SeiIntegracaoService {
                 }
 
                 await this.prisma.statusSEI.update({
-                    where: {
-                        processo_sei: record.processo_sei,
-                        proxima_sincronizacao: DateTime.now().plus({ hour: 8 }).toJSDate(),
-                    },
+                    where: { id: record.id },
                     data: updateData,
                 });
 
