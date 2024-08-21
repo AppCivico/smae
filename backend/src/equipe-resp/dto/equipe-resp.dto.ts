@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { PerfilResponsavelEquipe } from '@prisma/client';
 import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
@@ -39,3 +39,5 @@ export class CreateEquipeRespDto {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     colaboradores: number[];
 }
+
+export class UpdateEquipeRespDto extends PartialType(OmitType(CreateEquipeRespDto, ['orgao_id'])) {}
