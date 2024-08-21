@@ -1611,6 +1611,10 @@ model Variavel {
 
     nivel_regionalizacao Int? @ignore // não vamos usar por enquanto
 
+    variavel_mae_id Int?
+    variavel_mae    Variavel? @relation("VariavelMae", fields: [variavel_mae_id], references: [id])
+    variaveis_filhas Variavel[] @relation("VariavelMae")   
+
     serie_variavel             SerieVariavel[]
     variavel_responsavel       VariavelResponsavel[]
     indicador_variavel         IndicadorVariavel[]

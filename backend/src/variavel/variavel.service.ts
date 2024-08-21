@@ -379,6 +379,22 @@ export class VariavelService {
                 const prefixo = codigo;
                 delete (dto as any).regioes;
                 delete (dto as any).codigo;
+
+                // A primeira variável criada é a variável mãe.
+                const variavelMae = await this.performVariavelSave(
+                    tipo,
+                    prismaTxn,
+                    {
+                        ...dto,
+                        titulo: dto.titulo,
+                    },
+                    indicador,
+                    responsaveis,
+                    logger,
+                    prefixo
+                );
+                ids.push(variavelMae.id);
+
                 for (const regiao of regions) {
                     const variavel = await this.performVariavelSave(
                         tipo,
@@ -504,7 +520,8 @@ export class VariavelService {
         indicador: IndicadorInfo | undefined,
         responsaveis: number[],
         logger: LoggerWithLog | undefined,
-        codigo: string
+        codigo: string,
+        variavelMaeId?: number
     ) {
         logger = logger ?? LoggerWithLog('Criação de variável');
 
@@ -513,7 +530,7 @@ export class VariavelService {
             where: {
                 removido_em: null,
                 codigo: codigo,
-
+                variavel_mae_id: variavelMaeId,
                 OR: [
                     indicador_id
                         ? {
@@ -544,6 +561,7 @@ export class VariavelService {
         const variavel = await prismaTxn.variavel.create({
             data: {
                 tipo,
+                variavel_mae_id: variavelMaeId,
                 titulo: dto.titulo,
                 codigo: codigo,
                 acumulativa: dto.acumulativa,
@@ -872,6 +890,310 @@ export class VariavelService {
             where: {
                 AND: whereSet,
                 tipo: tipo == 'Global' ? { in: ['Global', 'Calculada'] } : tipo,
+                variavel_mae_id: null,
+            },
+            select: {
+                id: true,
+                titulo: true,
+                codigo: true,
+                acumulativa: true,
+                casas_decimais: true,
+                fim_medicao: true,
+                inicio_medicao: true,
+                atraso_meses: true,
+                suspendida_em: true,
+                mostrar_monitoramento: true,
+                polaridade: true,
+                unidade_medida: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                        sigla: true,
+                    },
+                },
+                ano_base: true,
+                valor_base: true,
+                periodicidade: true,
+                orgao: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                        sigla: true,
+                    },
+                },
+                regiao: {
+                    select: {
+                        id: true,
+                        nivel: true,
+                        descricao: true,
+                        parente_id: true,
+                        codigo: true,
+                        pdm_codigo_sufixo: true,
+                    },
+                },
+                indicador_variavel: {
+                    select: {
+                        desativado: true,
+                        id: true,
+                        aviso_data_fim: true,
+                        indicador_origem: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                            },
+                        },
+                        indicador: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                variavel_responsavel: {
+                    select: {
+                        pessoa: { select: { id: true, nome_exibicao: true } },
+                    },
+                },
+                variavel_categorica_id: true,
+                // Apenas utilizado para fornecer boolean de se possui filhas.
+                variaveis_filhas: { take: 1, select: { id: true } }
+            },
+        });
+
+        const variaveisCrono = listActive.filter((v) => v.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID);
+        const etapaDoCrono = await this.prisma.etapa.findMany({
+            where: {
+                variavel_id: { in: variaveisCrono.map((v) => v.id) },
+            },
+            select: {
+                id: true,
+                variavel_id: true,
+                titulo: true,
+            },
+        });
+
+        const mapEtapa = etapaDoCrono.reduce((acc: Record<string, any>, etapa: any) => {
+            acc[etapa.variavel_id!] = {
+                id: etapa.id,
+                titulo: etapa.titulo ?? '',
+            };
+            return acc;
+        }, {});
+
+        const ret = listActive.map((row) => {
+            const responsaveis = row.variavel_responsavel.map((responsavel) => {
+                return {
+                    id: responsavel.pessoa.id,
+                    nome_exibicao: responsavel.pessoa.nome_exibicao,
+                };
+            });
+
+            let indicador_variavel: typeof row.indicador_variavel = [];
+            // filtra as variaveis novamente caso tiver filtros por indicador ou atividade
+            if (filters.indicador_id || filters.iniciativa_id || filters.atividade_id) {
+                for (const iv of row.indicador_variavel) {
+                    if (filters.atividade_id && filters.atividade_id === iv.indicador.atividade?.id) {
+                        indicador_variavel.push(iv);
+                    } else if (filters.indicador_id && filters.indicador_id === iv.indicador.id) {
+                        indicador_variavel.push(iv);
+                    } else if (filters.iniciativa_id && filters.iniciativa_id === iv.indicador.iniciativa?.id) {
+                        indicador_variavel.push(iv);
+                    }
+                }
+            } else {
+                indicador_variavel = row.indicador_variavel;
+            }
+
+            return {
+                acumulativa: row.acumulativa,
+                atraso_meses: row.atraso_meses,
+                casas_decimais: row.casas_decimais,
+                codigo: row.codigo,
+                id: row.id,
+                mostrar_monitoramento: row.mostrar_monitoramento,
+                unidade_medida: {
+                    descricao: row.unidade_medida.descricao,
+                    id: row.unidade_medida.id,
+                    sigla: row.unidade_medida.sigla,
+                },
+                titulo: row.titulo,
+                ano_base: row.ano_base,
+                valor_base: row.valor_base,
+                periodicidade: row.periodicidade,
+                polaridade: row.polaridade,
+                orgao: row.orgao,
+                regiao: row.regiao,
+                variavel_categorica_id: row.variavel_categorica_id,
+                etapa: row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? mapEtapa[row.id] : null,
+                inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
+                fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),
+                indicador_variavel: indicador_variavel,
+                responsaveis: responsaveis,
+                suspendida: row.suspendida_em ? true : false,
+                possui_variaveis_filhas: row.variaveis_filhas.length > 0,
+            } satisfies VariavelItemDto;
+        });
+
+        return ret;
+    }
+
+    async findAllGlobal(
+        filters: FilterVariavelGlobalDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<VariavelGlobalItemDto>> {
+        let retToken = filters.token_paginacao;
+
+        let ipp = filters.ipp ?? 50;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
+        let tem_mais = false;
+
+        if (page > 1 && !retToken) throw new HttpException('Campo obrigatório para paginação', 400);
+
+        const filterToken = filters.token_paginacao;
+        // para não atrapalhar no hash, remove o campo pagina
+        delete filters.pagina;
+        delete filters.token_paginacao;
+
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+
+        let now = new Date(Date.now());
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filters);
+            total_registros = decoded.total_rows;
+            ipp = decoded.ipp;
+            now = new Date(decoded.issued_at);
+        }
+
+        const offset = (page - 1) * ipp;
+
+        //const permissionsSet: TODO: filtrar por plano do user? etc
+        const filterSet = this.getVariavelGlobalWhereSet(filters, palavrasChave);
+        const linhas = await this.prisma.viewVariavelGlobal.findMany({
+            where: {
+                AND: filterSet,
+            },
+            include: {
+                orgao: { select: { id: true, sigla: true, descricao: true } },
+                orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
+            },
+            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            skip: offset,
+            take: ipp,
+        });
+
+        if (filterToken) {
+            retToken = filterToken;
+            tem_mais = offset + linhas.length < total_registros;
+        } else {
+            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
+            retToken = info.jwt;
+            total_registros = info.body.total_rows;
+            tem_mais = offset + linhas.length < total_registros;
+        }
+
+        const planos = await this.prisma.pdm.findMany({
+            where: {
+                id: { in: linhas.map((r) => r.planos).flat() },
+            },
+            select: {
+                id: true,
+                nome: true,
+            },
+        });
+        const planoById = (pId: number): { id: number; nome: string } => {
+            const plano = planos.find((p) => p.id === pId);
+            if (!plano) return { id: MIN_DTO_SAFE_NUM, nome: 'Sem plano' };
+            return plano;
+        };
+
+        const perm = user.hasSomeRoles([
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            'CadastroVariavelGlobal.administrador',
+        ]);
+        const paginas = Math.ceil(total_registros / ipp);
+        return {
+            tem_mais,
+            total_registros: total_registros,
+            token_paginacao: retToken,
+            paginas,
+            pagina_corrente: page,
+            linhas: linhas.map((r): VariavelGlobalItemDto => {
+                return {
+                    id: r.id,
+                    codigo: r.codigo,
+                    titulo: r.titulo,
+                    planos: r.planos.map(planoById).sort((a, b) => a.nome.localeCompare(b.nome)),
+                    orgao: r.orgao ?? {
+                        descricao: 'Sem órgão',
+                        id: MIN_DTO_SAFE_NUM,
+                        sigla: 'SEM',
+                    },
+                    orgao_proprietario: r.orgao_proprietario ?? {
+                        descricao: 'Sem órgão',
+                        id: MIN_DTO_SAFE_NUM,
+                        sigla: 'SEM',
+                    },
+                    fonte: r.fonte_id ? { id: r.fonte_id, nome: r.fonte_nome ?? '' } : null,
+                    fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
+                    inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
+                    periodicidade: r.periodicidade,
+                    pode_editar: perm,
+                    pode_excluir: perm && r.planos.length == 0,
+                };
+            }),
+        };
+    }
+
+    async findFilhas(variavelMaeId: number, user: PessoaFromJwt): Promise<VariavelItemDto[]> {
+        const variavelMae = await this.prisma.variavel.findFirst({
+            where: {
+                removido_em: null,
+                id: variavelMaeId,
+            }
+        });
+        if (!variavelMae) throw new NotFoundException('Variável mãe não encontrada');
+
+        const listActive = await this.prisma.variavel.findMany({
+            where: {
+                variavel_mae_id: variavelMaeId,
             },
             select: {
                 id: true,
@@ -1004,21 +1326,7 @@ export class VariavelService {
                 };
             });
 
-            let indicador_variavel: typeof row.indicador_variavel = [];
-            // filtra as variaveis novamente caso tiver filtros por indicador ou atividade
-            if (filters.indicador_id || filters.iniciativa_id || filters.atividade_id) {
-                for (const iv of row.indicador_variavel) {
-                    if (filters.atividade_id && filters.atividade_id === iv.indicador.atividade?.id) {
-                        indicador_variavel.push(iv);
-                    } else if (filters.indicador_id && filters.indicador_id === iv.indicador.id) {
-                        indicador_variavel.push(iv);
-                    } else if (filters.iniciativa_id && filters.iniciativa_id === iv.indicador.iniciativa?.id) {
-                        indicador_variavel.push(iv);
-                    }
-                }
-            } else {
-                indicador_variavel = row.indicador_variavel;
-            }
+            let indicador_variavel: typeof row.indicador_variavel = row.indicador_variavel;
 
             return {
                 acumulativa: row.acumulativa,
@@ -1046,118 +1354,12 @@ export class VariavelService {
                 indicador_variavel: indicador_variavel,
                 responsaveis: responsaveis,
                 suspendida: row.suspendida_em ? true : false,
+                // Variável filha não pode ter filhas. Mas utilizo a mesma estrutura de retorno.
+                possui_variaveis_filhas: false,
             } satisfies VariavelItemDto;
         });
 
         return ret;
-    }
-
-    async findAllGlobal(
-        filters: FilterVariavelGlobalDto,
-        user: PessoaFromJwt
-    ): Promise<PaginatedWithPagesDto<VariavelGlobalItemDto>> {
-        let retToken = filters.token_paginacao;
-
-        let ipp = filters.ipp ?? 50;
-        const page = filters.pagina ?? 1;
-        let total_registros = 0;
-        let tem_mais = false;
-
-        if (page > 1 && !retToken) throw new HttpException('Campo obrigatório para paginação', 400);
-
-        const filterToken = filters.token_paginacao;
-        // para não atrapalhar no hash, remove o campo pagina
-        delete filters.pagina;
-        delete filters.token_paginacao;
-
-        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
-
-        let now = new Date(Date.now());
-        if (filterToken) {
-            const decoded = this.decodeNextPageToken(filterToken, filters);
-            total_registros = decoded.total_rows;
-            ipp = decoded.ipp;
-            now = new Date(decoded.issued_at);
-        }
-
-        const offset = (page - 1) * ipp;
-
-        //const permissionsSet: TODO: filtrar por plano do user? etc
-        const filterSet = this.getVariavelGlobalWhereSet(filters, palavrasChave);
-        const linhas = await this.prisma.viewVariavelGlobal.findMany({
-            where: {
-                AND: filterSet,
-            },
-            include: {
-                orgao: { select: { id: true, sigla: true, descricao: true } },
-                orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
-            },
-            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
-            skip: offset,
-            take: ipp,
-        });
-
-        if (filterToken) {
-            retToken = filterToken;
-            tem_mais = offset + linhas.length < total_registros;
-        } else {
-            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
-            retToken = info.jwt;
-            total_registros = info.body.total_rows;
-            tem_mais = offset + linhas.length < total_registros;
-        }
-
-        const planos = await this.prisma.pdm.findMany({
-            where: {
-                id: { in: linhas.map((r) => r.planos).flat() },
-            },
-            select: {
-                id: true,
-                nome: true,
-            },
-        });
-        const planoById = (pId: number): { id: number; nome: string } => {
-            const plano = planos.find((p) => p.id === pId);
-            if (!plano) return { id: MIN_DTO_SAFE_NUM, nome: 'Sem plano' };
-            return plano;
-        };
-
-        const perm = user.hasSomeRoles([
-            'CadastroVariavelGlobal.administrador_no_orgao',
-            'CadastroVariavelGlobal.administrador',
-        ]);
-        const paginas = Math.ceil(total_registros / ipp);
-        return {
-            tem_mais,
-            total_registros: total_registros,
-            token_paginacao: retToken,
-            paginas,
-            pagina_corrente: page,
-            linhas: linhas.map((r): VariavelGlobalItemDto => {
-                return {
-                    id: r.id,
-                    codigo: r.codigo,
-                    titulo: r.titulo,
-                    planos: r.planos.map(planoById).sort((a, b) => a.nome.localeCompare(b.nome)),
-                    orgao: r.orgao ?? {
-                        descricao: 'Sem órgão',
-                        id: MIN_DTO_SAFE_NUM,
-                        sigla: 'SEM',
-                    },
-                    orgao_proprietario: r.orgao_proprietario ?? {
-                        descricao: 'Sem órgão',
-                        id: MIN_DTO_SAFE_NUM,
-                        sigla: 'SEM',
-                    },
-                    fonte: r.fonte_id ? { id: r.fonte_id, nome: r.fonte_nome ?? '' } : null,
-                    fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
-                    inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
-                    periodicidade: r.periodicidade,
-                    pode_editar: perm,
-                    pode_excluir: perm && r.planos.length == 0,
-                };
-            }),
-        };
     }
 
     private decodeNextPageToken(jwt: string | undefined, filters: FilterVariavelGlobalDto): AnyPageTokenJwtBody {
