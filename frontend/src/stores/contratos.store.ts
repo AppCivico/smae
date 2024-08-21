@@ -121,6 +121,8 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
+      console.debug('segmentoIdentificador@buscarItem', segmentoIdentificador);
+
       this.chamadasPendentes.emFoco = true;
       try {
         const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
@@ -135,6 +137,8 @@ export const useContratosStore = (segmentoIdentificador: string) => defineStore(
     },
 
     async buscarTudo(params = {}, mãeComId: MãeComId = undefined): Promise<void> {
+      console.debug('segmentoIdentificador@buscarTudo', segmentoIdentificador);
+
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
 
