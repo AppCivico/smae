@@ -20,12 +20,15 @@ import {
   ref,
   watch,
 } from 'vue';
+import { useRoute } from 'vue-router';
 
 const emit = defineEmits(['salvo', 'excluido']);
 
+const route = useRoute();
+
 const aditivosStore = useTipoDeAditivosStore();
 const alertStore = useAlertStore();
-const contratosStore = useContratosStore();
+const contratosStore = useContratosStore(route.meta.entidadeMãe);
 
 const {
   chamadasPendentes,
