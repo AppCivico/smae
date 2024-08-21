@@ -34,7 +34,7 @@ export class GrupoRespVariavelService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 logger.log(`Dados: ${JSON.stringify(dto)}`);
 
-                const exists = await prismaTx.grupoResponsavelVariavel.count({
+                const exists = await prismaTx.grupoResponsavelEquipe.count({
                     where: {
                         titulo: { mode: 'insensitive', equals: dto.titulo },
                         removido_em: null,
@@ -71,7 +71,7 @@ export class GrupoRespVariavelService {
                         );
                 }
 
-                const gp = await prismaTx.grupoResponsavelVariavel.create({
+                const gp = await prismaTx.grupoResponsavelEquipe.create({
                     data: {
                         orgao_id,
                         titulo: dto.titulo,
@@ -81,23 +81,23 @@ export class GrupoRespVariavelService {
                     select: { id: true },
                 });
 
-                await prismaTx.grupoResponsavelVariavelPessoa.createMany({
+                await prismaTx.grupoResponsavelEquipePessoa.createMany({
                     data: dto.participantes.map((pessoaId) => {
                         const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
 
                         return {
-                            grupo_responsavel_variavel_id: gp.id,
+                            grupo_responsavel_equipe_id: gp.id,
                             orgao_id: pessoa.orgao_id,
                             pessoa_id: pessoa.pessoa_id,
                         };
                     }),
                 });
-                await prismaTx.grupoResponsavelVariavelColaborador.createMany({
+                await prismaTx.grupoResponsavelEquipeColaborador.createMany({
                     data: dto.colaboradores.map((pessoaId) => {
                         const pessoa = pComPriv2.filter((r) => r.pessoa_id == pessoaId)[0];
 
                         return {
-                            grupo_responsavel_variavel_id: gp.id,
+                            grupo_responsavel_equipe_id: gp.id,
                             orgao_id: pessoa.orgao_id,
                             pessoa_id: pessoa.pessoa_id,
                         };
@@ -114,7 +114,7 @@ export class GrupoRespVariavelService {
     }
 
     async findAll(filter: FilterGrupoRespVariavelDto): Promise<GrupoRespVariavelItemDto[]> {
-        const rows = await this.prisma.grupoResponsavelVariavel.findMany({
+        const rows = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
                 id: filter.id,
                 orgao_id: filter.orgao_id,
@@ -122,7 +122,7 @@ export class GrupoRespVariavelService {
             },
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
-                GrupoResponsavelVariavelPessoa: {
+                GrupoResponsavelEquipePessoa: {
                     where: {
                         removido_em: null,
                     },
@@ -142,7 +142,7 @@ export class GrupoRespVariavelService {
                         },
                     },
                 },
-                GrupoResponsavelVariavelColaborador: {
+                GrupoResponsavelEquipeColaborador: {
                     where: {
                         removido_em: null,
                     },
@@ -162,7 +162,7 @@ export class GrupoRespVariavelService {
                         },
                     },
                 },
-                VariavelGrupoResponsavelVariavel: filter.retornar_uso
+                VariavelGrupoResponsavelEquipe: filter.retornar_uso
                     ? {
                           where: {
                               removido_em: null,
@@ -191,16 +191,16 @@ export class GrupoRespVariavelService {
                 criado_em: r.criado_em,
                 orgao: r.orgao,
                 orgao_id: r.orgao_id,
-                variaveis: filter.retornar_uso ? r.VariavelGrupoResponsavelVariavel.map((p: any) => p.variavel) : [],
-                participantes: r.GrupoResponsavelVariavelPessoa.map((p) => p.pessoa),
-                colaboradores: r.GrupoResponsavelVariavelColaborador.map((p) => p.pessoa),
+                variaveis: filter.retornar_uso ? r.VariavelGrupoResponsavelEquipe.map((p: any) => p.variavel) : [],
+                participantes: r.GrupoResponsavelEquipePessoa.map((p) => p.pessoa),
+                colaboradores: r.GrupoResponsavelEquipeColaborador.map((p) => p.pessoa),
             };
         });
     }
 
     async update(id: number, dto: UpdateGrupoRespVariavelDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const logger = LoggerWithLog('Grupo Repensável de Variáveis: Atualização');
-        const gp = await this.prisma.grupoResponsavelVariavel.findFirst({
+        const gp = await this.prisma.grupoResponsavelEquipe.findFirst({
             where: {
                 id,
                 removido_em: null,
@@ -208,7 +208,7 @@ export class GrupoRespVariavelService {
             select: {
                 id: true,
                 orgao_id: true,
-                GrupoResponsavelVariavelColaborador: {
+                GrupoResponsavelEquipeColaborador: {
                     where: { removido_em: null },
                     select: {
                         pessoa_id: true,
@@ -225,8 +225,8 @@ export class GrupoRespVariavelService {
                     'Você só tem permissão para editar Grupo de Responsavel de Variável no mesmo órgão.'
                 );
 
-            // user.id  must be in gp.GrupoResponsavelVariavelColaborador
-            if (!gp.GrupoResponsavelVariavelColaborador.map((r) => r.pessoa_id).includes(user.id))
+            // user.id  must be in gp.GrupoResponsavelEquipeColaborador
+            if (!gp.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id).includes(user.id))
                 throw new BadRequestException(
                     'Você só tem permissão para editar Grupo de Responsavel de Variável se for um colaborador do grupo.'
                 );
@@ -238,7 +238,7 @@ export class GrupoRespVariavelService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             logger.log(`Dados: ${JSON.stringify(dto)}`);
             if (dto.titulo) {
-                const exists = await prismaTx.grupoResponsavelVariavel.count({
+                const exists = await prismaTx.grupoResponsavelEquipe.count({
                     where: {
                         NOT: { id: gp.id },
                         titulo: { mode: 'insensitive', equals: dto.titulo },
@@ -249,14 +249,14 @@ export class GrupoRespVariavelService {
             }
 
             if (dto.participantes) {
-                const prevVersion = await prismaTx.grupoResponsavelVariavel.findFirst({
+                const prevVersion = await prismaTx.grupoResponsavelEquipe.findFirst({
                     where: {
                         id,
                         removido_em: null,
                     },
                     select: {
                         id: true,
-                        GrupoResponsavelVariavelPessoa: {
+                        GrupoResponsavelEquipePessoa: {
                             where: {
                                 removido_em: null,
                             },
@@ -270,16 +270,16 @@ export class GrupoRespVariavelService {
                     dto.participantes
                 );
 
-                const keptRecord: number[] = prevVersion?.GrupoResponsavelVariavelPessoa.map((r) => r.pessoa_id) ?? [];
+                const keptRecord: number[] = prevVersion?.GrupoResponsavelEquipePessoa.map((r) => r.pessoa_id) ?? [];
 
                 for (const pessoaId of keptRecord) {
                     if (!dto.participantes.includes(pessoaId)) {
                         // O participante estava presente na versão anterior, mas não na nova versão
                         logger.log(`participante removido: ${pessoaId}`);
-                        await prismaTx.grupoResponsavelVariavelPessoa.updateMany({
+                        await prismaTx.grupoResponsavelEquipePessoa.updateMany({
                             where: {
                                 pessoa_id: pessoaId,
-                                grupo_responsavel_variavel_id: gp.id,
+                                grupo_responsavel_equipe_id: gp.id,
                                 removido_em: null,
                             },
                             data: {
@@ -301,9 +301,9 @@ export class GrupoRespVariavelService {
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
                         logger.log(`Novo participante: ${pessoa.pessoa_id}`);
-                        await prismaTx.grupoResponsavelVariavelPessoa.create({
+                        await prismaTx.grupoResponsavelEquipePessoa.create({
                             data: {
-                                grupo_responsavel_variavel_id: gp.id,
+                                grupo_responsavel_equipe_id: gp.id,
                                 orgao_id: pessoa.orgao_id,
                                 pessoa_id: pessoa.pessoa_id,
                             },
@@ -315,14 +315,14 @@ export class GrupoRespVariavelService {
             }
 
             if (dto.colaboradores) {
-                const prevVersion = await prismaTx.grupoResponsavelVariavel.findFirst({
+                const prevVersion = await prismaTx.grupoResponsavelEquipe.findFirst({
                     where: {
                         id,
                         removido_em: null,
                     },
                     select: {
                         id: true,
-                        GrupoResponsavelVariavelColaborador: {
+                        GrupoResponsavelEquipeColaborador: {
                             where: {
                                 removido_em: null,
                             },
@@ -337,16 +337,16 @@ export class GrupoRespVariavelService {
                 );
 
                 const keptRecord: number[] =
-                    prevVersion?.GrupoResponsavelVariavelColaborador.map((r) => r.pessoa_id) ?? [];
+                    prevVersion?.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id) ?? [];
 
                 for (const pessoaId of keptRecord) {
                     if (!dto.colaboradores.includes(pessoaId)) {
                         // O participante estava presente na versão anterior, mas não na nova versão
                         logger.log(`colaborador removido: ${pessoaId}`);
-                        await prismaTx.grupoResponsavelVariavelColaborador.updateMany({
+                        await prismaTx.grupoResponsavelEquipeColaborador.updateMany({
                             where: {
                                 pessoa_id: pessoaId,
-                                grupo_responsavel_variavel_id: gp.id,
+                                grupo_responsavel_equipe_id: gp.id,
                                 removido_em: null,
                             },
                             data: {
@@ -368,9 +368,9 @@ export class GrupoRespVariavelService {
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
                         logger.log(`Novo colaborador: ${pessoa.pessoa_id}`);
-                        await prismaTx.grupoResponsavelVariavelColaborador.create({
+                        await prismaTx.grupoResponsavelEquipeColaborador.create({
                             data: {
-                                grupo_responsavel_variavel_id: gp.id,
+                                grupo_responsavel_equipe_id: gp.id,
                                 orgao_id: pessoa.orgao_id,
                                 pessoa_id: pessoa.pessoa_id,
                             },
@@ -381,7 +381,7 @@ export class GrupoRespVariavelService {
                 }
             }
 
-            await prismaTx.grupoResponsavelVariavel.update({
+            await prismaTx.grupoResponsavelEquipe.update({
                 where: {
                     id: gp.id,
                 },
@@ -400,7 +400,7 @@ export class GrupoRespVariavelService {
 
     async remove(id: number, user: PessoaFromJwt) {
         const logger = LoggerWithLog('Grupo Repensável de Variáveis: Remoção');
-        const exists = await this.prisma.grupoResponsavelVariavel.findFirst({
+        const exists = await this.prisma.grupoResponsavelEquipe.findFirst({
             where: {
                 id,
                 removido_em: null,
@@ -422,7 +422,7 @@ export class GrupoRespVariavelService {
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
-            await prismaTx.grupoResponsavelVariavel.updateMany({
+            await prismaTx.grupoResponsavelEquipe.updateMany({
                 where: {
                     id,
                     removido_em: null,
@@ -432,9 +432,9 @@ export class GrupoRespVariavelService {
                 },
             });
 
-            await prismaTx.grupoResponsavelVariavelPessoa.updateMany({
+            await prismaTx.grupoResponsavelEquipePessoa.updateMany({
                 where: {
-                    grupo_responsavel_variavel_id: id,
+                    grupo_responsavel_equipe_id: id,
                     removido_em: null,
                 },
                 data: {

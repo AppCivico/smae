@@ -851,13 +851,13 @@ export class PessoaService {
                 `Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em grupos de variaveis`
             );
 
-            const grupoQSouResp = await prismaTx.grupoResponsavelVariavelPessoa.findMany({
+            const grupoQSouResp = await prismaTx.grupoResponsavelEquipePessoa.findMany({
                 where: {
                     removido_em: null,
                     pessoa_id: self.id,
                 },
                 select: {
-                    grupo_responsavel_variavel: {
+                    grupo_responsavel_equipe: {
                         select: {
                             titulo: true,
                         },
@@ -869,7 +869,7 @@ export class PessoaService {
                 throw new BadRequestException(
                     `Não é possível mudar de órgão, pois ainda é responsável no grupo de variáveis: ${grupoQSouResp
                         .map((r) => {
-                            return `${r.grupo_responsavel_variavel.titulo}`;
+                            return `${r.grupo_responsavel_equipe.titulo}`;
                         })
                         .join('\n')}`
                 );

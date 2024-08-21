@@ -612,30 +612,30 @@ export class VariavelService {
         logger: LoggerWithLog
     ) {
         if (Array.isArray(dto.medicao_grupo_ids)) {
-            await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
+            await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
                 data: dto.medicao_grupo_ids.map((grupo_id) => ({
                     variavel_id: variavelId,
-                    grupo_responsavel_variavel_id: grupo_id,
+                    grupo_responsavel_equipe_id: grupo_id,
                 })),
             });
             logger.verbose(`Grupos de medição adicionados: ${dto.medicao_grupo_ids.join(', ')}`);
         }
 
         if (Array.isArray(dto.validacao_grupo_ids)) {
-            await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
+            await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
                 data: dto.validacao_grupo_ids.map((grupo_id) => ({
                     variavel_id: variavelId,
-                    grupo_responsavel_variavel_id: grupo_id,
+                    grupo_responsavel_equipe_id: grupo_id,
                 })),
             });
             logger.verbose(`Grupos de validação adicionados: ${dto.validacao_grupo_ids.join(', ')}`);
         }
 
         if (Array.isArray(dto.liberacao_grupo_ids)) {
-            await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
+            await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
                 data: dto.liberacao_grupo_ids.map((grupo_id) => ({
                     variavel_id: variavelId,
-                    grupo_responsavel_variavel_id: grupo_id,
+                    grupo_responsavel_equipe_id: grupo_id,
                 })),
             });
             logger.verbose(`Grupos de liberação adicionados: ${dto.liberacao_grupo_ids.join(', ')}`);
@@ -1424,10 +1424,10 @@ export class VariavelService {
                             assunto_variavel_id: true,
                         },
                     },
-                    VariavelGrupoResponsavelVariavel: {
+                    VariavelGrupoResponsavelEquipe: {
                         where: { removido_em: null },
                         select: {
-                            grupo_responsavel_variavel_id: true,
+                            grupo_responsavel_equipe_id: true,
                         },
                     },
                 },
@@ -1457,7 +1457,7 @@ export class VariavelService {
             ]
                 .sort()
                 .join(',');
-            const gruposAtuais = self.VariavelGrupoResponsavelVariavel.map((v) => v.grupo_responsavel_variavel_id)
+            const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id)
                 .sort()
                 .join(',');
 
@@ -1469,7 +1469,7 @@ export class VariavelService {
             ) {
                 logger.log('Grupos de responsáveis alterados...');
 
-                await prismaTxn.variavelGrupoResponsavelVariavel.updateMany({
+                await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
                     where: { variavel_id: variavelId, removido_em: null },
                     data: { removido_em: now },
                 });
@@ -1751,7 +1751,7 @@ export class VariavelService {
     private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_id: number | undefined) {
         const orgao_id = dto.orgao_id ?? current_orgao_id;
 
-        const grupoPrefetch = await this.prisma.grupoResponsavelVariavel.findMany({
+        const grupoPrefetch = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
                 orgao_id: orgao_id,
                 id: {
@@ -2014,7 +2014,7 @@ export class VariavelService {
                     );
                 }
 
-                await prismaTx.variavelGrupoResponsavelVariavel.updateMany({
+                await prismaTx.variavelGrupoResponsavelEquipe.updateMany({
                     where: {
                         removido_em: null,
                         variavel: { id: variavelId },
@@ -2815,12 +2815,12 @@ export class VariavelService {
                         descricao: true,
                     },
                 },
-                VariavelGrupoResponsavelVariavel: {
+                VariavelGrupoResponsavelEquipe: {
                     where: {
                         removido_em: null,
                     },
                     select: {
-                        grupo_responsavel_variavel: {
+                        grupo_responsavel_equipe: {
                             select: {
                                 id: true,
                                 perfil: true,
@@ -2858,15 +2858,15 @@ export class VariavelService {
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
                 orgao_proprietario: detalhes.orgao_proprietario,
-                medicao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
-                    (e) => e.grupo_responsavel_variavel.perfil === 'Medicao'
-                ).map((e) => e.grupo_responsavel_variavel.id),
-                validacao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
-                    (e) => e.grupo_responsavel_variavel.perfil === 'Validacao'
-                ).map((e) => e.grupo_responsavel_variavel.id),
-                liberacao_grupo_ids: detalhes.VariavelGrupoResponsavelVariavel.filter(
-                    (e) => e.grupo_responsavel_variavel.perfil === 'Liberacao'
-                ).map((e) => e.grupo_responsavel_variavel.id),
+                medicao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
+                    (e) => e.grupo_responsavel_equipe.perfil === 'Medicao'
+                ).map((e) => e.grupo_responsavel_equipe.id),
+                validacao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
+                    (e) => e.grupo_responsavel_equipe.perfil === 'Validacao'
+                ).map((e) => e.grupo_responsavel_equipe.id),
+                liberacao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
+                    (e) => e.grupo_responsavel_equipe.perfil === 'Liberacao'
+                ).map((e) => e.grupo_responsavel_equipe.id),
             };
             return globalDetailDto;
         }
