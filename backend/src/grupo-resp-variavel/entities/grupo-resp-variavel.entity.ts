@@ -1,4 +1,4 @@
-import { PerfilResponsavelVariavel } from '@prisma/client';
+import { PerfilResponsavelEquipe } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
@@ -10,7 +10,7 @@ export class GrupoRespVariavelItemDto {
     orgao_id: number;
     orgao: OrgaoResumo;
     titulo: string;
-    perfil: PerfilResponsavelVariavel;
+    perfil: PerfilResponsavelEquipe;
     participantes: IdNomeExibicaoDto[];
     colaboradores: IdNomeExibicaoDto[];
     criado_em: Date;

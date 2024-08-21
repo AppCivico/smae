@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PerfilResponsavelVariavel } from '@prisma/client';
+import { PerfilResponsavelEquipe } from '@prisma/client';
 import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateGrupoRespVariavelDto {
@@ -7,9 +7,9 @@ export class CreateGrupoRespVariavelDto {
     @MaxLength(120)
     titulo: string;
 
-    @IsEnum(PerfilResponsavelVariavel)
-    @ApiProperty({ enum: PerfilResponsavelVariavel, enumName: 'PerfilResponsavelVariavel' })
-    perfil: PerfilResponsavelVariavel;
+    @IsEnum(PerfilResponsavelEquipe)
+    @ApiProperty({ enum: PerfilResponsavelEquipe, enumName: 'PerfilResponsavelEquipe' })
+    perfil: PerfilResponsavelEquipe;
 
     @IsOptional()
     @ApiProperty({

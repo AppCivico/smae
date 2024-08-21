@@ -465,10 +465,10 @@ model Pessoa {
     AssuntoVariavelQCriei               AssuntoVariavel[]                     @relation("Criador")
     AssuntoVariavelQAtualizei           AssuntoVariavel[]                     @relation("Atualizador")
     AssuntoVariavelQRemovi              AssuntoVariavel[]                     @relation("Removedor")
-    GrupoResponsavelVariavelPessoa      GrupoResponsavelVariavelPessoa[]
+    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
     VariavelQCriei                      Variavel[]                            @relation("Criador")
     VariavelQAtualizei                  Variavel[]                            @relation("Atualizador")
-    GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
+    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
 
     @@index([email])
     @@map("pessoa")
@@ -564,12 +564,12 @@ model Orgao {
     statusDistribuicaoRecusro           DistribuicaoRecursoStatus[]
     ViewProjetoMDO                      ViewProjetoMDO[]
     VariavelProprietario                Variavel[]                            @relation("proprietario")
-    GrupoResponsavelVariavel            GrupoResponsavelVariavel[]
-    GrupoResponsavelVariavelPessoa      GrupoResponsavelVariavelPessoa[]
+    GrupoResponsavelEquipe            GrupoResponsavelEquipe[]
+    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
     contratos                           Contrato[]
     ViewVariavelGlobalQSouResp          ViewVariavelGlobal[]                  @relation("resp")
     ViewVariavelGlobalQSouProp          ViewVariavelGlobal[]                  @relation("prop")
-    GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
+    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
     FormulaComposta                     FormulaComposta[]
 
     @@map("orgao")
@@ -1634,7 +1634,7 @@ model Variavel {
     MetaStatusAtrasoVariavel         MetaStatusAtrasoVariavel[]
     Etapa                            Etapa[]
     VariavelAssuntoVariavel          VariavelAssuntoVariavel[]
-    VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
+    VariavelGrupoResponsavelEquipe VariavelGrupoResponsavelEquipe[]
     ViewVariavelGlobal               ViewVariavelGlobal[]
     FormulaComposta                  FormulaComposta[]
     FormulaCompostaRelVariavel       FormulaCompostaRelVariavel[]
@@ -1658,37 +1658,40 @@ model FonteVariavel {
     @@map("fonte_variavel")
 }
 
-enum PerfilResponsavelVariavel {
+enum PerfilResponsavelEquipe {
     Medicao
     Validacao
     Liberacao
+    AdminPS
+    TecnicoPS
+    PontoFocalPS
     // TODO: mover admin e tecnico na meta, para cá, junto com o ponto focal, rename para equipe
 }
 
-model GrupoResponsavelVariavel {
+model GrupoResponsavelEquipe {
     id Int @id @default(autoincrement())
 
     orgao_id Int
     orgao    Orgao  @relation(fields: [orgao_id], references: [id])
     titulo   String
 
-    perfil PerfilResponsavelVariavel
+    perfil PerfilResponsavelEquipe
 
     criado_em                           DateTime                              @default(now()) @db.Timestamptz(6)
     atualizado_em                       DateTime?                             @db.Timestamptz(6)
     removido_em                         DateTime?                             @db.Timestamptz(6)
-    GrupoResponsavelVariavelPessoa      GrupoResponsavelVariavelPessoa[]
-    VariavelGrupoResponsavelVariavel    VariavelGrupoResponsavelVariavel[]
-    GrupoResponsavelVariavelColaborador GrupoResponsavelVariavelColaborador[]
+    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
+    VariavelGrupoResponsavelEquipe    VariavelGrupoResponsavelEquipe[]
+    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
 
-    @@map("grupo_responsavel_variavel")
+    @@map("grupo_responsavel_equipe")
 }
 
-model GrupoResponsavelVariavelColaborador {
+model GrupoResponsavelEquipeColaborador {
     id Int @id @default(autoincrement())
 
-    grupo_responsavel_variavel_id Int
-    grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+    grupo_responsavel_equipe_id Int
+    grupo_responsavel_equipe    GrupoResponsavelEquipe @relation(fields: [grupo_responsavel_equipe_id], references: [id])
 
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
@@ -1699,14 +1702,14 @@ model GrupoResponsavelVariavelColaborador {
     criado_em   DateTime  @default(now()) @db.Timestamptz(6)
     removido_em DateTime? @db.Timestamptz(6)
 
-    @@map("grupo_responsavel_variavel_colaborador")
+    @@map("grupo_responsavel_equipe_colaborador")
 }
 
-model GrupoResponsavelVariavelPessoa {
+model GrupoResponsavelEquipePessoa {
     id Int @id @default(autoincrement())
 
-    grupo_responsavel_variavel_id Int
-    grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+    grupo_responsavel_equipe_id Int
+    grupo_responsavel_equipe    GrupoResponsavelEquipe @relation(fields: [grupo_responsavel_equipe_id], references: [id])
 
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
@@ -1717,22 +1720,22 @@ model GrupoResponsavelVariavelPessoa {
     criado_em   DateTime  @default(now()) @db.Timestamptz(6)
     removido_em DateTime? @db.Timestamptz(6)
 
-    @@map("grupo_responsavel_variavel_pessoa")
+    @@map("grupo_responsavel_equipe_pessoa")
 }
 
-model VariavelGrupoResponsavelVariavel {
+model VariavelGrupoResponsavelEquipe {
     id Int @id @default(autoincrement())
 
     variavel_id Int
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
-    grupo_responsavel_variavel_id Int
-    grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+    grupo_responsavel_equipe_id Int
+    grupo_responsavel_equipe    GrupoResponsavelEquipe @relation(fields: [grupo_responsavel_equipe_id], references: [id])
 
     criado_em   DateTime  @default(now()) @db.Timestamptz(6)
     removido_em DateTime? @db.Timestamptz(6)
 
-    @@map("variavel_grupo_responsavel_variavel")
+    @@map("variavel_grupo_responsavel_equipe")
 }
 
 model VariavelAssuntoVariavel {
