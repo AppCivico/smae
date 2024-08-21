@@ -1,36 +1,35 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { CreateGrupoRespVariavelDto } from './dto/create-grupo-resp-variavel.dto';
-import { UpdateGrupoRespVariavelDto } from './dto/update-grupo-resp-variavel.dto';
-import { FilterGrupoRespVariavelDto, ListGrupoRespVariavelDto } from './entities/grupo-resp-variavel.entity';
-import { GrupoRespVariavelService } from './grupo-resp-variavel.service';
-import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
+import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
+import { FilterEquipeRespDto, ListEquipeRespDto } from './entities/equipe-resp.entity';
+import { EquipeRespService } from './equipe-resp.service';
 
 const roles: ListaDePrivilegios[] = [
     'CadastroGrupoVariavel.administrador',
     'CadastroGrupoVariavel.colaborador_responsavel',
 ];
 
-@ApiTags('Grupo Responsável de Variaveis')
-@Controller('grupo-variavel-responsavel')
-export class GrupoRespVariavelController {
-    constructor(private readonly grupoVarService: GrupoRespVariavelService) {}
+@ApiTags('Equipes de Responsáveis')
+@Controller('equipe-responsavel')
+export class EquipeRespController {
+    constructor(private readonly grupoVarService: EquipeRespService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles([...roles])
-    async create(@Body() dto: CreateGrupoRespVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(@Body() dto: CreateEquipeRespDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.grupoVarService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    async findAll(@Query() filter: FilterGrupoRespVariavelDto): Promise<ListGrupoRespVariavelDto> {
+    async findAll(@Query() filter: FilterEquipeRespDto): Promise<ListEquipeRespDto> {
         return { linhas: await this.grupoVarService.findAll(filter) };
     }
 
@@ -39,7 +38,7 @@ export class GrupoRespVariavelController {
     @Roles([...roles])
     async update(
         @Param() id: FindOneParams,
-        @Body() dto: UpdateGrupoRespVariavelDto,
+        @Body() dto: UpdateEquipeRespDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.grupoVarService.update(id.id, dto, user);

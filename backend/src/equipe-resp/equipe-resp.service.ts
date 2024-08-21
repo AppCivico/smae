@@ -5,18 +5,17 @@ import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateGrupoRespVariavelDto } from './dto/create-grupo-resp-variavel.dto';
-import { UpdateGrupoRespVariavelDto } from './dto/update-grupo-resp-variavel.dto';
-import { FilterGrupoRespVariavelDto, GrupoRespVariavelItemDto } from './entities/grupo-resp-variavel.entity';
+import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
+import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
 
 @Injectable()
-export class GrupoRespVariavelService {
+export class EquipeRespService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly pessoaPrivService: PessoaPrivilegioService
     ) {}
 
-    async create(dto: CreateGrupoRespVariavelDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(dto: CreateEquipeRespDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const logger = LoggerWithLog('Grupo Repensável de Variáveis: Criação');
         const orgao_id = dto.orgao_id ? dto.orgao_id : user.orgao_id;
 
@@ -113,7 +112,7 @@ export class GrupoRespVariavelService {
         return { id: created.id };
     }
 
-    async findAll(filter: FilterGrupoRespVariavelDto): Promise<GrupoRespVariavelItemDto[]> {
+    async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {
         const rows = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
                 id: filter.id,
@@ -198,7 +197,7 @@ export class GrupoRespVariavelService {
         });
     }
 
-    async update(id: number, dto: UpdateGrupoRespVariavelDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(id: number, dto: UpdateEquipeRespDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const logger = LoggerWithLog('Grupo Repensável de Variáveis: Atualização');
         const gp = await this.prisma.grupoResponsavelEquipe.findFirst({
             where: {
