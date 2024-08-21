@@ -281,10 +281,11 @@ export default [
         ],
       },
       {
+        // @see
         path: '/grupo-de-variaveis',
         component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisRaiz.vue'),
         meta: {
-          título: 'Grupos de Variáveis',
+          título: 'Equipe',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroGrupoVariavel.',
           // rotasParaMenuSecundário: [
@@ -297,7 +298,7 @@ export default [
             path: '',
             component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisLista.vue'),
             meta: {
-              título: 'Grupos de Variáveis',
+              título: 'Equipe',
             },
           },
           {
@@ -305,7 +306,7 @@ export default [
             path: 'novo',
             component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
             meta: {
-              título: 'Novo Grupo de Variáveis',
+              título: 'Nova Equipe',
               rotaDeEscape: 'grupoDeVariaveisListar',
               rotasParaMigalhasDePão: [
                 'grupoDeVariaveisListar',
@@ -321,7 +322,7 @@ export default [
               ...{ grupoDeVariaveisId: Number.parseInt(params.grupoDeVariaveisId, 10) || undefined },
             }),
             meta: {
-              título: 'Editar Grupo de Variáveis',
+              título: 'Editar Equipe',
               rotaDeEscape: 'grupoDeVariaveisListar',
               rotasParaMigalhasDePão: [
                 'grupoDeVariaveisListar',
