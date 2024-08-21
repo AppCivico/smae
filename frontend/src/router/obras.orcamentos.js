@@ -1,4 +1,3 @@
-import OrcamentosLista from '@/views/mdo.orcamentos/OrcamentosLista.vue';
 import OrcamentosRaiz from '@/views/mdo.orcamentos/OrcamentosRaiz.vue';
 import AddEditCusteio from '@/views/orcamento/AddEditCusteio.vue';
 import AddEditPlanejado from '@/views/orcamento/AddEditPlanejado.vue';
@@ -6,6 +5,7 @@ import AddRealizado from '@/views/orcamento/AddRealizado.vue';
 import AddRealizadoNota from '@/views/orcamento/AddRealizadoNota.vue';
 import AddRealizadoProcesso from '@/views/orcamento/AddRealizadoProcesso.vue';
 import EditRealizado from '@/views/orcamento/EditRealizado.vue';
+import OrcamentosLista from '@/views/orcamento/OrcamentosLista.vue';
 
 export default {
   path: 'orcamentos',

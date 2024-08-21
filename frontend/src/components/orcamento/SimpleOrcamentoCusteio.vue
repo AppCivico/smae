@@ -12,7 +12,20 @@ import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
 
 const alertStore = useAlertStore();
-const props = defineProps(['parentlink', 'config']);
+const props = defineProps({
+  parentlink: {
+    type: String,
+    default: '',
+  },
+  config: {
+    type: Object,
+    default: () => ({}),
+  },
+  etiquetaDosTotais: {
+    type: String,
+    default: 'Totais',
+  },
+});
 // eslint-disable-next-line vue/no-setup-props-destructure
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
@@ -151,14 +164,13 @@ function restringirAZero() {
             <th style="width: 50px" />
           </tr>
           <template v-if="linhasFiltradas?.length">
-            <td class="tc600 w700 pl1">
-              <strong>Totais da meta</strong>
-            </td>
+            <th class="tc600 w700 pl1">
+              {{ $props.etiquetaDosTotais }}
+            </th>
             <td class="w700">
               {{ somasDaMeta.custo_previsto
                 ? formataValor(somasDaMeta.custo_previsto)
-                : '-'
-              }}
+                : '-' }}
             </td>
           </template>
         </thead>

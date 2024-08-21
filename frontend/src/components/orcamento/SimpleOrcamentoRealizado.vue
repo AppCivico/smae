@@ -15,7 +15,21 @@ const gblLimiteDeSeleçãoSimultânea = inject('gblLimiteDeSeleçãoSimultânea'
 
 const emit = defineEmits(['apagar', 'editar']);
 
-const props = defineProps(['parentlink', 'config']);
+const props = defineProps({
+  parentlink: {
+    type: String,
+    default: '',
+  },
+  config: {
+    type: Object,
+    default: () => ({}),
+  },
+  etiquetaDosTotais: {
+    type: String,
+    default: 'Totais',
+  },
+});
+
 const ano = props.config.ano_referencia;
 
 const alertStore = useAlertStore();
@@ -290,9 +304,9 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
           <tbody>
             <tr>
               <template v-if="somasDaMeta">
-                <td class="tc600 w700 pl1">
-                  <strong>Totais da meta</strong>
-                </td>
+                <th class="tc600 w700 pl1">
+                  {{ $props.etiquetaDosTotais }}
+                </th>
                 <td class="w700">
                   {{ somasDaMeta.soma_valor_empenho
                     ? formataValor(somasDaMeta.soma_valor_empenho)

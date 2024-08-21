@@ -25,11 +25,13 @@ function caminhoParaApi(parametrosDeModulo = this.route.params) {
   }
 }
 
-function totalizador(anos, campo) {
+function totalizador(anos, camposFornecidos) {
+  const campos = Array.isArray(camposFornecidos) ? camposFornecidos : [camposFornecidos];
+
   const total = {
     anoDeInicio: 0,
     anoDeConclusao: 0,
-    valor: new Big(0),
+    valor: {},
   };
 
   if (typeof anos !== 'object' || anos === null) {
@@ -49,8 +51,15 @@ function totalizador(anos, campo) {
     while (j < dotacoesDoAno.length) {
       const dotacao = dotacoesDoAno[j];
 
-      if (dotacao[campo]) {
-        total.valor = total.valor.plus(new Big(dotacao[campo]));
+      if (Array.isArray(campos)) {
+        campos.forEach((c) => {
+          if (dotacao[c]) {
+            if (!total.valor[c]) {
+              total.valor[c] = new Big(0);
+            }
+            total.valor[c] = total.valor[c].plus(new Big(dotacao[c]));
+          }
+        });
       }
 
       j += 1;
@@ -62,7 +71,9 @@ function totalizador(anos, campo) {
     i += 1;
   }
 
-  total.valor = total.valor.toString();
+  Object.keys(total.valor).forEach((key) => {
+    total.valor[key] = total.valor[key].toString();
+  });
 
   return total;
 }
@@ -323,10 +334,10 @@ export const useOrcamentosStore = defineStore({
       };
     },
 
-    custeioConsolidado: ({ OrcamentoCusteio }) => totalizador(OrcamentoCusteio, 'custo_previsto'),
+    custeioConsolidado: ({ OrcamentoCusteio }) => totalizador(OrcamentoCusteio, ['custo_previsto']),
 
-    planejadoConsolidado: ({ OrcamentoPlanejado }) => totalizador(OrcamentoPlanejado, 'valor_planejado'),
+    planejadoConsolidado: ({ OrcamentoPlanejado }) => totalizador(OrcamentoPlanejado, ['valor_planejado']),
 
-    realizadoConsolidado: ({ OrcamentoRealizado }) => totalizador(OrcamentoRealizado, 'valor_liquidado'),
+    realizadoConsolidado: ({ OrcamentoRealizado }) => totalizador(OrcamentoRealizado, ['soma_valor_empenho', 'soma_valor_liquidado']),
   },
 });
