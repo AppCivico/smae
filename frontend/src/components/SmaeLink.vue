@@ -27,18 +27,24 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  download: {
+    type: Boolean,
+    default: undefined,
+  },
 });
 
 const prefixoDosCaminhos = props.prefixoDosCaminhos !== undefined
   ? props.prefixoDosCaminhos
   : rotaCorrente.meta.prefixoDosCaminhos
   || '';
+
 const sufixoDosCaminhos = props.sufixoDosCaminhos !== undefined
   ? props.sufixoDosCaminhos
   : rotaCorrente.meta.sufixoDosCaminhos
   || '';
 
-const isExternalLink = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
+const isExternalLink = computed(() => (typeof props.to === 'string' && props.to.startsWith('http'))
+  || props.download);
 
 const propriedadesManipuladas = computed(() => {
   let { to } = props;
