@@ -394,6 +394,15 @@ export const useProjetosStore = defineStore('projetos', {
       ? emFoco.permissoes
       : {}),
 
+    pdmsSimplificadosPorTipo: ({ pdmsSimplificados }: Estado) => pdmsSimplificados
+      .reduce((acc, cur) => {
+        if (!acc[cur.tipo]) {
+          acc[cur.tipo] = [];
+        }
+        acc[cur.tipo].push(cur);
+        return acc;
+      }, {} as { [key: string]: ProjetoProxyPdmMetaDto[] }),
+
     projetosPorPortfolio: ({ lista }: Estado): { [k: number | string]: ProjetoDto[] } => lista
       .reduce((acc, cur: ProjetoDto) => {
         if (!acc[cur.portfolio.id]) {

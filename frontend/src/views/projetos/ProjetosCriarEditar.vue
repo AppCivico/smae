@@ -47,6 +47,7 @@ const {
   geolocalizaçãoPorToken,
   itemParaEdição,
   pdmsSimplificados,
+  pdmsSimplificadosPorTipo,
   pdmsPorId,
   planosAgrupadosPorTipo,
   arvoreDeMetas,
@@ -928,13 +929,13 @@ watch(emFoco, () => {
               error: errors.pdm_escolhido,
               loading: chamadasPendentes.pdmsSimplificados
             }"
-            :disabled="!pdmsSimplificados?.length"
+            :disabled="!pdmsSimplificadosPorTipo['PDM']?.length"
           >
             <option :value="0">
               Selecionar
             </option>
             <option
-              v-for="item in pdmsSimplificados"
+              v-for="item in pdmsSimplificadosPorTipo['PDM']"
               :key="item.id"
               :value="item.id"
             >
