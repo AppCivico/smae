@@ -166,26 +166,31 @@ export default {
     <td>
       {{ linha.orgao?.sigla }} {{ linha.recursos ? ' - ' + linha.recursos : '' }}
     </td>
-    <template v-if="!apenasLeitura">
-      <td
-        class="center"
+    <td
+      class="center"
+    >
+      <router-link
+        v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1)"
+        title="Visualizar"
+        :to="{
+          name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
+          params: {
+            ...$route.params,
+            tarefaId: linha.id,
+          },
+          query: {
+            nivel: linha.nivel + 1,
+            tarefa_pai_id: linha.id,
+          }
+        }"
       >
-        <button
-          v-if="linha.pode_editar"
-          type="button"
-          class="like-a__text"
-          title="Excluir"
-          :hidden="linha.n_filhos_imediatos > 0
-            || (!oProjetoÉPrioritário && $route.meta.prefixoParaFilhas === 'projeto')"
-          @click="excluirTarefa(linha.id)"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_remove" /></svg>
-        </button>
-      </td>
-
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_eye" /></svg>
+      </router-link>
+    </td>
+    <template v-if="!apenasLeitura">
       <td
         class="center"
       >
@@ -232,6 +237,24 @@ export default {
             height="20"
           ><use xlink:href="#i_edit" /></svg>
         </router-link>
+      </td>
+      <td
+        class="center"
+      >
+        <button
+          v-if="linha.pode_editar"
+          type="button"
+          class="like-a__text"
+          title="Excluir"
+          :hidden="linha.n_filhos_imediatos > 0
+            || (!oProjetoÉPrioritário && $route.meta.prefixoParaFilhas === 'projeto')"
+          @click="excluirTarefa(linha.id)"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_remove" /></svg>
+        </button>
       </td>
     </template>
   </tr>

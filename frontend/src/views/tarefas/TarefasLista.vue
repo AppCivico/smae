@@ -273,6 +273,7 @@ export default {
         <col class="col--number">
         <col class="col--number">
         <col>
+        <col class="col--botão-de-ação">
 
         <template v-if="!apenasLeitura">
           <col class="col--botão-de-ação">
@@ -302,6 +303,7 @@ export default {
           <th colspan="2">
             Custo <small>(R$)</small>
           </th>
+          <th />
           <th />
           <th />
           <template v-if="!apenasLeitura">
@@ -343,6 +345,7 @@ export default {
           <th>
             Responsável
           </th>
+          <th />
           <template v-if="!apenasLeitura">
             <th />
             <th />
