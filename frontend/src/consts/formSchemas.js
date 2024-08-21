@@ -896,7 +896,7 @@ export const gruposTematicos = object({
     .nullable(),
 });
 
-export const grupoDeVariaveis = object({
+export const equipes = object({
   colaboradores: array()
     .label('Responsáveis pelo grupo')
     .nullable('Responsáveis inválidos'),
