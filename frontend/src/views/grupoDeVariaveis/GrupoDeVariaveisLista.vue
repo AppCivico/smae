@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'grupoDeVariaveisCriar' }"
+      :to="{ name: 'equipesCriar' }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -50,7 +50,7 @@
         </td>
         <td>
           <router-link
-            :to="{ name: 'grupoDeVariaveisEditar', params: { grupoDeVariaveisId: item.id } }"
+            :to="{ name: 'grupoDeVariaveisEditar', params: { equipeId: item.id } }"
             class="tprimary"
           >
             <svg

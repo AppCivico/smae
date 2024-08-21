@@ -97,7 +97,7 @@ const rotasParaMenuPrincipal = [
   'mdoEmpreendimentosListar',
   'parlamentaresListar',
   'paineisExternosListar',
-  'grupoDeVariaveisListar',
+  'equipesListar',
   'Workflow',
 ];
 
@@ -282,7 +282,7 @@ export default [
       },
       {
         // @see
-        path: '/grupo-de-variaveis',
+        path: '/equipes',
         component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisRaiz.vue'),
         meta: {
           título: 'Equipe',
@@ -294,7 +294,7 @@ export default [
         },
         children: [
           {
-            name: 'grupoDeVariaveisListar',
+            name: 'equipesListar',
             path: '',
             component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisLista.vue'),
             meta: {
@@ -302,30 +302,30 @@ export default [
             },
           },
           {
-            name: 'grupoDeVariaveisCriar',
+            name: 'equipesCriar',
             path: 'novo',
             component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
             meta: {
               título: 'Nova Equipe',
-              rotaDeEscape: 'grupoDeVariaveisListar',
+              rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: [
-                'grupoDeVariaveisListar',
+                'equipesListar',
               ],
             },
           },
           {
-            path: ':grupoDeVariaveisId',
+            path: ':equipeId',
             name: 'grupoDeVariaveisEditar',
             component: () => import('@/views/grupoDeVariaveis/GrupoDeVariaveisCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
-              ...{ grupoDeVariaveisId: Number.parseInt(params.grupoDeVariaveisId, 10) || undefined },
+              ...{ equipeId: Number.parseInt(params.equipeId, 10) || undefined },
             }),
             meta: {
               título: 'Editar Equipe',
-              rotaDeEscape: 'grupoDeVariaveisListar',
+              rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: [
-                'grupoDeVariaveisListar',
+                'equipesListar',
               ],
             },
           },

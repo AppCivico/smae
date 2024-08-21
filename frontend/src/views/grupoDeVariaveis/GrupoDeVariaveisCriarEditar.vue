@@ -228,10 +228,10 @@ const onSubmit = handleSubmit.withControlled(async () => {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (route.params?.grupoDeVariaveisId) {
+    if (route.params?.equipeId) {
       response = await grupoDeVariaveisStore.salvarItem(
         carga,
-        route.params.grupoDeVariaveisId,
+        route.params.equipeId,
       );
     } else {
       response = await grupoDeVariaveisStore.salvarItem(carga);
@@ -239,7 +239,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
     if (response) {
       alertStore.success(msg);
       grupoDeVariaveisStore.$reset();
-      router.push({ name: 'grupoDeVariaveisListar' });
+      router.push({ name: 'equipesListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -293,9 +293,9 @@ watch(orgao, () => {
 iniciar();
 
 grupoDeVariaveisStore.$reset();
-// não foi usada a prop.grupoDeVariaveisId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.grupoDeVariaveisId) {
-  grupoDeVariaveisStore.buscarItem({ id: route.params.grupoDeVariaveisId });
+// não foi usada a prop.equipeId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.equipeId) {
+  grupoDeVariaveisStore.buscarItem({ id: route.params.equipeId });
 }
 </script>
 
