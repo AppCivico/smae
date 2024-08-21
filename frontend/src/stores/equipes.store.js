@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useGrupoDeVariaveisStore = defineStore('grupoDeVariaveisStore', {
+export const useEquipesStore = defineStore('equipesStore', {
   state: () => ({
     lista: [],
     emFoco: null,

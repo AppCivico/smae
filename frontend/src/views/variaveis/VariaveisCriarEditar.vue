@@ -34,7 +34,7 @@ import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import { useGrupoDeVariaveisStore } from '@/stores/equipes.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 
 const opcoesFormatacaoCampoData = {
   format: 'MMM/yyyy',
@@ -60,11 +60,11 @@ const {
   chamadasPendentes: chamadasPendentesDeFontes,
 } = storeToRefs(fontesStore);
 
-const gruposStore = useGrupoDeVariaveisStore();
+const equipesStore = useEquipesStore();
 const {
   gruposPorOrgaoIdPorPerfil,
   chamadasPendentes: chamadasPendentesDeGrupos,
-} = storeToRefs(gruposStore);
+} = storeToRefs(equipesStore);
 
 const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -186,7 +186,7 @@ async function iniciar() {
   ÓrgãosStore.getAll();
   assuntosStore.buscarTudo();
   fontesStore.buscarTudo();
-  gruposStore.buscarTudo();
+  equipesStore.buscarTudo();
   usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true });
   variaveisCategoricasStore.buscarTudo();
 
