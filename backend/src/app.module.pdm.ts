@@ -19,7 +19,7 @@ import { VariavelCategoricaModule } from './variavel-categorica/variavel-categor
 import { VariavelModule } from './variavel/variavel.module';
 import { FonteVariavelModule } from './fonte-variavel/fonte-variavel.module';
 import { AssuntoVariavelModule } from './assunto-variavel/assunto-variavel.module';
-import { GrupoRespVariavelModule } from './grupo-resp-variavel/grupo-resp-variavel.module';
+import { EquipeRespModule } from './grupo-resp-variavel/grupo-resp-variavel.module';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 
 @Module({
@@ -50,7 +50,7 @@ import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.mod
         IndicadoresModule,
         MonitoramentoMensalModule,
         VariavelCategoricaModule,
-        GrupoRespVariavelModule,
+        EquipeRespModule,
     ],
     controllers: [],
     providers: [],

@@ -5,7 +5,7 @@ import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 
-export class GrupoRespVariavelItemDto {
+export class EquipeRespItemDto {
     id: number;
     orgao_id: number;
     orgao: OrgaoResumo;
@@ -17,11 +17,11 @@ export class GrupoRespVariavelItemDto {
     variaveis: IdCodTituloDto[];
 }
 
-export class ListGrupoRespVariavelDto {
-    linhas: GrupoRespVariavelItemDto[];
+export class ListEquipeRespDto {
+    linhas: EquipeRespItemDto[];
 }
 
-export class FilterGrupoRespVariavelDto {
+export class FilterEquipeRespDto {
     @IsOptional()
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))

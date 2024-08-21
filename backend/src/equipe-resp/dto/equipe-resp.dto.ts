@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PerfilResponsavelEquipe } from '@prisma/client';
 import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class CreateGrupoRespVariavelDto {
+export class CreateEquipeRespDto {
     @IsString()
     @MaxLength(120)
     titulo: string;
