@@ -141,12 +141,14 @@ export const useOrgansStore = defineStore({
         this.organResponsibles = { loading: true };
 
         if (!this.organs.length) await this.getAll();
-        if (!usersStore.users.length) await usersStore.getAll();
+        if (!usersStore.users.length) await usersStore.buscarPessoasSimplificadas();
 
-        // mantendo o máximo possível do código legado, mas sem os seus resultados involuntários
+        // mantendo o máximo possível do código legado, mas sem os seus
+        // resultados involuntários
+        // em 2024-08-22, passamos a buscar as pessoas simplificadas
         this.organResponsibles = this.organs.length
           ? this.organs.reduce((acc, cur) => {
-            const pessoas = usersStore.pessoasPorOrgao[cur.id];
+            const pessoas = usersStore.pessoasSimplificadasPorÓrgão[cur.id];
 
             if (pessoas?.length) {
               acc.push({
