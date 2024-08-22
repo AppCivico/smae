@@ -1,6 +1,6 @@
 <script setup>
-import { useCiclosStore } from '@/stores/ciclos.store';
 import dateToTitle from '@/helpers/dateToTitle';
+import { useCiclosStore } from '@/stores/ciclos.store';
 
 const CiclosStore = useCiclosStore();
 defineProps(['parent', 'list', 'indexes', 'editPeriodo', 'abrePeriodo']);

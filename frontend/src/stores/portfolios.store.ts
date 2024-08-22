@@ -1,16 +1,16 @@
-import dateTimeToDate from "@/helpers/dateTimeToDate";
-import { range } from "lodash";
-import { defineStore } from "pinia";
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { range } from 'lodash';
+import { defineStore } from 'pinia';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
   ListPortfolioDto,
   PortfolioDto,
   PortfolioOneDto,
-} from "@/../../backend/src/pp/portfolio/entities/portfolio.entity";
+} from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = ListPortfolioDto["linhas"];
+type Lista = ListPortfolioDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
@@ -24,7 +24,7 @@ interface Estado {
   erro: null | unknown;
 }
 
-export const usePortfolioStore = defineStore("portfolios", {
+export const usePortfolioStore = defineStore('portfolios', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -43,7 +43,7 @@ export const usePortfolioStore = defineStore("portfolios", {
       try {
         const resposta = await this.requestS.get(
           `${baseUrl}/portfolio/${id}`,
-          params
+          params,
         );
         this.emFoco = {
           ...resposta,
@@ -65,7 +65,7 @@ export const usePortfolioStore = defineStore("portfolios", {
       try {
         const { linhas } = await this.requestS.get(
           `${baseUrl}${rotaNaApi}`,
-          params
+          params,
         );
         this.lista = linhas;
       } catch (erro: unknown) {
@@ -120,15 +120,14 @@ export const usePortfolioStore = defineStore("portfolios", {
         ? dateTimeToDate(emFoco?.data_criacao)
         : null,
       orcamento_execucao_disponivel_meses:
-        emFoco?.orcamento_execucao_disponivel_meses &&
-        Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
+        emFoco?.orcamento_execucao_disponivel_meses
+        && Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
           ? emFoco.orcamento_execucao_disponivel_meses
           : range(1, 13),
     }),
 
     portfoliosPorId: ({
       lista,
-    }: Estado): { [k: number | string]: PortfolioDto } =>
-      lista.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    }: Estado): { [k: number | string]: PortfolioDto } => lista.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
