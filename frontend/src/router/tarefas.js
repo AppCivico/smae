@@ -85,7 +85,7 @@ export default {
       path: 'detalhe',
       component: TarefasDetalhes,
       meta: {
-        título: 'Detalhes da tarefa',
+        título: 'Resumo Atividade',
         rotaDeEscape: 'projetoTarefasListar',
       },
     },
