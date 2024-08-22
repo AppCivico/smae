@@ -1542,10 +1542,15 @@ export class VariavelService {
                 orgao_id: true,
                 inicio_medicao: true,
                 fim_medicao: true,
+                variavel_mae_id: true,
+                variaveis_filhas: { select: { id: true } },
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
+
+        if (selfBefUpdate.variavel_mae_id)
+            throw new HttpException('Variável filha não pode ser atualizada diretamente', 400);
 
         await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_id ?? MIN_DTO_SAFE_NUM);
 
