@@ -284,7 +284,7 @@ export default [
         path: '/equipes',
         component: () => import('@/views/equipes/EquipesRaiz.vue'),
         meta: {
-          título: 'Equipe',
+          título: 'Equipes',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroGrupoVariavel.',
           // rotasParaMenuSecundário: [
@@ -297,7 +297,7 @@ export default [
             path: '',
             component: () => import('@/views/equipes/EquipesLista.vue'),
             meta: {
-              título: 'Equipe',
+              título: 'Equipes',
             },
           },
           {

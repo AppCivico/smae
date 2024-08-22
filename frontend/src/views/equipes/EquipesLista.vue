@@ -6,7 +6,7 @@
       :to="{ name: 'equipesCriar' }"
       class="btn big ml1"
     >
-      Novo {{ titulo }}
+      Nova Equipe
     </router-link>
   </div>
 
