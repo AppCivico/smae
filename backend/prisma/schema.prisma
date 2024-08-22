@@ -462,12 +462,12 @@ model Pessoa {
     RelacaoParlamentarDistribuicaoQAtualizei DistribuicaoParlamentar[] @relation("Atualizador")
     RelacaoParlamentarDistribuicaoQRemovi    DistribuicaoParlamentar[] @relation("Removedor")
 
-    AssuntoVariavelQCriei               AssuntoVariavel[]                     @relation("Criador")
-    AssuntoVariavelQAtualizei           AssuntoVariavel[]                     @relation("Atualizador")
-    AssuntoVariavelQRemovi              AssuntoVariavel[]                     @relation("Removedor")
+    AssuntoVariavelQCriei             AssuntoVariavel[]                   @relation("Criador")
+    AssuntoVariavelQAtualizei         AssuntoVariavel[]                   @relation("Atualizador")
+    AssuntoVariavelQRemovi            AssuntoVariavel[]                   @relation("Removedor")
     GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
-    VariavelQCriei                      Variavel[]                            @relation("Criador")
-    VariavelQAtualizei                  Variavel[]                            @relation("Atualizador")
+    VariavelQCriei                    Variavel[]                          @relation("Criador")
+    VariavelQAtualizei                Variavel[]                          @relation("Atualizador")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
 
     @@index([email])
@@ -539,38 +539,38 @@ model Orgao {
     PlanoAcao              PlanoAcao[]
     projetos_participando  ProjetoOrgaoParticipante[]
 
-    PortifolioOrgao                     PortfolioOrgao[]
-    orgao_responsavel                   Projeto[]                             @relation("orgao_responsavel")
-    orgao_origem                        Projeto[]                             @relation("orgao_origem")
-    orgao_executor                      Projeto[]                             @relation("orgao_executor")
-    projetos_geridos                    Projeto[]                             @relation("orgao_gestor")
-    projeto_colaborados                 Projeto[]                             @relation("orgao_colaborador")
-    GrupoPortfolio                      GrupoPortfolio[]
-    GrupoPortfolioPessoa                GrupoPortfolioPessoa[]
-    ProjetoEquipe                       ProjetoEquipe[]
-    GrupoPainelExterno                  GrupoPainelExterno[]
-    GrupoPainelExternoPessoa            GrupoPainelExternoPessoa[]
-    TransferenciasOrgao                 Transferencia[]                       @relation("orgao_concedente")
-    TransferenciasSecretaria            Transferencia[]                       @relation("secretaria_concedente")
-    distribuicao_recursos               DistribuicaoRecurso[]
-    Nota                                Nota[]
-    NotaEnderecamento                   NotaEnderecamento[]
-    transferenciaAndamento              TransferenciaAndamento[]
-    transferenciaAndamentoTarefa        TransferenciaAndamentoTarefa[]
-    PdmOrcamentoRealizadoConfig         PdmOrcamentoRealizadoConfig[]
-    ViewNotaComOrdem                    ViewNotas[]
-    PdmPerfil                           PdmPerfil[]
-    Pdm                                 Pdm[]
-    statusDistribuicaoRecusro           DistribuicaoRecursoStatus[]
-    ViewProjetoMDO                      ViewProjetoMDO[]
-    VariavelProprietario                Variavel[]                            @relation("proprietario")
+    PortifolioOrgao                   PortfolioOrgao[]
+    orgao_responsavel                 Projeto[]                           @relation("orgao_responsavel")
+    orgao_origem                      Projeto[]                           @relation("orgao_origem")
+    orgao_executor                    Projeto[]                           @relation("orgao_executor")
+    projetos_geridos                  Projeto[]                           @relation("orgao_gestor")
+    projeto_colaborados               Projeto[]                           @relation("orgao_colaborador")
+    GrupoPortfolio                    GrupoPortfolio[]
+    GrupoPortfolioPessoa              GrupoPortfolioPessoa[]
+    ProjetoEquipe                     ProjetoEquipe[]
+    GrupoPainelExterno                GrupoPainelExterno[]
+    GrupoPainelExternoPessoa          GrupoPainelExternoPessoa[]
+    TransferenciasOrgao               Transferencia[]                     @relation("orgao_concedente")
+    TransferenciasSecretaria          Transferencia[]                     @relation("secretaria_concedente")
+    distribuicao_recursos             DistribuicaoRecurso[]
+    Nota                              Nota[]
+    NotaEnderecamento                 NotaEnderecamento[]
+    transferenciaAndamento            TransferenciaAndamento[]
+    transferenciaAndamentoTarefa      TransferenciaAndamentoTarefa[]
+    PdmOrcamentoRealizadoConfig       PdmOrcamentoRealizadoConfig[]
+    ViewNotaComOrdem                  ViewNotas[]
+    PdmPerfil                         PdmPerfil[]
+    Pdm                               Pdm[]
+    statusDistribuicaoRecusro         DistribuicaoRecursoStatus[]
+    ViewProjetoMDO                    ViewProjetoMDO[]
+    VariavelProprietario              Variavel[]                          @relation("proprietario")
     GrupoResponsavelEquipe            GrupoResponsavelEquipe[]
     GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
-    contratos                           Contrato[]
-    ViewVariavelGlobalQSouResp          ViewVariavelGlobal[]                  @relation("resp")
-    ViewVariavelGlobalQSouProp          ViewVariavelGlobal[]                  @relation("prop")
+    contratos                         Contrato[]
+    ViewVariavelGlobalQSouResp        ViewVariavelGlobal[]                @relation("resp")
+    ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                @relation("prop")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
-    FormulaComposta                     FormulaComposta[]
+    FormulaComposta                   FormulaComposta[]
 
     @@map("orgao")
 }
@@ -1477,7 +1477,10 @@ model FormulaComposta {
     criar_variavel     Boolean   @default(false)
     variavel_calc_erro String?
     variavel_calc_id   Int?
-    variavel_calc      Variavel? @relation(fields: [variavel_calc_id], references: [id])
+    variavel_calc      Variavel? @relation("calc", fields: [variavel_calc_id], references: [id])
+
+    variavel_mae_id Int?
+    variavel_mae    Variavel? @relation("mae", fields: [variavel_mae_id], references: [id])
 
     atualizador                           Pessoa?                                 @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador                               Pessoa?                                 @relation("Criador", fields: [criado_por], references: [id])
@@ -1611,9 +1614,9 @@ model Variavel {
 
     nivel_regionalizacao Int? @ignore // não vamos usar por enquanto
 
-    variavel_mae_id Int?
-    variavel_mae    Variavel? @relation("VariavelMae", fields: [variavel_mae_id], references: [id])
-    variaveis_filhas Variavel[] @relation("VariavelMae")   
+    variavel_mae_id  Int?
+    variavel_mae     Variavel?  @relation("VariavelMae", fields: [variavel_mae_id], references: [id])
+    variaveis_filhas Variavel[] @relation("VariavelMae")
 
     serie_variavel             SerieVariavel[]
     variavel_responsavel       VariavelResponsavel[]
@@ -1633,15 +1636,16 @@ model Variavel {
     removido_em             DateTime?                 @db.Timestamptz(6)
     FormulaCompostaVariavel FormulaCompostaVariavel[]
 
-    suspensao_log                    VariavelSuspensaoLog[]
-    suspensao_controle               VariavelSuspensaControle[]
-    MetaStatusAtrasoVariavel         MetaStatusAtrasoVariavel[]
-    Etapa                            Etapa[]
-    VariavelAssuntoVariavel          VariavelAssuntoVariavel[]
+    suspensao_log                  VariavelSuspensaoLog[]
+    suspensao_controle             VariavelSuspensaControle[]
+    MetaStatusAtrasoVariavel       MetaStatusAtrasoVariavel[]
+    Etapa                          Etapa[]
+    VariavelAssuntoVariavel        VariavelAssuntoVariavel[]
     VariavelGrupoResponsavelEquipe VariavelGrupoResponsavelEquipe[]
-    ViewVariavelGlobal               ViewVariavelGlobal[]
-    FormulaComposta                  FormulaComposta[]
-    FormulaCompostaRelVariavel       FormulaCompostaRelVariavel[]
+    ViewVariavelGlobal             ViewVariavelGlobal[]
+    FormulaCompostaCalc            FormulaComposta[]                @relation("calc")
+    FormulaCompostaMae             FormulaComposta[]                @relation("mae")
+    FormulaCompostaRelVariavel     FormulaCompostaRelVariavel[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -1681,9 +1685,9 @@ model GrupoResponsavelEquipe {
 
     perfil PerfilResponsavelEquipe
 
-    criado_em                           DateTime                              @default(now()) @db.Timestamptz(6)
-    atualizado_em                       DateTime?                             @db.Timestamptz(6)
-    removido_em                         DateTime?                             @db.Timestamptz(6)
+    criado_em                         DateTime                            @default(now()) @db.Timestamptz(6)
+    atualizado_em                     DateTime?                           @db.Timestamptz(6)
+    removido_em                       DateTime?                           @db.Timestamptz(6)
     GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
     VariavelGrupoResponsavelEquipe    VariavelGrupoResponsavelEquipe[]
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]

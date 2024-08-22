@@ -444,6 +444,7 @@ export class VariavelService {
                         regioes_ids,
                         nivel_regionalizacao,
                         dto.acumulativa, // usar_serie_acumulada
+                        variavelMae?.id,
                         prismaTxn
                     );
                 }
@@ -468,6 +469,7 @@ export class VariavelService {
         regionIDs: number[],
         nivel_regionalizacao: number,
         usar_serie_acumulada: boolean,
+        variavel_mae_id: number | null | undefined,
         prismaTxn: Prisma.TransactionClient
     ) {
         // SQL que retorna por nível as regiões pai e os filhos que estão dentro dela, agrupando por nivel.
@@ -511,6 +513,7 @@ export class VariavelService {
                             usar_serie_acumulada: usar_serie_acumulada,
                         })),
                     },
+                    variavel_mae_id: variavel_mae_id ?? null,
                 },
                 select: { id: true },
             });
@@ -526,9 +529,12 @@ export class VariavelService {
         responsaveis: number[],
         logger: LoggerWithLog | undefined,
         codigo: string,
-        variavelMaeId?: number
+        variavelMaeId?: number | null
     ) {
+        // nao deixar criar acumulativa com categorica
         logger = logger ?? LoggerWithLog('Criação de variável');
+
+        variavelMaeId = variavelMaeId ?? null;
 
         const indicador_id = indicador?.id;
         const jaEmUso = await prismaTxn.variavel.count({
@@ -998,7 +1004,7 @@ export class VariavelService {
                 },
                 variavel_categorica_id: true,
                 // Apenas utilizado para fornecer boolean de se possui filhas.
-                variaveis_filhas: { take: 1, select: { id: true } }
+                variaveis_filhas: { take: 1, select: { id: true } },
             },
         });
 
@@ -1193,7 +1199,7 @@ export class VariavelService {
             where: {
                 removido_em: null,
                 id: variavelMaeId,
-            }
+            },
         });
         if (!variavelMae) throw new NotFoundException('Variável mãe não encontrada');
 
@@ -1332,7 +1338,7 @@ export class VariavelService {
                 };
             });
 
-            let indicador_variavel: typeof row.indicador_variavel = row.indicador_variavel;
+            const indicador_variavel: typeof row.indicador_variavel = row.indicador_variavel;
 
             return {
                 acumulativa: row.acumulativa,

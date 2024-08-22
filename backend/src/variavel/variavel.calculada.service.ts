@@ -51,6 +51,7 @@ export class VariavelCalculadaService {
                 autogerenciavel: true,
                 calc_unidade_medida_id: true,
                 variavel_calc_id: true,
+                variavel_mae_id: true,
                 FormulaCompostaVariavel: {
                     select: {
                         variavel: true,
@@ -166,6 +167,7 @@ export class VariavelCalculadaService {
                         inicio_medicao: inicioMedicaoMinDate,
                         fim_medicao: fimMedicaoMaxDate,
                         criado_por: CONST_BOT_USER_ID,
+                        variavel_mae_id: fc.variavel_mae_id,
                         //: fc.calc_regionalizavel ?? getUniqueValues('regionalizavel')[0],
                     } satisfies Prisma.VariavelCreateManyInput;
 
