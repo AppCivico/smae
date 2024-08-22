@@ -58,6 +58,9 @@ type VariavelDetalhe = {
     id: number;
     codigo: string;
     titulo: string;
+    variavel_categorica_id: number | null;
+    acumulativa: boolean;
+    casas_decimais: number;
     indicador_variavel: {
         indicador: {
             iniciativa_id?: number | null;
@@ -253,7 +256,14 @@ export class MetasService {
                 }
 
                 seriesDaX.push({
-                    variavel: { id: variavel.id, codigo: variavel.codigo, titulo: variavel.titulo },
+                    variavel: {
+                        id: variavel.id,
+                        codigo: variavel.codigo,
+                        titulo: variavel.titulo,
+                        acumulativa: variavel.acumulativa,
+                        casas_decimais: variavel.casas_decimais,
+                        variavel_categorica_id: variavel.variavel_categorica_id,
+                    },
                     variavel_formula_composta: variavel.variavel_formula_composta,
                     series: seriesPorVariavel[+varId],
                 });
@@ -906,6 +916,9 @@ export class MetasService {
                 id: true,
                 codigo: true,
                 titulo: true,
+                acumulativa: true,
+                variavel_categorica_id: true,
+                casas_decimais: true,
                 indicador_variavel: {
                     where: {
                         desativado_em: null,
@@ -963,6 +976,9 @@ export class MetasService {
                 id: true,
                 codigo: true,
                 titulo: true,
+                acumulativa: true,
+                variavel_categorica_id: true,
+                casas_decimais: true,
                 indicador_variavel: {
                     where: {
                         desativado_em: null,
@@ -1023,6 +1039,9 @@ export class MetasService {
                 id: true,
                 codigo: true,
                 titulo: true,
+                acumulativa: true,
+                variavel_categorica_id: true,
+                casas_decimais: true,
                 indicador_variavel: {
                     where: {
                         desativado_em: null,
@@ -1702,7 +1721,7 @@ export class MetasService {
         fastlane = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
-         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
+        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente

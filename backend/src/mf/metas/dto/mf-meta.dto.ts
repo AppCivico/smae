@@ -133,8 +133,14 @@ export class VariavelQtdeDto {
 
 export type Status = keyof VariavelQtdeDto;
 
+export class VariavelUmPoucoDetalhesDto extends IdCodTituloDto {
+    variavel_categorica_id: number | null;
+    acumulativa: boolean;
+    casas_decimais: number;
+}
+
 export class VariavelComSeries {
-    variavel: IdCodTituloDto;
+    variavel: VariavelUmPoucoDetalhesDto;
     variavel_formula_composta: IdTituloDto[] | null;
     series: MfSeriesAgrupadas[];
 }
