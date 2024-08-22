@@ -387,7 +387,7 @@ export const contrato = object()
       .required(),
   });
 
-export const contratoDeObras = object()
+export const contratoDeObras = (tela = 'projeto') => object()
   .shape({
     numero: string()
       .label('Número do contrato')
@@ -395,7 +395,7 @@ export const contratoDeObras = object()
       .required(),
     contrato_exclusivo: boolean()
       .nullable()
-      .label('Contrato exclusivo desse Projeto'),
+      .label(`Contrato exclusivo ${tela === 'projeto' ? 'desse Projeto' : 'dessa Obra'}`),
     status: string()
       .label('Status')
       .required(),

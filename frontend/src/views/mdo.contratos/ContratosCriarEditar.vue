@@ -1,7 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { contratoDeObras as schema } from '@/consts/formSchemas';
+import { contratoDeObras } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
@@ -18,6 +18,7 @@ import {
 import {
   onMounted, ref,
   watch,
+  computed,
 } from 'vue';
 
 import { useRoute, useRouter } from 'vue-router';
@@ -33,6 +34,8 @@ const DotaçãoStore = useDotaçãoStore();
 const fontesRecurso = ref({ participantes: [], busca: '' });
 
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
+
+const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
 
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;

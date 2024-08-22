@@ -1,14 +1,14 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import ContratosAditivos from '@/components/obras/ContratosAditivos.vue';
-import { contratoDeObras as schema } from '@/consts/formSchemas';
+import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
-import { defineOptions } from 'vue';
+import { defineOptions, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
@@ -26,6 +26,8 @@ const obrasStore = useObrasStore();
 const {
   permissõesDaObraEmFoco,
 } = storeToRefs(obrasStore);
+
+const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
 </script>
 <template>
   <div class="flex spacebetween center mb2">

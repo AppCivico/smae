@@ -1,6 +1,6 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
-import { contratoDeObras as schema } from '@/consts/formSchemas';
+import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
@@ -42,6 +42,8 @@ const {
 const listaFiltradaPorTermoDeBusca = ref([]);
 const grauVisível = ref(0);
 const statusVisível = ref(0);
+
+const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
 
 async function iniciar() {
   contratosStore.$reset();
