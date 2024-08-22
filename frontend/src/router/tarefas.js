@@ -82,7 +82,7 @@ export default {
 
     {
       name: 'projetoTarefasDetalhes',
-      path: 'detalhe',
+      path: 'resumo',
       component: TarefasDetalhes,
       meta: {
         título: 'Resumo Atividade',
