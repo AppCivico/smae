@@ -3067,6 +3067,7 @@ pre {
 
 .dev-environment:root body {
   &::after {
+    pointer-events: none;
     content: '';
     position: fixed;
     top: 0;
@@ -3075,6 +3076,6 @@ pre {
     height: 1rem;
     background-image: repeating-linear-gradient(45deg, transparent, transparent 48px, #f2ff00 48px, #f2ff00 96px);
     background-color: #000000;
-    z-index: 1;
+    z-index: 1000;
   }
 }
