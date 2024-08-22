@@ -53,12 +53,14 @@ export const usePortfolioObraStore = defineStore('portfoliosMdo', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async buscarTudo(params = {}): Promise<void> {
+    async buscarTudo(params = {}, paraObras = true): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.erro.lista = null;
 
+      const caminho = paraObras ? `${baseUrl}/portfolio-mdo/para-obras` : `${baseUrl}/portfolio-mdo`;
+
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/portfolio-mdo`, params);
+        const { linhas } = await this.requestS.get(caminho, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro.lista = erro;
