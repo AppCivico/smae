@@ -16,6 +16,7 @@ import {
 } from './dto/responsabilidade-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { PessoaService } from './pessoa.service';
+import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../pp/projeto/projeto.controller';
 
 @ApiTags('Pessoa')
 @Controller('pessoa')
@@ -79,6 +80,8 @@ export class PessoaController {
         'PS.admin_cp',
         'PS.tecnico_cp',
         'PS.ponto_focal',
+        ...PROJETO_READONLY_ROLES,
+        ...PROJETO_READONLY_ROLES_MDO,
     ])
     async findAllReduced(
         @Query() filters: FilterPessoaDto,
