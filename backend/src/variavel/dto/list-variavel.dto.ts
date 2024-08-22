@@ -33,6 +33,8 @@ export class VariavelResumo {
      */
     id: number;
     suspendida: boolean;
+    variavel_categorica_id: number | null;
+
     /***
      * quantas cadas decimais são esperadas no envio/retorno
      * @example "11"

@@ -96,6 +96,7 @@ export class VariavelFormulaCompostaService {
                 titulo: true,
                 suspendida_em: true,
                 valor_base: true,
+                variavel_categorica_id: true,
             },
         });
 
