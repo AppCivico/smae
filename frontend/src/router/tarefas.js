@@ -6,6 +6,7 @@ import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
+import TarefasDetalhes from '@/views/tarefas/TarefasDetalhe.vue';
 
 export default {
   path: 'tarefas',
@@ -72,6 +73,17 @@ export default {
       name: 'projetoTarefasCriar',
       path: 'nova',
       component: TarefasCriarEditar,
+      meta: {
+        título: 'Nova tarefa',
+        títuloParaMenu: 'Nova tarefa',
+        rotaDeEscape: 'projetoTarefasListar',
+      },
+    },
+
+    {
+      name: 'projetoTarefasDetalhes',
+      path: 'detalhe',
+      component: TarefasDetalhes,
       meta: {
         título: 'Nova tarefa',
         títuloParaMenu: 'Nova tarefa',
