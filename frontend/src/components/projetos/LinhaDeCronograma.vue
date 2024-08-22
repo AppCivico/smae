@@ -173,15 +173,7 @@ export default {
         v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1)"
         title="Visualizar"
         :to="{
-          name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
-          params: {
-            ...$route.params,
-            tarefaId: linha.id,
-          },
-          query: {
-            nivel: linha.nivel + 1,
-            tarefa_pai_id: linha.id,
-          }
+          name: 'projetoTarefasDetalhes',
         }"
       >
         <svg
