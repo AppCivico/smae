@@ -174,6 +174,10 @@ export default {
         title="Visualizar"
         :to="{
           name: 'projetoTarefasDetalhes',
+          params: {
+            ...$route.params,
+            tarefaId: linha.id,
+          }
         }"
       >
         <svg

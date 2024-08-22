@@ -1,15 +1,19 @@
 <template>
   <div>
-    <h1>
-      Bom dia
-    </h1>
+    emFoco: <pre>{{ emFoco }}</pre>
   </div>
 </template>
-<script>
-export default {
-  name: 'TarefasDetalhes',
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
-};
+const tarefasStore = useTarefasStore();
+
+const {
+  chamadasPendentes,
+  emFoco,
+  erro,
+} = storeToRefs(tarefasStore);
 
 </script>
 

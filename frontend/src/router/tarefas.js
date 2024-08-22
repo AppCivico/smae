@@ -6,7 +6,7 @@ import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
-import TarefasDetalhes from '@/views/tarefas/TarefasDetalhe.vue';
+import TarefasDetalhe from '@/views/tarefas/TarefasDetalhe.vue';
 
 export default {
   path: 'tarefas',
@@ -81,16 +81,6 @@ export default {
     },
 
     {
-      name: 'projetoTarefasDetalhes',
-      path: 'resumo',
-      component: TarefasDetalhes,
-      meta: {
-        título: 'Resumo Atividade',
-        rotaDeEscape: 'projetoTarefasListar',
-      },
-    },
-
-    {
       path: ':tarefaId',
       component: TarefasItem,
       props: ({ params }) => ({
@@ -100,6 +90,22 @@ export default {
       }),
 
       children: [
+
+        {
+          name: 'projetoTarefasDetalhes',
+          path: 'resumo',
+          component: TarefasDetalhe,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+            tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Resumo Atividade',
+            rotaDeEscape: 'projetoTarefasListar',
+          },
+        },
+
         {
           path: '',
           name: 'projetoTarefasEditar',
