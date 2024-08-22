@@ -5,7 +5,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
+import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { ListPortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
@@ -113,7 +113,7 @@ export class PortfolioMDOController {
         ...PORT_ROLES_MDO,
         'ProjetoMDO.administrador',
         'ProjetoMDO.administrador_no_orgao',
-        ...PROJETO_READONLY_ROLES,
+        ...PROJETO_READONLY_ROLES_MDO,
     ])
     async findAllParaObras(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
@@ -127,7 +127,7 @@ export class PortfolioMDOController {
         ...PORT_ROLES_MDO,
         'ProjetoMDO.administrador',
         'ProjetoMDO.administrador_no_orgao',
-        ...PROJETO_READONLY_ROLES,
+        ...PROJETO_READONLY_ROLES_MDO,
     ])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
         return await this.portfolioService.findOne('MDO', params.id, user);
