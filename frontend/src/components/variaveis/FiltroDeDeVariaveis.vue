@@ -38,7 +38,7 @@
         <input
           id="descricao"
           class="inputtext light"
-          name="palavra_chave"
+          name="descricao"
           type="text"
           :value="$props.valoresIniciais.descricao"
         >
@@ -52,7 +52,7 @@
         <input
           id="titulo"
           class="inputtext light"
-          name="palavra_chave"
+          name="titulo"
           type="text"
           :value="$props.valoresIniciais.titulo"
         >
@@ -66,7 +66,7 @@
         <input
           id="codigo"
           class="inputtext light"
-          name="palavra_chave"
+          name="codigo"
           type="text"
           :value="$props.valoresIniciais.codigo"
         >
