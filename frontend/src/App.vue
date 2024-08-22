@@ -1,5 +1,6 @@
 <script setup>
 import { Alert, EditModal, SideBar } from '@/components';
+import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { onErrorCaptured, provide, ref } from 'vue';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
@@ -12,19 +13,29 @@ const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
 
 provide('gblLimiteDeSeleçãoSimultânea', gblLimiteDeSeleçãoSimultânea);
 
+const alertStore = useAlertStore();
+
 const authStore = useAuthStore();
 if (authStore.estouAutenticada) {
   authStore.getDados();
 }
 
 const erro = ref(null);
-
-if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
-  onErrorCaptured((err) => {
+onErrorCaptured((err) => {
+  if (
+    err?.message?.includes('Failed to fetch dynamically imported module')
+    || err?.message?.includes('error loading dynamically imported module')
+    || err?.type === 'NAVIGATION_ABORTED'
+    || err?.type === 4
+  ) {
+    alertStore.confirmAction('Navegação abortada. Quer tentar recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
+      window.location.reload();
+    });
+  } else if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
     erro.value = err;
     console.trace(err);
-  });
-}
+  }
+});
 
 if (import.meta.env.VITE_NAO_EH_PRODUCAO === 'true' || import.meta.env.DEV || ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
   window.document.documentElement.classList.add('dev-environment');

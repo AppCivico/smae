@@ -4,7 +4,6 @@ import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 // Stores
-import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 
 // Views
@@ -103,7 +102,7 @@ router.beforeEach(async (r) => {
   }
 });
 
-router.afterEach((to, from, failure) => {
+router.afterEach((to) => {
   const { título } = to.meta;
 
   if (título) {
@@ -116,23 +115,6 @@ router.afterEach((to, from, failure) => {
     }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
-  }
-
-  if (failure) {
-    console.trace('Navegação falha', to, from, failure);
-  }
-
-  if (
-    failure?.message?.includes('Failed to fetch dynamically imported module')
-    || failure?.message?.includes('error loading dynamically imported module')
-    || failure?.type === 'NAVIGATION_ABORTED'
-    || failure?.type === 4
-  ) {
-    const alertStore = useAlertStore();
-
-    alertStore.confirmAction('Navegação abortada. Quer tentar recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
-      window.location.reload();
-    });
   }
 });
 
