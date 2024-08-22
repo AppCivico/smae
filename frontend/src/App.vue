@@ -37,12 +37,27 @@ onErrorCaptured((err) => {
   }
 });
 
-if (import.meta.env.VITE_NAO_EH_PRODUCAO === 'true' || import.meta.env.DEV || ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+let corDaFaixa = '';
+
+if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+  corDaFaixa = import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO
+    ? `#${import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO}`
+    : '#f2ff00';
+
   window.document.documentElement.classList.add('dev-environment');
 }
 
 </script>
 <template>
+  <component
+    :is="`style`"
+    v-if="corDaFaixa"
+  >
+    .dev-environment:root body::after {
+      background-color: {{ corDaFaixa }} !important;
+    }
+  </component>
+
   <ErrorComponent
     v-if="erro"
     class="pl5"
