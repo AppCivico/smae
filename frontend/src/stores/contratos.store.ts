@@ -63,7 +63,7 @@ function gerarCaminhoParaApiAditivo(mãeComId: MãeComId): string | null {
   }
 }
 
-export const useContratosStore = (segmentoIdentificador: string) => defineStore(segmentoIdentificador ? `${segmentoIdentificador}.contratos` : 'contratos', {
+export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.contratos` : 'contratos', {
   state: (): Estado => ({
     lista: [],
     listaDeDependencias: {
