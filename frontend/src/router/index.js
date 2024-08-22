@@ -118,6 +118,10 @@ router.afterEach((to, from, failure) => {
     document.title = 'SMAE';
   }
 
+  if (failure) {
+    console.trace('Navegação falha', to, from, failure);
+  }
+
   if (
     failure?.message?.includes('Failed to fetch dynamically imported module')
     || failure?.message?.includes('error loading dynamically imported module')
