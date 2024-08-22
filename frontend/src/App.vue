@@ -25,6 +25,11 @@ if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
     console.trace(err);
   });
 }
+
+if (import.meta.env.VITE_NAO_EH_PRODUCAO === 'true' || import.meta.env.DEV || ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+  window.document.documentElement.classList.add('dev-environment');
+}
+
 </script>
 <template>
   <ErrorComponent

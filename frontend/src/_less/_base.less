@@ -3064,3 +3064,17 @@ pre {
 [hidden] {
   display: none !important;
 }
+
+.dev-environment:root body {
+  &::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1rem;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 48px, #f2ff00 48px, #f2ff00 96px);
+    background-color: #000000;
+    z-index: 1;
+  }
+}
