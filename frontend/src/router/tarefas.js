@@ -85,8 +85,7 @@ export default {
       path: 'detalhe',
       component: TarefasDetalhes,
       meta: {
-        título: 'Nova tarefa',
-        títuloParaMenu: 'Nova tarefa',
+        título: 'Detalhes da tarefa',
         rotaDeEscape: 'projetoTarefasListar',
       },
     },
