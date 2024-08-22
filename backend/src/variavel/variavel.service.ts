@@ -380,20 +380,23 @@ export class VariavelService {
                 delete (dto as any).regioes;
                 delete (dto as any).codigo;
 
-                // A primeira variável criada é a variável mãe.
-                const variavelMae = await this.performVariavelSave(
-                    tipo,
-                    prismaTxn,
-                    {
-                        ...dto,
-                        titulo: dto.titulo,
-                    },
-                    indicador,
-                    responsaveis,
-                    logger,
-                    prefixo
-                );
-                ids.push(variavelMae.id);
+                let variavelMae;
+                if (tipo == 'Global') {
+                    // A primeira variável criada é a variável mãe.
+                    variavelMae = await this.performVariavelSave(
+                        tipo,
+                        prismaTxn,
+                        {
+                            ...dto,
+                            titulo: dto.titulo,
+                        },
+                        indicador,
+                        responsaveis,
+                        logger,
+                        prefixo
+                    );
+                    ids.push(variavelMae.id);
+                }
 
                 for (const regiao of regions) {
                     const variavel = await this.performVariavelSave(
@@ -408,7 +411,7 @@ export class VariavelService {
                         responsaveis,
                         logger,
                         prefixo + regiao.pdm_codigo_sufixo,
-                        variavelMae.id
+                        variavelMae?.id
                     );
                     ids.push(variavel.id);
                 }
@@ -425,7 +428,8 @@ export class VariavelService {
                         indicador,
                         responsaveis,
                         logger,
-                        prefixo
+                        prefixo,
+                        variavelMae?.id
                     );
                     ids.push(supra.id);
                 }
