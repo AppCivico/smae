@@ -6,7 +6,14 @@ import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
 
 const showModal = ref(false);
 const analise = ref(null);
-const props = defineProps(['g', 'variavel']);
+const props = defineProps({
+  g: {},
+  variavel: {},
+  temVariavelAcumulada: {
+    type: Boolean,
+    default: true,
+  },
+});
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const mappedValues = computed(() => {
@@ -90,7 +97,7 @@ function handleClick(obj) {
             <th> Mês/ano </th>
             <th> Previsto mensal </th>
             <th> Realizado mensal </th>
-            <th> Previsto acumulado </th>
+            <th> Previsto acumulado</th>
             <th> Realizado acumulado </th>
           </tr>
         </thead>
@@ -168,6 +175,7 @@ function handleClick(obj) {
       </div>
     </div>
   </SmallModal>
+
   <template v-if="g?.linhas">
     <template
       v-for="k in nestLinhas(g.linhas)"
@@ -219,12 +227,24 @@ function handleClick(obj) {
             {{ val.series[g.ordem_series.indexOf('Realizado')]?.valor_nominal ?? '-' }}
           </td>
           <td>
-            {{ val.series[g.ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
+            <span v-if="!temVariavelAcumulada">
+              N/A
+            </span>
+
+            <span v-else>
+              {{ val.series[g.ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
+            </span>
           </td>
           <td>
-            {{
-              val.series[g.ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal ?? '-'
-            }}
+            <span v-if="!temVariavelAcumulada">
+              N/A
+            </span>
+
+            <span v-else>
+              {{
+                val.series[g.ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal ?? '-'
+              }}
+            </span>
           </td>
           <td style="white-space: nowrap; text-align: right;" />
         </tr>

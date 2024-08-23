@@ -64,7 +64,7 @@ async function onSubmit(values) {
       valor_realizado: !isNaN(parseFloat(values.valor_realizado))
         ? String(parseFloat(String(values.valor_realizado).replace(',', '.')))
         : '',
-      valor_realizado_acumulado: !SingleAnalise.value.variavel.acumulativa
+      valor_realizado_acumulado: SingleAnalise.value.variavel.acumulativa
         ? !isNaN(parseFloat(values.valor_realizado_acumulado))
           ? String(parseFloat(String(values.valor_realizado_acumulado).replace(',', '.')))
           : ''
@@ -72,6 +72,7 @@ async function onSubmit(values) {
       analise_qualitativa: values.analise_qualitativa,
       enviar_para_cp: enviaCP.value,
     };
+
     r = await CiclosStore.updateAnalise(v);
     msg = 'Dados salvos com sucesso!';
     enviaCP.value = false;
@@ -278,7 +279,7 @@ function addFile(e) {
             {{ errors.valor_realizado }}
           </div>
 
-          <template v-if="!SingleAnalise.variavel.acumulativa">
+          <template v-if="SingleAnalise.variavel.acumulativa">
             <label class="label">Valor Realizado Acumulado</label>
             <Field
               name="valor_realizado_acumulado"

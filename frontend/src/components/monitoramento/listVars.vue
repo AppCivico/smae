@@ -80,7 +80,13 @@ function openParent(e) {
           <td
             @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
           >
-            {{ val.series[indexes.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
+            <span v-if="!v.variavel.acumulativa">
+              N/A
+            </span>
+
+            <span v-else>
+              {{ val.series[indexes.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
+            </span>
           </td>
           <td
             :class="{
@@ -88,9 +94,15 @@ function openParent(e) {
             }"
             @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
           >
-            {{ !val.nao_preenchida
-              ? val.series[indexes.indexOf('RealizadoAcumulado')]?.valor_nominal
-              : (CiclosStore.valoresNovos.valorRealizadoAcumulado ?? '-') }}
+            <span v-if="!v.variavel.acumulativa">
+              N/A
+            </span>
+
+            <span v-else>
+              {{ !val.nao_preenchida
+                ? val.series[indexes.indexOf('RealizadoAcumulado')]?.valor_nominal
+                : (CiclosStore.valoresNovos.valorRealizadoAcumulado ?? '-') }}
+            </span>
           </td>
           <td style="white-space: nowrap; text-align: right;">
             <a

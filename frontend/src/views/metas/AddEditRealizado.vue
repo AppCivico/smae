@@ -255,7 +255,10 @@ function limparFormulário() {
               <div class="f1">
                 <label class="label tc300">Realizado</label>
               </div>
-              <div class="f1">
+              <div
+                v-if="Valores[var_id].variavel.acumulativa"
+                class="f1"
+              >
                 <label class="label tc300">Realizado Acumulado</label>
               </div>
             </div>
@@ -279,7 +282,10 @@ function limparFormulário() {
                     && soma($event, k[1], i)"
                 >
               </div>
-              <div class="f1">
+              <div
+                v-if="Valores[var_id].variavel.acumulativa"
+                class="f1"
+              >
                 <label class="label">Acumulado {{ v.periodo }}</label>
                 <input
                   type="number"

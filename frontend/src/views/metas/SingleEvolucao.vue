@@ -169,6 +169,7 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                 </div>
               </div>
             </div>
+
             <table class="tablemain">
               <thead>
                 <tr>
@@ -331,9 +332,11 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                     <th style="width: 5%" />
                   </tr>
                 </thead>
+
                 <GruposDeSerie
                   :g="Valores[v.id]"
                   variavel="true"
+                  :tem-variavel-acumulada="v.acumulativa"
                 />
               </table>
             </div>

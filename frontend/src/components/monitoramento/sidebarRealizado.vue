@@ -141,7 +141,7 @@ function complementar() {
           {{ vazio(SingleAnalise.series[SingleAnalise.ordem_series.indexOf('Realizado')].valor_nominal) }}
         </div>
       </div>
-      <div>
+      <div v-if="SingleAnalise.variavel.acumulativa">
         <div class="t12 uc w700 tc200">
           Realizado Acumulado
         </div>
