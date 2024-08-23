@@ -147,7 +147,7 @@
         >
           <option :value="null" />
           <option
-            v-for="nível in níveisRegionalização"
+            v-for="nível in Object.values(niveisRegionalizacao)"
             :key="nível.id"
             :value="nível.id"
             :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
@@ -347,7 +347,7 @@
 <script setup>
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import truncate from '@/helpers/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';

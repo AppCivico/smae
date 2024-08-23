@@ -1,5 +1,5 @@
 <script setup>
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import dateToField from '@/helpers/dateToField';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
@@ -188,7 +188,7 @@ function permitirEdição(indicadorVariavel) {
           {{ v.codigo }}
         </td>
         <td>{{ v.titulo }}</td>
-        <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
+        <td>{{ niveisRegionalizacao[v.regiao?.nivel]?.nome || '-' }}</td>
         <td class="cell--number">
           {{ v.valor_base }}
         </td>

@@ -2,7 +2,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -173,7 +173,7 @@ observadoresStore.buscarTudo();
           :class="{ 'error': errors.nivel_regionalizacao }"
         >
           <option
-            v-for="nível in níveisRegionalização"
+            v-for="nível in Object.values(niveisRegionalizacao)"
             :key="nível.id"
             :value="nível.id"
           >

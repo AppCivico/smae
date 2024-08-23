@@ -1,5 +1,5 @@
 <script setup>
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
@@ -68,9 +68,7 @@ function permitirEdição(indicadorVariavel) {
     >
       <td>{{ v.titulo }}</td>
       <td>
-        {{ v.nivel_regionalizacao
-          ? níveisRegionalização.find(e => e.id == v.nivel_regionalizacao).nome
-          : '-' }}
+        {{ niveisRegionalizacao[v.nivel_regionalizacao]?.nome || '-' }}
       </td>
       <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">

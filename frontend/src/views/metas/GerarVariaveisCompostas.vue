@@ -15,7 +15,7 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -205,7 +205,7 @@ export default {
           disabled
         />
         <option
-          v-for="nível in níveisRegionalização"
+          v-for="nível in Object.values(niveisRegionalizacao)"
           :key="nível.id"
           :value="nível.id"
           :disabled="typeof singleIndicadores?.nivel_regionalizacao !== 'number'

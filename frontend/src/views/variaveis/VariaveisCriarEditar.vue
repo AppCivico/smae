@@ -18,7 +18,7 @@ import {
   variavelGlobal as schemaCriacao,
   variavelGlobalParaGeracao as schemaGeracao,
 } from '@/consts/formSchemas';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
 import dateToDate from '@/helpers/dateToDate';
@@ -27,6 +27,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
@@ -34,7 +35,6 @@ import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import { useEquipesStore } from '@/stores/equipes.store';
 
 const opcoesFormatacaoCampoData = {
   format: 'MMM/yyyy',
@@ -1086,7 +1086,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
                 :value="null"
               />
               <option
-                v-for="nível in níveisRegionalização"
+                v-for="nível in Object.values(niveisRegionalizacao)"
                 :key="nível.id"
                 :value="nível.id"
                 :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"

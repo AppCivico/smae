@@ -1,9 +1,11 @@
 <script setup>
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import { variávelComposta as schema } from '@/consts/formSchemas';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import {
@@ -12,12 +14,10 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { useIndicadoresStore } from '@/stores/indicadores.store';
 import {
   computed, defineOptions, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
 
 defineOptions({ inheritAttrs: false });
 
@@ -161,7 +161,7 @@ if (variávelId) {
           disabled
         />
         <option
-          v-for="nível in níveisRegionalização"
+          v-for="nível in Object.values(niveisRegionalizacao)"
           :key="nível.id"
           :value="nível.id"
           :disabled="typeof singleIndicadores?.nivel_regionalizacao !== 'number'
