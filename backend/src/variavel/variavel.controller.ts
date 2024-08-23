@@ -198,16 +198,6 @@ export class VariavelGlobalController {
         return '';
     }
 
-    @Get('variavel/:id/filhas')
-    @ApiBearerAuth('access-token')
-    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
-    async findFilhas(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<VariavelItemDto[]> {
-        return (await this.variavelService.findFilhas(params.id, user)) as VariavelItemDto[];
-    }
-
     // patch precisa ficar antes da rota do :id/serie-previsto
     @Patch('variavel-serie')
     @ApiBearerAuth('access-token')
