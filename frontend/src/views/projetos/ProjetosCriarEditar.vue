@@ -919,7 +919,7 @@ watch(emFoco, () => {
           class="f1 mb1"
         >
           <label class="label tc300">
-            Programa de metas&nbsp;<span class="tvermelho">*</span>
+            Programa de metas / Plano setorial&nbsp;<span class="tvermelho">*</span>
           </label>
           <Field
             name="pdm_escolhido"
