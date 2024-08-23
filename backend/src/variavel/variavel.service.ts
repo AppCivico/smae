@@ -54,6 +54,7 @@ import {
 } from './entities/variavel.entity';
 import { PrismaHelpers } from '../common/PrismaHelpers';
 import { MetaService } from '../meta/meta.service';
+import { Regiao } from 'src/regiao/entities/regiao.entity';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -1127,6 +1128,7 @@ export class VariavelService {
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
+                regiao: { select: { id: true, nivel: true, descricao: true, parente_id: true, codigo: true, pdm_codigo_sufixo: true } },
             },
             orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
             skip: offset,
@@ -1192,6 +1194,14 @@ export class VariavelService {
                     pode_editar: perm,
                     pode_excluir: perm && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
+                    regiao: r.regiao ? {
+                        id: r.regiao.id,
+                        descricao: r.regiao.descricao,
+                        codigo: r.regiao.codigo,
+                        nivel: r.regiao.nivel,
+                        parente_id: r.regiao.parente_id,
+                        pdm_codigo_sufixo: r.regiao.pdm_codigo_sufixo,
+                    } satisfies Regiao : null,
                 };
             }),
         };

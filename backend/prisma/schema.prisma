@@ -1071,14 +1071,15 @@ model Regiao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
-    removedor       Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
-    RegioesAbaixo   Regiao[]          @relation("Parente")
-    Variavel        Variavel[]
-    Etapa           Etapa[]
-    Projetos        Projeto[]
-    GeoCamadaRegiao GeoCamadaRegiao[]
+    atualizador        Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador            Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    removedor          Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    RegioesAbaixo      Regiao[]          @relation("Parente")
+    Variavel           Variavel[]
+    VariavelGlobalView ViewVariavelGlobal[]
+    Etapa              Etapa[]
+    Projetos           Projeto[]
+    GeoCamadaRegiao    GeoCamadaRegiao[]
 
     eleicoesComparecimento    EleicaoComparecimento[]
     mandatoRepresentatividade MandatoRepresentatividade[]
@@ -3744,6 +3745,8 @@ view ViewVariavelGlobal {
     orgao                   Orgao?        @relation("resp", fields: [orgao_id], references: [id])
     orgao_proprietario_id   Int?
     orgao_proprietario      Orgao?        @relation("prop", fields: [orgao_proprietario_id], references: [id])
+    regiao_id               Int?
+    regiao                  Regiao?        @relation(fields: [regiao_id], references: [id])
     planos                  Int[]
     periodicidade           Periodicidade
     inicio_medicao          DateTime?

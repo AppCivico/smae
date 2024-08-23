@@ -67,6 +67,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'inicio_medicao',
     'fim_medicao',
     'orgao',
+    'regiao',
     'possui_variaveis_filhas'
 ]) {
     orgao_proprietario: OrgaoResumo;
