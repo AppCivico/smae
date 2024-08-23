@@ -7,7 +7,11 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DistribuicaoRecursoService } from './distribuicao-recurso.service';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
-import { DistribuicaoRecursoDetailDto, ListDistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
+import {
+    DistribuicaoRecursoDetailDto,
+    ListDistribuicaoRecursoDto,
+    SeiLidoStatusDto,
+} from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 
@@ -25,8 +29,24 @@ export class DistribuicaoRecursoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterDistribuicaoRecursoDto): Promise<ListDistribuicaoRecursoDto> {
-        return { linhas: await this.distribuicaoRecursoService.findAll(filters) };
+    async findAll(
+        @Query() filters: FilterDistribuicaoRecursoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListDistribuicaoRecursoDto> {
+        return { linhas: await this.distribuicaoRecursoService.findAll(filters, user) };
+    }
+
+    @Post(':id/sei/:seiId/marcar-sei-como-lido')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.editar'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async markSeiAsRead(
+        @Param() params: FindOneParams,
+        @Body() dto: SeiLidoStatusDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.distribuicaoRecursoService.marcarComoLido(params.id, dto, user);
     }
 
     @Get(':id')

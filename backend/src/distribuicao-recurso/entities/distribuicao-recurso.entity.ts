@@ -4,6 +4,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { SeiIntegracaoDto } from '../../sei-integracao/entities/sei-entidade.entity';
+import { IsBoolean, IsString, MaxLength } from 'class-validator';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -69,6 +70,16 @@ export class DistribuicaoRecursoSeiDto {
     nome: string | null;
     processo_sei: string;
     integracao_sei: SeiIntegracaoDto | null;
+    lido: boolean;
+}
+
+export class SeiLidoStatusDto {
+    @IsString()
+    @MaxLength(20)
+    processo_sei: string;
+
+    @IsBoolean()
+    lido: boolean;
 }
 
 export class DistribuicaoHistoricoStatusDto {

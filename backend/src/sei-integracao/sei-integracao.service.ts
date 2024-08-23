@@ -59,6 +59,57 @@ export class SeiIntegracaoService {
         };
     }
 
+    async marcaLidoStatusSei(processoSei: string, userId: number, lido: boolean): Promise<void> {
+        const normalizedProcessoSei = this.normalizaProcessoSei(processoSei);
+
+        await this.prisma.$transaction(async (prisma) => {
+            const statusSei = await prisma.statusSEI.findUnique({
+                where: { processo_sei: normalizedProcessoSei },
+                select: { usuarios_lidos: true },
+            });
+
+            if (!statusSei) {
+                throw new Error(`StatusSEI not found for processo_sei: ${normalizedProcessoSei}`);
+            }
+
+            let updatedUsuariosLidos: number[];
+            if (lido) {
+                updatedUsuariosLidos = [...new Set([...statusSei.usuarios_lidos, userId])];
+            } else {
+                updatedUsuariosLidos = statusSei.usuarios_lidos.filter((id) => id !== userId);
+            }
+
+            await prisma.statusSEI.update({
+                where: { processo_sei: normalizedProcessoSei },
+                data: { usuarios_lidos: updatedUsuariosLidos },
+            });
+        });
+    }
+
+    async verificaStatusLeituraSei(processosSei: string[], userId: number): Promise<Map<string, boolean>> {
+        processosSei = processosSei.map(this.normalizaProcessoSei);
+
+        const readStatus = await this.prisma.statusSEI.findMany({
+            where: {
+                processo_sei: { in: processosSei },
+                usuarios_lidos: { has: userId },
+            },
+            select: {
+                processo_sei: true,
+            },
+        });
+
+        const readStatusMap = new Map<string, boolean>();
+        processosSei.forEach((processo) => {
+            readStatusMap.set(
+                processo,
+                readStatus.some((status) => status.processo_sei === processo)
+            );
+        });
+
+        return readStatusMap;
+    }
+
     async buscaSeiRelatorio(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
         params.processo_sei = this.normalizaProcessoSei(params.processo_sei);
 
@@ -93,6 +144,7 @@ export class SeiIntegracaoService {
                         sei_atualizado_em: null,
                         relatorio_sincronizado_em: now,
                         proxima_sincronizacao: this.calculaProximaSync(),
+                        usuarios_lidos: [],
                     },
                 });
             } else {
@@ -107,6 +159,7 @@ export class SeiIntegracaoService {
                     updateData.sei_atualizado_em = now;
                     updateData.json_resposta = JSON.stringify(dados);
                     updateData.sei_hash = newHash;
+                    updateData.usuarios_lidos = []; // mudou o hash, então reset a lista de usuários que leram
                 }
 
                 this.logger.verbose(

@@ -6855,6 +6855,8 @@ model StatusSEI {
     proxima_sincronizacao DateTime @default(now())
     sincronizacao_errmsg  String?
 
+    usuarios_lidos Int[]
+
     sei_atualizado_em    DateTime? @db.Timestamptz(6)
     resumo_atualizado_em DateTime? @db.Timestamptz(6)
 

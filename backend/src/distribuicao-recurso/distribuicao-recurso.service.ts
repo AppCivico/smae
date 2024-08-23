@@ -9,6 +9,7 @@ import {
     DistribuicaoRecursoDetailDto,
     DistribuicaoRecursoDto,
     DistribuicaoRecursoSeiDto,
+    SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
@@ -348,7 +349,7 @@ export class DistribuicaoRecursoService {
         return { id: created.id };
     }
 
-    async findAll(filters: FilterDistribuicaoRecursoDto): Promise<DistribuicaoRecursoDto[]> {
+    async findAll(filters: FilterDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto[]> {
         const transferencia = await this.prisma.transferencia.findFirstOrThrow({
             where: {
                 id: filters.transferencia_id,
@@ -470,6 +471,10 @@ export class DistribuicaoRecursoService {
 
         const processo_seis = rows.map((r) => r.registros_sei.map((s) => s.processo_sei));
         const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
+        const readStatusMap = await this.seiService.verificaStatusLeituraSei(
+            processo_seis.flatMap((p) => p),
+            user.id
+        );
 
         return rows.map((r) => {
             let pode_registrar_status: boolean = true;
@@ -521,6 +526,7 @@ export class DistribuicaoRecursoService {
                         nome: s.nome,
                         processo_sei: formataSEI(s.processo_sei),
                         integracao_sei: integracoes_sei.find((i) => i.processo_sei == s.processo_sei) ?? null,
+                        lido: readStatusMap.get(s.processo_sei) ?? false,
                     };
                 }),
                 historico_status: r.status.map((status, idx) => {
@@ -736,6 +742,7 @@ export class DistribuicaoRecursoService {
 
         const processo_seis = row.registros_sei.map((s) => s.processo_sei);
         const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
+        const readStatusMap = await this.seiService.verificaStatusLeituraSei(processo_seis, user.id);
 
         return {
             id: row.id,
@@ -781,6 +788,7 @@ export class DistribuicaoRecursoService {
                     nome: s.nome,
                     processo_sei: formataSEI(s.processo_sei),
                     integracao_sei: integracoes.find((i) => i.processo_sei == s.processo_sei) ?? null,
+                    lido: readStatusMap.get(s.processo_sei) ?? false,
                 } satisfies DistribuicaoRecursoSeiDto;
             }),
             parlamentares: row.parlamentares,
@@ -1731,5 +1739,11 @@ export class DistribuicaoRecursoService {
             }
         }
         await Promise.all(updates);
+    }
+
+    async marcarComoLido(id: number, dto: SeiLidoStatusDto, user: PessoaFromJwt): Promise<void> {
+        await this.findOne(id, user);
+
+        await this.seiService.marcaLidoStatusSei(dto.processo_sei, user.id, dto.lido);
     }
 }
