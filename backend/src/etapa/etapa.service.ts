@@ -1,6 +1,5 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
-import { DateTime } from 'luxon';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -678,7 +677,8 @@ export class EtapaService {
                 dto.variavel.codigo,
                 user,
                 prismaTx,
-                now
+                now,
+                tipoPdm == 'PS' ? 'Global' : 'PDM'
             );
 
             for (const r of etapaAtualizada.responsaveis) {

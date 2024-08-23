@@ -2958,7 +2958,8 @@ export class VariavelService {
         codigo: string,
         user: PessoaFromJwt,
         prismaTxn: Prisma.TransactionClient,
-        now: Date
+        now: Date,
+        tipo: TipoVariavel = 'PDM'
     ): Promise<RecordWithId> {
         const indicador = await prismaTxn.indicador.findFirstOrThrow({
             where: { id: dto.indicador_id },
@@ -2992,6 +2993,7 @@ export class VariavelService {
                 periodicidade: indicador.periodicidade,
                 inicio_medicao: indicador.inicio_medicao,
                 fim_medicao: indicador.fim_medicao,
+                tipo: tipo,
             },
             select: { id: true },
         });
