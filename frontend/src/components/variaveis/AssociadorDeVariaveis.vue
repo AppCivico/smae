@@ -209,7 +209,11 @@ async function associar(encerrar = false) {
 }
 
 function selecionarGrupo(grupo: VariavelGlobalItemDto[]) {
-  variaveisSelecionadas.value.push(...grupo.map((v) => v.id));
+  grupo.forEach((v) => {
+    if (!variaveisSelecionadas.value.includes(v.id)) {
+      variaveisSelecionadas.value.push(v.id);
+    }
+  });
 }
 
 variaveisGlobaisStore.buscarTudo({
