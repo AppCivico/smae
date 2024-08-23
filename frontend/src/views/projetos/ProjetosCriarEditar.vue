@@ -934,13 +934,24 @@ watch(emFoco, () => {
             <option :value="0">
               Selecionar
             </option>
-            <option
-              v-for="item in pdmsSimplificadosPorTipo['PDM']"
-              :key="item.id"
-              :value="item.id"
-            >
-              {{ item.nome }}
-            </option>
+            <optgroup label="Programa de metas">
+              <option
+                v-for="item in pdmsSimplificadosPorTipo['PDM']"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.nome }}
+              </option>
+            </optgroup>
+            <optgroup label="Planos setoriais">
+              <option
+                v-for="item in pdmsSimplificadosPorTipo['PS']"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.nome }}
+              </option>
+            </optgroup>
           </Field>
           <ErrorMessage
             name="pdm_escolhido"
