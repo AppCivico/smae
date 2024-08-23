@@ -20,137 +20,72 @@
     Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
   </p>
 
+  <div class="flex flexwrap g1 debug">
+    <textarea
+      class="f1"
+      cols="30"
+      rows="10"
+    >
+filhasPorMaePorNivelDeRegiao:{{ filhasPorMaePorNivelDeRegiao }}</textarea>
+    <textarea
+      class="f1"
+      cols="30"
+      rows="10"
+    >
+variaveisSelecionadas:{{ variaveisSelecionadas }}</textarea>
+  </div>
+
   <form
     ref="formularioDeAssociacao"
     @submit.prevent="associar(false)"
   >
-    <div
-      role="region"
-      aria-labelledby="titulo-da-pagina"
-      tabindex="0"
-      class="mb2"
+    <p class="mb1">
+      <strong>
+        {{ variaveisSelecionadas.length }}
+      </strong>
+      <template v-if="variaveisSelecionadas.length === 1">
+        variável selecionada
+      </template>
+      <template v-else>
+        variáveis selecionadas
+      </template>
+      de {{ lista.length }}.
+    </p>
+
+    <TabelaDeVariaveisGlobais
+      :numero-de-colunas-extras="1"
     >
-      <table
-        class="tablemain"
-      >
+      <template #definicaoPrimeirasColunas>
         <col class="col--botão-de-ação">
-        <col class="col--minimum">
-        <col>
-        <col>
-        <col class="col--minimum">
-        <col class="col--minimum">
-        <col>
-        <thead>
-          <tr>
-            <th />
-            <th>
-              Código
-            </th>
-            <th>
-              {{ schema.fields.titulo?.spec.label }}
-            </th>
-            <th>
-              {{ schema.fields.fonte_id?.spec.label }}
-            </th>
-            <th class="cell--nowrap">
-              {{ schema.fields.periodicidade?.spec.label }}
-            </th>
-            <th>
-              {{ schema.fields.orgao_id?.spec.label }}
-            </th>
-            <th>
-              Planos
-            </th>
-          </tr>
-        </thead>
+      </template>
+      <template #comecoLinhaCabecalho>
+        <td />
+      </template>
 
-        <tr
-          v-for="item in lista"
-          :key="item.id"
-        >
-          <td>
-            <input
-              v-model="variaveisSelecionadas"
-              type="checkbox"
-              title="selecionar"
-              :value="item.id"
-              name="variavel_ids"
-            >
-          </td>
+      <template #comecoLinhaVariavel="{ item }">
+        <td>
+          <input
+            v-if="!item?.possui_variaveis_filhas"
+            v-model.number="variaveisSelecionadas"
+            type="checkbox"
+            title="selecionar"
+            :value="item?.id"
+            name="variavel_ids"
+          >
+        </td>
+      </template>
 
-          <td class="cell--nowrap">
-            {{ item.codigo }}
-          </td>
-          <th>
-            <router-link
-              v-if="item.pode_editar"
-              :to="{ name: 'variaveisEditar', params: { variavelId: item.id } }"
-              class="tprimary"
-              target="_blank"
-            >
-              {{ item.titulo }}
-            </router-link>
-          </th>
-          <td>
-            {{ item.fonte?.nome || item.fonte || '-' }}
-          </td>
-          <td class="cell--nowrap">
-            {{ item.periodicidade }}
-          </td>
-          <td class="cell--nowrap">
-            <abbr
-              v-if="item.orgao"
-              :title="item.orgao.descricao"
-            >
-              {{ item.orgao.sigla || item.orgao }}
-            </abbr>
-          </td>
-          <td class="contentStyle">
-            <ul v-if="Array.isArray(item.planos)">
-              <li
-                v-for="plano in item.planos"
-                :key="plano.id"
-              >
-                <component
-                  :is="temPermissãoPara([
-                    'CadastroPS.administrador',
-                    'CadastroPS.administrador_no_orgao'
-                  ])
-                    ? 'router-link'
-                    : 'span'"
-                  :to="{
-                    name: 'planosSetoriaisResumo', params: {
-                      planoSetorialId:
-                        plano.id
-                    }
-                  }"
-                  target="_blank"
-                  :title="plano.nome?.length > 36 ? plano.nome : null"
-                >
-                  {{ truncate(plano.nome, 36) }}
-                </component>
-              </li>
-            </ul>
-          </td>
-        </tr>
-
-        <tr v-if="chamadasPendentes.lista">
-          <td colspan="7">
-            Carregando
-          </td>
-        </tr>
-        <tr v-else-if="erros.lista">
-          <td colspan="7">
-            Erro: {{ erros.lista }}
-          </td>
-        </tr>
-        <tr v-else-if="!lista.length">
-          <td colspan="7">
-            Nenhum resultado encontrado.
-          </td>
-        </tr>
-      </table>
-    </div>
+      <template #comecoLinhaAgrupadora="{ grupo }">
+        <td>
+          <button
+            type="button"
+            @click="selecionarGrupo(grupo)"
+          >
+            Selecionar {{ grupo.length }}
+          </button>
+        </td>
+      </template>
+    </TabelaDeVariaveisGlobais>
 
     <p class="mb1">
       <strong>
@@ -197,12 +132,11 @@
 </template>
 <script setup lang="ts">
 import type { Indicador } from '@/../../backend/src/indicador/entities/indicador.entity';
+import type { VariavelGlobalItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
-import { variavelGlobal as schema } from '@/consts/formSchemas';
+import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
-import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import type { PropType } from 'vue';
@@ -232,11 +166,8 @@ const valoresIniciais = {
 
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 const {
-  lista, chamadasPendentes, erros, paginacao,
+  lista, chamadasPendentes, paginacao, filhasPorMaePorNivelDeRegiao,
 } = storeToRefs(variaveisGlobaisStore);
-
-const authStore = useAuthStore();
-const { temPermissãoPara } = storeToRefs(authStore);
 
 const formularioDeAssociacao = ref<HTMLFormElement | null>(null);
 const variaveisSelecionadas = ref<number[]>([]);
@@ -275,6 +206,10 @@ async function associar(encerrar = false) {
   }).finally(() => {
     envioPendente.value = false;
   });
+}
+
+function selecionarGrupo(grupo: VariavelGlobalItemDto[]) {
+  variaveisSelecionadas.value.push(...grupo.map((v) => v.id));
 }
 
 variaveisGlobaisStore.buscarTudo({

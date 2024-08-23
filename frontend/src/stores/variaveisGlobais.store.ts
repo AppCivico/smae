@@ -5,22 +5,23 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = VariavelGlobalItemDto[];
-
 interface ChamadasPendentes {
   lista: boolean;
+  variaveisFilhasPorMae: { [key: string | number]: boolean };
   emFoco: boolean;
 }
 
 interface Erros {
   lista: unknown;
+  variaveisFilhasPorMae: { [key: string | number]: unknown };
   emFoco: unknown;
 }
 
 interface Estado {
-  lista: Lista;
+  lista: VariavelGlobalItemDto[];
   emFoco: (VariavelDetailDto & VariavelGlobalDetailDto) | null;
   seriesAgrupadas: ListSeriesAgrupadas | null;
+  variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
@@ -34,18 +35,23 @@ interface Estado {
   };
 }
 
+const caminhoDeBuscaDeVariaveis = `${baseUrl}/variavel`;
+
 export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
     seriesAgrupadas: null,
+    variaveisFilhasPorMae: {},
 
     chamadasPendentes: {
       lista: false,
+      variaveisFilhasPorMae: {},
       emFoco: false,
     },
     erros: {
       lista: null,
+      variaveisFilhasPorMae: {},
       emFoco: null,
     },
     paginacao: {
@@ -70,6 +76,24 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.emFoco = false;
     },
 
+    async buscarFilhas(variavelId: number, params = {}): Promise<void> {
+      this.chamadasPendentes.variaveisFilhasPorMae[variavelId] = true;
+      this.erros.variaveisFilhasPorMae[variavelId] = null;
+
+      try {
+        const resposta = await this.requestS.get(caminhoDeBuscaDeVariaveis, {
+          ipp: 1000,
+          ...params,
+          variavel_mae_id: variavelId,
+        });
+
+        this.variaveisFilhasPorMae[variavelId] = resposta.linhas.slice();
+      } catch (erro: unknown) {
+        this.erros.variaveisFilhasPorMae[variavelId] = erro;
+      }
+      this.chamadasPendentes.variaveisFilhasPorMae[variavelId] = false;
+    },
+
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.erros.lista = null;
@@ -82,7 +106,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
           pagina_corrente: paginaCorrente,
           tem_mais: temMais,
           total_registros: totalRegistros,
-        } = await this.requestS.get(`${baseUrl}/variavel`, params);
+        } = await this.requestS.get(caminhoDeBuscaDeVariaveis, params);
 
         this.lista = linhas;
 
@@ -225,5 +249,25 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
     variaveisPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae)
+      .reduce((acc, maeId) => {
+        const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce((acc2, cur) => {
+          const regiaoNivel = cur.regiao?.nivel || 0;
+
+          if (!acc2[regiaoNivel]) {
+            // eslint-disable-next-line no-param-reassign
+            acc2[regiaoNivel] = [];
+          }
+
+          acc2[regiaoNivel].push(cur);
+
+          return acc2;
+        }, {} as { [key: string]: VariavelGlobalItemDto[] });
+
+        acc[maeId] = filhasAgrupadas;
+
+        return acc;
+      }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
   },
 });
