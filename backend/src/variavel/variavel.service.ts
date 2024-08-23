@@ -1128,7 +1128,16 @@ export class VariavelService {
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
-                regiao: { select: { id: true, nivel: true, descricao: true, parente_id: true, codigo: true, pdm_codigo_sufixo: true } },
+                regiao: {
+                    select: {
+                        id: true,
+                        nivel: true,
+                        descricao: true,
+                        parente_id: true,
+                        codigo: true,
+                        pdm_codigo_sufixo: true,
+                    },
+                },
             },
             orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
             skip: offset,
@@ -1194,14 +1203,16 @@ export class VariavelService {
                     pode_editar: perm,
                     pode_excluir: perm && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
-                    regiao: r.regiao ? {
-                        id: r.regiao.id,
-                        descricao: r.regiao.descricao,
-                        codigo: r.regiao.codigo,
-                        nivel: r.regiao.nivel,
-                        parente_id: r.regiao.parente_id,
-                        pdm_codigo_sufixo: r.regiao.pdm_codigo_sufixo,
-                    } satisfies Regiao : null,
+                    regiao: r.regiao
+                        ? ({
+                              id: r.regiao.id,
+                              descricao: r.regiao.descricao,
+                              codigo: r.regiao.codigo,
+                              nivel: r.regiao.nivel,
+                              parente_id: r.regiao.parente_id,
+                              pdm_codigo_sufixo: r.regiao.pdm_codigo_sufixo,
+                          } satisfies Regiao)
+                        : null,
                 };
             }),
         };
@@ -1379,6 +1390,7 @@ export class VariavelService {
         const selfBefUpdate = await this.prisma.variavel.findFirstOrThrow({
             where: { id: variavelId, tipo, removido_em: null },
             select: {
+                titulo: true,
                 periodicidade: true,
                 supraregional: true,
                 variavel_categorica_id: true,
@@ -1386,7 +1398,7 @@ export class VariavelService {
                 inicio_medicao: true,
                 fim_medicao: true,
                 variavel_mae_id: true,
-                variaveis_filhas: { select: { id: true } },
+                variaveis_filhas: { select: { id: true, titulo: true } },
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
@@ -1566,38 +1578,46 @@ export class VariavelService {
             });
 
             // Caso tenha filhas, deve atualizar as configs delas.
-            if (selfBefUpdate.variaveis_filhas.length > 0) {
-                await prismaTxn.variavel.updateMany({
-                    where: {
-                        id: { in: selfBefUpdate.variaveis_filhas.map((v) => v.id) },
-                        removido_em: null,
-                    },
-                    data: {
-                        titulo: dto.titulo,
-                        acumulativa: dto.acumulativa,
-                        mostrar_monitoramento: dto.mostrar_monitoramento,
-                        unidade_medida_id: dto.unidade_medida_id,
-                        ano_base: dto.ano_base,
-                        valor_base: dto.valor_base,
-                        periodicidade: dto.periodicidade,
-                        orgao_id: dto.orgao_id,
-                        variavel_categorica_id: dto.variavel_categorica_id,
-                        casas_decimais: dto.casas_decimais,
-                        atraso_meses: dto.atraso_meses,
-                        inicio_medicao: dto.inicio_medicao,
-                        fim_medicao: dto.fim_medicao,
+            const varsFilhasUpdates = [];
+            for (const variavelFilha of selfBefUpdate.variaveis_filhas) {
+                let tituloFilha: string | undefined = dto.titulo;
+                if (dto.titulo && !variavelFilha.titulo.includes(dto.titulo)) {
+                    tituloFilha = variavelFilha.titulo.replace(selfBefUpdate.titulo, dto.titulo);
+                }
 
-                        dado_aberto: dto.dado_aberto,
-                        metodologia: dto.metodologia,
-                        descricao: dto.descricao,
-                        fonte_id: dto.fonte_id,
-                        orgao_proprietario_id: dto.orgao_proprietario_id,
+                varsFilhasUpdates.push(
+                    prismaTxn.variavel.updateMany({
+                        where: {
+                            id: { in: selfBefUpdate.variaveis_filhas.map((v) => v.id) },
+                            removido_em: null,
+                        },
+                        data: {
+                            titulo: tituloFilha,
+                            acumulativa: dto.acumulativa,
+                            mostrar_monitoramento: dto.mostrar_monitoramento,
+                            unidade_medida_id: dto.unidade_medida_id,
+                            ano_base: dto.ano_base,
+                            valor_base: dto.valor_base,
+                            periodicidade: dto.periodicidade,
+                            orgao_id: dto.orgao_id,
+                            variavel_categorica_id: dto.variavel_categorica_id,
+                            casas_decimais: dto.casas_decimais,
+                            atraso_meses: dto.atraso_meses,
+                            inicio_medicao: dto.inicio_medicao,
+                            fim_medicao: dto.fim_medicao,
 
-                        ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
+                            dado_aberto: dto.dado_aberto,
+                            metodologia: dto.metodologia,
+                            descricao: dto.descricao,
+                            fonte_id: dto.fonte_id,
+                            orgao_proprietario_id: dto.orgao_proprietario_id,
 
-                        suspendida_em: suspendida ? now : null,
-                    }
-                });
+                            ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
+
+                            suspendida_em: suspendida ? now : null,
+                        },
+                    })
+                );
             }
 
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
