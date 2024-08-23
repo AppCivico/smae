@@ -531,7 +531,9 @@ export class VariavelService {
         codigo: string,
         variavelMaeId?: number | null
     ) {
-        // nao deixar criar acumulativa com categorica
+        if (dto.variavel_categorica_id && dto.acumulativa)
+            throw new BadRequestException('Variáveis categóricas não podem ser acumulativas');
+
         logger = logger ?? LoggerWithLog('Criação de variável');
 
         variavelMaeId = variavelMaeId ?? null;
