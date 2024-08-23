@@ -424,7 +424,7 @@ export class VariavelService {
                         prismaTxn,
                         {
                             ...dto, // aqui eu deixo tudo tbm, só pra não duplicar 100%
-                            titulo: dto.titulo,
+                            titulo: dto.titulo + (tipo == TipoVariavel.Global ? ' - Supra' : ''),
                         },
                         indicador,
                         responsaveis,
@@ -1546,8 +1546,7 @@ export class VariavelService {
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
-                    // TODO: tratar titulo
-                    //titulo: dto.titulo,
+                    titulo: dto.titulo,
                     acumulativa: dto.acumulativa,
                     mostrar_monitoramento: dto.mostrar_monitoramento,
                     unidade_medida_id: dto.unidade_medida_id,
