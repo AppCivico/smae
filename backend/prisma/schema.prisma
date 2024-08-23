@@ -1646,6 +1646,7 @@ model Variavel {
     FormulaCompostaCalc            FormulaComposta[]                @relation("calc")
     FormulaCompostaMae             FormulaComposta[]                @relation("mae")
     FormulaCompostaRelVariavel     FormulaCompostaRelVariavel[]
+    ViewVariavelGlobalFilhas       ViewVariavelGlobal[]             @relation("view_filha")
 
     @@index([regiao_id])
     @@map("variavel")
@@ -3752,6 +3753,8 @@ view ViewVariavelGlobal {
     tipo                    TipoVariavel
     fonte_id                Int?
     fonte_nome              String?
+    variavel_mae_id         Int?
+    variavel_mae            Variavel?     @relation("view_filha", fields: [variavel_mae_id], references: [id])
     possui_variaveis_filhas Boolean
 
     @@map("view_variavel_global")

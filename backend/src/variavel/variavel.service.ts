@@ -1122,6 +1122,7 @@ export class VariavelService {
         const linhas = await this.prisma.viewVariavelGlobal.findMany({
             where: {
                 AND: filterSet,
+                variavel_mae_id: filters.variavel_mae_id ?? null,
             },
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },

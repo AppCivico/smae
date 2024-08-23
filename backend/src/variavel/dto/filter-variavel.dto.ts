@@ -149,4 +149,9 @@ export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto,
     @IsInt()
     @Transform(NumberTransform)
     not_indicador_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    variavel_mae_id?: number;
 }

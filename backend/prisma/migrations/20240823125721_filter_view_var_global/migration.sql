@@ -51,5 +51,3 @@ FROM
     LEFT JOIN fonte_variavel fonte ON v.fonte_id = fonte.id
 WHERE
     v.removido_em IS NULL;
-
-
