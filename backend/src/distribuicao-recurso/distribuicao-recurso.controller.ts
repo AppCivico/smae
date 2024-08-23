@@ -36,7 +36,7 @@ export class DistribuicaoRecursoController {
         return { linhas: await this.distribuicaoRecursoService.findAll(filters, user) };
     }
 
-    @Post(':id/sei/:seiId/marcar-sei-como-lido')
+    @Post(':id/marcar-sei-como-lido')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.editar'])
     @ApiNoContentResponse()
