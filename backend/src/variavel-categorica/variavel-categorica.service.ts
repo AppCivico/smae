@@ -22,7 +22,7 @@ export class VariavelCategoricaService {
 
         if (dto.valores.length === 0)
             throw new BadRequestException(`Valores de variável categórica binária deve ter pelo menos 1 valor.`);
-
+        this.validarOrdemUnica(dto.valores);
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -92,7 +92,7 @@ export class VariavelCategoricaService {
                 tipo: filters.tipo,
                 AND: {
                     NOT: { tipo: 'Cronograma' },
-                }
+                },
             },
             orderBy: { titulo: 'asc' },
             select: {
@@ -156,6 +156,8 @@ export class VariavelCategoricaService {
             if (dto.valores.length == 0)
                 throw new BadRequestException(`Valores de variável categórica deve ter pelo menos 1 valor.`);
             if (selfVariavelCat.tipo == 'Binaria') this.checkTipoBinaria(dto);
+
+            this.validarOrdemUnica(dto.valores);
         }
 
         const jaEmUso = await this.prisma.variavelCategorica.count({
@@ -339,5 +341,13 @@ export class VariavelCategoricaService {
 
         await Promise.all(operations);
         return;
+    }
+
+    private validarOrdemUnica(valores: CreateVariavelCategoricaValorDto[]) {
+        const ordens = valores.map((v) => v.ordem);
+        const ordensUnicas = new Set(ordens);
+        if (ordens.length !== ordensUnicas.size) {
+            throw new BadRequestException('Valores de ordem devem ser únicos.');
+        }
     }
 }
