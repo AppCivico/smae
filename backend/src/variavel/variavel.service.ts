@@ -1362,6 +1362,7 @@ export class VariavelService {
         const total_rows = await this.prisma.viewVariavelGlobal.count({
             where: {
                 AND: filterSet,
+                variavel_mae_id: filters.variavel_mae_id ?? null,
             },
         });
 
