@@ -903,7 +903,7 @@ export class VariavelService {
             where: {
                 AND: whereSet,
                 tipo: tipo == 'Global' ? { in: ['Global', 'Calculada'] } : tipo,
-                variavel_mae_id: null,
+                variavel_mae_id: filters.variavel_mae_id ?? null,
             },
             select: {
                 id: true,
