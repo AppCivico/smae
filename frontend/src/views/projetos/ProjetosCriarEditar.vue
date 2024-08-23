@@ -115,7 +115,7 @@ const orgaosDisponiveisPorPortolio = computed(() => portfolioStore.lista.reduce(
 
 const possíveisOrigens = [
   {
-    texto: 'Programa de Metas',
+    texto: 'Programa de metas / Plano setorial',
     valor: 'PdmSistema',
   },
   {
