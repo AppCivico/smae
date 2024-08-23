@@ -1533,8 +1533,8 @@ export class VariavelService {
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
-                    titulo: dto.titulo,
-                    codigo: dto.codigo,
+                    // TODO: tratar titulo
+                    //titulo: dto.titulo,
                     acumulativa: dto.acumulativa,
                     mostrar_monitoramento: dto.mostrar_monitoramento,
                     unidade_medida_id: dto.unidade_medida_id,
@@ -1564,6 +1564,41 @@ export class VariavelService {
                     fim_medicao: true,
                 },
             });
+
+            // Caso tenha filhas, deve atualizar as configs delas.
+            if (selfBefUpdate.variaveis_filhas.length > 0) {
+                await prismaTxn.variavel.updateMany({
+                    where: {
+                        id: { in: selfBefUpdate.variaveis_filhas.map((v) => v.id) },
+                        removido_em: null,
+                    },
+                    data: {
+                        titulo: dto.titulo,
+                        acumulativa: dto.acumulativa,
+                        mostrar_monitoramento: dto.mostrar_monitoramento,
+                        unidade_medida_id: dto.unidade_medida_id,
+                        ano_base: dto.ano_base,
+                        valor_base: dto.valor_base,
+                        periodicidade: dto.periodicidade,
+                        orgao_id: dto.orgao_id,
+                        variavel_categorica_id: dto.variavel_categorica_id,
+                        casas_decimais: dto.casas_decimais,
+                        atraso_meses: dto.atraso_meses,
+                        inicio_medicao: dto.inicio_medicao,
+                        fim_medicao: dto.fim_medicao,
+
+                        dado_aberto: dto.dado_aberto,
+                        metodologia: dto.metodologia,
+                        descricao: dto.descricao,
+                        fonte_id: dto.fonte_id,
+                        orgao_proprietario_id: dto.orgao_proprietario_id,
+
+                        ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
+
+                        suspendida_em: suspendida ? now : null,
+                    }
+                });
+            }
 
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
             if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
