@@ -79,6 +79,12 @@
           />
         </tr>
 
+        <tr v-if="chamadasPendentes.variaveisFilhasPorMae[item.id]">
+          <td :colspan="7 + Number($props.numeroDeColunasExtras)">
+            <LoadingComponent class="horizontal" />
+          </td>
+        </tr>
+
         <tr v-if="erros.variaveisFilhasPorMae[item.id]">
           <td :colspan="7 + Number($props.numeroDeColunasExtras)">
             {{ erros.variaveisFilhasPorMae[item.id] }}
