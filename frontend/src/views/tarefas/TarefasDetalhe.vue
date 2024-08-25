@@ -57,7 +57,7 @@
     </dl>
     <dl>
       <div class="flex spacebetween center mt2 mb2">
-        <dt class="tc300 w700 t16">
+        <dt class="tc300 t16">
           Dependências
         </dt>
         <hr class="ml2 f1">
@@ -126,8 +126,8 @@
     </div>
 
     <dl class="mt1 mb1">
-      <div class="flex spacebetween center">
-        <dt class="tc300 w700 t16">
+      <div class="flex spacebetween center mb1">
+        <dt class="tc300 t16">
           Execução da atividade
         </dt>
         <hr class="ml2 f1">
