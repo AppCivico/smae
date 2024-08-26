@@ -23,6 +23,7 @@ import {
     type CreateProjetoDto,
 } from './generated';
 import Decimal from 'decimal.js';
+import { exit } from 'process';
 if (!process.env.BASE_PATH) throw new Error('BASE_PATH for API is required');
 if (!process.env.ACCESS_TOKEN) throw new Error('ACCESS_TOKEN is required');
 if (!process.env.DB_PATH) throw new Error('env DB_PATH for database is required');
@@ -212,8 +213,7 @@ async function main() {
         console.log('Importação não pode ser realizada');
         return;
     }
-    const empreendimento2id: Record<string, number> = {};
-    /*
+
     const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
     const empreendimentosMap: Record<string, number> = {};
     for (const emp of empreendimentos.data.linhas) {
@@ -225,6 +225,7 @@ async function main() {
         const exists = empreendimentosMap[row.rel_empreendimento_id];
         if (exists) continue;
 
+        console.log('Criando empreendimento', row.rel_empreendimento_id);
         try {
             const emp = await empreendimentoApi.empreendimentoControllerCreate({
                 CreateEmpreendimentoDto: {
@@ -232,14 +233,15 @@ async function main() {
                     identificador: row.rel_empreendimento_id,
                 },
             });
-            empreendimento2id[row.rel_empreendimento_id] = emp.data.id;
+            empreendimentosMap[row.rel_empreendimento_id] = emp.data.id;
         } catch (error) {
             console.log('Erro ao criar empreendimento', row.projeto_nome, row.rel_empreendimento_id);
             console.error(row.rel_empreendimento_id, (error as any).response?.data);
         }
-    }*/
+    }
 
     for (const row of rows) {
+        if (!row.rel_empreendimento_id) continue;
         let origem_tipo: ProjetoOrigemTipo = 'Outro';
         let iniciativa_id: number | undefined;
         let meta_id: number | undefined;
@@ -291,7 +293,9 @@ async function main() {
             orgao_executor_id: row.rel_orgao_executor_id
                 ? ensureIdExists(orgao2id[row.rel_orgao_executor_id])
                 : undefined,
-            empreendimento_id: empreendimento2id[row.rel_empreendimento_id],
+            empreendimento_id: row.rel_empreendimento_id
+                ? ensureIdExists(empreendimentosMap[row.rel_empreendimento_id])
+                : undefined,
             mdo_detalhamento: row.mdo_detalhamento ?? '',
 
             previsao_inicio: row.previsao_inicio?.toISOString().substring(0, 10) ?? (null as any),
@@ -371,15 +375,16 @@ async function main() {
             await projetoApi.projetoMDOControllerUpdate({
                 id: row.projeto_id,
                 UpdateProjetoDto: {
-                    regiao_ids: info.regiao_ids,
-                    previsao_inicio: info.previsao_inicio,
-                    previsao_termino: info.previsao_termino,
-                    responsaveis_no_orgao_gestor: info.responsaveis_no_orgao_gestor,
-                    responsavel_id: info.responsavel_id,
-                    secretario_colaborador: info.secretario_colaborador,
-                    secretario_executivo: info.secretario_executivo,
-                    secretario_responsavel: info.secretario_responsavel,
-                    colaboradores_no_orgao: info.colaboradores_no_orgao,
+                    empreendimento_id: info.empreendimento_id,
+                    //                    regiao_ids: info.regiao_ids,
+                    //                    previsao_inicio: info.previsao_inicio,
+                    //                    previsao_termino: info.previsao_termino,
+                    //                    responsaveis_no_orgao_gestor: info.responsaveis_no_orgao_gestor,
+                    //                    responsavel_id: info.responsavel_id,
+                    //                    secretario_colaborador: info.secretario_colaborador,
+                    //                    secretario_executivo: info.secretario_executivo,
+                    //                    secretario_responsavel: info.secretario_responsavel,
+                    //                    colaboradores_no_orgao: info.colaboradores_no_orgao,
                 },
             });
             console.log(`Projeto ${row.projeto_nome} atualizado com sucesso!`);
@@ -387,9 +392,6 @@ async function main() {
             console.log(`Erro ao atualizar projeto ${row.projeto_nome}`);
             console.error((error as any).response?.data);
         }
-
-
-
 
         /*
         const can_associate = row.parsed_processos_sei.length == 1 && row.parsed_contratos.length == 1;
