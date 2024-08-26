@@ -3,9 +3,6 @@
     {{ $props.linha.codigo }}
   </td>
   <th>
-    <code class="debug">
-      {{ $props.linha.id }}
-    </code> -
     {{ $props.linha.titulo }}
   </th>
   <td>
