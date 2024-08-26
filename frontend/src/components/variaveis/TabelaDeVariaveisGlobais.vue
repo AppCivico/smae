@@ -191,10 +191,7 @@ defineProps({
       String,
     ],
     default: 0,
-    validator: (value) => {
-      const parsed = Number(value);
-      return !Number.isNaN(parsed) && parsed >= 0;
-    },
+    validator: (value) => !!(Number(value)),
   },
 });
 
