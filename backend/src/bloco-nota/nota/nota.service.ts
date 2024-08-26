@@ -4,12 +4,15 @@ import { Nota, Prisma, TipoNota } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { CONST_TIPO_NOTA_DIST_RECURSO, CONST_TIPO_NOTA_TRANSF_GOV } from '../../common/consts';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota.service';
 import { TipoNotaService } from '../tipo-nota/tipo-nota.service';
+import { FilterNotaComunicadoDto, NotaComunicadoItemDto } from './dto/comunicados.dto';
 import {
     BuscaNotaDto,
     CreateNotaDto,
@@ -20,7 +23,10 @@ import {
     TipoNotaItem,
     UpdateNotaDto,
 } from './dto/nota.dto';
-import { CONST_TIPO_NOTA_DIST_RECURSO } from '../../common/consts';
+
+class NextPageTokenJwtBody {
+    offset: number;
+}
 
 const JWT_AUD = 'nt';
 type JwtToken = {
@@ -60,7 +66,7 @@ export class NotaService {
 
     async create(
         dto: CreateNotaDto,
-        user: PessoaFromJwt,
+        user: PessoaFromJwt | { id: number },
         prismaCtx?: Prisma.TransactionClient
     ): Promise<RecordWithIdJwt> {
         const blocoId = this.blocoService.checkToken(dto.bloco_token);
@@ -70,7 +76,8 @@ export class NotaService {
         if (!tipo.permite_revisao && dto.rever_em) delete dto.rever_em;
         if (!tipo.permite_email && dto.dispara_email) dto.dispara_email = false;
 
-        if (!user.orgao_id) throw new BadRequestException('Necessário ter órgão para criar uma nota');
+        if ('modulo_sistema' in user && !user.orgao_id)
+            throw new BadRequestException('Necessário ter órgão para criar uma nota');
 
         // acredito que podemos rever isso, para que notas possam sim ser private mas encaminhadas para órgãos
         // a questão é que o publico sempre aparece na listagem, sem qualquer restrição, fazendo com que o encaminhamento
@@ -87,12 +94,15 @@ export class NotaService {
                     status: dto.status,
                     dispara_email: dto.dispara_email === undefined ? undefined : !!dto.dispara_email,
                     rever_em: dto.rever_em,
+                    titulo: dto.titulo,
+                    dados: (dto.dados as any) ?? null,
 
                     bloco_nota_id: blocoId,
                     criado_por: user.id,
-                    orgao_responsavel_id: user.orgao_id!,
+                    orgao_responsavel_id: 'orgao_id' in user ? user.orgao_id ?? null : null,
                     pessoa_responsavel_id: user.id,
                     tipo_nota_id: tipo.id,
+                    usuarios_lidos: [], // agora precisa inicializar, se não os hasSome/hasEvery não funcionam
                 },
                 select: {
                     id: true,
@@ -104,7 +114,7 @@ export class NotaService {
             });
             this.validateReverEm(nota);
 
-            if (tipo.permite_enderecamento) await this.upsertEnderecamentos(prismaTx, nota.id, dto, now, user, nota);
+            if (tipo.permite_enderecamento) await this.upsertEnderecamentos(prismaTx, nota.id, dto, now, user.id, nota);
 
             return nota.id;
         };
@@ -233,6 +243,8 @@ export class NotaService {
                     n_repostas: r.n_repostas,
                     ultima_resposta: r.ultima_resposta,
                     pode_editar: idPerm.write,
+                    dados: r.dados ? (r.dados.valueOf() as any) : null,
+                    titulo: r.titulo,
                 };
             })
             .sort((a, b) => {
@@ -321,6 +333,8 @@ export class NotaService {
             ultima_resposta: r.ultima_resposta,
             enderecamentos: r.NotaEnderecamento,
             rever_em: r.rever_em,
+            dados: r.dados ? (r.dados.valueOf() as any) : null,
+            titulo: r.titulo,
             respostas: r.NotaEnderecamentoResposta.map((resp): NotaEnderecamentoRespostas => {
                 return {
                     id: resp.id,
@@ -474,10 +488,13 @@ export class NotaService {
         const now = new Date(Date.now());
 
         const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
-            if (dto.nota && dto.nota !== nota.nota)
+            let usuarios_lidos: number[] | undefined = undefined;
+            if (dto.nota && dto.nota !== nota.nota) {
                 await prismaTx.notaRevisao.create({
                     data: { criado_por: user.id, nota: nota.nota, nota_id: nota.id },
                 });
+                usuarios_lidos = [];
+            }
 
             const updated = await prismaTx.nota.update({
                 where: { id },
@@ -487,6 +504,9 @@ export class NotaService {
                     data_nota: dto.data_nota,
                     dispara_email: dto.dispara_email === undefined ? undefined : !!dto.dispara_email,
                     rever_em: dto.rever_em,
+                    titulo: dto.titulo,
+                    dados: (dto.dados as any) ?? null,
+                    usuarios_lidos,
                 },
                 select: {
                     nota: true,
@@ -502,7 +522,7 @@ export class NotaService {
                 this.validateReverEm(updated);
 
             if (nota.tipo_nota.permite_enderecamento)
-                await this.upsertEnderecamentos(prismaTx, id, dto, now, user, nota);
+                await this.upsertEnderecamentos(prismaTx, id, dto, now, user.id, nota);
         };
 
         if (prismaCtx) {
@@ -521,7 +541,7 @@ export class NotaService {
         id: number,
         dto: UpdateNotaDto,
         now: Date,
-        user: PessoaFromJwt,
+        user_id: number,
         nota: { nota: string; id: number; dispara_email: boolean }
     ) {
         if (!Array.isArray(dto.enderecamentos)) return;
@@ -577,7 +597,7 @@ export class NotaService {
             await prismaTx.notaEnderecamento.create({
                 data: {
                     criado_em: now,
-                    criado_por: user.id,
+                    criado_por: user_id,
                     nota_id: nota.id,
                     pessoa_enderecado_id: enderecamento.pessoa_enderecado_id,
                     orgao_enderecado_id: enderecamento.orgao_enderecado_id,
@@ -624,7 +644,7 @@ export class NotaService {
                 },
                 data: {
                     removido_em: now,
-                    removido_por: user.id,
+                    removido_por: user_id,
                 },
             });
             await prismaTx.nota.update({
@@ -779,5 +799,116 @@ export class NotaService {
         }
 
         return false;
+    }
+
+    async marcaLidoStatusComunicado(notaId: number, userId: number, lido: boolean): Promise<void> {
+        await this.prisma.$transaction(async (prisma) => {
+            const nota = await prisma.nota.findUnique({
+                where: { id: notaId, tipo_nota_id: CONST_TIPO_NOTA_TRANSF_GOV },
+                select: { usuarios_lidos: true },
+            });
+
+            if (!nota) throw new BadRequestException(`Comunicado não encontrado: ${notaId}`);
+
+            let updatedUsuariosLidos: number[];
+            if (lido) {
+                updatedUsuariosLidos = [...new Set([...nota.usuarios_lidos, userId])];
+            } else {
+                updatedUsuariosLidos = nota.usuarios_lidos.filter((id) => id !== userId);
+            }
+
+            await prisma.nota.update({
+                where: { id: notaId },
+                data: { usuarios_lidos: updatedUsuariosLidos },
+            });
+        });
+    }
+
+    async listaComunicados(
+        filters: FilterNotaComunicadoDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedDto<NotaComunicadoItemDto>> {
+        const { lido, palavra_chave, data_inicio, data_fim } = filters;
+
+        let offset = 0;
+        const limit = filters.ipp ?? 20;
+
+        if (filters.token_proxima_pagina) {
+            const decodedToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+            if (decodedToken) {
+                offset = decodedToken.offset;
+            }
+        }
+
+        const where: Prisma.NotaWhereInput = {
+            tipo_nota_id: CONST_TIPO_NOTA_TRANSF_GOV,
+            removido_em: null,
+        };
+
+        if (lido !== undefined) {
+            if (lido) {
+                where.usuarios_lidos = { has: user.id };
+            } else {
+                where.NOT = [{ usuarios_lidos: { has: user.id } }];
+            }
+        }
+
+        if (palavra_chave) {
+            where.OR = [
+                { titulo: { contains: palavra_chave, mode: 'insensitive' } },
+                { nota: { contains: palavra_chave, mode: 'insensitive' } },
+            ];
+        }
+
+        if (data_inicio) where.data_nota = { gte: data_inicio };
+        if (data_fim) where.data_nota = { lte: data_fim };
+
+        const comunicados = await this.prisma.nota.findMany({
+            where,
+            orderBy: { data_nota: 'desc' },
+            skip: offset,
+            take: limit + 1,
+        });
+
+        const tem_mais = comunicados.length > limit;
+        if (tem_mais) {
+            comunicados.pop();
+        }
+
+        const linhas = comunicados.map((comunicado): NotaComunicadoItemDto => {
+            const dados =
+                comunicado.dados?.valueOf() && typeof comunicado.dados?.valueOf() == 'object'
+                    ? (comunicado.dados.valueOf() as any)
+                    : null;
+
+            return {
+                id: comunicado.id,
+                titulo: comunicado.titulo || '',
+                conteudo: comunicado.nota,
+                data: comunicado.data_nota,
+                dados,
+                lido: comunicado.usuarios_lidos.includes(user.id),
+            };
+        });
+
+        const token_proxima_pagina = tem_mais ? this.encodeNextPageToken({ offset: offset + limit }) : null;
+
+        return {
+            linhas,
+            tem_mais,
+            token_proxima_pagina,
+        };
+    }
+
+    private decodeNextPageToken(jwt: string): NextPageTokenJwtBody | null {
+        try {
+            return this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new BadRequestException('Token próxima página inválido');
+        }
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
     }
 }

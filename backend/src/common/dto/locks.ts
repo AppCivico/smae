@@ -11,3 +11,4 @@ export const TASK_JOB_LOCK_NUMBER = id++;
 export const JOB_PDM_ORCAMENTO_CONCLUIDO = id++;
 export const JOB_AVISO_EMAIL = id++;
 export const JOB_LISTA_SEI_LOCK = id++;
+export const JOB_TRANSFERE_GOV_LOCK = id++;

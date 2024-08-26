@@ -39,8 +39,6 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
-import { SeiApiModule } from './sei-api/sei-api.module';
-import { SeiIntegracaoModule } from './sei-integracao/sei-integracao.module';
 import { TaskModule } from './task/task.module';
 import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-andamento-fase.module';
 import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
@@ -105,8 +103,6 @@ import { WorkflowModule } from './workflow/configuracao/workflow.module';
         PessoaPrivilegioModule,
         CommonBaseModule,
         TaskModule,
-        SeiApiModule ,
-        SeiIntegracaoModule
     ],
     controllers: [AppController],
     providers: [

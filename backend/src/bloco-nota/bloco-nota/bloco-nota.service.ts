@@ -20,7 +20,7 @@ export class BlocoNotaService {
 
     async getTokenFor(
         dto: CreateBlocoNotaDto,
-        user: PessoaFromJwt,
+        user: PessoaFromJwt | { id: number },
         prismaTx: Prisma.TransactionClient = this.prisma
     ): Promise<string> {
         let bloco: string;
@@ -28,6 +28,8 @@ export class BlocoNotaService {
             bloco = `Proj:${dto.projeto_id}`;
         } else if (dto.transferencia_id) {
             bloco = `Transf:${dto.transferencia_id}`;
+        } else if (dto.transfere_gov) {
+            bloco = `TransfereGov:${dto.transfere_gov}`;
         } else {
             throw new HttpException('Necessário informar um projeto ou transferência', 400);
         }

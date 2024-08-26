@@ -6190,12 +6190,15 @@ model Nota {
     bloco_nota_id         Int
     tipo_nota_id          Int
     data_nota             DateTime   @db.Date
-    orgao_responsavel_id  Int
+    orgao_responsavel_id  Int?
     pessoa_responsavel_id Int
     nota                  String
+    titulo                String?
+    dados                 Json?      @db.Json
     rever_em              DateTime?  @db.Date
     dispara_email         Boolean    @default(false)
     status                StatusNota
+    usuarios_lidos        Int[]
 
     n_enderecamentos Int       @default(0) @map("n_encaminhamentos")
     n_repostas       Int       @default(0)
@@ -6209,7 +6212,7 @@ model Nota {
 
     tipo_nota                 TipoNota                    @relation(fields: [tipo_nota_id], references: [id])
     bloco_nota                BlocoNota                   @relation(fields: [bloco_nota_id], references: [id])
-    orgao_responsavel         Orgao                       @relation(fields: [orgao_responsavel_id], references: [id])
+    orgao_responsavel         Orgao?                      @relation(fields: [orgao_responsavel_id], references: [id])
     pessoa_responsavel        Pessoa                      @relation("Resp", fields: [pessoa_responsavel_id], references: [id])
     criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
     removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
@@ -6867,4 +6870,28 @@ model StatusSEI {
     resumo_atualizado_em DateTime? @db.Timestamptz(6)
 
     @@map("status_sei")
+}
+
+enum ComunicadoTipo {
+    Geral
+    Individual
+    Especial
+    Bancada
+}
+
+model ComunicadoTransfereGov {
+    id        Int            @id @default(autoincrement())
+    numero    Int
+    ano       Int
+    titulo    String
+    link      String         @db.Text
+    data      DateTime       @db.Date
+    descricao String?        @db.Text
+    tipo      ComunicadoTipo
+
+    criado_em     DateTime @default(now())
+    atualizado_em DateTime @updatedAt
+
+    @@unique([numero, ano, titulo])
+    @@map("comunicado_transfere_gov")
 }

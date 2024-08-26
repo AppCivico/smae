@@ -12,6 +12,8 @@ import { OrgaoModule } from './orgao/orgao.module';
 import { PainelExternoModule } from './painel-externo/painel-externo.module';
 import { PessoaModule } from './pessoa/pessoa.module';
 import { RegiaoModule } from './regiao/regiao.module';
+import { SeiApiModule } from './sei-api/sei-api.module';
+import { SeiIntegracaoModule } from './sei-integracao/sei-integracao.module';
 import { SofApiModule } from './sof-api/sof-api.module';
 import { SofEntidadeModule } from './sof-entidade/sof-entidade.module';
 import { SubTemaModule } from './subtema/subtema.module';
@@ -20,6 +22,8 @@ import { TemaModule } from './tema/tema.module';
 import { TextoConfigModule } from './texto-config/texto-config.module';
 import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
+import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
+import { TransfereGovSyncModule } from './transfere-gov-sync/transfere-gov-sync.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 
@@ -48,6 +52,10 @@ import { UploadModule } from './upload/upload.module';
         GeoApiModule,
         GrupoPainelExternoModule,
         PainelExternoModule,
+        SeiApiModule,
+        SeiIntegracaoModule,
+        TransfereGovApiModule,
+        TransfereGovSyncModule,
     ],
     controllers: [],
     providers: [],

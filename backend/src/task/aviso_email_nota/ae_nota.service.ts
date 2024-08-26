@@ -110,7 +110,7 @@ export class AeNotaTaskService implements TaskableService {
                 }
             }
 
-            if (enviaParaOrgao) {
+            if (enviaParaOrgao && nota.orgao_responsavel) {
                 // avisa o órgão responsável se já não foi um dos encaminhamentos
                 if (!orgaoEnviado.has(nota.orgao_responsavel.id) && nota.orgao_responsavel.email) {
                     const globalEmailQueue = await prismaTx.emaildbQueue.create({

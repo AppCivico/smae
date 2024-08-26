@@ -8,6 +8,7 @@ import {
 } from './entities/sei-entidade.entity';
 import { SeiIntegracaoService } from './sei-integracao.service';
 import { PaginatedDto } from '../common/dto/paginated.dto';
+import { ApiPaginatedResponse } from '../auth/decorators/paginated.decorator';
 
 @Controller('sei-integracao')
 @ApiTags('SEI Integração')
@@ -28,7 +29,7 @@ export class SeiIntegracaoController {
 
     @Get('lista')
     @ApiBearerAuth('access-token')
-    @ApiQuery({ type: FilterSeiListParams })
+    @ApiPaginatedResponse(SeiIntegracaoDto)
     async listaProcessos(@Query() params: FilterSeiListParams): Promise<PaginatedDto<SeiIntegracaoDto>> {
         return await this.seiIntegracaoService.listaProcessos(params);
     }

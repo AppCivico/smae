@@ -10,8 +10,10 @@ import {
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 import {
     CONST_COD_NOTA_DIST_RECURSO,
+    CONST_COD_NOTA_TRANSF_GOV,
     CONST_CRONO_VAR_CATEGORICA_ID,
     CONST_TIPO_NOTA_DIST_RECURSO,
+    CONST_TIPO_NOTA_TRANSF_GOV,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -957,17 +959,40 @@ async function main() {
 
         await atualizar_superadmin();
         await ensure_bot_user();
-        await ensure_categorica_cronograma();
 
-        await ensure_tiponota_dist_recurso();
-
-        await populateEleicao();
-        await populateDistribuicaoStatusBase();
+        await Promise.allSettled([
+            ensure_categorica_cronograma(),
+            ensure_tiponota_dist_recurso(),
+            ensure_tiponota_transf_gov(),
+            populateEleicao(),
+            populateDistribuicaoStatusBase(),
+        ]);
 
         await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
     });
 }
 
+async function ensure_tiponota_transf_gov() {
+    await prisma.tipoNota.upsert({
+        where: { id: CONST_TIPO_NOTA_TRANSF_GOV },
+        create: {
+            id: CONST_TIPO_NOTA_TRANSF_GOV,
+            codigo: CONST_COD_NOTA_TRANSF_GOV,
+            autogerenciavel: true,
+
+            permite_email: false,
+            visivel_resp_orgao: false,
+            eh_publico: true,
+            permite_enderecamento: false,
+            permite_replica: false,
+            permite_revisao: false,
+        },
+        update: {
+            eh_publico: true,
+            codigo: CONST_COD_NOTA_DIST_RECURSO,
+        },
+    });
+}
 async function ensure_tiponota_dist_recurso() {
     await prisma.tipoNota.upsert({
         where: { id: CONST_TIPO_NOTA_DIST_RECURSO },

@@ -7,6 +7,7 @@ import {
     IsBoolean,
     IsEnum,
     IsInt,
+    IsObject,
     IsOptional,
     IsString,
     MaxLength,
@@ -72,6 +73,17 @@ export class CreateNotaDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => NotaEnderecamentoDto)
     enderecamentos?: NotaEnderecamentoDto[] | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(5000)
+    titulo?: string;
+
+    @IsOptional()
+    @IsObject()
+    @ValidateNested()
+    @Type(() => Object)
+    dados?: Record<string, any>;
 }
 
 export class BuscaNotaDto {
@@ -103,7 +115,16 @@ export class NotaEnderecamentoDto {
 }
 
 export class UpdateNotaDto extends PartialType(
-    PickType(CreateNotaDto, ['nota', 'status', 'data_nota', 'rever_em', 'dispara_email', 'enderecamentos'])
+    PickType(CreateNotaDto, [
+        'nota',
+        'status',
+        'data_nota',
+        'rever_em',
+        'dispara_email',
+        'enderecamentos',
+        'dados',
+        'titulo',
+    ])
 ) {}
 
 export class NovaRespostaDto {
@@ -134,12 +155,14 @@ export class TipoNotaItem {
     id_jwt: string;
     bloco_id: number;
     nota: string;
+    titulo: string | null;
+    dados: Record<string, any> | null;
     data_nota: Date;
     data_ordenacao: Date;
     bloco_token: string;
     tipo_nota_id: number;
     pessoa_responsavel: IdNomeExibicao;
-    orgao_responsavel: IdSigla;
+    orgao_responsavel: IdSigla | null;
     rever_em: Date | null;
     dispara_email: boolean;
     status: StatusNota;
