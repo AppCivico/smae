@@ -158,6 +158,21 @@ services:
         max-file: "2"
         max-size: 100MB
 
+  # RAM ~ 300mb max
+  smae_transferegov:
+    container_name: "${API_CONTAINER_NAME}_transferegov"
+    build:
+      context: ./backend-transfere-gov/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
   smae_sei:
     container_name: "${API_CONTAINER_NAME}_sei"
     build:

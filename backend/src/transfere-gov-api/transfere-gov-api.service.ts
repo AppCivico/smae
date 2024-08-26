@@ -51,7 +51,7 @@ export class TransfereGovApiService {
     TRANSFEREGOV_API_PREFIX: string;
 
     constructor() {
-        this.TRANSFEREGOV_API_PREFIX = process.env.TRANSFEREGOV_API_PREFIX || 'http://transfere_gov:80/';
+        this.TRANSFEREGOV_API_PREFIX = process.env.TRANSFEREGOV_API_PREFIX || 'http://smae_transferegov:80/';
         this.got = got.extend({
             prefixUrl: this.TRANSFEREGOV_API_PREFIX,
             timeout: 600 * 1000,
