@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h1 class="mt1 mb1">
+    <TítuloDePágina id="titulo-da-pagina">
       Resumo Atividade
-    </h1>
+    </TítuloDePágina>
     <div class="flex g2 mb1">
       <dl>
         <dt class="tc500 w700 t16 mb025">
@@ -14,7 +14,7 @@
         <dt class="tc500 w700 t16 mb025">
           Marco do projeto?
         </dt>
-        <dd> {{ emFoco?.eh_marco || ' - ' }}</dd>
+        <dd> {{ emFoco?.eh_marco ? 'Sim' : 'Não' }}</dd>
       </dl>
     </div>
     <div class="flex spacebetween  mb1">
