@@ -20,21 +20,6 @@
     Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
   </p>
 
-  <div class="flex flexwrap g1 debug">
-    <textarea
-      class="f1"
-      cols="30"
-      rows="10"
-    >
-filhasPorMaePorNivelDeRegiao:{{ filhasPorMaePorNivelDeRegiao }}</textarea>
-    <textarea
-      class="f1"
-      cols="30"
-      rows="10"
-    >
-variaveisSelecionadas:{{ variaveisSelecionadas }}</textarea>
-  </div>
-
   <form
     ref="formularioDeAssociacao"
     @submit.prevent="associar(false)"
