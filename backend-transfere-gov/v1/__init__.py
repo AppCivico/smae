@@ -1,0 +1,1 @@
+from .endpoints.comunicados import app as comunicados_routes
