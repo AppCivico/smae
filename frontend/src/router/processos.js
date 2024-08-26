@@ -35,7 +35,6 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'processosListar',
         ],
       },
       props: true,

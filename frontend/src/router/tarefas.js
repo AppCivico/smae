@@ -33,7 +33,6 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'projetoTarefasListar',
         ],
       },
       props: true,
@@ -131,7 +130,6 @@ export default {
               'projetosListar',
               'projetosResumo',
               'projetoTarefasListar',
-              'projetoTarefasEditar',
             ],
           },
         },
@@ -157,7 +155,6 @@ export default {
               'projetosListar',
               'projetosResumo',
               'projetoTarefasListar',
-              'projetoTarefasProgresso',
             ],
           },
         },
