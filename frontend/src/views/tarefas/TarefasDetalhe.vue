@@ -72,15 +72,20 @@
             </tr>
           </thead>
           <tbody>
-            <td>
-              <strong>Pego de onde?</strong>
-            </td>
-            <td>
-              <strong>Pego de onde?</strong>
-            </td>
-            <td>
-              <strong>Pego de onde?</strong>
-            </td>
+            <tr
+              v-for="dependencia, key in emFoco?.dependencias"
+              :key="key"
+            >
+              <td>
+                {{ dependencia.dependencia_tarefa_id }}
+              </td>
+              <td>
+                {{ dependencyTypes[dependencia.tipo] }}
+              </td>
+              <td>
+                {{ dependencia.latencia }}
+              </td>
+            </tr>
           </tbody>
         </table>
       </dd>
@@ -165,10 +170,19 @@
         </dl>
       </div>
     </dl>
-    <!-- tarefasPorId: <pre>{{ tarefasPorId }}</pre>
-    <div class="mt4">
-      emFoco: <pre>{{ emFoco }}</pre>
-    </div> -->
+    <span
+      v-if="chamadasPendentes?.emFoco"
+      class="spinner"
+    >Carregando</span>
+
+    <div
+      v-if="erro"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erro }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -176,6 +190,7 @@
 import { storeToRefs } from 'pinia';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import dateToDate from '@/helpers/dateToDate';
+import dependencyTypes from '@/consts/dependencyTypes';
 
 const tarefasStore = useTarefasStore();
 
