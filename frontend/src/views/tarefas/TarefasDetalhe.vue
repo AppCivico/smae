@@ -86,6 +86,11 @@
                 {{ dependencia.latencia }}
               </td>
             </tr>
+            <tr v-if="emFoco?.dependencias.length===0">
+              <td>
+                Nenhum resultado encontrado.
+              </td>
+            </tr>
           </tbody>
         </table>
       </dd>
