@@ -17,7 +17,7 @@
         <dd> {{ emFoco?.eh_marco ? 'Sim' : 'Não' }}</dd>
       </dl>
     </div>
-    <div class="flex spacebetween  mb1">
+    <div class="flex spacebetween maxw mb1">
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Tarefa-mãe

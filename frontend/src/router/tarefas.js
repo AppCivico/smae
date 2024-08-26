@@ -103,6 +103,11 @@ export default {
           meta: {
             título: 'Resumo Atividade',
             rotaDeEscape: 'projetoTarefasListar',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'projetoTarefasListar',
+            ],
           },
         },
 
