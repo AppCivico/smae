@@ -5,6 +5,9 @@
   - Added the required column `equipe_id` to the `pdm_perfil` table without a default value. This is not possible if the table is not empty.
 
 */
+
+DELETE FROM pdm_perfil;
+
 -- DropForeignKey
 ALTER TABLE "pdm_perfil" DROP CONSTRAINT "pdm_perfil_pessoa_id_fkey";
 
