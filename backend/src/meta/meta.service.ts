@@ -309,7 +309,8 @@ export class MetaService {
                     pdm: {
                         PdmPerfil: {
                             some: {
-                                pessoa_id: user.id,
+                                // TODO: validar como fica com estrutura nova de equipes
+                                //pessoa_id: user.id,
                                 removido_em: null,
                                 tipo: 'ADMIN',
                             },
@@ -324,7 +325,8 @@ export class MetaService {
                     pdm: {
                         PdmPerfil: {
                             some: {
-                                pessoa_id: user.id,
+                                // TODO: validar como fica com estrutura nova de equipes
+                                //pessoa_id: user.id,
                                 removido_em: null,
                                 tipo: 'CP',
                             },
@@ -345,7 +347,8 @@ export class MetaService {
                     pdm: {
                         PdmPerfil: {
                             some: {
-                                pessoa_id: user.id,
+                                // TODO: validar como fica com estrutura nova de equipes
+                                //pessoa_id: user.id,
                                 removido_em: null,
                                 tipo: 'PONTO_FOCAL',
                             },

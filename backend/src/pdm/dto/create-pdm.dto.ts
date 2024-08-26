@@ -13,15 +13,15 @@ import {
     Min,
     MinLength,
     ValidateIf,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
-export class CreatePdmAdminCPDto {
+export class CreatePSEquipeAdminCPDto {
     /**
-     * lista dos participantes do PS.admin_cp? pode ficar vazio
+     * lista de equipes do PS.admin_cp? pode ficar vazio
      * cada pessoa precisa ter o privilégio "PS.admin_cp"
      * @example "[4, 5, 6]"
      */
@@ -29,33 +29,33 @@ export class CreatePdmAdminCPDto {
     @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
-    participantes: number[];
+    equipes: number[];
 }
 
-export class CreatePdmTecnicoCPDto {
+export class CreatePSEquipeTecnicoCPDto {
     /**
-     * lista dos participantes do PS.tecnico_cp? pode ficar vazio
-     * cada pessoa precisa ter o privilégio "PS.tecnico_cp"
+     * lista de equipes do PS.tecnico_cp? pode ficar vazio
+     * cada pessoa precisa ter o privilégio "PS.admin_cp"
      * @example "[4, 5, 6]"
      */
     @IsArray({ message: 'precisa ser um array' })
     @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
-    participantes: number[];
+    equipes: number[];
 }
 
-export class CreatePdmPontoFocalDto {
+export class CreatePSEquipePontoFocalDto {
     /**
-     * lista dos participantes do PS.ponto_focal? pode ficar vazio
-     * cada pessoa precisa ter o privilégio "PS.ponto_focal"
+     * lista de equipes do PS.ponto_focal? pode ficar vazio
+     * cada pessoa precisa ter o privilégio "PS.admin_cp"
      * @example "[4, 5, 6]"
      */
     @IsArray({ message: 'precisa ser um array' })
     @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
-    participantes: number[];
+    equipes: number[];
 }
 
 export class CreatePdmDto {
@@ -258,27 +258,27 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @Type(() => CreatePdmTecnicoCPDto)
+    @Type(() => CreatePSEquipeTecnicoCPDto)
     @ValidateNested()
-    ps_tecnico_cp?: CreatePdmTecnicoCPDto;
+    ps_tecnico_cp?: CreatePSEquipeTecnicoCPDto;
 
     /**
      * Admin CP de Plano Setorial
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @Type(() => CreatePdmAdminCPDto)
+    @Type(() => CreatePSEquipeAdminCPDto)
     @ValidateNested()
-    ps_admin_cp?: CreatePdmAdminCPDto;
+    ps_admin_cp?: CreatePSEquipeAdminCPDto;
 
     /**
      * Ponto Focal Plano Setorial
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @Type(() => CreatePdmPontoFocalDto)
+    @Type(() => CreatePSEquipePontoFocalDto)
     @ValidateNested()
-    ps_ponto_focal?: CreatePdmPontoFocalDto;
+    ps_ponto_focal?: CreatePSEquipePontoFocalDto;
 
     /**
      * Legislação de instituição.

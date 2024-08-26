@@ -417,7 +417,6 @@ model Pessoa {
     ViewNotaComOrdemQRemovi            ViewNotas[]                          @relation("Removedor")
     ViewNotaComOrdemQSouResp           ViewNotas[]                          @relation("Resp")
 
-    PdmPerfil             PdmPerfil[] @relation("fk")
     PdmPerfilQueDesativei PdmPerfil[] @relation("Removedor")
     PdmPerfilQueCriei     PdmPerfil[] @relation("Criador")
 
@@ -846,8 +845,8 @@ model PdmPerfil {
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
-    pessoa_id Int
-    pessoa    Pessoa @relation("fk", fields: [pessoa_id], references: [id])
+    equipe_id Int
+    equipe    GrupoResponsavelEquipe @relation(fields: [equipe_id], references: [id])
 
     criado_por   Int
     criado_em    DateTime  @default(now()) @db.Timestamptz(6)
@@ -1071,10 +1070,10 @@ model Regiao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador        Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador            Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
-    removedor          Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
-    RegioesAbaixo      Regiao[]          @relation("Parente")
+    atualizador        Pessoa?              @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador            Pessoa?              @relation("Criador", fields: [criado_por], references: [id])
+    removedor          Pessoa?              @relation("Removedor", fields: [removido_por], references: [id])
+    RegioesAbaixo      Regiao[]             @relation("Parente")
     Variavel           Variavel[]
     VariavelGlobalView ViewVariavelGlobal[]
     Etapa              Etapa[]
@@ -1685,7 +1684,8 @@ model GrupoResponsavelEquipe {
     orgao    Orgao  @relation(fields: [orgao_id], references: [id])
     titulo   String
 
-    perfil PerfilResponsavelEquipe
+    perfil          PerfilResponsavelEquipe
+    planosSetoriais PdmPerfil[]
 
     criado_em                         DateTime                            @default(now()) @db.Timestamptz(6)
     atualizado_em                     DateTime?                           @db.Timestamptz(6)
@@ -3746,7 +3746,7 @@ view ViewVariavelGlobal {
     orgao_proprietario_id   Int?
     orgao_proprietario      Orgao?        @relation("prop", fields: [orgao_proprietario_id], references: [id])
     regiao_id               Int?
-    regiao                  Regiao?        @relation(fields: [regiao_id], references: [id])
+    regiao                  Regiao?       @relation(fields: [regiao_id], references: [id])
     planos                  Int[]
     periodicidade           Periodicidade
     inicio_medicao          DateTime?

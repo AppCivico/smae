@@ -8,7 +8,7 @@ import {
     forwardRef,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CicloFisicoFase, PdmPerfilTipo, Prisma, TipoPdm } from '@prisma/client';
+import { CicloFisicoFase, PdmPerfilTipo, PerfilResponsavelEquipe, Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
@@ -48,7 +48,7 @@ type CicloFisicoResumo = {
 
 class AdminCpDbItem {
     orgao_id: number;
-    pessoa_id: number;
+    equipe_id: number;
 }
 
 @Injectable()
@@ -199,7 +199,8 @@ export class PdmService {
                     some: {
                         removido_em: null,
                         tipo: 'ADMIN',
-                        pessoa_id: user.id,
+                        // TODO: validar como vai ficar agora com equipes.
+                        // pessoa_id: user.id,
                         orgao_id: user.orgao_id,
                     },
                 },
@@ -323,7 +324,7 @@ export class PdmService {
     calcPodeEditar(pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null }, user: PessoaFromJwt): boolean {
         if (pdm.tipo == 'PS') {
             let podeEditar = user.hasSomeRoles(['CadastroPS.administrador']);
-
+            // TODO: validar regras novas de PS e equipe
             if (!podeEditar) {
                 const dbValue = pdm.ps_admin_cps?.valueOf();
 
@@ -335,7 +336,7 @@ export class PdmService {
                     const parsed = plainToInstance(AdminCpDbItem, dbValue);
 
                     // está em algum item
-                    podeEditar = parsed.some((item) => +item.pessoa_id == +user.id);
+                    // podeEditar = parsed.some((item) => +item.pessoa_id == +user.id);
 
                     // e todos os itens são do mesmo órgão
                     podeEditar = podeEditar && parsed.every((item) => +item.orgao_id == +user.orgao_id!);
@@ -429,13 +430,13 @@ export class PdmService {
                 orgao_admin: pdm.orgao_admin,
                 pdm_anteriores: pdm_anteriores,
                 ps_admin_cp: {
-                    participantes: ps_admin_cp.map((item) => item.pessoa_id),
+                    equipes: ps_admin_cp.map((item) => item.equipe_id),
                 },
                 ps_tecnico_cp: {
-                    participantes: ps_tecnico_cp.map((item) => item.pessoa_id),
+                    equipes: ps_tecnico_cp.map((item) => item.equipe_id),
                 },
                 ps_ponto_focal: {
-                    participantes: ps_ponto_focal.map((item) => item.pessoa_id),
+                    equipes: ps_ponto_focal.map((item) => item.equipe_id),
                 },
             } satisfies PlanoSetorialDto;
         }
@@ -704,6 +705,7 @@ export class PdmService {
         }
     }
 
+    // TODO mudar nome
     private async upsertPerfil(
         pdm_id: number,
         tipo: PdmPerfilTipo,
@@ -711,25 +713,34 @@ export class PdmService {
         prismaTx: Prisma.TransactionClient,
         now: Date,
         data: {
-            participantes: number[];
+            equipes: number[];
         }
     ) {
         const prevVersion = await prismaTx.pdmPerfil.findMany({
             where: { pdm_id, removido_em: null, tipo: tipo },
-            select: { pessoa_id: true },
+            select: { equipe_id: true },
         });
 
-        const pComPriv = await this.pessoaPrivService.pessoasComPriv(MAPA_PERFIL_PERMISSAO[tipo], data.participantes);
+        // Tipo da equipe.
+        // TODO: mudar para uma verificação mais elegante.
+        let tipoEquipe: PerfilResponsavelEquipe;
+        if (tipo == PdmPerfilTipo.ADMIN) {
+            tipoEquipe = PerfilResponsavelEquipe.AdminPS;
+        } else if (tipo == PdmPerfilTipo.CP) {
+            tipoEquipe = PerfilResponsavelEquipe.TecnicoPS;
+        } else {
+            tipoEquipe = PerfilResponsavelEquipe.PontoFocalPS;
+        }
 
-        const keptRecord: number[] = prevVersion.map((r) => r.pessoa_id);
+        const keptRecord: number[] = prevVersion.map((r) => r.equipe_id);
 
-        for (const pessoaId of keptRecord) {
-            if (!data.participantes.includes(pessoaId)) {
+        for (const equipe_id of keptRecord) {
+            if (!data.equipes.includes(equipe_id)) {
                 // O participante estava presente na versão anterior, mas não na nova versão
-                this.logger.log(`participante removido: ${pessoaId}`);
+                this.logger.log(`equipe removida: ${equipe_id}`);
                 await prismaTx.pdmPerfil.updateMany({
                     where: {
-                        pessoa_id: pessoaId,
+                        equipe_id: equipe_id,
                         pdm_id,
                         tipo: tipo,
                         removido_em: null,
@@ -740,34 +751,41 @@ export class PdmService {
         }
 
         const cpItens: AdminCpDbItem[] = [];
-        for (const pessoaId of data.participantes) {
-            const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-            if (!pessoa)
-                throw new BadRequestException(
-                    `Pessoa ID ${pessoaId} não pode ser ${tipo == 'ADMIN' ? 'administrador' : 'coordenador'}. Necessário ter o privilégio.`
-                );
+        for (const equipe_id of data.equipes) {
+            const equipe = await prismaTx.grupoResponsavelEquipe.findFirst({
+                where: {
+                    id: equipe_id,
+                    removido_em: null,
+                    perfil: tipoEquipe,
+                },
+                select: {
+                    id: true,
+                    orgao_id: true,
+                },
+            });
+            if (!equipe) throw new BadRequestException(`Equipe ID ${equipe_id} inválida ou de tipo incorreto.`);
             cpItens.push({
-                orgao_id: pessoa.orgao_id,
-                pessoa_id: pessoa.pessoa_id,
+                orgao_id: equipe.orgao_id,
+                equipe_id: equipe.id,
             });
 
-            if (!keptRecord.includes(pessoaId)) {
-                // O participante é novo, crie um novo registro
-                this.logger.log(`Novo participante: ${pessoa.pessoa_id}`);
+            if (!keptRecord.includes(equipe_id)) {
+                // A equipe é nova, crie um novo registro
+                this.logger.log(`Novo participante: ${equipe.id}`);
                 await prismaTx.pdmPerfil.create({
                     data: {
                         pdm_id,
                         tipo,
                         criado_por: user.id,
                         criado_em: now,
-                        orgao_id: pessoa.orgao_id,
-                        pessoa_id: pessoa.pessoa_id,
+                        orgao_id: equipe.orgao_id,
+                        equipe_id: equipe.id,
                         removido_em: null,
                         removido_por: null,
                     },
                 });
             } else {
-                this.logger.log(`participante mantido sem alterações: ${pessoaId}`);
+                this.logger.log(`Equipe mantida sem alterações: ${equipe.id}`);
             }
         }
         if (tipo == 'ADMIN')
