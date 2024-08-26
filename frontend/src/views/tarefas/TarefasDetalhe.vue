@@ -22,9 +22,7 @@
         <dt class="tc500 w700 t16 mb025">
           Tarefa-mãe
         </dt>
-        <dd>
-          <strong>Pego de onde?</strong>
-        </dd>
+        <dd>{{ tarefasPorId[emFoco?.tarefa_pai_id]?.tarefa || ' - ' }}</dd>
       </dl>
       <dl>
         <dt class="tc500 w700 t16 mb025">
@@ -167,9 +165,10 @@
         </dl>
       </div>
     </dl>
+    <!-- tarefasPorId: <pre>{{ tarefasPorId }}</pre>
     <div class="mt4">
-      emFoco: <pre>{{ emFoco || ' - ' }}</pre>
-    </div>
+      emFoco: <pre>{{ emFoco }}</pre>
+    </div> -->
   </div>
 </template>
 
@@ -184,7 +183,10 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
+  tarefasPorId,
 } = storeToRefs(tarefasStore);
+
+tarefasStore.buscarTudo();
 
 </script>
 
