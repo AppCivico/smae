@@ -3,18 +3,18 @@
     <h1 class="mt1 mb1">
       Resumo Atividade
     </h1>
-    <div class="flex spacebetween maxw mb1">
+    <div class="flex maxw g2 mb1">
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Tarefa
         </dt>
-        <dd> {{ emFoco?.tarefa }}</dd>
+        <dd> {{ emFoco?.tarefa || ' - ' }}</dd>
       </dl>
-      <dl>
+      <dl class="ml3">
         <dt class="tc500 w700 t16 mb025">
           Marco do projeto?
         </dt>
-        <dd> {{ emFoco?.eh_marco }}</dd>
+        <dd> {{ emFoco?.eh_marco || ' - ' }}</dd>
       </dl>
     </div>
     <div class="flex spacebetween maxw mb1">
@@ -47,13 +47,13 @@
       <dt class="tc500 w700 t16 mb025">
         Responsável pela atividade
       </dt>
-      <dd> {{ emFoco?.projeto?.responsavel?.nome_exibicao }}</dd>
+      <dd> {{ emFoco?.projeto?.responsavel?.nome_exibicao || ' - ' }}</dd>
     </dl>
     <dl>
       <dt class="tc500 w700 t16 mb025 ">
         Descrição
       </dt>
-      <dd> {{ emFoco?.descricao }}</dd>
+      <dd> {{ emFoco?.descricao || ' - ' }}</dd>
     </dl>
     <dl>
       <div class="flex spacebetween center mt2 mb2">
@@ -66,13 +66,13 @@
         <table class="tablemain wrap">
           <thead>
             <tr>
-              <td class="tc300 w700">
+              <td class="tc300 w700 t12">
                 TAREFA RELACIONADA
               </td>
-              <td class="tc300 w700">
+              <td class="tc300 w700 t12">
                 TIPO DE RELAÇÃO
               </td>
-              <td class="tc300 w700">
+              <td class="tc300 w700 t12">
                 DIAS DE LATÊNCIA
               </td>
             </tr>
@@ -92,81 +92,87 @@
       </dd>
       <hr class="mt3 mb3">
     </dl>
-    <div class="flex spacebetween maxw">
-      <dl>
-        <dt class="tc500 w700 t16">
-          Previsão de início
-        </dt>
-        <dd> {{ emFoco?.inicio_planejado }}</dd>
-      </dl>
-      <dl>
-        <dt class="tc500 w700 t16">
-          Duração prevista
-        </dt>
-        <dd> {{ emFoco?.duracao_planejado }}</dd>
-      </dl>
-      <dl>
-        <dt class="tc500 w700 t16">
-          Previsão de término
-        </dt>
-        <dd> {{ emFoco?.termino_planejado }}</dd>
-      </dl>
-      <dl>
-        <dt class="tc500 w700 t16">
-          Atraso
-        </dt>
-        <dd> {{ emFoco?.atraso }}</dd>
-      </dl>
-      <dl>
-        <dt class="tc500 w700 t16">
-          Previsão de custo
-        </dt>
-        <dd> {{ emFoco?.custo_estimado }}</dd>
-      </dl>
+    <div class="maxw">
+      <div class="flex spacebetween mb1">
+        <dl>
+          <dt class="tc500 w700 t16">
+            Previsão de início
+          </dt>
+          <dd> {{ dateToDate(emFoco?.inicio_planejado) || ' - ' }}</dd>
+        </dl>
+        <dl>
+          <dt class="tc500 w700 t16">
+            Duração prevista
+          </dt>
+          <dd> {{ emFoco?.duracao_planejado || ' - ' }}</dd>
+        </dl>
+        <dl>
+          <dt class="tc500 w700 t16">
+            Previsão de término
+          </dt>
+          <dd> {{ dateToDate(emFoco?.termino_planejado) || ' - ' }}</dd>
+        </dl>
+      </div>
+      <div class="flex">
+        <dl>
+          <dt class="tc500 w700 t16">
+            Atraso
+          </dt>
+          <dd> {{ emFoco?.atraso || ' - ' }}</dd>
+        </dl>
+        <dl class="ml3">
+          <dt class="tc500 w700 t16">
+            Previsão de custo
+          </dt>
+          <dd> {{ emFoco?.custo_estimado || ' - ' }}</dd>
+        </dl>
+      </div>
     </div>
 
     <dl class="mt1 mb1">
-      <div class="flex spacebetween center mb1">
+      <div class="flex spacebetween center mt2 mb2">
         <dt class="tc300 t16">
           Execução da atividade
         </dt>
         <hr class="ml2 f1">
       </div>
-      <div class="flex spacebetween maxw">
+      <div class="flex spacebetween maxw mb1">
         <dl>
           <dt class="tc500 w700 t16">
             Data de início real
           </dt>
-          <dd>{{ emFoco?.inicio_real }}</dd>
+          <dd>{{ dateToDate(emFoco?.inicio_real) || ' - ' }}</dd>
         </dl>
         <dl>
           <dt class="tc500 w700 t16">
             Duração real
           </dt>
-          <dd>{{ emFoco?.duracao_real }}</dd>
+          <dd>{{ emFoco?.duracao_real || ' - ' }}</dd>
         </dl>
         <dl>
           <dt class="tc500 w700 t16">
             Data de término real
           </dt>
-          <dd>{{ emFoco?.termino_real }}</dd>
+          <dd>{{ dateToDate(emFoco?.termino_real) || ' - ' }}</dd>
         </dl>
+      </div>
+      <div class="flex">
         <dl>
           <dt class="tc500 w700 t16">
             Custo real
           </dt>
-          <dd>{{ emFoco?.custo_real }}</dd>
+          <dd>{{ emFoco?.custo_real || ' - ' }}</dd>
         </dl>
-        <dl>
+        <dl class="ml3">
           <dt class="tc500 w700 t16">
             Percentual concluído
           </dt>
-          <dd>{{ emFoco?.percentual_concluido }}%</dd>
+          <dd>{{ emFoco?.percentual_concluido || ' - ' }}%</dd>
         </dl>
       </div>
     </dl>
     <div class="mt4">
-      emFoco: <pre>{{ emFoco }}</pre>
+      emFoco: <pre>{{ emFoco || ' - ' }}</pre>
     </div>
   </div>
 </template>
@@ -174,6 +180,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import dateToDate from '@/helpers/dateToDate';
 
 const tarefasStore = useTarefasStore();
 
