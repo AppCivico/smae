@@ -1307,6 +1307,9 @@ export class VariavelService {
                 orgao_proprietario_id: filters.orgao_proprietario_id,
                 periodicidade: filters.periodicidade,
                 regiao_id: filters.regiao_id,
+                titulo: filters.titulo ? { contains: filters.titulo, mode: 'insensitive' } : undefined,
+                codigo: filters.codigo ? { contains: filters.codigo, mode: 'insensitive' } : undefined,
+                descricao: filters.descricao ? { contains: filters.descricao, mode: 'insensitive' } : undefined,
             },
         ];
 

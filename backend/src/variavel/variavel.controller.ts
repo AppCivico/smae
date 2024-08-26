@@ -29,8 +29,7 @@ import {
     FilterSVNPeriodoDto,
     SerieIndicadorValorNominal,
     SerieValorNomimal,
-    VariavelGlobalItemDto,
-    VariavelItemDto,
+    VariavelGlobalItemDto
 } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 

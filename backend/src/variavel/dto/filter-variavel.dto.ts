@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { AscDescEnum } from '../../pp/projeto/dto/filter-projeto.dto';
@@ -105,6 +105,21 @@ export class FilterVariavelDto {
     @IsInt()
     @Transform(NumberTransform)
     variavel_mae_id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(60)
+    codigo?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(60)
+    descricao?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(60)
+    titulo?: string;
 }
 
 export const VariavelOrderEnum = {
