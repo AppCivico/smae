@@ -1,6 +1,7 @@
 <template>
   <form
     class="flex flexwrap g2 mb2 fb100"
+    :aria-busy="!pronto"
     @submit.prevent="($e) => emit('enviado', $e)"
   >
     <div class="flex flexwrap end g2 fb100">
@@ -37,10 +38,10 @@
         >{{ schema.fields.descricao?.spec.label || 'Campo faltando no schema' }}</label>
         <input
           id="descricao"
+          v-model="descricao"
           class="inputtext light"
           name="descricao"
           type="text"
-          :value="$props.valoresIniciais.descricao"
         >
       </div>
 
@@ -51,10 +52,10 @@
         >{{ schema.fields.titulo.spec.label }}</label>
         <input
           id="titulo"
+          v-model="titulo"
           class="inputtext light"
           name="titulo"
           type="text"
-          :value="$props.valoresIniciais.titulo"
         >
       </div>
 
@@ -65,10 +66,10 @@
         >Código</label>
         <input
           id="codigo"
+          v-model="codigo"
           class="inputtext light"
           name="codigo"
           type="text"
-          :value="$props.valoresIniciais.codigo"
         >
       </div>
     </div>
@@ -140,7 +141,7 @@
         </label>
         <select
           id="nivel-regionalizacao"
-          v-model="nivelRegionalizacao"
+          v-model.number="nivelRegionalizacao"
           name="nivel_regionalizacao"
           class="inputtext light"
           @change="regiaoId = null"
@@ -151,7 +152,6 @@
             :key="nível.id"
             :value="nível.id"
             :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
-            :selected="Number($props.valoresIniciais.nivel_regionalizacao) === nível.id"
           >
             {{ nível.nome }}
           </option>
@@ -166,6 +166,7 @@
         </label>
         <select
           id="regiao-ids"
+          v-model.number="regiaoId"
           name="regiao_id"
           class="inputtext light"
           :aria-busy="regions.loading"
@@ -176,7 +177,6 @@
             v-for="regiao in regiõesPorNívelOrdenadas[nivelRegionalizacao]"
             :key="regiao.id"
             :value="regiao.id"
-            :selected="Number($props.valoresIniciais.regiao_id) === regiao.id"
           >
             {{ regiao.descricao }}
           </option>
@@ -269,10 +269,10 @@
       >Palavra-chave</label>
       <input
         id="palavra-chave"
+        v-model="palavraChave"
         class="inputtext light"
         name="palavra_chave"
         type="search"
-        :value="$props.valoresIniciais.palavra_chave"
       >
     </div>
     <div class="f1 fb10em">
@@ -357,7 +357,7 @@ import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import {
-  computed, nextTick, onUnmounted, ref, watch,
+  computed, onUnmounted, ref, watch,
 } from 'vue';
 
 const props = defineProps({
@@ -455,10 +455,13 @@ const {
 
 const pronto = ref(false);
 
+const codigo = ref('');
+const descricao = ref('');
 const nivelRegionalizacao = ref(null);
-const regiaoId = ref(null);
-
+const palavraChave = ref('');
 const planoSetorialId = ref(null);
+const regiaoId = ref(null);
+const titulo = ref('');
 
 const metasDisponiveis = computed(() => (!planoSetorialId.value
   ? listaDeMetas.value
@@ -466,41 +469,29 @@ const metasDisponiveis = computed(() => (!planoSetorialId.value
   || []));
 
 async function iniciar() {
-  const planoSelecionado = Number(props.valoresIniciais.plano_setorial_id || 0);
-  const regiaoSelecionada = Number(props.valoresIniciais.regiao_id || 0);
-  const nivelSelecionado = Number(props.valoresIniciais.nivel_regionalizacao || 0);
-
-  const cargaDeRegioes = regionsStore.getAll();
+  pronto.value = false;
 
   const promessas = [
     assuntosStore.buscarTudo(),
     MetasStore.buscarTudo(),
     ÓrgãosStore.getAll(),
     planosSetoriaisStore.buscarTudo(),
-    cargaDeRegioes,
+    regionsStore.getAll(),
   ];
 
-  planoSetorialId.value = planoSelecionado;
-
-  cargaDeRegioes.then(async () => {
-    if (nivelSelecionado) {
-      nivelRegionalizacao.value = nivelSelecionado;
-    }
-
-    await nextTick();
-
-    if (regiaoSelecionada) {
-      regiaoId.value = regiaoSelecionada;
-    }
-  });
+  codigo.value = props.valoresIniciais.codigo || '';
+  descricao.value = props.valoresIniciais.descricao || '';
+  nivelRegionalizacao.value = Number(props.valoresIniciais.nivel_regionalizacao || 0);
+  palavraChave.value = props.valoresIniciais.palavra_chave || '';
+  planoSetorialId.value = Number(props.valoresIniciais.plano_setorial_id || 0);
+  regiaoId.value = Number(props.valoresIniciais.regiao_id || 0);
+  titulo.value = props.valoresIniciais.titulo || '';
 
   Promise.allSettled(promessas)
     .then(() => {
       pronto.value = true;
     });
 }
-
-iniciar();
 
 onUnmounted(() => {
   assuntosStore.$reset();
@@ -510,16 +501,9 @@ onUnmounted(() => {
   regionsStore.$reset();
 });
 
-watch([
-  props.valoresIniciais.regiao_id,
-  props.valoresIniciais.nivel_regionalizacao,
-], (
-  novaRegiaoId,
-  novoNivelRegionalizacao,
-) => {
-  regiaoId.value = Number(novaRegiaoId || 0);
-  nivelRegionalizacao.value = Number(novoNivelRegionalizacao || 0);
-});
+watch(() => props.valoresIniciais, () => {
+  iniciar();
+}, { immediate: true });
 </script>
 <style lang="less" scoped>
 .label {
