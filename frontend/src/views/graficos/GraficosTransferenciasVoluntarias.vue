@@ -204,7 +204,7 @@
     class="w100 bgb mt4 p15 "
   >
     <h2 class="t36 block">
-      Hall da fama
+      Valores de destaque
     </h2>
     <div class="flex flexwrap g2">
       <div
