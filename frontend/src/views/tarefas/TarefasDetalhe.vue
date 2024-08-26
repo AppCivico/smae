@@ -30,17 +30,13 @@
         <dt class="tc500 w700 t16 mb025">
           Ordem
         </dt>
-        <dd>
-          <strong>Pego de onde?</strong>
-        </dd>
+        <dd> {{ emFoco?.numero || ' - ' }}</dd>
       </dl>
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Orgão responsável
         </dt>
-        <dd>
-          <strong>Pego de onde?</strong>
-        </dd>
+        <dd> {{ emFoco?.orgao?.descricao || ' - ' }}</dd>
       </dl>
     </div>
     <dl class="mb1">
@@ -104,7 +100,7 @@
           <dt class="tc500 w700 t16">
             Duração prevista
           </dt>
-          <dd> {{ emFoco?.duracao_planejado || ' - ' }}</dd>
+          <dd>{{ emFoco?.duracao_planejado ? `${emFoco.duracao_planejado} dias` : ' - ' }}</dd>
         </dl>
         <dl>
           <dt class="tc500 w700 t16">
@@ -118,13 +114,13 @@
           <dt class="tc500 w700 t16">
             Atraso
           </dt>
-          <dd> {{ emFoco?.atraso || ' - ' }}</dd>
+          <dd>{{ emFoco?.atraso ? `${emFoco.atraso} dias` : ' - ' }}</dd>
         </dl>
         <dl class="ml3">
           <dt class="tc500 w700 t16">
             Previsão de custo
           </dt>
-          <dd> {{ emFoco?.custo_estimado || ' - ' }}</dd>
+          <dd>{{ emFoco?.custo_estimado ? `R$${emFoco.custo_estimado}` : ' - ' }}</dd>
         </dl>
       </div>
     </div>
@@ -147,7 +143,7 @@
           <dt class="tc500 w700 t16">
             Duração real
           </dt>
-          <dd>{{ emFoco?.duracao_real || ' - ' }}</dd>
+          <dd>{{ emFoco?.duracao_real ? `${emFoco.duracao_real} dias` : ' - ' }}</dd>
         </dl>
         <dl>
           <dt class="tc500 w700 t16">
@@ -161,13 +157,13 @@
           <dt class="tc500 w700 t16">
             Custo real
           </dt>
-          <dd>{{ emFoco?.custo_real || ' - ' }}</dd>
+          <dd>{{ emFoco?.real ? `R$${emFoco.real}` : ' - ' }}</dd>
         </dl>
         <dl class="ml3">
           <dt class="tc500 w700 t16">
             Percentual concluído
           </dt>
-          <dd>{{ emFoco?.percentual_concluido || ' - ' }}%</dd>
+          <dd>{{ emFoco?.percentual_concluido ? `${emFoco.percentual_concluido}%` : ' - ' }}</dd>
         </dl>
       </div>
     </dl>
