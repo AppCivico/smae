@@ -3,7 +3,7 @@
     <h1 class="mt1 mb1">
       Resumo Atividade
     </h1>
-    <div class="flex maxw g2 mb1">
+    <div class="flex g2 mb1">
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Tarefa
@@ -17,7 +17,7 @@
         <dd> {{ emFoco?.eh_marco || ' - ' }}</dd>
       </dl>
     </div>
-    <div class="flex spacebetween maxw mb1">
+    <div class="flex spacebetween  mb1">
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Tarefa-mãe
@@ -57,7 +57,7 @@
         <hr class="ml2 f1">
       </div>
       <dd>
-        <table class="tablemain wrap">
+        <table class="tablemain maxw">
           <thead>
             <tr>
               <td class="tc300 w700 t12">
