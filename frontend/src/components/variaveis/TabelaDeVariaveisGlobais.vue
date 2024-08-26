@@ -45,6 +45,7 @@
         v-for="(item, idx) in lista"
         :key="item.id || idx"
         :aria-busy="chamadasPendentes.variaveisFilhasPorMae[item.id]"
+        :class="{ 'variavel-mae--aberta': variavelAberta === item.id }"
       >
         <tr>
           <slot
@@ -56,18 +57,33 @@
             <button
               v-if="item.possui_variaveis_filhas"
               type="button"
+              class="like-a__text tipinfo"
               @click="buscarFilhas(item.id)"
             >
-              <template v-if="!variaveisFilhasPorMae[item.id]">
-                carregar
-              </template>
-              <template v-else-if="variavelAberta === item.id">
-                ocultar
-              </template>
-              <template v-else>
-                exibir
-              </template>
-              filhas
+              <svg
+                v-if="variavelAberta === item.id"
+                class="arrow"
+                width="8"
+                height="13"
+              ><use xlink:href="#i_right" /></svg>
+              <svg
+                v-else
+                class="arrow"
+                width="13"
+                height="8"
+              ><use xlink:href="#i_down" /></svg>
+              <div>
+                <template v-if="!variaveisFilhasPorMae[item.id]">
+                  carregar
+                </template>
+                <template v-else-if="variavelAberta === item.id">
+                  ocultar
+                </template>
+                <template v-else>
+                  exibir
+                </template>
+                filhas
+              </div>
             </button>
           </td>
 
@@ -185,10 +201,16 @@ defineProps({
 const variavelAberta = ref<number>(0);
 
 function buscarFilhas(id: number) {
-  // if (!variaveisFilhasPorMae.value[id]) {
-  variaveisGlobaisStore.buscarFilhas(id);
-  // }
+  if (!variaveisFilhasPorMae.value[id]) {
+    variaveisGlobaisStore.buscarFilhas(id);
+  }
 
   variavelAberta.value = variavelAberta.value === id ? 0 : id;
 }
 </script>
+<style lang="less" scoped>
+.variavel-mae--aberta {
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+}
+</style>
