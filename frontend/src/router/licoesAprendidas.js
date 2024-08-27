@@ -23,6 +23,7 @@ export default {
   }),
 
   meta: {
+    título: 'Lições aprendidas',
   },
   children: [
     {
@@ -30,9 +31,7 @@ export default {
       path: '',
       component: liçõesAprendidasLista,
       meta: {
-        título: 'Lições aprendidas com o projeto',
         títuloParaMenu: 'Lições aprendidas',
-
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
@@ -81,12 +80,11 @@ export default {
 
           meta: {
             títuloParaMenu: 'Editar lição',
-
+            // título: ' ',
             rotaDeEscape: 'liçõesAprendidasListar',
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
-              'liçõesAprendidasListar',
             ],
           },
         },

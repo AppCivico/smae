@@ -50,7 +50,7 @@ export default {
           props: true,
 
           meta: {
-            títuloParaMenu: 'Editar processo',
+            títuloParaMenu: 'Editar',
 
             rotaDeEscape: 'contratosDoProjetoListar',
 

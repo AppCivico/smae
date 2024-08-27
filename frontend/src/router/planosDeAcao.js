@@ -16,7 +16,8 @@ export default {
   }),
 
   meta: {
-    títuloParaMenu: 'PlanosDeAção',
+    títuloParaMenu: 'Planos de ação',
+    título: 'Planos de ação',
   },
   children: [
     {
