@@ -109,7 +109,7 @@ export class VariavelCalculadaService {
                 }
 
                 if (!erro && fc.calc_codigo) {
-                    codigo = fc.calc_codigo;
+                    codigo = 'CALC.' + fc.calc_codigo;
                     const exists = await this.prisma.variavel.findFirst({
                         where: {
                             codigo,
