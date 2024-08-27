@@ -108,7 +108,12 @@ export class VariavelCalculadaService {
                 }
                 codigo = 'CALC.' + fc.titulo;
                 const exists = await this.prisma.variavel.findFirst({
-                    where: { codigo, removido_em: null, tipo: 'Calculada' },
+                    where: {
+                        codigo,
+                        removido_em: null,
+                        tipo: 'Calculada',
+                        NOT: fc.variavel_calc_id ? { id: fc.variavel_calc_id } : undefined,
+                    },
                 });
                 if (exists) erro = `Variável com código ${codigo} já existente`;
             } else {
