@@ -61,13 +61,6 @@
               @click="buscarFilhas(item.id)"
             >
               <svg
-                v-if="variavelAberta === item.id"
-                class="arrow"
-                width="8"
-                height="13"
-              ><use xlink:href="#i_right" /></svg>
-              <svg
-                v-else
                 class="arrow"
                 width="13"
                 height="8"
@@ -217,5 +210,9 @@ function buscarFilhas(id: number) {
 .variavel-mae--aberta {
   border-top: 2px solid @c600;
   border-bottom: 2px solid @c600;
+
+  .arrow {
+    transform: rotate(180deg);
+  }
 }
 </style>
