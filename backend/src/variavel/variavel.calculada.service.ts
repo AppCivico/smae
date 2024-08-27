@@ -105,17 +105,21 @@ export class VariavelCalculadaService {
                     if (orgaoIds.length !== 1) erro = 'Deve ter apenas Órgão: ' + orgaoIds.join(', ');
                     if (inicioMedicaoMinDate === null) erro = 'Nenhum Início de Medição pode ser nulo';
                     if (!inicioMedicaoMinDate) erro = 'Faltando início de Medição';
+                    if (!fc.calc_codigo) erro = 'Código da variável calculada não foi gerado';
                 }
-                codigo = 'CALC.' + fc.titulo;
-                const exists = await this.prisma.variavel.findFirst({
-                    where: {
-                        codigo,
-                        removido_em: null,
-                        tipo: 'Calculada',
-                        NOT: fc.variavel_calc_id ? { id: fc.variavel_calc_id } : undefined,
-                    },
-                });
-                if (exists) erro = `Variável com código ${codigo} já existente`;
+
+                if (!erro && fc.calc_codigo) {
+                    codigo = fc.calc_codigo;
+                    const exists = await this.prisma.variavel.findFirst({
+                        where: {
+                            codigo,
+                            removido_em: null,
+                            tipo: 'Calculada',
+                            NOT: fc.variavel_calc_id ? { id: fc.variavel_calc_id } : undefined,
+                        },
+                    });
+                    if (exists) erro = `Variável com código ${codigo} já existente`;
+                }
             } else {
                 if (!fc.calc_codigo) erro = 'Código da variável calculada não informado';
                 if (!fc.calc_inicio_medicao) erro = 'Início de Medição da variável calculada não informado';
@@ -129,7 +133,7 @@ export class VariavelCalculadaService {
                     fimMedicaoMaxDate = fc.calc_fim_medicao;
                 }
             }
-            if (!orgao_id) erro = 'Não foi resolver um Órgão Proprietários';
+            if (!erro && !orgao_id) erro = 'Não foi resolver um Órgão Proprietários';
 
             if (fc.calc_regiao?.id) {
                 titulo += ` - ${fc.calc_regiao.pdm_codigo_sufixo ?? fc.calc_regiao.codigo ?? `Região ${fc.calc_regiao.id}`}`;
