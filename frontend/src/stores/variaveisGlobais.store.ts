@@ -264,7 +264,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
             acc2[agrupador] = [];
           }
 
-          if (agrupador > nivelMaisFino) {
+          if (agrupador !== 'supraregional' && agrupador > nivelMaisFino) {
             nivelMaisFino = agrupador;
           }
 
