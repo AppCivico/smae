@@ -46,7 +46,8 @@ export class PrismaHelpers {
             };
 
             const words = trimmedInput
-                .split(' ')
+                .split(/\s+/i)
+                .filter((word) => word.length > 0)
                 .map((word) => `${escapeSpecialChars(word)}:*`)
                 .join(' & ');
 
