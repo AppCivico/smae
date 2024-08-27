@@ -1083,6 +1083,7 @@ model Regiao {
     eleicoesComparecimento    EleicaoComparecimento[]
     mandatoRepresentatividade MandatoRepresentatividade[]
     ProjetoRegiao             ProjetoRegiao[]
+    FormulaComposta           FormulaComposta[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -1471,6 +1472,8 @@ model FormulaComposta {
     calc_codigo            String?
     calc_unidade_medida_id Int?
     calc_unidade_medida    UnidadeMedida? @relation(fields: [calc_unidade_medida_id], references: [id])
+    calc_regiao_id         Int?
+    calc_regiao            Regiao?        @relation(fields: [calc_regiao_id], references: [id])
     atualizar_calc         Boolean        @default(false)
     tipo_pdm               TipoPdm        @default(PDM)
 

@@ -45,6 +45,9 @@ export class VariavelCalculadaService {
                 calc_inicio_medicao: true,
                 calc_periodicidade: true,
                 calc_regionalizavel: true,
+                calc_regiao: {
+                    select: { id: true, pdm_codigo_sufixo: true, codigo: true },
+                },
                 calc_codigo: true,
                 // esse é o órgão proprietário afinal, não tem responsável ja que o calculado é automatic
                 calc_orgao_id: true,
@@ -125,6 +128,10 @@ export class VariavelCalculadaService {
             }
             if (!orgao_id) erro = 'Não foi resolver um Órgão Proprietários';
 
+            if (fc.calc_regiao?.id) {
+                titulo += ` - ${fc.calc_regiao.pdm_codigo_sufixo ?? fc.calc_regiao.codigo ?? `Região ${fc.calc_regiao.id}`}`;
+            }
+
             if (erro) {
                 await this.prisma.formulaComposta.update({
                     where: { id: fc.id },
@@ -155,6 +162,7 @@ export class VariavelCalculadaService {
                         atraso_meses: 1,
                         ano_base: null,
                         valor_base: 0,
+                        regiao_id: fc.calc_regiao?.id,
                         acumulativa: getUniqueValues('acumulativa')[0],
                         descricao: getUniqueValues('descricao')[0],
                         metodologia: getUniqueValues('metodologia')[0],

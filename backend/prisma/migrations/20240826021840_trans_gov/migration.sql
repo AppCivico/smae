@@ -33,3 +33,6 @@ ALTER TABLE "nota" ADD CONSTRAINT "nota_orgao_responsavel_id_fkey" FOREIGN KEY (
 
 -- AlterTable
 ALTER TABLE "nota" ADD COLUMN     "usuarios_lidos" INTEGER[];
+
+ALTER TABLE "formula_composta" ADD COLUMN     "calc_regiao_id" INTEGER;
+

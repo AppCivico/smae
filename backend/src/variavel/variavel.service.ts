@@ -515,6 +515,7 @@ export class VariavelService {
                         })),
                     },
                     variavel_mae_id: variavel_mae_id ?? null,
+                    calc_regiao_id: fc.id
                 },
                 select: { id: true },
             });
