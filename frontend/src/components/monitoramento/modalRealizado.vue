@@ -6,7 +6,7 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { Field, Form, useForm } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
@@ -48,6 +48,11 @@ const schema = Yup.object().shape({
   valor_realizado: Yup.string(),
   valor_realizado_acumulado: Yup.string().nullable(),
   analise_qualitativa: Yup.string(),
+});
+
+const { errors, isSubmitting, setFieldValue } = useForm({
+  initialValues: SingleAnalise,
+  validationSchema: schema.value,
 });
 
 const submitBt = ref({});
@@ -154,6 +159,26 @@ function addFile(e) {
   virtualUpload.value.file = files[0];
 }
 
+function handleChangeValorRealizado(value) {
+  const valorRealizado = Number(value);
+  const valorRealizadoAcumulado = Number(SingleAnalise.value.valor_realizado_acumulado);
+
+  if (Number.isNaN(valorRealizado) || Number.isNaN(valorRealizadoAcumulado)) {
+    const err = new Error();
+    console.error(
+      'Erro ao tentar atribuir valor para variavel acumulado.',
+      {
+        valorRealizado,
+        valorRealizadoAcumulado,
+      },
+      err.stack,
+    );
+    return;
+  }
+
+  setFieldValue('valor_realizado_acumulado', valorRealizado + valorRealizadoAcumulado);
+}
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -255,12 +280,9 @@ function addFile(e) {
 
     <hr class="mt2 mb2">
 
-    <Form
-      ref="varForm"
-      v-slot="{ errors, isSubmitting }"
-      :validation-schema="schema"
-      :initial-values="SingleAnalise"
-      @submit="onSubmit"
+    <form
+      :disabled="isSubmitting"
+      @submit.prevent="onSubmit"
     >
       <div class="flex g2">
         <div class="f1">
@@ -274,6 +296,7 @@ function addFile(e) {
             "
             class="inputtext light mb1"
             :class="{ 'error': errors.valor_realizado }"
+            @update:model-value="handleChangeValorRealizado"
           />
           <div class="error-msg mb1">
             {{ errors.valor_realizado }}
@@ -286,6 +309,7 @@ function addFile(e) {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.valor_realizado_acumulado }"
+              disabled
             />
             <div class="error-msg mb1">
               {{ errors.valor_realizado_acumulado }}
