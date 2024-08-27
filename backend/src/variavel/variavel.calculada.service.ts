@@ -91,8 +91,8 @@ export class VariavelCalculadaService {
             let inicioMedicaoMinDate = inicioMedicao.includes(null)
                 ? null
                 : new Date(Math.min(...(inicioMedicao as any)));
-            const fimMedicaoMax = Math.max(...fimMedicao);
-            let fimMedicaoMaxDate = fimMedicaoMax ? new Date(fimMedicaoMax) : null;
+            let fimMedicaoMaxDate = fimMedicao.length ? new Date(Math.max(...fimMedicao)) : null; // com length zero vira -infinity
+
             let codigo: string;
             let titulo: string;
             let erro: string | undefined = undefined;
