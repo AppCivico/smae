@@ -92,10 +92,6 @@ services:
       PRISMA_FIELD_DECRYPTION_KEYS: "${PRISMA_FIELD_DECRYPTION_KEYS}"
       LOG_REQ_ON_DB: "${LOG_REQ_ON_DB}"
       LOG_DB_SKIP_URL_LIST: "${LOG_DB_SKIP_URL_LIST}"
-      SEI_HOST: "${SEI_HOST}" # eg: https://treinamentosei4.prefeitura.sp.gov.br/sei
-      SEI_ENDPOINT_WSDL: "${SEI_ENDPOINT_WSDL}" # eg: controlador_ws.php?servico=sei
-      SEI_SIGLA_SISTEMA: "${SEI_SIGLA_SISTEMA}" # eg: SEI
-      SEI_API_TOKEN: "${SEI_API_TOKEN}" # eg: awsf...
       GEO_API_PREFIX: "${GEO_API_PREFIX}" # http://smae_sei:80
       TRANSFEREGOV_API_PREFIX: "${TRANSFEREGOV_API_PREFIX}" # http://smae_transferegov:80
     networks:
@@ -185,10 +181,10 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      host_sei: "${SEI_HOST}"
-      endpoint_wsdl: "${SEI_ENDPOINT_WSDL}"
-      sigla_sistema: "${SEI_SIGLA_SISTEMA}"
-      identificacao_servico: "${SEI_API_TOKEN}"
+      host_sei: "${SEI_HOST}" # eg: https://treinamentosei4.prefeitura.sp.gov.br/sei
+      endpoint_wsdl: "${SEI_ENDPOINT_WSDL}"  # eg: controlador_ws.php?servico=sei
+      sigla_sistema: "${SEI_SIGLA_SISTEMA}" # eg: SEI
+      identificacao_servico: "${SEI_API_TOKEN}" # eg: awsf...
     networks:
       - smae_network
     logging:
