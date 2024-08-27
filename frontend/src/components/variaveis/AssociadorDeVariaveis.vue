@@ -88,21 +88,24 @@
 
       <template #comecoLinhaAgrupadora="{ agrupador, mae }">
         <td>
-          <button
-            type="button"
-            @click="selecionarTodasAsFilhas(mae.id, agrupador)"
-          >
-            <template
-              v-if="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
+          <input
+            type="checkbox"
+            class="like-a__text"
+            :indeterminate.prop="!!variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length
+              && variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length !==
                 filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            >
-              Desselecionar
-            </template>
-            <template v-else>
-              Selecionar
-            </template>
-            {{ filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length }}
-          </button>
+            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
+              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
+            :aria-label="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
+              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
+              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
+              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
+            :title="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
+              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
+              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
+              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
+            @change="selecionarTodasAsFilhas(mae.id, agrupador)"
+          >
         </td>
       </template>
     </TabelaDeVariaveisGlobais>
