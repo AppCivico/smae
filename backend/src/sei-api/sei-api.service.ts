@@ -137,7 +137,7 @@ export class SeiApiService {
         this.SEI_API_PREFIX = process.env.SEI_API_PREFIX || 'http://smae_sei:80/';
         this.got = got.extend({
             prefixUrl: this.SEI_API_PREFIX,
-            timeout: 20 * 1000,
+            timeout: 18 * 1000,
             retry: {
                 limit: 2,
                 methods: ['GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE', 'POST'],
