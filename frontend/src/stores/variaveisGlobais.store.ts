@@ -252,18 +252,33 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
     filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae)
       .reduce((acc, maeId) => {
-        const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce((acc2, cur) => {
-          const regiaoNivel = cur.regiao?.nivel || 0;
+        let nivelMaisFino = 0;
 
-          if (!acc2[regiaoNivel]) {
+        const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce((acc2, cur) => {
+          const agrupador = cur.supraregional && !cur.regiao?.nivel
+            ? 'supraregional'
+            : Number(cur.regiao?.nivel) || 0;
+
+          if (!acc2[agrupador]) {
             // eslint-disable-next-line no-param-reassign
-            acc2[regiaoNivel] = [];
+            acc2[agrupador] = [];
           }
 
-          acc2[regiaoNivel].push(cur);
+          if (agrupador > nivelMaisFino) {
+            nivelMaisFino = agrupador;
+          }
+
+          acc2[agrupador].push(cur);
 
           return acc2;
         }, {} as { [key: string]: VariavelGlobalItemDto[] });
+
+        if (nivelMaisFino && filhasAgrupadas.supraregional) {
+          filhasAgrupadas[nivelMaisFino] = filhasAgrupadas[nivelMaisFino]
+            .concat(filhasAgrupadas.supraregional);
+
+          delete filhasAgrupadas.supraregional;
+        }
 
         acc[maeId] = filhasAgrupadas;
 
