@@ -57,7 +57,7 @@
             <button
               v-if="item?.possui_variaveis_filhas"
               type="button"
-              class="like-a__text tipinfo"
+              class="like-a__text tipinfo right"
               @click="buscarFilhas(item.id)"
             >
               <svg
