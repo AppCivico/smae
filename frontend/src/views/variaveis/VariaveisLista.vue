@@ -116,7 +116,7 @@ watchEffect(() => {
     <template #finalLinhaVariavel="{ item }">
       <td>
         <button
-          v-if="!item.possui_variaveis_filhas && item.tipo !== 'calculada'"
+          v-if="!item?.possui_variaveis_filhas && item?.tipo !== 'calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
           @click="abrirEdicaoValores(item.id, 'Previsto')"
@@ -130,7 +130,7 @@ watchEffect(() => {
       </td>
       <td>
         <button
-          v-if="!item.possui_variaveis_filhas && item.tipo !== 'calculada'"
+          v-if="!item?.possui_variaveis_filhas && item?.tipo !== 'calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
           @click="abrirEdicaoValores(item.id, 'Realizado')"
@@ -145,7 +145,7 @@ watchEffect(() => {
 
       <td>
         <router-link
-          v-if="item.pode_editar"
+          v-if="item?.pode_editar"
           :to="{ name: 'variaveisEditar', params: { variavelId: item.id } }"
           class="tprimary"
         >
@@ -157,7 +157,7 @@ watchEffect(() => {
       </td>
       <td>
         <button
-          v-if="item.pode_excluir"
+          v-if="item?.pode_excluir"
           class="like-a__text"
           arial-label="excluir"
           title="excluir"
