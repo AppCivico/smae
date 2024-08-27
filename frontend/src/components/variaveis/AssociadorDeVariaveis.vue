@@ -152,7 +152,6 @@
 </template>
 <script setup lang="ts">
 import type { Indicador } from '@/../../backend/src/indicador/entities/indicador.entity';
-import type { VariavelGlobalItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
