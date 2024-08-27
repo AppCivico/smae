@@ -192,7 +192,6 @@ export default {
 
         rotasParaMigalhasDePão: [
           'projetosListar',
-          'projetosResumo',
         ],
       },
 
