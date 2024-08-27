@@ -491,6 +491,13 @@ export class VariavelService {
                 id: true,
             },
         });
+        const mae = variavel_mae_id
+            ? await prismaTxn.variavel.findFirst({
+                  where: { id: variavel_mae_id },
+                  select: { id: true, titulo: true },
+              })
+            : undefined;
+        const titulo = mae?.titulo ?? undefined;
 
         for (const fc of fc_tasks) {
             // busca apenas as variáveis que estão na região
@@ -500,7 +507,8 @@ export class VariavelService {
 
             const fc_id = await prismaTxn.formulaComposta.create({
                 data: {
-                    titulo: `${codigo}.${fc.pdm_codigo_sufixo}`,
+                    titulo: titulo ?? `${codigo}.${fc.pdm_codigo_sufixo}`,
+                    calc_codigo: `${codigo}.${fc.pdm_codigo_sufixo}`,
                     formula: formula,
                     formula_compilada: formula,
                     criar_variavel: true,
@@ -515,7 +523,7 @@ export class VariavelService {
                         })),
                     },
                     variavel_mae_id: variavel_mae_id ?? null,
-                    calc_regiao_id: fc.id
+                    calc_regiao_id: fc.id,
                 },
                 select: { id: true },
             });
