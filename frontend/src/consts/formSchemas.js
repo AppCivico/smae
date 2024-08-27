@@ -3264,7 +3264,7 @@ export const empreendimento = object({
   identificador: string()
     .label('Identificador')
     .max(250)
-    .min(3)
+    .min(1)
     .required(),
   nome: string()
     .label('Nome')
