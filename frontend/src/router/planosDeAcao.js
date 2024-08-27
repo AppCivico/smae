@@ -142,7 +142,6 @@ export default {
               'projetosResumo',
               'riscosListar',
               'planosDeAçãoListar',
-              'detalhes',
             ],
           },
         },
