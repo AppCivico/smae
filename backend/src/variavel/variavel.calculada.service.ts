@@ -87,12 +87,12 @@ export class VariavelCalculadaService {
             ];
 
             const inicioMedicao = variaveis.map((v) => v.inicio_medicao);
-            const fimMedicao = variaveis.map((v) => v.fim_medicao);
+            const fimMedicao = variaveis.filter((v) => v.fim_medicao !== null).map((v) => v.fim_medicao!.valueOf());
             let inicioMedicaoMinDate = inicioMedicao.includes(null)
                 ? null
                 : new Date(Math.min(...(inicioMedicao as any)));
-            const fimMedicaoMax = Math.max(...(fimMedicao.filter((date) => date !== null) as any));
-            let fimMedicaoMaxDate = isNaN(fimMedicaoMax) ? null : new Date(fimMedicaoMax);
+            const fimMedicaoMax = Math.max(...fimMedicao);
+            let fimMedicaoMaxDate = fimMedicaoMax ? new Date(fimMedicaoMax) : null;
             let codigo: string;
             let titulo: string;
             let erro: string | undefined = undefined;
