@@ -13,14 +13,14 @@ export default {
   },
   AdminPS: {
     valor: 'AdminPS',
-    nome: 'AdminPS',
+    nome: 'Administrador de plano',
   },
   TecnicoPS: {
     valor: 'TecnicoPS',
-    nome: 'TecnicoPS',
+    nome: 'Técnico',
   },
   PontoFocalPS: {
     valor: 'PontoFocalPS',
-    nome: 'PontoFocalPS',
+    nome: 'Ponto focal',
   },
 };
