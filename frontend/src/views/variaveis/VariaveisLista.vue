@@ -113,13 +113,13 @@ watchEffect(() => {
       <col class="col--botão-de-ação">
     </template>
 
-    <template #finalLinhaVariavel="{ item }">
+    <template #finalLinhaVariavel="{ variavel }">
       <td>
         <button
-          v-if="!item?.possui_variaveis_filhas && item?.tipo !== 'calculada'"
+          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
-          @click="abrirEdicaoValores(item.id, 'Previsto')"
+          @click="abrirEdicaoValores(variavel.id, 'Previsto')"
         >
           <svg
             width="20"
@@ -130,10 +130,10 @@ watchEffect(() => {
       </td>
       <td>
         <button
-          v-if="!item?.possui_variaveis_filhas && item?.tipo !== 'calculada'"
+          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
-          @click="abrirEdicaoValores(item.id, 'Realizado')"
+          @click="abrirEdicaoValores(variavel.id, 'Realizado')"
         >
           <svg
             width="20"
@@ -145,8 +145,8 @@ watchEffect(() => {
 
       <td>
         <router-link
-          v-if="item?.pode_editar"
-          :to="{ name: 'variaveisEditar', params: { variavelId: item.id } }"
+          v-if="variavel?.pode_editar"
+          :to="{ name: 'variaveisEditar', params: { variavelId: variavel.id } }"
           class="tprimary"
         >
           <svg
@@ -157,11 +157,11 @@ watchEffect(() => {
       </td>
       <td>
         <button
-          v-if="item?.pode_excluir"
+          v-if="variavel?.pode_excluir"
           class="like-a__text"
           arial-label="excluir"
           title="excluir"
-          @click="excluirVariavel(item.id, item.titulo)"
+          @click="excluirVariavel(variavel.id, variavel.titulo)"
         >
           <svg
             width="20"
