@@ -52,6 +52,7 @@ export class VariavelItemDto {
     inicio_medicao: string | null;
     fim_medicao: string | null;
     suspendida: boolean;
+    supraregional: boolean;
     mostrar_monitoramento: boolean;
     variavel_categorica_id: number | null;
     etapa: IdTituloDto | null;
@@ -68,7 +69,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'fim_medicao',
     'orgao',
     'regiao',
-    'possui_variaveis_filhas'
+    'possui_variaveis_filhas',
 ]) {
     orgao_proprietario: OrgaoResumo;
     fonte: IdNomeDto | null;

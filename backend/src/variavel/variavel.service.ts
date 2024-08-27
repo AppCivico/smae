@@ -937,6 +937,7 @@ export class VariavelService {
                 ano_base: true,
                 valor_base: true,
                 periodicidade: true,
+                supraregional: true,
                 orgao: {
                     select: {
                         id: true,
@@ -1091,6 +1092,7 @@ export class VariavelService {
                 responsaveis: responsaveis,
                 suspendida: row.suspendida_em ? true : false,
                 possui_variaveis_filhas: row.variaveis_filhas.length > 0,
+                supraregional: row.supraregional,
             } satisfies VariavelItemDto;
         });
 
