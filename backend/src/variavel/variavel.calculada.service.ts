@@ -98,7 +98,7 @@ export class VariavelCalculadaService {
             let erro: string | undefined = undefined;
             let orgao_id: number | null = null;
             if (autogerenciavel) {
-                titulo = getUniqueValues('titulo')[0];
+                titulo = fc.titulo;
                 const orgaoIds = getUniqueValues('orgao_proprietario_id');
                 orgao_id = orgaoIds[0];
                 erro = uniqueChecks.find((check) => getUniqueValues(check.key).length !== 1)?.label;
