@@ -70,6 +70,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'orgao',
     'regiao',
     'possui_variaveis_filhas',
+    'supraregional',
 ]) {
     orgao_proprietario: OrgaoResumo;
     fonte: IdNomeDto | null;

@@ -1138,6 +1138,7 @@ export class VariavelService {
             },
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
+                variavel: { select: { supraregional: true } },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
                 regiao: {
                     select: {
@@ -1214,6 +1215,7 @@ export class VariavelService {
                     pode_editar: perm,
                     pode_excluir: perm && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
+                    supraregional: r.variavel.supraregional,
                     regiao: r.regiao
                         ? ({
                               id: r.regiao.id,
