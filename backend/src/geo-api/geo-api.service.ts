@@ -99,7 +99,7 @@ export class GeoApiService {
     onModuleInit() {
         this.got = got.extend({
             prefixUrl: this.GEO_API_PREFIX,
-            timeout: 20 * 1000,
+            timeout: 18 * 1000,
             retry: {
                 limit: 2,
                 methods: ['GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE', 'POST'],
