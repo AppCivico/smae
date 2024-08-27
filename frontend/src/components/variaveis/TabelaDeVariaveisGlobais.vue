@@ -215,7 +215,7 @@ function buscarFilhas(id: number) {
 </script>
 <style lang="less" scoped>
 .variavel-mae--aberta {
-  border-top: 2px solid;
-  border-bottom: 2px solid;
+  border-top: 2px solid @c600;
+  border-bottom: 2px solid @c600;
 }
 </style>
