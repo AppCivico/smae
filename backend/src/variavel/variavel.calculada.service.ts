@@ -94,11 +94,10 @@ export class VariavelCalculadaService {
             let fimMedicaoMaxDate = fimMedicao.length ? new Date(Math.max(...fimMedicao)) : null; // com length zero vira -infinity
 
             let codigo: string;
-            let titulo: string;
+            let titulo = 'Calculada ' + fc.titulo;
             let erro: string | undefined = undefined;
             let orgao_id: number | null = null;
             if (autogerenciavel) {
-                titulo = fc.titulo;
                 const orgaoIds = getUniqueValues('orgao_proprietario_id');
                 orgao_id = orgaoIds[0];
                 erro = uniqueChecks.find((check) => getUniqueValues(check.key).length !== 1)?.label;
@@ -117,11 +116,10 @@ export class VariavelCalculadaService {
                 if (!fc.calc_inicio_medicao) erro = 'Início de Medição da variável calculada não informado';
                 if (!fc.calc_fim_medicao) erro = 'Fim de Medição da variável calculada não informado';
                 if (!fc.calc_unidade_medida_id) erro = 'Unidade de Medida da variável calculada não informado';
-                titulo = 'Calculada ' + fc.titulo;
                 orgao_id = fc.calc_orgao_id;
 
                 if (!erro) {
-                    codigo = fc.calc_codigo!;
+                    codigo = 'CALC.' + fc.calc_codigo!;
                     inicioMedicaoMinDate = fc.calc_inicio_medicao;
                     fimMedicaoMaxDate = fc.calc_fim_medicao;
                 }
