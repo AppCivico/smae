@@ -50,12 +50,12 @@
         <tr>
           <slot
             name="comecoLinhaVariavel"
-            :item="item"
+            :variavel="item"
           />
 
           <td>
             <button
-              v-if="item.possui_variaveis_filhas"
+              v-if="item?.possui_variaveis_filhas"
               type="button"
               class="like-a__text tipinfo"
               @click="buscarFilhas(item.id)"
@@ -91,7 +91,7 @@
 
           <slot
             name="finalLinhaVariavel"
-            :item="item"
+            :variavel="item"
           />
         </tr>
 
@@ -114,13 +114,19 @@
           >
             <tr
               v-show="variavelAberta === item.id"
+              class="variavel-mae__agrupador"
             >
               <td />
               <slot
                 name="comecoLinhaAgrupadora"
+                :agrupador="k"
                 :grupo="nivel"
+                :mae="item"
               />
-              <th :colspan="6 + Number($props.numeroDeColunasExtras)">
+              <th
+                :colspan="6 + Number($props.numeroDeColunasExtras)"
+                class="t10"
+              >
                 {{ nivel.length }} variáveis
                 <template v-if="niveisRegionalizacao[k]?.nome">
                   atribuídas à "{{ niveisRegionalizacao[k]?.nome }}"
@@ -136,15 +142,17 @@
               <th />
 
               <slot
-                name="comecoLinhaVariavel"
-                :item="filha"
+                name="comecoLinhaVariavelFilha"
+                :filha="filha"
+                :mae="item"
+                :agrupador="k"
               />
 
               <LinhaDeVariaveis :linha="filha" />
 
               <slot
                 name="finalLinhaVariavel"
-                :item="filha"
+                :filha="filha"
               />
             </tr>
           </template>

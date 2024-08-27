@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <CheckClose
       :apenas-emitir="true"
-      :formulário-sujo="!!variaveisSelecionadas.length"
+      :formulário-sujo="!!combinacaoDeVariaveisSelecionadas.length"
       @close="emit('close')"
     />
   </div>
@@ -26,9 +26,9 @@
   >
     <p class="mb1">
       <strong>
-        {{ variaveisSelecionadas.length }}
+        {{ combinacaoDeVariaveisSelecionadas.length }}
       </strong>
-      <template v-if="variaveisSelecionadas.length === 1">
+      <template v-if="combinacaoDeVariaveisSelecionadas.length === 1">
         variável selecionada
       </template>
       <template v-else>
@@ -47,26 +47,61 @@
         <td />
       </template>
 
-      <template #comecoLinhaVariavel="{ item }">
-        <td>
+      <template #comecoLinhaVariavel="{ variavel }">
+        <td
+          class="no++wrap"
+        >
           <input
-            v-if="!item?.possui_variaveis_filhas"
+            v-if="!variavel?.possui_variaveis_filhas"
             v-model.number="variaveisSelecionadas"
             type="checkbox"
             title="selecionar"
-            :value="item?.id"
+            :value="variavel?.id"
             name="variavel_ids"
+          >
+          <span
+            v-else-if="numeroDeSelecionadasPorMae[variavel?.id]"
+            class="tipinfo right"
+          >+{{ numeroDeSelecionadasPorMae[variavel.id] || 0 }}
+            <div>filhas selecionadas</div>
+          </span>
+        </td>
+      </template>
+
+      <template #comecoLinhaVariavelFilha="{ agrupador, filha, mae }">
+        <td>
+          <input
+            type="checkbox"
+            title="selecionar"
+            :value="filha?.id"
+            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.includes(filha.id)"
+            :name="`variavel[${mae.id}].[${agrupador}].filha_ids`"
+            @change="($e) => selecionarFilha(
+              mae?.id,
+              agrupador,
+              filha?.id,
+              ($e.target as HTMLInputElement)?.checked
+            )"
           >
         </td>
       </template>
 
-      <template #comecoLinhaAgrupadora="{ grupo }">
+      <template #comecoLinhaAgrupadora="{ agrupador, mae }">
         <td>
           <button
             type="button"
-            @click="selecionarGrupo(grupo)"
+            @click="selecionarTodasAsFilhas(mae.id, agrupador)"
           >
-            Selecionar {{ grupo.length }}
+            <template
+              v-if="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
+                filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
+            >
+              Desselecionar
+            </template>
+            <template v-else>
+              Selecionar
+            </template>
+            {{ filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length }}
           </button>
         </td>
       </template>
@@ -74,9 +109,9 @@
 
     <p class="mb1">
       <strong>
-        {{ variaveisSelecionadas.length }}
+        {{ combinacaoDeVariaveisSelecionadas.length }}
       </strong>
-      <template v-if="variaveisSelecionadas.length === 1">
+      <template v-if="combinacaoDeVariaveisSelecionadas.length === 1">
         variável selecionada
       </template>
       <template v-else>
@@ -99,7 +134,7 @@
       <button
         type="button"
         class="btn outline bgnone tcprimary big"
-        :aria-disabled="!variaveisSelecionadas.length || envioPendente"
+        :aria-disabled="!combinacaoDeVariaveisSelecionadas.length || envioPendente"
         @click="associar(true)"
       >
         Associar e fechar
@@ -107,7 +142,7 @@
       <button
         type="submit"
         class="btn big"
-        :aria-disabled="!variaveisSelecionadas.length || envioPendente"
+        :aria-disabled="!combinacaoDeVariaveisSelecionadas.length || envioPendente"
       >
         Associar
       </button>
@@ -125,7 +160,7 @@ import requestS from '@/helpers/requestS.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import type { PropType } from 'vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import LoadingComponent from '../LoadingComponent.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -156,8 +191,73 @@ const {
 
 const formularioDeAssociacao = ref<HTMLFormElement | null>(null);
 const variaveisSelecionadas = ref<number[]>([]);
+const variaveisFilhasSelecionadas = ref<{ [key: string]: { [key: string]: number[] } }>({});
+
 const envioPendente = ref<boolean>(false);
 const erro = ref<string | null>(null);
+
+const numeroDeSelecionadasPorMae = computed(() => Object.keys(variaveisFilhasSelecionadas.value)
+  .reduce((acc, mae: string) => {
+    acc[mae] = Object.keys(variaveisFilhasSelecionadas.value[mae])
+      .reduce((acc2, cur): number => acc2 + variaveisFilhasSelecionadas.value[mae][cur].length, 0);
+    return acc;
+  }, {} as { [key: string]: number }));
+
+const combinacaoDeVariaveisSelecionadas = computed(() => {
+  const combinacao: number[] = [...variaveisSelecionadas.value];
+
+  Object.keys(variaveisFilhasSelecionadas.value).forEach((mae) => {
+    Object.keys(variaveisFilhasSelecionadas.value[mae]).forEach((agrupador) => {
+      combinacao.push(...variaveisFilhasSelecionadas.value[mae][agrupador]);
+    });
+  });
+
+  return combinacao;
+});
+
+function selecionarTodasAsFilhas(
+  maeId: number,
+  agrupador: number | string,
+) {
+  const totalSelecionado = variaveisFilhasSelecionadas.value[maeId]?.[agrupador]?.length;
+  const totalDisponivel = filhasPorMaePorNivelDeRegiao.value[maeId]?.[agrupador]?.length;
+
+  if (totalSelecionado === totalDisponivel) {
+    variaveisFilhasSelecionadas.value[maeId][agrupador] = [];
+  } else {
+    if (!variaveisFilhasSelecionadas.value[maeId]) {
+      variaveisFilhasSelecionadas.value[maeId] = {};
+    }
+    if (!variaveisFilhasSelecionadas.value[maeId][agrupador]) {
+      variaveisFilhasSelecionadas.value[maeId][agrupador] = [];
+    }
+    variaveisFilhasSelecionadas.value[maeId][agrupador] = filhasPorMaePorNivelDeRegiao
+      .value[maeId][agrupador]
+      .map((v) => v.id);
+  }
+}
+
+function selecionarFilha(
+  mae: number,
+  agrupador: number | string,
+  filha: number,
+  valor: boolean,
+) {
+  if (!valor) {
+    variaveisFilhasSelecionadas.value[mae][agrupador] = variaveisFilhasSelecionadas
+      .value[mae][agrupador]
+      .filter((v) => v !== filha);
+  } else {
+    if (!variaveisFilhasSelecionadas.value[mae]) {
+      variaveisFilhasSelecionadas.value[mae] = {};
+    }
+    if (!variaveisFilhasSelecionadas.value[mae][agrupador]) {
+      variaveisFilhasSelecionadas.value[mae][agrupador] = [];
+    }
+
+    variaveisFilhasSelecionadas.value[mae][agrupador].push(filha);
+  }
+}
 
 function dispararBuscaDeVariaveis(evento: SubmitEvent) {
   const params = EnvioParaObjeto(evento, true);
@@ -190,14 +290,6 @@ async function associar(encerrar = false) {
     erro.value = err.message;
   }).finally(() => {
     envioPendente.value = false;
-  });
-}
-
-function selecionarGrupo(grupo: VariavelGlobalItemDto[]) {
-  grupo.forEach((v) => {
-    if (!variaveisSelecionadas.value.includes(v.id)) {
-      variaveisSelecionadas.value.push(v.id);
-    }
   });
 }
 
