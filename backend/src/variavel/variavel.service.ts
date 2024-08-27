@@ -411,7 +411,7 @@ export class VariavelService {
                         indicador,
                         responsaveis,
                         logger,
-                        prefixo + regiao.pdm_codigo_sufixo,
+                        prefixo + '.' + regiao.pdm_codigo_sufixo,
                         variavelMae?.id
                     );
                     ids.push(variavel.id);
@@ -429,7 +429,7 @@ export class VariavelService {
                         indicador,
                         responsaveis,
                         logger,
-                        prefixo,
+                        prefixo + '.SUPRA',
                         variavelMae?.id
                     );
                     ids.push(supra.id);
