@@ -93,7 +93,6 @@ export default {
               'projetosListar',
               'projetosResumo',
               'processosListar',
-              'processosEditar',
             ],
           },
         },
