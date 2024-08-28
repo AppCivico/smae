@@ -1,7 +1,7 @@
 export default {
   Medicao: {
     valor: 'Medicao',
-    nome: 'Mediçao',
+    nome: 'Medição',
   },
   Validacao: {
     valor: 'Validacao',
