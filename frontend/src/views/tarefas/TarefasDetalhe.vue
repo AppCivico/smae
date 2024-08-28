@@ -165,7 +165,7 @@
           <dt class="tc500 w700 t16">
             Custo real
           </dt>
-          <dd>{{ emFoco?.real ? `R$${emFoco.real}` : ' - ' }}</dd>
+          <dd>{{ emFoco?.real ? `R$${dinheiro(emFoco.real)}` : ' - ' }}</dd>
         </dl>
         <dl class="ml3">
           <dt class="tc500 w700 t16">
