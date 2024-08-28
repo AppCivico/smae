@@ -230,13 +230,13 @@ usersStore.buscarPessoasSimplificadas();
     </div>
 
     <div
-      v-if="emFoco?.ps_admin_cp?.participantes.length
-        || emFoco?.ps_tecnico_cp?.participantes.length
-        || emFoco?.ps_ponto_focal?.participantes.length"
+      v-if="emFoco?.ps_admin_cp?.participantes?.length
+        || emFoco?.ps_tecnico_cp?.participantes?.length
+        || emFoco?.ps_ponto_focal?.participantes?.length"
       class="flex flexwrap g2 mb2"
     >
       <dl
-        v-if="emFoco?.ps_admin_cp?.participantes.length"
+        v-if="emFoco?.ps_admin_cp?.participantes?.length"
         class="f1 mb1 fb15em"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -256,7 +256,7 @@ usersStore.buscarPessoasSimplificadas();
         </dd>
       </dl>
       <dl
-        v-if="emFoco?.ps_tecnico_cp?.participantes.length"
+        v-if="emFoco?.ps_tecnico_cp?.participantes?.length"
         class="f1 mb1 fb15em"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -276,7 +276,7 @@ usersStore.buscarPessoasSimplificadas();
         </dd>
       </dl>
       <dl
-        v-if="emFoco?.ps_ponto_focal?.participantes.length"
+        v-if="emFoco?.ps_ponto_focal?.participantes?.length"
         class="f1 mb1 fb15em"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
