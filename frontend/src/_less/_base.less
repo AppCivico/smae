@@ -1762,7 +1762,12 @@ input[type='checkbox'] {
 
   &:indeterminate {
     background-image: url("@{u}line8.svg");
-    background-color: currentColor;
+    border-color: currentColor;
+    background-color: white;
+
+    &:hover {
+      background-color: fadeout(@amarelo, 80%);
+    }
   }
 
   &:disabled {
@@ -1951,6 +1956,19 @@ input[type='radio'] {
   }
 }
 
+.legend {
+  display: flex;
+  gap: 2rem;
+
+  &::after {
+    content: '';
+    display: block;
+    flex-grow: 1;
+    border-top: 1px solid @c100;
+    margin: auto;
+    align-self: center;
+  }
+}
 .halfInput {
   width: 48%;
 }
