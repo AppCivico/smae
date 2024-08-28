@@ -211,11 +211,11 @@ watch(() => props.prontoParaMontagem, () => {
     >
       <div class="f1">
         <label
-          :for="`órgão--${idx}`"
+          :for="`${$props.name}__orgao--${idx}`"
           class="label"
         >Órgão</label>
         <select
-          :id="`órgão--${idx}`"
+          :id="`${$props.name}__orgao--${idx}`"
           v-model="listaDeÓrgãos[idx].id"
           class="inputtext light"
           :disabled="órgãosEPessoas[item.id]?.pessoas.length"
@@ -235,11 +235,11 @@ watch(() => props.prontoParaMontagem, () => {
 
       <div class="f2">
         <label
-          :for="`pessoas--${idx}`"
+          :for="`${$props.name}__pessoas--${idx}`"
           class="label"
         >Pessoas</label>
         <AutocompleteField
-          :id="`pessoas--${idx}`"
+          :id="`${$props.name}__pessoas--${idx}`"
           :controlador="{
             busca: '',
             participantes: órgãosEPessoas[item.id]?.pessoas || []
