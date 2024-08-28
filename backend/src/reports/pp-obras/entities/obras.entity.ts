@@ -55,6 +55,8 @@ export class RelObrasDto {
     custo_planejado: number | null;
     previsao_inicio: string | null;
     previsao_termino: string | null;
+    empreendimento_id: number | null;
+    empreendimento_identificador: string | null;
 }
 
 export class RelObrasCronogramaDto {
