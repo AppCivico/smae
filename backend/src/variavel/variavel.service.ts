@@ -503,15 +503,14 @@ export class VariavelService {
             : undefined;
         const titulo = mae?.titulo ?? undefined;
 
-        const maxNivel = Math.max(...fc_tasks.map((r) => r.nivel));
-
         for (const fc of fc_tasks) {
             // busca apenas as variáveis que estão na região
             const varEscopo = varDb.filter((v) => fc.output_ids.includes(v.regiao_id!)).map((v) => v.id);
 
             const formula_vars = varEscopo.map((r) => '$_' + r.toString());
-            // se for o último nível, adiciona a variável supra
-            if (maxNivel == fc.nivel && supra_variavel_id) formula_vars.push('$_' + supra_variavel_id.toString());
+
+            // se for o nivel mais alto, adiciona a variável supra
+            if (fc.parent == null && supra_variavel_id) formula_vars.push('$_' + supra_variavel_id.toString());
 
             const formula = formula_vars.join(' + ');
 
