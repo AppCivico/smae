@@ -128,7 +128,7 @@
           <dt class="tc500 w700 t16">
             Previsão de custo
           </dt>
-          <dd>{{ emFoco?.custo_estimado ? `R$${emFoco.custo_estimado}` : ' - ' }}</dd>
+          <dd>{{ emFoco?.custo_estimado ? `R$${dinheiro(emFoco.custo_estimado)}` : ' - ' }}</dd>
         </dl>
       </div>
     </div>
@@ -195,6 +195,7 @@
 import { storeToRefs } from 'pinia';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import dateToDate from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
 import dependencyTypes from '@/consts/dependencyTypes';
 
 const tarefasStore = useTarefasStore();
