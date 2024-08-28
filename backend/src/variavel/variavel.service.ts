@@ -1205,6 +1205,7 @@ export class VariavelService {
             linhas: linhas.map((r): VariavelGlobalItemDto => {
                 let localPerm = perm;
                 if (r.tipo == 'Calculada') localPerm = false;
+                if (r.variavel_mae_id) localPerm = false;
 
                 return {
                     id: r.id,
