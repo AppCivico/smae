@@ -587,6 +587,17 @@ export class MetaService {
                 }
             }
 
+            const ehPdm = tipo == 'PDM';
+            let podeEditar = false;
+
+            if (ehPdm && user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
+                podeEditar = true;
+            } else if (ehPdm && user.hasSomeRoles(['PS.tecnico_cp'])) {
+                podeEditar = coordenadores_cp.some((r) => r.id == user.id);
+            } else if (!ehPdm) {
+                podeEditar = true; // TODO plano setorial
+            }
+
             ret.push({
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
@@ -604,7 +615,7 @@ export class MetaService {
                 tags: tags,
                 cronograma: metaCronograma,
                 geolocalizacao: 'get' in geolocalizacao ? geolocalizacao.get(dbMeta.id) || [] : [],
-                pode_editar: true, // TODO
+                pode_editar: podeEditar, // TODO (lembrar
             });
         }
 
