@@ -116,7 +116,7 @@ watchEffect(() => {
     <template #finalLinhaVariavel="{ variavel }">
       <td>
         <button
-          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'calculada'"
+          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'Calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
           @click="abrirEdicaoValores(variavel.id, 'Previsto')"
@@ -130,7 +130,7 @@ watchEffect(() => {
       </td>
       <td>
         <button
-          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'calculada'"
+          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'Calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
           @click="abrirEdicaoValores(variavel.id, 'Realizado')"
