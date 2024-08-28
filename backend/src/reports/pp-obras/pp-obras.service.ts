@@ -93,6 +93,9 @@ class RetornoDbProjeto {
     orgao_descricao: string;
 
     projeto_etapa: string | null;
+
+    empreendimento_id?: number;
+    empreendimento_identificador?: string;
 }
 
 class RetornoDbCronograma {
@@ -509,7 +512,9 @@ export class PPObrasService implements ReportableService {
             ) AS subprefeituras,
             projeto.mdo_programa_habitacional as programa_habitacional,
             projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
-            projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas
+            projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
+            empreendimento.id AS empreendimento_id,
+            empreendimento.identificador AS empreendimento_identificador
         FROM projeto
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
@@ -528,6 +533,7 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
+          LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
         ${whereCond.whereString} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -551,6 +557,8 @@ export class PPObrasService implements ReportableService {
                 tipo_obra_nome: db.tipo_intervencao_nome ? db.tipo_intervencao_nome : null,
                 equipamento_id: db.equipamento_id ? db.equipamento_id : null,
                 equipamento_nome: db.equipamento_nome ? db.equipamento_nome : null,
+                empreendimento_id: db.empreendimento_id ? db.empreendimento_id : null,
+                empreendimento_identificador: db.empreendimento_identificador ? db.empreendimento_identificador : null,
                 nome: db.nome,
                 codigo: db.codigo ? db.codigo : null,
                 detalhamento: db.detalhamento ?? null,
