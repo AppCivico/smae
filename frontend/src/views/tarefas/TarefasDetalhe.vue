@@ -58,6 +58,9 @@
       </div>
       <dd>
         <table class="tablemain maxw">
+          <col>
+          <col>
+          <col>
           <thead>
             <tr>
               <td class="tc300 w700 t12">
@@ -76,8 +79,8 @@
               v-for="dependencia, key in emFoco?.dependencias"
               :key="key"
             >
-              <td>
-                {{ dependencia.dependencia_tarefa_id }}
+              <td class="pt2 pb2">
+                {{ tarefasPorId[dependencia.dependencia_tarefa_id]?.tarefa || ' - ' }}
               </td>
               <td>
                 {{ dependencyTypes[dependencia.tipo] }}
