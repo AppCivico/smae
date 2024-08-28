@@ -417,6 +417,7 @@ export class VariavelService {
                     ids.push(variavel.id);
                 }
 
+                let supraId: number | undefined = undefined;
                 if (dto.supraregional) {
                     logger.log('Criando variável supraregional');
                     const supra = await this.performVariavelSave(
@@ -432,6 +433,7 @@ export class VariavelService {
                         prefixo + '.SUPRA',
                         variavelMae?.id
                     );
+                    supraId = supra.id;
                     ids.push(supra.id);
                 }
 
@@ -446,6 +448,7 @@ export class VariavelService {
                         nivel_regionalizacao,
                         dto.acumulativa, // usar_serie_acumulada
                         variavelMae?.id,
+                        supraId,
                         prismaTxn
                     );
                 }
@@ -471,6 +474,7 @@ export class VariavelService {
         nivel_regionalizacao: number,
         usar_serie_acumulada: boolean,
         variavel_mae_id: number | null | undefined,
+        supra_variavel_id: number | undefined,
         prismaTxn: Prisma.TransactionClient
     ) {
         // SQL que retorna por nível as regiões pai e os filhos que estão dentro dela, agrupando por nivel.
@@ -499,11 +503,17 @@ export class VariavelService {
             : undefined;
         const titulo = mae?.titulo ?? undefined;
 
+        const maxNivel = Math.max(...fc_tasks.map((r) => r.nivel));
+
         for (const fc of fc_tasks) {
             // busca apenas as variáveis que estão na região
             const varEscopo = varDb.filter((v) => fc.output_ids.includes(v.regiao_id!)).map((v) => v.id);
 
-            const formula = varEscopo.map((r) => '$_' + r.toString()).join(' + ');
+            const formula_vars = varEscopo.map((r) => '$_' + r.toString());
+            // se for o último nível, adiciona a variável supra
+            if (maxNivel == fc.nivel && supra_variavel_id) formula_vars.push('$_' + supra_variavel_id.toString());
+
+            const formula = formula_vars.join(' + ');
 
             const fc_id = await prismaTxn.formulaComposta.create({
                 data: {
