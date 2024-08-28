@@ -92,7 +92,8 @@ services:
       PRISMA_FIELD_DECRYPTION_KEYS: "${PRISMA_FIELD_DECRYPTION_KEYS}"
       LOG_REQ_ON_DB: "${LOG_REQ_ON_DB}"
       LOG_DB_SKIP_URL_LIST: "${LOG_DB_SKIP_URL_LIST}"
-      GEO_API_PREFIX: "${GEO_API_PREFIX}" # http://smae_sei:80
+      GEO_API_PREFIX: "${GEO_API_PREFIX}" # http://smae_geoloc:80
+      SEI_API_PREFIX: "${SEI_API_PREFIX}" # http://smae_sei:80
       TRANSFEREGOV_API_PREFIX: "${TRANSFEREGOV_API_PREFIX}" # http://smae_transferegov:80
     networks:
       #- postgres
