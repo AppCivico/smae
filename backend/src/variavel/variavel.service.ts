@@ -1204,6 +1204,7 @@ export class VariavelService {
             linhas: linhas.map((r): VariavelGlobalItemDto => {
                 return {
                     id: r.id,
+                    tipo: r.tipo,
                     codigo: r.codigo,
                     titulo: r.titulo,
                     planos: r.planos.map(planoById).sort((a, b) => a.nome.localeCompare(b.nome)),

@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
-import { Periodicidade, Polaridade, Serie } from '@prisma/client';
+import { Periodicidade, Polaridade, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IsOptional, IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
@@ -73,6 +73,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'supraregional',
 ]) {
     orgao_proprietario: OrgaoResumo;
+    tipo: TipoVariavel;
     fonte: IdNomeDto | null;
     planos: IdNomeDto[];
     pode_editar: boolean;
