@@ -3,7 +3,7 @@
     <TítuloDePágina id="titulo-da-pagina">
       Resumo Atividade
     </TítuloDePágina>
-    <div class="flex g2 mb1">
+    <div class="flex g2 mb2">
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Tarefa
@@ -17,7 +17,7 @@
         <dd> {{ emFoco?.eh_marco ? 'Sim' : 'Não' }}</dd>
       </dl>
     </div>
-    <div class="flex spacebetween maxw mb1">
+    <div class="flex spacebetween maxw mb2">
       <dl>
         <dt class="tc500 w700 t16 mb025">
           Tarefa-mãe
@@ -37,7 +37,7 @@
         <dd> {{ emFoco?.orgao?.descricao || ' - ' }}</dd>
       </dl>
     </div>
-    <dl class="mb1">
+    <dl class="mb2">
       <dt class="tc500 w700 t16 mb025">
         Responsável pela atividade
       </dt>
@@ -100,7 +100,7 @@
       <hr class="mt3 mb3">
     </dl>
     <div class="maxw">
-      <div class="flex spacebetween mb1">
+      <div class="flex spacebetween mb2">
         <dl>
           <dt class="tc500 w700 t16">
             Previsão de início
@@ -136,7 +136,7 @@
       </div>
     </div>
 
-    <dl class="mt1 mb1">
+    <dl class="mt2 mb2">
       <div class="flex spacebetween center mt2 mb2">
         <dt class="tc300 t16">
           Execução da atividade
