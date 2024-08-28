@@ -77,6 +77,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     fonte: IdNomeDto | null;
     planos: IdNomeDto[];
     pode_editar: boolean;
+    pode_editar_valor: boolean;
     pode_excluir: boolean;
 }
 

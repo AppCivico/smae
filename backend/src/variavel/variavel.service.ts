@@ -1204,7 +1204,14 @@ export class VariavelService {
             pagina_corrente: page,
             linhas: linhas.map((r): VariavelGlobalItemDto => {
                 let localPerm = perm;
-                if (r.tipo == 'Calculada') localPerm = false;
+                let localPermValor = perm;
+                if (r.tipo == 'Calculada') {
+                    localPerm = false;
+                    localPermValor = false;
+                }
+
+                // fogo que isso vai criar um bug, na hora de editar os valores em si pode editar,
+                // entao o localPermValor = true
                 if (r.variavel_mae_id) localPerm = false;
 
                 return {
@@ -1228,6 +1235,7 @@ export class VariavelService {
                     inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
                     periodicidade: r.periodicidade,
                     pode_editar: localPerm,
+                    pode_editar_valor: localPermValor,
                     pode_excluir: localPerm && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
