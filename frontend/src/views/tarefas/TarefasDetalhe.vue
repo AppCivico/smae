@@ -49,7 +49,7 @@
       </dt>
       <dd> {{ emFoco?.descricao || ' - ' }}</dd>
     </dl>
-    <dl>
+    <dl v-if="emFoco?.dependencias.length">
       <div class="flex spacebetween center mt2 mb2">
         <dt class="tc300 t16">
           Dependências
@@ -88,7 +88,7 @@
             </tr>
             <tr v-if="emFoco?.dependencias.length===0">
               <td>
-                Nenhum resultado encontrado.
+                Nenhum há dependência.
               </td>
             </tr>
           </tbody>
