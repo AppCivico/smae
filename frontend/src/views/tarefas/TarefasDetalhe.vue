@@ -3,34 +3,34 @@
     <TítuloDePágina id="titulo-da-pagina">
       Resumo Atividade
     </TítuloDePágina>
-    <div class="flex g2 mb2">
-      <dl>
+    <div class="flex g2 maxw mb2">
+      <dl class="f1">
         <dt class="tc500 w700 t16 mb025">
           Tarefa
         </dt>
         <dd> {{ emFoco?.tarefa || ' - ' }}</dd>
       </dl>
-      <dl class="ml3">
+      <dl class="f1">
         <dt class="tc500 w700 t16 mb025">
           Marco do projeto?
         </dt>
         <dd> {{ emFoco?.eh_marco ? 'Sim' : 'Não' }}</dd>
       </dl>
     </div>
-    <div class="flex spacebetween maxw mb2">
-      <dl>
+    <div class="flex maxw mb2">
+      <dl class="f1">
         <dt class="tc500 w700 t16 mb025">
           Tarefa-mãe
         </dt>
         <dd>{{ tarefasPorId[emFoco?.tarefa_pai_id]?.tarefa || ' - ' }}</dd>
       </dl>
-      <dl>
+      <dl class="f1">
         <dt class="tc500 w700 t16 mb025">
           Ordem
         </dt>
         <dd> {{ emFoco?.numero || ' - ' }}</dd>
       </dl>
-      <dl>
+      <dl class="f1">
         <dt class="tc500 w700 t16 mb025">
           Orgão responsável
         </dt>
@@ -43,7 +43,7 @@
       </dt>
       <dd> {{ emFoco?.projeto?.responsavel?.nome_exibicao || ' - ' }}</dd>
     </dl>
-    <dl class="mb2">
+    <dl class="mb2 f1">
       <dt class="tc500 w700 t16 mb025 ">
         Descrição
       </dt>
@@ -100,34 +100,34 @@
       <hr class="mt3 mb3">
     </dl>
     <div class="maxw">
-      <div class="flex spacebetween mb2">
-        <dl>
+      <div class="flex maxw mb2">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Previsão de início
           </dt>
           <dd> {{ dateToDate(emFoco?.inicio_planejado) || ' - ' }}</dd>
         </dl>
-        <dl>
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Duração prevista
           </dt>
           <dd>{{ emFoco?.duracao_planejado ? `${emFoco.duracao_planejado} dias` : ' - ' }}</dd>
         </dl>
-        <dl>
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Previsão de término
           </dt>
           <dd> {{ dateToDate(emFoco?.termino_planejado) || ' - ' }}</dd>
         </dl>
       </div>
-      <div class="flex">
-        <dl>
+      <div class="flex maxw">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Atraso
           </dt>
           <dd>{{ emFoco?.atraso ? `${emFoco.atraso} dias` : ' - ' }}</dd>
         </dl>
-        <dl class="ml3">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Previsão de custo
           </dt>
@@ -143,34 +143,34 @@
         </dt>
         <hr class="ml2 f1">
       </div>
-      <div class="flex spacebetween maxw mb1">
-        <dl>
+      <div class="flex maxw mb1">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Data de início real
           </dt>
           <dd>{{ dateToDate(emFoco?.inicio_real) || ' - ' }}</dd>
         </dl>
-        <dl>
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Duração real
           </dt>
           <dd>{{ emFoco?.duracao_real ? `${emFoco.duracao_real} dias` : ' - ' }}</dd>
         </dl>
-        <dl>
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Data de término real
           </dt>
           <dd>{{ dateToDate(emFoco?.termino_real) || ' - ' }}</dd>
         </dl>
       </div>
-      <div class="flex">
-        <dl>
+      <div class="flex maxw">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Custo real
           </dt>
           <dd>{{ emFoco?.real ? `R$${dinheiro(emFoco.real)}` : ' - ' }}</dd>
         </dl>
-        <dl class="ml3">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Percentual concluído
           </dt>
