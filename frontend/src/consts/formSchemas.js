@@ -1553,25 +1553,25 @@ export const planoSetorial = object({
     .label('Prefeito/Titular')
     .max(250)
     .required(),
-  'ps_admin_cp.participantes': array()
-    .label('Administradores participantes')
+  'ps_admin_cp.equipes': array()
+    .label('Equipes de Administradores')
     .of(
       number()
-        .min(1)
+        .positive()
         .required(),
     ),
-  'ps_ponto_focal.participantes': array()
-    .label('Pontos focais participantes')
+  'ps_ponto_focal.equipes': array()
+    .label('Equipes de Pontos focais')
     .of(
       number()
-        .min(1)
+        .positive()
         .required(),
     ),
-  'ps_tecnico_cp.participantes': array()
-    .label('Técnicos participantes')
+  'ps_tecnico_cp.equipes': array()
+    .label('Equipes de Técnicos')
     .of(
       number()
-        .min(1)
+        .positive()
         .required(),
     ),
   rotulo_atividade: string()

@@ -1,15 +1,15 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -25,6 +25,12 @@ const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
+const equipesStore = useEquipesStore();
+const {
+  equipesPorOrgaoIdPorPerfil,
+  chamadasPendentes: chamadasPendentesDeEquipes,
+} = storeToRefs(equipesStore);
+
 const ÓrgãosStore = useOrgansStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
@@ -36,10 +42,6 @@ const {
   itemParaEdição,
   lista,
 } = storeToRefs(planosSetoriaisStore);
-
-const usersStore = useUsersStore();
-
-const { pessoasSimplificadasPorÓrgão } = storeToRefs(usersStore);
 
 const props = defineProps({
   planoSetorialId: {
@@ -96,7 +98,7 @@ const formulárioSujo = useIsFormDirty();
 async function iniciar() {
   const requisições = [
     ÓrgãosStore.getAll(),
-    usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true }),
+    equipesStore.buscarTudo(),
   ];
 
   await Promise.allSettled(requisições);
@@ -658,6 +660,7 @@ watch(itemParaEdição, (novoValor) => {
               error: errors.orgao_admin_id,
             }"
             :disabled="!órgãosComoLista?.length"
+            :aria-busy="chamadasPendentesDeEquipes.lista"
           >
             <option :value="0">
               Selecionar
@@ -666,7 +669,7 @@ watch(itemParaEdição, (novoValor) => {
               v-for="item in órgãosComoLista"
               :key="item"
               :value="item.id"
-              :disabled="!pessoasSimplificadasPorÓrgão[item.id]?.length"
+              :disabled="!equipesPorOrgaoIdPorPerfil[item.id]?.AdminPS?.length"
               :title="item.descricao?.length > 36 ? item.descricao : null"
             >
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -679,23 +682,24 @@ watch(itemParaEdição, (novoValor) => {
 
         <div class="f2 mb1">
           <LabelFromYup
-            name="ps_admin_cp.participantes"
+            name="ps_admin_cp.equipes"
             :schema="schema"
           />
           <AutocompleteField
-            name="ps_admin_cp.participantes"
+            name="ps_admin_cp.equipes"
             :controlador="{
               busca: '',
-              participantes: carga.ps_admin_cp?.participantes || []
+              participantes: carga.ps_admin_cp?.equipes || []
             }"
-            :grupo="pessoasSimplificadasPorÓrgão[carga.orgao_admin_id] || []"
+            :grupo="equipesPorOrgaoIdPorPerfil[carga.orgao_admin_id]?.AdminPS || []"
+            :aria-busy="chamadasPendentesDeEquipes.lista"
             :class="{
-              error: errors['ps_admin_cp.participantes'],
+              error: errors['ps_admin_cp.equipes'],
             }"
-            label="nome_exibicao"
+            label="titulo"
           />
           <ErrorMessage
-            name="ps_admin_cp.participantes"
+            name="ps_admin_cp.equipes"
             class="error-msg"
           />
         </div>
@@ -704,7 +708,7 @@ watch(itemParaEdição, (novoValor) => {
 
     <fieldset>
       <LabelFromYup
-        name="ps_tecnico_cp.participantes"
+        name="ps_tecnico_cp.equipes"
         :schema="schema"
         as="legend"
       />
@@ -712,15 +716,15 @@ watch(itemParaEdição, (novoValor) => {
         class="flex flexwrap g2 mb1"
       >
         <div class="f1 mb1">
-          <CampoDePessoasComBuscaPorOrgao
-            v-if="carga.ps_tecnico_cp?.participantes !== undefined"
-            v-model="carga.ps_tecnico_cp.participantes"
-            name="ps_tecnico_cp.participantes"
+          <CampoDeEquipesComBuscaPorOrgao
+            v-model="carga.ps_tecnico_cp.equipes"
+            :valores-iniciais="emFoco?.ps_tecnico_cp?.equipes"
+            name="ps_tecnico_cp.equipes"
             :pronto-para-montagem="montarCampoEstático"
-            ps-tecnico-cp
+            perfis-permitidos="TecnicoPS"
           />
           <ErrorMessage
-            name="ps_tecnico_cp.participantes"
+            name="ps_tecnico_cp.equipes"
           />
         </div>
       </div>
@@ -728,7 +732,7 @@ watch(itemParaEdição, (novoValor) => {
 
     <fieldset>
       <LabelFromYup
-        name="ps_ponto_focal.participantes"
+        name="ps_ponto_focal.equipes"
         :schema="schema"
         as="legend"
       />
@@ -737,15 +741,15 @@ watch(itemParaEdição, (novoValor) => {
         class="flex flexwrap g2 mb1"
       >
         <div class="f1 mb1">
-          <CampoDePessoasComBuscaPorOrgao
-            v-if="carga.ps_ponto_focal?.participantes !== undefined"
-            v-model="carga.ps_ponto_focal.participantes"
-            name="ps_ponto_focal.participantes"
+          <CampoDeEquipesComBuscaPorOrgao
+            v-model="carga.ps_ponto_focal.equipes"
+            :valores-iniciais="emFoco?.ps_ponto_focal?.equipes"
+            name="ps_ponto_focal.equipes"
             :pronto-para-montagem="montarCampoEstático"
-            ps-ponto-focal
+            perfis-permitidos="PontoFocalPS"
           />
           <ErrorMessage
-            name="ps_ponto_focal.participantes"
+            name="ps_ponto_focal.equipes"
           />
         </div>
       </div>

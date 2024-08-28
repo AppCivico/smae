@@ -209,15 +209,15 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       possui_sub_tema: !!emFoco?.possui_sub_tema,
       possui_tema: !!emFoco?.possui_tema,
       prefeito: emFoco?.prefeito || '',
-      ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.participantes)
+      ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.equipes)
         ? emFoco.ps_admin_cp
-        : { participantes: [] },
-      ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.participantes)
+        : { equipes: [] },
+      ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.equipes)
         ? emFoco.ps_ponto_focal
-        : { participantes: [] },
-      ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.participantes)
+        : { equipes: [] },
+      ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.equipes)
         ? emFoco.ps_tecnico_cp
-        : { participantes: [] },
+        : { equipes: [] },
       rotulo_atividade: emFoco?.rotulo_atividade || '',
       rotulo_complementacao_meta: emFoco?.rotulo_complementacao_meta || '',
       rotulo_contexto_meta: emFoco?.rotulo_contexto_meta || '',
