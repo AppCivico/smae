@@ -68,18 +68,18 @@
         </td>
       </template>
 
-      <template #comecoLinhaVariavelFilha="{ agrupador, filha, mae }">
+      <template #comecoLinhaVariavelFilha="{ agrupador, variavel, mae }">
         <td>
           <input
             type="checkbox"
             title="selecionar"
-            :value="filha?.id"
-            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.includes(filha.id)"
+            :value="variavel?.id"
+            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.includes(variavel.id)"
             :name="`variavel[${mae.id}].[${agrupador}].filha_ids`"
             @change="($e) => selecionarFilha(
               mae?.id,
               agrupador,
-              filha?.id,
+              variavel?.id,
               ($e.target as HTMLInputElement)?.checked
             )"
           >
@@ -242,13 +242,13 @@ function selecionarTodasAsFilhas(
 function selecionarFilha(
   mae: number,
   agrupador: number | string,
-  filha: number,
+  variavel: number,
   valor: boolean,
 ) {
   if (!valor) {
     variaveisFilhasSelecionadas.value[mae][agrupador] = variaveisFilhasSelecionadas
       .value[mae][agrupador]
-      .filter((v) => v !== filha);
+      .filter((v) => v !== variavel);
   } else {
     if (!variaveisFilhasSelecionadas.value[mae]) {
       variaveisFilhasSelecionadas.value[mae] = {};
@@ -257,7 +257,7 @@ function selecionarFilha(
       variaveisFilhasSelecionadas.value[mae][agrupador] = [];
     }
 
-    variaveisFilhasSelecionadas.value[mae][agrupador].push(filha);
+    variaveisFilhasSelecionadas.value[mae][agrupador].push(variavel);
   }
 }
 

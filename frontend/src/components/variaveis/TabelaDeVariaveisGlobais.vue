@@ -136,7 +136,7 @@
 
               <slot
                 name="comecoLinhaVariavelFilha"
-                :filha="filha"
+                :variavel="filha"
                 :mae="item"
                 :agrupador="k"
               />
@@ -145,7 +145,7 @@
 
               <slot
                 name="finalLinhaVariavel"
-                :filha="filha"
+                :variavel="filha"
               />
             </tr>
           </template>

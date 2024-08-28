@@ -3,6 +3,7 @@
     {{ $props.linha.codigo }}
   </td>
   <th>
+    <code v-scrollLockDebug>{{ $props.linha.id }}</code>
     {{ $props.linha.titulo }}
   </th>
   <td>
