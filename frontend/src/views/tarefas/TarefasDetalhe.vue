@@ -43,7 +43,7 @@
       </dt>
       <dd> {{ emFoco?.projeto?.responsavel?.nome_exibicao || ' - ' }}</dd>
     </dl>
-    <dl>
+    <dl class="mb2">
       <dt class="tc500 w700 t16 mb025 ">
         Descrição
       </dt>
