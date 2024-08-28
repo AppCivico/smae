@@ -1194,6 +1194,7 @@ export class VariavelService {
             'CadastroVariavelGlobal.administrador_no_orgao',
             'CadastroVariavelGlobal.administrador',
         ]);
+
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -1202,6 +1203,9 @@ export class VariavelService {
             paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): VariavelGlobalItemDto => {
+                let localPerm = perm;
+                if (r.tipo == 'Calculada') localPerm = false;
+
                 return {
                     id: r.id,
                     tipo: r.tipo,
@@ -1222,8 +1226,8 @@ export class VariavelService {
                     fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
                     inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
                     periodicidade: r.periodicidade,
-                    pode_editar: perm,
-                    pode_excluir: perm && r.planos.length == 0,
+                    pode_editar: localPerm,
+                    pode_excluir: localPerm && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
                     regiao: r.regiao
