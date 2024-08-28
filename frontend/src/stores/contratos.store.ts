@@ -55,7 +55,7 @@ function gerarCaminhoParaApiAditivo(mãeComId: MãeComId): string | null {
       return 'contrato-pp';
 
     case !!mãeComId?.obraId:
-      return 'contrato-mdo/';
+      return 'contrato-mdo';
 
     default:
       throw new Error('Id identificador não foi provido como esperado');
