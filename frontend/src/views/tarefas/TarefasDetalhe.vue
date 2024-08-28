@@ -3,14 +3,14 @@
     <TítuloDePágina id="titulo-da-pagina">
       Resumo Atividade
     </TítuloDePágina>
-    <div class="flex g2 maxw mb2">
+    <div class="flex maxw mb2">
       <dl class="f1">
         <dt class="tc500 w700 t16 mb025">
           Tarefa
         </dt>
         <dd> {{ emFoco?.tarefa || ' - ' }}</dd>
       </dl>
-      <dl class="f1">
+      <dl class="f2">
         <dt class="tc500 w700 t16 mb025">
           Marco do projeto?
         </dt>
@@ -127,7 +127,7 @@
           </dt>
           <dd>{{ emFoco?.atraso ? `${emFoco.atraso} dias` : ' - ' }}</dd>
         </dl>
-        <dl class="f1">
+        <dl class="f2">
           <dt class="tc500 w700 t16">
             Previsão de custo
           </dt>
@@ -170,7 +170,7 @@
           </dt>
           <dd>{{ emFoco?.real ? `R$${dinheiro(emFoco.real)}` : ' - ' }}</dd>
         </dl>
-        <dl class="f1">
+        <dl class="f2">
           <dt class="tc500 w700 t16">
             Percentual concluído
           </dt>
