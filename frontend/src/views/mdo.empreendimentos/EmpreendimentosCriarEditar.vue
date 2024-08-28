@@ -4,6 +4,7 @@
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
@@ -19,6 +20,8 @@
         name="nome"
         type="text"
         class="inputtext light mb1"
+        minlength="3"
+        maxlength="250"
       />
       <ErrorMessage
         class="error-msg mb1"
@@ -34,6 +37,8 @@
         name="identificador"
         type="text"
         class="inputtext light mb1"
+        minlength="3"
+        maxlength="250"
       />
       <ErrorMessage
         class="error-msg mb1"
@@ -75,12 +80,12 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import { empreendimento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
