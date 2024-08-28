@@ -118,7 +118,7 @@ const onSubmit = handleSubmit.withControlled(async (valores) => {
 
 async function validarDependências(dependências) {
   const params = {
-    tarefa_corrente_id: props.tarefaId,
+    tarefa_corrente_id: Number(props.tarefaId),
     dependencias: dependências,
   };
 
