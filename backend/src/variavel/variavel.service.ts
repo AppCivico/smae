@@ -405,7 +405,7 @@ export class VariavelService {
                         prismaTxn,
                         {
                             ...dto, // aqui eu passo tudo, pq no performVariavelSave eu deixo só o que é necessário
-                            titulo: dto.titulo + ' ' + regiao.descricao,
+                            titulo: dto.titulo + ' - ' + regiao.descricao,
                             regiao_id: regiao.id,
                         },
                         indicador,
@@ -1644,6 +1644,8 @@ export class VariavelService {
                     })
                 );
             }
+
+            await Promise.all(varsFilhasUpdates);
 
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
             if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
