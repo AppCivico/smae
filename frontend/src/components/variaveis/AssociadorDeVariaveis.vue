@@ -196,6 +196,8 @@ const formularioDeAssociacao = ref<HTMLFormElement | null>(null);
 const variaveisSelecionadas = ref<number[]>([]);
 const variaveisFilhasSelecionadas = ref<{ [key: string]: { [key: string]: number[] } }>({});
 
+const parametrosDaBuscaCorrente = ref<Record<string, unknown>>({});
+
 const envioPendente = ref<boolean>(false);
 const erro = ref<string | null>(null);
 
@@ -262,15 +264,22 @@ function selecionarFilha(
   }
 }
 
-function dispararBuscaDeVariaveis(evento: SubmitEvent) {
-  const params = EnvioParaObjeto(evento, true);
-
+function buscarVariaveis(params: Record<string, unknown>) {
   variaveisGlobaisStore.buscarTudo({
     ...params,
     not_indicador_id: props.indicador?.id,
   }).then(() => {
     variaveisSelecionadas.value.splice(0);
+    variaveisFilhasSelecionadas.value = {};
   });
+}
+
+function dispararBuscaDeVariaveis(evento: SubmitEvent) {
+  const params = EnvioParaObjeto(evento, true);
+
+  buscarVariaveis(params);
+
+  parametrosDaBuscaCorrente.value = params;
 }
 
 async function associar(encerrar = false) {
@@ -282,13 +291,13 @@ async function associar(encerrar = false) {
   envioPendente.value = true;
 
   requestS.patch(`${baseUrl}/plano-setorial-indicador/${props.indicador.id}/associar-variavel`, {
-    variavel_ids: variaveisSelecionadas.value,
+    variavel_ids: combinacaoDeVariaveisSelecionadas.value,
   }).then(() => {
     if (encerrar) {
       emit('close');
     }
 
-    variaveisSelecionadas.value.splice(0);
+    buscarVariaveis(parametrosDaBuscaCorrente.value);
   }).catch((err) => {
     erro.value = err.message;
   }).finally(() => {
