@@ -637,11 +637,10 @@ const PerfilAcessoConfig: {
     },
 
     {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
+        nome: atualizarNomePerfil('Administrador Geral do Plano Setorial', []),
         descricao:
-            'Pode editar qualquer plano setorial, administrar variaveis globais. Não pode participar como responsável.',
+            'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
         privilegios: [
-            'PS.admin_cp',
             'CadastroPS.administrador',
             'CadastroVariavelGlobal.administrador',
             ...PSCadastroBasico, // Tema, Tags, etc...
@@ -650,9 +649,26 @@ const PerfilAcessoConfig: {
     },
 
     {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
+        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
+        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroVariavelGlobal.administrador',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
+
+    {
+        nome: 'Ponto Focal Setorial',
         descricao:
-            'Pode editar qualquer plano setorial do órgão ao qual pertence, assim como suas variáveis globais. Não pode participar como responsável.',
+            'Pode editar qualquer plano setorial na equipe em que faz parte como ponto focal. Pode registrar evolução quando parte da equipe de medição.',
+        privilegios: ['PS.ponto_focal', 'CadastroMetaPS.listar', 'CadastroPainelPS.visualizar'],
+    },
+
+    {
+        nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
+        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como técnico.',
         privilegios: [
             'PS.admin_cp',
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
@@ -682,11 +698,6 @@ const PerfilAcessoConfig: {
         nome: 'Ponto Focal',
         descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
         privilegios: ['PDM.ponto_focal', 'CadastroMeta.listar', 'CadastroPainel.visualizar'],
-    },
-    {
-        nome: 'Ponto Focal Setorial',
-        descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
-        privilegios: ['PS.ponto_focal', 'CadastroMetaPS.listar', 'CadastroPainelPS.visualizar'],
     },
 
     {
