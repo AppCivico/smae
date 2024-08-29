@@ -172,25 +172,6 @@ export default {
               },
             },
             {
-              name: 'obras.TarefasDetalhes',
-              path: 'resumo',
-              component: () => import('@/views/tarefas/TarefasDetalhe.vue'),
-              props: ({ params }) => ({
-                ...params,
-                obraId: Number.parseInt(params.obraId, 10) || undefined,
-                tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
-              }),
-              meta: {
-                título: 'Resumo Atividade',
-                rotaDeEscape: 'obrasListar',
-                rotasParaMigalhasDePão: [
-                  'obrasListar',
-                  'obrasResumo',
-                  'obrasTarefasListar',
-                ],
-              },
-            },
-            {
               path: ':tarefaId',
               component: () => import('@/views/tarefas/TarefasItem.vue'),
               props: true,
@@ -204,6 +185,25 @@ export default {
                     título: 'Editar tarefa',
                     títuloParaMenu: 'Editar tarefa',
                     rotaDeEscape: 'obrasTarefasListar',
+                  },
+                },
+                {
+                  name: 'obras.TarefasDetalhes',
+                  path: 'resumo',
+                  component: () => import('@/views/tarefas/TarefasDetalhe.vue'),
+                  props: ({ params }) => ({
+                    ...params,
+                    obraId: Number.parseInt(params.obraId, 10) || undefined,
+                    tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+                  }),
+                  meta: {
+                    título: 'Resumo Atividade',
+                    rotaDeEscape: 'obrasListar',
+                    rotasParaMigalhasDePão: [
+                      'obrasListar',
+                      'obrasResumo',
+                      'obrasTarefasListar',
+                    ],
                   },
                 },
                 {
