@@ -7,8 +7,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
-  computed, onMounted, ref, watch,
-  watchEffect,
+  computed, ref, watch,
 } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -33,6 +32,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  valoresIniciais: {
+    type: Array,
+    default: () => [],
+  },
   // necessária para que o vee-validate não se perca
   name: {
     type: String,
@@ -46,6 +49,8 @@ const orgaosStore = useOrgansStore();
 const { organs } = storeToRefs(orgaosStore);
 
 const equipes = ref([]);
+
+const campoPronto = ref(false);
 
 const equipesPorId = computed(() => equipes.value.reduce((acc, cur) => {
   acc[cur.id] = cur;
@@ -67,7 +72,7 @@ const equipesPorOrgao = computed(() => equipes.value.reduce((acc, cur) => {
   return acc;
 }, {}));
 
-const { handleChange } = useField(props.name, undefined, {
+const { handleChange, resetField } = useField(props.name, undefined, {
   initialValue: props.modelValue,
 });
 
@@ -128,41 +133,50 @@ function adicionarEquipes(equipesParaAdicionar, índice) {
   emit('update:modelValue', novoValor);
 }
 
-async function montar() {
-  if (props.prontoParaMontagem) {
-    if (!Array.isArray(organs.value) || !organs.value.length) {
-      await orgaosStore.getAll();
-    }
+async function montar(valoresIniciais) {
+  const promessas = [];
 
-    listaDeOrgaos.value = Object.values((props.modelValue || []).reduce((acc, cur) => {
-      // usando reduce e um mapa para evitar o trabalho de remover duplicatas
-      const chaveDoOrgao = `_${equipesPorId.value[cur]?.orgao_id}`;
-      if (!acc[chaveDoOrgao]) {
-        acc[chaveDoOrgao] = { id: equipesPorId.value[cur]?.orgao_id };
-      }
-      return acc;
-    }, {}));
+  campoPronto.value = false;
+
+  if (!Array.isArray(organs.value) || !organs.value.length) {
+    // aguardar por causa de possíveis outros componentes que dependem de órgãos
+    promessas.push(orgaosStore.getAll());
   }
+
+  if (!Array.isArray(equipes.value) || !equipes.value.length) {
+    // aguardar para poder montar a lista de equipes agrupadas por órgão
+    const buscaDeEquipe = requestS.get(`${baseUrl}/equipe-responsavel`)
+      .then(({ linhas }) => {
+        if (Array.isArray(linhas)) {
+          equipes.value = linhas;
+        } else {
+          throw new Error('lista de equipes entregue fora do padrão esperado');
+        }
+      });
+
+    promessas.push(buscaDeEquipe);
+  }
+
+  await Promise.all(promessas);
+
+  listaDeOrgaos.value = Object.values(valoresIniciais.reduce((acc, cur) => {
+    // usando reduce e um mapa para evitar o trabalho de remover duplicatas
+    const chaveDoOrgao = `_${equipesPorId.value[cur]?.orgao_id}`;
+    if (!acc[chaveDoOrgao]) {
+      acc[chaveDoOrgao] = { id: equipesPorId.value[cur]?.orgao_id };
+    }
+    return acc;
+  }, {}));
+
+  resetField({
+    value: valoresIniciais,
+  });
+
+  campoPronto.value = true;
 }
 
-// assistindo mounted apenas para facilitar o desenvolvimento
-onMounted(() => {
-  montar();
-});
-
-watchEffect(async () => {
-  const { linhas } = await requestS.get(`${baseUrl}/equipe-responsavel`);
-
-  if (Array.isArray(linhas)) {
-    equipes.value = linhas;
-    montar();
-  } else {
-    throw new Error('lista de equipes entregue fora do padrão esperado');
-  }
-});
-
-watch(() => props.prontoParaMontagem, () => {
-  montar();
+watch(() => props.valoresIniciais, async (novoValor) => {
+  montar(novoValor);
 }, { immediate: true });
 </script>
 <template>
@@ -182,6 +196,7 @@ watch(() => props.prontoParaMontagem, () => {
           v-model="listaDeOrgaos[idx].id"
           class="inputtext light"
           :disabled="orgaosEquipes[item.id]?.equipes.length"
+          :aria-busy="!campoPronto"
         >
           <option value="" />
           <option
@@ -203,6 +218,7 @@ watch(() => props.prontoParaMontagem, () => {
         >Equipes</label>
         <AutocompleteField
           :id="`${$props.name}__equipes--${idx}`"
+          :aria-busy="!campoPronto"
           :controlador="{
             busca: '',
             participantes: orgaosEquipes[item.id]?.equipes || []
@@ -241,7 +257,7 @@ watch(() => props.prontoParaMontagem, () => {
     </button>
 
     <div
-      v-if="prontoParaMontagem && !orgaosDisponiveis.length"
+      v-if="!orgaosDisponiveis.length"
       class="error p1 error-msg"
     >
       Não há equipes com os perfis necessários nos órgãos disponíveis.
