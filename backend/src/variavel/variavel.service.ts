@@ -895,6 +895,20 @@ export class VariavelService {
     }
 
     async findAll(tipo: TipoVariavel, filters: FilterVariavelDto): Promise<VariavelItemDto[]> {
+        let filtraMae = true;
+        if (
+            !filters.indicador_id &&
+            !filters.meta_id &&
+            !filters.iniciativa_id &&
+            !filters.atividade_id &&
+            !filters.regiao_id &&
+            !filters.formula_composta_id &&
+            !filters.id
+        )
+            filtraMae = false;
+        // se a pessoa passou um id, não filtra a variável mãe, ela realmente quer ver só aquela variável
+        if (filters.variavel_mae_id) filtraMae = true;
+
         if (
             !filters.indicador_id &&
             !filters.meta_id &&
@@ -922,7 +936,7 @@ export class VariavelService {
             where: {
                 AND: whereSet,
                 tipo: tipo == 'Global' ? { in: ['Global', 'Calculada'] } : tipo,
-                variavel_mae_id: filters.id ? undefined : filters.variavel_mae_id ?? null,
+                variavel_mae_id: filtraMae ? undefined : filters.variavel_mae_id ?? null,
             },
             select: {
                 id: true,
