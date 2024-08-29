@@ -173,7 +173,7 @@ export default {
         v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1)"
         title="Visualizar"
         :to="{
-          name: 'projetoTarefasDetalhes',
+          name: $route.meta.entidadeMãe +'.TarefasDetalhes',
           params: {
             ...$route.params,
             tarefaId: linha.id,

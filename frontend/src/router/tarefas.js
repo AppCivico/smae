@@ -91,7 +91,7 @@ export default {
       children: [
 
         {
-          name: 'projetoTarefasDetalhes',
+          name: 'projeto.TarefasDetalhes',
           path: 'resumo',
           component: TarefasDetalhe,
           props: ({ params }) => ({
