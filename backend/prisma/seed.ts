@@ -747,20 +747,20 @@ const PerfilAcessoConfig: {
         privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
     },
     {
-        nome: 'Administrador de Grupo de Variáveis',
-        descricao: 'Gerenciar todos os Grupos de Variáveis',
+        nome: atualizarNomePerfil('Administrador de equipes', ['Administrador de Grupo de Variáveis']),
+        descricao: 'Gerenciar todas as equipes',
         privilegios: ['CadastroGrupoVariavel.administrador'],
     },
     {
-        nome: 'Colaborador de Grupo de Variáveis',
-        descricao: 'Gerenciar os Grupos de Variáveis onde é responsável',
+        nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
+        descricao: 'Gerenciar as equipes onde é responsável',
         privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
     },
 
     {
-        nome: 'Participante de Grupo de Variáveis',
+        nome: atualizarNomePerfil('Participante em equipes', ['Participante de Grupo de Variáveis']),
         descricao:
-            'Pode ser participante de grupos de variáveis, podendo ter qualquer perfil (Medição, Validação, Liberação)',
+            'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
         privilegios: ['SMAE.GrupoVariavel.participante'],
     },
 
