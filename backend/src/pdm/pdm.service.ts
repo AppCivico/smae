@@ -182,22 +182,27 @@ export class PdmService {
     }
 
     private async getPermissionSet(tipo: TipoPdm, user: PessoaFromJwt) {
-        const permissionsSet: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
+        const orList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
-        const tipoList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
+        const andList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
         if (
             tipo == 'PS' &&
             user.hasSomeRoles(['PS.ponto_focal', 'PS.admin_cp', 'PS.tecnico_cp', 'CadastroPS.administrador'])
         ) {
             this.logger.log('Usuário com permissão total em PS');
-            tipoList.push({
+            andList.push({
                 tipo: 'PS',
             });
 
             if (user.hasSomeRoles(['CadastroPS.administrador'])) {
-                // full access, nada pra fazer
-            } else {
+                orList.push({
+                    // só pra ter algo, sempre vai dar true
+                    removido_em: null,
+                });
+            }
+
+            if (orList.length == 0) {
                 // cache warmup
                 const collab = await user.getEquipesColaborador(this.prisma);
 
@@ -205,20 +210,22 @@ export class PdmService {
                     const orgaoId = user.orgao_id;
                     if (!orgaoId) throw new HttpException('Usuário sem órgão associado', 400);
 
-                    tipoList.push({
+                    andList.push({
                         tipo: 'PS',
                         PdmPerfil: {
                             some: {
                                 removido_em: null,
                                 tipo: 'ADMIN',
                                 orgao_id: orgaoId,
-                                // coloco a equipe? pelo nome da perm seria
+                                // colocachoo a equipe? pelo nome da perm seria
                                 equipe_id: { in: collab },
                             },
                         },
                     });
-                } else if (user.hasSomeRoles(['CadastroMetaPS.listar'])) {
-                    tipoList.push({
+                }
+
+                if (user.hasSomeRoles(['CadastroMetaPS.listar'])) {
+                    andList.push({
                         tipo: 'PS',
                         PdmPerfil: {
                             some: {
@@ -228,9 +235,12 @@ export class PdmService {
                             },
                         },
                     });
-                } else {
-                    throw new HttpException('Não foi possível determinar permissões para Plano Setorial', 403);
                 }
+            }
+
+            // se continua vazio, não tem permissão em nenhuma situação
+            if (orList.length == 0) {
+                throw new HttpException('Não foi possível determinar permissões para Plano Setorial', 403);
             }
         } else if (tipo == 'PS') {
             throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
@@ -250,19 +260,21 @@ export class PdmService {
                 'CadastroPdm.inativar',
             ])
         ) {
-            tipoList.push({
+            andList.push({
                 tipo: 'PDM',
             });
         } else if (tipo == 'PDM') {
             throw new HttpException('Usuário sem permissão para acessar Plano de Metas.', 403);
         }
 
-        console.log(tipoList);
-        permissionsSet.push({
-            AND: tipoList,
+        console.log(andList);
+
+        const ret: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
+        ret.push({
+            AND: andList,
         });
 
-        return permissionsSet;
+        return ret;
     }
 
     async findAll(tipo: TipoPdm, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
