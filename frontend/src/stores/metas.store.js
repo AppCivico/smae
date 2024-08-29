@@ -51,7 +51,7 @@ export const useMetasStore = defineStore({
     },
     async getPdM() {
       const PdMStore = usePdMStore();
-      if (!PdMStore.activePdm.id) {
+      if (!this.activePdm.id) {
         await PdMStore.getActive();
       }
       return this.activePdm;
