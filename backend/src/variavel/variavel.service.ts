@@ -897,13 +897,13 @@ export class VariavelService {
     async findAll(tipo: TipoVariavel, filters: FilterVariavelDto): Promise<VariavelItemDto[]> {
         let filtraMae = true;
         if (
-            !filters.indicador_id &&
-            !filters.meta_id &&
-            !filters.iniciativa_id &&
-            !filters.atividade_id &&
-            !filters.regiao_id &&
-            !filters.formula_composta_id &&
-            !filters.id
+            filters.indicador_id ||
+            filters.meta_id ||
+            filters.iniciativa_id ||
+            filters.atividade_id ||
+            filters.regiao_id ||
+            filters.formula_composta_id ||
+            filters.id
         )
             filtraMae = false;
         // se a pessoa passou um id, não filtra a variável mãe, ela realmente quer ver só aquela variável
