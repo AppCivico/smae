@@ -1,7 +1,7 @@
 <template>
   <div>
     <TítuloDePágina id="titulo-da-pagina">
-      Resumo Atividade
+      Resumo da Tarefa
     </TítuloDePágina>
     <div class="flex maxw mb2">
       <dl class="f1">
@@ -139,7 +139,7 @@
     <dl class="mt2 mb2">
       <div class="flex spacebetween center mt2 mb2">
         <dt class="tc300 t16">
-          Execução da atividade
+          Execução da tarefa
         </dt>
         <hr class="ml2 f1">
       </div>
