@@ -31,6 +31,13 @@ const props = defineProps({
   },
 });
 
+const etiquetasValores = {
+  soma_valor_empenho: 'Total geral empenhado',
+  soma_valor_liquidado: 'Total geral liquidado',
+  valor_planejado: 'Total geral do projeto',
+  custo_previsto: 'Total geral do projeto',
+};
+
 let SimpleOrcamento;
 
 let consolidado = null;
@@ -80,9 +87,7 @@ const orcamentosDosAnosPassados = computed(() => configuracaoDeOrcamentosPorAno.
   .filter((x) => x.ano_referencia < new Date().getUTCFullYear()));
 
 function iniciar() {
-  const promessas = [
-    // new Promise((resolve) => { setTimeout(resolve, 2000); }),
-  ];
+  const promessas = [];
 
   chamadasPendentes.value = true;
 
@@ -124,36 +129,32 @@ watch(() => props.anosDoOrcamento, () => {
 
     <hr class="ml2 f1">
   </header>
-
-  <pre>props.anosDoOrcamento: {{ props.anosDoOrcamento }}</pre>
-
-  <pre>consolidado:{{ consolidado }}</pre>
-  <pre>chamadasPendentes:{{ chamadasPendentes }}</pre>
-
-  <dl
-    v-if="consolidado?.anoDeInicio && consolidado?.anoDeConclusao"
-    :aria-busy="chamadasPendentes"
-  >
-    <div>
-      <dt>
-        {{ consolidado.anoDeInicio }} &mdash; {{ consolidado.anoDeConclusao }}
+  <LoadingComponent v-if="chamadasPendentes" />
+  <template v-else>
+    <dl
+      v-for="item, key in consolidado.valor"
+      :key="key"
+      class="flex flexwrap justifyright totalizador t18"
+    >
+      <dt class="w700 titulo">
+        {{ etiquetasValores[key] || key }}
       </dt>
-
+      <dd class="mb025">
+        {{ consolidado.anoDeInicio }} - {{ consolidado.anoDeConclusao }}
+      </dd>
       <AnimatedNumber
-        v-for="(valor, k) in consolidado.valor"
-        :key="k"
-        :value="valor"
+        :value="item"
         as="dd"
         :formatter="dinheiro"
         slowness="2"
-        style="font-size: x-large;"
+        class="fb100 tr tc500 w700 mb2"
       >
         <template #prefix>
-          <strong style="font-size: small;">R$</strong>
+          R$
         </template>
       </AnimatedNumber>
-    </div>
-  </dl>
+    </dl>
+  </template>
 
   <div class="boards">
     <p
@@ -212,3 +213,12 @@ watch(() => props.anosDoOrcamento, () => {
     </template>
   </div>
 </template>
+
+<style scoped lang="less">
+.totalizador{
+  .titulo::after{
+    content: ' - ';
+    margin-right: 0.25em;
+  }
+}
+</style>
