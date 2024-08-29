@@ -847,11 +847,9 @@ export class PessoaService {
         }
 
         {
-            logger.log(
-                `Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em grupos de variaveis`
-            );
+            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em equipes`);
 
-            const grupoQSouResp = await prismaTx.grupoResponsavelEquipePessoa.findMany({
+            const grupoQSouResp = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
                 where: {
                     removido_em: null,
                     pessoa_id: self.id,
@@ -867,7 +865,7 @@ export class PessoaService {
 
             if (grupoQSouResp.length) {
                 throw new BadRequestException(
-                    `Não é possível mudar de órgão, pois ainda é responsável no grupo de variáveis: ${grupoQSouResp
+                    `Não é possível mudar de órgão, pois ainda é responsável na equipes: ${grupoQSouResp
                         .map((r) => {
                             return `${r.grupo_responsavel_equipe.titulo}`;
                         })
@@ -876,6 +874,33 @@ export class PessoaService {
             }
         }
 
+        {
+            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades equipes`);
+
+            const grupoQSouPart = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+                where: {
+                    removido_em: null,
+                    pessoa_id: self.id,
+                },
+                select: {
+                    grupo_responsavel_equipe: {
+                        select: {
+                            titulo: true,
+                        },
+                    },
+                },
+            });
+
+            if (grupoQSouPart.length) {
+                throw new BadRequestException(
+                    `Não é possível mudar de órgão, pois ainda é participante na equipe: ${grupoQSouPart
+                        .map((r) => {
+                            return `${r.grupo_responsavel_equipe.titulo}`;
+                        })
+                        .join('\n')}`
+                );
+            }
+        }
         {
             logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no ${orgaoAntigoStr}`);
             await prismaTx.projetoEquipe.updateMany({

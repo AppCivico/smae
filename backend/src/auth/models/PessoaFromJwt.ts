@@ -22,7 +22,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     public async getEquipesColaborador(prisma: Prisma.TransactionClient): Promise<number[]> {
         if (this.cacheEquipesCollab) return this.cacheEquipesCollab;
 
-        const collab = await prisma.grupoResponsavelEquipeColaborador.findMany({
+        const collab = await prisma.grupoResponsavelEquipeParticipante.findMany({
             where: { pessoa_id: this.id, removido_em: null },
             select: { grupo_responsavel_equipe_id: true },
         });
@@ -35,7 +35,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     public async getEquipesResponsavel(prisma: Prisma.TransactionClient): Promise<number[]> {
         if (this.cacheEquipesResp) return this.cacheEquipesResp;
 
-        const resp = await prisma.grupoResponsavelEquipePessoa.findMany({
+        const resp = await prisma.grupoResponsavelEquipeResponsavel.findMany({
             where: { pessoa_id: this.id, removido_em: null },
             select: { grupo_responsavel_equipe_id: true },
         });

@@ -25,7 +25,7 @@ export class EquipeRespService {
             // assume que CadastroGrupoVariavel.administrador_no_orgao já foi validado na controller
             if (orgao_id != user.orgao_id)
                 throw new BadRequestException(
-                    'Você só tem permissão para criar Grupo de Responsavel de Variável no mesmo órgão.'
+                    'Você só tem permissão para criar Equipe no mesmo órgão.'
                 );
         }
 
@@ -80,7 +80,7 @@ export class EquipeRespService {
                     select: { id: true },
                 });
 
-                await prismaTx.grupoResponsavelEquipePessoa.createMany({
+                await prismaTx.grupoResponsavelEquipeParticipante.createMany({
                     data: dto.participantes.map((pessoaId) => {
                         const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
 
@@ -91,7 +91,7 @@ export class EquipeRespService {
                         };
                     }),
                 });
-                await prismaTx.grupoResponsavelEquipeColaborador.createMany({
+                await prismaTx.grupoResponsavelEquipeResponsavel.createMany({
                     data: dto.colaboradores.map((pessoaId) => {
                         const pessoa = pComPriv2.filter((r) => r.pessoa_id == pessoaId)[0];
 
@@ -216,18 +216,18 @@ export class EquipeRespService {
             },
         });
 
-        if (!gp) throw new NotFoundException('Grupo Responsavel de Variável não foi encontrado.');
+        if (!gp) throw new NotFoundException('Equipe não foi encontrada.');
 
         if (!user.hasSomeRoles(['CadastroGrupoVariavel.administrador'])) {
             if (user.orgao_id != gp.orgao_id)
                 throw new BadRequestException(
-                    'Você só tem permissão para editar Grupo de Responsavel de Variável no mesmo órgão.'
+                    'Você só tem permissão para editar Equipe no mesmo órgão.'
                 );
 
             // user.id  must be in gp.GrupoResponsavelEquipeColaborador
             if (!gp.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id).includes(user.id))
                 throw new BadRequestException(
-                    'Você só tem permissão para editar Grupo de Responsavel de Variável se for um colaborador do grupo.'
+                    'Você só tem permissão para editar Equipe se for um colaborador do grupo.'
                 );
         }
 
@@ -275,7 +275,7 @@ export class EquipeRespService {
                     if (!dto.participantes.includes(pessoaId)) {
                         // O participante estava presente na versão anterior, mas não na nova versão
                         logger.log(`participante removido: ${pessoaId}`);
-                        await prismaTx.grupoResponsavelEquipePessoa.updateMany({
+                        await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
                             where: {
                                 pessoa_id: pessoaId,
                                 grupo_responsavel_equipe_id: gp.id,
@@ -300,7 +300,7 @@ export class EquipeRespService {
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
                         logger.log(`Novo participante: ${pessoa.pessoa_id}`);
-                        await prismaTx.grupoResponsavelEquipePessoa.create({
+                        await prismaTx.grupoResponsavelEquipeParticipante.create({
                             data: {
                                 grupo_responsavel_equipe_id: gp.id,
                                 orgao_id: pessoa.orgao_id,
@@ -342,7 +342,7 @@ export class EquipeRespService {
                     if (!dto.colaboradores.includes(pessoaId)) {
                         // O participante estava presente na versão anterior, mas não na nova versão
                         logger.log(`colaborador removido: ${pessoaId}`);
-                        await prismaTx.grupoResponsavelEquipeColaborador.updateMany({
+                        await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
                             where: {
                                 pessoa_id: pessoaId,
                                 grupo_responsavel_equipe_id: gp.id,
@@ -367,7 +367,7 @@ export class EquipeRespService {
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
                         logger.log(`Novo colaborador: ${pessoa.pessoa_id}`);
-                        await prismaTx.grupoResponsavelEquipeColaborador.create({
+                        await prismaTx.grupoResponsavelEquipeResponsavel.create({
                             data: {
                                 grupo_responsavel_equipe_id: gp.id,
                                 orgao_id: pessoa.orgao_id,
@@ -414,7 +414,7 @@ export class EquipeRespService {
         if (!user.hasSomeRoles(['CadastroGrupoVariavel.administrador'])) {
             if (user.orgao_id != exists.orgao_id)
                 throw new BadRequestException(
-                    'Você só tem permissão para remover Grupo de Responsavel de Variável no mesmo órgão.'
+                    'Você só tem permissão para remover Equipe no mesmo órgão.'
                 );
         }
 
@@ -431,7 +431,17 @@ export class EquipeRespService {
                 },
             });
 
-            await prismaTx.grupoResponsavelEquipePessoa.updateMany({
+            await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
+                where: {
+                    grupo_responsavel_equipe_id: id,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                },
+            });
+
+            await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
                 where: {
                     grupo_responsavel_equipe_id: id,
                     removido_em: null,

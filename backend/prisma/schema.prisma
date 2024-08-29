@@ -461,13 +461,13 @@ model Pessoa {
     RelacaoParlamentarDistribuicaoQAtualizei DistribuicaoParlamentar[] @relation("Atualizador")
     RelacaoParlamentarDistribuicaoQRemovi    DistribuicaoParlamentar[] @relation("Removedor")
 
-    AssuntoVariavelQCriei             AssuntoVariavel[]                   @relation("Criador")
-    AssuntoVariavelQAtualizei         AssuntoVariavel[]                   @relation("Atualizador")
-    AssuntoVariavelQRemovi            AssuntoVariavel[]                   @relation("Removedor")
-    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
-    VariavelQCriei                    Variavel[]                          @relation("Criador")
-    VariavelQAtualizei                Variavel[]                          @relation("Atualizador")
-    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
+    AssuntoVariavelQCriei             AssuntoVariavel[]                    @relation("Criador")
+    AssuntoVariavelQAtualizei         AssuntoVariavel[]                    @relation("Atualizador")
+    AssuntoVariavelQRemovi            AssuntoVariavel[]                    @relation("Removedor")
+    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipeParticipante[]
+    VariavelQCriei                    Variavel[]                           @relation("Criador")
+    VariavelQAtualizei                Variavel[]                           @relation("Atualizador")
+    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
 
     @@index([email])
     @@map("pessoa")
@@ -539,18 +539,18 @@ model Orgao {
     projetos_participando  ProjetoOrgaoParticipante[]
 
     PortifolioOrgao                   PortfolioOrgao[]
-    orgao_responsavel                 Projeto[]                           @relation("orgao_responsavel")
-    orgao_origem                      Projeto[]                           @relation("orgao_origem")
-    orgao_executor                    Projeto[]                           @relation("orgao_executor")
-    projetos_geridos                  Projeto[]                           @relation("orgao_gestor")
-    projeto_colaborados               Projeto[]                           @relation("orgao_colaborador")
+    orgao_responsavel                 Projeto[]                            @relation("orgao_responsavel")
+    orgao_origem                      Projeto[]                            @relation("orgao_origem")
+    orgao_executor                    Projeto[]                            @relation("orgao_executor")
+    projetos_geridos                  Projeto[]                            @relation("orgao_gestor")
+    projeto_colaborados               Projeto[]                            @relation("orgao_colaborador")
     GrupoPortfolio                    GrupoPortfolio[]
     GrupoPortfolioPessoa              GrupoPortfolioPessoa[]
     ProjetoEquipe                     ProjetoEquipe[]
     GrupoPainelExterno                GrupoPainelExterno[]
     GrupoPainelExternoPessoa          GrupoPainelExternoPessoa[]
-    TransferenciasOrgao               Transferencia[]                     @relation("orgao_concedente")
-    TransferenciasSecretaria          Transferencia[]                     @relation("secretaria_concedente")
+    TransferenciasOrgao               Transferencia[]                      @relation("orgao_concedente")
+    TransferenciasSecretaria          Transferencia[]                      @relation("secretaria_concedente")
     distribuicao_recursos             DistribuicaoRecurso[]
     Nota                              Nota[]
     NotaEnderecamento                 NotaEnderecamento[]
@@ -562,13 +562,13 @@ model Orgao {
     Pdm                               Pdm[]
     statusDistribuicaoRecusro         DistribuicaoRecursoStatus[]
     ViewProjetoMDO                    ViewProjetoMDO[]
-    VariavelProprietario              Variavel[]                          @relation("proprietario")
+    VariavelProprietario              Variavel[]                           @relation("proprietario")
     GrupoResponsavelEquipe            GrupoResponsavelEquipe[]
-    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
+    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipeParticipante[]
     contratos                         Contrato[]
-    ViewVariavelGlobalQSouResp        ViewVariavelGlobal[]                @relation("resp")
-    ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                @relation("prop")
-    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
+    ViewVariavelGlobalQSouResp        ViewVariavelGlobal[]                 @relation("resp")
+    ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                 @relation("prop")
+    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
     FormulaComposta                   FormulaComposta[]
 
     @@map("orgao")
@@ -1677,7 +1677,6 @@ enum PerfilResponsavelEquipe {
     AdminPS
     TecnicoPS
     PontoFocalPS
-    // TODO: mover admin e tecnico na meta, para cá, junto com o ponto focal, rename para equipe
 }
 
 model GrupoResponsavelEquipe {
@@ -1690,17 +1689,17 @@ model GrupoResponsavelEquipe {
     perfil          PerfilResponsavelEquipe
     planosSetoriais PdmPerfil[]
 
-    criado_em                         DateTime                            @default(now()) @db.Timestamptz(6)
-    atualizado_em                     DateTime?                           @db.Timestamptz(6)
-    removido_em                       DateTime?                           @db.Timestamptz(6)
-    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipePessoa[]
+    criado_em                         DateTime                             @default(now()) @db.Timestamptz(6)
+    atualizado_em                     DateTime?                            @db.Timestamptz(6)
+    removido_em                       DateTime?                            @db.Timestamptz(6)
+    GrupoResponsavelEquipePessoa      GrupoResponsavelEquipeParticipante[]
     VariavelGrupoResponsavelEquipe    VariavelGrupoResponsavelEquipe[]
-    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeColaborador[]
+    GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
 
     @@map("grupo_responsavel_equipe")
 }
 
-model GrupoResponsavelEquipeColaborador {
+model GrupoResponsavelEquipeResponsavel {
     id Int @id @default(autoincrement())
 
     grupo_responsavel_equipe_id Int
@@ -1718,7 +1717,7 @@ model GrupoResponsavelEquipeColaborador {
     @@map("grupo_responsavel_equipe_colaborador")
 }
 
-model GrupoResponsavelEquipePessoa {
+model GrupoResponsavelEquipeParticipante {
     id Int @id @default(autoincrement())
 
     grupo_responsavel_equipe_id Int
