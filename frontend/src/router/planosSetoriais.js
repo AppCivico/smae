@@ -17,6 +17,7 @@ export default {
     pesoNoMenu: 2,
     limitarÀsPermissões: [
       'CadastroPS.',
+      'CadastroMetaPS.listar',
     ],
   },
   children: [
@@ -67,7 +68,6 @@ export default {
           rotas.push('planosSetoriaisTags');
           return rotas;
         },
-
         rotasParaMigalhasDePão: [
           'planosSetoriaisListar',
         ],
