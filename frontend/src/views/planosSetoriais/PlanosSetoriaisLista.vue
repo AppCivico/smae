@@ -98,6 +98,7 @@ planosSetoriaisStore.buscarTudo();
           <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
           <td>
             <router-link
+              v-if="item.pode_editar"
               :to="{ name: 'planosSetoriaisEditar', params: { planoSetorialId: item.id } }"
               class="tprimary"
             >
@@ -109,6 +110,7 @@ planosSetoriaisStore.buscarTudo();
           </td>
           <td>
             <button
+              v-if="item.pode_editar"
               class="like-a__text"
               arial-label="excluir"
               title="excluir"
