@@ -1673,8 +1673,19 @@ export class VariavelService {
                     })
                 );
             }
-
             await Promise.all(varsFilhasUpdates);
+
+            await prismaTxn.formulaComposta.updateMany({
+                where: {
+                    removido_em: null,
+                    variavel_mae_id: variavelId,
+                    autogerenciavel: true,
+                },
+                data: {
+                    titulo: dto.titulo,
+                    atualizar_calc: true,
+                },
+            });
 
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
             if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
