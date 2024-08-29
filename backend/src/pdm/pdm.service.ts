@@ -181,12 +181,16 @@ export class PdmService {
         delete dto.pdm_anteriores;
     }
 
-    private async getPermissionSet(user: PessoaFromJwt) {
+    private async getPermissionSet(tipo: TipoPdm, user: PessoaFromJwt) {
         const permissionsSet: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
         const tipoList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
-        if (user.hasSomeRoles(['PS.ponto_focal', 'PS.admin_cp', 'PS.tecnico_cp', 'CadastroPS.administrador'])) {
+        if (
+            tipo == 'PS' &&
+            user.hasSomeRoles(['PS.ponto_focal', 'PS.admin_cp', 'PS.tecnico_cp', 'CadastroPS.administrador'])
+        ) {
+            this.logger.log('Usuário com permissão total em PS');
             tipoList.push({
                 tipo: 'PS',
             });
@@ -228,14 +232,17 @@ export class PdmService {
                         },
                     });
                 } else {
-                    throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
+                    throw new HttpException('Não foi possível determinar permissões para Plano Setorial', 403);
                 }
             }
+        } else if (tipo == 'PS') {
+            throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
         }
 
         // talvez tenha que liberar pra mais pessoas, mas na teoria seria isso
         // mas tem GET no /pdm o tempo inteiro no frontend, então talvez precise liberar pra mais perfis
         if (
+            tipo == 'PDM' &&
             user.hasSomeRoles([
                 'PDM.ponto_focal',
                 'PDM.tecnico_cp',
@@ -249,11 +256,13 @@ export class PdmService {
             tipoList.push({
                 tipo: 'PDM',
             });
+        } else if (tipo == 'PDM') {
+            throw new HttpException('Usuário sem permissão para acessar Plano de Metas.', 403);
         }
 
         console.log(tipoList);
         permissionsSet.push({
-            OR: tipoList,
+            AND: tipoList,
         });
 
         return permissionsSet;
@@ -268,7 +277,7 @@ export class PdmService {
                 ativo: active,
                 tipo: tipo,
                 id: filters.id,
-                AND: await this.getPermissionSet(user),
+                AND: await this.getPermissionSet(tipo, user),
             },
             select: {
                 id: true,
