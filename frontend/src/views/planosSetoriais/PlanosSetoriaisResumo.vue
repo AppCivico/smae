@@ -11,8 +11,6 @@ import {
 
 defineOptions({ inheritAttrs: false });
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 const {
   emFoco,
@@ -29,7 +27,7 @@ planosSetoriaisStore.buscarTudo();
 usersStore.buscarPessoasSimplificadas();
 </script>
 <template>
-  <header class="flex flexwrap spacebetween center mb2 g2">
+  <header class="flex spacebetween center mb2 g2">
     <TítuloDePágina :ícone="emFoco?.logo" />
 
     <hr class="f1">
@@ -37,7 +35,7 @@ usersStore.buscarPessoasSimplificadas();
     <router-link
       v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
       :to="{ name: 'planosSetoriaisEditar', params: { palnoSetorialId: emFoco.id } }"
-      class="btn big ml2"
+      class="btn big"
     >
       Editar
     </router-link>
