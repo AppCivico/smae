@@ -647,7 +647,7 @@ watch(itemParaEdição, (novoValor) => {
       </LabelFromYup>
 
       <div class="flex flexwrap g2 mb1">
-        <div class="f1 mb1">
+        <div class="f1">
           <LabelFromYup
             name="orgao_admin_id"
             :schema="schema"
@@ -680,7 +680,7 @@ watch(itemParaEdição, (novoValor) => {
           />
         </div>
 
-        <div class="f2 mb1">
+        <div class="f2">
           <LabelFromYup
             name="ps_admin_cp.equipes"
             :schema="schema"
