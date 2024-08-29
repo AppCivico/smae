@@ -9,7 +9,7 @@ Senha do usuário padrão:
     email: superadmin@admin.com
     senha: !286!QDM7H
 
-Acesse [o README do frontend](frontend/README.md) para instruções de desenvolvimento do backend!
+Acesse [o README do frontend](frontend/README.md) para instruções de desenvolvimento do frontend!
 
 # Deploy com docker-compose
 
