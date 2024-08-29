@@ -34,7 +34,7 @@ usersStore.buscarPessoasSimplificadas();
 
     <router-link
       v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
-      :to="{ name: 'planosSetoriaisEditar', params: { palnoSetorialId: emFoco.id } }"
+      :to="{ name: 'planosSetoriaisEditar', params: { planoSetorialId: emFoco.id } }"
       class="btn big"
     >
       Editar
