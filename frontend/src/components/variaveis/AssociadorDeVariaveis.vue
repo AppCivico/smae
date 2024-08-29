@@ -39,6 +39,7 @@
 
     <TabelaDeVariaveisGlobais
       :numero-de-colunas-extras="1"
+      class="mb1"
     >
       <template #definicaoPrimeirasColunas>
         <col class="col--botão-de-ação">
@@ -49,7 +50,7 @@
 
       <template #comecoLinhaVariavel="{ variavel }">
         <td
-          class="no++wrap"
+          class="nowrap"
         >
           <input
             v-if="!variavel?.possui_variaveis_filhas"
@@ -61,7 +62,7 @@
           >
           <span
             v-else-if="numeroDeSelecionadasPorMae[variavel?.id]"
-            class="tipinfo right"
+            class="tc600 tipinfo right"
           >+{{ numeroDeSelecionadasPorMae[variavel.id] || 0 }}
             <div>filhas selecionadas</div>
           </span>
