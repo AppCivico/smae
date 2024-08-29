@@ -246,6 +246,9 @@ export class PdmService {
             if (orList.length == 0) {
                 throw new HttpException('Não foi possível determinar permissões para Plano Setorial', 403);
             }
+            andList.push({
+                OR: orList,
+            });
         } else if (tipo == 'PS') {
             throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
         }
