@@ -720,7 +720,6 @@ watch(itemParaEdição, (novoValor) => {
             v-model="carga.ps_tecnico_cp.equipes"
             :valores-iniciais="emFoco?.ps_tecnico_cp?.equipes"
             name="ps_tecnico_cp.equipes"
-            :pronto-para-montagem="montarCampoEstático"
             perfis-permitidos="TecnicoPS"
           />
           <ErrorMessage
@@ -745,7 +744,6 @@ watch(itemParaEdição, (novoValor) => {
             v-model="carga.ps_ponto_focal.equipes"
             :valores-iniciais="emFoco?.ps_ponto_focal?.equipes"
             name="ps_ponto_focal.equipes"
-            :pronto-para-montagem="montarCampoEstático"
             perfis-permitidos="PontoFocalPS"
           />
           <ErrorMessage
