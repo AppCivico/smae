@@ -10,10 +10,39 @@ export type LogOpt = {
 };
 
 export class PessoaFromJwt extends PessoaFromJwtBase {
+    private cacheEquipesCollab: number[] | null = null;
+    private cacheEquipesResp: number[] | null = null;
+
     // facilitando pra ter que não ter que usar um método estático aqui
     constructor(opts: PessoaFromJwtBase) {
         super();
         Object.assign(this, opts);
+    }
+
+    public async getEquipesColaborador(prisma: Prisma.TransactionClient): Promise<number[]> {
+        if (this.cacheEquipesCollab) return this.cacheEquipesCollab;
+
+        const collab = await prisma.grupoResponsavelEquipeColaborador.findMany({
+            where: { pessoa_id: this.id, removido_em: null },
+            select: { grupo_responsavel_equipe_id: true },
+        });
+
+        this.cacheEquipesCollab = collab.map((r) => r.grupo_responsavel_equipe_id);
+
+        return this.cacheEquipesCollab;
+    }
+
+    public async getEquipesResponsavel(prisma: Prisma.TransactionClient): Promise<number[]> {
+        if (this.cacheEquipesResp) return this.cacheEquipesResp;
+
+        const resp = await prisma.grupoResponsavelEquipePessoa.findMany({
+            where: { pessoa_id: this.id, removido_em: null },
+            select: { grupo_responsavel_equipe_id: true },
+        });
+
+        this.cacheEquipesResp = resp.map((r) => r.grupo_responsavel_equipe_id);
+
+        return this.cacheEquipesResp;
     }
 
     // não requirido, mas se não existir não vai autorizar

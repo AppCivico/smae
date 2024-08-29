@@ -14,10 +14,10 @@ import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
-import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { ReadOnlyBooleanType } from '../common/TypeReadOnly';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
@@ -30,12 +30,11 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
 
-const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, ListaDePrivilegios[]> = {
-    ADMIN: ['PS.admin_cp'],
-    CP: ['PS.tecnico_cp'],
-    PONTO_FOCAL: ['PS.ponto_focal'],
+const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
+    ADMIN: 'AdminPS',
+    CP: 'TecnicoPS',
+    PONTO_FOCAL: 'PontoFocalPS',
 } as const;
 
 type CicloFisicoResumo = {
@@ -47,6 +46,7 @@ type CicloFisicoResumo = {
 };
 
 class AdminCpDbItem {
+    perfil: PdmPerfilTipo;
     orgao_id: number;
     equipe_id: number;
 }
@@ -190,21 +190,47 @@ export class PdmService {
             tipoList.push({
                 tipo: 'PS',
             });
-        }
-        if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
-            // TODO validar se vai ser assim mesmo
-            tipoList.push({
-                tipo: 'PS',
-                PdmPerfil: {
-                    some: {
-                        removido_em: null,
-                        tipo: 'ADMIN',
-                        // TODO: validar como vai ficar agora com equipes.
-                        // pessoa_id: user.id,
-                        orgao_id: user.orgao_id,
-                    },
-                },
-            });
+
+            if (user.hasSomeRoles(['CadastroPS.administrador'])) {
+                // full access, nada pra fazer
+            } else {
+                // cache warmup
+                const [collab, resp] = await Promise.all([
+                    user.getEquipesColaborador(this.prisma),
+                    user.getEquipesResponsavel(this.prisma),
+                ]);
+
+                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+                    const orgaoId = user.orgao_id;
+                    if (!orgaoId) throw new HttpException('Usuário sem órgão associado', 400);
+
+                    tipoList.push({
+                        tipo: 'PS',
+                        PdmPerfil: {
+                            some: {
+                                removido_em: null,
+                                tipo: 'ADMIN',
+                                orgao_id: orgaoId,
+                                // coloco a equipe? pelo nome da perm seria
+                                equipe_id: { in: [...collab, ...resp] },
+                            },
+                        },
+                    });
+                } else if (user.hasSomeRoles(['CadastroMetaPS.listar'])) {
+                    tipoList.push({
+                        tipo: 'PS',
+                        PdmPerfil: {
+                            some: {
+                                removido_em: null,
+                                tipo: 'PONTO_FOCAL',
+                                equipe_id: { in: [...collab, ...resp] },
+                            },
+                        },
+                    });
+                } else {
+                    throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
+                }
+            }
         }
 
         // talvez tenha que liberar pra mais pessoas, mas na teoria seria isso
@@ -278,55 +304,65 @@ export class PdmService {
             orderBy: [{ ativo: 'desc' }, { data_inicio: 'desc' }, { data_fim: 'desc' }],
         });
 
-        const listActiveTmp = listActive.map((pdm) => {
-            let logo = null;
-            if (pdm.arquivo_logo_id) {
-                logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
-            }
+        const listActiveTmp = await Promise.all(
+            listActive.map(async (pdm) => {
+                let logo = null;
+                if (pdm.arquivo_logo_id) {
+                    logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
+                }
 
-            return {
-                id: pdm.id,
-                nome: pdm.nome,
-                descricao: pdm.descricao,
-                ativo: pdm.ativo,
-                prefeito: pdm.prefeito,
-                rotulo_macro_tema: pdm.rotulo_macro_tema,
-                rotulo_tema: pdm.rotulo_tema,
-                rotulo_sub_tema: pdm.rotulo_sub_tema,
-                rotulo_contexto_meta: pdm.rotulo_contexto_meta,
-                rotulo_complementacao_meta: pdm.rotulo_complementacao_meta,
-                rotulo_iniciativa: pdm.rotulo_iniciativa,
-                rotulo_atividade: pdm.rotulo_atividade,
-                possui_macro_tema: pdm.possui_macro_tema,
-                possui_tema: pdm.possui_tema,
-                possui_sub_tema: pdm.possui_sub_tema,
-                possui_contexto_meta: pdm.possui_contexto_meta,
-                possui_complementacao_meta: pdm.possui_complementacao_meta,
-                possui_iniciativa: pdm.possui_iniciativa,
-                possui_atividade: pdm.possui_atividade,
-                nivel_orcamento: pdm.nivel_orcamento,
+                return {
+                    id: pdm.id,
+                    nome: pdm.nome,
+                    descricao: pdm.descricao,
+                    ativo: pdm.ativo,
+                    prefeito: pdm.prefeito,
+                    rotulo_macro_tema: pdm.rotulo_macro_tema,
+                    rotulo_tema: pdm.rotulo_tema,
+                    rotulo_sub_tema: pdm.rotulo_sub_tema,
+                    rotulo_contexto_meta: pdm.rotulo_contexto_meta,
+                    rotulo_complementacao_meta: pdm.rotulo_complementacao_meta,
+                    rotulo_iniciativa: pdm.rotulo_iniciativa,
+                    rotulo_atividade: pdm.rotulo_atividade,
+                    possui_macro_tema: pdm.possui_macro_tema,
+                    possui_tema: pdm.possui_tema,
+                    possui_sub_tema: pdm.possui_sub_tema,
+                    possui_contexto_meta: pdm.possui_contexto_meta,
+                    possui_complementacao_meta: pdm.possui_complementacao_meta,
+                    possui_iniciativa: pdm.possui_iniciativa,
+                    possui_atividade: pdm.possui_atividade,
+                    nivel_orcamento: pdm.nivel_orcamento,
 
-                pode_editar: this.calcPodeEditar(pdm, user),
-                logo: logo,
-                data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
-                data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
-                data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
-                periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
-                periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(
-                    pdm.periodo_do_ciclo_participativo_inicio
-                ),
-            } satisfies ListPdm;
-        });
+                    pode_editar: await this.calcPodeEditar(pdm, user),
+                    logo: logo,
+                    data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
+                    data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
+                    data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
+                    periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
+                    periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(
+                        pdm.periodo_do_ciclo_participativo_inicio
+                    ),
+                } satisfies ListPdm;
+            })
+        );
 
         return listActiveTmp;
     }
 
-    calcPodeEditar(pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null }, user: PessoaFromJwt): boolean {
+    async calcPodeEditar(
+        pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null },
+        user: PessoaFromJwt
+    ): Promise<boolean> {
         if (pdm.tipo == 'PS') {
             let podeEditar = user.hasSomeRoles(['CadastroPS.administrador']);
             // TODO: validar regras novas de PS e equipe
             if (!podeEditar) {
                 const dbValue = pdm.ps_admin_cps?.valueOf();
+
+                const [collab, resp] = await Promise.all([
+                    user.getEquipesColaborador(this.prisma),
+                    user.getEquipesResponsavel(this.prisma),
+                ]);
 
                 if (
                     user.orgao_id &&
@@ -335,12 +371,16 @@ export class PdmService {
                 ) {
                     const parsed = plainToInstance(AdminCpDbItem, dbValue);
 
-                    // está em algum item
-                    // podeEditar = parsed.some((item) => +item.pessoa_id == +user.id);
-
                     // e todos os itens são do mesmo órgão
-                    podeEditar = podeEditar && parsed.every((item) => +item.orgao_id == +user.orgao_id!);
-                }
+                    podeEditar =
+                        podeEditar &&
+                        parsed.some(
+                            (item) =>
+                                item.perfil == 'CP' &&
+                                +item.orgao_id == +user.orgao_id! &&
+                                (collab.includes(item.equipe_id) || resp.includes(item.equipe_id))
+                        );
+                } // ponto focal nunca pode editar,
 
                 podeEditar = false;
             }
@@ -388,7 +428,7 @@ export class PdmService {
             possui_atividade: pdm.possui_atividade,
             nivel_orcamento: pdm.nivel_orcamento,
 
-            pode_editar: this.calcPodeEditar(pdm, user),
+            pode_editar: await this.calcPodeEditar(pdm, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
             data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
             data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
@@ -466,7 +506,7 @@ export class PdmService {
         });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        const pode_editar = this.calcPodeEditar(pdm, user);
+        const pode_editar = await this.calcPodeEditar(pdm, user);
         if (!pode_editar && readonly == 'ReadWrite') {
             throw new ForbiddenException(
                 `Você não tem permissão para editar este ${pdm.tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'}`
@@ -497,7 +537,7 @@ export class PdmService {
             throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
         }
 
-        this.calcPodeEditar(pdm, user);
+        await this.calcPodeEditar(pdm, user);
 
         // TODO: plano setorial verificar se é admin no órgão, se só tiver pessoas do órgão dele, pode desativar/ativar
     }
@@ -652,7 +692,7 @@ export class PdmService {
             });
 
             if (dto.ps_admin_cp) {
-                const pessoas = await this.upsertPerfil(id, 'ADMIN', user, prismaTx, now, dto.ps_admin_cp);
+                const pessoas = await this.upsertPdmResponsaveis(id, 'ADMIN', user, prismaTx, now, dto.ps_admin_cp);
                 const orgaosIguais = pessoas
                     .map((p) => p.orgao_id)
                     .every((orgaoId) => orgaoId == updated.orgao_admin_id);
@@ -660,8 +700,33 @@ export class PdmService {
                     throw new BadRequestException('Todos os administradores CP devem ser do mesmo órgão administrador');
                 }
             }
-            if (dto.ps_tecnico_cp) await this.upsertPerfil(id, 'CP', user, prismaTx, now, dto.ps_tecnico_cp);
-            if (dto.ps_ponto_focal) await this.upsertPerfil(id, 'PONTO_FOCAL', user, prismaTx, now, dto.ps_ponto_focal);
+            if (dto.ps_tecnico_cp) await this.upsertPdmResponsaveis(id, 'CP', user, prismaTx, now, dto.ps_tecnico_cp);
+            if (dto.ps_ponto_focal)
+                await this.upsertPdmResponsaveis(id, 'PONTO_FOCAL', user, prismaTx, now, dto.ps_ponto_focal);
+
+            if (dto.ps_admin_cp || dto.ps_tecnico_cp || dto.ps_ponto_focal) {
+                const cachedView = await prismaTx.pdm.findFirst({
+                    where: { id: id },
+                    select: {
+                        PdmPerfil: {
+                            where: {
+                                removido_em: null,
+                            },
+                            select: {
+                                tipo: true,
+                                equipe_id: true,
+                                orgao_id: true,
+                            },
+                        },
+                    },
+                });
+                await prismaTx.pdm.update({
+                    where: { id: id },
+                    data: {
+                        ps_admin_cps: cachedView?.PdmPerfil ?? [],
+                    },
+                });
+            }
 
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
@@ -705,8 +770,7 @@ export class PdmService {
         }
     }
 
-    // TODO mudar nome
-    private async upsertPerfil(
+    private async upsertPdmResponsaveis(
         pdm_id: number,
         tipo: PdmPerfilTipo,
         user: PessoaFromJwt,
@@ -715,21 +779,15 @@ export class PdmService {
         data: {
             equipes: number[];
         }
-    ) {
+    ): Promise<AdminCpDbItem[]> {
         const prevVersion = await prismaTx.pdmPerfil.findMany({
             where: { pdm_id, removido_em: null, tipo: tipo },
             select: { equipe_id: true },
         });
 
-        // Tipo da equipe.
-        // TODO: mudar para uma verificação mais elegante.
-        let tipoEquipe: PerfilResponsavelEquipe;
-        if (tipo == PdmPerfilTipo.ADMIN) {
-            tipoEquipe = PerfilResponsavelEquipe.AdminPS;
-        } else if (tipo == PdmPerfilTipo.CP) {
-            tipoEquipe = PerfilResponsavelEquipe.TecnicoPS;
-        } else {
-            tipoEquipe = PerfilResponsavelEquipe.PontoFocalPS;
+        const tipoEquipe = MAPA_PERFIL_PERMISSAO[tipo];
+        if (!tipoEquipe) {
+            throw new BadRequestException('Tipo de equipe inválido');
         }
 
         const keptRecord: number[] = prevVersion.map((r) => r.equipe_id);
@@ -765,6 +823,7 @@ export class PdmService {
             });
             if (!equipe) throw new BadRequestException(`Equipe ID ${equipe_id} inválida ou de tipo incorreto.`);
             cpItens.push({
+                perfil: tipo,
                 orgao_id: equipe.orgao_id,
                 equipe_id: equipe.id,
             });
@@ -788,13 +847,6 @@ export class PdmService {
                 this.logger.log(`Equipe mantida sem alterações: ${equipe.id}`);
             }
         }
-        if (tipo == 'ADMIN')
-            await prismaTx.pdm.update({
-                where: { id: pdm_id },
-                data: {
-                    ps_admin_cps: cpItens as any,
-                },
-            });
 
         return cpItens;
     }
