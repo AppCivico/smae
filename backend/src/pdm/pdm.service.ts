@@ -82,9 +82,11 @@ export class PdmService {
             } else if (dto.nivel_orcamento && !dto.nivel_orcamento) {
                 throw new BadRequestException('Nível de Orçamento é obrigatório');
             }
+            if (!dto.orgao_admin_id)
+                throw new BadRequestException('Órgão Administrador é obrigatório para Plano Setorial');
         }
 
-        await this.verificaOrgaoAdmin(dto, this.prisma);
+        await this.verificaOrgaoAdmin(dto, this.prisma, user);
         await this.verificaPdmAnterioes(dto, this.prisma);
 
         const similarExists = await this.prisma.pdm.count({
@@ -609,7 +611,7 @@ export class PdmService {
             }
         }
 
-        await this.verificaOrgaoAdmin(dto, prismaTx);
+        await this.verificaOrgaoAdmin(dto, prismaTx, user);
         await this.verificaPdmAnterioes(dto, prismaTx);
 
         if (dto.nome) {
@@ -769,12 +771,22 @@ export class PdmService {
         return { id: id };
     }
 
-    private async verificaOrgaoAdmin(dto: UpdatePdmDto, prismaTx: Prisma.TransactionClient) {
+    private async verificaOrgaoAdmin(dto: UpdatePdmDto, prismaTx: Prisma.TransactionClient, user: PessoaFromJwt) {
         if (dto.orgao_admin_id) {
-            await prismaTx.orgao.findFirstOrThrow({
+            const org = await prismaTx.orgao.findFirstOrThrow({
                 where: { id: dto.orgao_admin_id, removido_em: null },
-                select: { id: true },
+                select: { id: true, descricao: true, sigla: true },
             });
+
+            if (!user.hasSomeRoles(['CadastroPS.administrador'])) {
+                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+                    if (user.orgao_id != dto.orgao_admin_id) {
+                        throw new BadRequestException(
+                            `Você não tem permissão no órgão ${org.descricao} (${org.sigla})`
+                        );
+                    }
+                }
+            }
         }
     }
 

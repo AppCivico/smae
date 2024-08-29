@@ -543,9 +543,11 @@ const PSCadastroBasico: ListaDePrivilegios[] = [
     'CadastroTagPS.editar',
     'CadastroTagPS.remover',
 ];
+
 const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
     'CadastroMetaPS.administrador_no_pdm',
     'CadastroMetaPS.administrador_orcamento',
+    'CadastroMetaPS.listar',
 
     'CadastroPainelPS.inserir',
     'CadastroPainelPS.editar',
