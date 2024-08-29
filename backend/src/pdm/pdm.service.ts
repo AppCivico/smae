@@ -190,12 +190,12 @@ export class PdmService {
             tipo == 'PS' &&
             user.hasSomeRoles(['PS.ponto_focal', 'PS.admin_cp', 'PS.tecnico_cp', 'CadastroPS.administrador'])
         ) {
-            this.logger.log('Usuário com permissão total em PS');
             andList.push({
                 tipo: 'PS',
             });
 
             if (user.hasSomeRoles(['CadastroPS.administrador'])) {
+                this.logger.log('Usuário com permissão total em PS');
                 orList.push({
                     // só pra ter algo, sempre vai dar true
                     removido_em: null,
@@ -207,10 +207,12 @@ export class PdmService {
                 const collab = await user.getEquipesColaborador(this.prisma);
 
                 if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+                    this.logger.log('Usuário com permissão total em PS no órgão');
+
                     const orgaoId = user.orgao_id;
                     if (!orgaoId) throw new HttpException('Usuário sem órgão associado', 400);
 
-                    andList.push({
+                    orList.push({
                         tipo: 'PS',
                         PdmPerfil: {
                             some: {
@@ -225,7 +227,9 @@ export class PdmService {
                 }
 
                 if (user.hasSomeRoles(['CadastroMetaPS.listar'])) {
-                    andList.push({
+                    this.logger.log('Usuário com permissão total em PS no CP');
+
+                    orList.push({
                         tipo: 'PS',
                         PdmPerfil: {
                             some: {
