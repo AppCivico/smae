@@ -2,12 +2,12 @@
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'planosSetoriaisNovoTema' }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
-    </router-link>
+    </SmaeLink>
   </div>
   <table class="tablemain">
     <col>
@@ -27,7 +27,7 @@
       >
         <td>{{ item.descricao }}</td>
         <td>
-          <router-link
+          <SmaeLink
             :to="{ name: 'planosSetoriaisEditarTema', params: { temaId: item.id } }"
             class="tprimary"
           >
@@ -35,10 +35,11 @@
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
+            v-if="temPermissãoPara('CadastroTemaPS.remover')"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -71,6 +72,7 @@
 </template>
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTemasPsStore } from '@/stores/temasPs.store';
 import { storeToRefs } from 'pinia';
 import { computed, defineOptions } from 'vue';
@@ -85,6 +87,10 @@ const titulo = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
   : route?.meta?.título;
 const alertStore = useAlertStore();
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
+
 const temasStore = useTemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(temasStore);
 

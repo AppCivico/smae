@@ -2,12 +2,12 @@
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || "Tags" }}</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'planosSetoriaisNovaTag' }"
       class="btn big ml1"
     >
       Nova tag
-    </router-link>
+    </SmaeLink>
   </div>
 
   <table class="tablemain">
@@ -47,7 +47,7 @@
           <span v-else>-</span>
         </td>
         <td>
-          <router-link
+          <SmaeLink
             :to="{ name: 'planosSetoriaisEditarTag', params: { tagId: item.id } }"
             class="tprimary"
           >
@@ -55,10 +55,11 @@
               width="18"
               height="18"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
+            v-if="temPermissãoPara('CadastroTagPS.remover')"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -89,9 +90,9 @@
     </tbody>
   </table>
 </template>
-
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
@@ -103,6 +104,10 @@ defineOptions({
 
 const route = useRoute();
 const alertStore = useAlertStore();
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
+
 const tagsStore = useTagsPsStore();
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

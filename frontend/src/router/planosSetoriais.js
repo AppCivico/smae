@@ -158,8 +158,11 @@ export default {
               name: 'planosSetoriaisNovaTag',
               component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
               meta: {
-                rotaDeEscape: 'planosSetoriaisTags',
                 título: 'Nova Tag',
+                limitarÀsPermissões: [
+                  'CadastroTagPS.inserir',
+                ],
+                rotaDeEscape: 'planosSetoriaisTags',
               },
             },
             {
@@ -172,6 +175,9 @@ export default {
               }),
               meta: {
                 título: 'Editar Tag',
+                limitarÀsPermissões: [
+                  'CadastroTagPS.editar',
+                ],
                 rotaDeEscape: 'planosSetoriaisTags',
               },
             },
@@ -194,8 +200,11 @@ export default {
               name: 'planosSetoriaisNovoMacrotema',
               component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
               meta: {
-                rotaDeEscape: 'planosSetoriaisMacrotemas',
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Novo Macrotema',
+                limitarÀsPermissões: [
+                  'CadastroMacroTemaPS.inserir',
+                ],
+                rotaDeEscape: 'planosSetoriaisMacrotemas',
               },
             },
             {
@@ -208,6 +217,9 @@ export default {
               }),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Editar Macrotema',
+                limitarÀsPermissões: [
+                  'CadastroMacroTemaPS.editar',
+                ],
                 rotaDeEscape: 'planosSetoriaisMacrotemas',
               },
             },
@@ -230,8 +242,11 @@ export default {
               name: 'planosSetoriaisNovoTema',
               component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
               meta: {
-                rotaDeEscape: 'planosSetoriaisTemas',
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Novo Tema',
+                limitarÀsPermissões: [
+                  'CadastroTemaPS.inserir',
+                ],
+                rotaDeEscape: 'planosSetoriaisTemas',
               },
             },
             {
@@ -244,6 +259,9 @@ export default {
               }),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Editar Tema',
+                limitarÀsPermissões: [
+                  'CadastroTemaPS.editar',
+                ],
                 rotaDeEscape: 'planosSetoriaisTemas',
               },
             },
@@ -284,6 +302,9 @@ export default {
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Editar Subtema',
                 rotaDeEscape: 'planosSetoriaisSubtemas',
+                limitarÀsPermissões: [
+                  'CadastroSubTema.editar',
+                ],
               },
             },
           ],
