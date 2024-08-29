@@ -199,10 +199,7 @@ export class PdmService {
                 // full access, nada pra fazer
             } else {
                 // cache warmup
-                const [collab, resp] = await Promise.all([
-                    user.getEquipesColaborador(this.prisma),
-                    user.getEquipesResponsavel(this.prisma),
-                ]);
+                const collab = await user.getEquipesColaborador(this.prisma);
 
                 if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
                     const orgaoId = user.orgao_id;
@@ -216,7 +213,7 @@ export class PdmService {
                                 tipo: 'ADMIN',
                                 orgao_id: orgaoId,
                                 // coloco a equipe? pelo nome da perm seria
-                                equipe_id: { in: [...collab, ...resp] },
+                                equipe_id: { in: collab },
                             },
                         },
                     });
@@ -227,7 +224,7 @@ export class PdmService {
                             some: {
                                 removido_em: null,
                                 tipo: 'PONTO_FOCAL',
-                                equipe_id: { in: [...collab, ...resp] },
+                                equipe_id: { in: collab },
                             },
                         },
                     });
@@ -366,18 +363,13 @@ export class PdmService {
             let podeEditar = user.hasSomeRoles(['CadastroPS.administrador']);
             // TODO: validar regras novas de PS e equipe
             if (!podeEditar) {
+                if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado', 400);
+
                 const dbValue = pdm.ps_admin_cps?.valueOf();
 
-                const [collab, resp] = await Promise.all([
-                    user.getEquipesColaborador(this.prisma),
-                    user.getEquipesResponsavel(this.prisma),
-                ]);
+                const collab = await user.getEquipesColaborador(this.prisma);
 
-                if (
-                    user.orgao_id &&
-                    Array.isArray(dbValue) &&
-                    user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])
-                ) {
+                if (Array.isArray(dbValue) && user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
                     const parsed = plainToInstance(AdminCpDbItem, dbValue);
 
                     // e todos os itens são do mesmo órgão
@@ -385,12 +377,11 @@ export class PdmService {
                         podeEditar &&
                         parsed.some(
                             (item) =>
-                                item.perfil == 'CP' &&
-                                +item.orgao_id == +user.orgao_id! &&
-                                (collab.includes(item.equipe_id) || resp.includes(item.equipe_id))
+                                item.perfil == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
                         );
-                } // ponto focal nunca pode editar,
+                }
 
+                // ponto focal nunca pode editar
                 podeEditar = false;
             }
 
