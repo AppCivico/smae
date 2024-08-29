@@ -50,15 +50,35 @@ const schema = Yup.object().shape({
   analise_qualitativa: Yup.string(),
 });
 
-const { errors, isSubmitting, setFieldValue } = useForm({
+const {
+  errors, isSubmitting, setFieldValue, handleSubmit,
+} = useForm({
   initialValues: SingleAnalise,
-  validationSchema: schema.value,
+  validationSchema: schema,
 });
 
 const submitBt = ref({});
 const enviaCP = ref(false);
+const isLoadingData = ref(true);
 
-async function onSubmit(values) {
+function formatarValorRealizado(valor) {
+  let valorTexto = valor;
+
+  if (typeof valor === 'number') {
+    valorTexto = valor.toString();
+  }
+
+  const valorComPonto = valorTexto.replace(',', '.');
+  const valorFormatado = Number(valorComPonto);
+
+  if (Number.isNaN(valorFormatado)) {
+    return '';
+  }
+
+  return valorFormatado.toString();
+}
+
+const onSubmit = handleSubmit(async (values) => {
   try {
     let msg;
     let r;
@@ -66,14 +86,8 @@ async function onSubmit(values) {
     const v = {
       variavel_id: props.var_id,
       data_valor: props.periodo,
-      valor_realizado: !isNaN(parseFloat(values.valor_realizado))
-        ? String(parseFloat(String(values.valor_realizado).replace(',', '.')))
-        : '',
-      valor_realizado_acumulado: SingleAnalise.value.variavel.acumulativa
-        ? !isNaN(parseFloat(values.valor_realizado_acumulado))
-          ? String(parseFloat(String(values.valor_realizado_acumulado).replace(',', '.')))
-          : ''
-        : null,
+      valor_realizado: formatarValorRealizado(values.valor_realizado),
+      valor_realizado_acumulado: formatarValorRealizado(values.valor_realizado_acumulado),
       analise_qualitativa: values.analise_qualitativa,
       enviar_para_cp: enviaCP.value,
     };
@@ -90,7 +104,8 @@ async function onSubmit(values) {
     enviaCP.value = false;
     alertStore.error(error);
   }
-}
+});
+
 function submeter(e) {
   const item = e.target;
   alertStore.confirmAction(
@@ -160,7 +175,14 @@ function addFile(e) {
 }
 
 function handleChangeValorRealizado(value) {
+  if (isLoadingData.value) {
+    isLoadingData.value = false;
+
+    return;
+  }
+
   const valorRealizado = Number(value);
+  const valorRealizadoAtual = Number(SingleAnalise.value.valor_realizado);
   const valorRealizadoAcumulado = Number(SingleAnalise.value.valor_realizado_acumulado);
 
   if (Number.isNaN(valorRealizado) || Number.isNaN(valorRealizadoAcumulado)) {
@@ -176,7 +198,7 @@ function handleChangeValorRealizado(value) {
     return;
   }
 
-  setFieldValue('valor_realizado_acumulado', valorRealizado + valorRealizadoAcumulado);
+  setFieldValue('valor_realizado_acumulado', (valorRealizado - valorRealizadoAtual) + valorRealizadoAcumulado);
 }
 
 </script>
