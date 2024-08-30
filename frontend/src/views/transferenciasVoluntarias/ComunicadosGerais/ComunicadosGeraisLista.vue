@@ -35,7 +35,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
 import ComunicadoGeralItem from './partials/ComunicadoGeralItem.vue';
-import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface.ts';
+import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -78,11 +78,11 @@ function handleLido(item: IComunicadoGeralItem, lido: boolean) {
 </script>
 
 <style lang="less" scoped>
-.comunicados-gerais {
-  &__list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 42px 48px;
-  }
+.comunicados-gerais {}
+
+.comunicados-gerais__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 42px 48px;
 }
 </style>
