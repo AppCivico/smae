@@ -7,6 +7,7 @@ import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { usePsMetasStore } from '@/stores/metasPs.store.ts';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -59,6 +60,7 @@ async function escolher(opção) {
       useRegionsStore().$reset();
       useUsersStore().$reset();
       useTarefasStore().$reset();
+      useOrcamentosStore().$reset();
       usePsMetasStore().$reset();
       useMetasStore().$reset();
       useProcessosStore().$reset();
