@@ -75,7 +75,9 @@ BEGIN
         select
             vv.id as variavel_id
         from variavel vv
-        where exists (
+        where
+        vv.tipo = 'PDM'
+        AND exists (
             select
                 1
             from indicador_variavel iv
