@@ -1630,18 +1630,24 @@ export class VariavelService {
                 select: {
                     valor_base: true,
                     fim_medicao: true,
-                    variaveis_filhas: { select: { id: true, titulo: true } },
+                    variaveis_filhas: {
+                        select: {
+                            id: true,
+                            titulo: true,
+                            regiao: {
+                                select: {
+                                    id: true,
+                                    descricao: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
             // Caso tenha filhas, deve atualizar as configs delas.
             const varsFilhasUpdates = [];
             for (const variavelFilha of updated.variaveis_filhas) {
-                let tituloFilha: string | undefined = dto.titulo;
-                if (dto.titulo && !variavelFilha.titulo.includes(dto.titulo)) {
-                    tituloFilha = variavelFilha.titulo.replace(selfBefUpdate.titulo, dto.titulo);
-                }
-
                 varsFilhasUpdates.push(
                     prismaTxn.variavel.updateMany({
                         where: {
@@ -1649,7 +1655,7 @@ export class VariavelService {
                             removido_em: null,
                         },
                         data: {
-                            titulo: tituloFilha,
+                            titulo: dto.titulo + ' - ' + variavelFilha.regiao?.descricao,
                             acumulativa: dto.acumulativa,
                             mostrar_monitoramento: dto.mostrar_monitoramento,
                             unidade_medida_id: dto.unidade_medida_id,
