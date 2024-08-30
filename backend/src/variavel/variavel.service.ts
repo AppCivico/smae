@@ -2750,9 +2750,21 @@ export class VariavelService {
 
     async recalc_indicador_usando_variaveis(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
         this.logger.log(`called recalc_indicador_usando_variaveis (${JSON.stringify(variaveis)})`);
-        const indicadoresFv = await prismaTxn.indicadorFormulaVariavel.findMany({
+
+        const indicadoresViaCalc = await prismaTxn.formulaComposta.findMany({
             where: {
-                variavel_id: { in: variaveis },
+                removido_em: null,
+                FormulaCompostaVariavel: {
+                    some: { variavel_id: { in: variaveis } },
+                },
+                variavel_calc_id: { not: null },
+            },
+            select: { id: true, variavel_calc_id: true },
+        });
+
+        const indicadoresFV = await prismaTxn.indicadorFormulaVariavel.findMany({
+            where: {
+                variavel_id: { in: [...variaveis, ...indicadoresViaCalc.map((r) => r.variavel_calc_id!)] },
             },
             distinct: ['indicador_id'],
             select: { indicador_id: true },
@@ -2774,10 +2786,12 @@ export class VariavelService {
             select: { id: true },
         });
         const uniqueIndicadores = Array.from(
-            new Set([...indicadoresFC.map((r) => r.id), ...indicadoresFv.map((r) => r.indicador_id)])
+            new Set([...indicadoresFC.map((r) => r.id), ...indicadoresFV.map((r) => r.indicador_id)])
         );
 
-        this.logger.log(`query.indicadores => ${uniqueIndicadores.join(',')}`);
+        this.logger.log(
+            `Indicadores => ${uniqueIndicadores.join(',')} indicadoresViaCalc => ${JSON.stringify(indicadoresViaCalc)} indicadoresFV => ${JSON.stringify(indicadoresFV)} indicadoresFC => ${JSON.stringify(indicadoresFC)}`
+        );
         for (const indicador_id of uniqueIndicadores) {
             this.logger.log(`Recalculando indicador ... ${indicador_id}`);
             await prismaTxn.$queryRaw`select refresh_serie_indicador(${indicador_id}::int, null)`;

@@ -1849,6 +1849,7 @@ model IndicadorVariavel {
     @@map("indicador_variavel")
 }
 
+// nem sempre existe valor (na variavel calculada, por exemplo, a formula composta continua sem a ref aqui)
 model IndicadorFormulaComposta {
     id Int @id @default(autoincrement())
 
