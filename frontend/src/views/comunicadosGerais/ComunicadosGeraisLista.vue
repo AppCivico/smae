@@ -24,6 +24,14 @@
         @update:lido="mudarLido(item, $event)"
       />
     </ul>
+
+    <MenuPaginacao
+      class="mt4"
+      :paginas="paginacao.paginas"
+      :total-registros="paginacao.totalRegistros"
+      :tem-mais="paginacao.temMais"
+      :token-paginacao="paginacao.tokenProximaPagina"
+    />
   </section>
 </template>
 
@@ -37,6 +45,7 @@ import { useComunicadosGeraisStore } from '@/stores/comunicadosGerais.store';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
 import { useRoute } from 'vue-router';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import ComunicadoGeralItem from './partials/ComunicadoGeralItem.vue';
 import ComunicadosGeraisFiltros from './partials/ComunicadosGeraisFiltros.vue';
 import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
@@ -44,6 +53,7 @@ import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInter
 const authStore = useAuthStore();
 const comunicadosGeraisStore = useComunicadosGeraisStore();
 const comunicadosGerais = computed(() => comunicadosGeraisStore.comunicadosGerais);
+const paginacao = computed(() => comunicadosGeraisStore.paginacao);
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const $route = useRoute();
