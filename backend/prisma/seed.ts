@@ -670,15 +670,26 @@ const PerfilAcessoConfig: {
 
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como técnico.',
+        descricao: 'Pode editar e criar plano setorial no órgão administrador em que faz parte.',
         privilegios: [
-            'PS.admin_cp',
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',
             ...PSCadastroBasico, // Tema, Tags, etc...
             ...PSMetasReportsEAdmin, // Metas, Reports, Painel
         ],
     },
+
+    {
+        nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
+        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
+
 
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),

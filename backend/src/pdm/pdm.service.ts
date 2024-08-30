@@ -82,8 +82,11 @@ export class PdmService {
             } else if (dto.nivel_orcamento && !dto.nivel_orcamento) {
                 throw new BadRequestException('Nível de Orçamento é obrigatório');
             }
-            if (!dto.orgao_admin_id)
-                throw new BadRequestException('Órgão Administrador é obrigatório para Plano Setorial');
+
+            if (!dto.orgao_admin_id && !user.hasSomeRoles(['CadastroPS.administrador']))
+                throw new BadRequestException(
+                    'Órgão Administrador é obrigatório para Plano Setorial quando não administrador de Plano Setorial'
+                );
         }
 
         await this.verificaOrgaoAdmin(dto, this.prisma, user);
@@ -327,6 +330,7 @@ export class PdmService {
                 nivel_orcamento: true,
                 tipo: true,
                 ps_admin_cps: true,
+                orgao_admin_id: true,
             },
             orderBy: [{ ativo: 'desc' }, { data_inicio: 'desc' }, { data_fim: 'desc' }],
         });
@@ -377,36 +381,42 @@ export class PdmService {
     }
 
     async calcPodeEditar(
-        pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null },
+        pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null; orgao_admin_id: number | null },
         user: PessoaFromJwt
     ): Promise<boolean> {
         if (pdm.tipo == 'PS') {
-            let podeEditar = user.hasSomeRoles(['CadastroPS.administrador']);
-            // TODO: validar regras novas de PS e equipe
-            if (!podeEditar) {
-                if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado', 400);
+            if (user.hasSomeRoles(['CadastroPS.administrador'])) {
+                this.logger.log('Usuário com permissão total em PS');
+                return true;
+            }
+            if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado, necessário para PS', 400);
 
-                const dbValue = pdm.ps_admin_cps?.valueOf();
-
-                const collab = await user.getEquipesColaborador(this.prisma);
-
-                if (Array.isArray(dbValue) && user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
-                    const parsed = plainToInstance(AdminCpDbItem, dbValue);
-
-                    // e todos os itens são do mesmo órgão
-                    podeEditar =
-                        podeEditar &&
-                        parsed.some(
-                            (item) =>
-                                item.perfil == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
-                        );
-                }
-
-                // ponto focal nunca pode editar
-                podeEditar = false;
+            if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao']) && pdm.orgao_admin_id) {
+                this.logger.log('Usuário com permissão total em PS no órgão');
+                return user.orgao_id == pdm.orgao_admin_id;
             }
 
-            return podeEditar;
+            const dbValue = pdm.ps_admin_cps?.valueOf();
+            const collab = await user.getEquipesColaborador(this.prisma);
+
+            if (Array.isArray(dbValue) && user.hasSomeRoles(['PS.tecnico_cp'])) {
+                this.logger.log('Verificando permissão de PS..tecnico_cp no PS');
+
+                const parsed = plainToInstance(AdminCpDbItem, dbValue);
+
+                // e todos os itens são do mesmo órgão
+                const podeEditar = parsed.some(
+                    (item) => item.perfil == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
+                );
+                this.logger.verbose(`podeEditar: ${podeEditar}`);
+                return true;
+            }
+
+            this.logger.verbose(`podeEditar: false`);
+
+            // ponto focal nunca pode editar
+
+            return false;
         } else if (pdm.tipo == 'PDM') {
             return user.hasSomeRoles(['CadastroPdm.editar']);
         }
@@ -538,11 +548,12 @@ export class PdmService {
     }
 
     private async verificarPrivilegiosEdicao(
-        updatePdmDto: UpdatePdmDto,
+        updatePdmDto: UpdatePdmDto | null,
         user: PessoaFromJwt,
-        pdm: { ativo: boolean; tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null }
+        pdm: { ativo: boolean; tipo: TipoPdm; orgao_admin_id: number | null; ps_admin_cps: Prisma.JsonValue | null }
     ) {
         if (
+            updatePdmDto &&
             pdm.tipo == 'PDM' &&
             updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === true &&
@@ -550,6 +561,7 @@ export class PdmService {
         ) {
             throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
         } else if (
+            updatePdmDto &&
             pdm.tipo == 'PDM' &&
             updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === false &&
@@ -558,9 +570,13 @@ export class PdmService {
             throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
         }
 
-        await this.calcPodeEditar(pdm, user);
-
-        // TODO: plano setorial verificar se é admin no órgão, se só tiver pessoas do órgão dele, pode desativar/ativar
+        const podeEditar = await this.calcPodeEditar(pdm, user);
+        if (!podeEditar)
+            throw new ForbiddenException(
+                `Você não tem permissão para ${
+                    updatePdmDto ? 'editar' : 'remover'
+                } este ${pdm.tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'}`
+            );
     }
 
     async delete(tipo: TipoPdm, id: number, user: PessoaFromJwt): Promise<void> {

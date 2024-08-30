@@ -181,7 +181,7 @@ export class PdmController {
     }
 }
 
-const PermsPS: ListaDePrivilegios[] = ['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao'];
+const PermsPS: ListaDePrivilegios[] = ['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao', 'PS.admin_cp'];
 
 @ApiTags('Plano Setorial')
 @Controller('plano-setorial')
