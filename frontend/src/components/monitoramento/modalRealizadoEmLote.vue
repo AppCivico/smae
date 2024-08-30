@@ -44,11 +44,11 @@ const {
 } = storeToRefs(CiclosStore);
 
 const linhasAbertas = ref([]);
-const valorPadrãoParaAnáliseQualitativa = ref('');
-const valorPadrãoParaRealizado = ref('');
-const valorPadrãoParaRealizadoAcumulado = ref('');
+const valorPadraoParaAnaliseQualitativa = ref('');
+const valorPadraoParaRealizado = ref('');
+const valorPadraoParaRealizadoAcumulado = ref('');
 
-const variáveisComSuasDatas = computed(() => (Array.isArray(props.variávelComposta?.variaveis)
+const variaveisComSuasDatas = computed(() => (Array.isArray(props.variávelComposta?.variaveis)
   ? props.variávelComposta.variaveis.reduce((acc, cur) => acc.concat(
     cur.series.map((y) => ({
       data_valor: y.periodo,
@@ -100,12 +100,12 @@ const {
   validationSchema: schema,
 });
 
-const permitirSubmissãoAoCP = computed(() => Array.isArray(carga.linhas)
+const permitirSubmissaoAoCP = computed(() => Array.isArray(carga.linhas)
   && !carga.linhas
     .find((x) => (x.valor_realizado_acumulado !== undefined && !x.valor_realizado_acumulado)
       || !x.valor_realizado));
 
-const ediçãoProibidaApósConferência = computed(() => MetaVars.perfil === 'ponto_focal'
+const edicaoProibidaAposConferencia = computed(() => MetaVars.perfil === 'ponto_focal'
   && dadosExtrasDeComposta.value?.analises?.[0]?.enviado_para_cp);
 
 const onSubmit = handleSubmit.withControlled(async () => {
@@ -157,22 +157,22 @@ function submeterAoCP() {
 function preencher(quais) {
   if (quais === 'todos') {
     carga.linhas.forEach((_x, i) => {
-      setFieldValue(`linhas[${i}].analise_qualitativa`, valorPadrãoParaAnáliseQualitativa.value);
-      setFieldValue(`linhas[${i}].valor_realizado`, valorPadrãoParaRealizado.value);
-      setFieldValue(`linhas[${i}].valor_realizado_acumulado`, valorPadrãoParaRealizadoAcumulado.value);
+      setFieldValue(`linhas[${i}].analise_qualitativa`, valorPadraoParaAnaliseQualitativa.value);
+      setFieldValue(`linhas[${i}].valor_realizado`, valorPadraoParaRealizado.value);
+      setFieldValue(`linhas[${i}].valor_realizado_acumulado`, valorPadraoParaRealizadoAcumulado.value);
     });
   }
 
   if (quais === 'vazios') {
     carga.linhas.forEach((x, i) => {
-      if (!!valorPadrãoParaAnáliseQualitativa.value && !x.analise_qualitativa) {
-        setFieldValue(`linhas[${i}].analise_qualitativa`, valorPadrãoParaAnáliseQualitativa.value);
+      if (!!valorPadraoParaAnaliseQualitativa.value && !x.analise_qualitativa) {
+        setFieldValue(`linhas[${i}].analise_qualitativa`, valorPadraoParaAnaliseQualitativa.value);
       }
-      if (valorPadrãoParaRealizado.value !== '' && !x.valor_realizado) {
-        setFieldValue(`linhas[${i}].valor_realizado`, valorPadrãoParaRealizado.value);
+      if (valorPadraoParaRealizado.value !== '' && !x.valor_realizado) {
+        setFieldValue(`linhas[${i}].valor_realizado`, valorPadraoParaRealizado.value);
       }
-      if (valorPadrãoParaRealizadoAcumulado.value !== '' && !x.valor_realizado_acumulado) {
-        setFieldValue(`linhas[${i}].valor_realizado_acumulado`, valorPadrãoParaRealizadoAcumulado.value);
+      if (valorPadraoParaRealizadoAcumulado.value !== '' && !x.valor_realizado_acumulado) {
+        setFieldValue(`linhas[${i}].valor_realizado_acumulado`, valorPadraoParaRealizadoAcumulado.value);
       }
     });
   }
@@ -257,7 +257,7 @@ watch(() => props.variávelComposta, (novoValor) => {
   }
 }, { immediate: true });
 
-watch(variáveisComSuasDatas, (novoValor) => {
+watch(variaveisComSuasDatas, (novoValor) => {
   if (novoValor.length) {
     CiclosStore.buscarDadosExtrasDeVariáveis({ linhas: novoValor });
   }
@@ -309,7 +309,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
           rows="3"
           class="inputtext light mb1"
           :class="{ 'error': errors['composta.analise_qualitativa'] }"
-          :disabled="ediçãoProibidaApósConferência"
+          :disabled="edicaoProibidaAposConferencia"
         />
 
         <ErrorMessage
@@ -365,7 +365,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 type="button"
                 class="like-a__text tprimary"
 
-                :disabled="ediçãoProibidaApósConferência"
+                :disabled="edicaoProibidaAposConferencia"
 
                 @click="deleteArquivo(subitem.id)"
               >
@@ -380,7 +380,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
       </tbody>
     </table>
     <a
-      v-if="!ediçãoProibidaApósConferência"
+      v-if="!edicaoProibidaAposConferencia"
       class="addlink mb1"
       @click="virtualUpload.open = 1;"
     ><svg
@@ -397,7 +397,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         <div class="f1">
           <label class="label">Valores realizados</label>
           <input
-            v-model.number="valorPadrãoParaRealizado"
+            v-model.number="valorPadraoParaRealizado"
             type="number"
             class="inputtext light mb1"
           >
@@ -405,7 +405,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         <div class="f1">
           <label class="label">Valores realizados acumulados</label>
           <input
-            v-model.number="valorPadrãoParaRealizadoAcumulado"
+            v-model.number="valorPadraoParaRealizadoAcumulado"
             type="number"
             class="inputtext light mb1"
           >
@@ -416,7 +416,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         <div class="f1">
           <label class="label">Análise qualitativa</label>
           <textarea
-            v-model="valorPadrãoParaAnáliseQualitativa"
+            v-model="valorPadraoParaAnaliseQualitativa"
             class="inputtext light mb1"
           />
         </div>
@@ -623,7 +623,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         v-if="MetaVars.perfil === 'ponto_focal'"
         class="btn big"
         type="button"
-        :disabled="isSubmitting || !permitirSubmissãoAoCP"
+        :disabled="isSubmitting || !permitirSubmissaoAoCP"
         @click="submeterAoCP"
       >
         Salvar e submeter

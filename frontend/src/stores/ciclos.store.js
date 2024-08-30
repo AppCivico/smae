@@ -1,6 +1,6 @@
+import retornarPosiçõesPorValor from '@/helpers/retornarPosicoesPorValor';
 import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
-import retornarPosiçõesPorValor from '@/helpers/retornarPosicoesPorValor';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -12,7 +12,7 @@ export const useCiclosStore = defineStore({
     MetasCiclos: {},
     SingleMeta: {},
     MetaVars: {},
-    dadosExtrasDeVariáveis: [],
+    dadosExtrasDeVariaveis: [],
     dadosExtrasDeComposta: {},
     SingleAnalise: {},
     SingleMetaAnalise: {},
@@ -179,14 +179,14 @@ export const useCiclosStore = defineStore({
     },
 
     async buscarDadosExtrasDeVariáveis(params) {
-      this.dadosExtrasDeVariáveis = { loading: true };
+      this.dadosExtrasDeVariaveis = { loading: true };
       try {
         const r = await this.requestS.post(`${baseUrl}/mf/metas/variaveis/busca-analise-qualitativa`, params);
         if (Array.isArray(r.linhas)) {
-          this.dadosExtrasDeVariáveis = r.linhas;
+          this.dadosExtrasDeVariaveis = r.linhas;
         }
       } catch (error) {
-        this.dadosExtrasDeVariáveis = { error };
+        this.dadosExtrasDeVariaveis = { error };
       }
     },
 
@@ -490,8 +490,8 @@ export const useCiclosStore = defineStore({
   getters: {
     índiceDeSériesEmMetaVars: ({ MetaVars }) => retornarPosiçõesPorValor(MetaVars?.ordem_series),
 
-    dadosExtrasPorVariávelId: ({ dadosExtrasDeVariáveis }) => (Array.isArray(dadosExtrasDeVariáveis)
-      ? dadosExtrasDeVariáveis.reduce((acc, cur) => {
+    dadosExtrasPorVariávelId: ({ dadosExtrasDeVariaveis }) => (Array.isArray(dadosExtrasDeVariaveis)
+      ? dadosExtrasDeVariaveis.reduce((acc, cur) => {
         if (cur.variavel?.id && !acc[cur.variavel.id]) {
           acc[cur.variavel.id] = {
             ...cur.variavel,
