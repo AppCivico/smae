@@ -42,6 +42,10 @@ function totalizador(anos, camposFornecidos) {
 
   const listaDeAnos = Object.keys(anos);
 
+  if (!listaDeAnos.length) {
+    return total;
+  }
+
   while (i < listaDeAnos.length) {
     const dotacoesDoAno = anos[listaDeAnos[i]];
     const ano = Number(listaDeAnos[i]);
