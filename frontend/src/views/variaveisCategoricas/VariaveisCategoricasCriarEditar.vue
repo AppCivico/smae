@@ -84,18 +84,19 @@
       v-slot="{ fields, push, remove }"
       name="valores"
     >
-      <h2 class="mb1">
+      <h2 class="mb1 mt4">
         Valores
       </h2>
       <div
         v-for="(field, idx) in fields"
         :key="field.key"
+        class="mb3"
       >
         <Field
           type="hidden"
           :name="`valores[${idx}].id`"
         />
-        <div class="flex flexwrap g2 mb1">
+        <div class="flex flexwrap g2 mb1 center">
           <div class="f1 fb25em">
             <LabelFromYup
               name="titulo"
@@ -150,6 +151,20 @@
               :name="`valores[${idx}].valor_variavel`"
             />
           </div>
+          <button
+            class="like-a__text addlink"
+            arial-label="Remover valores"
+            title="Remover valores"
+            type="button"
+            @click="remove(idx)"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_remove" />
+            </svg>
+          </button>
         </div>
 
         <div class="f1">
@@ -171,21 +186,6 @@
             :name="`valores[${idx}].descricao`"
           />
         </div>
-        <button
-          class="like-a__text addlink mb1"
-          arial-label="Remover valores"
-          title="Remover valores"
-          type="button"
-          @click="remove(idx)"
-        >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_remove" />
-          </svg>
-          Remover valor
-        </button>
       </div>
 
       <button
