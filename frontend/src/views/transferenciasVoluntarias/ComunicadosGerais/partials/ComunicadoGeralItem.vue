@@ -11,10 +11,17 @@
 
     <div class="comunicado-geral-item__body">
       <p class="comunicado-geral-item__body-content">
-        {{ conteudo }}
+        {{ conteudo || '-Sem conteúdo a exibir-' }}
       </p>
 
-      <a class="comunicado-geral-item__body-link">
+      <a
+        class="comunicado-geral-item__body-link"
+        :href="dados.link"
+        target="_blank"
+        @click="emitirLido(true)"
+        @click.right="emitirLido(true)"
+        @click.middle="emitirLido(true)"
+      >
         <svg
           width="20"
           height="20"
@@ -53,11 +60,16 @@ const $emit = defineEmits<Emits>();
 
 const dataFormatada = computed<string>(() => format(props.data, "dd/MM/yyyy' às 'HH:mm"));
 
+function emitirLido(estaSelectionado: boolean) {
+  $emit('update:lido', estaSelectionado);
+}
+
 function handleSelecionarLido(ev: Event) {
   const target = ev.target as HTMLInputElement;
 
-  $emit('update:lido', target.checked);
+  emitirLido(target.checked);
 }
+
 </script>
 
 <style lang="less" scoped>
