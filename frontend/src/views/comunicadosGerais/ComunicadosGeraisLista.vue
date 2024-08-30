@@ -38,8 +38,8 @@ import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
 import { useRoute } from 'vue-router';
 import ComunicadoGeralItem from './partials/ComunicadoGeralItem.vue';
-import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
 import ComunicadosGeraisFiltros from './partials/ComunicadosGeraisFiltros.vue';
+import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
 
 const authStore = useAuthStore();
 const comunicadosGeraisStore = useComunicadosGeraisStore();

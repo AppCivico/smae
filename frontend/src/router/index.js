@@ -27,6 +27,7 @@ import projetos from './projetos';
 import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
 import variaveis from './variaveis';
+import comunicadosGerais from './comunicadosGerais';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -67,6 +68,7 @@ export const router = createRouter({
     relatorios,
     envios,
     transferenciasVoluntarias,
+    comunicadosGerais,
     panoramaTransferencias,
     variaveis,
 
