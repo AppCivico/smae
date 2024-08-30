@@ -37,7 +37,7 @@ const atividade = ref(route.query.atividade);
 
 const itensEmUso = computed(() => {
   const atividades = [];
-  let órgãos = [];
+  let orgaos = [];
   const partidos = [];
 
   lista.value.forEach((item) => {
@@ -46,7 +46,7 @@ const itensEmUso = computed(() => {
     }
 
     if (Array.isArray(item.orgaos)) {
-      órgãos = órgãos.concat(item.orgaos);
+      orgaos = orgaos.concat(item.orgaos);
     }
 
     if (item.partido_id) {
@@ -56,37 +56,37 @@ const itensEmUso = computed(() => {
 
   return {
     atividades,
-    órgãos,
+    orgaos,
     partidos,
   };
 });
 
-const listaComÓrgãos = computed(() => lista.value.map((x) => ({
+const listaComOrgaos = computed(() => lista.value.map((x) => ({
   ...x,
   orgaos: Array.isArray(x.orgaos)
     ? x.orgaos.map((y) => órgãosPorId.value[y.id || y]?.sigla || y.id || y).join(', ')
     : [],
 })));
 
-const atividadesDisponíveis = computed(() => [...new Set(itensEmUso.value.atividades)]
+const atividadesDisponiveis = computed(() => [...new Set(itensEmUso.value.atividades)]
   .sort((a, b) => a.localeCompare(b)));
 
-const partidosDisponíveis = computed(() => [...new Set(itensEmUso.value.partidos)]
+const partidosDisponiveis = computed(() => [...new Set(itensEmUso.value.partidos)]
   .map((x) => partidosPorId.value[x] || x)
   .sort((a, b) => a.sigla?.localeCompare(b.sigla)));
 
-const órgãosDisponíveis = computed(() => [...new Set(itensEmUso.value.órgãos)]
+const orgaosDisponiveis = computed(() => [...new Set(itensEmUso.value.orgaos)]
   .map((x) => órgãosPorId.value[x] || x)
   .sort((a, b) => a.sigla?.localeCompare(b.sigla)));
 
 const iniciar = async () => {
-  const requisições = [
+  const requisicoes = [
     OrgaosStore.getAll(),
     partidoStore.buscarTudo(),
     panoramaTransferenciasStore.buscarTudo(),
   ];
 
-  await Promise.allSettled(requisições);
+  await Promise.allSettled(requisicoes);
 };
 
 function atualizarUrl() {
@@ -109,9 +109,9 @@ watch([
   () => route.query.palavra_chave,
   () => route.query.atividade,
 ], async () => {
-  if (!partidosDisponíveis.value.length
-    && !atividadesDisponíveis.value.length
-    && !órgãosDisponíveis.value.length
+  if (!partidosDisponiveis.value.length
+    && !atividadesDisponiveis.value.length
+    && !orgaosDisponiveis.value.length
   ) {
     await iniciar();
 
@@ -233,7 +233,7 @@ onUnmounted(() => {
         >
           <option value="" />
           <option
-            v-for="item in partidosDisponíveis"
+            v-for="item in partidosDisponiveis"
             :key="item"
             :value="item.id || item"
           >
@@ -255,7 +255,7 @@ onUnmounted(() => {
         >
           <option value="" />
           <option
-            v-for="item in atividadesDisponíveis"
+            v-for="item in atividadesDisponiveis"
             :key="item"
             :value="item"
           >
@@ -279,7 +279,7 @@ onUnmounted(() => {
         >
           <option value="" />
           <option
-            v-for="item in órgãosDisponíveis"
+            v-for="item in orgaosDisponiveis"
             :key="item"
             :value="item.id"
           >
@@ -331,7 +331,7 @@ onUnmounted(() => {
           </thead>
           <tbody>
             <tr
-              v-for="item in listaComÓrgãos"
+              v-for="item in listaComOrgaos"
               :key="item.transferencia_id"
             >
               <th>
