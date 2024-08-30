@@ -43,7 +43,7 @@ export class VariavelFormulaCompostaController {
     @Roles(MetaController.ReadPerm)
     async getFormulaCompostaPeriodos(@Param() params: FindOneParams): Promise<ListaPeriodoFormulaCompostaDto> {
         return {
-            linhas: await this.variavelFCService.getFormulaCompostaPeriodos(params.id),
+            linhas: await this.variavelFCService.getFormulaCompostaPeriodos('PDM', params.id),
         };
     }
 
@@ -68,7 +68,7 @@ export class VariavelGlobalFCController {
     @Roles(ROLES_ACESSO_VARIAVEL_PS)
     async getFormulaCompostaPeriodos(@Param() params: FindOneParams): Promise<ListaPeriodoFormulaCompostaDto> {
         return {
-            linhas: await this.variavelFCService.getFormulaCompostaPeriodos(params.id),
+            linhas: await this.variavelFCService.getFormulaCompostaPeriodos('PS', params.id),
         };
     }
 

@@ -2378,7 +2378,13 @@ export class VariavelService {
         // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir (e agora com o plano setorial)
         // isso mudou mais uma vez
 
-        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id, filters);
+        let indicadorId: number | null = null;
+        if (tipo === 'PDM') {
+            const indicadorViaVar = await this.getIndicadorViaVariavel(variavelId);
+            indicadorId = indicadorViaVar.IndicadorVariavel[0].variavel.id;
+        }
+
+        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieValorNomimal[] = this.populaSeriesExistentes(
                 porPeriodo,
@@ -2499,12 +2505,16 @@ export class VariavelService {
         } as NonExistingSerieJwt);
     }
 
-    private async gerarPeriodoVariavelEntreDatas(variavelId: number, filtros?: FiltroData): Promise<DateYMD[]> {
+    private async gerarPeriodoVariavelEntreDatas(
+        variavelId: number,
+        indicadorId: number | null,
+        filtros?: FiltroData
+    ): Promise<DateYMD[]> {
         if (isNaN(variavelId)) throw new BadRequestException('Variável inválida');
 
         const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
             select to_char(p.p, 'yyyy-mm-dd') as dt
-            from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim),
+            from busca_periodos_variavel(${variavelId}::int ${indicadorId ? `, ${indicadorId}::int` : ''}) as g(p, inicio, fim),
             generate_series(inicio, fim, p) p
             where true
             ${filtros && filtros.data_inicio ? `and p.p >= '${filtros.data_inicio.toISOString()}'::date` : ''}

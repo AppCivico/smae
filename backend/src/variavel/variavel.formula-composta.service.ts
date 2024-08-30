@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
@@ -33,17 +33,35 @@ export class VariavelFormulaCompostaService {
         private readonly indicadorFCService: IndicadorFormulaCompostaService
     ) {}
 
-    async getFormulaCompostaPeriodos(formula_composta_id: number): Promise<PeriodoFormulaCompostaDto[]> {
-        const { formula_composta, variaveis } = await this.buscaVariaveisDaFormulaComposta(formula_composta_id);
+    async getFormulaCompostaPeriodos(tipo: TipoPdm, formula_composta_id: number): Promise<PeriodoFormulaCompostaDto[]> {
+        const { variaveis } = await this.buscaVariaveisDaFormulaComposta(formula_composta_id);
 
-        console.log(formula_composta);
+        let indicadorId: number | null = null;
+        if (tipo == 'PDM') {
+            const indicador = await this.prisma.indicador.findFirst({
+                where: {
+                    FormulaComposta: {
+                        some: {
+                            desativado: false,
+                            formula_composta_id: formula_composta_id,
+                        },
+                    },
+                },
+                select: { id: true },
+            });
+            if (!indicador) throw new BadRequestException('Indicador não encontrado para a fórmula composta');
+            indicadorId = indicador.id;
+        }
 
-        const dados: Record<string, string>[] = await this.prisma.$queryRaw`select to_char(p.p, 'yyyy-mm-dd') as dt,
-                cast(count(distinct n.variavel_id) as int) as variaveis
-        from (SELECT unnest(${variaveis}::int[]) AS variavel_id) n
-        cross join busca_periodos_variavel(n.variavel_id) as g(p, inicio, fim) ,
-        generate_series(inicio, fim, p) p
-        group by 1`;
+        const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
+            SELECT
+                to_char(p.p, 'yyyy-mm-dd') AS dt,
+                cast(count(distinct n.variavel_id) as int) AS variaveis
+            FROM (SELECT unnest(${variaveis}::int[]) AS variavel_id) n
+            CROSS JOIN busca_periodos_variavel(n.variavel_id ${indicadorId ? `, ${indicadorId}::int` : ''})
+                AS g(p, inicio, fim),
+                generate_series(inicio, fim, p) p
+            GROUP BY 1`);
 
         return plainToInstance(PeriodoFormulaCompostaDto, dados);
     }
@@ -169,7 +187,7 @@ export class VariavelFormulaCompostaService {
                         id: true,
                         sigla: true,
                         descricao: true,
-                    }
+                    },
                 },
                 calc_codigo: true,
                 variavel_calc_erro: true,
