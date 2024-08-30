@@ -141,7 +141,7 @@
             <Field
               :name="`valores[${idx}].valor_variavel`"
               type="number"
-              min="3"
+              min="0"
               max="2048"
               class="inputtext light mb1"
             />
