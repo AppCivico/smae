@@ -11,23 +11,20 @@
 
     <div class="comunicado-geral-item__body">
       <p class="comunicado-geral-item__body-content">
-        {{ conteudo || '-Sem conteúdo a exibir-' }}
+        {{ conteudoFormatado || '-Sem conteúdo a exibir-' }}
       </p>
 
-      <a
+      <SmaeLink
         class="comunicado-geral-item__body-link"
-        :href="dados.link"
-        target="_blank"
+        :to="dados.link"
         @click="emitirLido(true)"
-        @click.right="emitirLido(true)"
-        @click.middle="emitirLido(true)"
       >
         <svg
           width="20"
           height="20"
         ><use xlink:href="#i_link" /></svg>
         Link TransfereGov
-      </a>
+      </SmaeLink>
     </div>
 
     <div class="comunicado-geral-item__footer">
@@ -48,6 +45,8 @@
 import { computed } from 'vue';
 import { format } from 'date-fns';
 
+import truncate from '@/helpers/truncate';
+import SmaeLink from '@/components/SmaeLink.vue';
 import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface.ts';
 
 type Props = IComunicadoGeralItem;
@@ -59,6 +58,7 @@ const props = defineProps<Props>();
 const $emit = defineEmits<Emits>();
 
 const dataFormatada = computed<string>(() => format(props.data, "dd/MM/yyyy' às 'HH:mm"));
+const conteudoFormatado = computed<string>(() => truncate(props.conteudo, 722));
 
 function emitirLido(estaSelectionado: boolean) {
   $emit('update:lido', estaSelectionado);
@@ -111,9 +111,6 @@ function handleSelecionarLido(ev: Event) {
   line-height: 16px;
   color: #000000;
   margin: 0;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .comunicado-geral-item__body-link {
