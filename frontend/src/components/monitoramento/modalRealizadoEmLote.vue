@@ -379,14 +379,18 @@ watch(variaveisComSuasDatas, (novoValor) => {
         </template>
       </tbody>
     </table>
-    <a
+
+    <button
       v-if="!edicaoProibidaAposConferencia"
-      class="addlink mb1"
+      class="like-a__text addlink mb1"
+      type="button"
       @click="virtualUpload.open = 1;"
-    ><svg
-      width="20"
-      height="20"
-    ><use xlink:href="#i_+" /></svg> <span>Adicionar documentos comprobatórios</span></a>
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg><span>Adicionar documentos comprobatórios</span>
+    </button>
 
     <h4 class="mb1">
       Valores de variáveis componentes
