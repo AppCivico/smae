@@ -17,7 +17,6 @@ module.exports = {
     parser: '@typescript-eslint/parser',
   },
   rules: {
-    'vue/multi-word-component-names': 'off',
     'import/extensions': [
       'error', {
         ts: 'always',

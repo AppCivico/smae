@@ -1,7 +1,8 @@
-export interface IComunicadoGeralItem {
-  id: string;
+export type IComunicadoGeralItem = {
+  id: number;
   titulo: string;
-  data: Date;
   conteudo: string;
+  dados: any;
+  data: string | Date;
   lido: boolean;
-}
+};
