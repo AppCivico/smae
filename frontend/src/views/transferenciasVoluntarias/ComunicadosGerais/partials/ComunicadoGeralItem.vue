@@ -2,7 +2,7 @@
   <li class="comunicado-geral-item card-shadow">
     <div class="comunicado-geral-item__header">
       <h4 class="comunicado-geral-item__header-title">
-        {{ titulo }}
+        {{ titulo.toLowerCase() }}
       </h4>
       <small class="comunicado-geral-item__header-date">
         {{ dataFormatada }}
@@ -29,6 +29,7 @@
         <input
           type="checkbox"
           class="interruptor"
+          :checked="lido"
           @input="handleSelecionarLido"
         >
       </label>
@@ -64,65 +65,68 @@ function handleSelecionarLido(ev: Event) {
   display: flex;
   flex-direction: column;
 
-  // aspect-ratio
-
   min-height: 497px;
   padding: 26px;
+}
 
-  &__header {
-    &-title {
-      font-size: 22px;
-      font-weight: 700;
-      line-height: 26px;
-      color: #233b5c;
-      margin: 0;
-    }
+.comunicado-geral-item__header {
+}
 
-    &-date {
-      font-size: 12px;
-      font-weight: 400;
-      line-height: 14px;
-      color: #3b5881;
-    }
-  }
+.comunicado-geral-item__header-title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 26px;
+  color: #233b5c;
+  margin: 0;
+  text-transform: capitalize;
+}
 
-  &__body {
-    margin-top: 24px;
-    flex-grow: 1;
+.comunicado-geral-item__header-date {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+  color: #3b5881;
+}
 
-    &-content {
-      font-size: 13px;
-      font-weight: 400;
-      line-height: 16px;
-      color: #000000;
-      margin: 0;
-    }
+.comunicado-geral-item__body {
+  margin-top: 24px;
+  flex-grow: 1;
+}
 
-    &-link {
-      margin-left: 2px;
-      margin-top: 6px;
+.comunicado-geral-item__body-content {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #000000;
+  margin: 0;
 
-      font-size: 12px;
-      font-weight: 400;
-      line-height: 14px;
-      text-decoration: underline;
-      color: #025b97;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-  }
+.comunicado-geral-item__body-link {
+  margin-left: 2px;
+  margin-top: 6px;
 
-  &__footer {
-    margin-left: auto;
-    padding-top: 48px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+  text-decoration: underline;
+  color: #025b97;
 
-    &-lido {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  }
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.comunicado-geral-item__footer {
+  margin-left: auto;
+  padding-top: 48px;
+}
+
+.comunicado-geral-item__footer-lido {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>

@@ -11,10 +11,10 @@
       <template #ComunicadosDaSemana>
         <ul class="comunicados-gerais__list">
           <ComunicadoGeralItem
-            v-for="item in items"
+            v-for="item in comunicadosGerais"
             :key="`comunicado-item--${item.id}`"
             v-bind="item"
-            @update:lido="handleLido(item, $event)"
+            @update:lido="mudarLido(item, $event)"
           />
         </ul>
       </template>
@@ -27,10 +27,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 
 import { useAuthStore } from '@/stores/auth.store';
+import { useComunicadosGeraisStore } from '@/stores/comunicadosGerais.store';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
@@ -38,6 +39,8 @@ import ComunicadoGeralItem from './partials/ComunicadoGeralItem.vue';
 import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
 
 const authStore = useAuthStore();
+const comunicadosGeraisStore = useComunicadosGeraisStore();
+const comunicadosGerais = computed(() => comunicadosGeraisStore.comunicadosGerais);
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const tabs = {
@@ -54,27 +57,20 @@ const tabs = {
   },
 };
 
-const items = ref<IComunicadoGeralItem[]>([
-  {
-    id: '1',
-    titulo: 'Título do comunicado',
-    data: new Date(),
-    conteudo: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tempus  dignissim dolor, quis mollis justo cursus quis. Vestibulum consequat,  tortor eu bibendum lobortis, lacus urna semper elit, ac sollicitudin  ligula ante vitae erat. Vestibulum auctor magna sed lacus egestas, sed  porta lectus maximus. Proin non lobortis lacus. Donec laoreet quam sed  est eleifend sollicitudin. Maecenas pulvinar porta hendrerit. Nulla  facilisi. Fusce quis lacinia erat. Sed vel lorem eget felis interdum  tempus in ut elit. Quisque commodo viverra leo, nec iaculis nunc  fringilla et. Praesent luctus vulputate libero, a faucibus lectus  pretium tristique. Mauris pellentesque sollicitudin justo, sed efficitur  turpis convallis ac.',
-    lido: false,
-  },
-  {
-    id: '2',
-    titulo: 'Título do comunicado geral',
-    data: new Date(),
-    conteudo: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tempus dignissim dolor, quis mollis justo cursus quis. Vestibulum consequat, tortor eu bibendum lobortis, lacus urna semper elit, ac sollicitudin ligula ante vitae erat. Vestibulum auctor magna sed lacus egestas, sed porta lectus maximus. Proin non lobortis lacus. Donec laoreet quam sed est eleifend sollicitudin. Maecenas pulvinar porta hendrerit. Nulla facilisi.',
-    lido: true,
-  },
-]);
+async function mudarLido(item: IComunicadoGeralItem, lido: boolean) {
+  try {
+    await comunicadosGeraisStore.mudarLido(item.id, lido);
 
-function handleLido(item: IComunicadoGeralItem, lido: boolean) {
-  // eslint-disable-next-line no-param-reassign
-  item.lido = lido;
+    // eslint-disable-next-line no-param-reassign
+    item.lido = lido;
+  } catch (e) {
+    console.error('Erro ao tentar mudar status de leitura do documento');
+  }
 }
+
+onMounted(async () => {
+  await comunicadosGeraisStore.getComunicadosGerais({});
+});
 </script>
 
 <style lang="less" scoped>
