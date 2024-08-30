@@ -1,7 +1,7 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { custeio as schema } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
-import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
@@ -72,10 +72,6 @@ const caret = ref(0);
       throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
   }
 
-  OrcamentoCusteio.value[ano].map((x) => {
-    x.custo_previsto = dinheiro(x.custo_previsto);
-  });
-
   if (id) {
     currentEdit.value = OrcamentoCusteio.value[ano].find((x) => x.id == id);
 
@@ -105,10 +101,6 @@ async function onSubmit(values) {
 
     values.meta_id = meta_id;
     values.ano_referencia = ano;
-
-    if (typeof values.custo_previsto !== 'number') {
-      values.custo_previsto = toFloat(values.custo_previsto);
-    }
 
     values.parte_dotacao = values.parte_dotacao.split('.').map((x) => (x.indexOf('*') != -1 ? '*' : x)).join('.');
 
@@ -229,7 +221,7 @@ function montaDotacao(a) {
   </h3>
   <template v-if="!(OrcamentoCusteio[ano]?.loading || OrcamentoCusteio[ano]?.error)">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="currentEdit"
       @submit="onSubmit"
@@ -547,12 +539,11 @@ function montaDotacao(a) {
       <div class="flex g2 mb2">
         <div class="f1">
           <label class="label">Previsão de custo <span class="tvermelho">*</span></label>
-          <Field
+          <MaskedFloatInput
             name="custo_previsto"
-            type="text"
+            :value="values.custo_previsto"
             class="inputtext light mb1"
             :class="{ 'error': errors.custo_previsto }"
-            @keyup="maskFloat"
           />
           <div
             v-show="errors.custo_previsto"
