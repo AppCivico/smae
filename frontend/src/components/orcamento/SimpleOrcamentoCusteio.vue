@@ -56,7 +56,7 @@ const somasDaMeta = computed(() => (Array.isArray(linhasFiltradas.value)
   : null));
 
 const somaDasLinhas = computed(() => ({
-  custo_previsto: formataValor(somaItems(linhasFiltradas.value, 'custo_previsto')),
+  custo_previsto: somaItems(linhasFiltradas.value, 'custo_previsto'),
 }));
 
 function restringirAZero() {
@@ -137,7 +137,7 @@ function restringirAZero() {
           </tr>
           <tr v-else>
             <td>
-              {{ somaDasLinhas.custo_previsto }}
+              {{ formataValor(somaDasLinhas.custo_previsto) }}
             </td>
             <td>
               {{ dateToField(maiorData(linhasFiltradas, 'atualizado_em')) }}
