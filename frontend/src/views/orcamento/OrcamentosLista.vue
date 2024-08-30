@@ -34,8 +34,8 @@ const props = defineProps({
 const etiquetasValores = {
   soma_valor_empenho: 'Total geral empenhado',
   soma_valor_liquidado: 'Total geral liquidado',
-  valor_planejado: 'Total geral do projeto',
-  custo_previsto: 'Total geral do projeto',
+  valor_planejado: 'Total geral',
+  custo_previsto: 'Total geral',
 };
 
 let SimpleOrcamento;
