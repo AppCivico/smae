@@ -31,7 +31,10 @@ const { handleSubmit, isSubmitting } = useForm({
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   $router.replace({
-    query: valoresControlados,
+    query: {
+      ...$route.query,
+      ...valoresControlados,
+    },
   });
 });
 

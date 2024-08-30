@@ -8,7 +8,7 @@ export type IComunicadoGeralItem = {
     numero: number;
     tipo: string;
     transfere_gov_id: number;
-  };
+  } | any;
   data: string | Date;
   lido: boolean;
 };

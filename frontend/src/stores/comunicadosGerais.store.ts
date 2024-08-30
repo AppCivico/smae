@@ -29,6 +29,7 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       data_inicio,
       data_fim,
       palavra_chave,
+      lido,
     }: FilterNotaComunicadoDto) {
       try {
         this.dados = [];
@@ -37,6 +38,7 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
           data_inicio,
           data_fim,
           palavra_chave,
+          lido,
         });
 
         this.temMais = resposta.tem_mais;
