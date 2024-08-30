@@ -10,22 +10,20 @@
       :meta-dados-por-id="tabs"
       alinhamento="esquerda"
     >
-      <template #ComunicadosDaSemana>
-        <ul class="comunicados-gerais__list">
-          <ComunicadoGeralItem
-            v-for="item in comunicadosGerais"
-            :key="`comunicado-item--${item.id}`"
-            :class="`comunicado-item--${item.id}`"
-            v-bind="item"
-            @update:lido="mudarLido(item, $event)"
-          />
-        </ul>
-      </template>
+      <template #ComunicadosDaSemana />
 
-      <template #Historico>
-        <h1>Historico</h1>
-      </template>
+      <template #Historico />
     </EnvelopeDeAbas>
+
+    <ul class="comunicados-gerais__list">
+      <ComunicadoGeralItem
+        v-for="item in comunicadosGerais"
+        :key="`comunicado-item--${item.id}`"
+        :class="`comunicado-item--${item.id}`"
+        v-bind="item"
+        @update:lido="mudarLido(item, $event)"
+      />
+    </ul>
   </section>
 </template>
 
@@ -58,9 +56,9 @@ const tabs = {
     aba: 'comunicados-da-semana',
   },
   Historico: {
-    id: 'Historico',
+    id: 'historico',
     etiqueta: 'Histórico',
-    aba: 'Historico',
+    aba: 'historico',
   },
 };
 
@@ -75,9 +73,13 @@ async function mudarLido(item: IComunicadoGeralItem, lido: boolean) {
   }
 }
 
-watch(() => $route.query, () => {
-  comunicadosGeraisStore.getComunicadosGerais($route.query);
+watch(() => $route.query, (query) => {
+  comunicadosGeraisStore.getComunicadosGerais({
+    ...query,
+    lido: $route.query?.aba === tabs.Historico.id ? true : undefined,
+  });
 }, { immediate: true });
+
 </script>
 
 <style lang="less" scoped>
