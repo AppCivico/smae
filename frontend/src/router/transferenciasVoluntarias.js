@@ -43,7 +43,7 @@ export default {
   path: '/transferencias-voluntarias',
   component: TransferenciasVoluntariasRaiz,
   meta: {
-    título: 'Transfêrencias Voluntarias1',
+    título: 'Transfêrencias Voluntarias',
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
     pesoNoMenu: 1,
