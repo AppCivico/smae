@@ -64,7 +64,9 @@ function handleSelecionarLido(ev: Event) {
   display: flex;
   flex-direction: column;
 
-  height: 497px;
+  // aspect-ratio
+
+  min-height: 497px;
   padding: 26px;
 
   &__header {
@@ -114,6 +116,7 @@ function handleSelecionarLido(ev: Event) {
 
   &__footer {
     margin-left: auto;
+    padding-top: 48px;
 
     &-lido {
       display: flex;
