@@ -8,13 +8,10 @@
       Novo tipo de variável categórica
     </h1>
     <hr class="ml2 f1">
-    <CheckClose />
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
-  <Form
-    v-slot="{ errors, isSubmitting }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
-    @submit="onSubmit"
+  <form
+    @submit.prevent="onSubmit"
   >
     <div class="flex g2 mb1">
       <div class="f1">
@@ -245,12 +242,13 @@
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  ErrorMessage, Field, Form, FieldArray,
+  ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { variávelCategórica as schema } from '@/consts/formSchemas';
 import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
+import { watch } from 'vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -265,7 +263,16 @@ const alertStore = useAlertStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(variaveisCategoricasStore);
 
-async function onSubmit(values) {
+const {
+  errors, isSubmitting, resetForm, values,
+} = useForm({
+  initialValues: itemParaEdição.value,
+  validationSchema: schema,
+});
+
+const formulárioSujo = useIsFormDirty();
+
+async function onSubmit() {
   try {
     const msg = props.variavelId
       ? 'Dados salvos com sucesso!'
@@ -295,6 +302,11 @@ async function onSubmit(values) {
 if (route.params?.variavelId) {
   variaveisCategoricasStore.buscarItem(route.params?.variavelId);
 }
+
+watch(itemParaEdição, (novoValor) => {
+  resetForm({ values: novoValor });
+});
+
 </script>
 
 <style></style>
