@@ -510,7 +510,10 @@ export class VariavelService {
             const formula_vars = varEscopo.map((r) => '$_' + r.toString());
 
             // se for o nivel mais alto, adiciona a variável supra
-            if (fc.parent == null && supra_variavel_id) formula_vars.push('$_' + supra_variavel_id.toString());
+            if (fc.parent == null && supra_variavel_id) {
+                formula_vars.push('$_' + supra_variavel_id.toString());
+                varEscopo.push(supra_variavel_id);
+            }
 
             const formula = formula_vars.join(' + ');
 
