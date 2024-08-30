@@ -13,6 +13,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}/nota-comunicados`;
 type FiltroDadosGerais = FilterNotaComunicadoDto & {
   token_paginacao?: string;
   pagina?: string;
+  buscandoMais?: boolean;
 };
 interface Estado {
   dados: NotaComunicadoItemDto[];
@@ -43,9 +44,12 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       lido,
       pagina,
       token_paginacao,
+      buscandoMais,
     }: FiltroDadosGerais) {
       try {
-        this.dados = [];
+        if (!buscandoMais) {
+          this.dados = [];
+        }
 
         const resposta: PaginatedDto<NotaComunicadoItemDto> = await this.requestS.get(`${baseUrl}`, {
           data_inicio,
@@ -56,7 +60,8 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
         });
 
         this.temMais = resposta.tem_mais;
-        this.dados = resposta.linhas;
+        this.dados = [...this.dados, ...resposta.linhas];
+
         this.tokenProximaPagina = resposta.token_proxima_pagina;
       } catch (err) {
         console.error('Erro ao tentar buscar docuumentos gerais', err);
