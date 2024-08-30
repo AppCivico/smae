@@ -38,7 +38,7 @@ const atividade = ref(route.query.atividade);
 const itensEmUso = computed(() => {
   const atividades = [];
   let orgaos = [];
-  const partidos = [];
+  let partidos = [];
 
   lista.value.forEach((item) => {
     if (item.atividade) {
@@ -51,6 +51,8 @@ const itensEmUso = computed(() => {
 
     if (item.partido_id) {
       partidos.push(item.partido_id);
+    } else if (Array.isArray(item.partido_ids)) {
+      partidos = partidos.concat(item.partido_ids);
     }
   });
 
@@ -236,6 +238,7 @@ onUnmounted(() => {
             v-for="item in partidosDisponiveis"
             :key="item"
             :value="item.id || item"
+            :title="item.nome || null"
           >
             {{ item.sigla || item }}
           </option>
