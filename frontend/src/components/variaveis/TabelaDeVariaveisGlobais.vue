@@ -8,9 +8,9 @@
       <slot name="definicaoPrimeirasColunas" />
 
       <col class="col--minimum">
-
       <col>
       <col>
+      <col class="col--minimum">
       <col class="col--minimum">
       <col class="col--minimum">
       <col>
@@ -29,10 +29,10 @@
         <th>
           {{ schema.fields.fonte_id?.spec.label }}
         </th>
-        <th class="cell--nowrap">
+        <th>
           {{ schema.fields.periodicidade?.spec.label }}
         </th>
-        <th class="cell--nowrap">
+        <th>
           {{ schema.fields.orgao_id?.spec.label }}
         </th>
         <th>
