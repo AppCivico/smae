@@ -11,7 +11,6 @@ import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
-import ComunicadosGeraisLista from '@/views/transferenciasVoluntarias/ComunicadosGerais/ComunicadosGeraisLista.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
 import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
@@ -44,7 +43,7 @@ export default {
   path: '/transferencias-voluntarias',
   component: TransferenciasVoluntariasRaiz,
   meta: {
-    título: 'Transfêrencias Voluntarias',
+    título: 'Transfêrencias Voluntarias1',
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
     pesoNoMenu: 1,
@@ -410,14 +409,6 @@ export default {
           ],
         },
       ],
-    },
-    {
-      name: 'ComunicadosGerais',
-      path: 'comunicados-gerais',
-      component: ComunicadosGeraisLista,
-      meta: {
-        título: 'Comunicados Gerais',
-      },
     },
   ],
 };

@@ -47,7 +47,7 @@ import { format } from 'date-fns';
 
 import truncate from '@/helpers/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
-import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface.ts';
+import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface';
 
 type Props = IComunicadoGeralItem;
 type Emits = {
@@ -79,9 +79,6 @@ function handleSelecionarLido(ev: Event) {
 
   min-height: 497px;
   padding: 26px;
-}
-
-.comunicado-geral-item__header {
 }
 
 .comunicado-geral-item__header-title {
