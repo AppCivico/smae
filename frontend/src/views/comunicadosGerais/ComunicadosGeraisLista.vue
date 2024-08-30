@@ -26,12 +26,26 @@
     </ul>
 
     <MenuPaginacao
+      v-if="false"
       class="mt4"
       :paginas="paginacao.paginas"
       :total-registros="paginacao.totalRegistros"
       :tem-mais="paginacao.temMais"
       :token-paginacao="paginacao.tokenProximaPagina"
     />
+
+    <div
+      v-else-if="paginacao.temMais"
+      class="flex justifycenter mt4"
+    >
+      <button
+        type="submit"
+        class="btn big"
+        @click="buscarMais"
+      >
+        Buscar mais
+      </button>
+    </div>
   </section>
 </template>
 
@@ -81,6 +95,15 @@ async function mudarLido(item: IComunicadoGeralItem, lido: boolean) {
   } catch (e) {
     console.error('Erro ao tentar mudar status de leitura do documento');
   }
+}
+
+function buscarMais() {
+  comunicadosGeraisStore.getComunicadosGerais({
+    ...$route.query,
+    lido: $route.query?.aba === tabs.Historico.id ? true : undefined,
+    token_paginacao: paginacao.value.tokenProximaPagina,
+    buscandoMais: true,
+  });
 }
 
 watch(() => $route.query, (query) => {
