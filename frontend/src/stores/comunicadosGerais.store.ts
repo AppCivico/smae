@@ -31,12 +31,12 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       palavra_chave,
     }: FilterNotaComunicadoDto) {
       try {
+        this.dados = [];
+
         const resposta: PaginatedDto<NotaComunicadoItemDto> = await this.requestS.get(`${baseUrl}`, {
-          params: {
-            data_inicio,
-            data_fim,
-            palavra_chave,
-          },
+          data_inicio,
+          data_fim,
+          palavra_chave,
         });
 
         this.temMais = resposta.tem_mais;

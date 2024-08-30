@@ -4,6 +4,8 @@
       <TítuloDePágina />
     </div>
 
+    <ComunicadosGeraisFiltros />
+
     <EnvelopeDeAbas
       :meta-dados-por-id="tabs"
       alinhamento="esquerda"
@@ -13,6 +15,7 @@
           <ComunicadoGeralItem
             v-for="item in comunicadosGerais"
             :key="`comunicado-item--${item.id}`"
+            :class="`comunicado-item--${item.id}`"
             v-bind="item"
             @update:lido="mudarLido(item, $event)"
           />
@@ -27,7 +30,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 
 import { useAuthStore } from '@/stores/auth.store';
@@ -35,13 +38,17 @@ import { useComunicadosGeraisStore } from '@/stores/comunicadosGerais.store';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
+import { useRoute } from 'vue-router';
 import ComunicadoGeralItem from './partials/ComunicadoGeralItem.vue';
 import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
+import ComunicadosGeraisFiltros from './partials/ComunicadosGeraisFiltros.vue';
 
 const authStore = useAuthStore();
 const comunicadosGeraisStore = useComunicadosGeraisStore();
 const comunicadosGerais = computed(() => comunicadosGeraisStore.comunicadosGerais);
 const { temPermissãoPara } = storeToRefs(authStore);
+
+const $route = useRoute();
 
 const tabs = {
   ComunicadosDaSemana: {
@@ -68,9 +75,9 @@ async function mudarLido(item: IComunicadoGeralItem, lido: boolean) {
   }
 }
 
-onMounted(async () => {
-  await comunicadosGeraisStore.getComunicadosGerais({});
-});
+watch(() => $route.query, () => {
+  comunicadosGeraisStore.getComunicadosGerais($route.query);
+}, { immediate: true });
 </script>
 
 <style lang="less" scoped>
