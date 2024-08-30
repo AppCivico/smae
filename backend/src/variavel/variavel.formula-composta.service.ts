@@ -57,7 +57,7 @@ export class VariavelFormulaCompostaService {
             SELECT
                 to_char(p.p, 'yyyy-mm-dd') AS dt,
                 cast(count(distinct n.variavel_id) as int) AS variaveis
-            FROM (SELECT unnest(${variaveis}::int[]) AS variavel_id) n
+            FROM (SELECT unnest(ARRAY[${variaveis}]::int[]) AS variavel_id) n
             CROSS JOIN busca_periodos_variavel(n.variavel_id ${indicadorId ? `, ${indicadorId}::int` : ''})
                 AS g(p, inicio, fim),
                 generate_series(inicio, fim, p) p
