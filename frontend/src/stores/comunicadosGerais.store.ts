@@ -10,12 +10,23 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/nota-comunicados`;
 
+type FiltroDadosGerais = FilterNotaComunicadoDto & {
+  token_paginacao?: string;
+  pagina?: string;
+};
 interface Estado {
   dados: NotaComunicadoItemDto[];
   temMais: boolean;
   tokenProximaPagina: string | null;
   erro: null | unknown;
 }
+
+type Paginacao = {
+  paginas: number;
+  totalRegistros: number;
+  tokenProximaPagina?: string;
+  temMais: boolean;
+};
 
 export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
   state: (): Estado => ({
@@ -30,7 +41,9 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       data_fim,
       palavra_chave,
       lido,
-    }: FilterNotaComunicadoDto) {
+      pagina,
+      token_paginacao,
+    }: FiltroDadosGerais) {
       try {
         this.dados = [];
 
@@ -39,6 +52,7 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
           data_fim,
           palavra_chave,
           lido,
+          token_proxima_pagina: token_paginacao,
         });
 
         this.temMais = resposta.tem_mais;
@@ -57,6 +71,14 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
   getters: {
     comunicadosGerais(state): NotaComunicadoItemDto[] {
       return state.dados;
+    },
+    paginacao(state): Paginacao {
+      return {
+        paginas: 2,
+        totalRegistros: 300,
+        tokenProximaPagina: state.tokenProximaPagina || undefined,
+        temMais: state.temMais,
+      };
     },
   },
 });
