@@ -1159,7 +1159,10 @@ export class MetasService {
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // isolation lock
-            await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
+            const variavel = await prismaTxn.variavel.findFirstOrThrow({
+                where: { id: dto.variavel_id },
+                select: { id: true, acumulativa: true },
+            });
 
             let needRecalc = false;
             for (const campo of CamposRealizado) {
@@ -1168,24 +1171,64 @@ export class MetasService {
                         variavel_id: dto.variavel_id,
                         serie: CamposRealizadoParaSerie[campo],
                         data_valor: dto.data_valor,
-                        conferida: false,
                     },
-                    select: { id: true },
+                    select: { id: true, conferida: true, valor_nominal: true },
                 });
 
-                if (existeValor) {
-                    // existe o valor, entao vamos ativar
-                    needRecalc = true;
+                if (!existeValor)
+                    throw new HttpException('Não existe valor para conferir, ou o valor foi modificado.', 400);
 
-                    await prismaTxn.serieVariavel.update({
-                        where: { id: existeValor.id },
-                        data: {
-                            conferida_em: now,
-                            conferida_por: user.id,
-                            ciclo_fisico_id: dadosCiclo.id,
-                            conferida: true,
+                if (existeValor.conferida) continue;
+
+                if (campo == 'valor_realizado_acumulado' && !variavel.acumulativa) continue;
+
+                // existe o valor, entao vamos ativar
+                needRecalc = true;
+
+                await prismaTxn.serieVariavel.update({
+                    where: { id: existeValor.id },
+                    data: {
+                        conferida_em: now,
+                        conferida_por: user.id,
+                        ciclo_fisico_id: dadosCiclo.id,
+                        conferida: true,
+                    },
+                });
+
+                if (!variavel.acumulativa) {
+                    const acumulado = await prismaTxn.serieVariavel.findFirst({
+                        where: {
+                            variavel_id: dto.variavel_id,
+                            serie: CamposRealizadoParaSerie['valor_realizado_acumulado'],
+                            data_valor: dto.data_valor,
                         },
+                        select: { id: true, conferida: true },
                     });
+
+                    if (acumulado && !acumulado.conferida) {
+                        await prismaTxn.serieVariavel.update({
+                            where: { id: acumulado.id },
+                            data: {
+                                conferida_em: now,
+                                conferida_por: user.id,
+                                ciclo_fisico_id: dadosCiclo.id,
+                                conferida: true,
+                            },
+                        });
+                    } else if (!acumulado) {
+                        await prismaTxn.serieVariavel.create({
+                            data: {
+                                valor_nominal: existeValor.valor_nominal,
+                                variavel_id: dto.variavel_id,
+                                serie: CamposRealizadoParaSerie['valor_realizado_acumulado'],
+                                data_valor: dto.data_valor,
+                                conferida_em: now,
+                                conferida_por: user.id,
+                                ciclo_fisico_id: dadosCiclo.id,
+                                conferida: true,
+                            },
+                        });
+                    }
                 }
             }
 
