@@ -3,11 +3,13 @@ import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { valoresRealizadoEmLote as schema, arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+import Big from 'big.js';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -41,9 +43,11 @@ const { props } = pr;
 const CiclosStore = useCiclosStore();
 const {
   índiceDeSériesEmMetaVars, dadosExtrasDeComposta, dadosExtrasPorVariávelId, MetaVars,
+  variaveisPorId,
 } = storeToRefs(CiclosStore);
 
 const linhasAbertas = ref([]);
+const modoDePreenchimento = ref('valor_realizado'); // ou `valor_realizado_acumulado`
 const valorPadraoParaAnaliseQualitativa = ref('');
 const valorPadraoParaRealizado = ref('');
 const valorPadraoParaRealizadoAcumulado = ref('');
@@ -82,9 +86,8 @@ const valoresIniciais = computed(() => ({
           enviar_para_cp: false,
           titulo: cur.variavel.titulo,
           valor_realizado_acumulado: dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
-            ? undefined
-            : y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
-            ?? null,
+            ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
+            : null,
           valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal
             ?? null,
           variavel_id: cur.variavel.id,
@@ -108,11 +111,11 @@ const permitirSubmissaoAoCP = computed(() => Array.isArray(carga.linhas)
 const edicaoProibidaAposConferencia = computed(() => MetaVars.perfil === 'ponto_focal'
   && dadosExtrasDeComposta.value?.analises?.[0]?.enviado_para_cp);
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit.withControlled(async (controlados) => {
   try {
     const [primeira, segunda] = await Promise.all([
-      CiclosStore.salvarVariáveisCompostasEmLote({ linhas: carga.linhas }),
-      CiclosStore.salvarVariávelComposta(carga.composta),
+      CiclosStore.salvarVariáveisCompostasEmLote({ linhas: nulificadorTotal(controlados.linhas) }),
+      CiclosStore.salvarVariávelComposta(nulificadorTotal(controlados.composta)),
     ]);
 
     if (!primeira || !segunda) {
@@ -137,6 +140,43 @@ const soma = computed(() => carga.linhas?.reduce((acc, cur) => ({
   valor_realizado: 0,
   valor_realizado_acumulado: 0,
 }));
+
+function atualizarOutroValor(outroCampo, variavelId, indiceDaCarga) {
+  const {
+    Realizado: indiceDeRealizado,
+    RealizadoAcumulado: indiceDeRealizadoAcumulado,
+  } = índiceDeSériesEmMetaVars.value;
+
+  const series = variaveisPorId.value[variavelId]?.series?.[0]?.series;
+
+  let valorOriginalDoOutroCampo;
+  let valorPreenchido;
+  let novoValorDoOutroCampo;
+
+  if (outroCampo === 'valor_realizado_acumulado') {
+    valorOriginalDoOutroCampo = series?.[indiceDeRealizadoAcumulado]?.valor_nominal;
+    valorPreenchido = carga.linhas[indiceDaCarga].valor_realizado;
+  } else if (outroCampo === 'valor_realizado') {
+    valorOriginalDoOutroCampo = series?.[indiceDeRealizado]?.valor_nominal;
+    valorPreenchido = carga.linhas[indiceDaCarga].valor_realizado_acumulado;
+  } else {
+    throw new Error('Tipo de preenchimento desconhecido!');
+  }
+
+  if (valorPreenchido !== '') {
+    const realizadoOriginal = series?.[indiceDeRealizado]?.valor_nominal || 0;
+    const acumuladoOriginal = series?.[indiceDeRealizadoAcumulado]?.valor_nominal || 0;
+    const diferenca = new Big(acumuladoOriginal).minus(realizadoOriginal);
+
+    novoValorDoOutroCampo = outroCampo === 'valor_realizado'
+      ? new Big(valorPreenchido).minus(diferenca)
+      : new Big(valorPreenchido).plus(diferenca);
+  } else {
+    novoValorDoOutroCampo = valorOriginalDoOutroCampo;
+  }
+
+  setFieldValue(`linhas[${indiceDaCarga}].${outroCampo}`, novoValorDoOutroCampo);
+}
 
 function submeterAoCP() {
   alertStore.confirmAction(
@@ -183,6 +223,7 @@ function restaurarFormulário() {
 }
 
 const virtualUpload = ref({});
+
 async function addArquivo(values) {
   try {
     let msg;
@@ -223,6 +264,7 @@ async function addArquivo(values) {
     virtualUpload.value.loading = false;
   }
 }
+
 function deleteArquivo(id) {
   alertStore.confirmAction('Deseja remover o arquivo?', async () => {
     await CiclosStore.deleteArquivoComposta(id);
@@ -451,6 +493,25 @@ watch(variaveisComSuasDatas, (novoValor) => {
         </button>
         <hr class="f1">
       </div>
+
+      <hr class="mb2 f1">
+
+      <div class="flex mb1">
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_realizado"
+          ><span>Preencher por valor nominal</span></label>
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_realizado_acumulado"
+          ><span>Preencher por valor acumulado</span></label>
+      </div>
     </auxiliarDePreenchimento>
 
     <FieldArray
@@ -535,16 +596,10 @@ watch(variaveisComSuasDatas, (novoValor) => {
                 )"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado`] }"
-                @update:model-value="() => {
-                  if (carga.linhas[idx].valor_realizado === '') {
-                    setFieldValue(`linhas[${idx}].valor_realizado`, null);
-                  } else if (carga.linhas[idx].valor_realizado !== null) {
-                    setFieldValue(
-                      `linhas[${idx}].valor_realizado`,
-                      String(carga.linhas[idx].valor_realizado)
-                    );
-                  }
-                }"
+                :disabled="modoDePreenchimento !== 'valor_realizado'"
+                @update:model-value="() => modoDePreenchimento === 'valor_realizado'
+                  ? atualizarOutroValor('valor_realizado_acumulado', field.value.variavel_id, idx)
+                  : null"
               />
               <ErrorMessage
                 class="error-msg mt1"
@@ -554,7 +609,7 @@ watch(variaveisComSuasDatas, (novoValor) => {
             <td class="cell--number">
               <Field
                 v-if="dadosExtrasPorVariávelId[field.value.variavel_id]
-                  && !dadosExtrasPorVariávelId[field.value.variavel_id]?.acumulativa"
+                  && dadosExtrasPorVariávelId[field.value.variavel_id]?.acumulativa"
                 :name="`linhas[${idx}].valor_realizado_acumulado`"
                 type="number"
                 :value="field.valor_realizado_acumulado"
@@ -563,16 +618,10 @@ watch(variaveisComSuasDatas, (novoValor) => {
                 )"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado_acumulado`] }"
-                @update:model-value="() => {
-                  if (carga.linhas[idx].valor_realizado_acumulado === '') {
-                    setFieldValue(`linhas[${idx}].valor_realizado_acumulado`, null);
-                  } else if (carga.linhas[idx].valor_realizado_acumulado !== null) {
-                    setFieldValue(
-                      `linhas[${idx}].valor_realizado_acumulado`,
-                      String(carga.linhas[idx].valor_realizado_acumulado)
-                    );
-                  }
-                }"
+                :disabled="modoDePreenchimento !== 'valor_realizado_acumulado'"
+                @update:model-value="() => modoDePreenchimento === 'valor_realizado_acumulado'
+                  ? atualizarOutroValor('valor_realizado', field.value.variavel_id, idx)
+                  : null"
               />
               <template v-else>
                 -
