@@ -101,11 +101,15 @@ export class VariavelService {
     ) {}
 
     async loadVariaveisComCategorica(
+        tipo: TipoVariavel,
         prismaTxn: Prisma.TransactionClient,
         variavelId: number[]
     ): Promise<VariavelComCategorica[]> {
         const rows = await prismaTxn.variavel.findMany({
-            where: { id: { in: variavelId } },
+            where: {
+                tipo: tipo,
+                id: { in: variavelId },
+            },
             select: {
                 id: true,
                 acumulativa: true,
@@ -127,10 +131,11 @@ export class VariavelService {
     }
 
     async loadVariavelComCategorica(
+        tipo: TipoVariavel,
         prismaTxn: Prisma.TransactionClient,
         variavelId: number
     ): Promise<VariavelComCategorica> {
-        const v = await this.loadVariaveisComCategorica(prismaTxn, [variavelId]);
+        const v = await this.loadVariaveisComCategorica(tipo, prismaTxn, [variavelId]);
 
         if (v.length == 0) throw new HttpException('Variável não encontrada', 400);
         return v[0];
@@ -2309,7 +2314,7 @@ export class VariavelService {
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toString(),
-                referencia: this.getEditExistingSerieJwt(serieValor.id, variavel_id),
+                referencia: this.getEditExistingSerieJwt(serieValor.id, variavel_id, serieValor.serie),
                 conferida: serieValor.conferida,
             };
         }
@@ -2495,12 +2500,13 @@ export class VariavelService {
         };
     }
 
-    private getEditExistingSerieJwt(id: number, variavelId: number): string {
+    private getEditExistingSerieJwt(id: number, variavelId: number, serie: Serie): string {
         // TODO opcionalmente adicionar o modificado_em aqui
         return this.jwtService.sign({
             id: id,
             v: variavelId,
-        } as ExistingSerieJwt);
+            s: serie,
+        } satisfies ExistingSerieJwt);
     }
 
     private getEditNonExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
@@ -2508,7 +2514,7 @@ export class VariavelService {
             p: period,
             v: variavelId,
             s: serie,
-        } as NonExistingSerieJwt);
+        } satisfies NonExistingSerieJwt);
     }
 
     private async gerarPeriodoVariavelEntreDatas(
@@ -2574,6 +2580,7 @@ export class VariavelService {
         const valoresValidos = this.validarValoresJwt(valores);
 
         const variaveisInfo = await this.loadVariaveisComCategorica(
+            tipo,
             this.prisma,
             valoresValidos.map((e) => e.referencia.v)
         );
@@ -2591,6 +2598,13 @@ export class VariavelService {
                 for (const valor of valoresValidos) {
                     const variavelInfo = variaveisInfo.filter((e) => e.id === valor.referencia.v)[0];
                     if (!variavelInfo) throw new Error('Variável não encontrada, mas deveria já ter sido carregada.');
+
+                    if (
+                        !variavelInfo.acumulativa &&
+                        (valor.referencia.s == 'RealizadoAcumulado' || valor.referencia.s == 'PrevistoAcumulado')
+                    ) {
+                        continue;
+                    }
 
                     let variavel_categorica_valor_id: number | null = null;
                     // busca os valores vazios mas que já existem, para serem removidos

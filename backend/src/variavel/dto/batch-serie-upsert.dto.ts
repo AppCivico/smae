@@ -4,6 +4,7 @@ import { IsArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
 export class ExistingSerieJwt {
     id: number;
     v: number; // variable_id
+    s: Serie;
 }
 
 export class NonExistingSerieJwt {

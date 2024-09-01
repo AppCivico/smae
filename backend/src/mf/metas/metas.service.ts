@@ -1398,7 +1398,11 @@ export class MetasService {
         const id = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
                 // isolation lock
-                const variavelInfo = await this.variavelService.loadVariavelComCategorica(prismaTxn, dto.variavel_id);
+                const variavelInfo = await this.variavelService.loadVariavelComCategorica(
+                    'PDM',
+                    prismaTxn,
+                    dto.variavel_id
+                );
 
                 const needRecalc = await this.atualizaSerieVariaveis(
                     variavelInfo,
@@ -1523,6 +1527,7 @@ export class MetasService {
                     const { dadosCiclo, ehPontoFocal, meta_id } = batchResultados[i];
 
                     const variavelInfo = await this.variavelService.loadVariavelComCategorica(
+                        'PDM',
                         prismaTxn,
                         linha.variavel_id
                     );
