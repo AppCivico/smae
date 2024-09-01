@@ -2314,7 +2314,12 @@ export class VariavelService {
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toString(),
-                referencia: this.getEditExistingSerieJwt(serieValor.id, variavel_id, serieValor.serie),
+                referencia: this.getEditExistingSerieJwt(
+                    Date2YMD.toString(serieValor.data_valor),
+                    serieValor.id,
+                    variavel_id,
+                    serieValor.serie
+                ),
                 conferida: serieValor.conferida,
             };
         }
@@ -2500,9 +2505,10 @@ export class VariavelService {
         };
     }
 
-    private getEditExistingSerieJwt(id: number, variavelId: number, serie: Serie): string {
+    private getEditExistingSerieJwt(periodo: DateYMD, id: number, variavelId: number, serie: Serie): string {
         // TODO opcionalmente adicionar o modificado_em aqui
         return this.jwtService.sign({
+            p: periodo,
             id: id,
             v: variavelId,
             s: serie,
@@ -2592,6 +2598,7 @@ export class VariavelService {
             async (prismaTxn: Prisma.TransactionClient) => {
                 const idsToBeRemoved: number[] = [];
                 const updatePromises: Promise<any>[] = [];
+                const deletePromises: Promise<any>[] = [];
                 const createList: Prisma.SerieVariavelUncheckedCreateInput[] = [];
                 let anySerieIsToBeCreatedOnVariable: number | undefined;
 
@@ -2614,6 +2621,23 @@ export class VariavelService {
                         if (!variaveisModificadas[valor.referencia.v]) {
                             variaveisModificadas[valor.referencia.v] = true;
                         }
+
+                        if (
+                            !variavelInfo.acumulativa &&
+                            (valor.referencia.s === 'Realizado' || valor.referencia.s === 'Previsto')
+                        ) {
+                            const acumuladoSerie =
+                                valor.referencia.s === 'Realizado' ? 'RealizadoAcumulado' : 'PrevistoAcumulado';
+                            deletePromises.push(
+                                prismaTxn.serieVariavel.deleteMany({
+                                    where: {
+                                        variavel_id: valor.referencia.v,
+                                        serie: acumuladoSerie,
+                                        data_valor: Date2YMD.fromString(valor.referencia.p),
+                                    },
+                                })
+                            );
+                        }
                     } else if (valor.valor !== '') {
                         if (!variaveisModificadas[valor.referencia.v]) {
                             variaveisModificadas[valor.referencia.v] = true;
@@ -2630,12 +2654,25 @@ export class VariavelService {
                             variavel_categorica_valor_id = valorExiste.id;
                         }
 
+                        const updateOrCreateData: Prisma.SerieVariavelCreateManyInput = {
+                            data_valor: Date2YMD.fromString(valor.referencia.p),
+                            valor_nominal: valor.valor,
+                            variavel_id: valor.referencia.v,
+                            serie: valor.referencia.s,
+                            atualizado_em: now,
+                            atualizado_por: user.id,
+                            conferida: true,
+                            conferida_por: user.id,
+                            conferida_em: now,
+                            variavel_categorica_id: variavelInfo.variavel_categorica?.id,
+                            variavel_categorica_valor_id,
+                        };
+
                         if ('id' in valor.referencia) {
                             updatePromises.push(
                                 prismaTxn.serieVariavel.updateMany({
                                     where: {
                                         id: valor.referencia.id,
-
                                         AND: [
                                             {
                                                 OR: [
@@ -2651,40 +2688,59 @@ export class VariavelService {
                                             },
                                         ],
                                     },
-                                    data: {
-                                        valor_nominal: valor.valor,
-                                        atualizado_em: now,
-                                        atualizado_por: user.id,
-                                        conferida: true,
-                                        conferida_por: user.id,
-                                        conferida_em: now,
-                                        variavel_categorica_id: variavelInfo.variavel_categorica?.id,
-                                        variavel_categorica_valor_id,
-                                    },
+                                    data: updateOrCreateData,
                                 })
                             );
                         } else {
                             if (!anySerieIsToBeCreatedOnVariable) anySerieIsToBeCreatedOnVariable = valor.referencia.v;
                             createList.push({
-                                valor_nominal: valor.valor,
+                                ...updateOrCreateData,
                                 variavel_id: valor.referencia.v,
                                 serie: valor.referencia.s,
                                 data_valor: Date2YMD.fromString(valor.referencia.p),
-                                conferida: true,
-                                conferida_em: now,
-                                conferida_por: user.id,
-                                variavel_categorica_id: variavelInfo.variavel_categorica?.id,
-                                variavel_categorica_valor_id,
                             });
+                        }
+
+                        // Sync 'RealizadoAcumulado' and 'PrevistoAcumulado' for non-accumulative variables
+                        if (
+                            !variavelInfo.acumulativa &&
+                            (valor.referencia.s === 'Realizado' || valor.referencia.s === 'Previsto')
+                        ) {
+                            const acumuladoSerie =
+                                valor.referencia.s === 'Realizado' ? 'RealizadoAcumulado' : 'PrevistoAcumulado';
+
+                            updatePromises.push(
+                                prismaTxn.serieVariavel.upsert({
+                                    where: {
+                                        serie_variavel_id_data_valor: {
+                                            variavel_id: valor.referencia.v,
+                                            serie: acumuladoSerie,
+                                            data_valor: Date2YMD.fromString(valor.referencia.p),
+                                        },
+                                    },
+                                    update: {
+                                        // aqui vai acabar passando por cima dos timestamps e pessoas que fizeram
+                                        // a conferencia... mas acho que não tem problema
+                                        ...updateOrCreateData,
+                                        serie: acumuladoSerie,
+                                    },
+                                    create: {
+                                        ...updateOrCreateData,
+                                        serie: acumuladoSerie,
+                                    },
+                                })
+                            );
                         }
                     } // else "não há valor" e não tem ID, ou seja, n precisa acontecer nada no banco
                 }
+
                 console.log({
                     idsToBeRemoved,
                     anySerieIsToBeCreatedOnVariable,
                     updatePromises,
                     createList,
                 });
+
                 // apenas um select pra forçar o banco fazer o serialize na variavel
                 // ja que o prisma não suporta 'select for update'
                 if (anySerieIsToBeCreatedOnVariable)
@@ -2693,6 +2749,8 @@ export class VariavelService {
                         select: { id: true },
                     });
 
+                // apaga antes dos updates, para que o upsert não tenha problemas
+                if (deletePromises.length) await Promise.all(deletePromises);
                 if (updatePromises.length) await Promise.all(updatePromises);
 
                 // TODO: maybe pode verificar aqui o resultado e fazer o exception caso tenha removido alguma

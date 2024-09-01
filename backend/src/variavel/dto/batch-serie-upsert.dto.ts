@@ -2,13 +2,14 @@ import { Serie } from '@prisma/client';
 import { IsArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
 
 export class ExistingSerieJwt {
+    p: string; // periodo
     id: number;
     v: number; // variable_id
     s: Serie;
 }
 
 export class NonExistingSerieJwt {
-    p: string; // variable_id
+    p: string; // periodo
     v: number; // variable_id
     s: Serie;
 }

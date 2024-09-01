@@ -1976,7 +1976,7 @@ model SerieVariavel {
     ciclo_fisico_id Int?
 
     @@index([variavel_id, data_valor])
-    @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
+    @@unique([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
 }
 
