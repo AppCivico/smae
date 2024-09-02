@@ -111,11 +111,11 @@ const permitirSubmissaoAoCP = computed(() => Array.isArray(carga.linhas)
 const edicaoProibidaAposConferencia = computed(() => MetaVars.perfil === 'ponto_focal'
   && dadosExtrasDeComposta.value?.analises?.[0]?.enviado_para_cp);
 
-const onSubmit = handleSubmit.withControlled(async (controlados) => {
+const onSubmit = handleSubmit(async () => {
   try {
     const [primeira, segunda] = await Promise.all([
-      CiclosStore.salvarVariáveisCompostasEmLote({ linhas: nulificadorTotal(controlados.linhas) }),
-      CiclosStore.salvarVariávelComposta(nulificadorTotal(controlados.composta)),
+      CiclosStore.salvarVariáveisCompostasEmLote({ linhas: nulificadorTotal(carga.linhas) }),
+      CiclosStore.salvarVariávelComposta(nulificadorTotal(carga.composta)),
     ]);
 
     if (!primeira || !segunda) {
