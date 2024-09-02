@@ -168,9 +168,9 @@ function atualizarOutroValor(outroCampo, variavelId, indiceDaCarga) {
     const acumuladoOriginal = series?.[indiceDeRealizadoAcumulado]?.valor_nominal || 0;
     const diferenca = new Big(acumuladoOriginal).minus(realizadoOriginal);
 
-    novoValorDoOutroCampo = outroCampo === 'valor_realizado'
+    novoValorDoOutroCampo = (outroCampo === 'valor_realizado'
       ? new Big(valorPreenchido).minus(diferenca)
-      : new Big(valorPreenchido).plus(diferenca);
+      : new Big(valorPreenchido).plus(diferenca)).toString();
   } else {
     novoValorDoOutroCampo = valorOriginalDoOutroCampo;
   }
@@ -340,7 +340,7 @@ watch(variaveisComSuasDatas, (novoValor) => {
 
   <form
     :disabled="isSubmitting"
-    @submit="onSubmit"
+    @submit.prevent="onSubmit"
   >
     <div class="flex mb1">
       <div class="f1">
