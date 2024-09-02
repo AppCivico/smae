@@ -1,5 +1,5 @@
 <script setup>
-import { requestS } from '@/helpers';
+import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';

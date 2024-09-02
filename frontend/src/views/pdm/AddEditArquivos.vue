@@ -1,5 +1,5 @@
 <script setup>
-import { requestS } from '@/helpers';
+import requestS from '@/helpers/requestS.ts';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';

@@ -3,12 +3,11 @@ import { ref } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { router } from '@/router';
 import {
   useAuthStore, useEditModalStore, useAlertStore, useCiclosStore,
 } from '@/stores';
-import { requestS } from '@/helpers';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
