@@ -11,20 +11,54 @@ DECLARE
     vFim date;
 BEGIN
     --
+    WITH indicador_info AS (
+        SELECT iv.variavel_id, iv.indicador_id
+        FROM indicador_variavel iv
+        WHERE iv.indicador_origem_id IS NULL
+        AND iv.desativado = FALSE
+        AND iv.variavel_id = pVariavelId
+    ),
+    periodo_data AS (
+        SELECT
+            v.id AS variavel_id,
+            v.tipo,
+            CASE
+                WHEN v.tipo = 'Global' THEN
+                    (SELECT me.periodicidade::INTERVAL FROM busca_periodos_variavel(v.id) me)
+                WHEN v.tipo = 'PDM' THEN
+                    (SELECT me.periodicidade::INTERVAL FROM busca_periodos_variavel(v.id, ii.indicador_id) me)
+                ELSE NULL::INTERVAL
+            END AS periodicidade,
+            CASE
+                WHEN v.tipo = 'Global' THEN
+                    (SELECT min FROM busca_periodos_variavel(v.id))
+                WHEN v.tipo = 'PDM' THEN
+                    (SELECT min FROM busca_periodos_variavel(v.id, ii.indicador_id))
+                ELSE NULL::date
+            END AS inicio_medicao,
+            CASE
+                WHEN v.tipo = 'Global' THEN
+                    (SELECT max FROM busca_periodos_variavel(v.id))
+                WHEN v.tipo = 'PDM' THEN
+                    (SELECT max FROM busca_periodos_variavel(v.id, ii.indicador_id))
+                ELSE NULL::date
+            END AS fim_medicao
+        FROM variavel v
+        LEFT JOIN indicador_info ii ON v.id = ii.variavel_id
+    )
     SELECT
-        CASE WHEN eh_serie_realizado IS NULL THEN
-            NULL
-        WHEN eh_serie_realizado THEN
-            'Realizado'::"Serie"
-        ELSE
-            'Previsto'::"Serie"
+        CASE
+            WHEN eh_serie_realizado IS NULL THEN NULL
+            WHEN eh_serie_realizado THEN 'Realizado'::"Serie"
+            ELSE 'Previsto'::"Serie"
         END AS tipo_serie,
         v.valor_base,
-        bv.periodicidade,
-        bv.inicio_medicao,
-        bv.fim_medicao,
+        pd.periodicidade,
+        pd.inicio_medicao,
+        pd.fim_medicao,
         v.casas_decimais
-         INTO vTipoSerie,
+    INTO
+        vTipoSerie,
         vVariavelBase,
         vPeriodicidade,
         vInicio,
@@ -32,15 +66,9 @@ BEGIN
         vVariavelNumeroCasas
     FROM
         variavel v
-        -- na primeira versao, buscava-se pelo periodo do indicador original, mas claramente isso mostra uma falha no modelo de dados,
-        -- pois os indicadores auxiliares desta forma não conseguem ter dados de serie, pra resolver isso,
-        -- vamos pegar o menor periodo de preenchimento, junto com os limites extremos de inicio/fim dos indicadores onde a variavel foi utilizada
-    CROSS JOIN busca_periodos_variavel (v.id) AS bv (periodicidade,
-        inicio_medicao,
-        fim_medicao)
-WHERE
-    v.id = pVariavelId
-        AND acumulativa;
+    JOIN periodo_data pd ON v.id = pd.variavel_id
+    WHERE v.id = pVariavelId;
+
     -- double check
     -- se a pessoa ligou, o sistema fez a conta, e entao remover a opção, os valores já calculados vão ficar
     IF vInicio IS NULL THEN
@@ -53,7 +81,7 @@ WHERE
         UNION ALL
         SELECT
             'Previsto'::"Serie"
-)
+    )
     SELECT
         s.serie
     FROM
