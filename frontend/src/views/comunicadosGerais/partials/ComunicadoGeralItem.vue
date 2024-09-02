@@ -2,7 +2,7 @@
   <li class="comunicado-geral-item card-shadow">
     <div class="comunicado-geral-item__header">
       <h4 class="comunicado-geral-item__header-title">
-        {{ titulo.toLowerCase() }}
+        {{ titulo }}
       </h4>
       <small class="comunicado-geral-item__header-date">
         {{ dataFormatada }}
@@ -87,7 +87,6 @@ function handleSelecionarLido(ev: Event) {
   line-height: 26px;
   color: #233b5c;
   margin: 0;
-  text-transform: capitalize;
 }
 
 .comunicado-geral-item__header-date {
