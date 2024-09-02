@@ -3,6 +3,7 @@ import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 import {
   computed, inject, ref, watch,
@@ -35,6 +36,8 @@ const ano = props.config.ano_referencia;
 const alertStore = useAlertStore();
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado, OrcamentoRealizadoPermissões } = storeToRefs(OrcamentosStore);
+
+const { activePdm } = storeToRefs(usePdMStore());
 
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
@@ -139,7 +142,9 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
           {{ config.ano_referencia }}
         </h3>
 
-        <div>
+        <div
+          v-if="activePdm?.pode_editar"
+        >
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
             class="dropbtn"
@@ -234,7 +239,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         />
 
         <button
-          v-if="podeExcluirEmLote && config?.execucao_disponivel"
+          v-if="podeExcluirEmLote && config?.execucao_disponivel && activePdm?.pode_editar"
           type="button"
           class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"

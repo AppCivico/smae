@@ -83,7 +83,7 @@ iniciar();
         v-if="temPermissãoPara([
           'CadastroMeta.administrador_no_pdm',
           'CadastroMetaPS.administrador_no_pdm'
-        ])"
+        ]) && activePdm?.pode_editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
       >
@@ -233,7 +233,8 @@ iniciar();
                 'CadastroMeta.administrador_no_pdm',
                 'CadastroMetaPS.administrador_no_pdm'
               ])
-                && activePdm.possui_iniciativa"
+                && activePdm.possui_iniciativa
+                && activePdm?.pode_editar"
               :to="`${parentlink}/iniciativas/novo`"
               class="btn ml2"
             >

@@ -1,5 +1,6 @@
 <script setup>
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
+import { usePdMStore } from '@/stores/pdm.store';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
@@ -13,6 +14,8 @@ const props = defineProps(['group', 'parentlink', 'parent_id', 'parent_field']);
 
 const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
+
+const { activePdm } = storeToRefs(usePdMStore());
 
 (async () => {
   if (!tempIndicadores.value.length
@@ -63,7 +66,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPS.administrador_no_pdm',
-            ])"
+            ]) && activePdm?.pode_editar"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
           >
@@ -98,7 +101,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm',
-      ])"
+      ]) && activePdm?.pode_editar"
       class="bgc50"
     >
       <div class="tc">

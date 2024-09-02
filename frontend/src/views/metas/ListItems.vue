@@ -83,7 +83,7 @@ watch(() => props.group, (novoValor) => {
     <hr class="f1">
 
     <SmaeLink
-      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm')"
+      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm') && activePdm?.pode_editar"
       class="btn big"
       to="/metas/novo"
     >

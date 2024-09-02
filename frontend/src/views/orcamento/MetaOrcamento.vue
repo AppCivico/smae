@@ -188,7 +188,7 @@ export default {
         @apagar="start"
       >
         <template
-          v-if="orc.execucao_disponivel"
+          v-if="orc.execucao_disponivel && activePdm?.pode_editar"
           #cabeçalho="{ ano }"
         >
           <label

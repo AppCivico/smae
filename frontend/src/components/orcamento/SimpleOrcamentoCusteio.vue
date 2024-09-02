@@ -10,6 +10,7 @@ import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
+import { usePdMStore } from '@/stores/pdm.store';
 
 const alertStore = useAlertStore();
 const props = defineProps({
@@ -32,6 +33,8 @@ const OrcamentosStore = useOrcamentosStore();
 const {
   OrcamentoCusteio, previstoEhZero, previstoEhZeroCriadoPor, previstoEhZeroCriadoEm,
 } = storeToRefs(OrcamentosStore);
+
+const { activePdm } = storeToRefs(usePdMStore());
 
 const órgãoEUnidadeSelecionados = ref('');
 
@@ -238,7 +241,8 @@ function restringirAZero() {
 
       <div class="tc">
         <SmaeLink
-          v-if="config.previsao_custo_disponivel && ($route.meta?.rotaParaAdição || parentlink)"
+          v-if="config.previsao_custo_disponivel && ($route.meta?.rotaParaAdição
+          || parentlink) && activePdm?.pode_editar"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/custo/${ano}`"
@@ -261,7 +265,7 @@ function restringirAZero() {
         </span>
 
         <button
-          v-if="!linhasFiltradas?.length && !previstoEhZero[ano]"
+          v-if="!linhasFiltradas?.length && !previstoEhZero[ano] && activePdm?.pode_editar"
           type="button"
           class="like-a__text addlink mt1 mb1"
           @click="restringirAZero"

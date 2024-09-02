@@ -8,6 +8,7 @@ import { computed, ref } from 'vue';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
+import { usePdMStore } from '@/stores/pdm.store';
 
 const props = defineProps({
   parentlink: {
@@ -27,6 +28,8 @@ const props = defineProps({
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
+
+const { activePdm } = storeToRefs(usePdMStore());
 
 const órgãoEUnidadeSelecionados = ref('');
 
@@ -206,7 +209,9 @@ const somaDasLinhas = computed(() => ({
       </table>
       <div class="tc">
         <SmaeLink
-          v-if="config.planejado_disponivel && ($route.meta?.rotaParaAdição || parentlink)"
+          v-if="config.planejado_disponivel
+            && ($route.meta?.rotaParaAdição || parentlink)
+            && activePdm?.pode_editar"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/planejado/${ano}`"
