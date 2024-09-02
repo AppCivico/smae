@@ -31,7 +31,7 @@
       >
         <td>{{ item.titulo }}</td>
         <td>{{ item.orgao.sigla }}</td>
-        <td>{{ item.perfil }}</td>
+        <td>{{ tipoDePerfil[item.perfil].nome || '' }}</td>
         <td
           v-if="item.participantes.length"
         >
@@ -99,6 +99,8 @@ import { computed } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
 
 import { useEquipesStore } from '@/stores/equipes.store';
+
+import tipoDePerfil from '@/consts/tipoDePerfil';
 
 const route = useRoute();
 const titulo = typeof route?.meta?.título === 'function'
