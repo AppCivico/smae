@@ -181,7 +181,12 @@ export class PdmController {
     }
 }
 
-const PermsPS: ListaDePrivilegios[] = ['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao', 'PS.admin_cp'];
+const PermsPS: ListaDePrivilegios[] = [
+    'CadastroPS.administrador',
+    'CadastroPS.administrador_no_orgao',
+    'PS.admin_cp',
+    'PS.tecnico_cp',
+];
 
 @ApiTags('Plano Setorial')
 @Controller('plano-setorial')
@@ -199,7 +204,7 @@ export class PlanoSetorialController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles([...PermsPS, 'PS.admin_cp', 'PS.tecnico_cp', 'PS.ponto_focal'])
+    @Roles([...PermsPS, 'PS.ponto_focal'])
     async findAll(@Query() filters: FilterPdmDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDto> {
         const linhas = await this.pdmService.findAll('PS', filters, user);
         let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
@@ -236,7 +241,7 @@ export class PlanoSetorialController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...PermsPS, 'PS.admin_cp', 'PS.tecnico_cp', 'PS.ponto_focal'])
+    @Roles([...PermsPS, 'PS.ponto_focal'])
     @ApiExtraModels(PlanoSetorialDto, DetalhePSDto)
     @ApiOkResponse({
         schema: { anyOf: refs(PlanoSetorialDto, DetalhePSDto) },
@@ -285,7 +290,7 @@ export class PlanoSetorialController {
 
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
-    @Roles([...PermsPS, 'PS.admin_cp', 'PS.tecnico_cp', 'PS.ponto_focal'])
+    @Roles([...PermsPS, 'PS.ponto_focal'])
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDocument> {
         return { linhas: await this.pdmService.list_document(this.tipoPdm, params.id, user) };
     }
