@@ -1,4 +1,4 @@
-import módulos from '@/consts/modulosDoSistema';
+import modulos from '@/consts/modulosDoSistema';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -140,11 +140,11 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
-    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => módulos[sistemaEscolhido] || {},
+    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => modulos[sistemaEscolhido] || {},
     estouAutenticada: ({ token }) => !!token,
-    temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
-      ? permissões
-      : [permissões]
+    temPermissãoPara: ({ user }) => (permissoes) => (Array.isArray(permissoes)
+      ? permissoes
+      : [permissoes]
     ).some((x) => (x.slice(-1) === '.'
       // se o valor termina com `.`,
       // ele tem que bater com o começo de algumas permissão
