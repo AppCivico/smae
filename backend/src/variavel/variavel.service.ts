@@ -2248,6 +2248,7 @@ export class VariavelService {
                 },
             },
             select: {
+                id: true,
                 IndicadorVariavel: {
                     select: {
                         variavel: {
@@ -2397,7 +2398,7 @@ export class VariavelService {
         let indicadorId: number | null = null;
         if (tipo === 'PDM') {
             const indicadorViaVar = await this.getIndicadorViaVariavel(variavelId);
-            indicadorId = indicadorViaVar.IndicadorVariavel[0].variavel.id;
+            indicadorId = indicadorViaVar.id;
         }
 
         const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
