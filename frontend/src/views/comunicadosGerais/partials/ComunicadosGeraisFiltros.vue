@@ -62,6 +62,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
             :type="campo.tipo"
           />
           <ErrorMessage
+            v-if="campo.nome !== 'data_inicio'"
             class="error-msg mb1"
             :name="campo.nome"
           />
