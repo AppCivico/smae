@@ -168,9 +168,11 @@ function atualizarOutroValor(outroCampo, variavelId, indiceDaCarga) {
     const acumuladoOriginal = series?.[indiceDeRealizadoAcumulado]?.valor_nominal || 0;
     const diferenca = new Big(acumuladoOriginal).minus(realizadoOriginal);
 
+    const casasDecimais = variaveisPorId.value[variaveisPorId]?.variavel?.casas_decimais || 0;
+
     novoValorDoOutroCampo = (outroCampo === 'valor_realizado'
       ? new Big(valorPreenchido).minus(diferenca)
-      : new Big(valorPreenchido).plus(diferenca)).toString();
+      : new Big(valorPreenchido).plus(diferenca)).toFixed(casasDecimais);
   } else {
     novoValorDoOutroCampo = valorOriginalDoOutroCampo;
   }
