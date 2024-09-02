@@ -833,6 +833,9 @@ export class NotaService {
         let offset = 0;
         const limit = filters.ipp ?? 20;
 
+        if (data_inicio && data_fim && data_inicio.valueOf() > data_fim.valueOf())
+            throw new BadRequestException('Data de início não pode ser maior que data de fim');
+
         if (filters.token_proxima_pagina) {
             const decodedToken = this.decodeNextPageToken(filters.token_proxima_pagina);
             if (decodedToken) {
