@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { Field, useForm } from 'vee-validate';
-
+import { computed } from 'vue';
+import { Field, useForm, ErrorMessage } from 'vee-validate';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { comunidadosGeraisFiltrosSchema } from '@/consts/comunicadosGerais.ts';
 
@@ -43,7 +42,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 <template>
   <section class="comunicados-gerais-filtro">
     <form
-      class="flex center  g2"
+      class="flex center g2"
       @submit="onSubmit"
     >
       <div class="flex g2 fg999">
@@ -61,6 +60,10 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
             class="inputtext light mb1"
             :name="campo.nome"
             :type="campo.tipo"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            :name="campo.nome"
           />
         </div>
       </div>
