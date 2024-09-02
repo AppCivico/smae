@@ -28,6 +28,7 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
+import { PdmService } from '../pdm/pdm.service';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -47,10 +48,23 @@ export class MetaService {
         @Inject(forwardRef(() => CronogramaEtapaService))
         public readonly cronogramaEtapaService: CronogramaEtapaService,
         public readonly uploadService: UploadService,
-        public readonly geolocService: GeoLocService
+        public readonly geolocService: GeoLocService,
+        //
+        @Inject(forwardRef(() => PdmService))
+        private readonly pdmService: PdmService
     ) {}
 
     async create(tipo: TipoPdm, dto: CreateMetaDto, user: PessoaFromJwt) {
+        const pdm = await this.prisma.pdm.findFirstOrThrow({
+            where: {
+                id: dto.pdm_id,
+                tipo,
+                removido_em: null,
+            },
+            select: { id: true },
+        });
+        await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
+
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
@@ -418,6 +432,15 @@ export class MetaService {
             );
         }
 
+        // precisa de acesso no plano setorial tbm
+        if (tipo == 'PS')
+            await this.pdmService.getDetail(
+                tipo,
+                meta[0].pdm_id,
+                user,
+                readonly == 'readonly' ? 'ReadOnly' : 'ReadWrite'
+            );
+
         if (readonly == 'readwrite' && !meta[0].pode_editar)
             throw new HttpException(
                 `Usuário não tem permissão para editar ${context ? `${context} da meta` : 'meta'}`,
@@ -629,6 +652,7 @@ export class MetaService {
         //        }
 
         const loadMeta = await this.loadMetaOrThrow(id, tipo, user);
+        await this.pdmService.getDetail(tipo, loadMeta.pdm_id, user, 'ReadWrite');
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
@@ -843,6 +867,7 @@ export class MetaService {
         // }
 
         const meta = await this.loadMetaOrThrow(id, tipo, user);
+        await this.pdmService.getDetail(tipo, meta.pdm_id, user, 'ReadWrite');
 
         const now = new Date(Date.now());
         return await this.prisma.$transaction(

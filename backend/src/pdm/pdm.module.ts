@@ -23,5 +23,6 @@ import { PdmService } from './pdm.service';
     ],
     controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],
+    exports: [PdmService],
 })
 export class PdmModule {}

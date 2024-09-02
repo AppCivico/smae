@@ -5,9 +5,16 @@ import { GeoLocModule } from '../geo-loc/geo-loc.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { MetaController, MetaSetorialController } from './meta.controller';
 import { MetaService } from './meta.service';
+import { PdmModule } from '../pdm/pdm.module';
 
 @Module({
-    imports: [PrismaModule, forwardRef(() => CronogramaEtapaModule), UploadModule, GeoLocModule],
+    imports: [
+        PrismaModule,
+        forwardRef(() => PdmModule),
+        forwardRef(() => CronogramaEtapaModule),
+        UploadModule,
+        GeoLocModule,
+    ],
     controllers: [MetaController, MetaSetorialController],
     providers: [MetaService],
     exports: [MetaService],

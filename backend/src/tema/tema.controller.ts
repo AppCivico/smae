@@ -12,6 +12,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -21,9 +22,8 @@ import { CreateObjetivoEstrategicoDto } from './dto/create-tema.dto';
 import { FilterObjetivoEstrategicoDto } from './dto/filter-tema.dto';
 import { ListObjetivoEstrategicoDto } from './dto/list-tema.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
-import { TemaService } from './tema.service';
-import { TipoPdm } from '@prisma/client';
 import { ObjetivoEstrategicoDto } from './entities/objetivo-estrategico.entity';
+import { TemaService } from './tema.service';
 
 @ApiTags('Tema para PDM (Antigo Objetivo Estratégico)')
 @Controller('tema')

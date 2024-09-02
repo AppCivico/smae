@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
@@ -7,15 +7,21 @@ import { FilterTagDto } from './dto/filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { TipoPdm } from '@prisma/client';
 import { TagDto } from './entities/tag.entity';
+import { PdmService } from '../pdm/pdm.service';
 
 @Injectable()
 export class TagService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        //
+        @Inject(PdmService)
+        private readonly pdmService: PdmService
     ) {}
 
     async create(tipo: TipoPdm, createTagDto: CreateTagDto, user: PessoaFromJwt) {
+        await this.pdmService.getDetail(tipo, createTagDto.pdm_id, user, 'ReadWrite');
+
         const similarExists = await this.prisma.tag.count({
             where: {
                 descricao: { equals: createTagDto.descricao, mode: 'insensitive' },
@@ -33,8 +39,6 @@ export class TagService {
             uploadId = this.uploadService.checkUploadOrDownloadToken(createTagDto.upload_icone);
         }
         delete createTagDto.upload_icone;
-
-        console.log(createTagDto);
 
         const created = await this.prisma.tag.create({
             data: {
@@ -84,6 +88,8 @@ export class TagService {
             where: { id: id, removido_em: null, pdm: { tipo } },
         });
 
+        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+
         let uploadId: number | null | undefined = undefined;
         if (updateTagDto.upload_icone === null || updateTagDto.upload_icone === '') {
             uploadId = null;
@@ -124,6 +130,12 @@ export class TagService {
     }
 
     async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.tag.findFirstOrThrow({
+            where: { id, removido_em: null, pdm: { tipo } },
+            select: { pdm_id: true },
+        });
+        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+
         const emUso = await this.prisma.meta.count({
             where: {
                 removido_em: null,

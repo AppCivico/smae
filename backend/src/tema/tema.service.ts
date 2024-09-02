@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateObjetivoEstrategicoDto } from './dto/create-tema.dto';
@@ -7,12 +7,20 @@ import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
 import { Prisma, TipoPdm } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ObjetivoEstrategicoDto } from './entities/objetivo-estrategico.entity';
+import { PdmService } from '../pdm/pdm.service';
 
 @Injectable()
 export class TemaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        //
+        @Inject(PdmService)
+        private readonly pdmService: PdmService
+    ) {}
 
     async create(tipo: TipoPdm, dto: CreateObjetivoEstrategicoDto, user: PessoaFromJwt) {
+        await this.pdmService.getDetail(tipo, dto.pdm_id, user, 'ReadWrite');
+
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const descricaoExists = await prismaTx.tema.count({
                 where: {
@@ -64,15 +72,16 @@ export class TemaService {
 
     async update(tipo: TipoPdm, id: number, dto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
         delete dto.pdm_id; // nao deixa editar o PDM
+        const self = await this.prisma.tema.findFirstOrThrow({
+            where: { id, pdm: { tipo } },
+            select: { pdm_id: true },
+        });
+
+        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.descricao) {
-                    const self = await prismaTx.tema.findFirstOrThrow({
-                        where: { id, pdm: { tipo } },
-                        select: { pdm_id: true },
-                    });
-
                     const descricaoExists = await prismaTx.tema.count({
                         where: {
                             pdm_id: self.pdm_id,
@@ -108,6 +117,12 @@ export class TemaService {
     }
 
     async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.tema.findFirstOrThrow({
+            where: { id, pdm: { tipo } },
+            select: { pdm_id: true },
+        });
+        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+
         const emUso = await this.prisma.meta.count({ where: { tema_id: id, removido_em: null, pdm: { tipo } } });
         if (emUso > 0) throw new HttpException('Objetivo Estratégico em uso em Metas.', 400);
 
