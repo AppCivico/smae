@@ -1,9 +1,19 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
-import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { formataSEI } from 'src/common/formata-sei';
+import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AvisoEmailService } from '../aviso-email/aviso-email.service';
+import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
+import { NotaService } from '../bloco-nota/nota/nota.service';
+import { SeiIntegracaoService } from '../sei-integracao/sei-integracao.service';
+import { CreateDistribuicaoRecursoDto, CreateDistribuicaoRegistroSEIDto } from './dto/create-distribuicao-recurso.dto';
+import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
+import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import {
     DistribuicaoHistoricoStatusDto,
     DistribuicaoRecursoDetailDto,
@@ -11,20 +21,10 @@ import {
     DistribuicaoRecursoSeiDto,
     SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
-import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
-import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
-import { formataSEI } from 'src/common/formata-sei';
-import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
-import { NotaService } from '../bloco-nota/nota/nota.service';
-import { AvisoEmailService } from '../aviso-email/aviso-email.service';
-import { DateTime } from 'luxon';
-import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { SeiIntegracaoService } from '../sei-integracao/sei-integracao.service';
 
 type OperationsRegistroSEI = {
     id?: number;
-    nome: string | null;
+    nome?: string | null;
     processo_sei: string;
 }[];
 
@@ -52,6 +52,8 @@ export class DistribuicaoRecursoService {
             },
         });
         if (!orgaoGestorExiste) throw new HttpException('orgao_gestor_id| Órgão gestor inválido', 400);
+
+        this.checkDuplicateSei(dto);
 
         const transferencia = await this.prisma.transferencia.findFirst({
             where: {
@@ -347,6 +349,15 @@ export class DistribuicaoRecursoService {
         );
 
         return { id: created.id };
+    }
+
+    private checkDuplicateSei(dto: { registros_sei?: CreateDistribuicaoRegistroSEIDto[] }) {
+        if (dto.registros_sei) {
+            const duplicateSei = dto.registros_sei
+                .map((r) => r.processo_sei)
+                .filter((value, index, self) => self.indexOf(value) !== index);
+            if (duplicateSei.length > 0) throw new HttpException('Processo SEI duplicado na distribuição.', 400);
+        }
     }
 
     async findAll(filters: FilterDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto[]> {
@@ -797,6 +808,7 @@ export class DistribuicaoRecursoService {
 
     async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const self = await this.findOne(id, user);
+        this.checkDuplicateSei(dto);
 
         if (dto.orgao_gestor_id != undefined && dto.orgao_gestor_id != self.orgao_gestor.id) {
             const orgaoGestorExiste = await this.prisma.orgao.count({

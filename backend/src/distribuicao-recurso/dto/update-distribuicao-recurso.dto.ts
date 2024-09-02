@@ -1,27 +1,10 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { CreateDistribuicaoParlamentarDto, CreateDistribuicaoRecursoDto } from './create-distribuicao-recurso.dto';
-import {
-    IsArray,
-    IsNumber,
-    IsNumberString,
-    IsOptional,
-    IsString,
-    MaxLength,
-    ValidateIf,
-    ValidateNested,
-} from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional, IsString, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
+import { CreateDistribuicaoParlamentarDto, CreateDistribuicaoRecursoDto } from './create-distribuicao-recurso.dto';
 export class UpdateDistribuicaoRecursoDto extends PartialType(
-    OmitType(CreateDistribuicaoRecursoDto, ['transferencia_id', 'registros_sei', 'parlamentares'])
+    OmitType(CreateDistribuicaoRecursoDto, ['transferencia_id', 'parlamentares'])
 ) {
-    @IsOptional()
-    @IsArray()
-    registros_sei?: {
-        id?: number;
-        nome: string | null;
-        processo_sei: string;
-    }[];
-
     @IsOptional()
     @IsString()
     @MaxLength(250)

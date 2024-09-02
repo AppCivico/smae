@@ -2,7 +2,6 @@ import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
-    IsEnum,
     IsNumber,
     IsNumberString,
     IsOptional,
@@ -10,12 +9,26 @@ import {
     MaxLength,
     MinLength,
     ValidateIf,
-    ValidateNested,
+    ValidateNested
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
-import { ApiProperty } from '@nestjs/swagger';
-import { ParlamentarCargo } from '@prisma/client';
+
+export class CreateDistribuicaoRegistroSEIDto {
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(1024)
+    nome?: string;
+
+    @IsString()
+    @MaxLength(40)
+    processo_sei: string;
+}
 
 export class CreateDistribuicaoRecursoDto {
     @IsNumber()
@@ -228,18 +241,3 @@ export class CreateDistribuicaoParlamentarDto {
     valor?: number;
 }
 
-class CreateDistribuicaoRegistroSEIDto {
-    @IsOptional()
-    @IsNumber()
-    id?: number;
-
-    @IsOptional()
-    @IsString()
-    @MinLength(1)
-    @MaxLength(1024)
-    nome?: string;
-
-    @IsString()
-    @MaxLength(40)
-    processo_sei: string;
-}
