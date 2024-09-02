@@ -1,14 +1,16 @@
 <template>
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
     <SmaeLink
+      v-if="psEmFoco?.pode_editar"
       :to="{ name: 'planosSetoriaisNovoTema' }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
     </SmaeLink>
-  </div>
+  </header>
+
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
@@ -28,6 +30,7 @@
         <td>{{ item.descricao }}</td>
         <td>
           <SmaeLink
+            v-if="psEmFoco?.pode_editar"
             :to="{ name: 'planosSetoriaisEditarTema', params: { temaId: item.id } }"
             class="tprimary"
           >
@@ -39,7 +42,7 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroTemaPS.remover')"
+            v-if="temPermissãoPara('CadastroTemaPS.remover') && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -74,6 +77,7 @@
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useTemasPsStore } from '@/stores/temasPs.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
 import { computed, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
@@ -94,6 +98,9 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const temasStore = useTemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(temasStore);
 
+const planosSetoriaisStore = usePlanosSetoriaisStore();
+const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
+
 async function excluirTema(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
@@ -111,5 +118,3 @@ async function excluirTema(id, descricao) {
 temasStore.$reset();
 temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
 </script>
-
-<style></style>

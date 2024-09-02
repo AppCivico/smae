@@ -1,14 +1,15 @@
 <template>
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || "Tags" }}</h1>
     <hr class="ml2 f1">
     <SmaeLink
+      v-if="psEmFoco?.pode_editar"
       :to="{ name: 'planosSetoriaisNovaTag' }"
       class="btn big ml1"
     >
       Nova tag
     </SmaeLink>
-  </div>
+  </header>
 
   <table class="tablemain">
     <col>
@@ -48,6 +49,7 @@
         </td>
         <td>
           <SmaeLink
+            v-if="psEmFoco?.pode_editar"
             :to="{ name: 'planosSetoriaisEditarTag', params: { tagId: item.id } }"
             class="tprimary"
           >
@@ -59,7 +61,7 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroTagPS.remover')"
+            v-if="temPermissãoPara('CadastroTagPS.remover') && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -97,6 +99,7 @@ import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -112,6 +115,9 @@ const tagsStore = useTagsPsStore();
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
+
+const planosSetoriaisStore = usePlanosSetoriaisStore();
+const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirTag(id, descricao) {
   alertStore.confirmAction(
@@ -129,7 +135,4 @@ async function excluirTag(id, descricao) {
 
 tagsStore.$reset();
 tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-
 </script>
-
-<style></style>

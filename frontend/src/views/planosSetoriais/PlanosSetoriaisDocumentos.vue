@@ -24,6 +24,7 @@ const alertStore = useAlertStore();
 
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 const {
+  emFoco,
   chamadasPendentes,
   arquivos,
   erros,
@@ -47,6 +48,7 @@ iniciar();
 
     <hr class="ml2 f1">
     <router-link
+      v-if="emFoco?.pode_editar"
       :to="{
         name: 'planosSetoriaisNovoDocumento',
         params: {
@@ -67,12 +69,16 @@ iniciar();
     :parâmetros-de-diretórios="{ pdm_id: $route.params.planoSetorialId }"
     :arquivos="arquivos"
     class="mb1"
-    :rota-de-adição="{
-      name: 'planosSetoriaisNovoDocumento'
-    }"
-    :rota-de-edição="{
-      name: 'planosSetoriaisEditarDocumento'
-    }"
+    :rota-de-adição="emFoco?.pode_editar
+      ? {
+        name: 'planosSetoriaisNovoDocumento'
+      }
+      : null"
+    :rota-de-edição="emFoco?.pode_editar
+      ? {
+        name: 'planosSetoriaisEditarDocumento'
+      }
+      : null"
     @apagar="($params) => excluirArquivo($params)"
   />
 
