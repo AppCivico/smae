@@ -100,7 +100,7 @@ async function mudarLido(item: IComunicadoGeralItem, lido: boolean) {
 function buscarMais() {
   comunicadosGeraisStore.getComunicadosGerais({
     ...$route.query,
-    lido: $route.query?.aba === tabs.Historico.id ? true : undefined,
+    lido: $route.query?.aba === tabs.Historico.id,
     token_paginacao: paginacao.value.tokenProximaPagina,
     buscandoMais: true,
   });
@@ -109,7 +109,7 @@ function buscarMais() {
 watch(() => $route.query, (query) => {
   comunicadosGeraisStore.getComunicadosGerais({
     ...query,
-    lido: $route.query?.aba === tabs.Historico.id ? true : undefined,
+    lido: $route.query?.aba === tabs.Historico.id,
   });
 }, { immediate: true });
 
