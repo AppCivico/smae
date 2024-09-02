@@ -211,7 +211,7 @@ export class PdmService {
                 // cache warmup
                 const collab = await user.getEquipesColaborador(this.prisma);
 
-                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'PS.admin_cp'])) {
                     this.logger.log('Usuário com permissão total em PS no órgão');
 
                     const orgaoId = user.orgao_id;
@@ -231,7 +231,22 @@ export class PdmService {
                     });
                 }
 
-                if (user.hasSomeRoles(['CadastroMetaPS.listar'])) {
+                if (user.hasSomeRoles(['PS.tecnico_cp'])) {
+                    this.logger.log('Usuário com permissão total em PS no CP');
+
+                    orList.push({
+                        tipo: 'PS',
+                        PdmPerfil: {
+                            some: {
+                                removido_em: null,
+                                tipo: 'CP',
+                                equipe_id: { in: collab },
+                            },
+                        },
+                    });
+                }
+
+                if (user.hasSomeRoles(['PS.admin_cp'])) {
                     this.logger.log('Usuário com permissão total em PS no CP');
 
                     orList.push({
@@ -391,6 +406,7 @@ export class PdmService {
             }
             if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado, necessário para PS', 400);
 
+            // será que é pra ficar assim mesmo, ou mudar pro teste da equipe?
             if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao']) && pdm.orgao_admin_id) {
                 this.logger.log('Usuário com permissão total em PS no órgão');
                 return user.orgao_id == pdm.orgao_admin_id;
