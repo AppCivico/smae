@@ -14,6 +14,9 @@ import {
     TransfereGovError,
 } from '../transfere-gov-api/transfere-gov-api.service';
 import { FilterTransfereGovListDto, TransfereGovDto } from './entities/transfere-gov-sync.entity';
+import { SmaeConfigService } from '../common/services/smae-config.service';
+import { uuidv7 } from 'uuidv7';
+import { Date2YMD } from '../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -29,7 +32,8 @@ export class TransfereGovSyncService {
         private readonly transfereGovApi: TransfereGovApiService,
         private readonly blocosService: BlocoNotaService,
         private readonly notaService: NotaService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     private transformComunicado(
@@ -143,6 +147,16 @@ export class TransfereGovSyncService {
     }
 
     private async createNotifications(): Promise<void> {
+        const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+        const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
+        const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+        const orgaoEmail = orgaoId
+            ? await this.prisma.orgao.findUnique({
+                  where: { id: orgaoId },
+                  select: { email: true },
+              })
+            : null;
+
         const now = new Date();
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const novosItems = await prismaTx.comunicadoTransfereGov.findMany({
@@ -155,6 +169,25 @@ export class TransfereGovSyncService {
             this.logger.log(`Criando ${novosItems.length} notas`);
 
             for (const item of novosItems) {
+                if (orgaoEmail && orgaoEmail.email) {
+                    await prismaTx.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            to: orgaoEmail.email,
+                            subject: subject || `Novo comunicado Transfere GOV: ${item.titulo}`,
+                            template: 'comunicado-transfere-gov.html',
+                            variables: {
+                                titulo: item.titulo,
+                                data: Date2YMD.toString( item.data), // date already formatted
+                                descricao: item.descricao,
+                                link: item.link,
+                                tipo: item.tipo, // important string
+                            },
+                            config_id: 1,
+                        },
+                    });
+                }
+
                 const bloco = await this.blocosService.getTokenFor(
                     { transfere_gov: item.tipo.toString() },
                     { id: CONST_BOT_USER_ID },
