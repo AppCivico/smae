@@ -420,7 +420,7 @@ export class EquipeRespService {
         });
         if (emUsoVar.length)
             throw new BadRequestException(
-                `Não é possível remover o grupo pois as seguintes variáveis estão associadas a ele: ${emUsoVar
+                `Não é possível remover o grupo pois as seguintes variáveis estão associadas a ele:\n${emUsoVar
                     .map((r) => '-' + r.variavel.titulo)
                     .join('\n')}`
             );
@@ -434,7 +434,7 @@ export class EquipeRespService {
         });
         if (emUsoPdm.length)
             throw new BadRequestException(
-                `Não é possível remover o grupo pois os seguintes itens estão associados a ele: ${emUsoPdm
+                `Não é possível remover o grupo pois os seguintes itens estão associados a ele:\n${emUsoPdm
                     .map((r) => '-' + (r.pdm.tipo == 'PDM' ? 'PDM' : 'Plano Setorial') + ' ' + r.pdm.nome)
                     .join('\n')}`
             );
