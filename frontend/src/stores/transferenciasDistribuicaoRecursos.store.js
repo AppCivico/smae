@@ -20,7 +20,10 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/distribuicao-recurso/${id}`, params);
+        const resposta = await this.requestS.get(
+          `${baseUrl}/distribuicao-recurso/${id}`,
+          params,
+        );
         this.emFoco = {
           ...resposta,
         };
@@ -35,7 +38,10 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/distribuicao-recurso`, params);
+        const { linhas } = await this.requestS.get(
+          `${baseUrl}/distribuicao-recurso`,
+          params,
+        );
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -64,7 +70,10 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/distribuicao-recurso/${id}`, params);
+          await this.requestS.patch(
+            `${baseUrl}/distribuicao-recurso/${id}`,
+            params,
+          );
         } else {
           await this.requestS.post(`${baseUrl}/distribuicao-recurso`, params);
         }
@@ -75,6 +84,22 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
         this.erro = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
+      }
+    },
+
+    async selectionarSeiLido({ id, processoSei, lido }) {
+      try {
+        this.erro = null;
+
+        await this.requestS.post(
+          `${baseUrl}/distribuicao-recurso/${id}/marcar-sei-como-lido`,
+          {
+            processo_sei: processoSei,
+            lido,
+          },
+        );
+      } catch (erro) {
+        this.erro = erro;
       }
     },
   },
@@ -88,10 +113,10 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       conclusao_suspensiva: dateTimeToDate(emFoco?.conclusao_suspensiva),
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       vigencia: dateTimeToDate(emFoco?.vigencia),
-      justificativa_aditamento: emFoco?.aditamentos
-        ?.find((aditamento) => aditamento?.data_vigencia_corrente === emFoco?.vigencia)
-        ?.justificativa
-        || null,
+      justificativa_aditamento:
+        emFoco?.aditamentos?.find(
+          (aditamento) => aditamento?.data_vigencia_corrente === emFoco?.vigencia,
+        )?.justificativa || null,
     }),
   },
 });

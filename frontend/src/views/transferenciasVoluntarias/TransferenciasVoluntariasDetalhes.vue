@@ -90,6 +90,17 @@ function avançarEtapa() {
   }, 'Avançar');
 }
 
+function atualizaSeiLido(item, transferenciaId, lido) {
+  // eslint-disable-next-line no-param-reassign
+  item.lido = lido;
+
+  distribuicaoRecursos.selectionarSeiLido({
+    id: transferenciaId,
+    processoSei: item.integracao_sei.processo_sei,
+    lido,
+  });
+}
+
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
@@ -767,6 +778,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <col class="col--data">
         <col>
         <col>
+        <col>
         <col class="col--botão-de-ação">
 
         <thead>
@@ -779,14 +791,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           <th>Alteração</th>
           <th>Andamento</th>
           <th>Unidade</th>
-          <th>Usuário</th>
+          <th>Usuário SEI</th>
+          <th>Lido</th>
           <th />
         </thead>
 
-        <tbody>
+        <tbody class="transferencia-sei-body">
           <tr
             v-for="registro, idx in distribuição.registros_sei"
             :key="idx"
+            class="transferencia-sei-body__item"
           >
             <td>
               <span
@@ -823,10 +837,26 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </td>
             <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
             <td>
+              <label class="transferencia-sei-body__item--lido flex column g05 start">
+                {{ distribuição.id }} {{ registro.lido ? "Lido" : "Não lido" }}
+                <input
+                  type="checkbox"
+                  class="interruptor"
+                  :checked="registro.lido"
+                  @input="atualizaSeiLido(
+                    registro,
+                    distribuição.id,
+                    $event.target.checked
+                  )"
+                >
+              </label>
+            </td>
+            <td>
               <SmaeLink
                 v-if="registro?.integracao_sei?.link"
                 :to="registro?.integracao_sei?.link"
                 title="Abrir no site do SEI"
+                @click="atualizaSeiLido(registro, distribuição.transferencia_id, true)"
               >
                 <svg
                   width="20"
@@ -1095,5 +1125,9 @@ section + section {
 }
 
 .resumo-da-distribuicao-de-recursos__status-item {
+}
+
+.transferencia-sei-body__item--lido {
+  width: 55px;
 }
 </style>
