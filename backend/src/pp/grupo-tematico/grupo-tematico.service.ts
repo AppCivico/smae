@@ -29,6 +29,7 @@ export class GrupoTematicoService {
                         programa_habitacional: dto.programa_habitacional || false,
                         unidades_habitacionais: dto.unidades_habitacionais || false,
                         familias_beneficiadas: dto.familias_beneficiadas || false,
+                        unidades_atendidas: dto.unidades_atendidas || false,
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                     },
@@ -54,6 +55,7 @@ export class GrupoTematicoService {
                 programa_habitacional: true,
                 unidades_habitacionais: true,
                 familias_beneficiadas: true,
+                unidades_atendidas: true,
                 criador: { select: { id: true, nome_exibicao: true } },
             },
         });
@@ -65,6 +67,7 @@ export class GrupoTematicoService {
                 programa_habitacional: grupoTematico.programa_habitacional,
                 unidades_habitacionais: grupoTematico.unidades_habitacionais,
                 familias_beneficiadas: grupoTematico.familias_beneficiadas,
+                unidades_atendidas: grupoTematico.unidades_atendidas,
                 criado_em: grupoTematico.criado_em,
                 criado_por: {
                     id: grupoTematico.criador.id,
@@ -87,6 +90,7 @@ export class GrupoTematicoService {
                 programa_habitacional: true,
                 unidades_habitacionais: true,
                 familias_beneficiadas: true,
+                unidades_atendidas: true,
                 criador: { select: { id: true, nome_exibicao: true } },
             },
         });
@@ -98,6 +102,7 @@ export class GrupoTematicoService {
             programa_habitacional: grupoTematico.programa_habitacional,
             unidades_habitacionais: grupoTematico.unidades_habitacionais,
             familias_beneficiadas: grupoTematico.familias_beneficiadas,
+            unidades_atendidas: grupoTematico.unidades_atendidas,
             criado_em: grupoTematico.criado_em,
             criado_por: {
                 id: grupoTematico.criador.id,

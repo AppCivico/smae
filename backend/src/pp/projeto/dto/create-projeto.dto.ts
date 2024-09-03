@@ -251,6 +251,12 @@ export class CreateProjetoDto {
     @Transform(NumberTransform)
     mdo_n_familias_beneficiadas?: number | null;
 
+    @IsOptional()
+    @IsInt({ message: '$property| mdo_n_familias_beneficiadas precisa ser inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberTransform)
+    mdo_n_unidades_atendidas?: number | null;
+
     /**
      * tipo da origem
      *
