@@ -24,9 +24,7 @@ export class EquipeRespService {
         if (!user.hasSomeRoles(['CadastroGrupoVariavel.administrador'])) {
             // assume que CadastroGrupoVariavel.administrador_no_orgao já foi validado na controller
             if (orgao_id != user.orgao_id)
-                throw new BadRequestException(
-                    'Você só tem permissão para criar Equipe no mesmo órgão.'
-                );
+                throw new BadRequestException('Você só tem permissão para criar Equipe no mesmo órgão.');
         }
 
         const created = await this.prisma.$transaction(
@@ -220,9 +218,7 @@ export class EquipeRespService {
 
         if (!user.hasSomeRoles(['CadastroGrupoVariavel.administrador'])) {
             if (user.orgao_id != gp.orgao_id)
-                throw new BadRequestException(
-                    'Você só tem permissão para editar Equipe no mesmo órgão.'
-                );
+                throw new BadRequestException('Você só tem permissão para editar Equipe no mesmo órgão.');
 
             // user.id  must be in gp.GrupoResponsavelEquipeColaborador
             if (!gp.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id).includes(user.id))
@@ -408,15 +404,40 @@ export class EquipeRespService {
         });
 
         if (!exists) return;
-
         logger.log(`ID: ${id}`);
 
         if (!user.hasSomeRoles(['CadastroGrupoVariavel.administrador'])) {
             if (user.orgao_id != exists.orgao_id)
-                throw new BadRequestException(
-                    'Você só tem permissão para remover Equipe no mesmo órgão.'
-                );
+                throw new BadRequestException('Você só tem permissão para remover Equipe no mesmo órgão.');
         }
+
+        const emUsoVar = await this.prisma.variavelGrupoResponsavelEquipe.findMany({
+            where: {
+                grupo_responsavel_equipe_id: id,
+                removido_em: null,
+            },
+            select: { variavel: { select: { titulo: true } } },
+        });
+        if (emUsoVar.length)
+            throw new BadRequestException(
+                `Não é possível remover o grupo pois as seguintes variáveis estão associadas a ele: ${emUsoVar
+                    .map((r) => r.variavel.titulo)
+                    .join(', ')}`
+            );
+
+        const emUsoPdm = await this.prisma.pdmPerfil.findMany({
+            where: {
+                equipe_id: id,
+                removido_em: null,
+            },
+            select: { pdm: { select: { tipo: true, nome: true } } },
+        });
+        if (emUsoPdm.length)
+            throw new BadRequestException(
+                `Não é possível remover o grupo pois os seguintes itens estão associados a ele: ${emUsoPdm
+                    .map((r) => (r.pdm.tipo == 'PDM' ? 'PDM' : 'Plano Setorial') + ' ' + r.pdm.nome)
+                    .join(', ')}`
+            );
 
         const now = new Date(Date.now());
 
