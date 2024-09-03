@@ -1,12 +1,12 @@
 <template>
   <MigalhasDePão class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <h1>{{ titulo || "Equipes" }}</h1>
     <hr class="ml2 f1">
 
     <CheckClose :formulário-sujo="formulárioSujo" />
-  </div>
+  </header>
 
   <form @submit.prevent="onSubmit">
     <div class="f1">
