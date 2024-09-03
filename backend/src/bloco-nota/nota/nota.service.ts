@@ -866,6 +866,13 @@ export class NotaService {
         if (data_inicio) where.data_nota = { gte: data_inicio };
         if (data_fim) where.data_nota = where.data_nota ? { gte: data_inicio, lte: data_fim } : { lte: data_fim };
 
+        if (filters.tipo) {
+            where.dados = {
+                path: ['tipo'],
+                equals: filters.tipo,
+            };
+        }
+
         const comunicados = await this.prisma.nota.findMany({
             where,
             orderBy: { data_nota: 'desc' },

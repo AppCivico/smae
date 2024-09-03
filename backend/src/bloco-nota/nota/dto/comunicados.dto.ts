@@ -34,6 +34,10 @@ export class FilterNotaComunicadoDto {
     @Max(100)
     @Transform(({ value }) => parseInt(value, 10))
     ipp?: number = 20;
+
+    @IsOptional()
+    @IsString()
+    tipo?: string;
 }
 
 export class NotaComunicadoItemDto {
