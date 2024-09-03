@@ -77,7 +77,7 @@ const onSubmit = handleSubmit(() => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(obraEmFoco, (novoValor) => {
   if (novoValor.portfolio_id) {
@@ -113,7 +113,7 @@ export default {
       <hr class="ml2 f1">
 
       <CheckClose
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
       />
     </div>
 

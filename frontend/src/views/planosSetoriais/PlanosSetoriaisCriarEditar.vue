@@ -93,7 +93,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 async function iniciar() {
   const requisições = [
@@ -123,7 +123,7 @@ watch(itemParaEdicao, (novoValor) => {
 
     <hr class="f1">
 
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <form

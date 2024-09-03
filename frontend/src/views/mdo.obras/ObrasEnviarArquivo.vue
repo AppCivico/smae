@@ -1,12 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed, reactive, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import SmallModal from '@/components/SmallModal.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -16,6 +8,14 @@ import {
   useDocumentTypesStore,
 } from '@/stores';
 import { useObrasStore } from '@/stores/obras.store';
+import { storeToRefs } from 'pinia';
+import {
+    ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import {
+    computed, reactive, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -99,7 +99,7 @@ function addFile(e) {
   [curfile.file] = files;
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(arquivoParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
@@ -117,7 +117,7 @@ watch(arquivoParaEdição, (novosValores) => {
       </h2>
       <hr class="ml2 f1">
 
-      <CheckClose :formulário-sujo="formulárioSujo" />
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
 
     <form

@@ -180,7 +180,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 async function iniciar() {
   ÓrgãosStore.getAll();
@@ -222,7 +222,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
 
     <hr class="f1">
 
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <form

@@ -121,7 +121,7 @@ const {
   initialValues: SeriesAgrupadasPorAno.value,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 function buscarAcumuladoAnterior(ano: number, indice: number) {
   const digitos = carga[ano]?.[indice - 1]?.[`${props.tipoDeValor}Acumulado` as TiposValidos]?.valor
@@ -256,7 +256,7 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
     <hr class="f1">
 
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
       :apenas-emitir="true"
       @close="emit('close')"
     />

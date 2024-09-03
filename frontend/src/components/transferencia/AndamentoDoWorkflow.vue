@@ -90,7 +90,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   return resposta;
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 async function rolarParaFaseCorrente() {
   if (Array.isArray(etapaCorrente.value?.fases)) {
@@ -230,7 +230,7 @@ watch(itemParaEdicao, () => {
       <hr class="ml2 f1">
 
       <CheckClose
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         :apenas-emitir="true"
         @close="faseSelecionada = 0"
       />

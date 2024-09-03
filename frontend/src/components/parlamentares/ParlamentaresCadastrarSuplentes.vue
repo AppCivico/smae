@@ -77,7 +77,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(suplenteParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
@@ -92,7 +92,7 @@ watch(suplenteParaEdição, (novoValor) => {
 
       <CheckClose
         :apenas-emitir="props.apenasEmitir"
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         @close="emit('close')"
       />
     </div>

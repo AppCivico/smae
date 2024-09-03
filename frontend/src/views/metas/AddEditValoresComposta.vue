@@ -61,7 +61,7 @@ const {
   validationSchema: null,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const acumulados = computed(() => (Array.isArray(carga.valores)
   ? carga.valores.map((x, i) => ({
@@ -126,7 +126,7 @@ function limparFormulário() {
 function atualizarPeríodo(evento) {
   const { value: valor } = evento.target;
 
-  if (formulárioSujo.value) {
+  if (formularioSujo.value) {
     alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
       período.value = valor;
     }, 'OK', () => {
@@ -159,7 +159,7 @@ watch(período, (novoValor) => {
   <div class="flex spacebetween center mb2">
     <h2>{{ route?.meta?.título }}</h2>
     <hr class="ml2 f1">
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <template

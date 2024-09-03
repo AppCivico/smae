@@ -29,7 +29,7 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit(async () => {
   try {
@@ -74,7 +74,7 @@ watch(itemParaEdicao, (novoValor) => {
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Partido' }}</h1>
     <hr class="ml2 f1">
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form

@@ -4,13 +4,13 @@ import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { computed, ref } from 'vue';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
@@ -32,7 +32,7 @@ const valoresIniciais = {
     tipo: "Geral"
   },
   salvar_arquivo: false,
-  
+
 };
 
 TipoDeTransferenciaStore.buscarTudo();
@@ -69,7 +69,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 </script>
 <template>
@@ -77,7 +77,7 @@ const formulárioSujo = useIsFormDirty();
     <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
 
@@ -156,10 +156,10 @@ const formulárioSujo = useIsFormDirty();
         <div class="error-msg">
           {{ errors['parametros.esfera'] }}
         </div>
-      
+
 
     -->
-  
+
 
 
       <div class="f1">

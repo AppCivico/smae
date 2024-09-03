@@ -101,7 +101,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 function definirCampoNível(valor) {
   switch (valor) {
@@ -156,7 +156,7 @@ watch(representatividadeParaEdição, (novoValor) => {
 
       <CheckClose
         :apenas-emitir="props.apenasEmitir"
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         @close="emit('close')"
       />
     </div>

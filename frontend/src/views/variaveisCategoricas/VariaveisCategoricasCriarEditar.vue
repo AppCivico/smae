@@ -8,7 +8,7 @@
       Novo tipo de variável categórica
     </h1>
     <hr class="ml2 f1">
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
   <form
     @submit.prevent="onSubmit"
@@ -270,7 +270,7 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 async function onSubmit() {
   try {

@@ -84,7 +84,7 @@ const tiposDeDependências = Object.keys(dependencyTypes)
 const todasAsOutrasTarefas = computed(() => tarefasOrdenadas.value
   .filter((x) => x.id !== Number(props.tarefaId)));
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async (valores) => {
   const carga = valores;
@@ -195,7 +195,7 @@ watch(itemParaEdicao, (novoValor) => {
     <hr class="ml2 f1">
 
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
 

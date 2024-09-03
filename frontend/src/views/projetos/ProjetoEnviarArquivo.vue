@@ -1,7 +1,7 @@
 <script setup>
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
-import requestS from '@/helpers/requestS.ts';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import requestS from '@/helpers/requestS.ts';
 import {
   useAlertStore,
   useDocumentTypesStore,
@@ -93,7 +93,7 @@ function addFile(e) {
   [curfile.file] = files;
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(arquivoParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
@@ -105,7 +105,7 @@ watch(arquivoParaEdição, (novosValores) => {
     <h2>{{ $route.meta.título || 'Adicionar arquivo' }}</h2>
     <hr class="ml2 f1">
 
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <template v-if="!(chamadasPendentes?.arquivos?.loading || erro) && !curfile?.loading">

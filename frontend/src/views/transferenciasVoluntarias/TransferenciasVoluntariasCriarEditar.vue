@@ -100,7 +100,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 function iniciar() {
   if (props.transferenciaId) {
@@ -140,7 +140,7 @@ watch(itemParaEdicao, (novosValores) => {
     <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
 

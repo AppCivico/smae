@@ -1,10 +1,10 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { pessoaNaEquipeDeParlamentar as schema } from '@/consts/formSchemas';
-import { vMaska } from "maska"
 import tiposNaEquipe from '@/consts/tiposNaEquipeDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { vMaska } from "maska";
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -87,7 +87,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 function iniciar() {
   if (!parlamentaresStore.emFoco?.id !== Number(props.parlamentarId)) {
@@ -123,7 +123,7 @@ watch(pessoaParaEdição, (novoValor) => {
 
       <CheckClose
         :apenas-emitir="props.apenasEmitir"
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         @close="emit('close')"
       />
     </div>

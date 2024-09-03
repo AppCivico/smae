@@ -331,7 +331,7 @@ function excluirObra(id, nome) {
   }, 'Remover');
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(emFoco, () => {
   iniciar();
@@ -357,7 +357,7 @@ watch(itemParaEdicao, (novoValor) => {
     v-if="obraId"
   />
 -->
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <div

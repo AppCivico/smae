@@ -1,11 +1,11 @@
 <script setup>
+import { perdidoDeComplementação as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
-import { perdidoDeComplementação as schema } from '@/consts/formSchemas';
 import {
-  Field,
   ErrorMessage,
+  Field,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
@@ -67,7 +67,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
     alertStore.error(error);
   }
 });
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
@@ -79,7 +79,7 @@ watch(valoresIniciais, (novoValor) => {
     <hr class="ml2 f1">
 
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
       :apenas-modal="true"
     />
   </div>

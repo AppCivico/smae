@@ -77,7 +77,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
@@ -100,7 +100,7 @@ export default {
       <hr class="ml2 f1">
 
       <CheckClose
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
       />
     </div>
 

@@ -60,7 +60,7 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const nívelDeRegionalização = ref(0);
 const regiõesSelecionadas = ref([]);
@@ -145,7 +145,7 @@ export default {
     <hr class="ml2 f1">
 
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
 

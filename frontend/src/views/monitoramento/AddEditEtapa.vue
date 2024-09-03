@@ -102,7 +102,7 @@ function maskDate(el) {
   }
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
@@ -116,7 +116,7 @@ watch(valoresIniciais, (novoValor) => {
     <hr class="ml2 f1">
 
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
   <template

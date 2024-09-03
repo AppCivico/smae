@@ -57,7 +57,7 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async () => {
   loading.value = true;
@@ -116,7 +116,7 @@ if (variávelId) {
     <hr class="ml2 f1">
 
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
 

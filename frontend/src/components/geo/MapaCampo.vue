@@ -274,7 +274,7 @@ const onSubmit = handleSubmit(async () => {
     alertStore.error(error);
   }
 });
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 </script>
 <template>
   <table
@@ -367,7 +367,7 @@ const formulárioSujo = useIsFormDirty();
       <hr class="ml2 f1">
 
       <CheckClose
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         :apenas-emitir="true"
         @close="ediçãoDeEndereçoAberta = -1"
       />

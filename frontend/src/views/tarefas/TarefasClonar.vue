@@ -77,7 +77,7 @@ const onSubmit = handleSubmit(() => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 if (!projetosPorPortfolio.value.length) {
   projetosStore.buscarTudo();
@@ -104,7 +104,7 @@ export default {
       <hr class="ml2 f1">
 
       <CheckClose
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
       />
     </div>
     <form

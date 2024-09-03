@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <CheckClose
       :apenas-emitir="true"
-      :formulário-sujo="!!combinacaoDeVariaveisSelecionadas.length"
+      :formulario-sujo="!!combinacaoDeVariaveisSelecionadas.length"
       @close="emit('close')"
     />
   </div>

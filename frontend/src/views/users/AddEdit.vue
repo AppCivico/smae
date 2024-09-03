@@ -49,7 +49,7 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const perfilParaDetalhar = ref(0);
 
@@ -155,7 +155,7 @@ watch(accessProfiles, () => {
       </TítuloDePágina>
 
       <hr class="ml2 f1">
-      <CheckClose :formulário-sujo="formulárioSujo" />
+      <CheckClose :formulario-sujo="formularioSujo" />
     </header>
 
     <div

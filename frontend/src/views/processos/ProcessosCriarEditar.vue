@@ -97,7 +97,7 @@ function iniciar() {
   }
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 iniciar();
 
@@ -124,7 +124,7 @@ resetForm();
       v-if="emFoco?.id"
     />
 
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form

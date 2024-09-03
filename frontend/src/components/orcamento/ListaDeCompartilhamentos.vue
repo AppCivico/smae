@@ -249,7 +249,7 @@ watch(props, (novosValores) => {
         <hr class="ml2 f1">
 
         <CheckClose
-          :formulário-sujo="false"
+          :formulario-sujo="false"
           :apenas-emitir="true"
           @close="diálogoAberto = false"
         />

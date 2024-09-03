@@ -63,7 +63,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 ÓrgãosStore.getAll();
 partidosStore.buscarTudo();
@@ -73,7 +73,7 @@ partidosStore.buscarTudo();
     <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
     />
   </div>
 

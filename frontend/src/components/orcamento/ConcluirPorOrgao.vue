@@ -59,7 +59,7 @@ async function concluirOrçamento(concluir, órgãoId, índice) {
 
       <CheckClose
         :apenas-emitir="true"
-        :formulário-sujo="false"
+        :formulario-sujo="false"
         @close="emit('close')"
       />
     </div>

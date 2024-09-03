@@ -1,8 +1,8 @@
 <script setup>
-import { ref, defineProps, computed } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
-import requestS from '@/helpers/requestS.ts';
 import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
+import requestS from '@/helpers/requestS.ts';
+import { computed, defineProps, ref } from 'vue';
 
 const showModal = ref(false);
 const analise = ref(null);
@@ -77,7 +77,7 @@ function handleClick(obj) {
       <hr class="ml2 f1">
       <CheckClose
         :apenas-modal="true"
-        :formulário-sujo="false"
+        :formulario-sujo="false"
         @close="showModal = false"
       />
     </div>

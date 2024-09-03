@@ -1,6 +1,6 @@
 <script setup>
-import { useEditModalStore } from '@/stores/editModal.store';
 import { useAlertStore } from '@/stores/alert.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 import { useRoute, useRouter } from 'vue-router';
 
 const editModalStore = useEditModalStore();
@@ -14,7 +14,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  formulárioSujo: {
+  formularioSujo: {
     type: Boolean,
     default: true,
   },
@@ -71,7 +71,7 @@ async function checkClose() {
     }
   };
 
-  if (props.formulárioSujo) {
+  if (props.formularioSujo) {
     alertStore.confirm('Deseja sair sem salvar as alterações?', destino);
   } else {
     destino();
@@ -80,9 +80,9 @@ async function checkClose() {
 </script>
 <template>
   <pre
-    v-ScrollLockDebug="'formulárioSujo'"
+    v-ScrollLockDebug="'formularioSujo'"
     class="f1"
-  >{{ formulárioSujo }}</pre>
+  >{{ formularioSujo }}</pre>
 
   <button
     class="btn round ml2"

@@ -5,10 +5,10 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import { vMaska } from 'maska';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -105,7 +105,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 function iniciar() {
   parlamentaresStore.buscarEleições();
@@ -147,7 +147,7 @@ iniciar();
 
       <CheckClose
         :apenas-emitir="props.apenasEmitir"
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         @close="emit('close')"
       />
     </div>

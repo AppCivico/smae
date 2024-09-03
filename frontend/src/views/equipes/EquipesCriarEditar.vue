@@ -5,7 +5,7 @@
     <h1>{{ titulo || "Equipes" }}</h1>
     <hr class="ml2 f1">
 
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <form @submit.prevent="onSubmit">
@@ -236,7 +236,7 @@ const {
 
 const authStore = useAuthStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {

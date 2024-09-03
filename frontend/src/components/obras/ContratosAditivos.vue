@@ -94,7 +94,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
   }
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 function abrirDialogo(id = 0) {
   aditivoId.value = id;
@@ -233,7 +233,7 @@ watch(exibirDialogo, (novoValor) => {
       <h2>Aditivo</h2>
       <hr class="ml2 f1">
       <CheckClose
-        :formulário-sujo="formulárioSujo"
+        :formulario-sujo="formularioSujo"
         :apenas-emitir="true"
         @close="exibirDialogo = false"
       />

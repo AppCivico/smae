@@ -69,7 +69,7 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   // necessário por causa de 🤬
@@ -254,7 +254,7 @@ function fecharForm() {
     <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
-      :formulário-sujo="formulárioSujo"
+      :formulario-sujo="formularioSujo"
       :apenas-emitir="mostrarDistribuicaoRegistroForm"
       @close="fecharForm"
     />

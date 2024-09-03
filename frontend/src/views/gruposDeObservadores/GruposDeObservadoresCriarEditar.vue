@@ -86,7 +86,7 @@ async function iniciar() {
   montarCampoEstático.value = true;
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 iniciar();
 
 watch(itemParaEdicao, (novosValores) => {
@@ -98,7 +98,7 @@ watch(itemParaEdicao, (novosValores) => {
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
     <hr class="ml2 f1">
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form

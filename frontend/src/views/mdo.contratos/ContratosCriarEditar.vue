@@ -118,7 +118,7 @@ function iniciar() {
   }
 }
 
-const formulárioSujo = useIsFormDirty();
+const formularioSujo = useIsFormDirty();
 
 iniciar();
 
@@ -153,7 +153,7 @@ onMounted(async () => {
 
     <hr class="ml2 f1">
 
-    <CheckClose :formulário-sujo="formulárioSujo" />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form
