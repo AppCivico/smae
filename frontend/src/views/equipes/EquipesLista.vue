@@ -12,6 +12,9 @@
 
   <table class="tablemain">
     <col>
+    <col>
+    <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -79,12 +82,12 @@
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="3">
+        <td colspan="6">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="3">
+        <td colspan="6">
           Nenhum resultado encontrado.
         </td>
       </tr>
