@@ -421,8 +421,8 @@ export class EquipeRespService {
         if (emUsoVar.length)
             throw new BadRequestException(
                 `Não é possível remover o grupo pois as seguintes variáveis estão associadas a ele: ${emUsoVar
-                    .map((r) => r.variavel.titulo)
-                    .join(', ')}`
+                    .map((r) => '-' + r.variavel.titulo)
+                    .join('\n')}`
             );
 
         const emUsoPdm = await this.prisma.pdmPerfil.findMany({
@@ -435,8 +435,8 @@ export class EquipeRespService {
         if (emUsoPdm.length)
             throw new BadRequestException(
                 `Não é possível remover o grupo pois os seguintes itens estão associados a ele: ${emUsoPdm
-                    .map((r) => (r.pdm.tipo == 'PDM' ? 'PDM' : 'Plano Setorial') + ' ' + r.pdm.nome)
-                    .join(', ')}`
+                    .map((r) => '-' + (r.pdm.tipo == 'PDM' ? 'PDM' : 'Plano Setorial') + ' ' + r.pdm.nome)
+                    .join('\n')}`
             );
 
         const now = new Date(Date.now());
