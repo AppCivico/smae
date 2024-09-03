@@ -109,13 +109,12 @@
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
   >Carregando</span>
-
   <div
-    v-if="erro"
+    v-if="erro.emFoco"
     class="error p1"
   >
     <div class="error-msg">
-      {{ erro }}
+      {{ erro.emfoco }}
     </div>
   </div>
 </template>
