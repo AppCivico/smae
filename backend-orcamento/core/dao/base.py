@@ -1,22 +1,32 @@
-from typing import Callable
+from typing import Callable, Optional
 from functools import wraps
 from requests.exceptions import HTTPError
 from ..exceptions import EmptyData, UnexpectedResponse
 
 class Dao:
 
+    def __get_mdata(self, resp:dict)->None:
+
+        mdata = resp.get('metadados') or resp.get('metaDados')
+        if mdata is None:
+            raise HTTPError(f'Erro na resposta: metadados not found')
+        return mdata
+
     def __check_resp_status(self, resp:dict)->None:
 
-        mdata = resp.get('metadados', {})
+        mdata = self.__get_mdata(resp)
 
-        status = mdata.get('txtStatus', 'missing mdata')
+        status = mdata.get('txtStatus', 'missing txtStatus mdata')
         if status.lower()!='ok':
             raise HTTPError(f'Erro no status da resposta: {status}')
 
     def __get_num_pages(self, resp:dict)->None:
 
-        mdata = resp.get('metadados', {})
-        return int(mdata['qtdPaginas'])
+        mdata = self.__get_mdata(resp)
+        try:
+            return int(mdata['qtdPaginas'])
+        except (KeyError, ValueError):
+            raise HTTPError(f'Erro nos metadados: qtdPaginas not found')
 
     def __parse_single_resp(self, data:dict, attr_keys:list)->list:
 
@@ -29,7 +39,7 @@ class Dao:
             
         return [parsed]
 
-    def __parse_array_resp(self, data:list, attr_keys:list)->list:
+    def __parse_array_resp(self, data:list, attr_keys:Optional[list]=None)->list:
 
         parsed = []
         for item in data:

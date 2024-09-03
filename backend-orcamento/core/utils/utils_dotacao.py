@@ -16,7 +16,7 @@ class FonteSolver:
             fontes_cache = json.load(f)
 
         return fontes_cache
-
+    
     def build_mapper(self, cache:dict)->dict:
 
         return {item['descricao'] : item['codigo'] for item in cache['fonte_recursos']}
@@ -76,7 +76,7 @@ class ReconstructDotacao:
 
 
     def natureza_despesa(self, resp:dict)->str:
-
+        
         estrutura = [
             resp['codCategoria'],
             resp['codGrupo'],
@@ -85,11 +85,11 @@ class ReconstructDotacao:
             #subelemento vai como 00
             '00'
         ]
-
+        
         return ''.join(str(i) for i in estrutura)
 
     def dotacao_txt(self, resp:dict)->str:
-
+        
 
         fonte = resp['codFonteRecurso'] or self.solve_fonte(resp['txtDescricaoFonteRecurso'])
 
@@ -104,7 +104,7 @@ class ReconstructDotacao:
             self.natureza_despesa(resp),
             fonte
         ]
-
+        
         return '.'.join(str(i) for i in estrutura)
 
     def __call__(self, resp:dict)->str:
