@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ContratoPrazoUnidade, ProjetoOrigemTipo, ProjetoStatus, StatusContrato } from '@prisma/client';
+import {
+    CategoriaProcessoSei,
+    ContratoPrazoUnidade,
+    ProjetoOrigemTipo,
+    ProjetoStatus,
+    StatusContrato,
+} from '@prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
@@ -168,6 +174,16 @@ export class RelObrasOrigemDto {
     atividade_titulo: string | null;
 }
 
+export class RelObrasSeiDto {
+    obra_id: number;
+    categoria: CategoriaProcessoSei;
+    processo_sei: string;
+    descricao: string | null;
+    link: string | null;
+    comentarios: string | null;
+    observacoes: string | null;
+}
+
 export class PPObrasRelatorioDto {
     linhas: RelObrasDto[];
     cronograma: RelObrasCronogramaDto[];
@@ -177,4 +193,5 @@ export class PPObrasRelatorioDto {
     contratos: RelObrasContratosDto[];
     aditivos: RelObrasAditivosDto[];
     origens: RelObrasOrigemDto[];
+    processos_sei: RelObrasSeiDto[];
 }

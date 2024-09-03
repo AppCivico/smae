@@ -3,7 +3,14 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ContratoPrazoUnidade, ProjetoOrigemTipo, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
+import {
+    CategoriaProcessoSei,
+    ContratoPrazoUnidade,
+    ProjetoOrigemTipo,
+    ProjetoStatus,
+    StatusContrato,
+    StatusRisco,
+} from '@prisma/client';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
@@ -18,6 +25,7 @@ import {
     RelObrasFontesRecursoDto,
     RelObrasOrigemDto,
     RelObrasRegioesDto,
+    RelObrasSeiDto,
 } from './entities/obras.entity';
 
 const {
@@ -209,6 +217,16 @@ class RetornoDbAcompanhamentos {
     riscos: string | null;
 }
 
+class RetornoDbObrasSEI {
+    obra_id: number;
+    categoria: CategoriaProcessoSei;
+    processo_sei: string;
+    descricao: string | null;
+    link: string | null;
+    comentarios: string | null;
+    observacoes: string | null;
+}
+
 @Injectable()
 export class PPObrasService implements ReportableService {
     constructor(
@@ -227,6 +245,7 @@ export class PPObrasService implements ReportableService {
         const out_contratos: RelObrasContratosDto[] = [];
         const out_aditivos: RelObrasAditivosDto[] = [];
         const out_origens: RelObrasOrigemDto[] = [];
+        const out_processos_sei: RelObrasSeiDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
 
@@ -238,6 +257,7 @@ export class PPObrasService implements ReportableService {
         await this.queryDataContratos(whereCond, out_contratos);
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
+        await this.queryDataObrasSei(whereCond, out_processos_sei);
 
         return {
             linhas: out_obras,
@@ -248,6 +268,7 @@ export class PPObrasService implements ReportableService {
             contratos: out_contratos,
             aditivos: out_aditivos,
             origens: out_origens,
+            processos_sei: out_processos_sei,
         };
     }
 
@@ -353,6 +374,18 @@ export class PPObrasService implements ReportableService {
             const linhas = json2csvParser.parse(dados.origens);
             out.push({
                 name: 'origens.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.processos_sei.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.processos_sei);
+            out.push({
+                name: 'processos_sei.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
@@ -1027,6 +1060,40 @@ export class PPObrasService implements ReportableService {
                 iniciativa_titulo: db.iniciativa_titulo ?? null,
                 atividade_id: db.atividade_id ?? null,
                 atividade_titulo: db.atividade_titulo ?? null,
+            };
+        });
+    }
+
+    private async queryDataObrasSei(whereCond: WhereCond, out: RelObrasSeiDto[]) {
+        const sql = `SELECT
+            projeto.id AS obra_id,
+            projeto_registro_sei.categoria,
+            projeto_registro_sei.processo_sei,
+            projeto_registro_sei.descricao,
+            projeto_registro_sei.link,
+            projeto_registro_sei.comentarios,
+            projeto_registro_sei.observacoes
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL
+        ${whereCond.whereString}
+        `;
+
+        const data: RetornoDbObrasSEI[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsObrasSei(data));
+    }
+
+    private convertRowsObrasSei(input: RetornoDbObrasSEI[]): RelObrasSeiDto[] {
+        return input.map((db) => {
+            return {
+                obra_id: db.obra_id,
+                categoria: db.categoria,
+                processo_sei: db.processo_sei,
+                descricao: db.descricao ?? null,
+                link: db.link ?? null,
+                comentarios: db.comentarios ?? null,
+                observacoes: db.observacoes ?? null,
             };
         });
     }
