@@ -209,7 +209,7 @@ export default [
               ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
             }),
             meta: {
-              título: 'Editar grupo temático',
+              título: 'Editar',
               rotasParaMigalhasDePão: [
                 'cadastrosBasicos',
                 'gruposTematicosObras',
