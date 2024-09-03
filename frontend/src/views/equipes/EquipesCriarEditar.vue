@@ -79,7 +79,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="
-              emFoco?.permissoes.status_permitidos?.indexOf(item.valor) === -1
+              emFoco?.permissoes?.status_permitidos?.indexOf(item.valor) === -1
             "
           >
             {{ item.nome }}
