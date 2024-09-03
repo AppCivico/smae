@@ -3518,6 +3518,7 @@ model Projeto {
     mdo_programa_habitacional    String?
     mdo_observacoes              String?
     mdo_n_unidades_habitacionais Int?
+    mdo_n_unidades_atendidas     Int?
     mdo_n_familias_beneficiadas  Int?
     grupo_tematico_id            Int?
     mdo_previsao_inauguracao     DateTime?        @db.Date()
@@ -6403,6 +6404,7 @@ model GrupoTematico {
 
     programa_habitacional  Boolean @default(false)
     unidades_habitacionais Boolean @default(false)
+    unidades_atendidas     Boolean @default(false)
     familias_beneficiadas  Boolean @default(false)
 
     criado_por Int

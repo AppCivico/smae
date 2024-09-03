@@ -16,4 +16,8 @@ export class CreateGrupoTematicoDto {
     @IsBoolean()
     @IsOptional()
     familias_beneficiadas?: boolean | undefined;
+
+    @IsBoolean()
+    @IsOptional()
+    unidades_atendidas?: boolean | undefined;
 }

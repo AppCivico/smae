@@ -6,6 +6,7 @@ export class GrupoTematico {
     programa_habitacional: boolean;
     unidades_habitacionais: boolean;
     familias_beneficiadas: boolean;
+    unidades_atendidas: boolean;
     criado_em: Date;
     criado_por: IdNomeExibicaoDto;
 }

@@ -298,6 +298,7 @@ export class ProjetoDetailBaseMdo {
     mdo_detalhamento: string | null;
     mdo_n_unidades_habitacionais: number | null;
     mdo_n_familias_beneficiadas: number | null;
+    mdo_n_unidades_atendidas: number | null;
     mdo_previsao_inauguracao: Date | null;
     mdo_observacoes: string | null;
     tipo_aditivo: IdNomeDto | null;
