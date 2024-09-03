@@ -8,6 +8,7 @@ import {
     IsNumberString,
     IsOptional,
     IsString,
+    MaxLength,
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
@@ -315,6 +316,7 @@ export class VariavelAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     analise_qualitativa?: string;
 
     @IsOptional()

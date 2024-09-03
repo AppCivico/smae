@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 
 export class AnaliseQualitativaDocumentoDto {
@@ -74,5 +74,6 @@ export class AnaliseQualitativaDto {
     meta_id: number;
 
     @IsString()
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     informacoes_complementares: string;
 }
