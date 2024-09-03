@@ -178,10 +178,10 @@ export class TransfereGovSyncService {
                             template: 'comunicado-transfere-gov.html',
                             variables: {
                                 titulo: item.titulo,
-                                data: Date2YMD.toString( item.data), // date already formatted
+                                data: Date2YMD.dbDateToDMY(item.data),
                                 descricao: item.descricao,
                                 link: item.link,
-                                tipo: item.tipo, // important string
+                                tipo: item.tipo,
                             },
                             config_id: 1,
                         },
