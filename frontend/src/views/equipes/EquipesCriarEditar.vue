@@ -168,22 +168,22 @@
 </template>
 
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import { equipes as schema } from '@/consts/formSchemas';
+import tipoDePerfil from '@/consts/tipoDePerfil';
+import requestS from '@/helpers/requestS.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
-import { useAuthStore } from '@/stores/auth.store';
-import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { useUsersStore } from '@/stores/users.store';
-import { useAlertStore } from '@/stores/alert.store';
-import tipoDePerfil from '@/consts/tipoDePerfil';
-import { equipes as schema } from '@/consts/formSchemas';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
