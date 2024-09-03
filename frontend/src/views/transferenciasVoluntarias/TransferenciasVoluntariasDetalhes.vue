@@ -837,7 +837,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </td>
             <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
             <td>
-              <label class="transferencia-sei-body__item--lido flex column g05 start">
+              <label
+                v-if="registro.integracao_sei"
+                class="transferencia-sei-body__item--lido flex column g05 start"
+              >
                 {{ registro.lido ? "Lido" : "Não lido" }}
                 <input
                   type="checkbox"
