@@ -70,6 +70,7 @@
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.perfil }"
+          :disabled="!!emFoco?.id"
         >
           <option value="">
             Selecionar
@@ -214,7 +215,9 @@ const usersStore = useUsersStore();
 const ÓrgãosStore = useOrgansStore();
 const equipesStore = useEquipesStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(
+const {
+  chamadasPendentes, emFoco, erro, itemParaEdição,
+} = storeToRefs(
   equipesStore,
 );
 
