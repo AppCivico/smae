@@ -29,7 +29,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const paineisStore = usePaineisExternosStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(paineisStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(paineisStore);
 
 async function onSubmit(values) {
   try {
@@ -68,7 +68,7 @@ GruposPaineisExternos.buscarTudo();
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">

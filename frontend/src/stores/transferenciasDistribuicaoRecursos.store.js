@@ -104,7 +104,7 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       assinatura_estado: dateTimeToDate(emFoco?.assinatura_estado),
       assinatura_municipio: dateTimeToDate(emFoco?.assinatura_municipio),

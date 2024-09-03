@@ -78,7 +78,7 @@ export const useModalidadeDeContratacaoStore = defineStore('modalidadeDeContrata
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

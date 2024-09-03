@@ -89,7 +89,7 @@ const {
   chamadasPendentes,
   emFoco,
   erros,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(variaveisGlobaisStore);
 
 const props = defineProps({
@@ -114,7 +114,7 @@ const schema = computed(() => (gerarMultiplasVariaveis.value
 const {
   errors, handleSubmit, resetForm, resetField, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema.value,
 });
 
@@ -201,7 +201,7 @@ async function iniciar() {
 
 iniciar();
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({
     initialValues: novoValor,
   });

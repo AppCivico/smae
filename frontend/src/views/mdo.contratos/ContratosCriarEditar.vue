@@ -16,9 +16,9 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import {
+  computed,
   onMounted, ref,
   watch,
-  computed,
 } from 'vue';
 
 import { useRoute, useRouter } from 'vue-router';
@@ -48,7 +48,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
   listaDeDependencias,
 } = storeToRefs(contratosStore);
 
@@ -70,7 +70,7 @@ const props = defineProps({
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values: carga,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -122,7 +122,7 @@ const formulárioSujo = useIsFormDirty();
 
 iniciar();
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 }, { immediate: true });
 

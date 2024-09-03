@@ -216,7 +216,7 @@ const ÓrgãosStore = useOrgansStore();
 const equipesStore = useEquipesStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
-  chamadasPendentes, emFoco, erro, itemParaEdição,
+  chamadasPendentes, emFoco, erro, itemParaEdicao,
 } = storeToRefs(
   equipesStore,
 );
@@ -230,7 +230,7 @@ const {
   setFieldValue,
   values: carga,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 

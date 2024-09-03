@@ -78,7 +78,7 @@ export const useProgramaHabitacionalStore = defineStore('programaHabitacionalSto
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
         habilita_valor: emFoco?.habilita_valor || false,

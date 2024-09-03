@@ -90,7 +90,7 @@ export const useGruposPaineisExternos = defineStore('GruposPaineisExternos', {
   },
 
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       participantes: emFoco?.participantes && Array.isArray(emFoco.participantes)
         ? emFoco.participantes.map((x) => x.id)

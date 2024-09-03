@@ -1,7 +1,7 @@
 <script setup>
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -10,12 +10,11 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
-  Form,
   useForm,
-  useIsFormDirty,
+  useIsFormDirty
 } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -31,7 +30,7 @@ const useGruposPaineisExternosStore = useGruposPaineisExternos();
 const ÓrgãosStore = useOrgansStore();
 
 const {
-  chamadasPendentes, emFoco, erro, itemParaEdição,
+  chamadasPendentes, emFoco, erro, itemParaEdicao,
 } = storeToRefs(useGruposPaineisExternosStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
@@ -44,7 +43,7 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -90,7 +89,7 @@ async function iniciar() {
 const formulárioSujo = useIsFormDirty();
 iniciar();
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
 </script>

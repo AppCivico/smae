@@ -79,7 +79,7 @@ export const useBancadasStore = defineStore('bancadasStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
         partido_ids: emFoco?.partidos?.map((x) => x.id) || [],

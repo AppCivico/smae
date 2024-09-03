@@ -27,7 +27,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(riscosStore);
 
 const {
@@ -112,7 +112,7 @@ iniciar();
     v-if="!riscoId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :validation-schema="schema"
     @submit="onSubmit"
   >

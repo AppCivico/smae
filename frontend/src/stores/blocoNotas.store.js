@@ -120,7 +120,7 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       dispara_email: emFoco?.dispara_email || false,
       data_nota: dateTimeToDate(emFoco?.data_nota) || null,

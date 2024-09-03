@@ -81,7 +81,7 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

@@ -225,7 +225,7 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       data_assinatura: emFoco?.data_assinatura
         ? dateTimeToDate(emFoco?.data_assinatura)

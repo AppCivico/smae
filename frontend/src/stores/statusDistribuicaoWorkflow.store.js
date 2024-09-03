@@ -78,7 +78,7 @@ export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicao
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

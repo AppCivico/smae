@@ -79,7 +79,7 @@ export const useFontesStore = defineStore('fontesStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

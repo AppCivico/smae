@@ -89,7 +89,7 @@ export const useSubtemasPsStore = defineStore('subtemasPsStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

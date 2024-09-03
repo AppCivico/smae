@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
@@ -77,7 +77,7 @@ export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
         inicio: dateTimeToDate(emFoco?.inicio),

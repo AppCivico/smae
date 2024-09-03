@@ -313,7 +313,7 @@ export const useProjetosStore = defineStore('projetos', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco, route }) => ({
+    itemParaEdicao: ({ emFoco, route }) => ({
       ...emFoco,
       portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id,
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),

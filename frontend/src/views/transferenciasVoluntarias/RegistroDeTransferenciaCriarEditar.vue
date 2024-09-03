@@ -19,7 +19,7 @@ import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
-  chamadasPendentes, erro, itemParaEdição, emFoco: transferenciaEmFoco,
+  chamadasPendentes, erro, itemParaEdicao, emFoco: transferenciaEmFoco,
 } = storeToRefs(TransferenciasVoluntarias);
 
 const ParlamentaresStore = useParlamentaresStore();
@@ -43,7 +43,7 @@ const props = defineProps({
 const {
   errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -131,7 +131,7 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 partidoStore.buscarTudo();
 
-watch(itemParaEdição, async (novosValores) => {
+watch(itemParaEdicao, async (novosValores) => {
   resetForm({ values: novosValores });
 
   await nextTick();

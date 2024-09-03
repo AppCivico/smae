@@ -80,7 +80,7 @@ export const usePartidosStore = defineStore('partidosStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
         fundacao: dateTimeToDate(emFoco?.fundacao) || null,

@@ -78,7 +78,7 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
         habilita_valor: emFoco?.habilita_valor || false,

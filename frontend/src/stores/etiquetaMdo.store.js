@@ -78,7 +78,7 @@ export const useEtiquetasStore = defineStore('etiquetasStore', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

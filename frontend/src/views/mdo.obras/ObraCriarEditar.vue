@@ -89,7 +89,7 @@ const {
   emFoco,
   erro,
   geolocalizaçãoPorToken,
-  itemParaEdição,
+  itemParaEdicao,
   pdmsSimplificados,
   pdmsPorId,
   planosAgrupadosPorTipo,
@@ -182,7 +182,7 @@ const {
   setFieldValue,
   values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -337,7 +337,7 @@ watch(emFoco, () => {
   iniciar();
 }, { immediate: true });
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   montarCampoEstático.value = false;
   resetForm({
     initialValues: novoValor,
@@ -836,7 +836,7 @@ watch(itemParaEdição, (novoValor) => {
 
       <CampoDeRegioesAgrupadas
         v-model="values.regiao_ids"
-        :valores-iniciais="itemParaEdição.regiao_ids"
+        :valores-iniciais="itemParaEdicao.regiao_ids"
         :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
       />
     </fieldset>

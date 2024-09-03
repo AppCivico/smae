@@ -89,7 +89,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

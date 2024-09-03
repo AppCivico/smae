@@ -102,7 +102,7 @@ export const usePlanosDeAçãoStore = defineStore('planosDeAção', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco, route }) => ({
+    itemParaEdicao: ({ emFoco, route }) => ({
       ...emFoco,
       custo: emFoco?.custo || null,
       custo_percentual: emFoco?.custo_percentual || null,

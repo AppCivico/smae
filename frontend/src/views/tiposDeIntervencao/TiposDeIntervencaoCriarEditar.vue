@@ -7,7 +7,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -71,7 +71,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(tiposDeIntervencaoStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tiposDeIntervencaoStore);
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({

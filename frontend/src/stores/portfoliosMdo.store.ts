@@ -106,7 +106,7 @@ export const usePortfolioObraStore = defineStore('portfoliosMdo', {
   },
 
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       nivel_maximo_tarefa: emFoco?.nivel_maximo_tarefa || 5,
       nivel_regionalizacao: emFoco?.nivel_regionalizacao || 1,

@@ -297,7 +297,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

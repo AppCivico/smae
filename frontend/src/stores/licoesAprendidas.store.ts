@@ -97,7 +97,7 @@ export const useLiçõesAprendidasStore = defineStore('liçõesAprendidas', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
     }),

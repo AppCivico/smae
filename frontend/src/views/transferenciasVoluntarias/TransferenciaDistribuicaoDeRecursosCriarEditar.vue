@@ -37,7 +37,7 @@ const partidoStore = usePartidosStore();
 const ParlamentaresStore = useParlamentaresStore();
 
 const {
-  chamadasPendentes, erro, lista, itemParaEdição, emFoco: distribuiçãoEmFoco,
+  chamadasPendentes, erro, lista, itemParaEdicao, emFoco: distribuiçãoEmFoco,
 } = storeToRefs(distribuicaoRecursos);
 const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -65,7 +65,7 @@ const statusEmFoco = ref(null);
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -77,12 +77,12 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 
   try {
     let r;
-    const msg = itemParaEdição.value.id
+    const msg = itemParaEdicao.value.id
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (itemParaEdição.value.id) {
-      r = await distribuicaoRecursos.salvarItem(cargaManipulada, itemParaEdição.value.id);
+    if (itemParaEdicao.value.id) {
+      r = await distribuicaoRecursos.salvarItem(cargaManipulada, itemParaEdicao.value.id);
     } else {
       r = await distribuicaoRecursos.salvarItem(cargaManipulada);
     }
@@ -91,7 +91,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 
       mostrarDistribuicaoRegistroForm.value = false;
 
-      if (itemParaEdição.value.id) {
+      if (itemParaEdicao.value.id) {
         distribuiçãoEmFoco.value = null;
       }
 
@@ -195,7 +195,7 @@ function abrirModalStatus(status = null) {
 
 iniciar();
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({
     values: {
       ...novosValores,
@@ -213,9 +213,9 @@ watch(itemParaEdição, (novosValores) => {
 
 watch(() => values.vigencia, (novoValor) => {
   if (
-    itemParaEdição.value?.vigencia
-    && !itemParaEdição.value?.justificativa_aditamento
-    && novoValor !== itemParaEdição.value?.vigencia
+    itemParaEdicao.value?.vigencia
+    && !itemParaEdicao.value?.justificativa_aditamento
+    && novoValor !== itemParaEdicao.value?.vigencia
   ) {
     setFieldValue('justificativa_aditamento', '');
   }
@@ -371,7 +371,7 @@ function fecharForm() {
     @submit.prevent="onSubmit"
   >
     <Field
-      v-if="!itemParaEdição.id"
+      v-if="!itemParaEdicao.id"
       type="hidden"
       name="transferencia_id"
       :value="props.transferenciaId"

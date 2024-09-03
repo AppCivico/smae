@@ -7,7 +7,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -88,7 +88,7 @@ const titulo = typeof route?.meta?.título === 'function'
 
 const alertStore = useAlertStore();
 const temasStore = useTemasPsStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(temasStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(temasStore);
 
 async function onSubmit(values) {
   try {

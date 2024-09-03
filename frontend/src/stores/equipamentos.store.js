@@ -81,7 +81,7 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

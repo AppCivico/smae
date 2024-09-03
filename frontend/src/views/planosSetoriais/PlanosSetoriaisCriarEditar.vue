@@ -39,7 +39,7 @@ const {
   chamadasPendentes,
   emFoco,
   erros,
-  itemParaEdição,
+  itemParaEdicao,
   lista,
 } = storeToRefs(planosSetoriaisStore);
 
@@ -61,7 +61,7 @@ const montarCampoEstático = ref(false);
 const {
   errors, handleSubmit, isSubmitting, resetForm, resetField, setFieldValue, values: carga,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -109,7 +109,7 @@ async function iniciar() {
 
 iniciar();
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   montarCampoEstático.value = false;
   resetForm({
     initialValues: novoValor,

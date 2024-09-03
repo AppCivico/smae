@@ -115,7 +115,7 @@ export const useProcessosStore = defineStore('processos', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       processo_sei: formatProcesso(emFoco?.processo_sei) || '',
     }),

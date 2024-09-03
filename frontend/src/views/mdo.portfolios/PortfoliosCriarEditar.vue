@@ -25,7 +25,7 @@ const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
 const portfolioStore = usePortfolioObraStore();
 const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(portfolioStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(portfolioStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
   lista: gruposDeObservadores,
@@ -79,7 +79,7 @@ observadoresStore.buscarTudo();
     v-if="órgãosComoLista?.length"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">

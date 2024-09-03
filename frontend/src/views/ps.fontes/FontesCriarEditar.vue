@@ -8,7 +8,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -18,7 +18,7 @@
           :schema="schema"
         />
         <Field
-          v-model="itemParaEdição.nome"
+          v-model="itemParaEdicao.nome"
           name="nome"
           type="text"
           min="3"
@@ -66,13 +66,13 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useFontesStore } from '@/stores/fontesPs.store';
-import { useAlertStore } from '@/stores/alert.store';
 import { fonte as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useFontesStore } from '@/stores/fontesPs.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -85,7 +85,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const fontesStore = useFontesStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(fontesStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(fontesStore);
 
 async function onSubmit(values) {
   try {

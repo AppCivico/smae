@@ -23,7 +23,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(tarefasStore);
 
 const props = defineProps({
@@ -182,7 +182,7 @@ iniciar();
     v-if="!tarefaId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :validation-schema="schema"
     @submit="onSubmit"
   >

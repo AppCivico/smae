@@ -25,7 +25,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(acompanhamentosStore);
 
 const {
@@ -118,7 +118,7 @@ function excluirAcompanhamento(id) {
     v-if="!acompanhamentoId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :validation-schema="schema"
     @submit="onSubmit"
   >

@@ -111,7 +111,7 @@ export const useObservadoresStore = defineStore('observadores', {
   },
 
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       participantes: emFoco?.participantes && Array.isArray(emFoco.participantes)
         ? emFoco.participantes.map((x) => x.id)

@@ -20,7 +20,7 @@ export const useEmailsStore = defineStore("emailsStore", {
 
       try {
         const resposta = await this.requestS.get(
-          `${baseUrl}/aviso-email/`, 
+          `${baseUrl}/aviso-email/`,
           params
         );
         this.emFoco = {
@@ -71,7 +71,7 @@ export const useEmailsStore = defineStore("emailsStore", {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

@@ -45,7 +45,7 @@ const {
   erro,
   chamadasPendentes,
   emFoco,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(blocoStore);
 
 const tipoStore = useTipoDeNotasStore();
@@ -59,7 +59,7 @@ const statusSelecionado = ref('');
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
   validationSchema: schema,
 });
 
@@ -83,7 +83,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const valoresAuxiliares = {
     ...values,
     bloco_token: props.blocosToken,
-    id: itemParaEdição.value.id_jwt ? itemParaEdição.value.id_jwt : undefined,
+    id: itemParaEdicao.value.id_jwt ? itemParaEdicao.value.id_jwt : undefined,
   };
   try {
     let resposta;
@@ -93,7 +93,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       blocoStore.$reset();
       blocoStore.buscarTudo(props.blocosToken);
-      resetForm({ values: itemParaEdição.value });
+      resetForm({ values: itemParaEdicao.value });
     }
   } catch (error) {
     alertStore.error(error);
@@ -142,7 +142,7 @@ tipoStore.buscarTudo();
 UserStore.buscarPessoasSimplificadas();
 
 // deveria funcionar
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
 </script>

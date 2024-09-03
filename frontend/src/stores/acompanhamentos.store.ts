@@ -115,7 +115,7 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
       risco: emFoco?.risco?.map((x: RiscoIdCod) => x.id) || null,

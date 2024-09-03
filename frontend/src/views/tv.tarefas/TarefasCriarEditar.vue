@@ -20,7 +20,7 @@ const props = defineProps({
   },
 });
 
-const itemParaEdição = computed(() => lista.value
+const itemParaEdicao = computed(() => lista.value
   .find((x) => x.id === Number(route.params.tarefasId)) || {
   id: 0, descricao: '',
 });
@@ -53,7 +53,7 @@ async function onSubmit(_, { controlledValues: carga }) {
 
   <Form
     v-slot="{ errors, isSubmitting }"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :disabled="chamadasPendentes.emFoco"
     :validation-schema="schema"
     @submit="onSubmit"

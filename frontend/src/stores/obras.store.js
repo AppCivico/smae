@@ -228,7 +228,7 @@ export const useObrasStore = defineStore('obrasStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco, route }) {
+    itemParaEdicao({ emFoco, route }) {
       return {
         ...emFoco,
         codigo: emFoco?.codigo ? undefined : null,

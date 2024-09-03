@@ -26,7 +26,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(processosStore);
 
 const {
@@ -47,7 +47,7 @@ const props = defineProps({
 const {
   errors, handleSubmit, isSubmitting, resetForm, values: carga,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -103,7 +103,7 @@ const formulárioSujo = useIsFormDirty();
 
 iniciar();
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
 

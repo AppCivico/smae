@@ -1,7 +1,7 @@
 <script setup>
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -13,8 +13,8 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -30,7 +30,7 @@ const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
 
 const {
-  chamadasPendentes, emFoco, erro, itemParaEdição,
+  chamadasPendentes, emFoco, erro, itemParaEdicao,
 } = storeToRefs(observadoresStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
@@ -43,7 +43,7 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -89,7 +89,7 @@ async function iniciar() {
 const formulárioSujo = useIsFormDirty();
 iniciar();
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
 </script>

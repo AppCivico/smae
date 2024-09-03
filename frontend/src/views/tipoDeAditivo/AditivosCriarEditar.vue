@@ -8,7 +8,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -102,12 +102,12 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
-import { useAlertStore } from '@/stores/alert.store';
 import { tipoDeAditivo as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -120,7 +120,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const aditivosStore = useTipoDeAditivosStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(aditivosStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(aditivosStore);
 
 async function onSubmit(values) {
   try {

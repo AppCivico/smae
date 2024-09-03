@@ -33,7 +33,7 @@ const route = useRoute();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 const { lista: statusesDistribuicaoComoLista } = storeToRefs(statusesDistribuicaoStore);
 const {
-  chamadasPendentes, erro, itemParaEdição, emFoco,
+  chamadasPendentes, erro, itemParaEdicao, emFoco,
 } = storeToRefs(fluxosProjetoStore);
 const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
@@ -65,7 +65,7 @@ const props = defineProps({
 const {
   errors, isSubmitting, setFieldValue, handleSubmit,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -173,7 +173,7 @@ onUnmounted(() => {
   emFoco.value = null;
 });
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
     tipoTransferenciaSelecionado.value = novoValor.transferencia_tipo.id;
     statusesDistribuicaoStore.buscarTudo();

@@ -38,7 +38,7 @@ const {
 
 const emFoco = computed(() => variáveisCompostasPorReferência.value?.[`@_${variávelId}`] || null);
 
-const itemParaEdição = computed(() => emFoco.value || {
+const itemParaEdicao = computed(() => emFoco.value || {
   titulo: '',
   formula: '',
   formula_variaveis: [],
@@ -53,7 +53,7 @@ const loading = ref(false);
 const {
   errors, handleSubmit, isSubmitting, resetField, resetForm, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -100,7 +100,7 @@ if (variávelId) {
   }
 
   watch(
-    itemParaEdição,
+    itemParaEdicao,
     (novosValores) => {
       formula.value = emFoco.value?.formula || '';
       variaveisFormula.value = emFoco.value?.formula_variaveis || '';

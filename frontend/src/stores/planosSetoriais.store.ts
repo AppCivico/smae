@@ -177,7 +177,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
   },
 
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       data_fim: emFoco?.data_fim
         ? dateTimeToDate(emFoco.data_fim)

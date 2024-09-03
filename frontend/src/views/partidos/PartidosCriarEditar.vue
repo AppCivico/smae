@@ -20,12 +20,12 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const partidosStore = usePartidosStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(partidosStore);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -66,7 +66,7 @@ if (props.partidoId) {
   partidosStore.buscarItem(props.partidoId);
 }
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({ values: novoValor });
 });
 </script>

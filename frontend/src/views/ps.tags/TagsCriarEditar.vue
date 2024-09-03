@@ -7,7 +7,7 @@
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div>
@@ -132,7 +132,7 @@ const tagsStore = useTagsPsStore();
 const odsStore = useOdsStore();
 const router = useRouter();
 
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(tagsStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tagsStore);
 const {
   lista: odsLista, chamadasPendentes: odsChamadasPendentes, erro: odsErro,
 } = storeToRefs(odsStore);

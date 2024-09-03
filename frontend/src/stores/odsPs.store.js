@@ -87,7 +87,7 @@ export const useOdsStore = defineStore('odsStore', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

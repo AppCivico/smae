@@ -7,7 +7,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -138,7 +138,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const gruposTematicosStore = useGruposTematicosStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(gruposTematicosStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(gruposTematicosStore);
 
 async function onSubmit(values) {
   try {

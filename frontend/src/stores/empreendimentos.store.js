@@ -78,7 +78,7 @@ export const useEmpreendimentosStore = defineStore('empreendimentossStore', {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

@@ -59,7 +59,7 @@ const proximaOrdemDisponivel = computed(() => {
   return maxOrdem + 1;
 });
 
-const itemParaEdição = computed(() => {
+const itemParaEdicao = computed(() => {
   const tarefa = listaDeTarefasNoFluxo.value.find((x) => (x.id === Number(props.relacionamentoId)));
 
   return tarefa
@@ -79,7 +79,7 @@ const {
   errors, isSubmitting, values, handleSubmit, resetForm, setFieldValue,
 } = useForm({
   validationSchema: schema,
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
@@ -120,7 +120,7 @@ function iniciar() {
 }
 iniciar();
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({
     values: novoValor,
   });

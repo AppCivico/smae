@@ -134,7 +134,7 @@ export const useVariaveisGlobaisStore = defineStore('variareis', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
     }),
 

@@ -239,16 +239,16 @@
 </template>
 
 <script setup>
+import { variávelCategórica as schema } from '@/consts/formSchemas';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import { useAlertStore } from '@/stores/alert.store';
-import { variávelCategórica as schema } from '@/consts/formSchemas';
-import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
 import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -261,12 +261,12 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(variaveisCategoricasStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(variaveisCategoricasStore);
 
 const {
   errors, isSubmitting, resetForm, values,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
   validationSchema: schema,
 });
 
@@ -303,7 +303,7 @@ if (route.params?.variavelId) {
   variaveisCategoricasStore.buscarItem(route.params?.variavelId);
 }
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({ values: novoValor });
 });
 

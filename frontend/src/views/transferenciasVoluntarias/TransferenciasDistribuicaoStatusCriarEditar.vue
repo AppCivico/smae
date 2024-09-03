@@ -24,7 +24,7 @@
               as="select"
               class="inputtext light mb1"
               :class="{ error: errors.status_id }"
-              :disabled="itemParaEdição.id"
+              :disabled="itemParaEdicao.id"
             >
               <option value="">
                 Selecionar
@@ -136,6 +136,13 @@
 </template>
 
 <script setup>
+import SmallModal from '@/components/SmallModal.vue';
+import { statusDistribuicao as schema } from '@/consts/formSchemas';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -143,13 +150,6 @@ import {
   useForm,
 } from 'vee-validate';
 import { computed, watch } from 'vue';
-import SmallModal from '@/components/SmallModal.vue';
-import { statusDistribuicao as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
-import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const ÓrgãosStore = useOrgansStore();
 const fluxosProjetosStore = useFluxosProjetosStore();
@@ -180,7 +180,7 @@ const emit = defineEmits(['fecharModal', 'salvouStatus']);
 
 const alertStore = useAlertStore();
 
-const itemParaEdição = computed(() => ({
+const itemParaEdicao = computed(() => ({
   ...props.statusEmFoco,
   status_id: props.statusEmFoco?.status_base
     ? props.statusEmFoco.status_base.id
@@ -192,7 +192,7 @@ const itemParaEdição = computed(() => ({
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
   validationSchema: schema,
 });
 

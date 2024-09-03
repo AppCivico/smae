@@ -23,7 +23,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(liçõesAprendidasStore);
 
 const {
@@ -105,7 +105,7 @@ iniciar();
     v-if="!licaoAprendidaId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :validation-schema="schema"
     @submit="onSubmit"
   >

@@ -46,7 +46,7 @@ const {
 const aditivoId = ref(0);
 const exibirDialogo = ref(false);
 
-const itemParaEdição = computed(() => {
+const itemParaEdicao = computed(() => {
   const aditivoEmFoco = aditivoId.value && contratoEmFoco.value
     ? contratoEmFoco.value?.aditivos?.find((item) => item.id === aditivoId.value)
     : null;
@@ -68,7 +68,7 @@ const itemParaEdição = computed(() => {
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values: carga,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 
@@ -100,7 +100,7 @@ function abrirDialogo(id = 0) {
   aditivoId.value = id;
   exibirDialogo.value = true;
   resetForm({
-    values: itemParaEdição.value,
+    values: itemParaEdicao.value,
   });
 }
 

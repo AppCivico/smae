@@ -1,7 +1,7 @@
 <script setup>
-import { tipoDeTransferencia as schema } from '@/consts/formSchemas';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { tipoDeTransferencia as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
@@ -28,7 +28,7 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
- const itemParaEdição = computed(() => lista.value.find((x) => {
+const itemParaEdicao = computed(() => lista.value.find((x) => {
    return x.id === Number(route.params.tipoId);
  }) || {
    id: 0, nome: '', categoria: null, esfera: null,
@@ -72,7 +72,7 @@ if (props.tipoId) {
 
   <Form v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">

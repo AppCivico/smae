@@ -134,7 +134,7 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
     variaveisPositivas: ({ lista }: Estado) => lista.filter((variavel) => variavel.id > 0),
     variaveisPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
-    itemParaEdição({ emFoco }: { emFoco: Record<string, unknown> }): Record<string, unknown> { // está feio pq n usei os tipos do backend
+    itemParaEdicao({ emFoco }: { emFoco: Record<string, unknown> }): Record<string, unknown> { // está feio pq n usei os tipos do backend
       return {
         ...emFoco,
         valores: Array.isArray(emFoco.valores) ? emFoco.valores : [

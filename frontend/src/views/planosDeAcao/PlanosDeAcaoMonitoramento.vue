@@ -21,7 +21,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(planosDeAçãoStore);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -73,7 +73,7 @@ async function onSubmit(_, { controlledValues: carga }) {
     v-if="!planoId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :validation-schema="schema"
     @submit="onSubmit"
   >

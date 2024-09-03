@@ -96,7 +96,7 @@ export const useRiscosStore = defineStore('riscos', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       status: emFoco?.status_risco || null,
       tarefa_id: emFoco?.tarefas_afetadas?.map((x) => x.tarefa_id) || null,

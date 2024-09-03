@@ -210,7 +210,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
         diretórios,
       ),
 
-      itemParaEdição: ({ emFoco }) => ({
+      itemParaEdicao: ({ emFoco }) => ({
         ...emFoco,
         clausula_suspensiva_vencimento: dateTimeToDate(emFoco?.clausula_suspensiva_vencimento),
         orgao_concedente_id: emFoco?.orgao_concedente?.id || null,

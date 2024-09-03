@@ -52,7 +52,7 @@ const schema = computed(() => andamentoDaFase(
   !!faseEmFoco.value?.andamento?.necessita_preencher_pessoa,
 ));
 
-const itemParaEdição = computed(() => ({
+const itemParaEdicao = computed(() => ({
   transferencia_id: props.transferenciaId || Number(route.params.transferenciaId) || 0,
   fase_id: faseEmFoco.value?.fase?.id,
   orgao_responsavel_id: faseEmFoco.value?.andamento?.orgao_responsavel?.id || null,
@@ -69,7 +69,7 @@ const itemParaEdição = computed(() => ({
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
   validationSchema: schema.value,
 });
 
@@ -127,14 +127,14 @@ onUnmounted(() => {
   workflowAndamento.$reset();
 });
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({
     values: novoValor,
     validationSchema: schema.value,
   });
 });
 
-watch(itemParaEdição, () => {
+watch(itemParaEdicao, () => {
   ÓrgãosStore.getAll();
   UserStore.buscarPessoasSimplificadas();
 }, { once: true });

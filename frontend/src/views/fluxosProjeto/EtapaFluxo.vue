@@ -55,7 +55,7 @@ const proximaOrdemDisponivel = computed(() => {
   return ultimaOrdem + 1;
 });
 
-const itemParaEdição = computed(() => {
+const itemParaEdicao = computed(() => {
   const etapaDoFluxo = emFoco.value?.fluxo?.find((x) => (x.id === Number(props.etapaId)));
   return {
     ...etapaDoFluxo,
@@ -69,7 +69,7 @@ const {
   errors, isSubmitting, resetForm, handleSubmit, values,
 } = useForm({
   validationSchema: schema,
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
@@ -102,7 +102,7 @@ iniciar();
 const listaOrdenada = computed(() => lista.value
   .toSorted((a, b) => a.descricao.localeCompare(b.descricao)));
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({
     initialValues: novoValor,
   });
@@ -130,7 +130,7 @@ watch(itemParaEdição, (novoValor) => {
     </div>
 
     <pre v-scrollLockDebug>emFoco.fluxo: {{ emFoco.fluxo }}</pre>
-    <pre v-scrollLockDebug>itemParaEdição: {{ itemParaEdição }}</pre>
+    <pre v-scrollLockDebug>itemParaEdicao: {{ itemParaEdicao }}</pre>
 
     <ErrorComponent
       v-if="erroNaListaDeEtapas"

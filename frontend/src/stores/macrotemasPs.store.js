@@ -89,7 +89,7 @@ export const useMacrotemasPsStore = defineStore('macrotemasPsStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

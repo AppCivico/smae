@@ -142,7 +142,7 @@ export const usePsMetasStore = defineStore('psMetas', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
     }),
 

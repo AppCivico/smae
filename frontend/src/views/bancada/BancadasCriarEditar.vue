@@ -20,7 +20,7 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const bancadasStore = useBancadasStore();
 const partidoStore = usePartidosStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(bancadasStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(bancadasStore);
 
 const {
   lista: listaDePartidos,
@@ -74,7 +74,7 @@ partidoStore.buscarTudo();
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">

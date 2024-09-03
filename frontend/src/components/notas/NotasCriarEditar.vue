@@ -69,14 +69,14 @@ const { pessoasSimplificadas, pessoasSimplificadasPorÓrgão } = storeToRefs(Use
 
 const blocoStore = useBlocoDeNotasStore();
 const {
-  itemParaEdição,
+  itemParaEdicao,
   emFoco,
 } = storeToRefs(blocoStore);
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
   validationSchema: schema,
 });
 
@@ -137,7 +137,7 @@ watch(statusSelecionado, (novoValor) => {
   blocoStore.buscarTudo(blocosToken.value, { status: novoValor });
 });
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({
     values: novosValores,
   });
@@ -146,7 +146,7 @@ watch(itemParaEdição, (novosValores) => {
 watch(blocosToken, (novoValor) => {
   resetForm({
     values: {
-      ...itemParaEdição.value,
+      ...itemParaEdicao.value,
       bloco_token: novoValor,
     },
   });
@@ -216,7 +216,7 @@ watch(blocosToken, (novoValor) => {
             :schema="schema"
           />
           <Field
-            :disabled="itemParaEdição.id_jwt"
+            :disabled="itemParaEdicao.id_jwt"
             name="tipo_nota_id"
             as="select"
             class="inputtext light mb1"

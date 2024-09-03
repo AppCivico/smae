@@ -27,7 +27,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
 } = storeToRefs(acompanhamentosStore);
 
 const props = defineProps({
@@ -115,7 +115,7 @@ if (!riscosStore?.lista?.length) {
     v-if="!acompanhamentoId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :validation-schema="schema"
     @submit="onSubmit"
   >

@@ -112,7 +112,7 @@ export const usePortfolioStore = defineStore('portfolios', {
   },
 
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       nivel_maximo_tarefa: emFoco?.nivel_maximo_tarefa || 5,
       nivel_regionalizacao: emFoco?.nivel_regionalizacao || 1,

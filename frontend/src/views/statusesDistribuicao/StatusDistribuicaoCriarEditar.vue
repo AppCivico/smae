@@ -7,7 +7,7 @@
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -92,17 +92,17 @@
 </template>
 
 <script setup>
+import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
+import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
+import { useAlertStore } from '@/stores/alert.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage, Field, Form, useForm,
 } from 'vee-validate';
 import { computed, ref } from 'vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
-import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -120,7 +120,7 @@ const titulo = typeof route?.meta?.título === 'function'
 const alertStore = useAlertStore();
 const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(statusDistribuicaoStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(statusDistribuicaoStore);
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
 const tiposDisponíveis = computed(() => (tipoTransferenciaComoLista.value));
@@ -129,7 +129,7 @@ const tipoSelecionado = ref('');
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 

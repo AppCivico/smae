@@ -81,7 +81,7 @@ export const useTiposDeIntervencaoStore = defineStore('tiposDeIntervencaoStore',
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

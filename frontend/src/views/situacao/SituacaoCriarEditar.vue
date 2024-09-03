@@ -1,12 +1,12 @@
 <script setup>
 import { situacao as schema } from "@/consts/formSchemas";
+import tiposSituacao from "@/consts/tiposSituacao";
 import { useAlertStore } from "@/stores/alert.store";
 import { useSituacaoStore } from "@/stores/situacao.store.js";
 import { storeToRefs } from "pinia";
 import { ErrorMessage, Field, Form } from "vee-validate";
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import tiposSituacao from "@/consts/tiposSituacao";
 
 const alertStore = useAlertStore();
 const situacaoStore = useSituacaoStore();
@@ -21,8 +21,8 @@ const props = defineProps({
   },
 });
 
-const itemParaEdição = computed(
-  () => tiposPorId.value[props.situacaoId] || null 
+const itemParaEdicao = computed(
+  () => tiposPorId.value[props.situacaoId] || null
 );
 async function onSubmit(_, { controlledValues: carga }) {
   try {
@@ -54,7 +54,7 @@ async function onSubmit(_, { controlledValues: carga }) {
   </div>
   <Form
     v-slot="{ errors, isSubmitting }"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     :disabled="chamadasPendentes.emFoco"
     :validation-schema="schema"
     @submit="onSubmit"

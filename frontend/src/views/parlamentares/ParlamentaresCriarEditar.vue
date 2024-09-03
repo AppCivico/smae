@@ -1,4 +1,12 @@
 <script setup>
+import InputImageProfile from '@/components/InputImageProfile.vue';
+import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
+import { parlamentar as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import requestS from '@/helpers/requestS.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -8,14 +16,6 @@ import {
 } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import InputImageProfile from '@/components/InputImageProfile.vue';
-import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
-import { parlamentar as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const router = useRouter();
@@ -30,12 +30,12 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const parlamentaresStore = useParlamentaresStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(parlamentaresStore);
 const avatar = ref(null);
 
 async function onSubmit(values) {
   const newValues = nulificadorTotal(values);
-  newValues.upload_foto = avatar.value ? avatar.value : itemParaEdição.value.foto;
+  newValues.upload_foto = avatar.value ? avatar.value : itemParaEdicao.value.foto;
   try {
     let r;
     const msg = props.parlamentarId
@@ -95,7 +95,7 @@ function excluirItem(tipo, id) {
   }, 'Remover');
 }
 
-const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) => {
+const equipe = computed(() => itemParaEdicao.value?.equipe?.reduce((acc, cur) => {
   if (cur.tipo === 'Assessor') {
     acc.assessores.push(cur);
   } else if (cur.tipo === 'Contato') {
@@ -109,7 +109,7 @@ const equipeOrdenada = computed(() => {
   return equipeCompleta.sort((a, b) => a.nome.localeCompare(b.nome));
 });
 
-const imageUrl = computed(() => (itemParaEdição.value && itemParaEdição.value.foto ? `${baseUrl}/download/${itemParaEdição.value.foto}?inline=true` : false));
+const imageUrl = computed(() => (itemParaEdicao.value && itemParaEdicao.value.foto ? `${baseUrl}/download/${itemParaEdicao.value.foto}?inline=true` : false));
 
 async function handleImage(e) {
   const formData = new FormData();
@@ -132,7 +132,7 @@ iniciar();
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
-    :initial-values="itemParaEdição"
+    :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
     <div class="parlamentar-container mb3">
@@ -335,7 +335,7 @@ iniciar();
 
     <FormErrorsList :errors="errors" />
 
-    <div v-if="itemParaEdição?.mandatos">
+    <div v-if="itemParaEdicao?.mandatos">
       <div class="flex spacebetween center mb1">
         <span class="label tc300">Mandato</span>
         <hr class="mr2 f1">
@@ -362,9 +362,9 @@ iniciar();
             <th />
           </tr>
         </thead>
-        <tbody v-if="itemParaEdição?.mandatos?.length > 0">
+        <tbody v-if="itemParaEdicao?.mandatos?.length > 0">
           <tr
-            v-for="item in itemParaEdição.mandatos"
+            v-for="item in itemParaEdicao.mandatos"
             :key="item.id"
           >
             <td>{{ item.eleicao.ano }}</td>

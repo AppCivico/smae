@@ -1,17 +1,17 @@
 <script setup>
 import { emailTransferencia as schema } from "@/consts/formSchemas";
+import { useAlertStore } from "@/stores/alert.store";
+import { useEmailsStore } from "@/stores/envioEmail.store";
 import { storeToRefs } from "pinia";
 import { Field, Form } from "vee-validate";
 import { ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useAlertStore } from "@/stores/alert.store";
-import { useEmailsStore } from "@/stores/envioEmail.store";
 
 const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const emailsStore = useEmailsStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(emailsStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(emailsStore);
 const newEmail = ref("");
 const localEmails = ref([]);
 
@@ -74,7 +74,7 @@ async function onSubmit({comcopia, ...values}) {
 }
 
 watchEffect(() => {
-  localEmails.value = itemParaEdição?.value?.linhas?.[0]?.com_copia;
+  localEmails.value = itemParaEdicao?.value?.linhas?.[0]?.com_copia;
 })
 
 </script>
@@ -89,7 +89,7 @@ watchEffect(() => {
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="itemParaEdição?.linhas?.[0]"
+      :initial-values="itemParaEdicao?.linhas?.[0]"
       @submit="onSubmit"
     >
       <div class="mb2 flex flexwrap g2">

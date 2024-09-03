@@ -27,7 +27,7 @@ const partidoStore = usePartidosStore();
 const ÓrgãosStore = useOrgansStore();
 const ParlamentaresStore = useParlamentaresStore();
 
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(TransferenciasVoluntarias);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
   lista: parlamentarComoLista,
@@ -53,7 +53,7 @@ const alertStore = useAlertStore();
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
   validationSchema: schema,
 });
 const esferaSelecionada = ref('');
@@ -130,7 +130,7 @@ function sugerirCamposDoMandato(parlamentarId, idx) {
 
 iniciar();
 
-watch(itemParaEdição, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
 </script>
@@ -173,7 +173,7 @@ watch(itemParaEdição, (novosValores) => {
           type="text"
           class="inputtext light mb1"
           :disabled="props.transferenciaId"
-          :value="itemParaEdição?.identificador"
+          :value="itemParaEdicao?.identificador"
         >
       </div>
 

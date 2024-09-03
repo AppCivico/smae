@@ -41,7 +41,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
-  itemParaEdição,
+  itemParaEdicao,
   tarefasAgrupadasPorMãe,
   tarefasOrdenadas,
   tarefasPorId,
@@ -60,7 +60,7 @@ const props = defineProps({
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdicao.value,
   validationSchema: schema,
 });
 
@@ -175,7 +175,7 @@ watch(emFoco, () => {
   }
 });
 
-watch(itemParaEdição, (novoValor) => {
+watch(itemParaEdicao, (novoValor) => {
   resetForm({
     values: novoValor,
   });
@@ -608,7 +608,7 @@ watch(itemParaEdição, (novoValor) => {
         <input
           v-else
           type="date"
-          :value="itemParaEdição.inicio_planejado"
+          :value="itemParaEdicao.inicio_planejado"
           class="inputtext light mb1"
           disabled
         >
@@ -652,7 +652,7 @@ watch(itemParaEdição, (novoValor) => {
         <input
           v-else
           type="text"
-          :value="itemParaEdição.duracao_planejado"
+          :value="itemParaEdicao.duracao_planejado"
           class="inputtext light mb1"
           disabled
         >
@@ -692,7 +692,7 @@ watch(itemParaEdição, (novoValor) => {
         <input
           v-else
           type="date"
-          :value="itemParaEdição.termino_planejado"
+          :value="itemParaEdicao.termino_planejado"
           class="inputtext light mb1"
           disabled
         >
@@ -742,7 +742,7 @@ watch(itemParaEdição, (novoValor) => {
           v-else
           type="text"
           name="custo_estimado"
-          :value="dinheiro(itemParaEdição.custo_estimado)"
+          :value="dinheiro(itemParaEdicao.custo_estimado)"
           class="inputtext light mb1"
           disabled
         >

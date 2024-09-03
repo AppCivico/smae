@@ -57,7 +57,7 @@ const proximaOrdemDisponivel = computed(() => {
   return maxOrdem + 1;
 });
 
-const itemParaEdição = computed(() => {
+const itemParaEdicao = computed(() => {
   const fase = lista.value.find((x) => (x.id === Number(props.relacionamentoId)));
 
   return {
@@ -73,7 +73,7 @@ const {
   errors, isSubmitting, values, handleSubmit,
 } = useForm({
   validationSchema: schema,
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdicao,
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {

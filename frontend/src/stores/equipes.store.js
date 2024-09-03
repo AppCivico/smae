@@ -77,7 +77,7 @@ export const useEquipesStore = defineStore('equipesStore', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
         participantes: emFoco?.participantes?.map((participante) => participante.id) || [],

@@ -79,7 +79,7 @@ export const usePaineisExternosStore = defineStore('paineisExternos', {
   },
 
   getters: {
-    itemParaEdição({ emFoco }) {
+    itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
       };

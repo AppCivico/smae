@@ -204,7 +204,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
       acumulativa: emFoco?.acumulativa || false,
       assuntos: Array.isArray(emFoco?.assuntos)
