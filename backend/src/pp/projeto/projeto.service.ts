@@ -3164,10 +3164,14 @@ export class ProjetoService {
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 id: { in: ids != undefined ? ids : undefined },
-                portfolio_id: filters.portfolio_id,
-                portfolios_compartilhados: filters.portfolio_id
-                    ? { some: { portfolio_id: filters.portfolio_id } }
-                    : undefined,
+                OR: [
+                    { portfolio_id: filters.portfolio_id },
+                    {
+                        portfolios_compartilhados: filters.portfolio_id
+                            ? { some: { portfolio_id: filters.portfolio_id } }
+                            : undefined,
+                    },
+                ],
                 ProjetoRegiao: filters.regioes
                     ? {
                           some: {
