@@ -85,8 +85,9 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
       this.erros.emFoco = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/variavel-categorica/`, params);
-        this.emFoco = resposta.linhas.find((item) => item.id === Number(id));
+        const resposta = await this.requestS.get(`${baseUrl}/variavel-categorica/`, { id, ...params });
+        const [grupo] = resposta.linhas;
+        this.emFoco = grupo;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
       }
@@ -146,6 +147,18 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
           },
         ],
       };
+    },
+    obterValoresVariavelCategoricaPorId: ({ lista }: Estado) => (id: number) => {
+      const variavelCategorica = lista.find((item) => item.id === id);
+      if (!variavelCategorica) {
+        console.error(
+          `Não foi possível obter variavel categórica pelo ID: ${id}`,
+        );
+
+        return [];
+      }
+
+      return variavelCategorica.valores;
     },
   },
 
