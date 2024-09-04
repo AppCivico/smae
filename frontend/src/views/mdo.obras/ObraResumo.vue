@@ -52,6 +52,7 @@ const exibeBloco = computed(() => {
   const foco = emFoco.value;
   return foco?.mdo_n_familias_beneficiadas
       || foco?.mdo_n_unidades_habitacionais
+      || foco?.mdo_n_unidades_atendidas
       || foco?.programa?.nome
       || foco?.programa;
 });
@@ -343,6 +344,15 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           <dd
             class="t13"
             v-html="emFoco?.mdo_n_unidades_habitacionais || '-'"
+          />
+        </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.mdo_n_unidades_atendidas.spec.label }}
+          </dt>
+          <dd
+            class="t13"
+            v-html="emFoco?.mdo_n_unidades_atendidas || '-'"
           />
         </div>
         <div class="f1 mb1">
