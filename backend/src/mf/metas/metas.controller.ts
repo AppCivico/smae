@@ -44,6 +44,7 @@ import {
 
 import { MetasService } from './metas.service';
 import { MetaService } from '../../meta/meta.service';
+import { CheckArrayContains } from '../../common/helpers/CheckArrayContains';
 
 const DISP_ENDPOINT_MONIT = 'Variáveis disponíveis apenas durante o monitoramento físico';
 const DISP_ENDPOINT_MONIT_E_ADMIN =
@@ -95,7 +96,7 @@ export class MetasController {
     ): Promise<RetornoMetaVariaveisDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
-        if (config.metas_variaveis.includes(params.id) === false)
+        if (!CheckArrayContains(params.id, config.metas_variaveis))
             throw new HttpException(
                 `Meta ID=${params.id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(config)}`,
                 404
@@ -181,7 +182,7 @@ export class MetasController {
 
         if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
             const config = await this.mfService.pessoaAcessoPdm(user);
-            if (!config.metas_variaveis.includes(dto.variavel_id)) {
+            if (!CheckArrayContains(dto.variavel_id, config.metas_variaveis)) {
                 throw new HttpException(
                     `Variável ID=${dto.variavel_id} não faz parte do seu perfil atual.\nConfiguração Atual: ${JSON.stringify(config)}`,
                     404
@@ -228,7 +229,7 @@ export class MetasController {
         if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
             const config = await this.mfService.pessoaAcessoPdm(user);
             for (const item of dto.linhas) {
-                if (!config.metas_variaveis.includes(item.variavel_id)) {
+                if (!CheckArrayContains(item.variavel_id, config.metas_variaveis)) {
                     throw new HttpException(
                         `Variável ID=${item.variavel_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(
                             config
