@@ -3190,6 +3190,9 @@ export class ProjetoService {
                 eh_prioritario: filters.eh_prioritario,
                 arquivado: filters.arquivado,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
+                ProjetoRegistroSei: filters.registros_sei?.length
+                    ? { some: { processo_sei: { in: filters.registros_sei } } }
+                    : undefined,
             },
         ];
         return permissionsBaseSet;

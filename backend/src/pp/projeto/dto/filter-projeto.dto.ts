@@ -146,4 +146,9 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsString()
     @MaxLength(250)
     palavra_chave?: string;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @Transform(StringArrayTransform)
+    registros_sei?: string[];
 }
