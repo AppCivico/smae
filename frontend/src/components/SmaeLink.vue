@@ -53,6 +53,12 @@ const propriedadesManipuladas = computed(() => {
     to = prefixoDosCaminhos + (to.startsWith('/') ? '' : '/') + to + (to.endsWith('/') ? '' : '/') + sufixoDosCaminhos;
   } else if (typeof to.path === 'string') {
     to.path = prefixoDosCaminhos + (to.path.startsWith('/') ? '' : '/') + to.path + (to.path.endsWith('/') ? '' : '/') + sufixoDosCaminhos;
+  } else if (typeof to.name === 'string' && to.name.startsWith('.')) {
+    if (rotaCorrente.meta.entidadeMãe) {
+      to.name = rotaCorrente.meta.entidadeMãe + to.name;
+    } else {
+      throw new Error('Não foi possível determinar a entidade mãe da rota corrente, mas ela é exigida para rotas que começam com `.`.');
+    }
   }
 
   return {
