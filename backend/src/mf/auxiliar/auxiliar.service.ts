@@ -7,6 +7,7 @@ import { MetasService } from '../metas/metas.service';
 import { MfService } from '../mf.service';
 import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/auxiliar.dto';
 import { RetryPromise } from 'src/common/retryPromise';
+import { CheckArrayContains } from '../../common/helpers/CheckArrayContains';
 
 type VariavelParaEnviar = {
     data_valor: Date;
@@ -24,7 +25,7 @@ export class AuxiliarService {
     async auto_preencher(dto: AutoPreencherValorDto, user: PessoaFromJwt) {
         const meta_id = dto.meta_id;
         const config = await this.mfService.pessoaAcessoPdm(user);
-        if (config.metas_variaveis.includes(meta_id) === false)
+        if (!CheckArrayContains(meta_id, config.metas_variaveis))
             throw new HttpException(
                 `Meta ID=${meta_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(config)}`,
                 404
@@ -114,7 +115,7 @@ export class AuxiliarService {
     async enviar_cp(dto: EnviarParaCpDto, user: PessoaFromJwt) {
         const meta_id = dto.meta_id;
         const config = await this.mfService.pessoaAcessoPdm(user);
-        if (config.metas_variaveis.includes(meta_id) === false)
+        if (!CheckArrayContains(meta_id, config.metas_variaveis))
             throw new HttpException(
                 `Meta ID=${meta_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(config)}`,
                 404
