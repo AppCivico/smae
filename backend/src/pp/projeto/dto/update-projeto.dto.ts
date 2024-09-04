@@ -196,6 +196,9 @@ export class TransferProjetoPortfolioDto {
 }
 
 export class RevisarObrasDto {
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ValidateNested({ each: true })
+    @Type(() => ObraRevisaoDto)
     obras: ObraRevisaoDto[];
 }
 
