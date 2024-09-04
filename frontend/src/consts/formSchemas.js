@@ -1168,6 +1168,10 @@ export const obras = object({
     .label('Número de unidades')
     .min(0)
     .nullable(),
+  mdo_n_unidades_atendidas: number()
+    .label('Número de unidades atendidas até o momento')
+    .min(0)
+    .nullable(),
   mdo_observacoes: string()
     .label('Observações')
     .max(1024)

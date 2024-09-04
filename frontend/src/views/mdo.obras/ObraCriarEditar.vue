@@ -803,6 +803,28 @@ watch(itemParaEdicao, (novoValor) => {
         />
       </div>
       <div
+        v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.unidades_atendidas"
+        class="f1 mb1 fb5em"
+      >
+        <LabelFromYup
+          name="mdo_n_unidades_atendidas"
+          :schema="schema"
+        />
+        <Field
+          name="mdo_n_unidades_atendidas"
+          type="number"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.mdo_n_unidades_atendidas }"
+          @update:model-value="($v) => {
+            setFieldValue('mdo_n_unidades_atendidas', Number($v) || null);
+          }"
+        />
+        <ErrorMessage
+          name="mdo_n_unidades_atendidas"
+          class="error-msg"
+        />
+      </div>
+      <div
         v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.familias_beneficiadas"
         class="f1 mb1 fb5em"
       >
