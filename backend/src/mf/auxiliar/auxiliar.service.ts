@@ -25,7 +25,10 @@ export class AuxiliarService {
         const meta_id = dto.meta_id;
         const config = await this.mfService.pessoaAcessoPdm(user);
         if (config.metas_variaveis.includes(meta_id) === false)
-            throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+            throw new HttpException(
+                `Meta ID=${meta_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(config)}`,
+                404
+            );
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
@@ -112,7 +115,10 @@ export class AuxiliarService {
         const meta_id = dto.meta_id;
         const config = await this.mfService.pessoaAcessoPdm(user);
         if (config.metas_variaveis.includes(meta_id) === false)
-            throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+            throw new HttpException(
+                `Meta ID=${meta_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(config)}`,
+                404
+            );
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo

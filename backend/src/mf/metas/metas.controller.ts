@@ -96,7 +96,10 @@ export class MetasController {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         if (config.metas_variaveis.includes(params.id) === false)
-            throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+            throw new HttpException(
+                `Meta ID=${params.id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(config)}`,
+                404
+            );
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
@@ -179,7 +182,10 @@ export class MetasController {
         if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
             const config = await this.mfService.pessoaAcessoPdm(user);
             if (!config.metas_variaveis.includes(dto.variavel_id)) {
-                throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+                throw new HttpException(
+                    `Variável ID=${dto.variavel_id} não faz parte do seu perfil atual.\nConfiguração Atual: ${JSON.stringify(config)}`,
+                    404
+                );
             }
         } else if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm'])) {
             // logo é tem que ser admin_cp
@@ -223,7 +229,12 @@ export class MetasController {
             const config = await this.mfService.pessoaAcessoPdm(user);
             for (const item of dto.linhas) {
                 if (!config.metas_variaveis.includes(item.variavel_id)) {
-                    throw new HttpException(`ID da meta ${item.variavel_id} não faz parte do seu perfil`, 404);
+                    throw new HttpException(
+                        `Variável ID=${item.variavel_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(
+                            config
+                        )}`,
+                        404
+                    );
                 }
             }
         } else if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm'])) {
