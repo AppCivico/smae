@@ -1171,7 +1171,8 @@ export const obras = object({
   mdo_n_unidades_atendidas: number()
     .label('Número de unidades atendidas até o momento')
     .min(0)
-    .nullable(),
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   mdo_observacoes: string()
     .label('Observações')
     .max(1024)

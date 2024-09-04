@@ -21,6 +21,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -234,29 +235,30 @@ async function buscarPossíveisColaboradores() {
 // mapa. Trazer de volta.
 const onSubmit = handleSubmit(async () => {
   const carga = values;
+  const cargaManipulada = nulificadorTotal(carga);
 
   switch (true) {
-    case !!carga.atividade_id:
-      carga.iniciativa_id = undefined;
-      carga.meta_id = undefined;
+    case !!cargaManipulada.atividade_id:
+      cargaManipulada.iniciativa_id = undefined;
+      cargaManipulada.meta_id = undefined;
       break;
 
-    case !!carga.iniciativa_id:
-      carga.meta_id = undefined;
-      carga.atividade_id = undefined;
+    case !!cargaManipulada.iniciativa_id:
+      cargaManipulada.meta_id = undefined;
+      cargaManipulada.atividade_id = undefined;
       break;
 
-    case !!carga.meta_id:
-      carga.atividade_id = undefined;
-      carga.iniciativa_id = undefined;
+    case !!cargaManipulada.meta_id:
+      cargaManipulada.atividade_id = undefined;
+      cargaManipulada.iniciativa_id = undefined;
       break;
 
     default:
       break;
   }
 
-  if (carga.pdm_escolhido) {
-    carga.pdm_escolhido = undefined;
+  if (cargaManipulada.pdm_escolhido) {
+    cargaManipulada.pdm_escolhido = undefined;
   }
 
   try {
@@ -265,8 +267,8 @@ const onSubmit = handleSubmit(async () => {
       : 'Item adicionado com sucesso!';
 
     const resposta = props.obraId
-      ? await obrasStore.salvarItem(carga, props.obraId)
-      : await obrasStore.salvarItem(carga);
+      ? await obrasStore.salvarItem(cargaManipulada, props.obraId)
+      : await obrasStore.salvarItem(cargaManipulada);
 
     if (resposta) {
       alertStore.success(msg);
@@ -842,9 +844,6 @@ watch(itemParaEdicao, (novoValor) => {
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.mdo_n_unidades_atendidas }"
-          @update:model-value="($v) => {
-            setFieldValue('mdo_n_unidades_atendidas', Number($v) || null);
-          }"
         />
         <ErrorMessage
           name="mdo_n_unidades_atendidas"
