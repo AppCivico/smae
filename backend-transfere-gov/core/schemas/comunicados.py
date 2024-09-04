@@ -15,12 +15,16 @@ class Comunicado(BaseModel):
     descricao: str
 
     @field_validator('data')
-    def validate_data(cls, value)->str:
-
+    def validate_data(cls, value: str) -> str:
         try:
-            datetime.strptime(value, '%d/%m/%Y')
+            # First, try to parse with both date and time
+            datetime.strptime(value, '%d/%m/%Y %H:%M:%S')
         except ValueError:
-            raise DadosForadoPadrao(f'data: {value}')
+            try:
+                # If that fails, try to parse with just the date
+                datetime.strptime(value, '%d/%m/%Y')
+            except ValueError:
+                raise DadosForadoPadrao(f'data: {value} - formato inválido. Use DD/MM/YYYY ou DD/MM/YYYY HH:MM:SS')
         return value
 
 class Page(BaseModel):
@@ -40,6 +44,6 @@ class Page(BaseModel):
 
         if teste is None:
             raise DadosForadoPadrao('ultima_atualizacao: {value}')
-        
+
         return value
 
