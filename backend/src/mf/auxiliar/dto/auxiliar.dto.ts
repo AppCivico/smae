@@ -1,7 +1,10 @@
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsNumberString, IsOptional, ValidateIf } from 'class-validator';
+import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 export class AutoPreencherValorDto {
     @IsInt()
+    @Transform(NumberTransform)
     meta_id: number;
 
     @IsNumberString(
@@ -31,6 +34,7 @@ export class AutoPreencherValorDto {
 
 export class EnviarParaCpDto {
     @IsInt()
+    @Transform(NumberTransform)
     meta_id: number;
 
     /**
