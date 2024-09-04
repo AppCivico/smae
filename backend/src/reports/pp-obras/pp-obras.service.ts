@@ -559,7 +559,26 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
           LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-          LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
+          LEFT JOIN LATERAL (
+                SELECT 
+                    unnest(array[
+                        projeto.portfolio_id, 
+                        portfolio_projeto_compartilhado.portfolio_id
+                    ]) AS portfolio_id
+                FROM 
+                    portfolio_projeto_compartilhado 
+                WHERE 
+                    projeto.id = portfolio_projeto_compartilhado.projeto_id
+                UNION ALL
+                SELECT 
+                    projeto.portfolio_id AS portfolio_id
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM portfolio_projeto_compartilhado 
+                    WHERE projeto.id = portfolio_projeto_compartilhado.projeto_id
+                )
+            ) AS port_array ON true
+          LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id
@@ -571,6 +590,7 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
+          WHERE projeto.id = 20111
         ${whereCond.whereString} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
