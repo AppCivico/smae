@@ -52,7 +52,7 @@
   >Carregando</span>
 
   <div
-    v-if="erro"
+    v-if="erro.length"
     class="error p1"
   >
     <div class="error-msg">
