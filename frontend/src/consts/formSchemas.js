@@ -1183,7 +1183,11 @@ export const obras = object({
     .nullable(),
   meta_codigo: string()
     .label('Código da Meta')
-    .nullable(),
+    .when(['origem_tipo'], {
+      is: (origemTipo) => origemTipo === 'PdmAntigo',
+      then: (field) => field.required(),
+      otherwise: (field) => field.nullable(),
+    }),
   meta_id: number()
     .when(['origem_tipo', 'iniciativa_id'], {
       is: (origemTipo, iniciativaId) => origemTipo === 'PdmSistema' || iniciativaId,
