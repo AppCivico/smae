@@ -246,7 +246,7 @@ export default [
             path: 'novo',
             component: TiposDeIntervencaoCriarEditar,
             meta: {
-              título: 'Novo tipo de intervenção',
+              título: 'Novo',
               rotasParaMigalhasDePão: [
                 'cadastrosBasicos',
                 'tiposDeIntervencao',
@@ -262,7 +262,7 @@ export default [
               ...{ intervencaoId: Number.parseInt(params.intervencaoId, 10) || undefined },
             }),
             meta: {
-              título: 'Editar tipo de intervenção',
+              título: 'Editar',
               rotasParaMigalhasDePão: [
                 'cadastrosBasicos',
                 'tiposDeIntervencao',
