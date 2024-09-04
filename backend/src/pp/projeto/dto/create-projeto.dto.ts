@@ -162,7 +162,6 @@ export class CreateProjetoDto {
 
     /**
      * IDs de Portfolios que também terão "acesso" ao projeto,
-     * Desativado em MDO
      * @example "[]"
      */
     @IsOptional()

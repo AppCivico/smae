@@ -339,11 +339,10 @@ export class ProjetoService {
             // Não permitir compartilhar com outros ports.
             if (portfolio.modelo_clonagem)
                 throw new HttpException(
-                    'portfolios_compartilhados| Projeto não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
+                    'portfolios_compartilhados| Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
                     400
                 );
 
-            // Os portfolios compartilhados obrigatoriamente devem possuir ao menos um órgão em comum.
             const portfoliosCompartilhados = portfolios.filter((p) =>
                 dto.portfolios_compartilhados?.some((x) => x == p.id)
             );
