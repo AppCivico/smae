@@ -22,6 +22,7 @@ import {
 import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
+    RevisarObrasDto,
     TransferProjetoPortfolioDto,
     UpdateProjetoDocumentDto,
     UpdateProjetoDto,
@@ -51,6 +52,7 @@ import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
+import { use } from 'passport';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -921,6 +923,11 @@ export class ProjetoService {
             tem_mais = offset + linhas.length < total_registros;
         }
 
+        const linhasRevisao = await this.prisma.projetoPessoaRevisao.findMany({
+            where: { pessoa_id: user.id },
+            select: { projeto_id: true, projeto_revisado: true },
+        });
+
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -929,6 +936,8 @@ export class ProjetoService {
             paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): ProjetoMdoDto => {
+                const linhaRevisao = linhasRevisao.find((lr) => lr.projeto_id == r.id);
+
                 return {
                     id: r.id,
                     codigo: r.codigo,
@@ -949,6 +958,7 @@ export class ProjetoService {
                         : null,
                     regioes: r.regioes,
                     portfolio: r.portfolio,
+                    revisado: linhaRevisao ? linhaRevisao.projeto_revisado : null,
                 };
             }),
         };
@@ -3463,5 +3473,44 @@ export class ProjetoService {
             });
             return meta;
         }
+    }
+
+    async revisarObras(dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
+        const now = new Date(Date.now());
+
+        const updated = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
+                const obrasExistem = await prismaTx.projeto.count({
+                    where: {
+                        tipo: 'MDO',
+                        id: { in: dto.obras.map((o) => o.projeto_id) },
+                        removido_em: null,
+                    },
+                });
+                if (obrasExistem !== dto.obras.length)
+                    throw new HttpException('projeto_id| Um ou mais projetos não foram encontrados.', 400);
+
+                const operations = [];
+                for (const obra of dto.obras) {
+                    operations.push(
+                        prismaTx.projetoPessoaRevisao.update({
+                            where: {
+                                projeto_id_pessoa_id: {
+                                    projeto_id: obra.projeto_id,
+                                    pessoa_id: user.id,
+                                },
+                            },
+                            data: {
+                                projeto_revisado: obra.revisado,
+                                atualizado_em: now,
+                            },
+                        })
+                    );
+                }
+                return await Promise.all(operations);
+            }
+        );
+
+        return updated;
     }
 }

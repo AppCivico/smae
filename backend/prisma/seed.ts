@@ -474,6 +474,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
             'CadastroPessoa.administrador.MDO',
             'Editar/Inserir/Inativar/Ativar qualquer usuário, inclusive outros administradores',
         ],
+        ['MDO.revisar_obra', 'Revisar obras'],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', 'Pode ser designado como Coordenador Responsável na CP'],
@@ -822,6 +823,8 @@ const PerfilAcessoConfig: {
             'ProjetoProgramaMDO.inserir',
             'ProjetoProgramaMDO.editar',
             'ProjetoProgramaMDO.remover',
+
+            'MDO.revisar_obra',
         ],
     },
     {
@@ -839,6 +842,7 @@ const PerfilAcessoConfig: {
         privilegios: [
             'ProjetoTagMDO.inserir',
             'ProjetoTagMDO.editar',
+            'MDO.revisar_obra',
             'ProjetoTagMDO.remover',
             'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
             'MDO.gestor_de_projeto',
@@ -865,6 +869,7 @@ const PerfilAcessoConfig: {
         privilegios: [
             'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
             'MDO.colaborador_de_projeto',
+            'MDO.revisar_obra',
             'Reports.dashboard_mdo',
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
@@ -890,7 +895,7 @@ const PerfilAcessoConfig: {
     {
         nome: atualizarNomePerfil('Observador de obra', []),
         descricao: 'Pode participar como leitor em portfólio e obras',
-        privilegios: ['MDO.espectador_de_projeto'],
+        privilegios: ['MDO.espectador_de_projeto', 'MDO.revisar_obra'],
     },
     {
         nome: atualizarNomePerfil('Observador de painéis externos', []),

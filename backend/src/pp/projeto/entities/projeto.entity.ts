@@ -43,7 +43,7 @@ export class ProjetoMdoDto {
     equipamento: IdNomeDto | null;
     empreendimento: IdNomeIdentificadorDto | null;
     regioes: string;
-
+    revisado: boolean | null;
     @ApiProperty({
         enum: ProjetoStatus,
         enumName: 'ProjetoStatus',

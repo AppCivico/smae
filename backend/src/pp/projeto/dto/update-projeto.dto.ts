@@ -2,6 +2,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
+    IsBoolean,
     IsInt,
     IsNumber,
     IsOptional,
@@ -192,4 +193,16 @@ export class CloneProjetoTarefasDto {
 export class TransferProjetoPortfolioDto {
     @IsInt()
     portfolio_id: number;
+}
+
+export class RevisarObrasDto {
+    obras: ObraRevisaoDto[];
+}
+
+export class ObraRevisaoDto {
+    @IsInt()
+    projeto_id: number;
+
+    @IsBoolean()
+    revisado: boolean;
 }

@@ -469,6 +469,8 @@ model Pessoa {
     VariavelQAtualizei                Variavel[]                           @relation("Atualizador")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
 
+    projetosRevisao ProjetoPessoaRevisao[]
+
     @@index([email])
     @@map("pessoa")
 }
@@ -3664,7 +3666,8 @@ model Projeto {
     contratos                Contrato[]
 
     // Módulo de gestão de obras
-    ProjetoRegiao ProjetoRegiao[]
+    ProjetoRegiao  ProjetoRegiao[]
+    PessoasRevisao ProjetoPessoaRevisao[]
 
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
@@ -6900,4 +6903,20 @@ model ComunicadoTransfereGov {
 
     @@unique([numero, ano, titulo])
     @@map("comunicado_transfere_gov")
+}
+
+model ProjetoPessoaRevisao {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    projeto_revisado Boolean
+    atualizado_em    DateTime @default(now())
+
+    @@unique([projeto_id, pessoa_id])
+    @@map("projeto_pessoa_revisao")
 }

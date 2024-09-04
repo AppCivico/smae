@@ -26,6 +26,7 @@ import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from 
 import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
+    RevisarObrasDto,
     TransferProjetoPortfolioDto,
     UpdateProjetoDocumentDto,
     UpdateProjetoDto,
@@ -297,6 +298,16 @@ export class ProjetoMDOController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
         return this.projetoService.findAllMDO(filters, user);
+    }
+
+    @Patch('revisar-obras')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.administrador', 'MDO.revisar_obra'])
+    async revisarObras(
+        @Body() revisarObrasDto: RevisarObrasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId[]> {
+        return await this.projetoService.revisarObras(revisarObrasDto, user);
     }
 
     //@IsPublic()

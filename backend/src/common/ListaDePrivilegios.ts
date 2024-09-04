@@ -178,6 +178,7 @@ export type ListaDePrivilegios =
     | 'MDO.gestor_de_projeto'
     | 'MDO.colaborador_de_projeto'
     | 'MDO.espectador_de_projeto'
+    | 'MDO.revisar_obra'
     | 'ModalidadeContratacao.inserir'
     | 'ModalidadeContratacao.editar'
     | 'ModalidadeContratacao.remover'
