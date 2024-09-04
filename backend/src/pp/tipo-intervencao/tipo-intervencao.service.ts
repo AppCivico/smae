@@ -26,6 +26,7 @@ export class TipoIntervencaoService {
                 const tipoIntervencao = await prismaTx.tipoIntervencao.create({
                     data: {
                         nome: dto.nome,
+                        conceito: dto.conceito,
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                     },
@@ -39,7 +40,7 @@ export class TipoIntervencaoService {
     }
 
     async findAll(user: PessoaFromJwt): Promise<TipoIntervencao[]> {
-        const gruposTematicos = await this.prisma.tipoIntervencao.findMany({
+        const tiposIntervencao = await this.prisma.tipoIntervencao.findMany({
             where: {
                 removido_em: null,
             },
@@ -47,10 +48,11 @@ export class TipoIntervencaoService {
             select: {
                 id: true,
                 nome: true,
+                conceito: true,
             },
         });
 
-        return gruposTematicos;
+        return tiposIntervencao;
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<TipoIntervencao> {
@@ -62,6 +64,7 @@ export class TipoIntervencaoService {
             select: {
                 id: true,
                 nome: true,
+                conceito: true,
             },
         });
         if (!tipoIntervencao) throw new NotFoundException('Não foi possível encontrar tipoIntervencao.');

@@ -1975,8 +1975,8 @@ model SerieVariavel {
     conferidor      Pessoa? @relation("Conferidor", fields: [conferida_por], references: [id])
     ciclo_fisico_id Int?
 
-    @@index([variavel_id, data_valor])
     @@unique([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
+    @@index([variavel_id, data_valor])
     @@map("serie_variavel")
 }
 
@@ -6428,7 +6428,8 @@ model GrupoTematico {
 model TipoIntervencao {
     id Int @id @default(autoincrement())
 
-    nome String
+    nome     String
+    conceito String?
 
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
