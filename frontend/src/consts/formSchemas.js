@@ -894,6 +894,9 @@ export const gruposTematicos = object({
   familias_beneficiadas: boolean()
     .label('Número de famílias beneficiadas')
     .nullable(),
+  unidades_atendidas: boolean()
+    .label('Número de unidades atendidas')
+    .nullable(),
 });
 
 export const equipes = object({

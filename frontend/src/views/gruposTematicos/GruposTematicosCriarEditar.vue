@@ -86,6 +86,25 @@
       />
     </label>
 
+    <label
+      for="unidades_atendidas"
+      class="flex center mb1"
+    >
+      <Field
+        id="unidades_atendidas"
+        name="unidades_atendidas"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+      />
+      <LabelFromYup
+        as="span"
+        name="unidades_atendidas"
+        :schema="schema"
+        class="mb0"
+      />
+    </label>
+
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
