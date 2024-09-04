@@ -357,7 +357,7 @@ export class ProjetoService {
             if (!dto.tipo_intervencao_id)
                 throw new HttpException('tipo_intervencao_id| Campo obrigatório para obras', 400);
 
-            await this.verificaGrupoTematico(dto);
+            //await this.verificaGrupoTematico(dto);
         }
 
         const statusPadrao = tipo == 'PP' ? 'Registrado' : 'MDO_NaoIniciada';
@@ -2080,7 +2080,8 @@ export class ProjetoService {
         }
 
         if ('grupo_tematico_id' in dto) {
-            await this.verificaGrupoTematico(dto);
+            // Desativando essa verificação por agora.
+            // await this.verificaGrupoTematico(dto);
         } else {
             // bloqueia a mudança dos campos se não informar o grupo temático
             dto.mdo_n_familias_beneficiadas = undefined;
