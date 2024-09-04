@@ -48,10 +48,13 @@ const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizaca
   }, {})
   : {}));
 
-const exibeBloco = computed(() => emFoco?.mdo_n_familias_beneficiadas
-         || emFoco?.mdo_n_unidades_habitacionais
-         || emFoco?.programa?.nome
-         || emFoco?.programa);
+const exibeBloco = computed(() => {
+  const foco = emFoco.value;
+  return foco?.mdo_n_familias_beneficiadas
+      || foco?.mdo_n_unidades_habitacionais
+      || foco?.programa?.nome
+      || foco?.programa;
+});
 
 defineProps({
   obraId: {
@@ -318,7 +321,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </dl>
     </div>
 
-    <div v-if=" exibeBloco">
+    <div v-if="exibeBloco">
       <hr class="mb1 f1">
       <dl
         class="flex g2 flexwrap"
