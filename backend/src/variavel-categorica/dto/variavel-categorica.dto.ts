@@ -12,7 +12,8 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IdNomeExibicao } from '../../meta/entities/meta.entity';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
+import { NumberTransform } from '../../auth/transforms/number.transform';
 
 export class CreateVariavelCategoricaValorDto {
     /**
@@ -106,6 +107,7 @@ export class FilterVariavelCategoricaDto {
 
     @IsOptional()
     @IsInt()
+    @Transform(NumberTransform)
     id?: number;
 }
 
