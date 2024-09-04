@@ -52,6 +52,7 @@ class RetornoDbProjeto {
     grupo_tematico_nome?: string;
     tipo_intervencao_id?: number;
     tipo_intervencao_nome?: string;
+    tipo_intervencao_conceito?: string;
     equipamento_id?: number;
     equipamento_nome?: string;
     origem_tipo: ProjetoOrigemTipo;
@@ -95,6 +96,7 @@ class RetornoDbProjeto {
     programa_habitacional?: string;
     n_unidades_habitacionais?: number;
     n_familias_beneficiadas?: number;
+    n_unidades_atendidas?: number;
 
     orgao_id: number;
     orgao_sigla: string;
@@ -527,6 +529,7 @@ export class PPObrasService implements ReportableService {
             grupo_tematico.nome AS grupo_tematico_nome,
             tipo_intervencao.id AS tipo_intervencao_id,
             tipo_intervencao.nome AS tipo_intervencao_nome,
+            tipo_intervencao.conceito AS tipo_intervencao_conceito,
             equipamento.id AS equipamento_id,
             equipamento.nome AS equipamento_nome,
             mdo_detalhamento AS detalhamento,
@@ -546,6 +549,7 @@ export class PPObrasService implements ReportableService {
             projeto.mdo_programa_habitacional as programa_habitacional,
             projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
             projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
+            projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
             empreendimento.id AS empreendimento_id,
             empreendimento.identificador AS empreendimento_identificador
         FROM projeto
@@ -588,6 +592,7 @@ export class PPObrasService implements ReportableService {
                 grupo_tematico_nome: db.grupo_tematico_nome ? db.grupo_tematico_nome : null,
                 tipo_obra_id: db.tipo_intervencao_id ? db.tipo_intervencao_id : null,
                 tipo_obra_nome: db.tipo_intervencao_nome ? db.tipo_intervencao_nome : null,
+                tipo_obra_conceito: db.tipo_intervencao_conceito ? db.tipo_intervencao_conceito : null,
                 equipamento_id: db.equipamento_id ? db.equipamento_id : null,
                 equipamento_nome: db.equipamento_nome ? db.equipamento_nome : null,
                 empreendimento_id: db.empreendimento_id ? db.empreendimento_id : null,
@@ -615,6 +620,7 @@ export class PPObrasService implements ReportableService {
                 etapa: db.projeto_etapa ? db.projeto_etapa : null,
                 n_familias_beneficiadas: db.n_familias_beneficiadas ? db.n_familias_beneficiadas : null,
                 n_unidades_habitacionais: db.n_unidades_habitacionais ? db.n_unidades_habitacionais : null,
+                n_unidades_atendidas: db.n_unidades_atendidas ? db.n_unidades_atendidas : null,
                 programa_habitacional: db.programa_habitacional ? db.programa_habitacional : null,
                 pontos_focais_colaboradores: db.pontos_focais_colaboradores,
                 orgao_executor: db.orgao_executor_id

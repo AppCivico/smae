@@ -28,6 +28,7 @@ export class RelObrasDto {
     grupo_tematico_nome: string | null;
     tipo_obra_id: number | null;
     tipo_obra_nome: string | null;
+    tipo_obra_conceito: string | null;
     equipamento_id: number | null;
     equipamento_nome: string | null;
     codigo: string | null;
@@ -57,6 +58,7 @@ export class RelObrasDto {
     programa_habitacional: string | null;
     n_unidades_habitacionais: number | null;
     n_familias_beneficiadas: number | null;
+    n_unidades_atendidas: number | null;
     etapa: string | null;
     custo_planejado: number | null;
     previsao_inicio: string | null;
