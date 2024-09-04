@@ -102,6 +102,7 @@ export class TipoIntervencaoService {
                     where: { id },
                     data: {
                         nome: dto.nome,
+                        conceito: dto.conceito,
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
