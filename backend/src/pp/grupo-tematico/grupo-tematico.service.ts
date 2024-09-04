@@ -149,6 +149,7 @@ export class GrupoTematicoService {
                         programa_habitacional: dto.programa_habitacional,
                         unidades_habitacionais: dto.unidades_habitacionais,
                         familias_beneficiadas: dto.familias_beneficiadas,
+                        unidades_atendidas: dto.unidades_atendidas,
                         atualizado_em: now,
                         atualizado_por: user.id,
                     },
