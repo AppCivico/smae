@@ -182,7 +182,7 @@ export class MetasController {
 
         if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
             const config = await this.mfService.pessoaAcessoPdm(user);
-            if (!CheckArrayContains(dto.variavel_id, config.metas_variaveis)) {
+            if (!CheckArrayContains(dto.variavel_id, config.variaveis)) {
                 throw new HttpException(
                     `Variável ID=${dto.variavel_id} não faz parte do seu perfil atual.\nConfiguração Atual: ${JSON.stringify(config)}`,
                     404
@@ -229,7 +229,7 @@ export class MetasController {
         if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm', 'CadastroMeta.administrador_no_pdm_admin_cp'])) {
             const config = await this.mfService.pessoaAcessoPdm(user);
             for (const item of dto.linhas) {
-                if (!CheckArrayContains(item.variavel_id, config.metas_variaveis)) {
+                if (!CheckArrayContains(item.variavel_id, config.variaveis)) {
                     throw new HttpException(
                         `Variável ID=${item.variavel_id} não faz parte do seu perfil.\nConfiguração Atual: ${JSON.stringify(
                             config
