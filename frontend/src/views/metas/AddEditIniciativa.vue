@@ -388,7 +388,7 @@ function filterResponsible(orgao_id) {
       ><svg
         width="20"
         height="20"
-      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+      ><use xlink:href="#i_+" /></svg> <span>Adicionar órgão participante</span></a>
 
       <hr class="mt2 mb2">
 
