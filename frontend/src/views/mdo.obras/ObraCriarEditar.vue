@@ -571,34 +571,6 @@ watch(itemParaEdicao, (novoValor) => {
       </div>
       <div class="f1 mb1 fb15em">
         <LabelFromYup
-          name="tipo_intervencao_id"
-          :schema="schema"
-        />
-        <Field
-          name="tipo_intervencao_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.tipo_intervencao_id }"
-          :aria-busy="chamadasPendentesDeTiposDeIntervenção.lista"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="item in listaDeTiposDeIntervenção"
-            :key="item.id"
-            :value="item.id"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="tipo_intervencao_id"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1 mb1 fb15em">
-        <LabelFromYup
           name="equipamento_id"
           :schema="schema"
         />
@@ -723,6 +695,35 @@ watch(itemParaEdicao, (novoValor) => {
           class="error-msg"
         />
       </div>
+    </div>
+
+    <div class="f1 mb1 fb15em">
+      <LabelFromYup
+        name="tipo_intervencao_id"
+        :schema="schema"
+      />
+      <ul>
+        <li
+          v-for="item in listaDeTiposDeIntervenção"
+          :key="item.id"
+          class="mb1"
+        >
+          <label>
+            <input
+              type="radio"
+              :value="item.id"
+              name="tipoDeIntervencao"
+              class="inputcheckbox"
+            >
+            {{ item.nome }}
+            <p>{{ item.conceito }}</p>
+          </label>
+        </li>
+      </ul>
+      <ErrorMessage
+        name="tipo_intervencao_id"
+        class="error-msg"
+      />
     </div>
     <div
       v-if="obraId"
