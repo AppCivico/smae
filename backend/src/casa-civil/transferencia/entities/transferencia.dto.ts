@@ -12,6 +12,7 @@ export class TransferenciaDto {
     identificador: string;
     valor: Decimal | null;
     partido: IdSigla[] | null;
+    parlamentar: ParlamnetarIdNomes[] | null;
     tipo: IdNomeDto | null;
     objeto: string;
     detalhamento: string | null;

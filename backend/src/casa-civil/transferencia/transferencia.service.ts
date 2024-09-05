@@ -1047,6 +1047,15 @@ export class TransferenciaService {
                     .map((e) => {
                         return { id: e.partido!.id, sigla: e.partido!.sigla };
                     }),
+                parlamentar: r.parlamentar.length
+                    ? r.parlamentar.map((e) => {
+                          return {
+                              id: e.parlamentar.id,
+                              nome: e.parlamentar.nome,
+                              nome_popular: e.parlamentar.nome_popular,
+                          };
+                      })
+                    : null,
                 tipo: r.tipo,
                 objeto: r.objeto,
                 detalhamento: r.detalhamento,
