@@ -233,7 +233,7 @@ function filterResponsible(orgao_id) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <template v-if="oktogo&&!(singleIniciativa?.loading || singleIniciativa?.error)">
+  <template v-if="oktogo && !(singleIniciativa?.loading || singleIniciativa?.error)">
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
@@ -354,7 +354,7 @@ function filterResponsible(orgao_id) {
               @change="item.participantes=[]"
             >
               <option
-                v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
+                v-for="o in organsAvailable.filter(a => a.orgao_id == item.orgao_id || !orgaos_participantes.map(b => b.orgao_id).includes(a.orgao_id))"
                 :key="o.orgao_id"
                 :value="o.orgao_id"
                 :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
@@ -423,7 +423,7 @@ function filterResponsible(orgao_id) {
     </Form>
   </template>
 
-  <template v-if="singleIniciativa?.loading||!oktogo">
+  <template v-if="singleIniciativa?.loading || !oktogo">
     <span class="spinner">Carregando</span>
   </template>
   <template v-if="singleIniciativa?.error||error">
@@ -434,7 +434,7 @@ function filterResponsible(orgao_id) {
     </div>
   </template>
 
-  <template v-if="iniciativa_id&&singleIniciativa.id&&iniciativa_id==singleIniciativa.id">
+  <template v-if="iniciativa_id && singleIniciativa.id && iniciativa_id == singleIniciativa.id">
     <hr class="mt2 mb2">
     <button
       class="btn amarelo big"
