@@ -924,7 +924,7 @@ export class ProjetoService {
 
         const linhasRevisao = await this.prisma.projetoPessoaRevisao.findMany({
             where: { pessoa_id: user.id },
-            select: { projeto_id: true, projeto_revisado: true },
+            select: { projeto_id: true },
         });
 
         const paginas = Math.ceil(total_registros / ipp);
