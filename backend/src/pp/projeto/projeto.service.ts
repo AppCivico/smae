@@ -3521,4 +3521,11 @@ export class ProjetoService {
 
         return updated;
     }
+
+    async revisarObrasDesmarcar(user: PessoaFromJwt) {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id } });
+            return;
+        });
+    }
 }
