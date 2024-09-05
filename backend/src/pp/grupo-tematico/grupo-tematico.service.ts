@@ -141,6 +141,7 @@ export class GrupoTematicoService {
                 if (dto.programa_habitacional === null) delete dto.programa_habitacional;
                 if (dto.unidades_habitacionais === null) delete dto.unidades_habitacionais;
                 if (dto.familias_beneficiadas === null) delete dto.familias_beneficiadas;
+                if (dto.unidades_atendidas === null) delete dto.unidades_atendidas;
 
                 return await prismaTx.grupoTematico.update({
                     where: { id },
