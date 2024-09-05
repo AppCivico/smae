@@ -1,6 +1,6 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import { localizarDataHorario, localizarData, dateToShortDate } from '@/helpers/dateToDate';
+import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -10,7 +10,7 @@ import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVolunt
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
 import {
-  computed, defineAsyncComponent,
+  defineAsyncComponent,
   nextTick, onMounted,
   ref,
 } from 'vue';
@@ -44,9 +44,6 @@ const {
   idDaPróximaFasePendente,
 } = storeToRefs(workflowAndamento);
 const { temPermissãoPara } = storeToRefs(authStore);
-
-const totalDistribuído = computed(() => listaDeDistribuição.value
-  .reduce((acc, cur) => acc + (Number(cur.valor) || 0), 0));
 
 const listaDeStatus = ref(null);
 
@@ -228,8 +225,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor distribuído
         </dt>
         <dd>
-          {{ totalDistribuído
-            ? `R$${dinheiro(totalDistribuído)}`
+          {{ transferênciaEmFoco?.valor_distribuido
+            ? `R$${dinheiro(transferênciaEmFoco?.valor_distribuido)}`
             : '-' }}
         </dd>
       </div>
@@ -241,7 +238,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           <progress
             id="file"
             :max="transferênciaEmFoco?.valor"
-            :value="totalDistribuído"
+            :value="transferênciaEmFoco?.valor_distribuido || 0"
           />
         </dd>
       </div>
