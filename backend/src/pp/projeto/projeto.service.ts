@@ -52,7 +52,6 @@ import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
-import { use } from 'passport';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
