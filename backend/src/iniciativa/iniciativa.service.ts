@@ -26,6 +26,12 @@ export class IniciativaService {
     async create(tipo: TipoPdm, dto: CreateIniciativaDto, user: PessoaFromJwt) {
         await this.metaService.assertMetaWriteOrThrow(tipo, dto.meta_id, user, 'iniciativa');
 
+        const meta = await this.prisma.meta.findFirstOrThrow({
+            where: { id: dto.meta_id, removido_em: null },
+            select: { ativo: true },
+        });
+        if (!meta.ativo) throw new HttpException('Meta desativada, ative a meta para criar iniciativas', 400);
+
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -337,10 +343,11 @@ export class IniciativaService {
     async update(tipo: TipoPdm, id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({
             where: { id, meta: { pdm: { tipo } }, removido_em: null },
-            select: { meta_id: true },
+            select: { meta_id: true, meta: { select: { ativo: true } } },
         });
 
         await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'iniciativa');
+        if (!self.meta.ativo) throw new HttpException('Meta desativada, ative a meta para editar iniciativas', 400);
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -385,7 +392,6 @@ export class IniciativaService {
                     atualizado_por: user.id,
                     atualizado_em: now,
                     status: '',
-                    ativo: true,
                     ...dto,
                 },
                 select: { id: true },
@@ -451,6 +457,7 @@ export class IniciativaService {
             where: { id, removido_em: null },
             select: {
                 meta_id: true,
+                meta: { select: { ativo: true } },
                 compoe_indicador_meta: true,
                 Indicador: {
                     select: {
@@ -463,6 +470,7 @@ export class IniciativaService {
             },
         });
         await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'iniciativa');
+        if (!self.meta.ativo) throw new HttpException('Meta desativada, ative a meta para remover iniciativas', 400);
 
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
