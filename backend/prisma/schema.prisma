@@ -1191,7 +1191,7 @@ model Meta {
     sub_tema_id   Int?
     sub_tema      SubTema?   @relation(fields: [sub_tema_id], references: [id])
 
-    ativo Boolean @default(false)
+    ativo Boolean @default(true)
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -2000,7 +2000,7 @@ model Iniciativa {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    ativo Boolean @default(false)
+    ativo Boolean @default(true)
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -2087,7 +2087,7 @@ model Atividade {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    ativo Boolean @default(false)
+    ativo Boolean @default(true)
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -2186,7 +2186,7 @@ model Cronograma {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    ativo Boolean @default(false)
+    ativo Boolean @default(true)
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
