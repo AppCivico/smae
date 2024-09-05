@@ -8,6 +8,7 @@ export default {
   PDM: {
     nome: 'Programa de metas',
     ícone: programaDeMetas,
+    segmentoIdentificador: 'pdm',
     rotaInicial: {
       name: 'panorama',
     },
@@ -15,6 +16,7 @@ export default {
   Projetos: {
     nome: 'Gestão de projetos',
     ícone: gestaoDeProjetos,
+    segmentoIdentificador: 'gp',
     rotaInicial: {
       name: 'projetosListar',
     },
@@ -22,6 +24,7 @@ export default {
   CasaCivil: {
     nome: 'Transferências voluntárias',
     ícone: transferenciasVoluntarias,
+    segmentoIdentificador: 'tv',
     rotaInicial: {
       name: 'PanoramaTransferenciasListar',
     },
@@ -29,6 +32,7 @@ export default {
   MDO: {
     nome: 'Monitoramento de Obras',
     ícone: monitoramentoDeObras,
+    segmentoIdentificador: 'mdo',
     rotaInicial: {
       name: 'obrasListar',
     },
@@ -36,6 +40,7 @@ export default {
   PlanoSetorial: {
     nome: 'Planos setoriais',
     ícone: planosSetoriais,
+    segmentoIdentificador: 'ps',
     rotaInicial: {
       name: 'planosSetoriaisListar',
     },
