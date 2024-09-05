@@ -98,6 +98,10 @@ export class TipoIntervencaoService {
                         );
                 }
 
+                console.log('=========================\n');
+                console.log(dto);
+                console.log('=========================\n');
+
                 return await prismaTx.tipoIntervencao.update({
                     where: { id },
                     data: {
