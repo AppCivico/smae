@@ -742,6 +742,7 @@ watch(itemParaEdicao, (novoValor) => {
           error: errors.portfolios_compartilhados,
           loading: portfolioMdoStore.chamadasPendentes.lista
         }"
+        label="titulo"
       />
       <ErrorMessage
         name="portfolios_compartilhados"

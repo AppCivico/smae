@@ -255,6 +255,9 @@ export const useObrasStore = defineStore('obrasStore', {
           : [],
         pdm_escolhido: emFoco?.meta?.pdm_id || null,
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,
+        portfolios_compartilhados: Array.isArray(emFoco?.portfolios_compartilhados)
+          ? emFoco.portfolios_compartilhados.map((x) => x.id)
+          : [],
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,
         programa_id: emFoco?.programa?.id || null,
