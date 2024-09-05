@@ -722,6 +722,32 @@ watch(itemParaEdicao, (novoValor) => {
         />
       </div>
     </div>
+    <div
+      v-if="obraId"
+      class="mb2"
+    >
+      <LabelFromYup
+        name="portfolios_compartilhados"
+        :schema="schema"
+      />
+
+      <AutocompleteField
+        name="portfolios_compartilhados"
+        :controlador="{
+          busca: '',
+          participantes: values.portfolios_compartilhados || []
+        }"
+        :grupo="portfóliosDisponíveis"
+        :class="{
+          error: errors.portfolios_compartilhados,
+          loading: portfolioMdoStore.chamadasPendentes.lista
+        }"
+      />
+      <ErrorMessage
+        name="portfolios_compartilhados"
+        class="error-msg"
+      />
+    </div>
 
     <div class="flex g2">
       <div class="f1 mb1">

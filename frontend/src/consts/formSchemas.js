@@ -1258,6 +1258,9 @@ export const obras = object({
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
     .nullable(),
+  portfolios_compartilhados: array()
+    .label('Compartilhar com portfolios')
+    .nullable(),
   portfolio_id: number()
     .label('Nome do portfólio')
     .min(1, 'Portfólio inválido')
