@@ -33,9 +33,9 @@ const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const workflowAndamento = useWorkflowAndamentoStore();
 
-const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
+const { emFoco: transferenciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const {
-  lista: listaDeDistribuição,
+  lista: listaDeDistribuicao,
   chamadasPendentes: distribuicoesPendentes,
 } = storeToRefs(distribuicaoRecursos);
 const {
@@ -48,8 +48,8 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const listaDeStatus = ref(null);
 
 function rolarParaStatusCorrente() {
-  if (listaDeStatus.value && Array.isArray(distribuição?.historico_status)) {
-    const índiceDoStatusCorrente = distribuição.historico_status.findIndex(
+  if (listaDeStatus.value && Array.isArray(distribuicao?.historico_status)) {
+    const índiceDoStatusCorrente = distribuicao.historico_status.findIndex(
       (status) => status.concluida === false,
     );
 
@@ -138,12 +138,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </header>
 
   <AndamentoDoWorkflow
-    v-if="temPermissãoPara('AndamentoWorkflow.listar') && transferênciaEmFoco?.workflow_id"
+    v-if="temPermissãoPara('AndamentoWorkflow.listar') && transferenciaEmFoco?.workflow_id"
     class="mb2"
   />
 
-  <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
-  <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
+  <pre v-scrollLockDebug>transferenciaEmFoco:{{ transferenciaEmFoco }}</pre>
+  <pre v-scrollLockDebug>listaDeDistribuicao:{{ listaDeDistribuicao }}</pre>
 
   <div class="flex g2 flexwrap center mt3 mb2">
     <h3 class="sr-only">
@@ -170,7 +170,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Esfera
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.esfera || '-' }}
+          {{ transferenciaEmFoco?.esfera || '-' }}
         </dd>
       </div>
       <div class="f1 fb5em">
@@ -178,7 +178,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Tipo
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.tipo.nome || '-' }}
+          {{ transferenciaEmFoco?.tipo.nome || '-' }}
         </dd>
       </div>
       <div class="f1 fb5">
@@ -186,7 +186,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Interface
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.interface || '-' }}
+          {{ transferenciaEmFoco?.interface || '-' }}
         </dd>
       </div>
       <div class="f1 fb100">
@@ -194,8 +194,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Órgão concedente / Secretaria do órgão concedente
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.orgao_concedente?.sigla || '-' }} /
-          {{ transferênciaEmFoco?.secretaria_concedente || '-' }}
+          {{ transferenciaEmFoco?.orgao_concedente?.sigla || '-' }} /
+          {{ transferenciaEmFoco?.secretaria_concedente || '-' }}
         </dd>
       </div>
     </dl>
@@ -205,8 +205,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor do repasse
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.valor
-            ? `R$${dinheiro(transferênciaEmFoco.valor)}`
+          {{ transferenciaEmFoco?.valor
+            ? `R$${dinheiro(transferenciaEmFoco.valor)}`
             : '-' }}
         </dd>
       </div>
@@ -215,8 +215,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor total
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.valor_total
-            ? `R$${dinheiro(transferênciaEmFoco.valor_total)}`
+          {{ transferenciaEmFoco?.valor_total
+            ? `R$${dinheiro(transferenciaEmFoco.valor_total)}`
             : '-' }}
         </dd>
       </div>
@@ -225,8 +225,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor distribuído
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.valor_distribuido
-            ? `R$${dinheiro(transferênciaEmFoco?.valor_distribuido)}`
+          {{ transferenciaEmFoco?.valor_distribuido
+            ? `R$${dinheiro(transferenciaEmFoco?.valor_distribuido)}`
             : '-' }}
         </dd>
       </div>
@@ -237,8 +237,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <dd>
           <progress
             id="file"
-            :max="transferênciaEmFoco?.valor"
-            :value="transferênciaEmFoco?.valor_distribuido || 0"
+            :max="transferenciaEmFoco?.valor"
+            :value="transferenciaEmFoco?.valor_distribuido || 0"
           />
         </dd>
       </div>
@@ -253,7 +253,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </div>
 
   <div
-    v-for="parlamentar in transferênciaEmFoco?.parlamentares"
+    v-for="parlamentar in transferenciaEmFoco?.parlamentares"
     :key="parlamentar.id"
     class="mb2"
   >
@@ -309,34 +309,34 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <LoadingComponent v-if="distribuicoesPendentes.lista" />
 
     <div
-      v-for="distribuição in listaDeDistribuição"
-      :key="distribuição.id"
+      v-for="distribuicao in listaDeDistribuicao"
+      :key="distribuicao.id"
       class="resumo-da-distribuicao-de-recursos__item mb2"
     >
       <div class="resumo-da-distribuicao-de-recursos__descricao f1 fb75 mb2">
         <hgroup class="resumo-da-distribuicao-de-recursos__titulo flex g1">
           <h3 class="ml0 t16 w700 tc500">
             <abbr
-              v-if="distribuição.orgao_gestor"
-              :title="distribuição.orgao_gestor.descricao"
+              v-if="distribuicao.orgao_gestor"
+              :title="distribuicao.orgao_gestor.descricao"
             >
-              {{ distribuição.orgao_gestor.sigla }}
+              {{ distribuicao.orgao_gestor.sigla }}
             </abbr>
           </h3>
           <h4 class="mlauto mr0 t16 w700 tc300">
-            {{ distribuição.valor
-              ? `R$${dinheiro(distribuição.valor)}`
+            {{ distribuicao.valor
+              ? `R$${dinheiro(distribuicao.valor)}`
               : '' }}
           </h4>
           <h5
             class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16 w700 tc500"
           >
-            {{ distribuição.pct_valor_transferencia }}%
+            {{ distribuicao.pct_valor_transferencia }}%
           </h5>
         </hgroup>
 
         <div class="resumo-da-distribuicao-de-recursos__objeto contentStyle f1">
-          {{ distribuição.objeto || '-' }}
+          {{ distribuicao.objeto || '-' }}
         </div>
       </div>
 
@@ -345,7 +345,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       flex flexwrap g2 align-end"
       >
         <div
-          v-if=" distribuição?.historico_status"
+          v-if=" distribuicao?.historico_status"
           class="resumo-da-distribuicao-de-recursos__status-item f1 mb1"
         >
           <ul
@@ -353,10 +353,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             class="flex pb1 andamento-fluxo__lista-de-fases"
           >
             <li
-              v-for="(status, index) in distribuição.historico_status"
+              v-for="(status, index) in distribuicao.historico_status"
               :key="status.id"
               class="p1 tc andamento-fluxo__fase"
-              :class="index === distribuição.historico_status.length - 1 && index === 0? 'andamento-fluxo__fase--iniciada' : 'andamento-fluxo__fase--concluída'"
+              :class="index === distribuicao.historico_status.length - 1
+                && index === 0
+                ? 'andamento-fluxo__fase--iniciada'
+                : 'andamento-fluxo__fase--concluída'"
             >
               <div class="status-item__header">
                 <dt class="w700 t16 andamento-fluxo__nome-da-fase">
@@ -386,11 +389,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </li>
           </ul>
           <dd
-            v-if="distribuição.parlamentares.length"
+            v-if="distribuicao.parlamentares.length"
             class="parlamentares"
           >
             <div
-              v-for="parlamentar, index in distribuição.parlamentares"
+              v-for="parlamentar, index in distribuicao.parlamentares"
               :key="parlamentar.id"
               :class="['flex spacebetween center g2', { 'mt1': index > 0}]"
             >
@@ -409,10 +412,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 </dt>
                 <dd class="tc300">
                   <strong
-                    v-if="parlamentar?.valor && transferênciaEmFoco?.valor"
+                    v-if="parlamentar?.valor && transferenciaEmFoco?.valor"
                   >
                     R$ {{ dinheiro(parlamentar.valor) || '0' }} ({{
-                      (parlamentar.valor / transferênciaEmFoco.valor *
+                      (parlamentar.valor / transferenciaEmFoco.valor *
                         100).toFixed() }}%)
                   </strong>
                 </dd>
@@ -439,7 +442,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Ano
           </dt>
           <dd>
-            {{ transferênciaEmFoco?.ano || '-' }}
+            {{ transferenciaEmFoco?.ano || '-' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -447,7 +450,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Código do programa
           </dt>
           <dd>
-            {{ transferênciaEmFoco?.programa || '-' }}
+            {{ transferenciaEmFoco?.programa || '-' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -455,7 +458,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Nome do Programa
           </dt>
           <dd>
-            {{ transferênciaEmFoco?.nome_programa || '-' }}
+            {{ transferenciaEmFoco?.nome_programa || '-' }}
           </dd>
         </dl>
       </div>
@@ -465,7 +468,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Objeto/Empreendimento
           </dt>
           <dd class="text">
-            {{ transferênciaEmFoco?.objeto || '-' }}
+            {{ transferenciaEmFoco?.objeto || '-' }}
           </dd>
         </dl>
         <dl class="f1 mb1">
@@ -473,7 +476,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Detalhamento
           </dt>
           <dd class="text">
-            {{ transferênciaEmFoco?.detalhamento }}
+            {{ transferenciaEmFoco?.detalhamento }}
           </dd>
         </dl>
       </div>
@@ -486,7 +489,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Cláusula suspensiva
           </dt>
           <dd>
-            {{ transferênciaEmFoco?.clausula_suspensiva ? 'Sim' : 'Não' }}
+            {{ transferenciaEmFoco?.clausula_suspensiva ? 'Sim' : 'Não' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -494,8 +497,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Data de vencimento
           </dt>
           <dd>
-            {{ transferênciaEmFoco?.clausula_suspensiva_vencimento
-              ? dateToField(transferênciaEmFoco.clausula_suspensiva_vencimento)
+            {{ transferenciaEmFoco?.clausula_suspensiva_vencimento
+              ? dateToField(transferenciaEmFoco.clausula_suspensiva_vencimento)
               : '-' }}
           </dd>
         </dl>
@@ -508,7 +511,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Normativa
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.normativa || '-' }}
+          {{ transferenciaEmFoco?.normativa || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb1">
@@ -516,7 +519,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Observações
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.observacoes || '-' }}
+          {{ transferenciaEmFoco?.observacoes || '-' }}
         </dd>
       </dl>
     </div>
@@ -547,7 +550,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Empenho
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.empenho ? 'Sim' : 'Não' }}
+          {{ transferenciaEmFoco?.empenho ? 'Sim' : 'Não' }}
         </dd>
       </dl>
       <dl class="mb1">
@@ -555,7 +558,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Ordenador de despesas
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.ordenador_despesa || '-' }}
+          {{ transferenciaEmFoco?.ordenador_despesa || '-' }}
         </dd>
       </dl>
       <dl class="mb1">
@@ -563,7 +566,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Gestor municipal do contrato
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.gestor_contrato || '-' }}
+          {{ transferenciaEmFoco?.gestor_contrato || '-' }}
         </dd>
       </dl>
     </div>
@@ -573,7 +576,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Dotação
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.dotacao || '-' }}
+          {{ transferenciaEmFoco?.dotacao || '-' }}
         </dd>
       </dl>
     </div>
@@ -592,7 +595,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         Banco
       </dt>
       <dd>
-        {{ transferênciaEmFoco?.banco_aceite || '-' }}
+        {{ transferenciaEmFoco?.banco_aceite || '-' }}
       </dd>
     </dl>
     <dl class="f1">
@@ -600,7 +603,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         Agência
       </dt>
       <dd>
-        {{ transferênciaEmFoco?.agencia_aceite || '-' }}
+        {{ transferenciaEmFoco?.agencia_aceite || '-' }}
       </dd>
     </dl>
     <dl class="f1">
@@ -608,7 +611,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         Conta
       </dt>
       <dd>
-        {{ transferênciaEmFoco?.conta_aceite || '-' }}
+        {{ transferenciaEmFoco?.conta_aceite || '-' }}
       </dd>
     </dl>
   </div>
@@ -626,7 +629,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         Banco
       </dt>
       <dd>
-        {{ transferênciaEmFoco?.banco_fim || '-' }}
+        {{ transferenciaEmFoco?.banco_fim || '-' }}
       </dd>
     </dl>
     <dl class="f1">
@@ -634,7 +637,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         Agência
       </dt>
       <dd>
-        {{ transferênciaEmFoco?.agencia_fim || '-' }}
+        {{ transferenciaEmFoco?.agencia_fim || '-' }}
       </dd>
     </dl>
     <dl class="f1">
@@ -642,7 +645,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         Conta
       </dt>
       <dd>
-        {{ transferênciaEmFoco?.conta_fim || '-' }}
+        {{ transferenciaEmFoco?.conta_fim || '-' }}
       </dd>
     </dl>
   </div>
@@ -666,8 +669,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </div>
 
   <section
-    v-for="distribuição in listaDeDistribuição"
-    :key="distribuição.id"
+    v-for="distribuicao in listaDeDistribuicao"
+    :key="distribuicao.id"
     class="mb2 pt1"
   >
     <div class="mb1">
@@ -676,8 +679,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Gestor municipal
         </dt>
         <dd>
-          {{ distribuição.orgao_gestor
-            ? `${distribuição.orgao_gestor.sigla} - ${distribuição.orgao_gestor.descricao}`
+          {{ distribuicao.orgao_gestor
+            ? `${distribuicao.orgao_gestor.sigla} - ${distribuicao.orgao_gestor.descricao}`
             : '-' }}
         </dd>
       </dl>
@@ -686,7 +689,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Objeto/Empreendimento
         </dt>
         <dd>
-          {{ distribuição.objeto || '-' }}
+          {{ distribuicao.objeto || '-' }}
         </dd>
       </dl>
     </div>
@@ -698,7 +701,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor do repasse
           </dt>
           <dd>
-            {{ distribuição.valor ? `R$${dinheiro(distribuição.valor)}` : '-' }}
+            {{ distribuicao.valor ? `R$${dinheiro(distribuicao.valor)}` : '-' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -706,8 +709,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor contrapartida
           </dt>
           <dd>
-            {{ distribuição.valor_contrapartida
-              ? `R$${dinheiro(distribuição.valor_contrapartida)}`
+            {{ distribuicao.valor_contrapartida
+              ? `R$${dinheiro(distribuicao.valor_contrapartida)}`
               : '-' }}
           </dd>
         </dl>
@@ -716,8 +719,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor total
           </dt>
           <dd>
-            {{ distribuição.valor_total
-              ? `R$${dinheiro(distribuição.valor_total)}`
+            {{ distribuicao.valor_total
+              ? `R$${dinheiro(distribuicao.valor_total)}`
               : '-' }}
           </dd>
         </dl>
@@ -728,7 +731,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Empenho
           </dt>
           <dd>
-            {{ distribuição.empenho ? 'Sim' : 'Não' }}
+            {{ distribuicao.empenho ? 'Sim' : 'Não' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -736,7 +739,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Programa orçamentário municipal
           </dt>
           <dd>
-            {{ distribuição.programa_orcamentario_municipal || '-' }}
+            {{ distribuicao.programa_orcamentario_municipal || '-' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -744,7 +747,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Programa orçamentário estadual
           </dt>
           <dd>
-            {{ distribuição.programa_orcamentario_estadual || '-' }}
+            {{ distribuicao.programa_orcamentario_estadual || '-' }}
           </dd>
         </dl>
       </div>
@@ -754,7 +757,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Dotação orçamentária
           </dt>
           <dd>
-            {{ distribuição.dotacao || '-' }}
+            {{ distribuicao.dotacao || '-' }}
           </dd>
         </dl>
       </div>
@@ -762,7 +765,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
     <div>
       <table
-        v-if="distribuição.registros_sei?.length"
+        v-if="distribuicao.registros_sei?.length"
         class="tablemain no-zebra horizontal-lines mb1"
       >
         <caption class="t16 w700 mb05 tc500 tl">
@@ -795,7 +798,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
         <tbody class="transferencia-sei-body">
           <tr
-            v-for="registro, idx in distribuição.registros_sei"
+            v-for="registro, idx in distribuicao.registros_sei"
             :key="idx"
             class="transferencia-sei-body__item"
           >
@@ -845,7 +848,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                   :checked="registro.lido"
                   @input="atualizaSeiLido(
                     registro,
-                    distribuição.id,
+                    distribuicao.id,
                     $event.target.checked
                   )"
                 >
@@ -856,7 +859,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 v-if="registro?.integracao_sei?.link"
                 :to="registro?.integracao_sei?.link"
                 title="Abrir no site do SEI"
-                @click="atualizaSeiLido(registro, distribuição.transferencia_id, true)"
+                @click="atualizaSeiLido(registro, distribuicao.transferencia_id, true)"
               >
                 <svg
                   width="20"
@@ -873,7 +876,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Número proposta
           </dt>
           <dd>
-            {{ distribuição.proposta || '-' }}
+            {{ distribuicao.proposta || '-' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -881,7 +884,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Número do convênio/pré convênio
           </dt>
           <dd>
-            {{ distribuição.convenio || '-' }}
+            {{ distribuicao.convenio || '-' }}
           </dd>
         </dl>
       </div>
@@ -891,7 +894,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Número do contrato
           </dt>
           <dd>
-            {{ distribuição.contrato || '-' }}
+            {{ distribuicao.contrato || '-' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -899,8 +902,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Data de vigência
           </dt>
           <dd>
-            {{ distribuição.vigencia
-              ? dateToField(distribuição.vigencia)
+            {{ distribuicao.vigencia
+              ? dateToField(distribuicao.vigencia)
               : '-' }}
           </dd>
         </dl>
@@ -909,7 +912,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Motivo do aditamento
           </dt>
           <dd>
-            {{ distribuição.aditamentos[0]?.justificativa || ' - ' }}
+            {{ distribuicao.aditamentos[0]?.justificativa || ' - ' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -917,8 +920,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Data de conclusão da suspensiva
           </dt>
           <dd>
-            {{ distribuição.conclusao_suspensiva
-              ? dateToField(distribuição.conclusao_suspensiva)
+            {{ distribuicao.conclusao_suspensiva
+              ? dateToField(distribuicao.conclusao_suspensiva)
               : '-' }}
           </dd>
         </dl>
@@ -937,24 +940,24 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <dt class="t16 w700 mb05 tc500">
           Data da assinatura do termo de aceite
         </dt>
-        <dd v-if="distribuição?.assinatura_termo_aceite">
-          {{ dateToField(distribuição.assinatura_termo_aceite) }}
+        <dd v-if="distribuicao?.assinatura_termo_aceite">
+          {{ dateToField(distribuicao.assinatura_termo_aceite) }}
         </dd>
       </dl>
       <dl class="f1">
         <dt class="t16 w700 mb05 tc500">
           Data da assinatura do representante do estado
         </dt>
-        <dd v-if="distribuição?.assinatura_estado">
-          {{ dateToField(distribuição.assinatura_estado) }}
+        <dd v-if="distribuicao?.assinatura_estado">
+          {{ dateToField(distribuicao.assinatura_estado) }}
         </dd>
       </dl>
       <dl class="f1">
         <dt class="t16 w700 mb05 tc500">
           Data da assinatura do representante do município
         </dt>
-        <dd v-if="distribuição?.assinatura_municipio">
-          {{ dateToField(distribuição.assinatura_municipio) }}
+        <dd v-if="distribuicao?.assinatura_municipio">
+          {{ dateToField(distribuicao.assinatura_municipio) }}
         </dd>
       </dl>
     </div>
