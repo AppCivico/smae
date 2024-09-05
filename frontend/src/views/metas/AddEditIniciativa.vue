@@ -210,7 +210,7 @@ function filterResponsible(orgao_id) {
 <template>
   <MigalhasDeMetas class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <div>
       <TítuloDePágina
         :ícone="activePdm?.logo"
@@ -232,7 +232,7 @@ function filterResponsible(orgao_id) {
         height="12"
       ><use xlink:href="#i_x" /></svg>
     </button>
-  </div>
+  </header>
   <template v-if="oktogo && !(singleIniciativa?.loading || singleIniciativa?.error)">
     <Form
       v-slot="{ errors, isSubmitting, values }"
