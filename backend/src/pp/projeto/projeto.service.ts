@@ -957,7 +957,11 @@ export class ProjetoService {
                         : null,
                     regioes: r.regioes,
                     portfolio: r.portfolio,
-                    revisado: linhaRevisao ? linhaRevisao.projeto_revisado : null,
+                    revisado: user.hasSomeRoles(['MDO.revisar_obra', 'ProjetoMDO.administrador'])
+                        ? linhaRevisao
+                            ? true
+                            : false
+                        : null,
                 };
             }),
         };
@@ -3476,36 +3480,40 @@ export class ProjetoService {
     }
 
     async revisarObras(dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
-        const now = new Date(Date.now());
-
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
-                const obrasExistem = await prismaTx.projeto.count({
-                    where: {
-                        tipo: 'MDO',
-                        id: { in: dto.obras.map((o) => o.projeto_id) },
-                        removido_em: null,
-                    },
+                const obrasRevisadas = await prismaTx.projetoPessoaRevisao.findMany({
+                    where: { pessoa_id: user.id },
+                    select: { projeto_id: true },
                 });
-                if (obrasExistem !== dto.obras.length)
-                    throw new HttpException('projeto_id| Um ou mais projetos não foram encontrados.', 400);
 
                 const operations = [];
                 for (const obra of dto.obras) {
-                    operations.push(
-                        prismaTx.projetoPessoaRevisao.update({
-                            where: {
-                                projeto_id_pessoa_id: {
-                                    projeto_id: obra.projeto_id,
+                    if (obra.revisado == true) {
+                        if (obrasRevisadas.some((o) => o.projeto_id === obra.projeto_id)) continue;
+
+                        operations.push(
+                            prismaTx.projetoPessoaRevisao.create({
+                                data: {
                                     pessoa_id: user.id,
+                                    projeto_id: obra.projeto_id,
                                 },
-                            },
-                            data: {
-                                projeto_revisado: obra.revisado,
-                                atualizado_em: now,
-                            },
-                        })
-                    );
+                            })
+                        );
+                    } else {
+                        if (!obrasRevisadas.some((o) => o.projeto_id === obra.projeto_id)) continue;
+
+                        operations.push(
+                            prismaTx.projetoPessoaRevisao.delete({
+                                where: {
+                                    projeto_id_pessoa_id: {
+                                        pessoa_id: user.id,
+                                        projeto_id: obra.projeto_id,
+                                    },
+                                },
+                            })
+                        );
+                    }
                 }
                 return await Promise.all(operations);
             }

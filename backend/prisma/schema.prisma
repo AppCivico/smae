@@ -6914,8 +6914,7 @@ model ProjetoPessoaRevisao {
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
 
-    projeto_revisado Boolean
-    atualizado_em    DateTime @default(now())
+    criado_em DateTime @default(now())
 
     @@unique([projeto_id, pessoa_id])
     @@map("projeto_pessoa_revisao")
