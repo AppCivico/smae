@@ -590,7 +590,6 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
-          WHERE projeto.id = 20111
         ${whereCond.whereString} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
