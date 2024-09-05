@@ -398,10 +398,10 @@ function filterResponsible(orgao_id) {
   <template v-if="singleAtividade?.loading || !oktogo">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="singleAtividade?.error||error">
+  <template v-if="singleAtividade?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ singleAtividade.error??error }}
+        {{ singleAtividade.error }}
       </div>
     </div>
   </template>
