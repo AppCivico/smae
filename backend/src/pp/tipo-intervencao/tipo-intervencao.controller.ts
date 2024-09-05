@@ -5,12 +5,12 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { UpdateProjetoDto } from '../projeto/dto/update-projeto.dto';
 import { TipoIntervencaoService } from './tipo-intervencao.service';
 import { CreateTipoIntervencaoDto } from './dto/create-tipo-intervencao.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { TipoIntervencao, ListTipoIntervencaoDto } from './entities/tipo-intervencao.entity';
+import { UpdateTipoIntervencaoDto } from './dto/update-tipo-intervencao.dto';
 
 const rolesMDO: ListaDePrivilegios[] = ['ProjetoMDO.administrador'];
 
@@ -48,7 +48,7 @@ export class TipoIntervencaoController {
     @Roles([...rolesMDO])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateProjetoDto: UpdateProjetoDto,
+        @Body() updateProjetoDto: UpdateTipoIntervencaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.tipoIntervencaoService.update(params.id, updateProjetoDto, user);
