@@ -216,11 +216,11 @@ function filterResponsible(orgao_id) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <template v-if="oktogo&&!(singleAtividade?.loading || singleAtividade?.error)">
+  <template v-if="oktogo && !(singleAtividade?.loading || singleAtividade?.error)">
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="atividade_id?singleAtividade:virtualParent"
+      :initial-values="atividade_id ? singleAtividade : virtualParent"
       @submit="onSubmit"
     >
       <hr class="mt2 mb2">
@@ -395,7 +395,7 @@ function filterResponsible(orgao_id) {
     </Form>
   </template>
 
-  <template v-if="singleAtividade?.loading||!oktogo">
+  <template v-if="singleAtividade?.loading || !oktogo">
     <span class="spinner">Carregando</span>
   </template>
   <template v-if="singleAtividade?.error||error">
@@ -406,7 +406,7 @@ function filterResponsible(orgao_id) {
     </div>
   </template>
 
-  <template v-if="atividade_id&&singleAtividade.id&&atividade_id==singleAtividade.id">
+  <template v-if="atividade_id && singleAtividade.id && atividade_id == singleAtividade.id">
     <hr class="mt2 mb2">
     <button
       class="btn amarelo big"
