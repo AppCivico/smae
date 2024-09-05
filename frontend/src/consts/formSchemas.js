@@ -3314,6 +3314,7 @@ export const tipoDeIntervencao = object({
     .label('Conceito')
     .min(3)
     .max(250)
+    .transform((v) => (!v ? null : v))
     .nullable(),
 });
 
