@@ -37,7 +37,7 @@ async function escolher(opção) {
   erro.value = null;
   sistemaEscolhido.value = opção;
 
-  authStore.getDados()
+  authStore.getDados({ 'smae-sistemas': Object.keys(módulos).join(',') })
     .then(() => {
       // PRA-FAZER: persistir o auth.store no navegador
       localStorage.setItem('sistemaEscolhido', opção);
