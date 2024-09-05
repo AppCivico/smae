@@ -6,6 +6,7 @@ import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
+import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
@@ -13,7 +14,6 @@ import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-ati
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
-import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 
 @Injectable()
 export class AtividadeService {
@@ -27,9 +27,21 @@ export class AtividadeService {
     async create(tipo: TipoPdm, dto: CreateAtividadeDto, user: PessoaFromJwt) {
         const iniciativa = await this.prisma.iniciativa.findFirstOrThrow({
             where: { id: dto.iniciativa_id, removido_em: null },
-            select: { meta_id: true },
+            select: {
+                ativo: true,
+                meta_id: true,
+                meta: {
+                    select: {
+                        ativo: true,
+                    },
+                },
+            },
         });
         await this.metaService.assertMetaWriteOrThrow(tipo, iniciativa.meta_id, user, 'atividade');
+
+        if (!iniciativa.ativo) throw new BadRequestException('Iniciativa está desativada, ative-a criar uma Atividade');
+        if (!iniciativa.meta.ativo)
+            throw new BadRequestException('Meta está desativada, ative-a antes criar uma Atividade');
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -345,6 +357,27 @@ export class AtividadeService {
 
         await this.metaService.assertMetaWriteOrThrow(tipo, self.iniciativa.meta_id, user, 'atividade');
 
+        const atividade = await this.prisma.atividade.findFirstOrThrow({
+            where: { id: id, removido_em: null },
+            select: {
+                iniciativa: {
+                    select: {
+                        ativo: true,
+                        meta: {
+                            select: {
+                                ativo: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (!atividade.iniciativa.ativo)
+            throw new BadRequestException('Iniciativa está desativada, ative-a editar a Atividade');
+        if (!atividade.iniciativa.meta.ativo)
+            throw new BadRequestException('Meta está desativada, ative-a antes editar a Atividade');
+
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -378,29 +411,13 @@ export class AtividadeService {
                     throw new HttpException('titulo| Já existe outra atividade com este título nesta iniciativa', 400);
             }
 
-            if (dto.ativo) {
-                const atividade = await prismaTx.atividade.findFirst({
-                    where: {
-                        id: id,
-                    },
-                    select: {
-                        iniciativa: {
-                            select: { ativo: true },
-                        },
-                    },
-                });
-
-                if (!atividade?.iniciativa.ativo)
-                    throw new BadRequestException('Iniciativa está desativada, ative-a antes de ativar a Atividade');
-            }
-
             const atividade = await prismaTx.atividade.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: now,
                     status: '',
-                    ativo: true,
+                    ativo: dto.ativo,
                     codigo: dto.codigo,
                     titulo: dto.titulo,
                     contexto: dto.contexto,
@@ -472,7 +489,13 @@ export class AtividadeService {
                 iniciativa_id: true,
                 iniciativa: {
                     select: {
+                        ativo: true,
                         meta_id: true,
+                        meta: {
+                            select: {
+                                ativo: true,
+                            },
+                        },
                     },
                 },
                 compoe_indicador_iniciativa: true,
@@ -488,6 +511,11 @@ export class AtividadeService {
         });
 
         await this.metaService.assertMetaWriteOrThrow(tipo, self.iniciativa.meta_id, user, 'atividade');
+
+        if (!self.iniciativa.ativo)
+            throw new BadRequestException('Iniciativa está desativada, ative-a antes de remover a Atividade');
+        if (!self.iniciativa.meta.ativo)
+            throw new BadRequestException('Meta está desativada, ative-a antes de remover a Atividade');
 
         // Antes de remover a Atividade, deve ser verificada a Iniciativa para garantir de que não há variaveis em uso
         if (self.compoe_indicador_iniciativa) {

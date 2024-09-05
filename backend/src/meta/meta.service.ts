@@ -61,9 +61,11 @@ export class MetaService {
                 tipo,
                 removido_em: null,
             },
-            select: { id: true },
+            select: { id: true, ativo: true },
         });
         await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
+
+        if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
 
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
@@ -652,7 +654,8 @@ export class MetaService {
         //        }
 
         const loadMeta = await this.loadMetaOrThrow(id, tipo, user);
-        await this.pdmService.getDetail(tipo, loadMeta.pdm_id, user, 'ReadWrite');
+        const pdm = await this.pdmService.getDetail(tipo, loadMeta.pdm_id, user, 'ReadWrite');
+        if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
@@ -867,7 +870,8 @@ export class MetaService {
         // }
 
         const meta = await this.loadMetaOrThrow(id, tipo, user);
-        await this.pdmService.getDetail(tipo, meta.pdm_id, user, 'ReadWrite');
+        const pdm = await this.pdmService.getDetail(tipo, meta.pdm_id, user, 'ReadWrite');
+        if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
 
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
