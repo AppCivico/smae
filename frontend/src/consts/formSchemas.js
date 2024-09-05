@@ -3310,6 +3310,11 @@ export const tipoDeIntervencao = object({
     .min(3)
     .max(250)
     .required(),
+  conceito: string()
+    .label('Conceito')
+    .min(3)
+    .max(250)
+    .nullable(),
 });
 
 export const usuário = object()

@@ -11,11 +11,13 @@
   </div>
   <table class="tablemain">
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th>Tipo</th>
+        <th>Conceito</th>
         <th />
         <th />
       </tr>
@@ -26,6 +28,7 @@
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
+        <td>{{ item.conceito }}</td>
         <td>
           <router-link
             :to="{ name: 'tiposDeIntervencaoEditar', params: { intervencaoId: item.id } }"
@@ -52,17 +55,17 @@
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="3">
+        <td colspan="4">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro?.lista">
-        <td colspan="3">
+        <td colspan="4">
           Erro: {{ erro.lista }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="3">
+        <td colspan="4">
           Nenhum resultado encontrado.
         </td>
       </tr>

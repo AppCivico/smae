@@ -26,6 +26,21 @@
           name="nome"
         />
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="conceito"
+          :schema="schema"
+        />
+        <Field
+          name="conceito"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="conceito"
+        />
+      </div>
     </div>
     <FormErrorsList :errors="errors" />
 
