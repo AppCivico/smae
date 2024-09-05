@@ -149,7 +149,7 @@ export const useVariaveisCategoricasStore = defineStore('variareisCategoricas', 
       };
     },
     obterValoresVariavelCategoricaPorId: ({ lista }: Estado) => (id: number) => {
-      const variavelCategorica = lista.find((item) => item.id === id);
+      const variavelCategorica = lista.find((item) => item.id === Number(id));
       if (!variavelCategorica) {
         console.error(
           `Não foi possível obter variavel categórica pelo ID: ${id}`,

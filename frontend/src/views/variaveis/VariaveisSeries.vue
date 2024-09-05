@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@/../../backend/src/variavel/entities/variavel.entity';
-import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import {
+  computed, defineEmits, defineProps, ref, watch,
+} from 'vue';
+import { storeToRefs } from 'pinia';
+import { Field, useForm, useIsFormDirty } from 'vee-validate';
+
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+
+import truncate from '@/helpers/truncate';
 import dateToTitle from '@/helpers/dateToTitle';
-import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
+import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import { storeToRefs } from 'pinia';
-import {
-  Field,
-  useForm, useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed, defineEmits, defineProps,
-  ref, watch,
-} from 'vue';
+
+import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@/../../backend/src/variavel/entities/variavel.entity';
 
 type TiposValidos = 'Previsto' | 'PrevistoAcumulado' | 'Realizado' | 'RealizadoAcumulado';
 
@@ -245,11 +246,9 @@ function limparFormulário() {
   });
 }
 
-watch(() => props.variavelId, async (novoId) => {
-  await Promise.all([
-    variaveisGlobaisStore.buscarSerie(novoId),
-    variaveisCategoricasStore.buscarTudo(),
-  ]);
+watch(() => props.variavelId, (novoId) => {
+  variaveisGlobaisStore.buscarSerie(novoId);
+  variaveisCategoricasStore.buscarTudo();
 }, {
   immediate: true,
 });
@@ -397,7 +396,8 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
                     :key="item.id"
                     :value="item.valor_variavel"
                   >
-                    {{ item.titulo }} {{ item.descricao && `- ${item.descricao}` }}
+                    {{ item.titulo }}
+                    {{ item.descricao && truncate(`- ${item.descricao}`, 55) }}
                   </option>
                 </Field>
 
