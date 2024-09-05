@@ -300,7 +300,7 @@ export class ProjetoMDOController {
         return this.projetoService.findAllMDO(filters, user);
     }
 
-    @Patch('revisar-obras')
+    @Post('revisar-obras')
     @ApiBearerAuth('access-token')
     @Roles(['ProjetoMDO.administrador', 'MDO.revisar_obra'])
     async revisarObras(
