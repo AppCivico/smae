@@ -891,15 +891,15 @@ export class NotaService {
                     ? (comunicado.dados.valueOf() as any)
                     : null;
 
-            const dthr = dados?.dthr
-                ? DateTime.fromFormat(dados.dthr, 'yyyy-MM-dd HH:mm:ss', { zone: 'UTC' }).toJSDate()
+            const publicado_em = dados?.publicado_em
+                ? DateTime.fromFormat(dados.publicado_em, 'yyyy-MM-dd HH:mm:ss', { zone: 'UTC' })
                 : null;
 
             return {
                 id: comunicado.id,
                 titulo: comunicado.titulo || '',
                 conteudo: comunicado.nota,
-                data: dthr ?? comunicado.data_nota,
+                data: publicado_em && publicado_em.isValid ? publicado_em.toJSDate() : comunicado.data_nota,
                 dados,
                 lido: comunicado.usuarios_lidos.includes(user.id),
             };
