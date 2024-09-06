@@ -1171,16 +1171,90 @@ export class TransferenciaService {
                         nome: true,
                     },
                 },
+                distribuicao_recursos: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        valor: true,
+                        status: {
+                            take: 1,
+                            where: { removido_em: null },
+                            orderBy: { data_troca: 'asc' },
+                            select: {
+                                status: {
+                                    select: {
+                                        tipo: true,
+                                        permite_novos_registros: true,
+                                    },
+                                },
+                                status_base: {
+                                    select: {
+                                        tipo: true,
+                                        permite_novos_registros: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
 
         return {
-            ...row,
+            id: row.id,
+            identificador: row.identificador,
+            ano: row.ano,
+            objeto: row.objeto,
+            detalhamento: row.detalhamento,
+            clausula_suspensiva: row.clausula_suspensiva,
+            clausula_suspensiva_vencimento: row.clausula_suspensiva_vencimento,
+            normativa: row.normativa,
+            observacoes: row.observacoes,
+            programa: row.programa,
+            empenho: row.empenho,
+            pendente_preenchimento_valores: row.pendente_preenchimento_valores,
+            valor: row.valor,
+            valor_total: row.valor_total,
+            valor_contrapartida: row.valor_contrapartida,
+            custeio: row.custeio,
+            investimento: row.investimento,
+            emenda: row.emenda,
+            dotacao: row.dotacao,
+            demanda: row.demanda,
+            banco_fim: row.banco_fim,
+            conta_fim: row.conta_fim,
+            agencia_fim: row.agencia_fim,
+            banco_aceite: row.banco_aceite,
+            conta_aceite: row.conta_aceite,
+            nome_programa: row.nome_programa,
+            agencia_aceite: row.agencia_aceite,
+            emenda_unitaria: row.emenda_unitaria,
+            gestor_contrato: row.gestor_contrato,
+            ordenador_despesa: row.ordenador_despesa,
+            numero_identificacao: row.numero_identificacao,
+            tipo: row.tipo,
+            workflow_id: row.workflow_id,
+            interface: row.interface,
+            esfera: row.esfera,
+            valor_distribuido: row.distribuicao_recursos
+                .filter((e) => {
+                    const statusTipo: DistribuicaoStatusTipo | undefined =
+                        e.status[0].status?.tipo ?? e.status[0].status_base?.tipo;
+
+                    return (
+                        statusTipo != DistribuicaoStatusTipo.Declinada &&
+                        statusTipo != DistribuicaoStatusTipo.Redirecionada &&
+                        statusTipo != DistribuicaoStatusTipo.Cancelada &&
+                        statusTipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
+                    );
+                })
+                .reduce((acc, curr) => acc + curr.valor.toNumber(), 0),
             parlamentares: row.parlamentar,
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
-        };
+            orgao_concedente: row.orgao_concedente,
+        } satisfies TransferenciaDetailDto;
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {

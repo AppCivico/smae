@@ -51,6 +51,7 @@ export class TransferenciaDetailDto {
     valor: Decimal | null;
     valor_total: Decimal | null;
     valor_contrapartida: Decimal | null;
+    valor_distribuido: number | null;
     custeio: Decimal | null;
     investimento: Decimal | null;
     emenda: string | null;
