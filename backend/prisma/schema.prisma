@@ -6889,19 +6889,19 @@ enum ComunicadoTipo {
 }
 
 model ComunicadoTransfereGov {
-    id        Int            @id @default(autoincrement())
-    numero    Int
-    ano       Int
-    titulo    String
-    link      String         @db.Text
-    data      DateTime       @db.Date
-    descricao String?        @db.Text
-    tipo      ComunicadoTipo
+    id           Int            @id @default(autoincrement())
+    numero       Int
+    ano          Int
+    titulo       String
+    link         String         @db.Text
+    publicado_em DateTime
+    descricao    String?        @db.Text
+    tipo         ComunicadoTipo
 
     criado_em     DateTime @default(now())
     atualizado_em DateTime @updatedAt
 
-    @@unique([numero, ano, titulo])
+    @@unique([tipo, numero, ano, titulo])
     @@map("comunicado_transfere_gov")
 }
 

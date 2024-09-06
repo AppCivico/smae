@@ -28,7 +28,7 @@ export class TransfGovComunicado {
 
     @IsOnlyDate()
     @Transform(DateTransformDMY)
-    data: Date;
+    publicado_em: Date;
 
     @IsString()
     descricao: string;
