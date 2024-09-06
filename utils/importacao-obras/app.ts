@@ -214,6 +214,8 @@ async function main() {
         return;
     }
 
+    return;
+
     const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
     const empreendimentosMap: Record<string, number> = {};
     for (const emp of empreendimentos.data.linhas) {
@@ -579,8 +581,14 @@ async function validaIniciativas() {
             meta_id: memMeta2id[metaCodigoOrCodigo],
         });
         for (const iniciativaCodigo in memIniciativa[metaCodigoOrCodigo]) {
-            const matchByCodigo = iniciativasNaApi.data.linhas.find((iniciativa) =>
-                matchStringFuzzy(iniciativa.codigo, metaCod + '.' + iniciativaCodigo)
+            let matchStr = iniciativaCodigo;
+            if (iniciativaCodigo.includes(' - ')) {
+                matchStr = iniciativaCodigo.split(' - ')[0];
+            }
+            const matchByCodigo = iniciativasNaApi.data.linhas.find(
+                (iniciativa) =>
+                    matchStringFuzzy(iniciativa.codigo, metaCod + '.' + matchStr) ||
+                    matchStringFuzzy(iniciativa.codigo, matchStr)
             );
             if (matchByCodigo) {
                 memIniciativa2id[metaCodigoOrCodigo] = memIniciativa2id[metaCodigoOrCodigo] || {};
