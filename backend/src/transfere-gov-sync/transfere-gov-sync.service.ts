@@ -212,7 +212,7 @@ export class TransfereGovSyncService {
                             numero: item.numero,
                             ano: item.ano,
                             link: item.link,
-                            publicado_em: item.publicado_em.toJSON(),
+                            publicado_em: DateTime.fromJSDate(item.publicado_em).toISO(),
                         },
                         dispara_email: false,
                         tipo_nota_id: CONST_TIPO_NOTA_TRANSF_GOV,
