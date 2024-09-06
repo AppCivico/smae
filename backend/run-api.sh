@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+export TZ=UTC
 
 # Set the log file and maximum log size (in bytes, e.g., 10MB)
 MAX_LOG_SIZE=$((10 * 1024 * 1024))
@@ -37,4 +38,4 @@ npx prisma migrate deploy 2>&1 | $LOGGING_CMD
 node --enable-source-maps dist/prisma/seed.js 2>&1 | $LOGGING_CMD
 
 # Run the main application, logging output
-LOG_FILE=$LOG_FILE node --enable-source-maps dist/src/main 2>&1 | $LOGGING_CMD
+LOG_FILE=$LOG_FILE TZ=UTC node --enable-source-maps dist/src/main 2>&1 | $LOGGING_CMD
