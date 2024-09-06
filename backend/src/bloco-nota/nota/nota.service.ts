@@ -891,9 +891,7 @@ export class NotaService {
                     ? (comunicado.dados.valueOf() as any)
                     : null;
 
-            const publicado_em = dados?.publicado_em
-                ? DateTime.fromFormat(dados.publicado_em, 'yyyy-MM-dd HH:mm:ss', { zone: 'UTC' })
-                : null;
+            const publicado_em = dados?.publicado_em ? DateTime.fromISO(dados.publicado_em) : null;
 
             return {
                 id: comunicado.id,
