@@ -46,7 +46,7 @@ export class TransfereGovSyncService {
             ano: comunicado.ano,
             titulo: comunicado.titulo,
             link: comunicado.link,
-            publicado_em: comunicado.publicado_em,
+            publicado_em: comunicado.data,
             descricao: comunicado.descricao,
             tipo: tipo,
         };
