@@ -1,9 +1,8 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Transform, Type, plainToClass } from 'class-transformer';
-import { IsArray, IsNumber, IsString, ValidateNested, validate } from 'class-validator';
+import { IsArray, IsDate, IsNumber, IsString, ValidateNested, validate } from 'class-validator';
 import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
-import { IsOnlyDate } from '../common/decorators/IsDateOnly';
 
 export class TransfereGovError extends Error {
     constructor(msg: string) {
@@ -26,9 +25,9 @@ export class TransfGovComunicado {
     @IsString()
     link: string;
 
-    @IsOnlyDate()
+    @IsDate()
     @Transform(DateTransformDMY)
-    publicado_em: Date;
+    data: Date;
 
     @IsString()
     descricao: string;
@@ -90,8 +89,7 @@ export class TransfereGovApiService {
             const apiResponse = plainToClass(ApiResponse, response);
             const errors = await validate(apiResponse);
             if (errors.length > 0) {
-                const errorMessages = errors.map((error) => Object.values((error as any).constraints)).flat();
-                throw new HttpException(`Validation failed: ${errorMessages.join(', ')}`, 400);
+                throw new HttpException(errors.map((e) => e.toString()).join('\n'), 400);
             }
 
             return apiResponse.comunicados;
