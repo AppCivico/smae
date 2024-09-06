@@ -2,11 +2,15 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ComunicadoTipo, ComunicadoTransfereGov, Prisma } from '@prisma/client';
+import { DateTime } from 'luxon';
+import { uuidv7 } from 'uuidv7';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
 import { CONST_BOT_USER_ID, CONST_TIPO_NOTA_TRANSF_GOV } from '../common/consts';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_TRANSFERE_GOV_LOCK } from '../common/dto/locks';
 import { PaginatedDto } from '../common/dto/paginated.dto';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     TransfGovComunicado,
@@ -14,9 +18,6 @@ import {
     TransfereGovError,
 } from '../transfere-gov-api/transfere-gov-api.service';
 import { FilterTransfereGovListDto, TransfereGovDto } from './entities/transfere-gov-sync.entity';
-import { SmaeConfigService } from '../common/services/smae-config.service';
-import { uuidv7 } from 'uuidv7';
-import { Date2YMD } from '../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -45,7 +46,7 @@ export class TransfereGovSyncService {
             ano: comunicado.ano,
             titulo: comunicado.titulo,
             link: comunicado.link,
-            data: comunicado.data,
+            publicado_em: comunicado.publicado_em,
             descricao: comunicado.descricao,
             tipo: tipo,
         };
@@ -64,7 +65,8 @@ export class TransfereGovSyncService {
             try {
                 const result = await this.prisma.comunicadoTransfereGov.upsert({
                     where: {
-                        numero_ano_titulo: {
+                        tipo_numero_ano_titulo: {
+                            tipo: transformedComunicado.tipo,
                             numero: transformedComunicado.numero,
                             ano: transformedComunicado.ano,
                             titulo: transformedComunicado.titulo,
@@ -178,7 +180,7 @@ export class TransfereGovSyncService {
                             template: 'comunicado-transfere-gov.html',
                             variables: {
                                 titulo: item.titulo,
-                                data: Date2YMD.dbDateToDMY(item.data),
+                                data: Date2YMD.dbDateToDMY(item.publicado_em),
                                 descricao: item.descricao,
                                 link: item.link,
                                 tipo: item.tipo,
@@ -199,7 +201,7 @@ export class TransfereGovSyncService {
                         bloco_token: bloco,
                         titulo: item.titulo,
                         nota: item.descricao ?? '',
-                        data_nota: item.data,
+                        data_nota: DateTime.fromJSDate(item.publicado_em).setZone(SYSTEM_TIMEZONE).toJSDate(),
                         status: 'Em_Curso',
                         dados: {
                             transfere_gov_id: item.id,
@@ -207,6 +209,7 @@ export class TransfereGovSyncService {
                             numero: item.numero,
                             ano: item.ano,
                             link: item.link,
+                            publicado_em: item.publicado_em,
                         },
                         dispara_email: false,
                         tipo_nota_id: CONST_TIPO_NOTA_TRANSF_GOV,
@@ -249,7 +252,7 @@ export class TransfereGovSyncService {
 
         const dbRows = await this.prisma.comunicadoTransfereGov.findMany({
             where: {
-                data: {
+                publicado_em: {
                     gte: data_inicio,
                     lte: data_fim,
                 },
@@ -259,16 +262,19 @@ export class TransfereGovSyncService {
             orderBy: { id: 'desc' },
         });
 
-        const linhas: TransfereGovDto[] = dbRows.map((item) => ({
-            id: item.id,
-            numero: item.numero,
-            ano: item.ano,
-            titulo: item.titulo,
-            link: item.link,
-            data: item.data,
-            descricao: item.descricao,
-            tipo: item.tipo,
-        }));
+        const linhas = dbRows.map(
+            (item) =>
+                ({
+                    id: item.id,
+                    numero: item.numero,
+                    ano: item.ano,
+                    titulo: item.titulo,
+                    link: item.link,
+                    publicado_em: item.publicado_em,
+                    descricao: item.descricao,
+                    tipo: item.tipo,
+                }) satisfies TransfereGovDto
+        );
 
         if (linhas.length > ipp) {
             tem_mais = true;

@@ -10,7 +10,7 @@ export class TransfereGovDto {
     ano: number;
     titulo: string;
     link: string;
-    data: Date;
+    publicado_em: Date;
     descricao: string | null;
     tipo: ComunicadoTipo;
 }
