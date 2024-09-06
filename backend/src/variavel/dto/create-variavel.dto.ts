@@ -30,34 +30,24 @@ export const MAX_CASAS_DECIMAIS = 12;
 export class VariaveisPeriodosDto {
     @IsInt()
     @Min(1)
-    @Max(31)
+    @Max(36524)
     @Transform(NumberTransform)
     preenchimento_inicio: number;
     @IsInt()
     @Min(1)
-    @Max(31)
+    @Max(36524)
     @Transform(NumberTransform)
-    preenchimento_fim: number;
+    preenchimento_duracao: number;
     @IsInt()
     @Min(1)
-    @Max(31)
+    @Max(36524)
     @Transform(NumberTransform)
-    validacao_inicio: number;
+    validacao_duracao: number;
     @IsInt()
     @Min(1)
-    @Max(31)
+    @Max(36524)
     @Transform(NumberTransform)
-    validacao_fim: number;
-    @IsInt()
-    @Min(1)
-    @Max(31)
-    @Transform(NumberTransform)
-    liberacao_inicio: number;
-    @IsInt()
-    @Min(1)
-    @Max(31)
-    @Transform(NumberTransform)
-    liberacao_fim: number;
+    liberacao_duracao: number;
 }
 
 export class CreateVariavelBaseDto {

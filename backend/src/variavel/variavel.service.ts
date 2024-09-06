@@ -90,6 +90,30 @@ type FiltroData = {
     data_valor?: Date;
 };
 
+function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
+    switch (periodicidade) {
+        case 'Mensal':
+            return 31;
+        case 'Bimestral':
+            return 62;
+        case 'Trimestral':
+            return 92;
+        case 'Quadrimestral':
+            return 123;
+        case 'Semestral':
+            return 184;
+        case 'Anual':
+            return 366;
+        case 'Quinquenal':
+            return 1827;
+        case 'Secular':
+            return 36524;
+        default:
+            periodicidade satisfies never;
+    }
+    throw new Error(`getMaxDiasPeriodicidade: Periodicidade=${periodicidade} não reconhecida`);
+}
+
 @Injectable()
 export class VariavelService {
     private readonly logger = new Logger(VariavelService.name);
@@ -596,7 +620,7 @@ export class VariavelService {
         // TODO verificar quem pode usar o orgao_proprietario_id
         // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo_ids
 
-        const periodos = dto.periodos ? this.getPeriodTuples(dto.periodos) : {};
+        const periodos = dto.periodos ? this.getPeriodTuples(dto.periodos, dto.periodicidade) : {};
 
         const variavel = await prismaTxn.variavel.create({
             data: {
@@ -700,7 +724,10 @@ export class VariavelService {
         }
     }
 
-    private getPeriodTuples(p: VariaveisPeriodosDto | null): {
+    private getPeriodTuples(
+        p: VariaveisPeriodosDto | null,
+        periodo: Periodicidade
+    ): {
         periodo_preenchimento: number[];
         periodo_validacao: number[];
         periodo_liberacao: number[];
@@ -709,32 +736,26 @@ export class VariavelService {
         const periodo_validacao: number[] = [];
         const periodo_liberacao: number[] = [];
 
-        // se caiu nessa função é pq quer atualizar
         if (!p) return { periodo_preenchimento, periodo_validacao, periodo_liberacao };
 
-        if (p.preenchimento_inicio >= p.preenchimento_fim) {
-            throw new BadRequestException('Preenchimento: Início deve ser menor que fim');
-        }
-        if (p.validacao_inicio >= p.validacao_fim) {
-            throw new BadRequestException('Validação: Início deve ser menor que fim');
-        }
-        if (p.liberacao_inicio >= p.liberacao_fim) {
-            throw new BadRequestException('Liberação: Início deve ser menor que fim');
-        }
+        const maxDias = getMaxDiasPeriodicidade(periodo);
 
-        // desativando regra por enquanto
-        // Cada período de preenchimento deve ser menor que o próximo
-        //        if (p.preenchimento_fim >= p.validacao_inicio) {
-        //            throw new Error('Preenchimento fim deve ser menor que Validação início');
-        //        }
-        //        if (p.validacao_fim >= p.liberacao_inicio) {
-        //            throw new Error('Validação fim deve ser menor que Liberação início');
-        //        }
+        // Calcula usando periodos fechados
+        const preenchimento_fim = p.preenchimento_inicio + p.preenchimento_duracao - 1;
+        const validacao_inicio = preenchimento_fim + 1;
+        const validacao_fim = validacao_inicio + p.validacao_duracao - 1;
+        const liberacao_inicio = validacao_fim + 1;
+        const liberacao_fim = liberacao_inicio + p.liberacao_duracao - 1;
+
+        // Não deixa vazar do periodo da variavel
+        if (preenchimento_fim > maxDias) throw new BadRequestException(`Preenchimento: Duração excedê o ${maxDias}`);
+        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração excedê o ${maxDias}`);
+        if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração excedê o ${maxDias}`);
 
         return {
-            periodo_preenchimento: [p.preenchimento_inicio, p.preenchimento_fim],
-            periodo_liberacao: [p.liberacao_inicio, p.liberacao_fim],
-            periodo_validacao: [p.validacao_inicio, p.validacao_fim],
+            periodo_preenchimento: [p.preenchimento_inicio, preenchimento_fim],
+            periodo_validacao: [validacao_inicio, validacao_fim],
+            periodo_liberacao: [liberacao_inicio, liberacao_fim],
         };
     }
 
@@ -1460,6 +1481,7 @@ export class VariavelService {
                 inicio_medicao: true,
                 fim_medicao: true,
                 variavel_mae_id: true,
+                orgao_proprietario_id: true,
                 variaveis_filhas: { select: { id: true, titulo: true } },
             },
         });
@@ -1526,7 +1548,10 @@ export class VariavelService {
                 });
             }
         } else if (tipo == 'Global') {
-            this.checkPeriodoVariavelGlobal({ ...dto, inicio_medicao: selfBefUpdate.inicio_medicao });
+            this.checkPeriodoVariavelGlobal({
+                ...dto,
+                inicio_medicao: selfBefUpdate.inicio_medicao ?? dto.inicio_medicao,
+            });
         }
 
         // Quando a variável é supraregional, está sendo enviado regiao_id = 0
@@ -1545,6 +1570,7 @@ export class VariavelService {
                     mostrar_monitoramento: true,
                     suspendida_em: true,
                     valor_base: true,
+                    periodicidade: true,
                     VariavelAssuntoVariavel: {
                         select: {
                             assunto_variavel_id: true,
@@ -1602,6 +1628,8 @@ export class VariavelService {
                 await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
             }
 
+            dto.orgao_proprietario_id = dto.orgao_proprietario_id ?? selfBefUpdate.orgao_proprietario_id;
+
             this.checkOrgaoProprietario(tipo, dto, user);
 
             const updated = await prismaTxn.variavel.update({
@@ -1628,7 +1656,9 @@ export class VariavelService {
                     fonte_id: dto.fonte_id,
                     orgao_proprietario_id: dto.orgao_proprietario_id,
 
-                    ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
+                    ...(dto.periodos
+                        ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
+                        : {}),
 
                     suspendida_em: suspendida ? now : null,
                 },
@@ -1680,7 +1710,9 @@ export class VariavelService {
                             fonte_id: dto.fonte_id,
                             orgao_proprietario_id: dto.orgao_proprietario_id,
 
-                            ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
+                            ...(dto.periodos
+                                ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
+                                : {}),
 
                             suspendida_em: suspendida ? now : null,
                         },
@@ -3120,12 +3152,10 @@ export class VariavelService {
                 return { id: e.assunto_variavel.id, nome: e.assunto_variavel.nome };
             }),
             periodos: {
-                liberacao_inicio: detalhes.periodo_liberacao[0],
-                liberacao_fim: detalhes.periodo_liberacao[1],
-                validacao_inicio: detalhes.periodo_validacao[0],
-                validacao_fim: detalhes.periodo_validacao[1],
                 preenchimento_inicio: detalhes.periodo_preenchimento[0],
-                preenchimento_fim: detalhes.periodo_preenchimento[1],
+                preenchimento_duracao: detalhes.periodo_preenchimento[1] - detalhes.periodo_preenchimento[0] + 1,
+                validacao_duracao: detalhes.periodo_validacao[1] - detalhes.periodo_validacao[0] + 1,
+                liberacao_duracao: detalhes.periodo_liberacao[1] - detalhes.periodo_liberacao[0] + 1,
             },
             fonte: detalhes.fonte,
             metodologia: detalhes.metodologia,
