@@ -18,6 +18,12 @@ export class VariavelDetailDto extends VariavelItemDto {
     descricao: string | null;
     fonte: IdNomeDto | null;
 }
+export class VariavelDetailComAuxiliaresDto extends VariavelDetailDto {
+    variavel_categorica: IdTituloDto | null;
+    medicao_grupo: IdTituloDto[];
+    validacao_grupo: IdTituloDto[];
+    liberacao_grupo: IdTituloDto[];
+}
 
 export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['responsaveis']) {
     orgao_proprietario: OrgaoResumo | null;

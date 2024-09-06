@@ -21,15 +21,17 @@ import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variave
 import {
     ListSeriesAgrupadas,
     ListVariavelDto,
+    VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
     FilterSVNPeriodoDto,
+    FilterVariavelDetalheDto,
     SerieIndicadorValorNominal,
     SerieValorNomimal,
-    VariavelGlobalItemDto
+    VariavelGlobalItemDto,
 } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 
@@ -59,8 +61,12 @@ export class IndicadorVariavelPDMController {
     @Get('indicador-variavel/:id')
     @ApiBearerAuth('access-token')
     @Roles([...ROLES_ACESSO_VARIAVEL_PDM])
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<VariavelDetailDto> {
-        return await this.variavelService.findOne(this.tipo, params.id, user);
+    async findOne(
+        @Param() params: FindOneParams,
+        filters: FilterVariavelDetalheDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelDetailDto | VariavelDetailComAuxiliaresDto> {
+        return await this.variavelService.findOne(this.tipo, params.id, filters, user);
     }
 
     @Patch('indicador-variavel/:id')
@@ -171,9 +177,10 @@ export class VariavelGlobalController {
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
     async findOne(
         @Param() params: FindOneParams,
+        @Query() filters: FilterVariavelDetalheDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<VariavelGlobalDetailDto> {
-        return (await this.variavelService.findOne(this.tipo, params.id, user)) as VariavelGlobalDetailDto;
+    ): Promise<VariavelGlobalDetailDto| VariavelDetailComAuxiliaresDto> {
+        return (await this.variavelService.findOne(this.tipo, params.id, filters, user)) as VariavelGlobalDetailDto;
     }
 
     @Patch('variavel/:id')

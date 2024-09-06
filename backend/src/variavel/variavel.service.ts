@@ -41,10 +41,16 @@ import {
     VariaveisPeriodosDto,
 } from './dto/create-variavel.dto';
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
-import { ListSeriesAgrupadas, VariavelDetailDto, VariavelGlobalDetailDto } from './dto/list-variavel.dto';
+import {
+    ListSeriesAgrupadas,
+    VariavelDetailComAuxiliaresDto,
+    VariavelDetailDto,
+    VariavelGlobalDetailDto,
+} from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
     FilterSVNPeriodoDto,
+    FilterVariavelDetalheDto,
     SACicloFisicoDto,
     SerieValorNomimal,
     SerieValorPorPeriodo,
@@ -3103,8 +3109,9 @@ export class VariavelService {
     async findOne(
         tipo: TipoVariavel,
         id: number,
+        filters: FilterVariavelDetalheDto,
         user: PessoaFromJwt
-    ): Promise<VariavelGlobalDetailDto | VariavelDetailDto> {
+    ): Promise<VariavelGlobalDetailDto | VariavelDetailDto | VariavelDetailComAuxiliaresDto> {
         const selfItem = await this.findAll(tipo, { id: id });
         if (selfItem.length === 0) {
             throw new NotFoundException('Variável não encontrada');
@@ -3138,6 +3145,7 @@ export class VariavelService {
                         grupo_responsavel_equipe: {
                             select: {
                                 id: true,
+                                titulo: true,
                                 perfil: true,
                             },
                         },
@@ -3146,7 +3154,7 @@ export class VariavelService {
             },
         });
 
-        const detailDto: VariavelDetailDto = {
+        let detailDto: VariavelDetailDto | VariavelDetailComAuxiliaresDto = {
             ...selfItem[0],
             assuntos: detalhes.VariavelAssuntoVariavel.map((e) => {
                 return { id: e.assunto_variavel.id, nome: e.assunto_variavel.nome };
@@ -3161,12 +3169,51 @@ export class VariavelService {
             metodologia: detalhes.metodologia,
             descricao: detalhes.descricao,
             dado_aberto: detalhes.dado_aberto,
-        };
+        } satisfies VariavelDetailDto;
+
+        if (filters.incluir_auxiliares) {
+            const categorica = selfItem[0].variavel_categorica_id
+                ? await this.prisma.variavelCategorica.findFirst({
+                      where: { id: selfItem[0].variavel_categorica_id },
+                      select: { id: true, titulo: true },
+                  })
+                : null;
+
+            detailDto = {
+                ...detailDto,
+                variavel_categorica: categorica,
+                liberacao_grupo: [],
+                validacao_grupo: [],
+                medicao_grupo: [],
+            } satisfies VariavelDetailComAuxiliaresDto;
+        }
 
         if (tipo == 'Global') {
             // retirando, pois o ... do selfItem[0] adiciona isso que não queremos
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (detailDto as any).responsaveis;
+
+            if (filters.incluir_auxiliares) {
+                const grupos = detalhes.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe);
+                for (const grupo of grupos) {
+                    if (grupo.perfil === 'Medicao') {
+                        (detailDto as VariavelDetailComAuxiliaresDto).medicao_grupo.push({
+                            id: grupo.id,
+                            titulo: grupo.titulo,
+                        });
+                    } else if (grupo.perfil === 'Validacao') {
+                        (detailDto as VariavelDetailComAuxiliaresDto).validacao_grupo.push({
+                            id: grupo.id,
+                            titulo: grupo.titulo,
+                        });
+                    } else if (grupo.perfil === 'Liberacao') {
+                        (detailDto as VariavelDetailComAuxiliaresDto).liberacao_grupo.push({
+                            id: grupo.id,
+                            titulo: grupo.titulo,
+                        });
+                    }
+                }
+            }
 
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
@@ -3181,6 +3228,7 @@ export class VariavelService {
                     (e) => e.grupo_responsavel_equipe.perfil === 'Liberacao'
                 ).map((e) => e.grupo_responsavel_equipe.id),
             };
+
             return globalDetailDto;
         }
 

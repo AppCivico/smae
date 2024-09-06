@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
@@ -96,6 +96,13 @@ export class FilterSVNPeriodoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     data_valor?: Date;
+}
+
+export class FilterVariavelDetalheDto {
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    incluir_auxiliares?: boolean;
 }
 
 export class SACicloFisicoDto {
