@@ -701,22 +701,29 @@ watch(itemParaEdicao, (novoValor) => {
       <LabelFromYup
         name="tipo_intervencao_id"
         :schema="schema"
+        class="mb1"
       />
-      <ul>
+      <ul class="lista-de-perfis t12">
         <li
           v-for="item in listaDeTiposDeIntervenção"
           :key="item.id"
-          class="mb1"
+          class="lista-de-perfis__item mb2"
         >
-          <label>
-            <input
+          <label
+            class="block mb1 perfil"
+            :for="`tipo_intervencao_id_${item.id}`"
+          >
+            <Field
+              :id="`tipo_intervencao_id_${item.id}`"
               type="radio"
               :value="item.id"
-              name="tipoDeIntervencao"
-              class="inputcheckbox"
-            >
+              name="tipo_intervencao_id"
+              class="perfil__campo inputcheckbox"
+            />
             {{ item.nome }}
-            <p>{{ item.conceito }}</p>
+            <small class="block t12 tc500 w700 mt05">
+              {{ item.conceito }}
+            </small>
           </label>
         </li>
       </ul>
