@@ -214,8 +214,6 @@ async function main() {
         return;
     }
 
-    return;
-
     const empreendimentos = await empreendimentoApi.empreendimentoControllerFindAll();
     const empreendimentosMap: Record<string, number> = {};
     for (const emp of empreendimentos.data.linhas) {
@@ -243,7 +241,7 @@ async function main() {
     }
 
     for (const row of rows) {
-        if (!row.rel_empreendimento_id) continue;
+
         let origem_tipo: ProjetoOrigemTipo = 'Outro';
         let iniciativa_id: number | undefined;
         let meta_id: number | undefined;
@@ -333,7 +331,8 @@ async function main() {
 
             portfolio_id: ensureIdExists(portfolios[row.rel_portfolio_id]),
             mdo_n_familias_beneficiadas: row.mdo_n_familias_beneficiadas,
-            mdo_n_unidades_habitacionais: row.mdo_n_unidades_habitacionais,
+            mdo_n_unidades_habitacionais:
+                row.mdo_n_unidades_habitacionais === 0 ? -1 : row.mdo_n_unidades_habitacionais,
             programa_id: row.rel_programa_id ? ensureIdExists(programa2id[row.rel_programa_id]) : undefined,
             regiao_ids: regiao,
             origem_tipo,
@@ -374,28 +373,27 @@ async function main() {
 
         // update projeto
         try {
-            await projetoApi.projetoMDOControllerUpdate({
-                id: row.projeto_id,
-                UpdateProjetoDto: {
-                    empreendimento_id: info.empreendimento_id,
-                    //                    regiao_ids: info.regiao_ids,
-                    //                    previsao_inicio: info.previsao_inicio,
-                    //                    previsao_termino: info.previsao_termino,
-                    //                    responsaveis_no_orgao_gestor: info.responsaveis_no_orgao_gestor,
-                    //                    responsavel_id: info.responsavel_id,
-                    //                    secretario_colaborador: info.secretario_colaborador,
-                    //                    secretario_executivo: info.secretario_executivo,
-                    //                    secretario_responsavel: info.secretario_responsavel,
-                    //                    colaboradores_no_orgao: info.colaboradores_no_orgao,
-                },
-            });
-            console.log(`Projeto ${row.projeto_nome} atualizado com sucesso!`);
+//            await projetoApi.projetoMDOControllerUpdate({
+//                id: row.projeto_id,
+//                UpdateProjetoDto: {
+//                    empreendimento_id: info.empreendimento_id,
+//                    //                    regiao_ids: info.regiao_ids,
+//                    //                    previsao_inicio: info.previsao_inicio,
+//                    //                    previsao_termino: info.previsao_termino,
+//                    //                    responsaveis_no_orgao_gestor: info.responsaveis_no_orgao_gestor,
+//                    //                    responsavel_id: info.responsavel_id,
+//                    //                    secretario_colaborador: info.secretario_colaborador,
+//                    //                    secretario_executivo: info.secretario_executivo,
+//                    //                    secretario_responsavel: info.secretario_responsavel,
+//                    //                    colaboradores_no_orgao: info.colaboradores_no_orgao,
+//                },
+//            });
+            console.log(`Projeto ${row.projeto_nome} não há necessidade de atualizar.`);
         } catch (error) {
             console.log(`Erro ao atualizar projeto ${row.projeto_nome}`);
             console.error((error as any).response?.data);
         }
 
-        /*
         const can_associate = row.parsed_processos_sei.length == 1 && row.parsed_contratos.length == 1;
         if (row.parsed_contratos.length) {
             for (const contrato of row.parsed_contratos) {
@@ -448,7 +446,6 @@ async function main() {
                 }
             }
         }
-        */
     }
 }
 
