@@ -310,7 +310,7 @@ export class ProjetoMDOController {
         return await this.projetoService.revisarObras(revisarObrasDto, user);
     }
 
-    @Post('revisar-obras-desmarcar')
+    @Post('revisar-obras-todas')
     @ApiBearerAuth('access-token')
     @Roles(['ProjetoMDO.administrador', 'MDO.revisar_obra'])
     async revisarObrasDesmarcar(@CurrentUser() user: PessoaFromJwt) {
