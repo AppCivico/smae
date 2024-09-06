@@ -3178,7 +3178,11 @@ export class ProjetoService {
         }
     }
 
-    private getProjetoMDOWhereSet(filters: FilterProjetoMDODto, ids: number[] | undefined): Prisma.ProjetoWhereInput[] {
+    private getProjetoMDOWhereSet(
+        filters: FilterProjetoMDODto,
+        ids: number[] | undefined,
+        userId?: number
+    ): Prisma.ProjetoWhereInput[] {
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 id: { in: ids != undefined ? ids : undefined },
@@ -3211,6 +3215,12 @@ export class ProjetoService {
                 ProjetoRegistroSei: filters.registros_sei?.length
                     ? { some: { processo_sei: { in: filters.registros_sei } } }
                     : undefined,
+                PessoasRevisao:
+                    filters.revisado == undefined || filters.revisado == false
+                        ? undefined
+                        : {
+                              some: { pessoa_id: userId },
+                          },
             },
         ];
         return permissionsBaseSet;
@@ -3244,7 +3254,7 @@ export class ProjetoService {
         body: AnyPageTokenJwtBody;
     }> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, ids);
+        const filterSet = this.getProjetoMDOWhereSet(filters, ids, user.id);
         const total_rows = await this.prisma.projeto.count({
             where: {
                 AND: [...permissionsSet, ...filterSet],

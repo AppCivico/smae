@@ -151,4 +151,9 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsString({ each: true })
     @Transform(StringArrayTransform)
     registros_sei?: string[];
+
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @Transform(({ value }: any) => value === 'true')
+    revisado?: boolean;
 }
