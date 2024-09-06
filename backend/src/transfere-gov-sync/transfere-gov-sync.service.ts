@@ -201,7 +201,10 @@ export class TransfereGovSyncService {
                         bloco_token: bloco,
                         titulo: item.titulo,
                         nota: item.descricao ?? '',
-                        data_nota: DateTime.fromJSDate(item.publicado_em).setZone(SYSTEM_TIMEZONE).toJSDate(),
+                        data_nota: DateTime.fromJSDate(item.publicado_em, { zone: 'UTC' })
+                            .setZone(SYSTEM_TIMEZONE)
+                            .startOf('day')
+                            .toJSDate(),
                         status: 'Em_Curso',
                         dados: {
                             transfere_gov_id: item.id,
