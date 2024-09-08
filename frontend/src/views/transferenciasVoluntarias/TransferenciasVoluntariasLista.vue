@@ -178,6 +178,7 @@ watch([
     <col>
     <col>
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -194,6 +195,9 @@ watch([
         </th>
         <th>
           Partido
+        </th>
+        <th>
+          Parlamentar
         </th>
         <th>
           Etapa
@@ -252,6 +256,9 @@ watch([
           {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
         </td>
         <td>
+          {{ item.parlamentar?.length ? item.parlamentar?.map((e) => e.nome_popular).join(', ') : '-' }}
+        </td>
+        <td>
           {{ item.andamento_etapa? item.andamento_etapa : '-' }}
         </td>
         <td>
@@ -304,17 +311,17 @@ watch([
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="10">
+        <td colspan="11">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="10">
+        <td colspan="11">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="10">
+        <td colspan="11">
           Nenhum resultado encontrado.
         </td>
       </tr>
