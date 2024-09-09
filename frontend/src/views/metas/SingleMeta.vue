@@ -2,6 +2,7 @@
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
+import statusObras from '@/consts/statusObras';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
@@ -447,7 +448,7 @@ iniciar();
                     {{ obra.equipamento?.nome || '-' }}
                   </td>
                   <td>
-                    {{ obra.status || '-' }}
+                    {{ statusObras[obra.status]?.nome || '-' }}
                   </td>
                   <td>
                     {{ obra.percentual_concluido || '-' }}
