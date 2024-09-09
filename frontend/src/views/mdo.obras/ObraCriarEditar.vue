@@ -784,7 +784,8 @@ watch(itemParaEdicao, (novoValor) => {
     <div
       v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.programa_habitacional
         || gruposTemáticosPorId[values.grupo_tematico_id]?.unidades_habitacionais
-        || gruposTemáticosPorId[values.grupo_tematico_id]?.familias_beneficiadas"
+        || gruposTemáticosPorId[values.grupo_tematico_id]?.familias_beneficiadas
+        || gruposTemáticosPorId[values.grupo_tematico_id]?.unidades_atendidas"
       class="flex flexwrap g2 mb1"
     >
       <div
