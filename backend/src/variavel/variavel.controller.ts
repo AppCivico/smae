@@ -179,7 +179,7 @@ export class VariavelGlobalController {
         @Param() params: FindOneParams,
         @Query() filters: FilterVariavelDetalheDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<VariavelGlobalDetailDto| VariavelDetailComAuxiliaresDto> {
+    ): Promise<VariavelGlobalDetailDto | VariavelDetailComAuxiliaresDto> {
         return (await this.variavelService.findOne(this.tipo, params.id, filters, user)) as VariavelGlobalDetailDto;
     }
 
@@ -227,6 +227,7 @@ export class VariavelGlobalController {
         return { ids: await this.variavelService.create_region_generated(this.tipo, dto, user) };
     }
 
+    // Manter em sync o getSeriePrevistoRealizadoCopia
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @Get('variavel/:id/serie')
     @ApiBearerAuth('access-token')
@@ -239,11 +240,13 @@ export class VariavelGlobalController {
         return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
     }
 
+    // Endpoint é uma copia do acima, o acima está sendo chamado na tela do banco de variaveis
+    // mas esse aqui segue o padrão que o frontend está usando para montar as urls do plano setorial
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @Get('plano-setorial-indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
-    async getSeriePrevistoRealizadoTest(
+    async getSeriePrevistoRealizadoCopia(
         @Param() params: FindOneParams,
         @Query() filters: FilterSVNPeriodoDto,
         @CurrentUser() user: PessoaFromJwt
