@@ -1816,12 +1816,20 @@ input[type='checkbox'] {
     &:active {
       &::before {
         color: @laranja;
-        margin: 0;
       }
     }
 
     &:disabled {
       background-image: none;
+    }
+
+    &[aria-busy="true"] {
+      cursor: wait;
+
+      &::before {
+        border-style: inset;
+        animation: spin 1s linear infinite;
+      }
     }
   }
 }
