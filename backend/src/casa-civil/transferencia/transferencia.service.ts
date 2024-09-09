@@ -1240,7 +1240,7 @@ export class TransferenciaService {
             valor_distribuido: row.distribuicao_recursos
                 .filter((e) => {
                     const statusTipo: DistribuicaoStatusTipo | undefined =
-                        e.status[0].status?.tipo ?? e.status[0].status_base?.tipo;
+                        e.status[0]?.status?.tipo ?? e.status[0]?.status_base?.tipo;
 
                     return (
                         statusTipo != DistribuicaoStatusTipo.Declinada &&
