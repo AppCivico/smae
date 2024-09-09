@@ -76,7 +76,22 @@
               {{ schema.fields.status.spec.label }}
             </th>
             <th />
+            <th
+              v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+            >
+              Revisada
+            </th>
             <th />
+            <th
+              v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+            >
+              <button
+                class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
+                @click="marcarTodasComoNaoRevisadas"
+              >
+                Desmarcar todas
+              </button>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -119,6 +134,17 @@
               </router-link>
             </td>
             <td>
+              <label class="comunicado-geral-item__footer-lido">
+                <input
+                  v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+                  v-model="item.revisado"
+                  type="checkbox"
+                  class="interruptor"
+                  @click.prevent="marcarComoRevisado(item.id, $event)"
+                >
+              </label>
+            </td>
+            <td>
               <button
                 class="like-a__text"
                 arial-label="excluir"
@@ -131,6 +157,9 @@
                 ><use xlink:href="#i_remove" /></svg>
               </button>
             </td>
+            <td
+              v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+            />
           </tr>
           <tr v-if="chamadasPendentes.lista">
             <td colspan="10">
@@ -163,18 +192,21 @@ import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
+import { useAuthStore } from '@/stores/auth.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 
+const authStore = useAuthStore();
 const route = useRoute();
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const obrasStore = useObrasStore();
 
 const {
-  lista, chamadasPendentes, erro, paginacao,
+  lista, chamadasPendentes, erro, paginacao, totalRegistrosSemFiltros,
 } = storeToRefs(obrasStore);
 const alertStore = useAlertStore();
 
@@ -185,6 +217,20 @@ async function excluirObra(id, nome) {
       alertStore.success('Obra removida.');
     }
   }, 'Remover');
+}
+
+async function marcarComoRevisado(id, event) {
+  event.target.ariaBusy = 'true';
+  await obrasStore.marcarComoRevisado(id, event.target.checked);
+  event.target.ariaBusy = 'false';
+}
+
+async function marcarTodasComoNaoRevisadas() {
+  alertStore.confirmAction(`Deseja marcar ${totalRegistrosSemFiltros.value} obras como não revisadas?`, async () => {
+    if (await obrasStore.marcarTodasComoNaoRevisadas()) {
+      obrasStore.buscarTudo();
+    }
+  }, 'Sim');
 }
 
 watchEffect(() => {

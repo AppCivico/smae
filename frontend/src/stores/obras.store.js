@@ -8,6 +8,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 export const useObrasStore = defineStore('obrasStore', {
   state: () => ({
     lista: [],
+    totalRegistrosSemFiltros: 0,
     emFoco: null,
     arquivos: [],
 
@@ -113,6 +114,7 @@ export const useObrasStore = defineStore('obrasStore', {
       try {
         const {
           linhas,
+          total_registros_sem_filtros: totalRegistrosSemFiltros,
           token_paginacao: tokenPaginacao,
           paginas,
           pagina_corrente: paginaCorrente,
@@ -121,6 +123,7 @@ export const useObrasStore = defineStore('obrasStore', {
         } = await this.requestS.get(`${baseUrl}/projeto-mdo`, params);
 
         this.lista = linhas;
+        this.totalRegistrosSemFiltros = totalRegistrosSemFiltros;
 
         this.paginacao.tokenPaginacao = tokenPaginacao;
         this.paginacao.paginas = paginas;
@@ -225,9 +228,46 @@ export const useObrasStore = defineStore('obrasStore', {
         return false;
       }
     },
+    async marcarComoRevisado(id, revisado) {
+      this.chamadasPendentes.lista = true;
+      this.erro = null;
+      const item = this.itemPorId(id);
+
+      try {
+        const params = {
+          obras: [{
+            projeto_id: id,
+            revisado,
+          }],
+        };
+        await this.requestS.post(`${baseUrl}/projeto-mdo/revisar-obras/`, params);
+        this.chamadasPendentes.lista = false;
+        item.revisado = revisado;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.lista = false;
+        return false;
+      }
+    },
+    async marcarTodasComoNaoRevisadas() {
+      this.chamadasPendentes.lista = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.post(`${baseUrl}/projeto-mdo/revisar-obras-todas/`);
+        this.chamadasPendentes.lista = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.lista = false;
+        return false;
+      }
+    },
   },
 
   getters: {
+    itemPorId: (state) => (id) => state.lista.find((item) => item.id === id),
     itemParaEdicao({ emFoco, route }) {
       return {
         ...emFoco,
