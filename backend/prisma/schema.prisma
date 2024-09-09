@@ -836,13 +836,26 @@ enum PdmPerfilTipo {
     PONTO_FOCAL
 }
 
+enum PdmPerfilRelacionamento {
+    PDM
+    META
+    ETAPA
+}
+
 model PdmPerfil {
     id Int @id @default(autoincrement())
 
     pdm_id Int
     pdm    Pdm @relation(fields: [pdm_id], references: [id])
 
-    tipo PdmPerfilTipo
+    meta_id Int?
+    meta    Meta? @relation(fields: [meta_id], references: [id])
+
+    etapa_id Int?
+    etapa    Etapa? @relation(fields: [etapa_id], references: [id])
+
+    tipo           PdmPerfilTipo
+    relacionamento PdmPerfilRelacionamento @default(PDM)
 
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
@@ -1242,6 +1255,7 @@ model Meta {
     PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
     view_pdm_meta_iniciativa_atividade     view_pdm_meta_iniciativa_atividade[]
     ProjetoOrigem                          ProjetoOrigem[]
+    PdmPerfil                              PdmPerfil[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -2249,6 +2263,7 @@ model Etapa {
 
     responsaveis             EtapaResponsavel[]
     GeoLocalizacaoReferencia GeoLocalizacaoReferencia[]
+    PdmPerfil                PdmPerfil[]
 
     @@index([regiao_id])
     @@index([etapa_pai_id])

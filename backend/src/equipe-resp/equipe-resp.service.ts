@@ -411,33 +411,7 @@ export class EquipeRespService {
                 throw new BadRequestException('Você só tem permissão para remover Equipe no mesmo órgão.');
         }
 
-        const emUsoVar = await this.prisma.variavelGrupoResponsavelEquipe.findMany({
-            where: {
-                grupo_responsavel_equipe_id: id,
-                removido_em: null,
-            },
-            select: { variavel: { select: { titulo: true } } },
-        });
-        if (emUsoVar.length)
-            throw new BadRequestException(
-                `Não é possível remover o grupo pois as seguintes variáveis estão associadas a ele:\n${emUsoVar
-                    .map((r) => '-' + r.variavel.titulo)
-                    .join('\n')}`
-            );
-
-        const emUsoPdm = await this.prisma.pdmPerfil.findMany({
-            where: {
-                equipe_id: id,
-                removido_em: null,
-            },
-            select: { pdm: { select: { tipo: true, nome: true } } },
-        });
-        if (emUsoPdm.length)
-            throw new BadRequestException(
-                `Não é possível remover o grupo pois os seguintes itens estão associados a ele:\n${emUsoPdm
-                    .map((r) => '-' + (r.pdm.tipo == 'PDM' ? 'PDM' : 'Plano Setorial') + ' ' + r.pdm.nome)
-                    .join('\n')}`
-            );
+        await this.confereUso(id);
 
         const now = new Date(Date.now());
 
@@ -476,5 +450,58 @@ export class EquipeRespService {
         });
 
         return;
+    }
+
+    private async confereUso(id: number) {
+        const emUsoVar = await this.prisma.variavelGrupoResponsavelEquipe.findMany({
+            where: {
+                grupo_responsavel_equipe_id: id,
+                removido_em: null,
+            },
+            select: { variavel: { select: { titulo: true } } },
+        });
+        if (emUsoVar.length)
+            throw new BadRequestException(
+                `Não é possível remover o grupo pois as seguintes variáveis estão associadas a ele:\n${emUsoVar
+                    .map((r) => '-' + r.variavel.titulo)
+                    .join('\n')}`
+            );
+
+        const emUsoPdm = await this.prisma.pdmPerfil.findMany({
+            where: {
+                equipe_id: id,
+                removido_em: null,
+            },
+            select: {
+                relacionamento: true,
+                tipo: true,
+                pdm: { select: { tipo: true, nome: true } },
+                etapa: { select: { titulo: true } },
+                meta: { select: { titulo: true } },
+            },
+        });
+        if (emUsoPdm.length) {
+            const mensagens = emUsoPdm.map((item) => {
+                let mensagem = '';
+                switch (item.relacionamento) {
+                    case 'PDM':
+                        mensagem = `PDM ${item.pdm.nome}`;
+                        break;
+                    case 'META':
+                        mensagem = `Meta ${item.meta?.titulo || 'Desconhecida'} do PDM ${item.pdm.nome}`;
+                        break;
+                    case 'ETAPA':
+                        mensagem = `Etapa ${item.etapa?.titulo || 'Desconhecida'} do PDM ${item.pdm.nome}`;
+                        break;
+                    default:
+                        mensagem = `Relacionamento desconhecido do PDM ${item.pdm.nome}`;
+                }
+                return `- ${mensagem} (Tipo de perfil: ${item.tipo})`;
+            });
+
+            throw new BadRequestException(
+                `Não é possível remover o grupo pois os seguintes itens estão associados a ele:\n${mensagens.join('\n')}`
+            );
+        }
     }
 }

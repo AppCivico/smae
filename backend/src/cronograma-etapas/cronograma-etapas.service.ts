@@ -102,6 +102,10 @@ export class CronogramaEtapaService {
                                 },
                             },
                         },
+                        PdmPerfil: {
+                            where: { removido_em: null },
+                            select: { equipe_id: true, tipo: true },
+                        },
                         variavel: { select: { id: true, codigo: true, titulo: true } },
                         cronograma: {
                             select: {
@@ -190,6 +194,10 @@ export class CronogramaEtapaService {
                                         },
                                     },
                                 },
+                                PdmPerfil: {
+                                    where: { removido_em: null },
+                                    select: { equipe_id: true, tipo: true },
+                                },
                                 variavel: { select: { id: true, codigo: true, titulo: true } },
                                 CronogramaEtapa: {
                                     orderBy: { ordem: 'asc' },
@@ -226,6 +234,10 @@ export class CronogramaEtapaService {
                                                 },
                                             },
                                         },
+                                        PdmPerfil: {
+                                            where: { removido_em: null },
+                                            select: { equipe_id: true, tipo: true },
+                                        },
                                         variavel: { select: { id: true, codigo: true, titulo: true } },
                                         CronogramaEtapa: {
                                             orderBy: { ordem: 'asc' },
@@ -244,19 +256,42 @@ export class CronogramaEtapaService {
         const ret: CECronogramaEtapaDto[] = [];
 
         const etapasIds: number[] = [];
+        const equipesIds: number[] = [];
         for (const cronogramaEtapa of cronogramaEtapas) {
             etapasIds.push(cronogramaEtapa.etapa.id);
 
+            for (const perfil of cronogramaEtapa.etapa.PdmPerfil) {
+                equipesIds.push(perfil.equipe_id);
+            }
+
             for (const fase of cronogramaEtapa.etapa.etapa_filha) {
                 etapasIds.push(fase.id);
+
+                for (const perfil of fase.PdmPerfil) {
+                    equipesIds.push(perfil.equipe_id);
+                }
+
                 for (const subFase of cronogramaEtapa.etapa.etapa_filha) {
                     etapasIds.push(subFase.id);
+
+                    for (const perfil of subFase.PdmPerfil) {
+                        equipesIds.push(perfil.equipe_id);
+                    }
                 }
             }
         }
         const geoDto = new ReferenciasValidasBase();
         geoDto.etapa_id = etapasIds;
         const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
+        const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
+            where: { id: { in: equipesIds } },
+            select: { id: true, titulo: true },
+        });
+        const equipesMap = new Map<number, string>();
+        for (const equipe of equipes) {
+            equipesMap.set(equipe.id, equipe.titulo);
+        }
 
         for (const cronogramaEtapa of cronogramaEtapas) {
             if (cronogramaEtapa.etapa.etapa_pai_id) {
@@ -299,6 +334,10 @@ export class CronogramaEtapaService {
                             ordem: cronogramaEtapa.ordem,
                         },
                     ],
+                    ps_ponto_focal: cronogramaEtapa.etapa.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => ({
+                        id: r.equipe_id,
+                        titulo: equipesMap.get(r.equipe_id) ?? '',
+                    })),
 
                     id: cronogramaEtapa.etapa.id,
                     etapa_id: cronogramaEtapa.etapa.id,
@@ -347,6 +386,11 @@ export class CronogramaEtapaService {
                             const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
 
                             return {
+                                ps_ponto_focal: f.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => ({
+                                    id: r.equipe_id,
+                                    titulo: equipesMap.get(r.equipe_id) ?? '',
+                                })),
+
                                 CronogramaEtapa: f.CronogramaEtapa.map((x) => {
                                     return {
                                         id: x.id,
@@ -394,6 +438,12 @@ export class CronogramaEtapaService {
                                         );
                                         const atrasoSubFaseGrau = await this.getAtrasoGrau(atrasoSubFase);
                                         return {
+                                            ps_ponto_focal: ff.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map(
+                                                (r) => ({
+                                                    id: r.equipe_id,
+                                                    titulo: equipesMap.get(r.equipe_id) ?? '',
+                                                })
+                                            ),
                                             CronogramaEtapa: ff.CronogramaEtapa.map((x) => {
                                                 return { id: x.id, cronograma_id: x.cronograma_id, ordem: x.ordem };
                                             }),

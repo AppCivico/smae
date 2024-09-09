@@ -29,6 +29,7 @@ import {
 } from './entities/meta.entity';
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PdmService } from '../pdm/pdm.service';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -55,14 +56,7 @@ export class MetaService {
     ) {}
 
     async create(tipo: TipoPdm, dto: CreateMetaDto, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.findFirstOrThrow({
-            where: {
-                id: dto.pdm_id,
-                tipo,
-                removido_em: null,
-            },
-            select: { id: true, ativo: true },
-        });
+        const pdm = await this.loadPdmById(dto.pdm_id, tipo);
         await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
 
         if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
@@ -77,13 +71,18 @@ export class MetaService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const op = dto.orgaos_participantes!;
-                const cp = dto.coordenadores_cp!;
+                const op = dto.orgaos_participantes;
+                const cp = dto.coordenadores_cp;
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
 
-                const tags = dto.tags!;
+                const tags = dto.tags;
                 delete dto.tags;
+
+                const psTecnicoCP = dto.ps_tecnico_cp;
+                const psPontoFocal = dto.ps_ponto_focal;
+                delete dto.ps_tecnico_cp;
+                delete dto.ps_ponto_focal;
 
                 // Verificação de código da Meta.
                 const codigoJaEmUso = await prismaTx.meta.count({
@@ -115,13 +114,49 @@ export class MetaService {
                     select: { id: true },
                 });
 
-                await prismaTx.metaOrgao.createMany({
-                    data: await this.buildOrgaosParticipantes(meta.id, op),
-                });
+                if (tipo === 'PDM') {
+                    if (!op) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
+                    await prismaTx.metaOrgao.createMany({
+                        data: await this.buildOrgaosParticipantes(meta.id, op),
+                    });
 
-                await prismaTx.metaResponsavel.createMany({
-                    data: await this.buildMetaResponsaveis(meta.id, op, cp),
-                });
+                    if (!cp) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
+                    await prismaTx.metaResponsavel.createMany({
+                        data: await this.buildMetaResponsaveis(meta.id, op, cp),
+                    });
+                } else if (tipo === 'PS') {
+                    if (psTecnicoCP) {
+                        for (const equipe_id of psTecnicoCP.equipes) {
+                            const pdmPerfil = pdm.PdmPerfil.find((r) => r.equipe.id == equipe_id && r.tipo == 'CP');
+                            if (!pdmPerfil) {
+                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
+                            }
+                        }
+
+                        await this.upsertPSPerfis(meta.id, psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
+                    }
+                    if (psPontoFocal) {
+                        for (const equipe_id of psPontoFocal.equipes) {
+                            const pdmPerfil = pdm.PdmPerfil.find(
+                                (r) => r.equipe.id == equipe_id && r.tipo == 'PONTO_FOCAL'
+                            );
+                            if (!pdmPerfil) {
+                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
+                            }
+                        }
+
+                        await this.upsertPSPerfis(meta.id, psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
+                    }
+
+                    const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
+                        psTecnicoCP,
+                        psPontoFocal,
+                        pdm.PdmPerfil
+                    );
+                    await prismaTx.metaOrgao.createMany({
+                        data: await this.buildOrgaosParticipantes(meta.id, orgaosParticipantes),
+                    });
+                }
 
                 if (Array.isArray(tags) && tags.length)
                     await prismaTx.metaTag.createMany({
@@ -157,6 +192,30 @@ export class MetaService {
         );
 
         return created;
+    }
+
+    private async loadPdmById(pdm_id: number, tipo: TipoPdm) {
+        return await this.prisma.pdm.findFirstOrThrow({
+            where: {
+                id: pdm_id,
+                tipo,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                ativo: true,
+                PdmPerfil: {
+                    where: {
+                        removido_em: null,
+                        relacionamento: 'PDM',
+                    },
+                    select: {
+                        equipe: { select: { id: true, orgao_id: true } },
+                        tipo: true,
+                    },
+                },
+            },
+        });
     }
 
     async buildTags(metaId: number, tags: number[] | undefined): Promise<Prisma.MetaTagCreateManyInput[]> {
@@ -423,7 +482,7 @@ export class MetaService {
         user: PessoaFromJwt,
         context?: string,
         readonly: 'readonly' | 'readwrite' = 'readwrite'
-    ): Promise<void> {
+    ): Promise<MetaItemDto> {
         console.trace(`meta-service: assertMetaWriteOrThrow ${meta_id} ${context} ${readonly}`);
 
         const meta = await this.findAll(tipo, { id: meta_id }, user, true);
@@ -449,7 +508,7 @@ export class MetaService {
                 400
             );
 
-        return;
+        return meta[0];
     }
 
     async findAll(
@@ -512,6 +571,20 @@ export class MetaService {
                     },
                     orderBy: {
                         tag: { descricao: 'asc' },
+                    },
+                },
+                PdmPerfil: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        tipo: true,
+                        equipe: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                            },
+                        },
                     },
                 },
                 cronograma:
@@ -640,7 +713,15 @@ export class MetaService {
                 tags: tags,
                 cronograma: metaCronograma,
                 geolocalizacao: 'get' in geolocalizacao ? geolocalizacao.get(dbMeta.id) || [] : [],
-                pode_editar: podeEditar, // TODO (lembrar
+                pode_editar: podeEditar, // TODO (lembrar,
+                ps_tecnico_cp: dbMeta.PdmPerfil.filter((r) => r.tipo == 'CP').map((r) => ({
+                    id: r.equipe.id,
+                    titulo: r.equipe.titulo,
+                })),
+                ps_ponto_focal: dbMeta.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => ({
+                    id: r.equipe.id,
+                    titulo: r.equipe.titulo,
+                })),
             });
         }
 
@@ -656,17 +737,22 @@ export class MetaService {
         const loadMeta = await this.loadMetaOrThrow(id, tipo, user);
         const pdm = await this.pdmService.getDetail(tipo, loadMeta.pdm_id, user, 'ReadWrite');
         if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
+        const detailPdm = await this.loadPdmById(pdm.id, tipo);
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
         const geolocalizacao = updateMetaDto.geolocalizacao;
+        const psTecnicoCP = updateMetaDto.ps_tecnico_cp;
+        const psPontoFocal = updateMetaDto.ps_ponto_focal;
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
         delete updateMetaDto.tags;
         delete updateMetaDto.geolocalizacao;
+        delete updateMetaDto.ps_tecnico_cp;
+        delete updateMetaDto.ps_ponto_focal;
         const now = new Date(Date.now());
-        if (cp && !op)
+        if (tipo === 'PDM' && cp && !op)
             throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
         await this.prisma.$transaction(
@@ -708,28 +794,105 @@ export class MetaService {
                     select: { id: true },
                 });
 
-                if (op) {
-                    // Caso os orgaos_participantes estejam atrelados a Iniciativa ou Atividade
-                    // Não podem ser excluídos
-                    await this.checkHasOrgaosParticipantesChildren(meta.id, op);
+                if (tipo === 'PDM') {
+                    if (op) {
+                        // Caso os orgaos_participantes estejam atrelados a Iniciativa ou Atividade
+                        // Não podem ser excluídos
+                        await this.checkHasOrgaosParticipantesChildren(meta.id, op);
 
-                    await prismaTx.metaOrgao.deleteMany({ where: { meta_id: id } });
-                    await prismaTx.metaOrgao.createMany({
-                        data: await this.buildOrgaosParticipantes(meta.id, op),
+                        await prismaTx.metaOrgao.deleteMany({ where: { meta_id: id } });
+                        await prismaTx.metaOrgao.createMany({
+                            data: await this.buildOrgaosParticipantes(meta.id, op),
+                        });
+
+                        if (cp) {
+                            await prismaTx.metaResponsavel.deleteMany({
+                                where: {
+                                    meta_id: id,
+                                },
+                            });
+                            await prismaTx.metaResponsavel.createMany({
+                                data: await this.buildMetaResponsaveis(meta.id, op, cp),
+                            });
+                        }
+                    }
+                } else if (tipo === 'PS') {
+                    // Fetch current PdmPerfil for this meta
+                    const currentPdmPerfis = await prismaTx.pdmPerfil.findMany({
+                        where: {
+                            meta_id: id,
+                            removido_em: null,
+                        },
+                        select: {
+                            id: true,
+                            tipo: true,
+                            equipe_id: true,
+                        },
                     });
 
-                    if (cp) {
-                        // await this.checkHasResponsaveisChildren(meta.id, cp);
+                    if (psTecnicoCP) {
+                        for (const equipe_id of psTecnicoCP.equipes) {
+                            const pdmPerfil = detailPdm.PdmPerfil.find(
+                                (r) => r.equipe.id == equipe_id && r.tipo == 'CP'
+                            );
+                            if (!pdmPerfil) {
+                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
+                            }
+                        }
 
-                        await prismaTx.metaResponsavel.deleteMany({
-                            where: {
-                                meta_id: id,
-                            },
-                        });
-                        await prismaTx.metaResponsavel.createMany({
-                            data: await this.buildMetaResponsaveis(meta.id, op, cp),
-                        });
+                        await this.upsertPSPerfis(
+                            meta.id,
+                            psTecnicoCP,
+                            'CP',
+                            currentPdmPerfis,
+                            user,
+                            prismaTx,
+                            loadMeta.pdm_id
+                        );
                     }
+
+                    if (psPontoFocal) {
+                        for (const equipe_id of psPontoFocal.equipes) {
+                            const pdmPerfil = detailPdm.PdmPerfil.find(
+                                (r) => r.equipe.id == equipe_id && r.tipo == 'PONTO_FOCAL'
+                            );
+                            if (!pdmPerfil) {
+                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
+                            }
+                        }
+                        await this.upsertPSPerfis(
+                            meta.id,
+                            psPontoFocal,
+                            'PONTO_FOCAL',
+                            currentPdmPerfis,
+                            user,
+                            prismaTx,
+                            loadMeta.pdm_id
+                        );
+                    }
+
+                    // Recalculate orgaos_participantes
+                    const pdmPerfis = await prismaTx.pdmPerfil.findMany({
+                        where: {
+                            pdm_id: loadMeta.pdm_id,
+                            removido_em: null,
+                            relacionamento: 'PDM',
+                        },
+                        select: {
+                            equipe: { select: { id: true, orgao_id: true } },
+                            tipo: true,
+                        },
+                    });
+
+                    const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
+                        psTecnicoCP,
+                        psPontoFocal,
+                        pdmPerfis
+                    );
+                    await prismaTx.metaOrgao.deleteMany({ where: { meta_id: id } });
+                    await prismaTx.metaOrgao.createMany({
+                        data: await this.buildOrgaosParticipantes(meta.id, orgaosParticipantes),
+                    });
                 }
 
                 if (tags == null || tags) {
@@ -737,6 +900,7 @@ export class MetaService {
                     if (Array.isArray(tags) && tags.length)
                         await prismaTx.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
                 }
+
                 if (geolocalizacao) {
                     const geoDto = new CreateGeoEnderecoReferenciaDto();
                     geoDto.meta_id = meta.id;
@@ -755,6 +919,97 @@ export class MetaService {
         );
 
         return { id };
+    }
+
+    private async upsertPSPerfis(
+        metaId: number,
+        newEquipes: CreatePSEquipeTecnicoCPDto | CreatePSEquipePontoFocalDto,
+        tipo: 'CP' | 'PONTO_FOCAL',
+        currentPdmPerfis: { id: number; tipo: string; equipe_id: number }[],
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient,
+        pdmId: number
+    ) {
+        const currentEquipes = currentPdmPerfis.filter((p) => p.tipo === tipo).map((p) => p.equipe_id);
+        const equipesToAdd = newEquipes.equipes.filter((e) => !currentEquipes.includes(e));
+        const equipesToRemove = currentEquipes.filter((e) => !newEquipes.equipes.includes(e));
+
+        for (const equipeId of equipesToRemove) {
+            await prismaTx.pdmPerfil.updateMany({
+                where: {
+                    meta_id: metaId,
+                    equipe_id: equipeId,
+                    tipo: tipo,
+                },
+                data: {
+                    removido_em: new Date(),
+                    removido_por: user.id,
+                },
+            });
+        }
+
+        for (const equipeId of equipesToAdd) {
+            const equipe = await prismaTx.grupoResponsavelEquipe.findFirst({
+                where: { id: equipeId, removido_em: null },
+                select: { orgao_id: true },
+            });
+
+            if (!equipe) throw new HttpException(`Equipe ${equipeId} não encontrada`, 400);
+
+            await prismaTx.pdmPerfil.create({
+                data: {
+                    pdm_id: pdmId,
+                    meta_id: metaId,
+                    equipe_id: equipeId,
+                    relacionamento: 'META',
+                    tipo: tipo,
+                    criado_por: user.id,
+                    criado_em: new Date(),
+                    orgao_id: equipe.orgao_id,
+                },
+            });
+        }
+    }
+
+    private async calculaOrgaosPelaEquipe(
+        psTecnicoCP: CreatePSEquipeTecnicoCPDto | undefined,
+        psPontoFocal: CreatePSEquipePontoFocalDto | undefined,
+        pdmPerfis: { equipe: { id: number; orgao_id: number }; tipo: string }[]
+    ): Promise<MetaOrgaoParticipante[]> {
+        const orgaosParticipantes: MetaOrgaoParticipante[] = [];
+
+        if (psTecnicoCP) {
+            for (const equipe_id of psTecnicoCP.equipes) {
+                const perfil = pdmPerfis.find((p) => p.equipe.id === equipe_id && p.tipo === 'CP');
+                if (perfil) {
+                    orgaosParticipantes.push({
+                        orgao_id: perfil.equipe.orgao_id,
+                        responsavel: true,
+                        participantes: [],
+                    });
+                }
+            }
+        }
+
+        if (psPontoFocal) {
+            for (const equipe_id of psPontoFocal.equipes) {
+                const perfil = pdmPerfis.find((p) => p.equipe.id === equipe_id && p.tipo === 'PONTO_FOCAL');
+                if (perfil) {
+                    const existingOrgao = orgaosParticipantes.find((op) => op.orgao_id === perfil.equipe.orgao_id);
+                    if (existingOrgao) {
+                        existingOrgao.responsavel = true;
+                    } else {
+                        orgaosParticipantes.push({
+                            orgao_id: perfil.equipe.orgao_id,
+                            responsavel: true,
+                            participantes: [],
+                        });
+                    }
+                }
+            }
+        }
+
+        return orgaosParticipantes;
     }
 
     private async loadMetaOrThrow(id: number, tipo: TipoPdm, user: PessoaFromJwt) {

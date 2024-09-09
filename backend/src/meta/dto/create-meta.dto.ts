@@ -12,6 +12,7 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
 
 export class MetaOrgaoParticipante {
     /**
@@ -109,7 +110,9 @@ export class CreateMetaDto {
 
     /**
      * Quais são os órgãos participantes e seus membros responsáveis
+     * * Apenas no PDM, opcional no PS
      */
+    @IsOptional()
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
     @ValidateNested({ each: true })
     @Type(() => MetaOrgaoParticipante)
@@ -117,12 +120,14 @@ export class CreateMetaDto {
 
     /**
      * ID das pessoas que são coordenadores, para editar, necessário enviar orgaos_participantes
+     * Apenas no PDM, opcional no PS
      * @example "[1, 2, 3]"
      */
+    @IsOptional()
     @IsArray({
         message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
     })
-    @ArrayMinSize(1, {
+    @ArrayMinSize(0, {
         message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item',
     })
     @ArrayMaxSize(100, {
@@ -146,6 +151,24 @@ export class CreateMetaDto {
     @IsString({ each: true })
     @IsArray()
     geolocalizacao?: string[];
+
+    /**
+     * Técnicos de Plano Setorial
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePSEquipeTecnicoCPDto)
+    @ValidateNested()
+    ps_tecnico_cp?: CreatePSEquipeTecnicoCPDto;
+
+    /**
+     * Ponto Focal Plano Setorial
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePSEquipePontoFocalDto)
+    @ValidateNested()
+    ps_ponto_focal?: CreatePSEquipePontoFocalDto;
 }
 
 export class DadosCodTituloAtividadeDto {

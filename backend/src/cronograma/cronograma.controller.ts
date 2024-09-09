@@ -1,21 +1,19 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateEtapaDto } from '../etapa/dto/create-etapa.dto';
-import { FilterEtapaSemCronoIdDto } from '../etapa/dto/filter-etapa.dto';
-import { ListEtapaDto } from '../etapa/dto/list-etapa.dto';
 import { EtapaService } from '../etapa/etapa.service';
+import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { CronogramaService } from './cronograma.service';
 import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from './dto/list-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
-import { MetaController, MetaSetorialController } from '../meta/meta.controller';
-import { TipoPdm } from '@prisma/client';
 
 export const API_TAGS_CRONOGRAMA = 'Cronograma - PDM e PS';
 @ApiTags(API_TAGS_CRONOGRAMA)
@@ -79,21 +77,6 @@ export class CronogramaController {
         return await this.etapaService.create(this.tipo, +params.id, createEtapaDto, user);
     }
 
-    @ApiBearerAuth('access-token')
-    @Get(':id/etapa')
-    @Roles(MetaController.ReadPerm)
-    @ApiOperation({ deprecated: true, description: 'Use o endpoint /api/cronograma-etapa' })
-    async findAllEtapas(
-        @Query() filters: FilterEtapaSemCronoIdDto,
-        @Param() params: FindOneParams
-    ): Promise<ListEtapaDto> {
-        return {
-            linhas: await this.etapaService.findAllDeprecated({
-                ...filters,
-                cronograma_id: +params.id,
-            }),
-        };
-    }
 }
 
 @ApiTags(API_TAGS_CRONOGRAMA)

@@ -5,16 +5,16 @@ import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-crono
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { CreateGeoEnderecoReferenciaDto } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService, UpsertEnderecoDto } from '../geo-loc/geo-loc.service';
+import { MetaItemDto } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
 import { MfPessoaAcessoPdm } from '../mf/mf.service';
+import { CreatePSEquipePontoFocalDto } from '../pdm/dto/create-pdm.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateEtapaDto } from './dto/create-etapa.dto';
-import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
-import { EtapaItemDto } from './entities/etapa.entity';
 
 const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser posterior à data de término previsto.';
 const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
@@ -70,7 +70,7 @@ export class EtapaService {
             select: { meta_id: true },
         });
 
-        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
+        const meta = await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
         if (dto.inicio_previsto && dto.termino_previsto && dto.inicio_previsto > dto.termino_previsto)
             throw new BadRequestException(MSG_INI_POSTERIOR_TERM_PREV);
@@ -114,10 +114,24 @@ export class EtapaService {
                     select: { id: true },
                 });
 
-                if (Array.isArray(dto.responsaveis))
-                    await prismaTx.etapaResponsavel.createMany({
-                        data: await this.buildEtapaResponsaveis(etapa.id, dto.responsaveis),
-                    });
+                if (tipo === 'PS') {
+                    if (dto.ps_ponto_focal) {
+                        await this.upsertPSPerfis(
+                            etapa.id,
+                            dto.ps_ponto_focal,
+                            'PONTO_FOCAL',
+                            [],
+                            user,
+                            prismaTx,
+                            meta
+                        );
+                    }
+                } else {
+                    if (Array.isArray(dto.responsaveis))
+                        await prismaTx.etapaResponsavel.createMany({
+                            data: await this.buildEtapaResponsaveis(etapa.id, dto.responsaveis),
+                        });
+                }
 
                 const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
                     cronograma_id: cronogramaId,
@@ -149,113 +163,27 @@ export class EtapaService {
         return created;
     }
 
+    private async getPSPontoFocalEquipeIds(prismaTx: Prisma.TransactionClient, meta: MetaItemDto): Promise<number[]> {
+        const rows = await prismaTx.pdmPerfil.findMany({
+            where: {
+                removido_em: null,
+                relacionamento: 'META',
+                tipo: 'PONTO_FOCAL',
+                pdm_id: meta.pdm_id,
+                meta_id: meta.id,
+            },
+            select: {
+                equipe_id: true,
+            },
+        });
+
+        return rows.map((r) => r.equipe_id);
+    }
+
     private async lockCronograma(cronogramaId: number) {
         await this.prisma.$queryRaw`SELECT id FROM cronograma WHERE id = ${cronogramaId} FOR UPDATE`;
     }
 
-    /**
-     * Esse endpoint não está sendo usado no frontend, e pelo retorno, está com os filtros errados
-     **/
-    async findAllDeprecated(filters: FilterEtapaDto | undefined = undefined): Promise<EtapaItemDto[]> {
-        throw new Error(
-            'Teste para verificar se esse endpoint realmente não está sendo usado no frontend, e pelo retorno, está com os filtros errados'
-        );
-        const ret: EtapaItemDto[] = [];
-
-        const etapaPaiId = filters?.etapa_pai_id;
-        const regiaoId = filters?.regiao_id;
-        const cronogramaId = filters?.cronograma_id;
-
-        const etapas = await this.prisma.etapa.findMany({
-            where: {
-                etapa_pai_id: etapaPaiId,
-                regiao_id: regiaoId,
-                cronograma_id: cronogramaId,
-                removido_em: null,
-
-                OR: [
-                    {
-                        CronogramaEtapa: {
-                            some: { cronograma_id: cronogramaId },
-                        },
-                    },
-                    {
-                        etapa_filha: {
-                            some: {
-                                CronogramaEtapa: {
-                                    some: { cronograma_id: cronogramaId },
-                                },
-                            },
-                        },
-                    },
-                    {
-                        etapa_filha: {
-                            some: {
-                                etapa_filha: {
-                                    some: {
-                                        CronogramaEtapa: {
-                                            some: { cronograma_id: cronogramaId },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
-            include: {
-                etapa_filha: {
-                    include: {
-                        etapa_filha: true,
-                    },
-                },
-                CronogramaEtapa: true,
-                variavel: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                    },
-                },
-            },
-        });
-
-        const geoDto = new ReferenciasValidasBase();
-        geoDto.etapa_id = etapas.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
-
-        for (const etapa of etapas) {
-            const cronograma_etapa = etapa.CronogramaEtapa.filter((r) => {
-                return r.cronograma_id === cronogramaId;
-            });
-
-            ret.push({
-                id: etapa.id,
-                etapa_pai_id: etapa.etapa_pai_id,
-                regiao_id: etapa.regiao_id,
-                cronograma_id: etapa.cronograma_id,
-                titulo: etapa.titulo,
-                descricao: etapa.descricao,
-                nivel: etapa.nivel,
-                prazo_inicio: etapa.prazo_inicio,
-                prazo_termino: etapa.prazo_termino,
-                peso: etapa.peso,
-                percentual_execucao: etapa.percentual_execucao,
-                n_filhos_imediatos: etapa.n_filhos_imediatos,
-                inicio_previsto: etapa.inicio_previsto,
-                termino_previsto: etapa.termino_previsto,
-                inicio_real: etapa.inicio_real,
-                termino_real: etapa.termino_real,
-                etapa_filha: etapa.etapa_filha,
-                ordem: cronograma_etapa[0].ordem,
-                endereco_obrigatorio: etapa.endereco_obrigatorio,
-                geolocalizacao: geolocalizacao.get(etapa.id) || [],
-                variavel: etapa.variavel,
-            });
-        }
-
-        return ret;
-    }
 
     async update(
         tipo: TipoPdm,
@@ -271,7 +199,7 @@ export class EtapaService {
             where: { etapa_id: id },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
+        const meta = await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
         const basicSelf = await prisma.etapa.findFirstOrThrow({
             where: { id, removido_em: null },
@@ -448,6 +376,14 @@ export class EtapaService {
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
+            if (tipo === 'PS') {
+                if (dto.ps_ponto_focal) {
+                    await this.upsertPSPerfis(self.id, dto.ps_ponto_focal, 'PONTO_FOCAL', [], user, prismaTx, meta);
+                }
+            } else {
+                await this.updateResponsaveis(dto.responsaveis, self, prismaTx);
+            }
+
             const etapaAtualizada = await prismaTx.etapa.update({
                 where: { id: id },
                 data: {
@@ -596,6 +532,62 @@ export class EtapaService {
         }
 
         return { id };
+    }
+
+    private async upsertPSPerfis(
+        etapaId: number,
+        newEquipes: CreatePSEquipePontoFocalDto,
+        tipo: 'PONTO_FOCAL',
+        currentPdmPerfis: { id: number; tipo: string; equipe_id: number }[],
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient,
+        meta: MetaItemDto
+    ) {
+        const pdmEquipes = await this.getPSPontoFocalEquipeIds(prismaTx, meta);
+        for (const equipe_id of newEquipes.equipes) {
+            if (!pdmEquipes.includes(equipe_id))
+                throw new BadRequestException(`Equipe ${equipe_id} não é um ponto focal da meta ${meta.id}`);
+        }
+
+        const currentEquipes = currentPdmPerfis.filter((p) => p.tipo === tipo).map((p) => p.equipe_id);
+        const equipesToAdd = newEquipes.equipes.filter((e) => !currentEquipes.includes(e));
+        const equipesToRemove = currentEquipes.filter((e) => !newEquipes.equipes.includes(e));
+
+        for (const equipeId of equipesToRemove) {
+            await prismaTx.pdmPerfil.updateMany({
+                where: {
+                    etapa_id: etapaId,
+                    equipe_id: equipeId,
+                    tipo: tipo,
+                },
+                data: {
+                    removido_em: new Date(),
+                    removido_por: user.id,
+                },
+            });
+        }
+
+        for (const equipeId of equipesToAdd) {
+            const equipe = await prismaTx.grupoResponsavelEquipe.findFirst({
+                where: { id: equipeId, removido_em: null },
+                select: { orgao_id: true },
+            });
+
+            if (!equipe) throw new HttpException(`Equipe ${equipeId} não encontrada`, 400);
+
+            await prismaTx.pdmPerfil.create({
+                data: {
+                    etapa_id: etapaId,
+                    equipe_id: equipeId,
+                    relacionamento: 'ETAPA',
+                    tipo: tipo,
+                    criado_por: user.id,
+                    criado_em: new Date(),
+                    orgao_id: equipe.orgao_id,
+                    pdm_id: meta.pdm_id,
+                },
+            });
+        }
     }
 
     private async upsertVariavel(

@@ -491,6 +491,7 @@ export class PdmService {
                 where: {
                     pdm_id: id,
                     tipo: { in: ['ADMIN', 'CP', 'PONTO_FOCAL'] },
+                    relacionamento: 'PDM',
                     removido_em: null,
                 },
             });
@@ -763,6 +764,7 @@ export class PdmService {
                     select: {
                         PdmPerfil: {
                             where: {
+                                relacionamento: 'PDM',
                                 removido_em: null,
                             },
                             select: {
@@ -862,6 +864,7 @@ export class PdmService {
                 await prismaTx.pdmPerfil.updateMany({
                     where: {
                         equipe_id: equipe_id,
+                        relacionamento: 'PDM',
                         pdm_id,
                         tipo: tipo,
                         removido_em: null,
@@ -896,6 +899,7 @@ export class PdmService {
                 this.logger.log(`Novo participante: ${equipe.id}`);
                 await prismaTx.pdmPerfil.create({
                     data: {
+                        relacionamento: 'PDM',
                         pdm_id,
                         tipo,
                         criado_por: user.id,

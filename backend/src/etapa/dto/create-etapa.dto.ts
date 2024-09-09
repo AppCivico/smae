@@ -19,6 +19,7 @@ import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { PartialType, PickType } from '@nestjs/swagger';
 import { CreateVariavelBaseDto } from '../../variavel/dto/create-variavel.dto';
+import { CreatePSEquipePontoFocalDto } from '../../pdm/dto/create-pdm.dto';
 
 export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelBaseDto, ['titulo'])) {
     @IsString()
@@ -29,14 +30,24 @@ export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelB
 export class CreateEtapaDto {
     /**
      * lista dos responsáveis pelo preenchimento. Pelo menos uma pessoa
+     * Apenas no PDM, não é obrigatório no PS
      * @example "[4, 5, 6]"
      */
     @IsOptional()
     @IsArray({ message: 'Responsáveis precisa ser um array' })
     @ArrayMaxSize(100, { message: 'Responsáveis precisa ter no máximo 100 items' })
-    @ArrayMinSize(1, { message: 'Responsáveis precisa ter no mínimo 1 item' })
+    @ArrayMinSize(0, { message: 'Responsáveis precisa ter no mínimo 1 item' })
     @IsInt({ each: true, message: 'Responsáveis: Cada item precisa ser um número inteiro' })
     responsaveis: number[];
+
+    /**
+     * Ponto Focal Plano Setorial
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePSEquipePontoFocalDto)
+    @ValidateNested()
+    ps_ponto_focal?: CreatePSEquipePontoFocalDto;
 
     /**
      * etapa_pai_id

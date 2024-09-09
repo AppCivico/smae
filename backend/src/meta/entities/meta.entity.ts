@@ -47,6 +47,8 @@ export class MetaItemDto {
     cronograma: CronogramaAtrasoGrau | null;
     geolocalizacao: GeolocalizacaoDto[];
     pode_editar: boolean;
+    ps_tecnico_cp: IdTituloDto[];
+    ps_ponto_focal: IdTituloDto[];
 }
 
 export class MetaPdmDto {
