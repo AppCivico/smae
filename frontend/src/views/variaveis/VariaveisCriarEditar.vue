@@ -982,45 +982,6 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             />
           </div>
         </div>
-
-        <div class="f1 fb20em flex flexwrap g2 mb1">
-          <div class="f1 fb10em">
-            <LabelFromYup
-              name="periodos.liberacao_inicio"
-              :schema="schema"
-            />
-            <Field
-              name="periodos.liberacao_inicio"
-              type="number"
-              :min="values.periodos?.validacao_inicio || 1"
-              max="31"
-              class="inputtext light mb1"
-              :class="{ error: errors['periodos.liberacao_inicio'] }"
-            />
-            <ErrorMessage
-              class="error-msg"
-              name="periodos.liberacao_inicio"
-            />
-          </div>
-          <div class="f1 fb10em">
-            <LabelFromYup
-              name="periodos.liberacao_fim"
-              :schema="schema"
-            />
-            <Field
-              name="periodos.liberacao_fim"
-              type="number"
-              :min="values.periodos?.liberacao_inicio || 1"
-              max="31"
-              class="inputtext light mb1"
-              :class="{ error: errors['periodos.liberacao_fim'] }"
-            />
-            <ErrorMessage
-              class="error-msg"
-              name="periodos.liberacao_fim"
-            />
-          </div>
-        </div>
       </div>
     </fieldset>
 
