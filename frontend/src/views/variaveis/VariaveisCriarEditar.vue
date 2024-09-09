@@ -926,20 +926,20 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           </div>
           <div class="f1 fb10em">
             <LabelFromYup
-              name="periodos.preenchimento_fim"
+              name="periodos.preenchimento_duracao"
               :schema="schema"
             />
             <Field
-              name="periodos.preenchimento_fim"
+              name="periodos.preenchimento_duracao"
               type="number"
               :min="values.periodos?.preenchimento_inicio || 1"
               max="31"
               class="inputtext light mb1"
-              :class="{ error: errors['periodos.preenchimento_fim'] }"
+              :class="{ error: errors['periodos.preenchimento_duracao'] }"
             />
             <ErrorMessage
               class="error-msg"
-              name="periodos.preenchimento_fim"
+              name="periodos.preenchimento_duracao"
             />
           </div>
         </div>
@@ -947,38 +947,38 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
         <div class="f1 fb20em flex flexwrap g2 mb1">
           <div class="f1 fb10em">
             <LabelFromYup
-              name="periodos.validacao_inicio"
+              name="periodos.validacao_duracao"
               :schema="schema"
             />
             <Field
-              name="periodos.validacao_inicio"
+              name="periodos.validacao_duracao"
               type="number"
               :min="values.periodos?.preenchimento_inicio || 1"
               max="31"
               class="inputtext light mb1"
-              :class="{ error: errors['periodos.validacao_inicio'] }"
+              :class="{ error: errors['periodos.validacao_duracao'] }"
             />
             <ErrorMessage
               class="error-msg"
-              name="periodos.validacao_inicio"
+              name="periodos.validacao_duracao"
             />
           </div>
           <div class="f1 fb10em">
             <LabelFromYup
-              name="periodos.validacao_fim"
+              name="periodos.liberacao_duracao"
               :schema="schema"
             />
             <Field
-              name="periodos.validacao_fim"
+              name="periodos.liberacao_duracao"
               type="number"
-              :min="values.periodos?.validacao_inicio || 1"
+              :min="values.periodos?.validacao_duracao || 1"
               max="31"
               class="inputtext light mb1"
-              :class="{ error: errors['periodos.validacao_fim'] }"
+              :class="{ error: errors['periodos.liberacao_duracao'] }"
             />
             <ErrorMessage
               class="error-msg"
-              name="periodos.validacao_fim"
+              name="periodos.liberacao_duracao"
             />
           </div>
         </div>
