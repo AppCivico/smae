@@ -31,7 +31,7 @@ export class PaginatedWithPagesDto<TData> {
     linhas: TData[];
 
     @ApiHideProperty()
-    total_registros_sem_filtros?: number;
+    total_registros_revisados?: number;
 }
 
 export class AnyPageTokenJwtBody {

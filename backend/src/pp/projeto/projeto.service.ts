@@ -928,13 +928,15 @@ export class ProjetoService {
         });
 
         // COUNT para mensagem de aviso quando o usuário quiser desmarcar a revisão de todas as obras.
-        const total_registros_sem_filtros: number = await this.prisma.viewProjetoMDO.count();
+        const total_registros_revisados: number = await this.prisma.projetoPessoaRevisao.count({
+            where: { pessoa_id: user.id },
+        });
 
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
             total_registros: total_registros,
-            total_registros_sem_filtros: total_registros_sem_filtros,
+            total_registros_revisados: total_registros_revisados,
             token_paginacao: retToken,
             paginas,
             pagina_corrente: page,
