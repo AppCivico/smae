@@ -261,6 +261,8 @@ export class DistribuicaoRecursoService {
                                 },
                             },
                             select: {
+                                id: true,
+                                distribuicao_recurso_id: true,
                                 valor: true,
                             },
                         });
@@ -277,10 +279,12 @@ export class DistribuicaoRecursoService {
                                 400
                             );
 
-                        const sumValor = rowsParlamentarDist
+                        let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor)
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
+                        sumValor += novaRow.valor ? +novaRow.valor : 0;
                         console.log('\n==========================');
+                        console.log(rowsParlamentarDist);
                         console.log(+sumValor);
                         console.log(+valorNaTransf);
                         console.log('\n==========================');
