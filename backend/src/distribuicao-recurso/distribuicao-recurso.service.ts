@@ -1130,6 +1130,7 @@ export class DistribuicaoRecursoService {
 
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
+                                id: { not: relParlamentar.id },
                                 parlamentar_id: relParlamentar.parlamentar_id,
                                 distribuicao_recurso: {
                                     transferencia_id: self.transferencia_id,
@@ -1147,9 +1148,10 @@ export class DistribuicaoRecursoService {
                                 400
                             );
 
-                        const sumValor = rowsParlamentarDist
+                        let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor)
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
+                        sumValor += +relParlamentar.valor!;
                         console.log('===================================\n');
                         console.log(+sumValor);
                         console.log(+valorNaTransf);
