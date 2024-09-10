@@ -1164,7 +1164,7 @@ export class DistribuicaoRecursoService {
                         );
                         if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
                         const valorNaTransf = rowParlamentarTransf.valor ?? 0;
-                        if (valorNaTransf == 0)
+                        if (valorNaTransf == 0 && relParlamentar.valor != null && relParlamentar.valor > 0)
                             throw new HttpException(
                                 'Parlamentar não está com valor de repasse definido na transferência.',
                                 400
@@ -1172,11 +1172,16 @@ export class DistribuicaoRecursoService {
 
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
-                                id: { not: relParlamentar.id },
+                                id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
                                 parlamentar_id: relParlamentar.parlamentar_id,
                                 removido_em: null,
                                 distribuicao_recurso: {
-                                    transferencia_id: self.transferencia_id,
+                                    id: id,
+                                    removido_em: null,
+                                    transferencia: {
+                                        id: self.transferencia_id,
+                                        removido_em: null,
+                                    },
                                     status: {
                                         some: {
                                             OR: [
@@ -1210,6 +1215,7 @@ export class DistribuicaoRecursoService {
                                 },
                             },
                             select: {
+                                id: true,
                                 valor: true,
                             },
                         });
@@ -1218,7 +1224,9 @@ export class DistribuicaoRecursoService {
                             .filter((e) => e.valor)
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
+
                         console.log('\n==========================');
+                        console.log(rowsParlamentarDist);
                         console.log(+sumValor);
                         console.log(+valorNaTransf);
                         console.log('\n==========================');
