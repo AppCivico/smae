@@ -6,11 +6,13 @@ import formataValor from '@/helpers/formataValor';
 import { useAlertStore, useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import { usePdMStore } from '@/stores/pdm.store';
+import { useObrasStore } from '@/stores/obras.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
-import { usePdMStore } from '@/stores/pdm.store';
 
 const alertStore = useAlertStore();
 const props = defineProps({
@@ -35,6 +37,17 @@ const {
 } = storeToRefs(OrcamentosStore);
 
 const { activePdm } = storeToRefs(usePdMStore());
+
+const projetosStore = useProjetosStore();
+const obrasStore = useObrasStore();
+
+const {
+  permissõesDaObraEmFoco,
+} = storeToRefs(obrasStore);
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
 
@@ -242,7 +255,7 @@ function restringirAZero() {
       <div class="tc">
         <SmaeLink
           v-if="config.previsao_custo_disponivel && ($route.meta?.rotaParaAdição
-            || parentlink)"
+            || parentlink) && (!permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/custo/${ano}`"
