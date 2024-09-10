@@ -4,6 +4,8 @@ import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { usePdMStore } from '@/stores/pdm.store';
+import { useObrasStore } from '@/stores/obras.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   computed, inject, ref, watch,
@@ -38,6 +40,8 @@ const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado, OrcamentoRealizadoPermissões } = storeToRefs(OrcamentosStore);
 
 const { activePdm } = storeToRefs(usePdMStore());
+const { permissõesDaObraEmFoco } = storeToRefs(useObrasStore());
+const { permissõesDoProjetoEmFoco } = storeToRefs(useProjetosStore());
 
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
@@ -143,7 +147,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         </h3>
 
         <div
-          v-if="activePdm?.pode_editar"
+          v-if="activePdm?.pode_editar || !permissõesDaObraEmFoco?.pode_editar || !permissõesDoProjetoEmFoco?.pode_editar"
         >
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
@@ -239,7 +243,8 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         />
 
         <button
-          v-if="podeExcluirEmLote && config?.execucao_disponivel && activePdm?.pode_editar"
+          v-if="podeExcluirEmLote && config?.execucao_disponivel &&
+            (activePdm?.pode_editar || !permissõesDaObraEmFoco?.pode_editar || !permissõesDoProjetoEmFoco?.pode_editar)"
           type="button"
           class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"
