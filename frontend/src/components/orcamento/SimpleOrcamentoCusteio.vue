@@ -254,8 +254,9 @@ function restringirAZero() {
 
       <div class="tc">
         <SmaeLink
-          v-if="config.previsao_custo_disponivel && ($route.meta?.rotaParaAdição
-            || parentlink) && (!permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
+          v-if="config.previsao_custo_disponivel
+            && ($route.meta?.rotaParaAdição || parentlink)
+            && (activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/custo/${ano}`"
