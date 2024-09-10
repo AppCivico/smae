@@ -893,6 +893,8 @@ export class ProjetoService {
 
         const offset = (page - 1) * ipp;
 
+        // AVISO: os dois métodos abaixo alteram o número de rows!
+        // getProjetoWhereSet e getProjetoMDOWhereSet
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
         const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave);
         const linhas = await this.prisma.viewProjetoMDO.findMany({
