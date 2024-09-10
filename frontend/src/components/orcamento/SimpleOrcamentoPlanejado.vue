@@ -5,10 +5,22 @@ import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import { useObrasStore } from '@/stores/obras.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
-import { usePdMStore } from '@/stores/pdm.store';
+
+const projetosStore = useProjetosStore();
+const obrasStore = useObrasStore();
+
+const {
+  permissõesDaObraEmFoco,
+} = storeToRefs(obrasStore);
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const props = defineProps({
   parentlink: {
@@ -28,8 +40,6 @@ const props = defineProps({
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
-
-const { activePdm } = storeToRefs(usePdMStore());
 
 const órgãoEUnidadeSelecionados = ref('');
 
@@ -211,7 +221,7 @@ const somaDasLinhas = computed(() => ({
         <SmaeLink
           v-if="config.planejado_disponivel
             && ($route.meta?.rotaParaAdição || parentlink)
-            && activePdm?.pode_editar"
+            && (!permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/planejado/${ano}`"
