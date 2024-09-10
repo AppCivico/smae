@@ -225,10 +225,40 @@ export class DistribuicaoRecursoService {
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
                                 parlamentar_id: novaRow.parlamentar_id,
+                                removido_em: null,
                                 distribuicao_recurso: {
                                     transferencia_id: dto.transferencia_id,
+                                    status: {
+                                        some: {
+                                            OR: [
+                                                {
+                                                    status_base: {
+                                                        tipo: {
+                                                            notIn: [
+                                                                DistribuicaoStatusTipo.Declinada,
+                                                                DistribuicaoStatusTipo.Cancelada,
+                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                                DistribuicaoStatusTipo.Redirecionada,
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                                {
+                                                    status: {
+                                                        tipo: {
+                                                            notIn: [
+                                                                DistribuicaoStatusTipo.Declinada,
+                                                                DistribuicaoStatusTipo.Cancelada,
+                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                                DistribuicaoStatusTipo.Redirecionada,
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
                                 },
-                                removido_em: null,
                             },
                             select: {
                                 valor: true,
@@ -250,6 +280,11 @@ export class DistribuicaoRecursoService {
                         const sumValor = rowsParlamentarDist
                             .filter((e) => e.valor)
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
+                        console.log('\n==========================');
+                        console.log(+sumValor);
+                        console.log(+valorNaTransf);
+                        console.log('\n==========================');
+
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
                                 'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
@@ -1139,10 +1174,40 @@ export class DistribuicaoRecursoService {
                             where: {
                                 id: { not: relParlamentar.id },
                                 parlamentar_id: relParlamentar.parlamentar_id,
+                                removido_em: null,
                                 distribuicao_recurso: {
                                     transferencia_id: self.transferencia_id,
+                                    status: {
+                                        some: {
+                                            OR: [
+                                                {
+                                                    status_base: {
+                                                        tipo: {
+                                                            notIn: [
+                                                                DistribuicaoStatusTipo.Declinada,
+                                                                DistribuicaoStatusTipo.Cancelada,
+                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                                DistribuicaoStatusTipo.Redirecionada,
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                                {
+                                                    status: {
+                                                        tipo: {
+                                                            notIn: [
+                                                                DistribuicaoStatusTipo.Declinada,
+                                                                DistribuicaoStatusTipo.Cancelada,
+                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                                DistribuicaoStatusTipo.Redirecionada,
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
                                 },
-                                removido_em: null,
                             },
                             select: {
                                 valor: true,
