@@ -400,6 +400,7 @@ export class DistribuicaoRecursoService {
                 vigencia: true,
                 conclusao_suspensiva: true,
                 parlamentares: {
+                    orderBy: { id: 'asc' },
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -683,6 +684,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 parlamentares: {
+                    orderBy: { id: 'asc' },
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -1127,6 +1129,11 @@ export class DistribuicaoRecursoService {
                         );
                         if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
                         const valorNaTransf = rowParlamentarTransf.valor ?? 0;
+                        if (valorNaTransf == 0)
+                            throw new HttpException(
+                                'Parlamentar não está com valor de repasse definido na transferência.',
+                                400
+                            );
 
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
@@ -1141,12 +1148,6 @@ export class DistribuicaoRecursoService {
                                 valor: true,
                             },
                         });
-
-                        if (valorNaTransf == 0)
-                            throw new HttpException(
-                                'Parlamentar não está com valor de repasse definido na transferência.',
-                                400
-                            );
 
                         let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor)
