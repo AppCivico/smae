@@ -135,5 +135,6 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     )
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
+    @Transform(String)
     acumulado_valor_base?: number | null;
 }
