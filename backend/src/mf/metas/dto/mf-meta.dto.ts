@@ -299,7 +299,7 @@ export class VariavelAnaliseQualitativaDto {
         }
     )
     @ValidateIf((object, value) => value !== '')
-    @Transform(String)
+    @Type(() => String)
     valor_realizado?: string;
 
     @IsOptional()
@@ -313,7 +313,7 @@ export class VariavelAnaliseQualitativaDto {
         }
     )
     @ValidateIf((object, value) => value !== '')
-    @Transform(String)
+    @Type(() => String)
     valor_realizado_acumulado?: string;
 
     @IsOptional()
