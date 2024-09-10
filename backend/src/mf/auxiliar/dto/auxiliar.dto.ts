@@ -14,6 +14,7 @@ export class AutoPreencherValorDto {
                 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
         }
     )
+    @Transform(String)
     valor_realizado: string;
 
     @IsOptional()
@@ -25,6 +26,7 @@ export class AutoPreencherValorDto {
         }
     )
     @ValidateIf((object, value) => value !== '')
+    @Transform(String)
     valor_realizado_acumulado?: string;
 
     @IsOptional()

@@ -94,6 +94,7 @@ export class CreateVariavelBaseDto {
                 '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
+    @Transform(String)
     valor_base: number;
 
     @IsInt({ message: '$property| $property inválido' })
