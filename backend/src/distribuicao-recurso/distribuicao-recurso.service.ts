@@ -1218,7 +1218,10 @@ export class DistribuicaoRecursoService {
                             .filter((e) => e.valor)
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
-
+                        console.log('\n==========================');
+                        console.log(+sumValor);
+                        console.log(+valorNaTransf);
+                        console.log('\n==========================');
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
                                 'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
