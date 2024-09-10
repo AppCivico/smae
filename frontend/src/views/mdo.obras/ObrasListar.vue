@@ -75,13 +75,11 @@
             <th>
               {{ schema.fields.status.spec.label }}
             </th>
-            <th />
             <th
               v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
             >
               Revisada
             </th>
-            <th />
             <th
               v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
             >
@@ -122,18 +120,6 @@
             <td class="cell--minimum">
               {{ statusObras[item.status]?.nome || item.status }}
             </td>
-
-            <td>
-              <router-link
-                :to="{ name: 'obrasEditar', params: { obraId: item.id } }"
-                class="tprimary"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </td>
             <td>
               <label class="comunicado-geral-item__footer-lido">
                 <input
@@ -145,9 +131,22 @@
                 >
               </label>
             </td>
-            <td>
+            <td
+              v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+            >
+              <router-link
+
+                :to="{ name: 'obrasEditar', params: { obraId: item.id } }"
+                class="ml1 mr1 tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+
               <button
-                class="like-a__text"
+                class="ml1 mr1 like-a__text"
                 arial-label="excluir"
                 title="excluir"
                 @click="excluirObra(item.id, item.nome)"
@@ -158,9 +157,6 @@
                 ><use xlink:href="#i_remove" /></svg>
               </button>
             </td>
-            <td
-              v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
-            />
           </tr>
           <tr v-if="chamadasPendentes.lista">
             <td colspan="10">
