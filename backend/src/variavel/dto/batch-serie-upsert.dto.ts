@@ -1,5 +1,5 @@
 import { Serie } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
 
 export class ExistingSerieJwt {
@@ -41,7 +41,7 @@ export class SerieUpsert {
         }
     )
     @ValidateIf((object, value) => value !== '')
-    @Transform(String)
+    @Type(() => String)
     valor: string;
 
     /**
