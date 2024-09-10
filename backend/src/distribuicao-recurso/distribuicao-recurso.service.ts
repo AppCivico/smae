@@ -1122,6 +1122,44 @@ export class DistribuicaoRecursoService {
                                 400
                             );
 
+                        const rowParlamentarTransf = parlamentaresNaTransf.find(
+                            (e) => e.parlamentar_id == relParlamentar.parlamentar_id
+                        );
+                        if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                        const valorNaTransf = rowParlamentarTransf.valor ?? 0;
+
+                        const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
+                            where: {
+                                parlamentar_id: relParlamentar.parlamentar_id,
+                                distribuicao_recurso: {
+                                    transferencia_id: self.transferencia_id,
+                                },
+                                removido_em: null,
+                            },
+                            select: {
+                                valor: true,
+                            },
+                        });
+
+                        if (valorNaTransf == 0)
+                            throw new HttpException(
+                                'Parlamentar não está com valor de repasse definido na transferência.',
+                                400
+                            );
+
+                        const sumValor = rowsParlamentarDist
+                            .filter((e) => e.valor)
+                            .reduce((acc, curr) => acc + +curr.valor!, 0);
+                        console.log('===================================\n');
+                        console.log(+sumValor);
+                        console.log(+valorNaTransf);
+                        console.log('===================================\n');
+                        if (+sumValor > +valorNaTransf)
+                            throw new HttpException(
+                                'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                400
+                            );
+
                         if (relParlamentar.id) {
                             const row = updated.parlamentares.find((e) => e.id == relParlamentar.id);
                             if (!row) throw new HttpException('id| Linha não encontrada.', 400);
@@ -1143,44 +1181,6 @@ export class DistribuicaoRecursoService {
                                 );
                             }
                         } else {
-                            const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
-                                where: {
-                                    parlamentar_id: relParlamentar.parlamentar_id,
-                                    distribuicao_recurso: {
-                                        transferencia_id: self.transferencia_id,
-                                    },
-                                    removido_em: null,
-                                },
-                                select: {
-                                    valor: true,
-                                },
-                            });
-
-                            const rowParlamentarTransf = parlamentaresNaTransf.find(
-                                (e) => e.parlamentar_id == relParlamentar.parlamentar_id
-                            );
-                            if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
-                            const valorNaTransf = rowParlamentarTransf.valor ?? 0;
-
-                            if (valorNaTransf == 0)
-                                throw new HttpException(
-                                    'Parlamentar não está com valor de repasse definido na transferência.',
-                                    400
-                                );
-
-                            const sumValor = rowsParlamentarDist
-                                .filter((e) => e.valor)
-                                .reduce((acc, curr) => acc + +curr.valor!, 0);
-                            console.log('===================================\n');
-                            console.log(+sumValor);
-                            console.log(+valorNaTransf);
-                            console.log('===================================\n');
-                            if (+sumValor > +valorNaTransf)
-                                throw new HttpException(
-                                    'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
-                                    400
-                                );
-
                             operations.push(
                                 prismaTx.distribuicaoParlamentar.create({
                                     data: {
