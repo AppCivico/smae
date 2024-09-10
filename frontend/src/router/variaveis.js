@@ -70,7 +70,7 @@ export default {
           meta: {
             rotaDeEscape: 'variaveisListar',
             rotasParaMigalhasDePão: ['variaveisListar'],
-            titulo: 'Resumo Variável',
+            título: 'Resumo Variável',
           },
         },
         {
