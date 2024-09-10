@@ -98,6 +98,7 @@
           <tr
             v-for="item in lista"
             :key="item.id"
+            :class="['obras-item', { 'obras-item--selecionado': item.id == ultimoVistoId }]"
           >
             <td>{{ item.orgao_origem.sigla }}</td>
             <td>{{ item.portfolio?.titulo || item.portfolio }}</td>
@@ -206,7 +207,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const obrasStore = useObrasStore();
 
 const {
-  lista, chamadasPendentes, erro, paginacao, totalRegistrosSemFiltros,
+  ultimoVistoId, lista, chamadasPendentes, erro, paginacao, totalRegistrosSemFiltros,
 } = storeToRefs(obrasStore);
 const alertStore = useAlertStore();
 
@@ -254,3 +255,9 @@ watchEffect(() => {
   });
 });
 </script>
+
+<style lang="less" scoped>
+.obras-item--selecionado {
+  background-color: #D8E9F1;
+}
+</style>

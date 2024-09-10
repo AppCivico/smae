@@ -7,6 +7,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useObrasStore = defineStore('obrasStore', {
   state: () => ({
+    ultimoVistoId: sessionStorage.getItem('obras.ultimoVistoId') || null,
     lista: [],
     totalRegistrosSemFiltros: 0,
     emFoco: null,
@@ -45,6 +46,9 @@ export const useObrasStore = defineStore('obrasStore', {
     async buscarItem(id = 0, params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
+
+      this.ultimoVistoId = id;
+      sessionStorage.setItem('obras.ultimoVistoId', this.ultimoVistoId);
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${id}`, params);
@@ -130,6 +134,8 @@ export const useObrasStore = defineStore('obrasStore', {
         this.paginacao.paginaCorrente = paginaCorrente;
         this.paginacao.temMais = temMais;
         this.paginacao.totalRegistros = totalRegistros;
+
+        sessionStorage.removeItem('obras.ultimoVistoId');
       } catch (erro) {
         this.erro = erro;
       }
