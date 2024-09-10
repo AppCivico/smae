@@ -17,7 +17,7 @@ const { emFoco } = storeToRefs(variaveisGlobaisStore);
 function iniciar() {
   if (emFoco?.id !== Number(props.variavelId)) {
     emFoco.value = null;
-    variaveisGlobaisStore.buscarItem(props.variavelId);
+    variaveisGlobaisStore.buscarItem(props.variavelId, { incluir_auxiliares: true });
   }
 }
 

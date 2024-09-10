@@ -2,6 +2,7 @@
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmallModal from '@/components/SmallModal.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -111,9 +112,25 @@ watchEffect(() => {
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
     </template>
 
     <template #finalLinhaVariavel="{ variavel }">
+      <td>
+        <smae-link
+          type="button"
+          class="tipinfo tprimary like-a__text"
+          :to="{ name: `.variaveisDetalhe`, params: { variavelId: variavel.id } }"
+          exibir-desabilitado
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_eye" /></svg>
+          <div>Detalhe da variável</div>
+        </smae-link>
+      </td>
+
       <td>
         <button
           v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'Calculada'"

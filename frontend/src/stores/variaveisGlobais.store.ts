@@ -1,4 +1,6 @@
-import type { ListSeriesAgrupadas, VariavelDetailDto, VariavelGlobalDetailDto } from '@/../../backend/src/variavel/dto/list-variavel.dto';
+import type {
+  ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
+} from '@/../../backend/src/variavel/dto/list-variavel.dto';
 import type { VariavelGlobalItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
 
 import { defineStore } from 'pinia';
@@ -19,7 +21,13 @@ interface Erros {
 
 interface Estado {
   lista: VariavelGlobalItemDto[];
-  emFoco: (VariavelDetailDto & VariavelGlobalDetailDto) | null;
+  emFoco:
+  | (
+    VariavelDetailDto &
+    VariavelGlobalDetailDto &
+    VariavelDetailComAuxiliaresDto
+  )
+  | null;
   seriesAgrupadas: ListSeriesAgrupadas | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 

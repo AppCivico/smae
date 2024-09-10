@@ -1,5 +1,7 @@
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 
+const entidadeMãe = 'planoSetorial';
+
 export default {
   path: '/variaveis',
   component: () => import('@/views/variaveis/VariaveisRaiz.vue'),
@@ -20,7 +22,7 @@ export default {
 </svg>`,
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
-    entidadeMãe: 'planoSetorial',
+    entidadeMãe,
     pesoNoMenu: 3,
     limitarÀsPermissões: [
       'CadastroPS.administrador',
@@ -41,13 +43,9 @@ export default {
       path: 'novo',
       name: 'variaveisCriar',
       meta: {
-        limitarÀsPermissões: [
-          'CadastroVariavelGlobal.administrador_no_orgao',
-        ],
+        limitarÀsPermissões: ['CadastroVariavelGlobal.administrador_no_orgao'],
         rotaDeEscape: 'variaveisListar',
-        rotasParaMigalhasDePão: [
-          'variaveisListar',
-        ],
+        rotasParaMigalhasDePão: ['variaveisListar'],
         título: 'Cadastro de Variável',
       },
     },
@@ -62,11 +60,19 @@ export default {
         rotasParaMenuSecundário: [
           // 'variaveisResumo',
         ],
-        rotasParaMigalhasDePão: [
-          'variaveisListar',
-        ],
+        rotasParaMigalhasDePão: ['variaveisListar'],
       },
       children: [
+        {
+          name: `${entidadeMãe}.variaveisDetalhe`,
+          path: '/:variavelId/detalhar',
+          component: () => import('@/views/variaveis/VariaveisDetalhe.vue'),
+          meta: {
+            rotaDeEscape: 'variaveisListar',
+            rotasParaMigalhasDePão: ['variaveisListar'],
+            titulo: 'Resumo Variável',
+          },
+        },
         {
           component: () => import('@/views/variaveis/VariaveisCriarEditar.vue'),
           name: 'variaveisEditar',
