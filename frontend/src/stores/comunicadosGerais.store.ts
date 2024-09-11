@@ -42,6 +42,7 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       data_fim,
       palavra_chave,
       lido,
+      tipo,
       pagina,
       token_paginacao,
       buscandoMais,
@@ -56,6 +57,7 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
           data_fim,
           palavra_chave,
           lido,
+          tipo,
           token_proxima_pagina: token_paginacao,
         });
 

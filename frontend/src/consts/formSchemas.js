@@ -33,6 +33,7 @@ import {
   setLocale,
   string,
 } from 'yup';
+import { isBefore, isAfter } from 'date-fns';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -3749,4 +3750,73 @@ export const obra = projeto.concat(obras).shape({
         .min(1),
     )
     .nullable(),
+});
+
+export const comunidadosGeraisFiltrosSchemaTipoOpcoes = [
+  '',
+  'Geral',
+  'Individual',
+  'Especial',
+  'Bancada',
+];
+
+export const comunidadosGeraisFiltrosSchema = object().shape({
+  palavra_chave: string().label('palavra-chave'),
+  data_inicio: date()
+    .label('Início do período')
+    .test(
+      'verificar-datas',
+      (dataInicio, { resolve, createError, options }) => {
+        if (!dataInicio) {
+          return true;
+        }
+
+        const [{ schema }] = options.from;
+        const { data_inicio: dataInicioSchema, data_fim: dataFimSchema } = schema.fields;
+
+        const dataFim = resolve < Date > ref('data_fim');
+
+        if (isAfter(dataInicio, new Date())) {
+          return createError({
+            message: `"${dataInicioSchema.spec.label}" não pode ser MAIOR que HOJE`,
+          });
+        }
+
+        if (isAfter(dataInicio, dataFim)) {
+          return createError({
+            message: `"${dataInicioSchema.spec.label}" não pode ser MAIOR que "${dataFimSchema.spec.label}"`,
+          });
+        }
+
+        return true;
+      },
+    ),
+  data_fim: date()
+    // .default('')
+    .label('Fim do período')
+    .test('verificar-datas', (dataFim, { resolve, createError, options }) => {
+      if (!dataFim) {
+        return true;
+      }
+
+      const [{ schema }] = options.from;
+      const { data_inicio: dataInicioSchema, data_fim: dataFimSchema } = schema.fields;
+
+      const dataInicio = resolve < Date > ref('data_inicio');
+
+      if (isAfter(dataFim, new Date())) {
+        return createError({
+          message: `"${dataFimSchema.spec.label}" não pode ser MAIOR que HOJE`,
+        });
+      }
+
+      if (isBefore(dataFim, dataInicio)) {
+        return createError({
+          message: `"${dataFimSchema.spec.label}" não pode ser MENOR que "${dataInicioSchema.spec.label}"`,
+        });
+      }
+
+      return true;
+    }),
+  tipo: mixed().label('Tipo').oneOf(comunidadosGeraisFiltrosSchemaTipoOpcoes),
 });

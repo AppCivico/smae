@@ -7,6 +7,9 @@
       <small class="comunicado-geral-item__header-date">
         {{ dataFormatada }}
       </small>
+      <h5 class="comunicado-geral-item__header-tipo mt025 mb0">
+        {{ dados.tipo }}
+      </h5>
     </div>
 
     <div class="comunicado-geral-item__body">
@@ -94,6 +97,13 @@ function handleSelecionarLido(ev: Event) {
   font-weight: 400;
   line-height: 14px;
   color: #3b5881;
+}
+
+.comunicado-geral-item__header-tipo {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  color: #025B97;
 }
 
 .comunicado-geral-item__body {
