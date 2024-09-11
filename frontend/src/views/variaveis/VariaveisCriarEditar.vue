@@ -971,7 +971,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             <Field
               name="periodos.liberacao_duracao"
               type="number"
-              :min="values.periodos?.validacao_duracao || 1"
+              :min="1"
               max="31"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.liberacao_duracao'] }"

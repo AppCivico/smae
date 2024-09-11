@@ -3571,7 +3571,6 @@ export const variavelGlobal = object({
     liberacao_duracao: number()
       .label('Duração da liberação')
       .max(31)
-      .min(ref('periodos.validacao_inicio'), 'Precisa ser posterior ao dia de início')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
