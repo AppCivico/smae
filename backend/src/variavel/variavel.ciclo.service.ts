@@ -129,12 +129,14 @@ export class VariavelCicloService {
     }
 
     async patchVariavelCiclo(dto: BatchAnaliseQualitativaDto, user: PessoaFromJwt): Promise<void> {
-        const whereFilter = await this.getPermissionSet({}, user);
+        const whereFilter = await this.getPermissionSet({
+
+         }, user);
 
         const variavel = await this.prisma.variavelCicloCorrente.findFirst({
             where: {
                 AND: whereFilter,
-                id: dto.variavel_id,
+                variavel_id: dto.variavel_id,
             },
             include: {
                 variavel: {
