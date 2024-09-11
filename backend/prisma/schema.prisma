@@ -474,6 +474,10 @@ model Pessoa {
     VariavelCicloFisicoDocumentoQCrei   VariavelGlobalCicloDocumento[] @relation("criador")
     VariavelCicloFisicoDocumentoQRemovi VariavelGlobalCicloDocumento[] @relation("removedor")
 
+    VarGlobPedidoComplementacaoCriador   VariavelGlobalPedidoComplementacao[] @relation("criador")
+    VarGlobPedidoComplementacaoAtendeu   VariavelGlobalPedidoComplementacao[] @relation("atendeu")
+    VarGlobPedidoComplementacaoRemovedor VariavelGlobalPedidoComplementacao[] @relation("removedor")
+
     projetosRevisao ProjetoPessoaRevisao[]
 
     @@index([email])
@@ -1661,20 +1665,21 @@ model Variavel {
     removido_em             DateTime?                 @db.Timestamptz(6)
     FormulaCompostaVariavel FormulaCompostaVariavel[]
 
-    suspensao_log                  VariavelSuspensaoLog[]
-    suspensao_controle             VariavelSuspensaControle[]
-    MetaStatusAtrasoVariavel       MetaStatusAtrasoVariavel[]
-    Etapa                          Etapa[]
-    VariavelAssuntoVariavel        VariavelAssuntoVariavel[]
-    VariavelGrupoResponsavelEquipe VariavelGrupoResponsavelEquipe[]
-    ViewVariavelGlobal             ViewVariavelGlobal[]
-    FormulaCompostaCalc            FormulaComposta[]                @relation("calc")
-    FormulaCompostaMae             FormulaComposta[]                @relation("mae")
-    FormulaCompostaRelVariavel     FormulaCompostaRelVariavel[]
-    ViewVariavelGlobalFilhas       ViewVariavelGlobal[]             @relation("view_filha")
-    VariavelCicloCorrente          VariavelCicloCorrente?
-    VariavelGlobalCicloAnalise     VariavelGlobalCicloAnalise[]
-    VariavelGlobalCicloDocumento   VariavelGlobalCicloDocumento[]
+    suspensao_log                      VariavelSuspensaoLog[]
+    suspensao_controle                 VariavelSuspensaControle[]
+    MetaStatusAtrasoVariavel           MetaStatusAtrasoVariavel[]
+    Etapa                              Etapa[]
+    VariavelAssuntoVariavel            VariavelAssuntoVariavel[]
+    VariavelGrupoResponsavelEquipe     VariavelGrupoResponsavelEquipe[]
+    ViewVariavelGlobal                 ViewVariavelGlobal[]
+    FormulaCompostaCalc                FormulaComposta[]                    @relation("calc")
+    FormulaCompostaMae                 FormulaComposta[]                    @relation("mae")
+    FormulaCompostaRelVariavel         FormulaCompostaRelVariavel[]
+    ViewVariavelGlobalFilhas           ViewVariavelGlobal[]                 @relation("view_filha")
+    VariavelCicloCorrente              VariavelCicloCorrente?
+    VariavelGlobalCicloAnalise         VariavelGlobalCicloAnalise[]
+    VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
+    VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -6959,12 +6964,41 @@ model VariavelCicloCorrente {
     fase                     VariavelFase
     proximo_periodo_abertura DateTime     @db.Date
     ultimo_periodo_valido    DateTime     @db.Date
+    pedido_complementacao    Boolean      @default(false)
 
     variavel           Variavel             @relation(fields: [variavel_id], references: [id])
     ViewVariavelGlobal ViewVariavelGlobal[]
 
     @@unique([variavel_id])
     @@map("variavel_ciclo_corrente")
+}
+
+model VariavelGlobalPedidoComplementacao {
+    id Int @id @default(autoincrement())
+
+    referencia_data DateTime @db.Date
+    variavel_id     Int
+
+    pedido String
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+    atendido       Boolean
+    atendido_em    DateTime?
+    atendido_por   Int?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    variavel        Variavel @relation(fields: [variavel_id], references: [id])
+    pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
+    pessoaAtendeu   Pessoa?  @relation("atendeu", fields: [atendido_por], references: [id])
+    pessoaRemovedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([variavel_id, ultima_revisao])
+    @@map("variavel_global_pedido_complementacao")
 }
 
 model VariavelGlobalCicloAnalise {

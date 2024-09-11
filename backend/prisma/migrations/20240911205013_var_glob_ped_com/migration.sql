@@ -1,3 +1,39 @@
+-- AlterTable
+ALTER TABLE "variavel_ciclo_corrente" ADD COLUMN     "pedido_complementacao" BOOLEAN NOT NULL DEFAULT false;
+
+-- CreateTable
+CREATE TABLE "variavel_global_pedido_complementacao" (
+    "id" SERIAL NOT NULL,
+    "referencia_data" DATE NOT NULL,
+    "variavel_id" INTEGER NOT NULL,
+    "pedido" TEXT NOT NULL,
+    "criado_em" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "criado_por" INTEGER NOT NULL,
+    "ultima_revisao" BOOLEAN NOT NULL,
+    "atendido" BOOLEAN NOT NULL,
+    "atendido_em" TIMESTAMP(3),
+    "atendido_por" INTEGER,
+    "removido_em" TIMESTAMP(3),
+    "removido_por" INTEGER,
+
+    CONSTRAINT "variavel_global_pedido_complementacao_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "variavel_global_pedido_complementacao_variavel_id_ultima_re_idx" ON "variavel_global_pedido_complementacao"("variavel_id", "ultima_revisao");
+
+-- AddForeignKey
+ALTER TABLE "variavel_global_pedido_complementacao" ADD CONSTRAINT "variavel_global_pedido_complementacao_variavel_id_fkey" FOREIGN KEY ("variavel_id") REFERENCES "variavel"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "variavel_global_pedido_complementacao" ADD CONSTRAINT "variavel_global_pedido_complementacao_criado_por_fkey" FOREIGN KEY ("criado_por") REFERENCES "pessoa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "variavel_global_pedido_complementacao" ADD CONSTRAINT "variavel_global_pedido_complementacao_atendido_por_fkey" FOREIGN KEY ("atendido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "variavel_global_pedido_complementacao" ADD CONSTRAINT "variavel_global_pedido_complementacao_removido_por_fkey" FOREIGN KEY ("removido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
 CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente(p_variavel_id int)
     RETURNS void
     AS $$
@@ -55,62 +91,4 @@ END;
 $$
 LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION f_atualiza_todas_variaveis( )
-        RETURNS void AS
-$$ DECLARE v_record RECORD;
-
-BEGIN
-    FOR v_record IN (
-        SELECT
-            id
-        FROM
-            variavel
-        WHERE
-            tipo = 'Global'
-            AND variavel_mae_id IS NULL
-            AND removido_em IS NULL)
-        LOOP
-BEGIN
-    PERFORM
-        update_variable_state_by_id(v_record.id);
-
-            EXCEPTION
-                WHEN OTHERS THEN
-                    -- só faz o log do erro e continua o loop
-                    RAISE NOTICE 'Erro ID %: %', v_record.id, SQLERRM;
-
-            END;
-
-END LOOP;
-
-END;
-
-$$
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION f_trigger_update_variavel_ciclo()
-    RETURNS TRIGGER
-    AS $$
-BEGIN
-    IF(TG_OP = 'UPDATE') OR(TG_OP = 'INSERT') THEN
-        PERFORM
-            f_atualiza_variavel_ciclo_corrente(NEW.id);
-        END IF;
-    RETURN NEW;
-END;
-
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER tgr_update_variavel_ciclo_corrente
-    AFTER UPDATE ON variavel
-    FOR EACH ROW
-    WHEN((OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao OR OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento OR OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao OR OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao))
-    EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
-
-CREATE TRIGGER tgr_insert_variavel_ciclo_corrente
-    AFTER INSERT ON variavel
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
-
+select f_atualiza_variavel_ciclo_corrente (id) from variavel where tipo='Global' and variavel_mae_id is null;

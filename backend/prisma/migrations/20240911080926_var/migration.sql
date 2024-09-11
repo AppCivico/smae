@@ -14,9 +14,6 @@ CREATE TABLE "variavel_ciclo_corrente" (
 
 CREATE unique index "variavel_ciclo_corrente_variavel_id_key" on "variavel_ciclo_corrente"("variavel_id");
 
--- AlterTable
-ALTER TABLE "variavel_global_ciclo_analise" ADD COLUMN     "valores" JSONB NOT NULL;
-
 -- CreateTable
 CREATE TABLE "variavel_global_ciclo_analise" (
     "id" SERIAL NOT NULL,
@@ -31,6 +28,8 @@ CREATE TABLE "variavel_global_ciclo_analise" (
 
     CONSTRAINT "variavel_global_ciclo_analise_pkey" PRIMARY KEY ("id")
 );
+
+ALTER TABLE "variavel_global_ciclo_analise" ADD COLUMN     "valores" JSONB NOT NULL;
 
 -- CreateTable
 CREATE TABLE "variavel_global_ciclo_documento" (
