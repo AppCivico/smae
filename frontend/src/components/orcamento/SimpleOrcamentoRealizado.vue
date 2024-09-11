@@ -147,7 +147,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         </h3>
 
         <div
-          v-if="activePdm?.pode_editar || !permissõesDaObraEmFoco?.pode_editar || !permissõesDoProjetoEmFoco?.pode_editar"
+          v-if="activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura"
         >
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
@@ -244,7 +244,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 
         <button
           v-if="podeExcluirEmLote && config?.execucao_disponivel &&
-            (activePdm?.pode_editar || !permissõesDaObraEmFoco?.pode_editar || !permissõesDoProjetoEmFoco?.pode_editar)"
+            (activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
           type="button"
           class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"

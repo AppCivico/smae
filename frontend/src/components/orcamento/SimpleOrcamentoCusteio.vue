@@ -279,7 +279,7 @@ function restringirAZero() {
         </span>
 
         <button
-          v-if="!linhasFiltradas?.length && !previstoEhZero[ano] && activePdm?.pode_editar"
+          v-if="!linhasFiltradas?.length && !previstoEhZero[ano] && (activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
           type="button"
           class="like-a__text addlink mt1 mb1"
           @click="restringirAZero"
