@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { computed } from 'vue';
+import { format } from 'date-fns';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisDetalheSessao from './partials/VariaveisDetalhe/VariaveisDetalheSessao.vue';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisDetalhe/VariaveisDetalheSessao.vue';
 
@@ -90,7 +91,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
           { label: 'Início da medição', valor: emFoco.value.inicio_medicao || '-' },
         ],
         [
-          { label: 'Fim da medição', valor: emFoco.value.fim_medicao || '-' },
+          { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? format(emFoco.value.fim_medicao, 'dd/MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
           { label: 'Defasagem da medição (meses)', valor: emFoco.value.atraso_meses },
         ],
@@ -106,9 +107,9 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     grupos: {
       linhas: [
         [
-          { label: 'Grupos de medição?', valor: formatarLista(emFoco.value.medicao_grupo) },
-          { label: 'Grupos de validação?', valor: formatarLista(emFoco.value.validacao_grupo) },
-          { label: 'Grupos de liberação?', valor: formatarLista(emFoco.value.liberacao_grupo) },
+          { label: 'Grupos de medição', valor: formatarLista(emFoco.value.medicao_grupo) },
+          { label: 'Grupos de validação', valor: formatarLista(emFoco.value.validacao_grupo) },
+          { label: 'Grupos de liberação', valor: formatarLista(emFoco.value.liberacao_grupo) },
         ],
       ],
     },
@@ -125,9 +126,9 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       linhas: [
         [
           { label: 'Início do preenchimento', valor: emFoco.value.periodos.preenchimento_inicio },
-          { label: 'Preenchimento duração', valor: emFoco.value.periodos.preenchimento_duracao },
-          { label: 'Início da liberação', valor: emFoco.value.periodos.liberacao_duracao },
-          { label: 'Validação duração', valor: emFoco.value.periodos.validacao_duracao },
+          { label: 'Duração do preenchimento', valor: emFoco.value.periodos.preenchimento_duracao },
+          { label: 'Duração da liberação', valor: emFoco.value.periodos.liberacao_duracao },
+          { label: 'Duração da validação', valor: emFoco.value.periodos.validacao_duracao },
         ],
       ],
     },
