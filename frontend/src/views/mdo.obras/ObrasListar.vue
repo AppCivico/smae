@@ -23,10 +23,11 @@
       <FiltroDeListagemDeObras
         :aria-busy="chamadasPendentes.lista"
         :valores-iniciais="{
-          ipp: $route.query.ipp || 100,
+          ipp: $route.query.ipp,
           ordem_coluna: $route.query.codigo || 'codigo',
           ordem_direcao: $route.query.ordem_direcao || 'asc',
           regiao_id: $route.query.regiao_id,
+          ...$route.query
         }"
         @submit="capturarEnvio"
       />
@@ -231,24 +232,7 @@ async function marcarTodasComoNaoRevisadas() {
 }
 
 watchEffect(() => {
-  obrasStore.buscarTudo({
-    codigo: route.query.codigo,
-    equipamento_id: route.query.equipamento_id,
-    grupo_tematico_id: route.query.grupo_tematico_id,
-    ipp: route.query.ipp,
-    nome: route.query.nome,
-    ordem_coluna: route.query.ordem_coluna,
-    ordem_direcao: route.query.ordem_direcao,
-    orgao_origem_id: route.query.orgao_origem_id,
-    orgao_responsavel_id: route.query.orgao_responsavel_id,
-    pagina: route.query.pagina,
-    palavra_chave: route.query.palavra_chave,
-    portfolio_id: route.query.portfolio_id,
-    regioes: route.query.regioes,
-    status: route.query.status,
-    tipo_intervencao_id: route.query.tipo_intervencao_id,
-    token_paginacao: route.query.token_paginacao,
-  });
+  obrasStore.buscarTudo(route.query);
 });
 </script>
 

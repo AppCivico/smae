@@ -122,6 +122,7 @@
             v-for="regiao in regiõesPorNível[3]"
             :key="regiao.id"
             :value="regiao.id"
+            :selected="Number($props.valoresIniciais.regioes) === regiao.id"
           >
             {{ regiao.descricao }}
           </option>
