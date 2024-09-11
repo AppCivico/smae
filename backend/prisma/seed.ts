@@ -43,7 +43,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroTema: ['Temas', 'PDM'],
     CadastroMeta: ['Metas', 'PDM'],
     CadastroIndicador: ['Indicadores', 'PDM'],
-    CadastroVariavelCategorica: ['Variável Categórica', 'SMAE'],
+    CadastroVariavelCategorica: ['Variável Categórica', 'PlanoSetorial'],
     CadastroIniciativa: ['Iniciativas', 'PDM'],
     CadastroAtividade: ['Atividades', 'PDM'],
     CadastroCronograma: ['Cronogramas', 'PDM'],
