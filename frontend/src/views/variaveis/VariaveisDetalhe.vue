@@ -88,10 +88,10 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
         [
           { label: 'Valor base', valor: emFoco.value.valor_base },
           { label: 'Ano base', valor: emFoco.value.ano_base || '-' },
-          { label: 'Início da medição', valor: emFoco.value.inicio_medicao || '-' },
+          { label: 'Início da medição', valor: emFoco.value.inicio_medicao ? format(emFoco.value.inicio_medicao, 'MM/yyyy') : '-' },
         ],
         [
-          { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? format(emFoco.value.fim_medicao, 'dd/MM/yyyy') : '-' },
+          { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? format(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
           { label: 'Defasagem da medição (meses)', valor: emFoco.value.atraso_meses },
         ],
@@ -127,8 +127,8 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
         [
           { label: 'Início do preenchimento', valor: emFoco.value.periodos.preenchimento_inicio },
           { label: 'Duração do preenchimento', valor: emFoco.value.periodos.preenchimento_duracao },
-          { label: 'Duração da liberação', valor: emFoco.value.periodos.liberacao_duracao },
           { label: 'Duração da validação', valor: emFoco.value.periodos.validacao_duracao },
+          { label: 'Duração da liberação', valor: emFoco.value.periodos.liberacao_duracao },
         ],
       ],
     },
@@ -152,20 +152,20 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       remover-divisoria
     />
 
-    <article class="mt3 sessao sessao--assunto">
+    <article class="mt2 sessao sessao--assunto">
       <div class="flex center g4 sessao__divider">
         <h2 class="sessao__divider-titulo">
-          Sessão
+          Assunto
         </h2>
 
         <hr class="f1">
       </div>
 
-      <ul class="mt3">
+      <ul class="mt3 flex g1">
         <li
           v-for="assunto in emFoco?.assuntos"
           :key="`assunto--${assunto.id}`"
-          class="sessao__item"
+          class="particula"
         >
           {{ assunto.nome }}
         </li>
