@@ -3774,7 +3774,7 @@ export const comunidadosGeraisFiltrosSchema = object().shape({
         const [{ schema }] = options.from;
         const { data_inicio: dataInicioSchema, data_fim: dataFimSchema } = schema.fields;
 
-        const dataFim = resolve < Date > ref('data_fim');
+        const dataFim = resolve(ref('data_fim'));
 
         if (isAfter(dataInicio, new Date())) {
           return createError({
@@ -3802,7 +3802,7 @@ export const comunidadosGeraisFiltrosSchema = object().shape({
       const [{ schema }] = options.from;
       const { data_inicio: dataInicioSchema, data_fim: dataFimSchema } = schema.fields;
 
-      const dataInicio = resolve < Date > ref('data_inicio');
+      const dataInicio = resolve(ref('data_inicio'));
 
       if (isAfter(dataFim, new Date())) {
         return createError({
