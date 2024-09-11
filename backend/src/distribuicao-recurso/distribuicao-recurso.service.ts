@@ -87,6 +87,9 @@ export class DistribuicaoRecursoService {
                         );
                 }
 
+                // Valor do repasse não pode ser zero
+                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser zero.', 400);
+
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
                     throw new HttpException(
@@ -881,6 +884,8 @@ export class DistribuicaoRecursoService {
                     });
                 }
                 delete dto.registros_sei;
+
+                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser zero.', 400);
 
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
                     throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
