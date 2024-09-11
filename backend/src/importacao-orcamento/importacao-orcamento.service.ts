@@ -466,7 +466,7 @@ export class ImportacaoOrcamentoService {
 
     @Cron('* * * * *')
     async handleCron() {
-        if (process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB']) return;
+        if (process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB'] || process.env['DISABLE_CRONTABS'] == 'all') return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

@@ -34,7 +34,7 @@ export class SofEntidadeService {
 
     @Cron(process.env['SOF_CRONTAB_STRING'] || '*/5 * * * *')
     async handleListaSofCron() {
-        if (process.env['DISABLE_SOF_CRONTAB']) return;
+        if (process.env['DISABLE_SOF_CRONTAB'] || process.env['DISABLE_CRONTABS'] == 'all') return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

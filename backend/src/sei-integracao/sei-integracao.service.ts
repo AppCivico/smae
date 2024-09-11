@@ -353,7 +353,7 @@ export class SeiIntegracaoService {
 
     @Cron(process.env['SEI_CRONTAB_STRING'] || '*/5 * * * *')
     async handleListaSeiCron() {
-        if (process.env['DISABLE_SEI_CRONTAB']) return;
+        if (process.env['DISABLE_SEI_CRONTAB'] || process.env['DISABLE_CRONTABS'] == 'all') return;
 
         this.logger.log('Iniciando Sync SEI');
 
