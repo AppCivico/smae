@@ -129,11 +129,9 @@ export class VariavelCicloService {
     }
 
     async patchVariavelCiclo(dto: BatchAnaliseQualitativaDto, user: PessoaFromJwt): Promise<void> {
-        const whereFilter = await this.getPermissionSet({
+        const whereFilter = await this.getPermissionSet({}, user);
 
-         }, user);
-
-        const variavel = await this.prisma.variavelCicloCorrente.findFirst({
+        const cicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
             where: {
                 AND: whereFilter,
                 variavel_id: dto.variavel_id,
@@ -151,26 +149,20 @@ export class VariavelCicloService {
                 },
             },
         });
-        if (!variavel) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
+        if (!cicloCorrente) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
 
-        if (variavel.fase != 'Preenchimento')
+        if (cicloCorrente.fase != 'Preenchimento')
             throw new BadRequestException('Variável não está em fase de preenchimento');
 
-        if (dto.data_referencia.valueOf() != variavel.ultimo_periodo_valido.valueOf())
+        if (dto.data_referencia.valueOf() != cicloCorrente.ultimo_periodo_valido.valueOf())
             throw new BadRequestException(
-                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(variavel.ultimo_periodo_valido)})`
+                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
             );
 
         // primeira versão, só tem medicao
         const conferida = false;
 
-        for (const valor of dto.valores) {
-            if (valor.variavel_id && valor.variavel_id == dto.variavel_id) delete valor.variavel_id;
-
-            if (valor.variavel_id && !variavel.variavel.variaveis_filhas.map((v) => v.id).includes(valor.variavel_id)) {
-                throw new BadRequestException('Variável filha não encontrada');
-            }
-        }
+        this.validaValoresVariaveis(dto, cicloCorrente);
 
         const now = new Date(Date.now());
 
@@ -230,6 +222,34 @@ export class VariavelCicloService {
             await this.variavelService.recalc_indicador_usando_variaveis(variveisIds, prismaTxn);
         });
     }
+    private validaValoresVariaveis(dto: BatchAnaliseQualitativaDto, cicloCorrente) {
+        for (const valor of dto.valores) {
+            // Remove variavel_id dos valores principais se for o mesmo que a variável sendo analisada
+            if (valor.variavel_id && valor.variavel_id == dto.variavel_id) delete valor.variavel_id;
+        }
+
+        const valorGlobalOuMae = dto.valores.filter((valor) => !valor.variavel_id);
+        const valorFilhas = dto.valores.filter((valor) => valor.variavel_id);
+
+        if (valorGlobalOuMae.length > 0 && cicloCorrente.variavel.variaveis_filhas.length > 0)
+            if (valorFilhas.length > 0)
+                throw new BadRequestException(
+                    'Valores de variáveis mãe e filhas não podem ser fornecidos simultaneamente'
+                );
+
+        if (valorGlobalOuMae.length > 0 && cicloCorrente.variavel.variaveis_filhas.length === 0)
+            throw new BadRequestException('Apenas um valor pode ser fornecido para uma variável sem filhas');
+
+        const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
+        for (const valor of valorFilhas) {
+            if (!valor.variavel_id) continue;
+            if (!cicloCorrente.variavel.variaveis_filhas.map((v) => v.id).includes(valor.variavel_id))
+                throw new BadRequestException('Variável filha não encontrada');
+            if (filhasSet.has(valor.variavel_id)) filhasSet.delete(valor.variavel_id);
+            else throw new BadRequestException('Variável filha duplicada');
+        }
+    }
+
     private async atualizaSerieVariavel(
         variavelInfo: VariavelComCategorica,
         valor: VariavelGlobalAnaliseItemDto,
