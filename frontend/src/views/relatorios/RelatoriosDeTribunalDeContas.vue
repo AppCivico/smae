@@ -27,10 +27,6 @@ async function iniciar() {
   relatóriosStore.getAll({ fonte });
   etiquetasParaValoresDeParâmetros.value.esfera = prepararEsferaDeTransferência();
   etiquetasParaValoresDeParâmetros.value.tipo_id = await prepararTipoTransferencia();
-
-
-console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-  console.log(etiquetasParaValoresDeParâmetros);
 }
 
 iniciar();
