@@ -469,6 +469,11 @@ model Pessoa {
     VariavelQAtualizei                Variavel[]                           @relation("Atualizador")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
 
+    VariavelCicloAnaliseQCrei           VariavelGlobalCicloAnalise[]   @relation("criador")
+    VariavelCicloAnaliseQRemovi         VariavelGlobalCicloAnalise[]   @relation("removedor")
+    VariavelCicloFisicoDocumentoQCrei   VariavelGlobalCicloDocumento[] @relation("criador")
+    VariavelCicloFisicoDocumentoQRemovi VariavelGlobalCicloDocumento[] @relation("removedor")
+
     projetosRevisao ProjetoPessoaRevisao[]
 
     @@index([email])
@@ -1136,6 +1141,7 @@ model Arquivo {
     ImportacaoLogOutput                 ImportacaoOrcamento[]                 @relation("output")
     FormulaCompostaCicloFisicoDocumento FormulaCompostaCicloFisicoDocumento[]
     transferencia_anexos                TransferenciaAnexo[]
+    VariavelGlobalCicloDocumento        VariavelGlobalCicloDocumento[]
 
     @@map("arquivo")
 }
@@ -1666,6 +1672,9 @@ model Variavel {
     FormulaCompostaMae             FormulaComposta[]                @relation("mae")
     FormulaCompostaRelVariavel     FormulaCompostaRelVariavel[]
     ViewVariavelGlobalFilhas       ViewVariavelGlobal[]             @relation("view_filha")
+    VariavelCicloCorrente          VariavelCicloCorrente?
+    VariavelGlobalCicloAnalise     VariavelGlobalCicloAnalise[]
+    VariavelGlobalCicloDocumento   VariavelGlobalCicloDocumento[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -3781,6 +3790,8 @@ view ViewVariavelGlobal {
     variavel_mae_id         Int?
     variavel_mae            Variavel?     @relation("view_filha", fields: [variavel_mae_id], references: [id])
     possui_variaveis_filhas Boolean
+
+    VariavelCicloCorrente VariavelCicloCorrente? @relation(fields: [id], references: [variavel_id])
 
     @@map("view_variavel_global")
 }
@@ -6933,4 +6944,73 @@ model ProjetoPessoaRevisao {
 
     @@unique([projeto_id, pessoa_id])
     @@map("projeto_pessoa_revisao")
+}
+
+enum VariavelFase {
+    Preenchimento
+    Validacao
+    Liberacao
+}
+
+model VariavelCicloCorrente {
+    id Int @id @default(autoincrement())
+
+    variavel_id              Int
+    fase                     VariavelFase
+    proximo_periodo_abertura DateTime     @db.Date
+    ultimo_periodo_valido    DateTime     @db.Date
+
+    variavel           Variavel             @relation(fields: [variavel_id], references: [id])
+    ViewVariavelGlobal ViewVariavelGlobal[]
+
+    @@unique([variavel_id])
+    @@map("variavel_ciclo_corrente")
+}
+
+model VariavelGlobalCicloAnalise {
+    id          Int @id @default(autoincrement())
+    variavel_id Int
+
+    referencia_data            DateTime @db.Date
+    informacoes_complementares String?
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    valores Json
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    variavel        Variavel @relation(fields: [variavel_id], references: [id])
+    pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([variavel_id, ultima_revisao])
+    @@map("variavel_global_ciclo_analise")
+}
+
+model VariavelGlobalCicloDocumento {
+    id          Int @id @default(autoincrement())
+    variavel_id Int
+
+    referencia_data DateTime @db.Date
+
+    arquivo_id Int
+    arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    variavel        Variavel @relation(fields: [variavel_id], references: [id])
+    pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([variavel_id])
+    @@map("variavel_global_ciclo_documento")
 }

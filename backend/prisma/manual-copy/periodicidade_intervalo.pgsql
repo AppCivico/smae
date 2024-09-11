@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION periodicidade_intervalo (p "Periodicidade")
         WHEN p = 'Quinquenal' THEN
             '5 year'::interval
         WHEN p = 'Secular' THEN
-            '10 year'::interval
+            '100 year'::interval
         ELSE
             NULL
         END;

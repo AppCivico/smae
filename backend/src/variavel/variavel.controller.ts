@@ -137,7 +137,7 @@ export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
 @Controller('')
 export class VariavelGlobalController {
     private tipo: TipoVariavel = 'Global';
-    private static WritePerm: ListaDePrivilegios[] = [
+    public static WritePerm: ListaDePrivilegios[] = [
         'CadastroVariavelGlobal.administrador_no_orgao',
         'CadastroVariavelGlobal.administrador',
     ];

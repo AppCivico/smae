@@ -304,6 +304,24 @@ export class PdmService {
         return ret;
     }
 
+    async findAllIds(tipo: TipoPdm, user: PessoaFromJwt): Promise<number[]> {
+        const active = true;
+
+        const listActive = await this.prisma.pdm.findMany({
+            where: {
+                removido_em: null,
+                ativo: active,
+                tipo: tipo,
+                AND: await this.getPermissionSet(tipo, user),
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        return listActive.map((pdm) => pdm.id);
+    }
+
     async findAll(tipo: TipoPdm, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
         const active = filters.ativo;
 

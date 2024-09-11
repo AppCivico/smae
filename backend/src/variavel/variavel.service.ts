@@ -3234,4 +3234,5 @@ export class VariavelService {
 
         return detailDto;
     }
+
 }
