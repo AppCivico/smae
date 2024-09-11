@@ -9,7 +9,7 @@ export const useObrasStore = defineStore('obrasStore', {
   state: () => ({
     ultimoVistoId: sessionStorage.getItem('obras.ultimoVistoId') || null,
     lista: [],
-    totalRegistrosSemFiltros: 0,
+    totalRegistrosRevisados: 0,
     emFoco: null,
     arquivos: [],
 
@@ -118,7 +118,7 @@ export const useObrasStore = defineStore('obrasStore', {
       try {
         const {
           linhas,
-          total_registros_sem_filtros: totalRegistrosSemFiltros,
+          total_registros_revisados: totalRegistrosRevisados,
           token_paginacao: tokenPaginacao,
           paginas,
           pagina_corrente: paginaCorrente,
@@ -127,7 +127,7 @@ export const useObrasStore = defineStore('obrasStore', {
         } = await this.requestS.get(`${baseUrl}/projeto-mdo`, params);
 
         this.lista = linhas;
-        this.totalRegistrosSemFiltros = totalRegistrosSemFiltros;
+        this.totalRegistrosRevisados = totalRegistrosRevisados;
 
         this.paginacao.tokenPaginacao = tokenPaginacao;
         this.paginacao.paginas = paginas;

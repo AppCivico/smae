@@ -97,7 +97,7 @@
           <tr
             v-for="item in lista"
             :key="item.id"
-            :class="['obras-item', { 'obras-item--selecionado': item.id == ultimoVistoId }]"
+            :class="{ 'selecionado': item.id == ultimoVistoId }"
           >
             <td>{{ item.orgao_origem.sigla }}</td>
             <td>{{ item.portfolio?.titulo || item.portfolio }}</td>
@@ -204,7 +204,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const obrasStore = useObrasStore();
 
 const {
-  ultimoVistoId, lista, chamadasPendentes, erro, paginacao, totalRegistrosSemFiltros,
+  ultimoVistoId, lista, chamadasPendentes, erro, paginacao, totalRegistrosRevisados,
 } = storeToRefs(obrasStore);
 const alertStore = useAlertStore();
 
@@ -224,7 +224,7 @@ async function marcarComoRevisado(id, event) {
 }
 
 async function marcarTodasComoNaoRevisadas() {
-  alertStore.confirmAction(`Deseja marcar ${totalRegistrosSemFiltros.value} obras como não revisadas?`, async () => {
+  alertStore.confirmAction(`Deseja marcar ${totalRegistrosRevisados.value} obras como não revisadas?`, async () => {
     if (await obrasStore.marcarTodasComoNaoRevisadas()) {
       obrasStore.buscarTudo();
     }
@@ -235,9 +235,3 @@ watchEffect(() => {
   obrasStore.buscarTudo(route.query);
 });
 </script>
-
-<style lang="less" scoped>
-.obras-item--selecionado {
-  background-color: #D8E9F1;
-}
-</style>
