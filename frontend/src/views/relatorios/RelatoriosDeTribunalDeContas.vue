@@ -17,7 +17,7 @@ const { temPermissãoPara } = storeToRefs(useAuthStore());
 const fonte = 'TribunalDeContas';
 const etiquetasParaValoresDeParâmetros = ref({
   esfera: {},
-  tipoTransferencia: {},
+  tipo_id: {},
 });
 
 const etiquetasParaParâmetros = prepararEtiquetas(schema);
@@ -26,7 +26,7 @@ async function iniciar() {
   relatóriosStore.$reset();
   relatóriosStore.getAll({ fonte });
   etiquetasParaValoresDeParâmetros.value.esfera = prepararEsferaDeTransferência();
-  etiquetasParaValoresDeParâmetros.value.tipoTransferencia = prepararTipoTransferencia().getAll;
+  etiquetasParaValoresDeParâmetros.value.tipo_id = await prepararTipoTransferencia();
 
 
 console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
