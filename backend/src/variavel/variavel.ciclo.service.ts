@@ -15,6 +15,20 @@ import {
 } from './dto/variavel.ciclo.dto';
 import { VariavelComCategorica, VariavelService } from './variavel.service';
 
+interface ICicloCorrente {
+    variavel: {
+        id: number;
+        titulo: string;
+        variaveis_filhas: {
+            id: number;
+            titulo?: string;
+        }[];
+    };
+    fase: string;
+    proximo_periodo_abertura: Date;
+    ultimo_periodo_valido: Date;
+}
+
 @Injectable()
 export class VariavelCicloService {
     private enabled: boolean;
@@ -222,7 +236,7 @@ export class VariavelCicloService {
             await this.variavelService.recalc_indicador_usando_variaveis(variveisIds, prismaTxn);
         });
     }
-    private validaValoresVariaveis(dto: BatchAnaliseQualitativaDto, cicloCorrente) {
+    private validaValoresVariaveis(dto: BatchAnaliseQualitativaDto, cicloCorrente: ICicloCorrente) {
         for (const valor of dto.valores) {
             // Remove variavel_id dos valores principais se for o mesmo que a variável sendo analisada
             if (valor.variavel_id && valor.variavel_id == dto.variavel_id) delete valor.variavel_id;
