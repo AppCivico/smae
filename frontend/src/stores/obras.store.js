@@ -288,7 +288,7 @@ export const useObrasStore = defineStore('obrasStore', {
         orgao_executor_id: emFoco?.orgao_executor?.id || null,
         orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
         orgao_origem_id: emFoco?.orgao_origem ? emFoco?.orgao_origem.id : null, // não editável
-        orgao_colaborador_id: emFoco?.orgao_colaborador?.id || null,
+        orgao_colaborador_id: null,
         orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
         origens_extra: Array.isArray(emFoco?.origens_extra)
           ? emFoco.origens_extra.map((origem) => ({

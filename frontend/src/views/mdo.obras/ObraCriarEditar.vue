@@ -1,6 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
@@ -1658,84 +1659,12 @@ watch(itemParaEdicao, (novoValor) => {
       </div>
 
       <div class="flex flexwrap g2 mb1">
-        <div class="f1 mb1 fb15em">
-          <LabelFromYup
-            name="orgao_colaborador_id"
-            :schema="schema"
-          />
-          <Field
-            name="orgao_colaborador_id"
-            as="select"
-            class="inputtext light mb1"
-            :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
-            :class="{ error: errors.orgao_colaborador_id }"
-            :disabled="!órgãosQueTemResponsáveis?.length"
-            @update:model-value="($v) => {
-              setFieldValue('orgao_colaborador_id', Number($v) || null);
-            }"
-          >
-            <option :value="0">
-              Selecionar
-            </option>
-            <option
-              v-for="item in órgãosQueTemResponsáveis"
-              :key="item"
-              :value="item.id"
-              :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
-              :title="item.descricao?.length > 36 ? item.descricao : null"
-            >
-              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-            </option>
-          </Field>
-          <ErrorMessage
-            name="orgao_colaborador_id"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="f2 mb1 fb15em">
-          <LabelFromYup
-            name="colaboradores_no_orgao"
-            :schema="schema"
-          />
-
-          <AutocompleteField
-            name="colaboradores_no_orgao"
-            :controlador="{
-              busca: '',
-              participantes: values.colaboradores_no_orgao || []
-            }"
-            :grupo="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id]
-              || []"
-            :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
-            :class="{
-              error: errors.colaboradores_no_orgao,
-            }"
-            label="nome_exibicao"
-          />
-
-          <ErrorMessage
-            name="colaboradores_no_orgao"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="f2 mb1 fb15em">
-          <LabelFromYup
-            name="secretario_colaborador"
-            :schema="schema"
-          />
-          <Field
-            name="secretario_colaborador"
-            type="text"
-            class="inputtext light mb1"
-            maxlength="20"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="secretario_colaborador"
-          />
-        </div>
+        <CampoDePessoasComBuscaPorOrgao
+          v-model="values.colaboradores_no_orgao"
+          name="participantes"
+          :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
+          :pronto-para-montagem="montarCampoEstático"
+        />
       </div>
     </fieldset>
 
