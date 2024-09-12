@@ -13,9 +13,8 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { NumberTransform } from '../../auth/transforms/number.transform';
-import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
-import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -61,6 +60,8 @@ export class VariavelGlobalCicloDto {
     proximo_periodo_abertura: string;
     @ApiProperty({ type: 'string', format: 'date' })
     ultimo_periodo_valido: string;
+
+    pedido_complementacao: boolean;
 }
 
 export class VariavelGlobalAnaliseItemDto {
@@ -91,8 +92,7 @@ export class BatchAnaliseQualitativaDto {
     @MaxLength(50000)
     analise_qualitativa?: string;
 
-    @IsOnlyDate()
-    @Transform(DateTransform)
+    @IsDateYMD()
     data_referencia: Date;
 
     @IsOptional()

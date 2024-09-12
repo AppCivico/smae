@@ -136,6 +136,7 @@ export class VariavelCicloService {
                 fase: v.fase,
                 proximo_periodo_abertura: Date2YMD.toString(v.proximo_periodo_abertura),
                 ultimo_periodo_valido: Date2YMD.toString(v.ultimo_periodo_valido),
+                pedido_complementacao: v.pedido_complementacao,
             } satisfies VariavelGlobalCicloDto;
         });
 
