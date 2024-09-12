@@ -8,7 +8,7 @@ import {
     BatchAnaliseQualitativaDto,
     FilterVariavelGlobalCicloDto,
     ListVariavelGlobalCicloDto,
-    VariavelAnaliseQualitativaGetDto,
+    FilterVariavelAnaliseQualitativaGetDto,
     VariavelAnaliseQualitativaResponseDto,
 } from './dto/variavel.ciclo.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
@@ -48,7 +48,7 @@ export class VariavelCicloGlobalController {
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
     async getVariavelAnaliseQualitativa(
-        @Query() dto: VariavelAnaliseQualitativaGetDto,
+        @Query() dto: FilterVariavelAnaliseQualitativaGetDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<VariavelAnaliseQualitativaResponseDto> {
         return this.variavelCicloService.getVariavelAnaliseQualitativa(dto, user);

@@ -11,7 +11,7 @@ import {
     AnaliseQualitativaDto,
     BatchAnaliseQualitativaDto,
     FilterVariavelGlobalCicloDto,
-    VariavelAnaliseQualitativaGetDto,
+    FilterVariavelAnaliseQualitativaGetDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
@@ -415,7 +415,7 @@ export class VariavelCicloService {
     }
 
     async getVariavelAnaliseQualitativa(
-        dto: VariavelAnaliseQualitativaGetDto,
+        dto: FilterVariavelAnaliseQualitativaGetDto,
         user: PessoaFromJwt
     ): Promise<VariavelAnaliseQualitativaResponseDto> {
         const { variavel_id, data_referencia } = dto;

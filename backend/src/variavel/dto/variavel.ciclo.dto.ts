@@ -107,7 +107,7 @@ export class BatchAnaliseQualitativaDto {
     valores: VariavelGlobalAnaliseItemDto[];
 }
 
-export class VariavelAnaliseQualitativaGetDto {
+export class FilterVariavelAnaliseQualitativaGetDto {
     @IsInt()
     @ApiProperty({ description: 'ID da variável pai' })
     @Transform(NumberTransform)
