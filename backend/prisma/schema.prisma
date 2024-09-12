@@ -478,8 +478,7 @@ model Pessoa {
     VarGlobPedidoComplementacaoAtendeu   VariavelGlobalPedidoComplementacao[] @relation("atendeu")
     VarGlobPedidoComplementacaoRemovedor VariavelGlobalPedidoComplementacao[] @relation("removedor")
 
-    oportunidadesTransferenciaQueAtualizei TransfereGovOportunidade[] @relation("Atualizador")
-    projetosRevisao                        ProjetoPessoaRevisao[]
+    projetosRevisao ProjetoPessoaRevisao[]
 
     @@index([email])
     @@map("pessoa")
@@ -7079,11 +7078,8 @@ model TransfereGovOportunidade {
     modalidade_programa       String
     acao_orcamentaria         String
 
-    criado_em DateTime @default(now())
-
-    atualizado_por Int?
-    atualizado_em  DateTime? @updatedAt
-    atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criado_em     DateTime  @default(now())
+    atualizado_em DateTime? @updatedAt
 
     @@map("transfere_gov_oportunidade")
 }
