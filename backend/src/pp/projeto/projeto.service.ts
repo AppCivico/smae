@@ -896,7 +896,7 @@ export class ProjetoService {
         // AVISO: os dois métodos abaixo alteram o número de rows!
         // getProjetoWhereSet e getProjetoMDOWhereSet
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave);
+        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave, user.id);
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
                 // Filtro por palavras-chave com tsvector
@@ -3222,11 +3222,19 @@ export class ProjetoService {
                     ? { some: { processo_sei: { in: filters.registros_sei } } }
                     : undefined,
                 PessoasRevisao:
-                    filters.revisado == undefined || filters.revisado == false
+                    filters.revisado == undefined
                         ? undefined
-                        : {
-                              some: { pessoa_id: userId },
-                          },
+                        : filters.revisado == true
+                          ? {
+                                some: {
+                                    pessoa_id: userId,
+                                },
+                            }
+                          : {
+                                none: {
+                                    pessoa_id: userId,
+                                },
+                            },
             },
         ];
         return permissionsBaseSet;
