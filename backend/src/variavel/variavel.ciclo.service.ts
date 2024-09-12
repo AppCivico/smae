@@ -8,12 +8,18 @@ import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import {
+    AnaliseQualitativaDto,
     BatchAnaliseQualitativaDto,
     FilterVariavelGlobalCicloDto,
+    VariavelAnaliseQualitativaGetDto,
+    VariavelAnaliseQualitativaResponseDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
+    VariavelValorDto,
 } from './dto/variavel.ciclo.dto';
 import { VariavelComCategorica, VariavelService } from './variavel.service';
+import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
+import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 
 interface ICicloCorrente {
     variavel: {
@@ -27,6 +33,22 @@ interface ICicloCorrente {
     fase: VariavelFase;
     proximo_periodo_abertura: Date;
     ultimo_periodo_valido: Date;
+}
+
+interface ValorSerieInterface {
+    variavel_id: number;
+    variavel: { titulo: string };
+    serie: string;
+    valor_nominal: { toString: () => string };
+}
+
+interface UploadArquivoInterface {
+    arquivo: {
+        id: number;
+        tamanho_bytes: number;
+        nome_original: string;
+        diretorio_caminho: string | null;
+    };
 }
 
 @Injectable()
@@ -59,7 +81,7 @@ export class VariavelCicloService {
     async getPermissionSet(
         filters: FilterVariavelGlobalCicloDto,
         user: PessoaFromJwt
-    ): Promise<Prisma.Enumerable<Prisma.VariavelCicloCorrenteWhereInput>> {
+    ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
         const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
         const pdmIds = isRoot ? undefined : await this.pdmService.findAllIds('PS', user);
 
@@ -73,7 +95,7 @@ export class VariavelCicloService {
             ponto_focal = true;
         }
 
-        const whereConditions: Prisma.Enumerable<Prisma.VariavelCicloCorrenteWhereInput> = [{ fase: filters.fase }];
+        const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [{}];
 
         if (pdmIds) {
             whereConditions.push({
@@ -98,10 +120,8 @@ export class VariavelCicloService {
             const equipeIds = equipes.map((e) => e.id);
 
             whereConditions.push({
-                variavel: {
-                    VariavelGrupoResponsavelEquipe: {
-                        some: { grupo_responsavel_equipe_id: { in: equipeIds } },
-                    },
+                VariavelGrupoResponsavelEquipe: {
+                    some: { grupo_responsavel_equipe_id: { in: equipeIds } },
                 },
             });
         }
@@ -117,7 +137,10 @@ export class VariavelCicloService {
 
         const variaveis = await this.prisma.variavelCicloCorrente.findMany({
             where: {
-                AND: whereFilter,
+                variavel: {
+                    AND: whereFilter,
+                },
+                fase: filters.fase,
             },
             include: {
                 variavel: {
@@ -148,7 +171,9 @@ export class VariavelCicloService {
 
         const cicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
             where: {
-                AND: whereFilter,
+                variavel: {
+                    AND: whereFilter,
+                },
                 variavel_id: dto.variavel_id,
             },
             include: {
@@ -387,5 +412,124 @@ export class VariavelCicloService {
                 },
             });
         }
+    }
+
+    async getVariavelAnaliseQualitativa(
+        dto: VariavelAnaliseQualitativaGetDto,
+        user: PessoaFromJwt
+    ): Promise<VariavelAnaliseQualitativaResponseDto> {
+        const { variavel_id, data_referencia } = dto;
+
+        const whereFilter = await this.getPermissionSet({}, user);
+
+        const variavel = await this.prisma.variavel.findFirst({
+            where: {
+                id: variavel_id,
+                AND: whereFilter,
+            },
+
+            select: {
+                id: true,
+                titulo: true,
+                variaveis_filhas: {
+                    where: { removido_em: null, tipo: 'Global' },
+                    select: { id: true },
+                },
+            },
+        });
+        if (!variavel) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
+
+        // Buscar a última análise qualitativa
+        const ultimaAnalise = await this.prisma.variavelGlobalCicloAnalise.findFirst({
+            where: {
+                variavel_id: variavel_id,
+                referencia_data: data_referencia,
+                ultima_revisao: true,
+            },
+            orderBy: { criado_em: 'desc' },
+            select: {
+                informacoes_complementares: true,
+                criado_em: true,
+                pessoaCriador: { select: { nome_exibicao: true } },
+            },
+        });
+
+        // Buscar valores da variável e suas filhas
+        const valores = await this.prisma.serieVariavel.findMany({
+            where: {
+                OR: [{ variavel_id: variavel_id }, { variavel: { variavel_mae_id: variavel_id } }],
+                data_valor: data_referencia,
+                serie: { in: ['Realizado', 'RealizadoAcumulado'] },
+            },
+            select: {
+                variavel_id: true,
+                variavel: { select: { titulo: true } },
+                serie: true,
+                valor_nominal: true,
+            },
+        });
+
+        // Buscar uploads associados
+        const uploads = await this.prisma.variavelGlobalCicloDocumento.findMany({
+            where: {
+                variavel_id: variavel_id,
+                referencia_data: data_referencia,
+                removido_em: null,
+            },
+            select: { arquivo: true },
+        });
+
+        // Processar e formatar os resultados
+        const valoresFormatados = this.formatarValores(valores);
+        const uploadsFormatados = this.formatarUploads(uploads);
+
+        return {
+            ultima_analise: ultimaAnalise
+                ? ({
+                      analise_qualitativa: ultimaAnalise.informacoes_complementares ?? '',
+                      criado_em: ultimaAnalise.criado_em,
+                      criador_nome: ultimaAnalise.pessoaCriador.nome_exibicao,
+                  } satisfies AnaliseQualitativaDto)
+                : null,
+            valores: valoresFormatados,
+            uploads: uploadsFormatados,
+        };
+    }
+
+    private formatarValores(valores: ValorSerieInterface[]): VariavelValorDto[] {
+        const valoresMap = new Map<number, VariavelValorDto>();
+
+        for (const valor of valores) {
+            if (!valoresMap.has(valor.variavel_id)) {
+                valoresMap.set(valor.variavel_id, {
+                    variavel_id: valor.variavel_id,
+                    variavel_titulo: valor.variavel.titulo,
+                    valor_realizado: null,
+                    valor_realizado_acumulado: null,
+                });
+            }
+
+            const valorDto = valoresMap.get(valor.variavel_id);
+            if (!valorDto) continue;
+
+            if (valor.serie === 'Realizado') {
+                valorDto.valor_realizado = valor.valor_nominal.toString();
+            } else if (valor.serie === 'RealizadoAcumulado') {
+                valorDto.valor_realizado_acumulado = valor.valor_nominal.toString();
+            }
+        }
+
+        return Array.from(valoresMap.values());
+    }
+
+    private formatarUploads(uploads: UploadArquivoInterface[]): ArquivoBaseDto[] {
+        return uploads.map((upload) => {
+            const arquivo = upload.arquivo;
+            return {
+                ...arquivo,
+                descricao: null,
+                ...this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
+            };
+        });
     }
 }

@@ -83,7 +83,7 @@ function shuffleArray(array: any[]) {
     }
 }
 
-const TEMPO_EXPIRACAO_ARQUIVO = '180 minutes';
+export const TEMPO_EXPIRACAO_ARQUIVO = '180 minutes';
 type VariavelDetalhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()

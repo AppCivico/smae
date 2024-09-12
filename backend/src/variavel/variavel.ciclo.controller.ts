@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
-import { TipoVariavel } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -9,6 +8,8 @@ import {
     BatchAnaliseQualitativaDto,
     FilterVariavelGlobalCicloDto,
     ListVariavelGlobalCicloDto,
+    VariavelAnaliseQualitativaGetDto,
+    VariavelAnaliseQualitativaResponseDto,
 } from './dto/variavel.ciclo.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelCicloService } from './variavel.ciclo.service';
@@ -17,8 +18,6 @@ import { VariavelGlobalController } from './variavel.controller';
 @ApiTags('Variável Global - Ciclo')
 @Controller('')
 export class VariavelCicloGlobalController {
-    private tipo: TipoVariavel = 'Global';
-
     constructor(private readonly variavelCicloService: VariavelCicloService) {}
 
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
@@ -43,5 +42,15 @@ export class VariavelCicloGlobalController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<void> {
         return await this.variavelCicloService.patchVariavelCiclo(dto, user);
+    }
+
+    @Get('variavel-analise-qualitativa')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
+    async getVariavelAnaliseQualitativa(
+        @Query() dto: VariavelAnaliseQualitativaGetDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelAnaliseQualitativaResponseDto> {
+        return this.variavelCicloService.getVariavelAnaliseQualitativa(dto, user);
     }
 }

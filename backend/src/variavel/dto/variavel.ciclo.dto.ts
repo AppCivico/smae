@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { NumberTransform } from '../../auth/transforms/number.transform';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -104,4 +105,39 @@ export class BatchAnaliseQualitativaDto {
     @Type(() => VariavelGlobalAnaliseItemDto)
     @ValidateNested({ each: true })
     valores: VariavelGlobalAnaliseItemDto[];
+}
+
+export class VariavelAnaliseQualitativaGetDto {
+    @IsInt()
+    @ApiProperty({ description: 'ID da variável pai' })
+    @Transform(NumberTransform)
+    variavel_id: number;
+
+    @IsDateYMD({ description: 'Data de referência' })
+    data_referencia: string;
+}
+
+export class VariavelValorDto {
+    variavel_id: number;
+    variavel_titulo: string;
+    valor_realizado: string | null;
+    valor_realizado_acumulado: string | null;
+}
+
+export class AnaliseQualitativaDto {
+    @ApiProperty({ description: 'Análise qualitativa' })
+    analise_qualitativa: string;
+    criado_em: Date;
+    criador_nome: string;
+}
+
+export class VariavelAnaliseQualitativaResponseDto {
+    @ApiProperty({ description: 'Última análise qualitativa' })
+    ultima_analise: AnaliseQualitativaDto | null;
+
+    @ApiProperty({ description: 'Valores da variável e suas filhas', type: [VariavelValorDto] })
+    valores: VariavelValorDto[];
+
+    @ApiProperty({ description: 'Uploads associados', type: [ArquivoBaseDto] })
+    uploads: ArquivoBaseDto[];
 }
