@@ -111,7 +111,7 @@ watch(() => $route.query, (query) => {
     ...query,
     lido: $route.query?.aba === tabs.Historico.id,
   });
-}, { immediate: true });
+});
 
 </script>
 

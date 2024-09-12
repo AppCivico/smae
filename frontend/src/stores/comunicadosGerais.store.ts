@@ -48,10 +48,6 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       buscandoMais,
     }: FiltroDadosGerais) {
       try {
-        if (!buscandoMais) {
-          this.dados = [];
-        }
-
         const resposta: PaginatedDto<NotaComunicadoItemDto> = await this.requestS.get(`${baseUrl}`, {
           data_inicio,
           data_fim,
@@ -61,9 +57,13 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
           token_proxima_pagina: token_paginacao,
         });
 
-        this.temMais = resposta.tem_mais;
-        this.dados = [...this.dados, ...resposta.linhas];
+        if (!buscandoMais) {
+          this.dados = resposta.linhas;
+        } else {
+          this.dados = [...this.dados, ...resposta.linhas];
+        }
 
+        this.temMais = resposta.tem_mais;
         this.tokenProximaPagina = resposta.token_proxima_pagina;
       } catch (err) {
         console.error('Erro ao tentar buscar docuumentos gerais', err);
