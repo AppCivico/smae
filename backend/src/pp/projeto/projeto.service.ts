@@ -2333,9 +2333,11 @@ export class ProjetoService {
                     tipo_aditivo_id: dto.tipo_aditivo_id,
                     projeto_programa_id: dto.programa_id,
 
-                    // TODO validar as permissoes
+                    // EDIT: nao é mais TODO, bug virou feature: orgao_colaborador_id vai ser NULL e o
+                    // colaboradores_no_orgao ter pessoas de N orgãos
                     colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
                     orgao_colaborador_id: dto.orgao_colaborador_id,
+
                     secretario_colaborador: dto.secretario_colaborador,
 
                     tags: dto.tags ?? [],
