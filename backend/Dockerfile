@@ -1,4 +1,4 @@
-FROM node:18-bullseye AS SMAE_API
+FROM node:20-bullseye AS SMAE_API
 
 # Instala o graphviz (dot) para gerar EAP do tarefas do lado do server-side
 RUN apt-get update && apt-get install -y --no-install-recommends graphviz
@@ -16,7 +16,7 @@ RUN fc-cache -f -v
 
 WORKDIR /usr/src/app
 
-RUN npm --loglevel=error install -g npm@9.6.4
+RUN npm --loglevel=error install -g npm@10.8.1
 
 COPY package.json ./
 COPY package-lock.json ./

@@ -49,7 +49,7 @@ export class WorkflowService {
                         },
                     });
 
-                    ativo = !workflowAtivo ?? true;
+                    ativo = !workflowAtivo;
                 }
 
                 // Populando com todos statuses base de distribuição.
