@@ -368,7 +368,6 @@ export class TransfereGovSyncService {
             data: {
                 avaliacao: dto.avaliacao,
                 atualizado_em: new Date(Date.now()),
-                atualizado_por: user.id,
             },
         });
     }
