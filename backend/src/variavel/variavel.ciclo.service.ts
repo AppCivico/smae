@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { Prisma, VariavelFase } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
 import { Date2YMD } from '../common/date2ymd';
@@ -24,7 +24,7 @@ interface ICicloCorrente {
             titulo?: string;
         }[];
     };
-    fase: string;
+    fase: VariavelFase;
     proximo_periodo_abertura: Date;
     ultimo_periodo_valido: Date;
 }
@@ -176,6 +176,7 @@ export class VariavelCicloService {
         // primeira versão, só tem medicao
         const conferida = false;
 
+        console.log(cicloCorrente, dto);
         this.validaValoresVariaveis(dto, cicloCorrente);
 
         const now = new Date(Date.now());
@@ -251,7 +252,7 @@ export class VariavelCicloService {
                     'Valores de variáveis mãe e filhas não podem ser fornecidos simultaneamente'
                 );
 
-        if (valorGlobalOuMae.length > 0 && cicloCorrente.variavel.variaveis_filhas.length === 0)
+        if (valorGlobalOuMae.length > 1 && cicloCorrente.variavel.variaveis_filhas.length === 0)
             throw new BadRequestException('Apenas um valor pode ser fornecido para uma variável sem filhas');
 
         const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
