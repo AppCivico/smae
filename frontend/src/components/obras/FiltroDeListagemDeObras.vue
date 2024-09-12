@@ -80,6 +80,67 @@
           </option>
         </select>
       </div>
+
+      <div class="f1 fb15em">
+        <label
+          class="label"
+          for="equipamento-id"
+        >
+          Revisada
+        </label>
+        <select
+          id="revisado"
+          name="revisado"
+          class="inputtext light"
+        >
+          <option value="" />
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </select>
+      </div>
+      <div class="f1 fb15em">
+        <label
+          class="label"
+          for="registros_sei"
+        >Processos SEI</label>
+        <input
+          id="registros_sei"
+          class="inputtext light"
+          name="registros_sei"
+          type="search"
+          :value="$route.query.palavra_chave"
+        >
+      </div>
+      <div class="f1 fb15em">
+        <label
+          class="label"
+          for="status"
+        >
+          Tipo de Obra
+        </label>
+        <select
+          id="status"
+          name="status"
+          class="inputtext light"
+        >
+          <option value="" />
+
+          <option
+            v-for="item in statusObras"
+            :key="item.valor"
+            :value="item.valor"
+            :disabled="!Object.keys(statusObras).length"
+            :selected="$props.valoresIniciais.status === item.valor"
+          >
+            {{ item.nome }}
+          </option>
+        </select>
+      </div>
+
       <div class="f1 fb15em">
         <label
           class="label"
