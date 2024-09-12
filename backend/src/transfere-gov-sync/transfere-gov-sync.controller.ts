@@ -37,7 +37,7 @@ export class TransfereGovController {
 
     @Get('transferencia')
     @ApiBearerAuth('access-token')
-    @ApiPaginatedResponse(TransfereGovDto)
+    @ApiPaginatedResponse(TransfereGovTransferenciasDto)
     async listaTransferencias(
         @Query() params: FilterTransfereGovTransferenciasDto
     ): Promise<PaginatedDto<TransfereGovTransferenciasDto>> {
