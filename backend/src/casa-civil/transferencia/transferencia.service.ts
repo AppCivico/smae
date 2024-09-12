@@ -481,6 +481,7 @@ export class TransferenciaService {
                                     where: {
                                         distribuicao_recurso: {
                                             transferencia_id: id,
+                                            removido_em: null,
                                         },
                                         parlamentar_id: row.parlamentar_id,
                                         removido_em: null,
@@ -534,6 +535,7 @@ export class TransferenciaService {
                             where: {
                                 distribuicao_recurso: {
                                     transferencia_id: id,
+                                    removido_em: null,
                                 },
                                 parlamentar_id: row.parlamentar_id,
                                 removido_em: null,
@@ -688,6 +690,7 @@ export class TransferenciaService {
                                         where: {
                                             distribuicao_recurso: {
                                                 transferencia_id: id,
+                                                removido_em: null,
                                             },
                                             parlamentar_id: row.parlamentar_id,
                                             removido_em: null,
