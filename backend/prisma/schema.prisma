@@ -478,7 +478,8 @@ model Pessoa {
     VarGlobPedidoComplementacaoAtendeu   VariavelGlobalPedidoComplementacao[] @relation("atendeu")
     VarGlobPedidoComplementacaoRemovedor VariavelGlobalPedidoComplementacao[] @relation("removedor")
 
-    projetosRevisao ProjetoPessoaRevisao[]
+    oportunidadesTransferenciaQueAtualizei TransfereGovOportunidade[] @relation("Atualizador")
+    projetosRevisao                        ProjetoPessoaRevisao[]
 
     @@index([email])
     @@map("pessoa")
@@ -7047,4 +7048,42 @@ model VariavelGlobalCicloDocumento {
 
     @@index([variavel_id])
     @@map("variavel_global_ciclo_documento")
+}
+
+enum TransfereGovOportunidadeTipo {
+    Voluntaria
+    Especifica
+    Emenda
+}
+
+enum TransfereGovOportunidadeAvaliacao {
+    Inadequada
+    Selecionada
+}
+
+model TransfereGovOportunidade {
+    id Int @id @default(autoincrement())
+
+    tipo                      TransfereGovOportunidadeTipo
+    avaliacao                 TransfereGovOportunidadeAvaliacao?
+    transferencia_incorporada Boolean                            @default(false)
+    cod_orgao_sup_programa    String
+    desc_orgao_sup_programa   String
+    cod_programa              String
+    nome_programa             String
+    sit_programa              String
+    ano_disponibilizacao      Int
+    data_disponibilizacao     DateTime                           @db.Date()
+    dt_ini_receb              DateTime                           @db.Date()
+    dt_fim_receb              DateTime                           @db.Date()
+    modalidade_programa       String
+    acao_orcamentaria         String
+
+    criado_em DateTime @default(now())
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @updatedAt
+    atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    @@map("transfere_gov_oportunidade")
 }

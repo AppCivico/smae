@@ -17,7 +17,14 @@ import {
     TransfereGovApiService,
     TransfereGovError,
 } from '../transfere-gov-api/transfere-gov-api.service';
-import { FilterTransfereGovListDto, TransfereGovDto } from './entities/transfere-gov-sync.entity';
+import {
+    FilterTransfereGovListDto,
+    FilterTransfereGovTransferenciasDto,
+    TransfereGovDto,
+    TransfereGovTransferenciasDto,
+    UpdateTransfereGovTransferenciaDto,
+} from './entities/transfere-gov-sync.entity';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -290,6 +297,80 @@ export class TransfereGovSyncService {
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };
+    }
+
+    async listaTransferencias(
+        filters: FilterTransfereGovTransferenciasDto
+    ): Promise<PaginatedDto<TransfereGovTransferenciasDto>> {
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
+        }
+
+        const dbRows = await this.prisma.transfereGovOportunidade.findMany({
+            where: {
+                ano_disponibilizacao: filters.ano,
+                tipo: filters.tipo,
+                transferencia_incorporada: false,
+            },
+            skip: offset,
+            take: ipp + 1,
+            orderBy: { id: 'desc' },
+        });
+
+        const linhas = dbRows.map(
+            (item) =>
+                ({
+                    id: item.id,
+                    tipo: item.tipo,
+                    avaliacao: item.avaliacao,
+                    cod_orgao_sup_programa: item.cod_orgao_sup_programa,
+                    desc_orgao_sup_programa: item.desc_orgao_sup_programa,
+                    cod_programa: item.cod_programa,
+                    nome_programa: item.nome_programa,
+                    sit_programa: item.sit_programa,
+                    ano_disponibilizacao: item.ano_disponibilizacao,
+                    data_disponibilizacao: item.data_disponibilizacao,
+                    dt_ini_receb: item.dt_ini_receb,
+                    dt_fim_receb: item.dt_fim_receb,
+                    modalidade_programa: item.modalidade_programa,
+                    acao_orcamentaria: item.acao_orcamentaria,
+                }) satisfies TransfereGovTransferenciasDto
+        );
+
+        if (linhas.length > ipp) {
+            tem_mais = true;
+            linhas.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        }
+
+        return {
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
+            linhas,
+        };
+    }
+
+    async atualizarTransferencia(id: number, dto: UpdateTransfereGovTransferenciaDto, user: PessoaFromJwt) {
+        // TODO: verificar a row.
+
+        return await this.prisma.transfereGovOportunidade.update({
+            where: {
+                id: id,
+            },
+            data: {
+                avaliacao: dto.avaliacao,
+                atualizado_em: new Date(Date.now()),
+                atualizado_por: user.id,
+            },
+        });
     }
 
     private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
