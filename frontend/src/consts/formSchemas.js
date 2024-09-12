@@ -2118,7 +2118,7 @@ export const registroDeTransferencia = object({
     .nullable(),
   empenho: boolean()
     .label('Empenho')
-    .required(),
+    .nullable(),
   valor: number()
     .label('Valor do Repasse')
     .nullable()
