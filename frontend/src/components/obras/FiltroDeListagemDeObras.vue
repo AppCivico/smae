@@ -1,10 +1,11 @@
 <template>
+  <!-- schema: <pre>{{ schema }}</pre> -->
   <form
-    class="flex flexwrap g2 mb2 fb100"
+    class="mb2 fb100"
     @submit.prevent="($e) => emit('enviado', $e)"
   >
-    <div class="flex flexwrap end g2 mb1 fb100">
-      <div class="f1 fb10em">
+    <div class="flex g2 mb2 fb100 flexwrap">
+      <div class="f1 fb15em">
         <label
           class="label"
           for="portfolio-id"
@@ -29,7 +30,7 @@
           </option>
         </select>
       </div>
-      <div class="f1 fb10em">
+      <div class="f1 fb15em">
         <label
           class="label"
           for="orgao-origem-id"
@@ -54,7 +55,7 @@
           </option>
         </select>
       </div>
-      <div class="f1 fb10em">
+      <div class="f1 fb15em">
         <label
           class="label"
           for="grupo-tematico-id"
@@ -79,7 +80,7 @@
           </option>
         </select>
       </div>
-      <div class="f1 fb10em">
+      <div class="f1 fb15em">
         <label
           class="label"
           for="equipamento-id"
@@ -104,7 +105,7 @@
           </option>
         </select>
       </div>
-      <div class="f1 fb10em">
+      <div class="f1 fb15em">
         <label
           class="label"
           for="regiao-ids"
@@ -128,7 +129,7 @@
           </option>
         </select>
       </div>
-      <div class="f1 fb10em">
+      <div class="f1 fb15em">
         <label
           class="label"
           for="status"
@@ -154,7 +155,8 @@
         </select>
       </div>
     </div>
-    <div class="f1 fb25em">
+
+    <div class="f1 fb25em mb2">
       <label
         class="label"
         for="palavra-chave"
@@ -167,74 +169,78 @@
         :value="$route.query.palavra_chave"
       >
     </div>
-    <div class="f1 fb10em">
-      <label
-        class="label"
-        for="ordem-coluna"
-      >Ordenar por</label>
-      <select
-        id="ordem-coluna"
-        class="inputtext light"
-        name="ordem_coluna"
+    <div class="flex g2 center flexwrap">
+      <div class="flex flexwrap g2 maxw">
+        <div class="f1 fb10em">
+          <label
+            class="label"
+            for="ordem-coluna"
+          >Ordenar por</label>
+          <select
+            id="ordem-coluna"
+            class="inputtext light"
+            name="ordem_coluna"
+          >
+            <option
+              v-for="coluna in colunasParaOrdenacao"
+              :key="coluna.valor"
+              :value="coluna.valor"
+              :selected="$props.valoresIniciais.ordem_coluna === coluna.valor"
+            >
+              {{ coluna.nome }}
+            </option>
+          </select>
+        </div>
+        <div class="f1 fb10em">
+          <label
+            class="label"
+            for="ordem-direcao"
+          >Direção</label>
+          <select
+            id="ordem-direcao"
+            class="inputtext light"
+            name="ordem_direcao"
+          >
+            <option value="" />
+            <option
+              v-for="direcao in
+                Object.values(direcoesDeOrdenacao)"
+              :key="direcao.valor"
+              :value="direcao.valor"
+              :selected="$props.valoresIniciais.ordem_direcao === direcao.valor"
+            >
+              {{ direcao.nome || direcao.valor }}
+            </option>
+          </select>
+        </div>
+        <div class="f1 fb10em">
+          <label
+            class="label"
+            for="itens-por-pagina"
+          >Itens por página</label>
+          <select
+            id="itens-por-pagina"
+            class="inputtext light"
+            name="ipp"
+          >
+            <option
+              v-for="quantidade in itensPorPagina"
+              :key="quantidade"
+              :value="quantidade"
+              :selected="Number($props.valoresIniciais.ipp) === quantidade"
+            >
+              {{ quantidade }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="btn outline bgnone tcprimary mt1"
       >
-        <option
-          v-for="coluna in colunasParaOrdenacao"
-          :key="coluna.valor"
-          :value="coluna.valor"
-          :selected="$props.valoresIniciais.ordem_coluna === coluna.valor"
-        >
-          {{ coluna.nome }}
-        </option>
-      </select>
+        Filtrar
+      </button>
     </div>
-    <div class="f1 fb10em">
-      <label
-        class="label"
-        for="ordem-direcao"
-      >Direção</label>
-      <select
-        id="ordem-direcao"
-        class="inputtext light"
-        name="ordem_direcao"
-      >
-        <option value="" />
-        <option
-          v-for="direcao in
-            Object.values(direcoesDeOrdenacao)"
-          :key="direcao.valor"
-          :value="direcao.valor"
-          :selected="$props.valoresIniciais.ordem_direcao === direcao.valor"
-        >
-          {{ direcao.nome || direcao.valor }}
-        </option>
-      </select>
-    </div>
-    <div class="f1 fb10em">
-      <label
-        class="label"
-        for="itens-por-pagina"
-      >Itens por página</label>
-      <select
-        id="itens-por-pagina"
-        class="inputtext light"
-        name="ipp"
-      >
-        <option
-          v-for="quantidade in itensPorPagina"
-          :key="quantidade"
-          :value="quantidade"
-          :selected="Number($props.valoresIniciais.ipp) === quantidade"
-        >
-          {{ quantidade }}
-        </option>
-      </select>
-    </div>
-    <button
-      type="submit"
-      class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
-    >
-      Filtrar
-    </button>
   </form>
 </template>
 <script setup>
