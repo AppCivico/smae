@@ -250,6 +250,9 @@ export class VariavelCicloService {
                 await this.moveProximaFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn);
             } else if (cicloCorrente.fase === 'Validacao') {
                 if (dto.aprovar) {
+                    // aqui poderia ter o mesmo "problema" de faltar alguma filha, mas ai o
+                    // não temos como saber pq não temos campos para acompanhar isso, já que sempre
+                    // estamos salvando o status apenas na variável mãe. No frontend é sempre enviado todas as filhas
                     await this.moveProximaFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn);
                 } else if (dto.pedido_complementacao) {
                     await this.criaPedidoComplementacao(
@@ -264,6 +267,10 @@ export class VariavelCicloService {
             } else if (cicloCorrente.fase === 'Liberacao') {
                 if (dto.aprovar) {
                     conferida = true;
+
+                    // Verifica se todas as filhas estão conferidas ou serão atualizadas neste batch
+                    const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
+                    await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
                 } else if (dto.pedido_complementacao) {
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
@@ -307,6 +314,31 @@ export class VariavelCicloService {
             await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
             await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
         });
+    }
+
+    private async verificaStatusConferenciaFilhas(
+        filhaIds: number[],
+        prismaTxn: Prisma.TransactionClient,
+        dto: BatchAnaliseQualitativaDto
+    ) {
+        if (!filhaIds.length) return;
+
+        const serieFilhas = await prismaTxn.serieVariavel.findMany({
+            where: {
+                variavel_id: { in: filhaIds },
+                data_valor: dto.data_referencia,
+                serie: 'Realizado',
+            },
+            select: { variavel_id: true, conferida: true },
+        });
+
+        // se não ta conferida e não ta no batch, não pode aprovar
+        const filhosNaoVerificados = serieFilhas.filter(
+            (series) => !series.conferida && !dto.valores.some((v) => v.variavel_id === series.variavel_id)
+        );
+
+        if (filhosNaoVerificados.length > 0)
+            throw new BadRequestException('Não é possível aprovar. Existem variáveis filhas não conferidas.');
     }
 
     private validaValoresVariaveis(dto: BatchAnaliseQualitativaDto, cicloCorrente: ICicloCorrente) {
