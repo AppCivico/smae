@@ -2,7 +2,7 @@
   <!-- schema: <pre>{{ schema }}</pre> -->
   <form
     class="mb2 fb100"
-    @submit.prevent="($e) => emit('enviado', $e)"
+    @submit.prevent="tratandoSubmit"
   >
     <div class="flex g2 mb2 fb100 flexwrap">
       <div class="f1 fb15em">
@@ -112,7 +112,7 @@
           class="inputtext light"
           name="registros_sei"
           type="search"
-          :value="$route.query.palavra_chave"
+          :value="$route.query.registros_sei"
         >
       </div>
       <div class="f1 fb15em">
@@ -377,6 +377,11 @@ const colunasParaOrdenacao = {
     nome: 'Data de registro',
   },
 };
+
+function tratandoSubmit(evento) {
+  evento.target.registros_sei.value = evento.target.registros_sei.value.replace(/\D/g, '');
+  emit('enviado', evento);
+}
 
 const itensPorPagina = [
   10,
