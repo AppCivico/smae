@@ -21,6 +21,7 @@ import { VariavelComCategorica, VariavelService } from './variavel.service';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { VariavelUtilService } from './variavel.util.service';
+import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
 
 interface ICicloCorrente {
     variavel: {
@@ -37,8 +38,7 @@ interface ICicloCorrente {
 }
 
 interface ValorSerieInterface {
-    variavel_id: number;
-    variavel: { titulo: string };
+    variavel: VariavelResumoInput;
     serie: string;
     valor_nominal: { toString: () => string };
 }
@@ -508,10 +508,27 @@ export class VariavelCicloService {
 
             select: {
                 id: true,
+                suspendida_em: true,
+                variavel_categorica_id: true,
+                casas_decimais: true,
+                periodicidade: true,
+                acumulativa: true,
+                codigo: true,
                 titulo: true,
+                valor_base: true,
                 variaveis_filhas: {
                     where: { removido_em: null, tipo: 'Global' },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        suspendida_em: true,
+                        variavel_categorica_id: true,
+                        casas_decimais: true,
+                        periodicidade: true,
+                        acumulativa: true,
+                        codigo: true,
+                        titulo: true,
+                        valor_base: true,
+                    },
                 },
             },
         });
@@ -549,7 +566,19 @@ export class VariavelCicloService {
             },
             select: {
                 variavel_id: true,
-                variavel: { select: { titulo: true } },
+                variavel: {
+                    select: {
+                        id: true,
+                        suspendida_em: true,
+                        variavel_categorica_id: true,
+                        casas_decimais: true,
+                        periodicidade: true,
+                        acumulativa: true,
+                        codigo: true,
+                        titulo: true,
+                        valor_base: true,
+                    },
+                },
                 serie: true,
                 valor_nominal: true,
             },
@@ -570,6 +599,7 @@ export class VariavelCicloService {
         const uploadsFormatados = this.formatarUploads(uploads);
 
         return {
+            variavel: this.formatarVariavelResumo(variavel),
             ultima_analise: ultimaAnalise
                 ? ({
                       analise_qualitativa: ultimaAnalise.informacoes_complementares ?? '',
@@ -586,16 +616,15 @@ export class VariavelCicloService {
         const valoresMap = new Map<number, VariavelValorDto>();
 
         for (const valor of valores) {
-            if (!valoresMap.has(valor.variavel_id)) {
-                valoresMap.set(valor.variavel_id, {
-                    variavel_id: valor.variavel_id,
-                    variavel_titulo: valor.variavel.titulo,
+            if (!valoresMap.has(valor.variavel.id)) {
+                valoresMap.set(valor.variavel.id, {
+                    variavel: this.formatarVariavelResumo(valor.variavel),
                     valor_realizado: null,
                     valor_realizado_acumulado: null,
                 });
             }
 
-            const valorDto = valoresMap.get(valor.variavel_id);
+            const valorDto = valoresMap.get(valor.variavel.id);
             if (!valorDto) continue;
 
             if (valor.serie === 'Realizado') {
@@ -678,5 +707,19 @@ export class VariavelCicloService {
             },
             data: { conferida: conferida },
         });
+    }
+
+    private formatarVariavelResumo(variavel: VariavelResumoInput): VariavelResumo {
+        return {
+            id: variavel.id,
+            suspendida: variavel.suspendida_em !== null,
+            variavel_categorica_id: variavel.variavel_categorica_id,
+            casas_decimais: variavel.casas_decimais,
+            periodicidade: variavel.periodicidade,
+            acumulativa: variavel.acumulativa,
+            codigo: variavel.codigo,
+            titulo: variavel.titulo,
+            valor_base: variavel.valor_base.toString(),
+        };
     }
 }

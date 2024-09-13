@@ -5,6 +5,7 @@ import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variav
 import { VariaveisPeriodosDto } from './create-variavel.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -30,6 +31,19 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     medicao_grupo_ids: number[] | null;
     validacao_grupo_ids: number[] | null;
     liberacao_grupo_ids: number[] | null;
+}
+
+
+export class VariavelResumoInput {
+    id: number;
+    suspendida_em: Date | null;
+    variavel_categorica_id: number | null;
+    casas_decimais: number;
+    periodicidade: Periodicidade;
+    acumulativa: boolean;
+    codigo: string;
+    titulo: string;
+    valor_base: Decimal;
 }
 
 export class VariavelResumo {

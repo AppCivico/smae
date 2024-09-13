@@ -16,6 +16,7 @@ import {
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
+import { VariavelResumo } from './list-variavel.dto';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -106,7 +107,6 @@ export class BatchAnaliseQualitativaDto {
     @ValidateNested({ each: true })
     valores: VariavelGlobalAnaliseItemDto[];
 
-
     @IsOptional()
     @IsBoolean()
     aprovar?: boolean;
@@ -128,8 +128,7 @@ export class FilterVariavelAnaliseQualitativaGetDto {
 }
 
 export class VariavelValorDto {
-    variavel_id: number;
-    variavel_titulo: string;
+    variavel: VariavelResumo;
     valor_realizado: string | null;
     valor_realizado_acumulado: string | null;
 }
@@ -142,6 +141,8 @@ export class AnaliseQualitativaDto {
 }
 
 export class VariavelAnaliseQualitativaResponseDto {
+    variavel: VariavelResumo;
+
     @ApiProperty({ description: 'Última análise qualitativa' })
     ultima_analise: AnaliseQualitativaDto | null;
 
