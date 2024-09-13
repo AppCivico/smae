@@ -118,25 +118,26 @@
       <div class="f1 fb15em">
         <label
           class="label"
-          for="status"
+          for="tipo_intervencao_id"
         >
           Tipo de Obra
         </label>
         <select
-          id="status"
-          name="status"
+          id="tipo_intervencao_id"
+          name="tipo_intervencao_id"
           class="inputtext light"
+          :disabled="!Object.keys(listaDeTiposDeIntervenção).length"
+          :aria-busy="chamadasPendentesDeTiposDeIntervenção.lista"
+          :class="{ error: erroDeTiposDeIntervenção.lista }"
         >
           <option value="" />
-
           <option
-            v-for="item in statusObras"
-            :key="item.valor"
-            :value="item.valor"
-            :disabled="!Object.keys(statusObras).length"
-            :selected="$props.valoresIniciais.status === item.valor"
+            v-for="tipo in listaDeTiposDeIntervenção"
+            :key="tipo.id"
+            :value="tipo.id"
+            :selected="Number($props.valoresIniciais.tipo_intervencao_id) === tipo.id"
           >
-            {{ item.nome }}
+            {{ tipo.nome }}
           </option>
         </select>
       </div>
@@ -315,6 +316,7 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import { onUnmounted, ref } from 'vue';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 
 defineProps({
   ariaBusy: {
@@ -388,6 +390,7 @@ const equipamentosStore = useEquipamentosStore();
 const gruposTematicosStore = useGruposTematicosStore();
 const portfolioMdoStore = usePortfolioObraStore();
 const regionsStore = useRegionsStore();
+const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
 
 const {
   lista: listaDeEquipamentos,
@@ -405,14 +408,22 @@ const {
   órgãosComoLista,
   organs,
 } = storeToRefs(ÓrgãosStore);
+
 const {
   lista: listaDePortfolios,
   chamadasPendentes: chamadasPendentesDePortfolios,
   erro: errosDePortfolios,
 } = storeToRefs(portfolioMdoStore);
+
 const {
   regions, regiõesPorNível,
 } = storeToRefs(regionsStore);
+
+const {
+  lista: listaDeTiposDeIntervenção,
+  chamadasPendentes: chamadasPendentesDeTiposDeIntervenção,
+  erro: erroDeTiposDeIntervenção,
+} = storeToRefs(tiposDeIntervencaoStore);
 
 const pronto = ref(false);
 
@@ -423,6 +434,7 @@ function iniciar() {
     gruposTematicosStore.buscarTudo(),
     ÓrgãosStore.getAll(),
     regionsStore.getAll(),
+    tiposDeIntervencaoStore.buscarTudo(),
   ];
 
   Promise.allSettled(promessas)
