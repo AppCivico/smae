@@ -1586,12 +1586,26 @@ export class PdmService {
     }
 
     private verificaRotulos(dto: CreatePdmDto | UpdatePdmDto) {
-        const rotulos = [dto.rotulo_macro_tema, dto.rotulo_tema, dto.rotulo_sub_tema].filter(
+        const rotulosA = [dto.rotulo_macro_tema, dto.rotulo_tema, dto.rotulo_sub_tema].filter(
             (r) => r !== null && r !== undefined
         );
-        const uniqueRotulos = new Set(rotulos);
-        if (rotulos.length !== uniqueRotulos.size) {
+        const uniqueRotulosA = new Set(rotulosA);
+        if (rotulosA.length !== uniqueRotulosA.size) {
             throw new BadRequestException('Os rótulos para macrotema, tema e subtema devem ser únicos');
+        }
+
+        const rotulosB = [dto.rotulo_contexto_meta, dto.rotulo_complementacao_meta].filter(
+            (r) => r !== null && r !== undefined
+        );
+        const uniqueRotulosB = new Set(rotulosB);
+        if (rotulosA.length !== uniqueRotulosB.size) {
+            throw new BadRequestException('Os rótulos para contexto e complementação de meta devem ser únicos');
+        }
+
+        const rotulosC = [dto.rotulo_iniciativa, dto.rotulo_atividade].filter((r) => r !== null && r !== undefined);
+        const uniqueRotulosC = new Set(rotulosC);
+        if (rotulosC.length !== uniqueRotulosC.size) {
+            throw new BadRequestException('Os rótulos para iniciativa e atividade devem ser únicos');
         }
     }
 }
