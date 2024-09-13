@@ -207,7 +207,6 @@ export class VariavelCicloService {
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
             );
 
-        console.log(cicloCorrente, dto);
         this.validaValoresVariaveis(dto, cicloCorrente);
 
         const now = new Date(Date.now());
