@@ -10,6 +10,7 @@ import {
     IsInt,
     IsNumber,
     IsNumberString,
+    IsObject,
     IsOptional,
     IsString,
     Max,
@@ -178,6 +179,7 @@ export class CreateVariavelBaseDto {
 
     @ValidateNested()
     @Type(() => VariaveisPeriodosDto)
+    @IsObject()
     periodos: VariaveisPeriodosDto;
 
     @IsOptional()
