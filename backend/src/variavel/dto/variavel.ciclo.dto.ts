@@ -105,6 +105,16 @@ export class BatchAnaliseQualitativaDto {
     @Type(() => VariavelGlobalAnaliseItemDto)
     @ValidateNested({ each: true })
     valores: VariavelGlobalAnaliseItemDto[];
+
+
+    @IsOptional()
+    @IsBoolean()
+    aprovar?: boolean;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(5000)
+    pedido_complementacao?: string;
 }
 
 export class FilterVariavelAnaliseQualitativaGetDto {
@@ -114,7 +124,7 @@ export class FilterVariavelAnaliseQualitativaGetDto {
     variavel_id: number;
 
     @IsDateYMD({ description: 'Data de referência' })
-    data_referencia: string;
+    data_referencia: Date;
 }
 
 export class VariavelValorDto {

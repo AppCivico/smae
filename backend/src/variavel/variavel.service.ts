@@ -61,6 +61,7 @@ import {
 import { PrismaHelpers } from '../common/PrismaHelpers';
 import { MetaService } from '../meta/meta.service';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
+import { VariavelFiltroDataType, VariavelUtilService } from './variavel.util.service';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -88,12 +89,6 @@ export type VariavelComCategorica = {
         tipo: TipoVariavelCategorica;
         valores: VariavelCategoricaValor[];
     } | null;
-};
-
-type FiltroData = {
-    data_inicio?: Date;
-    data_fim?: Date;
-    data_valor?: Date;
 };
 
 function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
@@ -127,6 +122,7 @@ export class VariavelService {
         private readonly jwtService: JwtService,
         @Inject(forwardRef(() => MetaService))
         private readonly metaService: MetaService,
+        private readonly util: VariavelUtilService,
         private readonly prisma: PrismaService
     ) {}
 
@@ -2311,7 +2307,7 @@ export class VariavelService {
     async getValorSerieExistente(
         variavelId: number,
         series: Serie[],
-        filters: FiltroData
+        filters: VariavelFiltroDataType
     ): Promise<ValorSerieExistente[]> {
         return await this.prisma.serieVariavel.findMany({
             where: {
@@ -2439,7 +2435,7 @@ export class VariavelService {
             indicadorId = indicadorViaVar.id;
         }
 
-        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
+        const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieValorNomimal[] = this.populaSeriesExistentes(
                 porPeriodo,
@@ -2560,26 +2556,6 @@ export class VariavelService {
             v: variavelId,
             s: serie,
         } satisfies NonExistingSerieJwt);
-    }
-
-    private async gerarPeriodoVariavelEntreDatas(
-        variavelId: number,
-        indicadorId: number | null,
-        filtros?: FiltroData
-    ): Promise<DateYMD[]> {
-        if (isNaN(variavelId)) throw new BadRequestException('Variável inválida');
-
-        const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
-            select to_char(p.p, 'yyyy-mm-dd') as dt
-            from busca_periodos_variavel(${variavelId}::int ${indicadorId ? `, ${indicadorId}::int` : ''}) as g(p, inicio, fim),
-            generate_series(inicio, fim, p) p
-            where true
-            ${filtros && filtros.data_inicio ? `and p.p >= '${filtros.data_inicio.toISOString()}'::date` : ''}
-            ${filtros && filtros.data_fim ? `and p.p <= '${filtros.data_fim.toISOString()}'::date` : ''}
-            ${filtros && filtros.data_valor ? `and p.p = '${filtros.data_valor.toISOString()}'::date` : ''}
-        `);
-
-        return dados.map((e) => e.dt);
     }
 
     private validarValoresJwt(valores: SerieUpsert[]): ValidatedUpsert[] {

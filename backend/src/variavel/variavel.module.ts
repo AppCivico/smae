@@ -12,6 +12,7 @@ import { VariavelCicloGlobalController } from './variavel.ciclo.controller';
 import { VariavelCicloService } from './variavel.ciclo.service';
 import { PdmModule } from '../pdm/pdm.module';
 import { UploadModule } from '../upload/upload.module';
+import { VariavelUtilService } from './variavel.util.service';
 
 @Module({
     imports: [
@@ -32,7 +33,13 @@ import { UploadModule } from '../upload/upload.module';
         VariavelGlobalFCController,
         VariavelCicloGlobalController,
     ],
-    providers: [VariavelService, VariavelFormulaCompostaService, VariavelCalculadaService, VariavelCicloService],
+    providers: [
+        VariavelService,
+        VariavelFormulaCompostaService,
+        VariavelCalculadaService,
+        VariavelCicloService,
+        VariavelUtilService,
+    ],
     exports: [VariavelService],
 })
 export class VariavelModule {}

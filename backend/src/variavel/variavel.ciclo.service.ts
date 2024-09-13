@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma, VariavelFase } from '@prisma/client';
+import { PerfilResponsavelEquipe, Prisma, VariavelFase } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
 import { Date2YMD } from '../common/date2ymd';
@@ -20,6 +20,7 @@ import {
 import { VariavelComCategorica, VariavelService } from './variavel.service';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
+import { VariavelUtilService } from './variavel.util.service';
 
 interface ICicloCorrente {
     variavel: {
@@ -58,6 +59,7 @@ export class VariavelCicloService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly variavelService: VariavelService,
+        private readonly util: VariavelUtilService,
         //
         @Inject(forwardRef(() => PdmService))
         private readonly pdmService: PdmService
@@ -85,14 +87,10 @@ export class VariavelCicloService {
         const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
         const pdmIds = isRoot ? undefined : await this.pdmService.findAllIds('PS', user);
 
-        let ponto_focal = true;
         let pessoaId = user.id;
-
-        if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador'])) ponto_focal = false;
 
         if (filters.simular_ponto_focal && isRoot) {
             pessoaId = filters.simular_usuario ?? pessoaId;
-            ponto_focal = true;
         }
 
         const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [{}];
@@ -105,11 +103,11 @@ export class VariavelCicloService {
             });
         }
 
-        if (ponto_focal) {
+        if (!isRoot) {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
                 where: {
                     removido_em: null,
-                    perfil: 'Medicao',
+                    perfil: { in: ['Medicao', 'Validacao', 'Liberacao'] },
                     GrupoResponsavelEquipePessoa: {
                         some: {
                             pessoa_id: pessoaId,
@@ -191,16 +189,23 @@ export class VariavelCicloService {
         });
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
 
-        if (cicloCorrente.fase != 'Preenchimento')
-            throw new BadRequestException('Variável não está em fase de preenchimento');
+        const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
+        const userPerfil = await this.getPerfisEmEquipes(user.id);
+        if (!isRoot) {
+            if (cicloCorrente.fase === 'Preenchimento' && !userPerfil.includes('Medicao'))
+                throw new BadRequestException('Apenas usuários com perfil de Medição podem atualizar nesta fase');
+
+            if (cicloCorrente.fase === 'Validacao' && !userPerfil.includes('Validacao'))
+                throw new BadRequestException('Apenas usuários com perfil de Validação podem atualizar nesta fase');
+
+            if (cicloCorrente.fase === 'Liberacao' && !userPerfil.includes('Liberacao'))
+                throw new BadRequestException('Apenas usuários com perfil de Liberação podem atualizar nesta fase');
+        }
 
         if (dto.data_referencia.valueOf() != cicloCorrente.ultimo_periodo_valido.valueOf())
             throw new BadRequestException(
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
             );
-
-        // primeira versão, só tem medicao
-        const conferida = false;
 
         console.log(cicloCorrente, dto);
         this.validaValoresVariaveis(dto, cicloCorrente);
@@ -239,9 +244,50 @@ export class VariavelCicloService {
                 }
             }
 
-            const variveisIds: number[] = [dto.variavel_id];
+            let conferida: boolean = false;
+
+            // Troca de fase
+            if (cicloCorrente.fase === 'Preenchimento') {
+                await this.moveProximaFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn);
+            } else if (cicloCorrente.fase === 'Validacao') {
+                if (dto.aprovar) {
+                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn);
+                } else if (dto.pedido_complementacao) {
+                    await this.criaPedidoComplementacao(
+                        cicloCorrente.variavel.id,
+                        dto.pedido_complementacao,
+                        user,
+                        prismaTxn,
+                        now
+                    );
+                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn);
+                }
+            } else if (cicloCorrente.fase === 'Liberacao') {
+                if (dto.aprovar) {
+                    conferida = true;
+                } else if (dto.pedido_complementacao) {
+                    await this.criaPedidoComplementacao(
+                        cicloCorrente.variavel.id,
+                        dto.pedido_complementacao,
+                        user,
+                        prismaTxn,
+                        now
+                    );
+                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn);
+                }
+            }
+
+            if (conferida)
+                await this.updateSerieVariavelConferida(
+                    cicloCorrente.variavel.id,
+                    dto.data_referencia,
+                    true,
+                    prismaTxn
+                );
+
+            const variaveisIds: number[] = [dto.variavel_id];
             for (const valor of dto.valores) {
-                if (valor.variavel_id) variveisIds.push(valor.variavel_id);
+                if (valor.variavel_id) variaveisIds.push(valor.variavel_id);
                 const variavelInfo = await this.variavelService.loadVariavelComCategorica(
                     'Global',
                     prismaTxn,
@@ -259,10 +305,11 @@ export class VariavelCicloService {
                 );
             }
 
-            await this.variavelService.recalc_series_dependentes(variveisIds, prismaTxn);
-            await this.variavelService.recalc_indicador_usando_variaveis(variveisIds, prismaTxn);
+            await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
+            await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
         });
     }
+
     private validaValoresVariaveis(dto: BatchAnaliseQualitativaDto, cicloCorrente: ICicloCorrente) {
         for (const valor of dto.valores) {
             // Remove variavel_id dos valores principais se for o mesmo que a variável sendo analisada
@@ -317,7 +364,7 @@ export class VariavelCicloService {
             where: {
                 variavel_id: variavelInfo.id,
                 serie: 'Realizado',
-                data_valor: new Date(dataReferencia),
+                data_valor: dataReferencia,
             },
             select: { id: true, valor_nominal: true },
         });
@@ -333,7 +380,7 @@ export class VariavelCicloService {
                 data: {
                     variavel_id: variavelInfo.id,
                     serie: 'Realizado',
-                    data_valor: new Date(dataReferencia),
+                    data_valor: dataReferencia,
                     valor_nominal: valor_nominal,
                     atualizado_em: now,
                     atualizado_por: user.id,
@@ -454,6 +501,14 @@ export class VariavelCicloService {
             },
         });
 
+        if (!ultimaAnalise) {
+            // verificar se o periodo é válido
+            const valid = await this.util.gerarPeriodoVariavelEntreDatas(variavel_id, null, {
+                data_valor: data_referencia,
+            });
+            if (valid.length === 0) throw new BadRequestException('Período não é válido');
+        }
+
         // Buscar valores da variável e suas filhas
         const valores = await this.prisma.serieVariavel.findMany({
             where: {
@@ -530,6 +585,67 @@ export class VariavelCicloService {
                 descricao: null,
                 ...this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
             };
+        });
+    }
+
+    private async getPerfisEmEquipes(userId: number): Promise<PerfilResponsavelEquipe[]> {
+        const userEquipe = await this.prisma.grupoResponsavelEquipeParticipante.findMany({
+            where: { pessoa_id: userId, removido_em: null },
+            include: { grupo_responsavel_equipe: true },
+        });
+        const equipeSet = new Set<PerfilResponsavelEquipe>();
+        for (const equipe of userEquipe) {
+            equipeSet.add(equipe.grupo_responsavel_equipe.perfil);
+        }
+        return Array.from(equipeSet);
+    }
+
+    private async moveProximaFase(
+        variavelId: number,
+        nextPhase: VariavelFase,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<void> {
+        await prismaTxn.variavelCicloCorrente.update({
+            where: { variavel_id: variavelId },
+            data: { fase: nextPhase },
+        });
+    }
+
+    private async criaPedidoComplementacao(
+        variavelId: number,
+        pedido: string,
+        user: PessoaFromJwt,
+        prismaTxn: Prisma.TransactionClient,
+        now: Date
+    ): Promise<void> {
+        await prismaTxn.variavelCicloCorrente.update({
+            where: { variavel_id: variavelId },
+            data: { pedido_complementacao: true },
+        });
+        await prismaTxn.variavelGlobalPedidoComplementacao.create({
+            data: {
+                variavel_id: variavelId,
+                pedido: pedido,
+                criado_por: user.id,
+                referencia_data: now,
+                ultima_revisao: true,
+                atendido: false,
+            },
+        });
+    }
+
+    private async updateSerieVariavelConferida(
+        variavelId: number,
+        dataReferencia: Date,
+        conferida: boolean,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<void> {
+        await prismaTxn.serieVariavel.updateMany({
+            where: {
+                variavel_id: variavelId,
+                data_valor: dataReferencia,
+            },
+            data: { conferida: conferida },
         });
     }
 }
