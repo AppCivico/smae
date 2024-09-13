@@ -579,12 +579,7 @@ export class MetaService {
                     },
                     select: {
                         tipo: true,
-                        equipe: {
-                            select: {
-                                id: true,
-                                titulo: true,
-                            },
-                        },
+                        equipe_id: true,
                     },
                 },
                 cronograma:
@@ -714,14 +709,12 @@ export class MetaService {
                 cronograma: metaCronograma,
                 geolocalizacao: 'get' in geolocalizacao ? geolocalizacao.get(dbMeta.id) || [] : [],
                 pode_editar: podeEditar, // TODO (lembrar,
-                ps_tecnico_cp: dbMeta.PdmPerfil.filter((r) => r.tipo == 'CP').map((r) => ({
-                    id: r.equipe.id,
-                    titulo: r.equipe.titulo,
-                })),
-                ps_ponto_focal: dbMeta.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => ({
-                    id: r.equipe.id,
-                    titulo: r.equipe.titulo,
-                })),
+                ps_tecnico_cp: {
+                    equipes: dbMeta.PdmPerfil.filter((r) => r.tipo == 'CP').map((r) => r.equipe_id),
+                },
+                ps_ponto_focal: {
+                    equipes: dbMeta.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => r.equipe_id),
+                },
             });
         }
 
