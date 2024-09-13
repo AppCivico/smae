@@ -22,6 +22,11 @@ module.exports = {
         vue: 'always',
       },
     ],
+    'no-param-reassign': [
+      'error', {
+        props: false,
+      },
+    ],
   },
   settings: {
     'import/resolver': {
