@@ -7,6 +7,7 @@ import {
     IsBoolean,
     IsEnum,
     IsInt,
+    IsObject,
     IsOptional,
     IsString,
     MaxLength,
@@ -260,6 +261,7 @@ export class CreatePdmDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePSEquipeTecnicoCPDto)
     @ValidateNested()
+    @IsObject()
     ps_tecnico_cp?: CreatePSEquipeTecnicoCPDto;
 
     /**
@@ -269,6 +271,7 @@ export class CreatePdmDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePSEquipeAdminCPDto)
     @ValidateNested()
+    @IsObject()
     ps_admin_cp?: CreatePSEquipeAdminCPDto;
 
     /**
@@ -278,6 +281,7 @@ export class CreatePdmDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePSEquipePontoFocalDto)
     @ValidateNested()
+    @IsObject()
     ps_ponto_focal?: CreatePSEquipePontoFocalDto;
 
     /**
