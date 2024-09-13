@@ -43,5 +43,8 @@ USER node
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 ENV USE_FILE_LOG=1
+ENV PORT=3001
+
+HEALTHCHECK CMD curl --fail localhost:${PORT:-3001}/api/ping || exit 1
 
 CMD ["sh", "./run-api.sh"]
