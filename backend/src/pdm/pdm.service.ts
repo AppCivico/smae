@@ -1598,7 +1598,7 @@ export class PdmService {
             (r) => r !== null && r !== undefined
         );
         const uniqueRotulosB = new Set(rotulosB);
-        if (rotulosA.length !== uniqueRotulosB.size) {
+        if (rotulosB.length !== uniqueRotulosB.size) {
             throw new BadRequestException('Os rótulos para contexto e complementação de meta devem ser únicos');
         }
 

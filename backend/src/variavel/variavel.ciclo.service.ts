@@ -189,18 +189,17 @@ export class VariavelCicloService {
         });
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
 
-        const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
+        //const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
         const userPerfil = await this.getPerfisEmEquipes(user.id);
-        if (!isRoot) {
-            if (cicloCorrente.fase === 'Preenchimento' && !userPerfil.includes('Medicao'))
-                throw new BadRequestException('Apenas usuários com perfil de Medição podem atualizar nesta fase');
 
-            if (cicloCorrente.fase === 'Validacao' && !userPerfil.includes('Validacao'))
-                throw new BadRequestException('Apenas usuários com perfil de Validação podem atualizar nesta fase');
+        if (cicloCorrente.fase === 'Preenchimento' && !userPerfil.includes('Medicao'))
+            throw new BadRequestException('Apenas usuários com perfil de Medição podem atualizar nesta fase');
 
-            if (cicloCorrente.fase === 'Liberacao' && !userPerfil.includes('Liberacao'))
-                throw new BadRequestException('Apenas usuários com perfil de Liberação podem atualizar nesta fase');
-        }
+        if (cicloCorrente.fase === 'Validacao' && !userPerfil.includes('Validacao'))
+            throw new BadRequestException('Apenas usuários com perfil de Validação podem atualizar nesta fase');
+
+        if (cicloCorrente.fase === 'Liberacao' && !userPerfil.includes('Liberacao'))
+            throw new BadRequestException('Apenas usuários com perfil de Liberação podem atualizar nesta fase');
 
         if (dto.data_referencia.valueOf() != cicloCorrente.ultimo_periodo_valido.valueOf())
             throw new BadRequestException(
