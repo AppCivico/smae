@@ -92,6 +92,8 @@ export class PdmService {
         await this.verificaOrgaoAdmin(dto, this.prisma, user);
         await this.verificaPdmAnterioes(dto, this.prisma);
 
+        this.verificaRotulos(dto);
+
         const similarExists = await this.prisma.pdm.count({
             where: {
                 tipo: tipo,
@@ -664,6 +666,7 @@ export class PdmService {
 
         await this.verificaOrgaoAdmin(dto, prismaTx, user);
         await this.verificaPdmAnterioes(dto, prismaTx);
+        this.verificaRotulos(dto);
 
         if (dto.nome) {
             const similarExists = await prismaTx.pdm.count({
@@ -1580,5 +1583,15 @@ export class PdmService {
 
             return await Promise.all(operations);
         });
+    }
+
+    private verificaRotulos(dto: CreatePdmDto | UpdatePdmDto) {
+        const rotulos = [dto.rotulo_macro_tema, dto.rotulo_tema, dto.rotulo_sub_tema].filter(
+            (r) => r !== null && r !== undefined
+        );
+        const uniqueRotulos = new Set(rotulos);
+        if (rotulos.length !== uniqueRotulos.size) {
+            throw new BadRequestException('Os rótulos para macrotema, tema e subtema devem ser únicos');
+        }
     }
 }
