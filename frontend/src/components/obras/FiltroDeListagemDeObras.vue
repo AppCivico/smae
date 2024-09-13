@@ -58,29 +58,52 @@
       <div class="f1 fb15em">
         <label
           class="label"
-          for="grupo-tematico-id"
+          for="regiao-ids"
         >
-          {{ schema.fields.grupo_tematico_id.spec.label }}
+          {{ schema.fields.regiao_ids.spec.label }}
         </label>
         <select
-          id="grupo-tematico-id"
-          name="grupo_tematico_id"
+          id="regiao-ids"
+          name="regioes"
           class="inputtext light"
-          :aria-busy="chamadasPendentesDeGruposTemáticos.lista"
-          :class="{ error: erroDeGrupoTemático.lista }"
+          :aria-busy="regions.loading"
         >
           <option value="" />
           <option
-            v-for="grupoTematico in listaDeGruposTemáticos"
-            :key="grupoTematico.id"
-            :value="grupoTematico.id"
-            :selected="Number($props.valoresIniciais.grupo_tematico_id) === grupoTematico.id"
+            v-for="regiao in regiõesPorNível[3]"
+            :key="regiao.id"
+            :value="regiao.id"
+            :selected="Number($props.valoresIniciais.regioes) === regiao.id"
           >
-            {{ grupoTematico.nome }}
+            {{ regiao.descricao }}
           </option>
         </select>
       </div>
+      <div class="f1 fb15em">
+        <label
+          class="label"
+          for="status"
+        >
+          {{ schema.fields.status.spec.label }}
+        </label>
+        <select
+          id="status"
+          name="status"
+          class="inputtext light"
+        >
+          <option value="" />
 
+          <option
+            v-for="item in statusObras"
+            :key="item.valor"
+            :value="item.valor"
+            :disabled="!Object.keys(statusObras).length"
+            :selected="$props.valoresIniciais.status === item.valor"
+          >
+            {{ item.nome }}
+          </option>
+        </select>
+      </div>
       <div class="f1 fb15em">
         <label
           class="label"
@@ -105,15 +128,27 @@
       <div class="f1 fb15em">
         <label
           class="label"
-          for="registros_sei"
-        >Processos SEI</label>
-        <input
-          id="registros_sei"
-          class="inputtext light"
-          name="registros_sei"
-          type="search"
-          :value="$route.query.registros_sei"
+          for="grupo-tematico-id"
         >
+          {{ schema.fields.grupo_tematico_id.spec.label }}
+        </label>
+        <select
+          id="grupo-tematico-id"
+          name="grupo_tematico_id"
+          class="inputtext light"
+          :aria-busy="chamadasPendentesDeGruposTemáticos.lista"
+          :class="{ error: erroDeGrupoTemático.lista }"
+        >
+          <option value="" />
+          <option
+            v-for="grupoTematico in listaDeGruposTemáticos"
+            :key="grupoTematico.id"
+            :value="grupoTematico.id"
+            :selected="Number($props.valoresIniciais.grupo_tematico_id) === grupoTematico.id"
+          >
+            {{ grupoTematico.nome }}
+          </option>
+        </select>
       </div>
       <div class="f1 fb15em">
         <label
@@ -170,51 +205,15 @@
       <div class="f1 fb15em">
         <label
           class="label"
-          for="regiao-ids"
-        >
-          {{ schema.fields.regiao_ids.spec.label }}
-        </label>
-        <select
-          id="regiao-ids"
-          name="regioes"
+          for="registros_sei"
+        >Processos SEI</label>
+        <input
+          id="registros_sei"
           class="inputtext light"
-          :aria-busy="regions.loading"
+          name="registros_sei"
+          type="search"
+          :value="$route.query.registros_sei"
         >
-          <option value="" />
-          <option
-            v-for="regiao in regiõesPorNível[3]"
-            :key="regiao.id"
-            :value="regiao.id"
-            :selected="Number($props.valoresIniciais.regioes) === regiao.id"
-          >
-            {{ regiao.descricao }}
-          </option>
-        </select>
-      </div>
-      <div class="f1 fb15em">
-        <label
-          class="label"
-          for="status"
-        >
-          {{ schema.fields.status.spec.label }}
-        </label>
-        <select
-          id="status"
-          name="status"
-          class="inputtext light"
-        >
-          <option value="" />
-
-          <option
-            v-for="item in statusObras"
-            :key="item.valor"
-            :value="item.valor"
-            :disabled="!Object.keys(statusObras).length"
-            :selected="$props.valoresIniciais.status === item.valor"
-          >
-            {{ item.nome }}
-          </option>
-        </select>
       </div>
     </div>
 
@@ -306,6 +305,8 @@
   </form>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { onUnmounted, ref } from 'vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
@@ -314,8 +315,6 @@ import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
-import { storeToRefs } from 'pinia';
-import { onUnmounted, ref } from 'vue';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 
 defineProps({
