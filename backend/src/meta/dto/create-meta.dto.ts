@@ -5,6 +5,7 @@ import {
     IsArray,
     IsBoolean,
     IsInt,
+    IsObject,
     IsOptional,
     IsString,
     MaxLength,
@@ -159,6 +160,7 @@ export class CreateMetaDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePSEquipeTecnicoCPDto)
     @ValidateNested()
+    @IsObject()
     ps_tecnico_cp?: CreatePSEquipeTecnicoCPDto;
 
     /**
@@ -168,6 +170,7 @@ export class CreateMetaDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePSEquipePontoFocalDto)
     @ValidateNested()
+    @IsObject()
     ps_ponto_focal?: CreatePSEquipePontoFocalDto;
 }
 
