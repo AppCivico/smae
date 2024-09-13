@@ -3219,7 +3219,7 @@ export class ProjetoService {
                 arquivado: filters.arquivado,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 ProjetoRegistroSei: filters.registros_sei?.length
-                    ? { some: { processo_sei: { in: filters.registros_sei } } }
+                    ? { some: { processo_sei: { in: filters.registros_sei.map((e) => e.replace(/\D/g, '')) } } }
                     : undefined,
                 PessoasRevisao:
                     filters.revisado == undefined
