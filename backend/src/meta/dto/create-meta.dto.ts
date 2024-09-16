@@ -114,7 +114,7 @@ export class CreateMetaDto {
      * * Apenas no PDM, opcional no PS
      */
     @IsOptional()
-    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @IsArray({ message: 'precisa ser uma array' })
     @ValidateNested({ each: true })
     @Type(() => MetaOrgaoParticipante)
     orgaos_participantes?: MetaOrgaoParticipante[];
