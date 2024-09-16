@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, refs } from '@nestjs/swagger';
 import { NivelOrcamento } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -61,17 +61,26 @@ export class CreatePSEquipePontoFocalDto {
 }
 
 export class RetornoPSEquipeAdminCPDto {
-    @ApiProperty({ type: [Number, IdTituloDto], isArray: true })
+    @ApiProperty({
+        type: 'array',
+        items: { oneOf: [{ type: 'number' }, ...refs(IdTituloDto)] },
+    })
     equipes: number[] | IdTituloDto[];
 }
 
 export class RetornoPSEquipeTecnicoCPDto {
-    @ApiProperty({ type: [Number, IdTituloDto], isArray: true })
+    @ApiProperty({
+        type: 'array',
+        items: { oneOf: [{ type: 'number' }, ...refs(IdTituloDto)] },
+    })
     equipes: number[] | IdTituloDto[];
 }
 
 export class RetornoPSEquipePontoFocalDto {
-    @ApiProperty({ type: [Number, IdTituloDto], isArray: true })
+    @ApiProperty({
+        type: 'array',
+        items: { oneOf: [{ type: 'number' }, ...refs(IdTituloDto)] },
+    })
     equipes: number[] | IdTituloDto[];
 }
 
