@@ -610,6 +610,7 @@ export class VariavelCicloService {
 
         return {
             variavel: this.formatarVariavelResumo(variavel),
+            possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
             ultima_analise: ultimaAnalise
                 ? ({
                       analise_qualitativa: ultimaAnalise.informacoes_complementares ?? '',

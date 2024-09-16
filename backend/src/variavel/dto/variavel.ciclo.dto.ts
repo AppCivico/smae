@@ -159,4 +159,6 @@ export class VariavelAnaliseQualitativaResponseDto {
 
     @ApiProperty({ description: 'Uploads associados', type: [ArquivoBaseDto] })
     uploads: ArquivoBaseDto[];
+
+    possui_variaveis_filhas: boolean;
 }
