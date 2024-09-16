@@ -1,27 +1,30 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PerfilResponsavelEquipe, Prisma, VariavelFase } from '@prisma/client';
+import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { LoggerWithLog } from '../common/LoggerWithLog';
+import { CONST_BOT_USER_ID } from '../common/consts';
 import { Date2YMD } from '../common/date2ymd';
+import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
+import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
+import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
 import {
     AnaliseQualitativaDto,
     BatchAnaliseQualitativaDto,
-    FilterVariavelGlobalCicloDto,
     FilterVariavelAnaliseQualitativaGetDto,
+    FilterVariavelGlobalCicloDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
     VariavelValorDto,
 } from './dto/variavel.ciclo.dto';
 import { VariavelComCategorica, VariavelService } from './variavel.service';
-import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
-import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { VariavelUtilService } from './variavel.util.service';
-import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
 
 interface ICicloCorrente {
     variavel: {
@@ -75,7 +78,11 @@ export class VariavelCicloService {
     async onModuleInit() {
         if (CrontabIsEnabled('variavel_ciclo')) {
             // irá ser necessário verificar uma vez por mes ativar as variaveis
-            this.enabled = true;
+            const botUser = await this.prisma.pessoa.findUnique({
+                where: { id: CONST_BOT_USER_ID },
+                select: { id: true },
+            });
+            this.enabled = !!botUser;
         }
     }
 
@@ -747,5 +754,97 @@ export class VariavelCicloService {
                 descricao: variavel.unidade_medida.descricao,
             },
         };
+    }
+
+    @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT, {
+        timeZone: 'America/Sao_Paulo',
+    })
+    async updateVariavelCiclo() {
+        if (!this.enabled) return;
+
+        const logger = LoggerWithLog('VariavelCicloUpdateService');
+
+        try {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+            await this.prisma.$transaction(async (prismaTx) => {
+                const lockPromise: Promise<{ locked: boolean }[]> =
+                    prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_CICLO_VARIAVEL}) as locked`;
+                lockPromise.then(() => {
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                });
+
+                const locked = await lockPromise;
+                if (!locked[0].locked) return;
+
+                const variaveis = await prismaTx.variavel.findMany({
+                    where: {
+                        tipo: 'Global',
+                        variavel_mae_id: null,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+
+                for (const variavel of variaveis) {
+                    await this.processVariavel(variavel.id, logger);
+                }
+            });
+
+            logger.log('Processamento do ciclo de variáveis concluído');
+        } catch (error) {
+            logger.error(`Erro ao atualizar ciclo de variáveis : ${error.message}`);
+        } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+            await logger.saveLogs(this.prisma, { pessoa_id: CONST_BOT_USER_ID });
+        }
+    }
+
+    private async processVariavel(variavelId: number, logger: LoggerWithLog) {
+        try {
+            // segunda transação para garantir que a variável não seja alterada enquanto processamos
+            await this.prisma.$transaction(async (prismaTx) => {
+                const currentState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
+
+                await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId})`;
+
+                const newState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
+                if (!newState) {
+                    logger.error(`Variável ${variavelId} não encontrada após atualização`);
+                    return;
+                }
+
+                if (this.hasStateChanged(currentState, newState)) {
+                    logger.log(`Mudança de estado em ${variavelId}. Iniciando recálculo.`);
+                    await this.recalculaVariavelNovoCiclo(variavelId, prismaTx);
+                } else {
+                    logger.log(`Sem alterações para a variável ${variavelId}`);
+                }
+            });
+        } catch (error) {
+            logger.error(`Erro ao processar variável ${variavelId}: ${error.message}`);
+        }
+    }
+
+    private async getVariavelCicloCorrente(
+        variavelId: number,
+        prisma: Prisma.TransactionClient
+    ): Promise<VariavelCicloCorrente | null> {
+        return await prisma.variavelCicloCorrente.findUnique({ where: { variavel_id: variavelId } });
+    }
+
+    private hasStateChanged(anterior: VariavelCicloCorrente | null, atualizado: VariavelCicloCorrente): boolean {
+        if (!anterior) return true;
+
+        return (
+            anterior.ultimo_periodo_valido.getTime() !== atualizado.ultimo_periodo_valido.getTime() ||
+            anterior.fase !== atualizado.fase
+        );
+    }
+
+    private async recalculaVariavelNovoCiclo(variavelId: number, prismaTxn: Prisma.TransactionClient) {
+        await this.variavelService.recalc_series_dependentes([variavelId], prismaTxn);
+        await this.variavelService.recalc_indicador_usando_variaveis([variavelId], prismaTxn);
     }
 }
