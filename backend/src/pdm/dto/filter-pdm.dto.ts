@@ -26,4 +26,13 @@ export class FilterPdmDetailDto {
     @IsOptional()
     @Transform(({ value }: any) => value === 'true')
     incluir_auxiliares?: boolean;
+
+    /**
+     * Expandir objetos de equipes
+     * @example "true"
+     */
+    @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }: any) => value === 'true')
+    expandir_equipes?: boolean;
 }

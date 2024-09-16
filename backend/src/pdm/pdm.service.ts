@@ -463,7 +463,8 @@ export class PdmService {
         tipo: TipoPdm,
         id: number,
         user: PessoaFromJwt,
-        readonly: ReadOnlyBooleanType
+        readonly: ReadOnlyBooleanType,
+        exEquipe: boolean | undefined
     ): Promise<PdmDto | PlanoSetorialDto> {
         const pdm = await this.loadPdm(tipo, id, user, readonly);
 
@@ -514,6 +515,10 @@ export class PdmService {
                     relacionamento: 'PDM',
                     removido_em: null,
                 },
+                select: {
+                    tipo: true,
+                    equipe: { select: { id: true, titulo: true } },
+                },
             });
 
             const ps_admin_cp = pdmPerfis.filter((perfil) => perfil.tipo === 'ADMIN');
@@ -531,6 +536,12 @@ export class PdmService {
                   })
                 : [];
 
+            const expandeEquipe = function (item: { equipe: { id: number; titulo: string } }[]) {
+                return item.map((item) => {
+                    return { id: item.equipe.id, titulo: item.equipe.titulo };
+                });
+            };
+
             merged = {
                 ...pdmInfo,
                 legislacao_de_instituicao: pdm.legislacao_de_instituicao,
@@ -538,13 +549,13 @@ export class PdmService {
                 orgao_admin: pdm.orgao_admin,
                 pdm_anteriores: pdm_anteriores,
                 ps_admin_cp: {
-                    equipes: ps_admin_cp.map((item) => item.equipe_id),
+                    equipes: exEquipe ? expandeEquipe(ps_admin_cp) : ps_admin_cp.map((item) => item.equipe.id),
                 },
                 ps_tecnico_cp: {
-                    equipes: ps_tecnico_cp.map((item) => item.equipe_id),
+                    equipes: exEquipe ? expandeEquipe(ps_tecnico_cp) : ps_tecnico_cp.map((item) => item.equipe.id),
                 },
                 ps_ponto_focal: {
-                    equipes: ps_ponto_focal.map((item) => item.equipe_id),
+                    equipes: exEquipe ? expandeEquipe(ps_ponto_focal) : ps_ponto_focal.map((item) => item.equipe.id),
                 },
             } satisfies PlanoSetorialDto;
         }

@@ -1,5 +1,5 @@
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
-import { CreatePSEquipeAdminCPDto, CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from './create-pdm.dto';
+import { RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 
 export class PdmDto {
     nome: string;
@@ -39,9 +39,9 @@ export class PlanoSetorialAnteriorDto {
 }
 
 export class PlanoSetorialDto extends PdmDto {
-    ps_tecnico_cp: CreatePSEquipeAdminCPDto;
-    ps_admin_cp: CreatePSEquipeTecnicoCPDto;
-    ps_ponto_focal: CreatePSEquipePontoFocalDto;
+    ps_tecnico_cp: RetornoPSEquipeAdminCPDto;
+    ps_admin_cp: RetornoPSEquipeTecnicoCPDto;
+    ps_ponto_focal: RetornoPSEquipePontoFocalDto;
 
     legislacao_de_instituicao: string | null;
     monitoramento_orcamento: boolean;

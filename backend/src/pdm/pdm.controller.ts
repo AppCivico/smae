@@ -13,6 +13,7 @@ import {
     forwardRef,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiResponse, ApiTags, refs } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -33,7 +34,6 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
 import { PdmService } from './pdm.service';
-import { TipoPdm } from '@prisma/client';
 
 @ApiTags('PDM')
 @Controller('pdm')
@@ -102,7 +102,7 @@ export class PdmController {
         @CurrentUser() user: PessoaFromJwt,
         @Query() detail: FilterPdmDetailDto
     ): Promise<PdmDto | DetalhePdmDto> {
-        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly');
+        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly', false);
 
         if (!detail.incluir_auxiliares) return pdm;
 
@@ -251,7 +251,7 @@ export class PlanoSetorialController {
         @Query() detail: FilterPdmDetailDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PlanoSetorialDto | DetalhePSDto> {
-        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly');
+        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly', detail.expandir_equipes);
 
         if (!detail.incluir_auxiliares) return pdm as PlanoSetorialDto;
 
@@ -303,7 +303,7 @@ export class PlanoSetorialController {
         @Body() dto: UpdatePdmDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadWrite');
+        await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadWrite', false);
 
         return await this.pdmService.updateDocumento(this.tipoPdm, params.id, params.id2, dto, user);
     }

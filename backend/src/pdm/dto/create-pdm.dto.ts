@@ -19,6 +19,7 @@ import {
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 
 export class CreatePSEquipeAdminCPDto {
     /**
@@ -57,6 +58,21 @@ export class CreatePSEquipePontoFocalDto {
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     equipes: number[];
+}
+
+export class RetornoPSEquipeAdminCPDto {
+    @ApiProperty({ type: [Number, IdTituloDto], isArray: true })
+    equipes: number[] | IdTituloDto[];
+}
+
+export class RetornoPSEquipeTecnicoCPDto {
+    @ApiProperty({ type: [Number, IdTituloDto], isArray: true })
+    equipes: number[] | IdTituloDto[];
+}
+
+export class RetornoPSEquipePontoFocalDto {
+    @ApiProperty({ type: [Number, IdTituloDto], isArray: true })
+    equipes: number[] | IdTituloDto[];
 }
 
 export class CreatePdmDto {
