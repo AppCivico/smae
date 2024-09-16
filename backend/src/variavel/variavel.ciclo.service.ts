@@ -5,7 +5,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_BOT_USER_ID } from '../common/consts';
-import { Date2YMD } from '../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { PdmService } from '../pdm/pdm.service';
@@ -756,9 +756,7 @@ export class VariavelCicloService {
         };
     }
 
-    @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT, {
-        timeZone: 'America/Sao_Paulo',
-    })
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: SYSTEM_TIMEZONE })
     async updateVariavelCiclo() {
         if (!this.enabled) return;
 
