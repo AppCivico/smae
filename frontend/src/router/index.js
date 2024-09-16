@@ -28,6 +28,7 @@ import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
 import variaveis from './variaveis';
 import comunicadosGerais from './comunicadosGerais';
+import oportunidades from './ps.oportunidades';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -69,6 +70,7 @@ export const router = createRouter({
     envios,
     transferenciasVoluntarias,
     comunicadosGerais,
+    oportunidades,
     panoramaTransferencias,
     variaveis,
 
