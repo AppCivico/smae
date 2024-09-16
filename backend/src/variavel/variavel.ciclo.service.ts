@@ -251,7 +251,9 @@ export class VariavelCicloService {
 
             // Troca de fase
             if (cicloCorrente.fase === 'Preenchimento') {
-                await this.moveProximaFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn);
+                if (dto.aprovar) {
+                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn);
+                }
             } else if (cicloCorrente.fase === 'Validacao') {
                 if (dto.aprovar) {
                     // aqui poderia ter o mesmo "problema" de faltar alguma filha, mas ai o
