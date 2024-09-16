@@ -829,7 +829,13 @@ export class MetaService {
                                 (r) => r.equipe.id == equipe_id && r.tipo == 'CP'
                             );
                             if (!pdmPerfil) {
-                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
+                                throw new HttpException(
+                                    `Equipe ${equipe_id} não existe no PDM ${pdm.id}: CP, aceitos: ${detailPdm.PdmPerfil.filter(
+                                        (r) => r.tipo == 'CP'
+                                    ).map((r) => r.equipe.id)}
+                                    `,
+                                    400
+                                );
                             }
                         }
 
@@ -850,7 +856,13 @@ export class MetaService {
                                 (r) => r.equipe.id == equipe_id && r.tipo == 'PONTO_FOCAL'
                             );
                             if (!pdmPerfil) {
-                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
+                                throw new HttpException(
+                                    `Equipe ${equipe_id} não existe no PDM ${pdm.id}: PONTO_FOCAL, aceitos: ${detailPdm.PdmPerfil.filter(
+                                        (r) => r.tipo == 'PONTO_FOCAL'
+                                    ).map((r) => r.equipe.id)}
+                                    `,
+                                    400
+                                );
                             }
                         }
                         await this.upsertPSPerfis(
