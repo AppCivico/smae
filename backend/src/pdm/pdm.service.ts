@@ -464,7 +464,7 @@ export class PdmService {
         id: number,
         user: PessoaFromJwt,
         readonly: ReadOnlyBooleanType,
-        exEquipe: boolean | undefined
+        exEquipe?: boolean
     ): Promise<PdmDto | PlanoSetorialDto> {
         const pdm = await this.loadPdm(tipo, id, user, readonly);
 
