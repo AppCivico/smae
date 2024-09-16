@@ -890,7 +890,7 @@ export class PdmService {
                         tipo: tipo,
                         removido_em: null,
                     },
-                    data: { removido_em: now },
+                    data: { removido_em: now, removido_por: user.id },
                 });
             }
         }
