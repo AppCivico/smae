@@ -52,6 +52,11 @@ interface UploadArquivoInterface {
     };
 }
 
+interface IUltimaAnaliseValor {
+    variavel_id: number;
+    analise_qualitativa: string | null;
+}
+
 @Injectable()
 export class VariavelCicloService {
     private enabled: boolean;
@@ -543,6 +548,7 @@ export class VariavelCicloService {
             orderBy: { criado_em: 'desc' },
             select: {
                 informacoes_complementares: true,
+                valores: true,
                 criado_em: true,
                 pessoaCriador: { select: { nome_exibicao: true } },
             },
@@ -594,7 +600,7 @@ export class VariavelCicloService {
         });
 
         // Processar e formatar os resultados
-        const valoresFormatados = this.formatarValores(valores);
+        const valoresFormatados = this.formatarValores(valores, ultimaAnalise?.valores as any as IUltimaAnaliseValor[]);
         const uploadsFormatados = this.formatarUploads(uploads);
 
         return {
@@ -611,7 +617,10 @@ export class VariavelCicloService {
         };
     }
 
-    private formatarValores(valores: ValorSerieInterface[]): VariavelValorDto[] {
+    private formatarValores(
+        valores: ValorSerieInterface[],
+        ultimaAnaliseValores?: IUltimaAnaliseValor[]
+    ): VariavelValorDto[] {
         const valoresMap = new Map<number, VariavelValorDto>();
 
         for (const valor of valores) {
@@ -620,6 +629,7 @@ export class VariavelCicloService {
                     variavel: this.formatarVariavelResumo(valor.variavel),
                     valor_realizado: null,
                     valor_realizado_acumulado: null,
+                    analise_qualitativa: null,
                 });
             }
 
@@ -630,6 +640,13 @@ export class VariavelCicloService {
                 valorDto.valor_realizado = valor.valor_nominal.toString();
             } else if (valor.serie === 'RealizadoAcumulado') {
                 valorDto.valor_realizado_acumulado = valor.valor_nominal.toString();
+            }
+
+            if (ultimaAnaliseValores && Array.isArray(ultimaAnaliseValores)) {
+                const analiseValor = ultimaAnaliseValores.find((v) => v.variavel_id === valor.variavel.id);
+                if (analiseValor) {
+                    valorDto.analise_qualitativa = analiseValor.analise_qualitativa || null;
+                }
             }
         }
 

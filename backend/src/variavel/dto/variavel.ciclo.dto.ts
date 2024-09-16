@@ -82,6 +82,12 @@ export class VariavelGlobalAnaliseItemDto {
     @ValidateIf((object, value) => value !== '')
     @Type(() => String)
     valor_realizado: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(50000)
+    @ValidateIf((object, value) => value !== '')
+    analise_qualitativa: string;
 }
 
 export class BatchAnaliseQualitativaDto {
@@ -131,6 +137,7 @@ export class VariavelValorDto {
     variavel: VariavelResumo;
     valor_realizado: string | null;
     valor_realizado_acumulado: string | null;
+    analise_qualitativa: string | null;
 }
 
 export class AnaliseQualitativaDto {
