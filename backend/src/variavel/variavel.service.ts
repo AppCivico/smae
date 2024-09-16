@@ -1071,7 +1071,7 @@ export class VariavelService {
                 },
                 variavel_categorica_id: true,
                 // Apenas utilizado para fornecer boolean de se possui filhas.
-                variaveis_filhas: { take: 1, select: { id: true } },
+                variaveis_filhas: { take: 1,where: { removido_em: null }, select: { id: true } },
             },
         });
 

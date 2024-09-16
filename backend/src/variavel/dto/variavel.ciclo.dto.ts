@@ -64,6 +64,7 @@ export class VariavelGlobalCicloDto {
     ultimo_periodo_valido: string;
 
     pedido_complementacao: boolean;
+    possui_variaveis_filhas: boolean;
 }
 
 export class VariavelGlobalAnaliseItemDto {

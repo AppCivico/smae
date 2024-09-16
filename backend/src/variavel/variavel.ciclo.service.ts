@@ -148,6 +148,8 @@ export class VariavelCicloService {
             include: {
                 variavel: {
                     select: {
+                        // Apenas utilizado para fornecer boolean de se possui filhas.
+                        variaveis_filhas: { take: 1, where: { removido_em: null }, select: { id: true } },
                         id: true,
                         titulo: true,
                     },
@@ -163,6 +165,7 @@ export class VariavelCicloService {
                 proximo_periodo_abertura: Date2YMD.toString(v.proximo_periodo_abertura),
                 ultimo_periodo_valido: Date2YMD.toString(v.ultimo_periodo_valido),
                 pedido_complementacao: v.pedido_complementacao,
+                possui_variaveis_filhas: v.variavel.variaveis_filhas.length > 0,
             } satisfies VariavelGlobalCicloDto;
         });
 
