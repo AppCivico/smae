@@ -520,6 +520,7 @@ export class VariavelCicloService {
                 codigo: true,
                 titulo: true,
                 valor_base: true,
+                unidade_medida: { select: { id: true, sigla: true, descricao: true } },
                 variaveis_filhas: {
                     where: { removido_em: null, tipo: 'Global' },
                     select: {
@@ -582,6 +583,7 @@ export class VariavelCicloService {
                         codigo: true,
                         titulo: true,
                         valor_base: true,
+                        unidade_medida: { select: { id: true, sigla: true, descricao: true } },
                     },
                 },
                 serie: true,
@@ -736,6 +738,11 @@ export class VariavelCicloService {
             codigo: variavel.codigo,
             titulo: variavel.titulo,
             valor_base: variavel.valor_base.toString(),
+            unidade_medida: {
+                id: variavel.unidade_medida.id,
+                sigla: variavel.unidade_medida.sigla,
+                descricao: variavel.unidade_medida.descricao,
+            },
         };
     }
 }

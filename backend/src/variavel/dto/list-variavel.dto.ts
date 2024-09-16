@@ -6,6 +6,7 @@ import { VariaveisPeriodosDto } from './create-variavel.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Decimal } from '@prisma/client/runtime/library';
+import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -33,7 +34,6 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     liberacao_grupo_ids: number[] | null;
 }
 
-
 export class VariavelResumoInput {
     id: number;
     suspendida_em: Date | null;
@@ -44,6 +44,7 @@ export class VariavelResumoInput {
     codigo: string;
     titulo: string;
     valor_base: Decimal;
+    unidade_medida: IdSiglaDescricao;
 }
 
 export class VariavelResumo {
@@ -54,6 +55,7 @@ export class VariavelResumo {
     id: number;
     suspendida: boolean;
     variavel_categorica_id: number | null;
+    unidade_medida: IdSiglaDescricao;
 
     /***
      * quantas cadas decimais são esperadas no envio/retorno

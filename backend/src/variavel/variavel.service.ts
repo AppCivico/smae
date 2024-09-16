@@ -967,7 +967,7 @@ export class VariavelService {
             where: {
                 AND: whereSet,
                 tipo: tipo == 'Global' ? { in: ['Global', 'Calculada'] } : tipo,
-                variavel_mae_id: !filtraMae ? undefined : filters.variavel_mae_id ?? null,
+                variavel_mae_id: !filtraMae ? undefined : (filters.variavel_mae_id ?? null),
             },
             select: {
                 id: true,
@@ -2387,6 +2387,7 @@ export class VariavelService {
                 suspendida: variavel.suspendida,
                 valor_base: variavel.valor_base.toString(),
                 variavel_categorica_id: variavel.variavel_categorica_id,
+                unidade_medida: variavel.unidade_medida,
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,
@@ -3210,5 +3211,4 @@ export class VariavelService {
 
         return detailDto;
     }
-
 }
