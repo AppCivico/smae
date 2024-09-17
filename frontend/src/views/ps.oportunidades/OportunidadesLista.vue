@@ -149,11 +149,10 @@
         </td>
         <td>
           <button
-
             class="like-a__text"
-            arial-label="excluir"
-            title="excluir"
-            @click="excluirTransferencia(item.id)"
+            arial-label="editar"
+            title="editar"
+            @click="editarOportunidade(item.id)"
           >
             <svg
               width="20"
@@ -194,6 +193,43 @@
   >
     carregar mais
   </button>
+  <SmallModal v-if="showModal">
+    <div class="flex spacebetween center mb2">
+      <h2>
+        Editar Avaliação
+      </h2>
+      <hr class="ml2 f1">
+      <CheckClose
+        :apenas-modal="true"
+        :formulario-sujo="false"
+        @close="showModal = false"
+      />
+    </div>
+    <div class="f0">
+      <label
+        for="avaliacao"
+        class="label tc300"
+      >Avaliação</label>
+      <select
+        id="avaliacao"
+        v-model.trim="tipo"
+        class="inputtext mb1"
+        name="avaliacao"
+      >
+        <option value="" />
+        <option
+          value="Inadequada"
+        >
+          Inadequada
+        </option>
+        <option
+          value="Selecionada"
+        >
+          Selecionada
+        </option>
+      </select>
+    </div>
+  </SmallModal>
 </template>
 
 <script setup>
@@ -202,6 +238,7 @@ import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
+import SmallModal from '@/components/SmallModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -210,6 +247,7 @@ const oportunidades = useOportunidadesStore();
 
 const alertStore = useAlertStore();
 
+const showModal = ref(false);
 const ano = ref(route.query.ano);
 const palavras_chave = ref(route.query.palavras_chave);
 
@@ -231,6 +269,11 @@ const tipos = [
     name: 'Emenda',
   },
 ];
+
+function editarOportunidade(id) {
+  this.showModal = true;
+  console.log('editarOportunidade id:', id);
+}
 
 function atualizarUrl() {
   router.push({
