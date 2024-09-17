@@ -1,6 +1,6 @@
+import { defineStore } from 'pinia';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -249,6 +249,13 @@ export const useObrasStore = defineStore('obrasStore', {
         await this.requestS.post(`${baseUrl}/projeto-mdo/revisar-obras/`, params);
         this.chamadasPendentes.lista = false;
         item.revisado = revisado;
+
+        if (revisado) {
+          this.totalRegistrosRevisados += 1;
+        } else {
+          this.totalRegistrosRevisados -= 1;
+        }
+
         return true;
       } catch (erro) {
         this.erro = erro;
