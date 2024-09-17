@@ -178,7 +178,7 @@ EXECUTE PROCEDURE f_transferencia_parlamentar_update_tsvector();
 CREATE OR REPLACE FUNCTION f_transfere_gov_oportunidade_update_tsvector() RETURNS TRIGGER AS $$
 BEGIN
     NEW.vetores_busca = (
-        SELECT to_tsvector('portuguese',
+        SELECT to_tsvector('simple',
             COALESCE(CAST(NEW.tipo AS TEXT), '') || ' ' ||
             COALESCE(CAST(NEW.avaliacao AS TEXT), '') || ' ' ||
             COALESCE(CAST(NEW.id_programa AS TEXT), '') || ' ' ||
