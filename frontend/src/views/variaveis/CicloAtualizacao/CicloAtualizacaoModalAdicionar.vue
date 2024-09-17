@@ -51,6 +51,7 @@
               class="inputtext light "
               type="text"
               name="valor_realizado"
+              @update:model-value="atualizarVariavelAcululado"
             />
 
             <ErrorMessage
@@ -59,9 +60,10 @@
           </div>
 
           <div
+            v-if="emFoco?.variavel.acumulativa"
             :class="[
               'f1 formulario__item formulario__item--valor_realizado_acumulado',
-              { 'formulario__item--disabled': !emFoco?.variavel.acumulativa }
+              'formulario__item--disabled'
             ]"
           >
             <LabelFromYup
@@ -72,7 +74,7 @@
               class="inputtext light f1"
               type="text"
               name="valor_realizado_acumulado"
-              :disabled="!emFoco?.variavel.acumulativa"
+              disabled
             />
 
             <ErrorMessage
@@ -157,10 +159,31 @@ const valorInicial = {
   analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
 };
 
-const { handleSubmit } = useForm({
+const { handleSubmit, setFieldValue } = useForm({
   validationSchema: schema,
   initialValues: valorInicial,
 });
+
+function atualizarVariavelAcululado(valor: string) {
+  const valorAtual = emFoco?.valores[0];
+
+  if (!valorAtual) {
+    throw new Error('Valor atual não encontrado');
+  }
+
+  const valorVariavelInicial = Number(valorAtual.valor_realizado);
+  const valorVariavelAcululadoInicial = Number(
+    valorAtual.valor_realizado_acumulado,
+  );
+  const novoValor = Number(valor);
+
+  const novoValorAcumulado = (valorVariavelAcululadoInicial - valorVariavelInicial) + novoValor;
+
+  setFieldValue(
+    'valor_realizado_acumulado',
+    novoValorAcumulado.toString(),
+  );
+}
 
 const onSubmit = handleSubmit(async (valores) => {
   if (!emFoco) {

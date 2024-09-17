@@ -100,6 +100,7 @@
                   ]"
                   type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                  @update:model-value="atualizarVariavelAcululado(variavelDadoIndex, $event)"
                 />
               </td>
 
@@ -197,7 +198,7 @@ const valorInicial = {
   variaveis_dados: valorInicialVariaveis,
 };
 
-const { handleSubmit, errors } = useForm({
+const { handleSubmit, errors, setFieldValue } = useForm({
   validationSchema: schema,
   initialValues: valorInicial,
 });
@@ -279,6 +280,21 @@ function temErro(caminho: string) {
   }
 
   return erro[caminho];
+}
+
+function atualizarVariavelAcululado(variavelIndex: number, valor: string) {
+  const valorVariavelInicial = Number(emFoco?.valores[variavelIndex].valor_realizado);
+  const valorVariavelAcululadoInicial = Number(
+    emFoco?.valores[variavelIndex].valor_realizado_acumulado,
+  );
+  const novoValor = Number(valor);
+
+  const novoValorAcumulado = (valorVariavelAcululadoInicial - valorVariavelInicial) + novoValor;
+
+  setFieldValue(
+    `variaveis_dados[${variavelIndex}].valor_realizado_acumulado` as any,
+    novoValorAcumulado,
+  );
 }
 </script>
 

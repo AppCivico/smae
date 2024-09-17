@@ -93,7 +93,6 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
       });
 
       this.emFoco = resposta;
-      console.log(this.emFoco);
     },
     async enviarDados(dados: DadosASeremEnviados) {
       const dadosASeremEnviados = {

@@ -65,7 +65,7 @@ const $router = useRouter();
 function fecharModal() {
   const { state } = window.history;
 
-  if (state.back.includes('/variaveis/ciclo-atualizacao')) {
+  if (state.back?.includes('/variaveis/ciclo-atualizacao')) {
     $router.push(state.back);
   }
 
@@ -77,7 +77,7 @@ function fecharModal() {
   });
 }
 
-onMounted(() => {
+onMounted(async () => {
   const cicloAtualizacaoId = $route.params.cicloAtualizacaoId as string;
   const dataReferencia = $route.params.dataReferencia as string;
 
@@ -85,7 +85,11 @@ onMounted(() => {
     fecharModal();
   }
 
-  cicloAtualizacaoStore.obterCicloPorId(cicloAtualizacaoId, dataReferencia);
+  try {
+    await cicloAtualizacaoStore.obterCicloPorId(cicloAtualizacaoId, dataReferencia);
+  } catch (err) {
+    fecharModal();
+  }
 });
 
 const conteudoEscolhido = computed<ConteudoOpcao>(() => {
