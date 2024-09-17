@@ -363,22 +363,44 @@ export class VariavelCicloService {
         const valorGlobalOuMae = dto.valores.filter((valor) => !valor.variavel_id);
         const valorFilhas = dto.valores.filter((valor) => valor.variavel_id);
 
-        if (valorGlobalOuMae.length > 0 && cicloCorrente.variavel.variaveis_filhas.length > 0)
-            if (valorFilhas.length > 0)
-                throw new BadRequestException(
-                    'Valores de variáveis mãe e filhas não podem ser fornecidos simultaneamente'
-                );
+        const variableIds = dto.valores.map((v) => v.variavel_id).filter((id) => id !== undefined);
+        const uniqueIds = new Set(variableIds);
+        if (variableIds.length !== uniqueIds.size) {
+            throw new BadRequestException('Valores duplicados para a mesma variável não são permitidos');
+        }
 
-        if (valorGlobalOuMae.length > 1 && cicloCorrente.variavel.variaveis_filhas.length === 0)
-            throw new BadRequestException('Apenas um valor pode ser fornecido para uma variável sem filhas');
+        if (cicloCorrente.variavel.variaveis_filhas.length > 0) {
+            if (valorGlobalOuMae.length > 0) {
+                throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
+            }
+            if (valorFilhas.length === 0) {
+                throw new BadRequestException('É necessário fornecer valores para as variáveis filhas');
+            }
+        } else {
+            if (valorGlobalOuMae.length === 0) {
+                throw new BadRequestException('É necessário fornecer um valor para a variável');
+            }
+            if (valorGlobalOuMae.length > 1) {
+                throw new BadRequestException('Apenas um valor pode ser fornecido para uma variável sem filhas');
+            }
+            if (valorFilhas.length > 0) {
+                throw new BadRequestException('Variáveis sem filhas não podem ter valores de filhas');
+            }
+        }
 
         const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
         for (const valor of valorFilhas) {
             if (!valor.variavel_id) continue;
-            if (!cicloCorrente.variavel.variaveis_filhas.map((v) => v.id).includes(valor.variavel_id))
-                throw new BadRequestException('Variável filha não encontrada');
-            if (filhasSet.has(valor.variavel_id)) filhasSet.delete(valor.variavel_id);
-            else throw new BadRequestException('Variável filha duplicada');
+            if (!filhasSet.has(valor.variavel_id)) {
+                throw new BadRequestException(`Variável filha ${valor.variavel_id} não encontrada`);
+            }
+            filhasSet.delete(valor.variavel_id);
+        }
+
+        if (filhasSet.size > 0) {
+            throw new BadRequestException(
+                `Valores não fornecidos para as variáveis filhas: ${Array.from(filhasSet).join(', ')}`
+            );
         }
     }
 
