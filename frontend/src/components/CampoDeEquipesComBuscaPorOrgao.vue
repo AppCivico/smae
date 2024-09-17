@@ -1,4 +1,6 @@
 <script setup>
+// @todo entender e corrigir o motivo desse componente estar dando
+// um looping infinito quando é atualizado pelo live reload
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 import requestS from '@/helpers/requestS.ts';
@@ -18,6 +20,10 @@ const props = defineProps({
     required: true,
   },
   orgaosPermitidos: {
+    type: Array,
+    default: () => [],
+  },
+  equipesIds: {
     type: Array,
     default: () => [],
   },
@@ -148,6 +154,14 @@ async function montar(valoresIniciais) {
     const buscaDeEquipe = requestS.get(`${baseUrl}/equipe-responsavel`)
       .then(({ linhas }) => {
         if (Array.isArray(linhas)) {
+          // se o componente receber os ids possíveis de equipes,
+          // retornar apenas as equipes selecionadas
+          if (props.equipesIds) {
+            const equipesFiltradas = linhas.filter((equipe) => props.equipesIds
+              .includes(equipe.id));
+            equipes.value = equipesFiltradas;
+            return;
+          }
           equipes.value = linhas;
         } else {
           throw new Error('lista de equipes entregue fora do padrão esperado');
