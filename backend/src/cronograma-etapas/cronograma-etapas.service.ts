@@ -284,15 +284,6 @@ export class CronogramaEtapaService {
         geoDto.etapa_id = etapasIds;
         const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
 
-        const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
-            where: { id: { in: equipesIds } },
-            select: { id: true, titulo: true },
-        });
-        const equipesMap = new Map<number, string>();
-        for (const equipe of equipes) {
-            equipesMap.set(equipe.id, equipe.titulo);
-        }
-
         for (const cronogramaEtapa of cronogramaEtapas) {
             if (cronogramaEtapa.etapa.etapa_pai_id) {
                 const firstLevelParentIndex = cronogramaEtapas
@@ -334,11 +325,11 @@ export class CronogramaEtapaService {
                             ordem: cronogramaEtapa.ordem,
                         },
                     ],
-                    ps_ponto_focal: cronogramaEtapa.etapa.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => ({
-                        id: r.equipe_id,
-                        titulo: equipesMap.get(r.equipe_id) ?? '',
-                    })),
-
+                    ps_ponto_focal: {
+                        equipes: cronogramaEtapa.etapa.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map(
+                            (r) => r.equipe_id
+                        ),
+                    },
                     id: cronogramaEtapa.etapa.id,
                     etapa_id: cronogramaEtapa.etapa.id,
                     etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
@@ -386,10 +377,9 @@ export class CronogramaEtapaService {
                             const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
 
                             return {
-                                ps_ponto_focal: f.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => ({
-                                    id: r.equipe_id,
-                                    titulo: equipesMap.get(r.equipe_id) ?? '',
-                                })),
+                                ps_ponto_focal: {
+                                    equipes: f.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => r.equipe_id),
+                                },
 
                                 CronogramaEtapa: f.CronogramaEtapa.map((x) => {
                                     return {
@@ -438,12 +428,11 @@ export class CronogramaEtapaService {
                                         );
                                         const atrasoSubFaseGrau = await this.getAtrasoGrau(atrasoSubFase);
                                         return {
-                                            ps_ponto_focal: ff.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map(
-                                                (r) => ({
-                                                    id: r.equipe_id,
-                                                    titulo: equipesMap.get(r.equipe_id) ?? '',
-                                                })
-                                            ),
+                                            ps_ponto_focal: {
+                                                equipes: ff.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map(
+                                                    (r) => r.equipe_id
+                                                ),
+                                            },
                                             CronogramaEtapa: ff.CronogramaEtapa.map((x) => {
                                                 return { id: x.id, cronograma_id: x.cronograma_id, ordem: x.ordem };
                                             }),

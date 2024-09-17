@@ -1,5 +1,5 @@
-import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
+import { CreatePSEquipePontoFocalDto } from '../../pdm/dto/create-pdm.dto';
 
 export enum CronogramaEtapaAtrasoGrau {
     Concluido,
@@ -92,7 +92,7 @@ export class CEEtapaDto {
     etapa_filha?: CEEtapaDto[] | null;
     CronogramaEtapa: CECronogramaEtapaCronoId[];
     variavel: EtapaVariavelItemDto | null;
-    ps_ponto_focal: IdTituloDto[];
+    ps_ponto_focal: CreatePSEquipePontoFocalDto;
 }
 
 export class CronogramaEtapaResponsavel {
