@@ -151,6 +151,7 @@ export class VariavelCicloService {
                     AND: whereFilter,
                 },
                 fase: filters.fase,
+                eh_corrente: true,
             },
             include: {
                 variavel: {
@@ -187,6 +188,7 @@ export class VariavelCicloService {
                     AND: whereFilter,
                 },
                 variavel_id: dto.variavel_id,
+                eh_corrente: true,
             },
             include: {
                 variavel: {

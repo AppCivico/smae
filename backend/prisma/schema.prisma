@@ -6975,6 +6975,7 @@ model VariavelCicloCorrente {
     proximo_periodo_abertura DateTime     @db.Date
     ultimo_periodo_valido    DateTime     @db.Date
     pedido_complementacao    Boolean      @default(false)
+    eh_corrente              Boolean      @default(true)
 
     variavel           Variavel             @relation(fields: [variavel_id], references: [id])
     ViewVariavelGlobal ViewVariavelGlobal[]

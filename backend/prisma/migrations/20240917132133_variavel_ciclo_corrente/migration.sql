@@ -1,3 +1,5 @@
+-- AlterTable
+ALTER TABLE "variavel_ciclo_corrente" ADD COLUMN     "eh_corrente" BOOLEAN NOT NULL DEFAULT true;
 CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente(p_variavel_id int)
     RETURNS void
     AS $$
@@ -96,29 +98,3 @@ END;
 
 $$
 LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION f_trigger_update_variavel_ciclo()
-    RETURNS TRIGGER
-    AS $$
-BEGIN
-    IF(TG_OP = 'UPDATE') OR(TG_OP = 'INSERT') THEN
-        PERFORM
-            f_atualiza_variavel_ciclo_corrente(NEW.id);
-        END IF;
-    RETURN NEW;
-END;
-
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER tgr_update_variavel_ciclo_corrente
-    AFTER UPDATE ON variavel
-    FOR EACH ROW
-    WHEN((OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao OR OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento OR OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao OR OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao))
-    EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
-
-CREATE TRIGGER tgr_insert_variavel_ciclo_corrente
-    AFTER INSERT ON variavel
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
-
