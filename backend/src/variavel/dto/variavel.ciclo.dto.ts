@@ -98,6 +98,7 @@ export class UpsertVariavelGlobalCicloDocumentoDto {
     descricao?: string | null;
 
     @IsString()
+    @MaxLength(255)
     upload_token: string;
 }
 
@@ -116,7 +117,8 @@ export class BatchAnaliseQualitativaDto {
 
     @IsOptional()
     @IsArray()
-    @IsString({ each: true })
+    @Type(() => UpsertVariavelGlobalCicloDocumentoDto)
+    @ValidateNested({ each: true })
     uploads?: UpsertVariavelGlobalCicloDocumentoDto[];
 
     @IsArray()
