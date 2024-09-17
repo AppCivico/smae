@@ -160,7 +160,7 @@
               width="20"
               height="20"
             >
-              <use xlink:href="#i_remove" />
+              <use xlink:href="#i_edit" />
             </svg>
           </button>
         </td>
