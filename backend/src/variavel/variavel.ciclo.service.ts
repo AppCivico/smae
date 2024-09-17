@@ -54,6 +54,7 @@ interface UploadArquivoInterface {
         nome_original: string;
         diretorio_caminho: string | null;
     };
+    descricao: string | null;
 }
 
 interface IUltimaAnaliseValor {
@@ -634,7 +635,7 @@ export class VariavelCicloService {
                 referencia_data: data_referencia,
                 removido_em: null,
             },
-            select: { arquivo: true },
+            select: { arquivo: true, descricao: true },
         });
 
         // Processar e formatar os resultados
@@ -697,7 +698,7 @@ export class VariavelCicloService {
             const arquivo = upload.arquivo;
             return {
                 ...arquivo,
-                descricao: null,
+                descricao: upload.descricao,
                 ...this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
             };
         });
