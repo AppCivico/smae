@@ -163,7 +163,9 @@ export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
     'nome_original',
     'download_token',
     'descricao',
-]) {}
+]) {
+    descricao: string | null;
+}
 
 export class VariavelAnaliseQualitativaResponseDto {
     variavel: VariavelResumo;
