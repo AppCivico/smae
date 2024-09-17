@@ -7042,6 +7042,7 @@ model VariavelGlobalCicloDocumento {
     variavel_id Int
 
     referencia_data DateTime @db.Date
+    descricao      String?
 
     arquivo_id Int
     arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])

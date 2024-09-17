@@ -91,6 +91,16 @@ export class VariavelGlobalAnaliseItemDto {
     analise_qualitativa: string;
 }
 
+export class UpsertVariavelGlobalCicloDocumentoDto {
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    descricao?: string | null;
+
+    @IsString()
+    upload_token: string;
+}
+
 export class BatchAnaliseQualitativaDto {
     @IsInt()
     @Transform(NumberTransform)
@@ -107,7 +117,7 @@ export class BatchAnaliseQualitativaDto {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    uploads?: string[];
+    uploads?: UpsertVariavelGlobalCicloDocumentoDto[];
 
     @IsArray()
     @Type(() => VariavelGlobalAnaliseItemDto)

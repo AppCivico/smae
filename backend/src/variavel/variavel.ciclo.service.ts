@@ -18,6 +18,7 @@ import {
     BatchAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaGetDto,
     FilterVariavelGlobalCicloDto,
+    UpsertVariavelGlobalCicloDocumentoDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
@@ -244,17 +245,18 @@ export class VariavelCicloService {
             });
 
             // uploads se existirem
-            if (dto.uploads && dto.uploads.length > 0) {
-                for (const uploadToken of dto.uploads) {
-                    const uploadId = this.uploadService.checkUploadOrDownloadToken(uploadToken);
-                    await prismaTxn.variavelGlobalCicloDocumento.create({
-                        data: {
-                            variavel_id: dto.variavel_id,
-                            referencia_data: new Date(dto.data_referencia),
-                            arquivo_id: uploadId,
-                            criado_por: user.id,
+            if (dto.uploads && Array.isArray(dto.uploads)) {
+                for (const upload of dto.uploads) {
+                    await this.upsertVariavelGlobalCicloDocumento(
+                        dto.variavel_id,
+                        new Date(dto.data_referencia),
+                        {
+                            descricao: upload.descricao,
+                            upload_token: upload.upload_token,
                         },
-                    });
+                        user,
+                        prismaTxn
+                    );
                 }
             }
 
@@ -869,5 +871,43 @@ export class VariavelCicloService {
     private async recalculaVariavelNovoCiclo(variavelId: number, prismaTxn: Prisma.TransactionClient) {
         await this.variavelService.recalc_series_dependentes([variavelId], prismaTxn);
         await this.variavelService.recalc_indicador_usando_variaveis([variavelId], prismaTxn);
+    }
+
+    async upsertVariavelGlobalCicloDocumento(
+        variavel_id: number,
+        referencia_data: Date,
+        dto: UpsertVariavelGlobalCicloDocumentoDto,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient
+    ): Promise<void> {
+        const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+
+        const existingDoc = await prismaTx.variavelGlobalCicloDocumento.findFirst({
+            where: {
+                variavel_id: variavel_id,
+                referencia_data: referencia_data,
+                arquivo_id: uploadId,
+                removido_em: null,
+            },
+        });
+
+        if (existingDoc) {
+            await prismaTx.variavelGlobalCicloDocumento.update({
+                where: { id: existingDoc.id },
+                data: {
+                    descricao: dto.descricao,
+                },
+            });
+        } else {
+            await prismaTx.variavelGlobalCicloDocumento.create({
+                data: {
+                    variavel_id: variavel_id,
+                    referencia_data: referencia_data,
+                    descricao: dto.descricao,
+                    arquivo_id: uploadId,
+                    criado_por: user.id,
+                },
+            });
+        }
     }
 }
