@@ -4,8 +4,9 @@ import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
-  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
+  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore
 } from '@/stores';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
@@ -45,6 +46,10 @@ const { singleEtapa } = storeToRefs(EtapasStore);
 
 const RegionsStore = useRegionsStore();
 const { tempRegions } = storeToRefs(RegionsStore);
+
+const EquipesStore = useEquipesStore();
+EquipesStore.buscarTudo();
+const { lista } = storeToRefs(EquipesStore);
 
 const title = ref(`Adicionar ${group.value}`);
 const level1 = ref(null);
@@ -201,6 +206,13 @@ function maskDate(el) {
       el.target.value = data;
     }
   }
+}
+
+// @todo, talvez isso deva ser um helper?
+function pegaPsTecnicoCpCompleto(idsDasEquipes) {
+  const listaDeEquipes = lista.value;
+
+  return listaDeEquipes.filter((equipe) => idsDasEquipes.includes(equipe.id));
 }
 
 const valoresIniciais = computed(() => (currentFase.value?.loading
@@ -369,14 +381,18 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         <hr class="mt2 mb2">
 
         <label class="label">
-          Responsável <span class="tvermelho">*</span>
+          Equipe Responsável
         </label>
         <div class="flex mb1">
           <div class="f1">
             <AutocompleteField
-              :controlador="responsaveis"
-              :grupo="usersAvailable"
-              label="nome_exibicao"
+              name="values.ps_ponto_focal.equipes"
+              :controlador="{
+                busca: '',
+                participantes: values.ps_ponto_focal.equipes,
+              }"
+              :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa.ps_ponto_focal.equipes)"
+              label="titulo"
             />
           </div>
         </div>

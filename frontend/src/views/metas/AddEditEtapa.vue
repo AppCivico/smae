@@ -1,5 +1,5 @@
 <script setup>
-import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { etapa as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
@@ -11,6 +11,7 @@ import { useEtapasStore } from '@/stores/etapas.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions, ref } from 'vue';
@@ -59,6 +60,10 @@ EtapasStore.clearEdit();
 const RegionsStore = useRegionsStore();
 const { regions, tempRegions } = storeToRefs(RegionsStore);
 if (!regions.length) RegionsStore.getAll();
+
+const EquipesStore = useEquipesStore();
+EquipesStore.buscarTudo();
+const { lista } = storeToRefs(EquipesStore);
 
 let title = 'Adicionar etapa';
 
@@ -169,6 +174,12 @@ if (etapa_id) {
     }
   }
 })();
+
+function pegaPsTecnicoCpCompleto(idsDasEquipes) {
+  const listaDeEquipes = lista.value;
+
+  return listaDeEquipes.filter((equipe) => idsDasEquipes.includes(equipe.id));
+}
 
 async function onSubmit(values) {
   try {
@@ -398,13 +409,17 @@ function maskDate(el) {
 
       <hr class="mt2 mb2">
 
-      <label class="label">Responsável<span class="tvermelho">*</span></label>
+      <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
       <div class="flex">
         <div class="f1 mb1">
           <AutocompleteField
-            :controlador="responsaveis"
-            :grupo="usersAvailable"
-            label="nome_exibicao"
+            name="values.ps_ponto_focal.equipes"
+            :controlador="{
+              busca: '',
+              participantes: values.ps_ponto_focal.equipes,
+            }"
+            :grupo="pegaPsTecnicoCpCompleto(singleMeta.ps_ponto_focal.equipes)"
+            label="titulo"
           />
         </div>
       </div>
