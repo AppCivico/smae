@@ -70,7 +70,7 @@ export class EtapaService {
             select: { meta_id: true },
         });
 
-        const meta = await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
         if (dto.inicio_previsto && dto.termino_previsto && dto.inicio_previsto > dto.termino_previsto)
             throw new BadRequestException(MSG_INI_POSTERIOR_TERM_PREV);
@@ -405,15 +405,15 @@ export class EtapaService {
                     let relacionamento: 'META' | 'INICIATIVA' | 'ATIVIDADE';
                     let relacionamentoId: number;
 
-                    if (etapaInfo.cronograma.meta_id) {
-                        relacionamento = 'META';
-                        relacionamentoId = etapaInfo.cronograma.meta_id;
+                    if (etapaInfo.cronograma.atividade_id) {
+                        relacionamento = 'ATIVIDADE';
+                        relacionamentoId = etapaInfo.cronograma.atividade_id;
                     } else if (etapaInfo.cronograma.iniciativa_id) {
                         relacionamento = 'INICIATIVA';
                         relacionamentoId = etapaInfo.cronograma.iniciativa_id;
-                    } else if (etapaInfo.cronograma.atividade_id) {
-                        relacionamento = 'ATIVIDADE';
-                        relacionamentoId = etapaInfo.cronograma.atividade_id;
+                    } else if (etapaInfo.cronograma.meta_id) {
+                        relacionamento = 'META';
+                        relacionamentoId = etapaInfo.cronograma.meta_id;
                     } else {
                         throw new BadRequestException('Etapa não está associada a uma meta, iniciativa ou atividade');
                     }
