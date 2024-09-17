@@ -24,27 +24,26 @@
         max="9999"
       >
     </div>
-
     <div class="f0">
       <label
-        for="esfera"
+        for="tipo"
         class="label tc300"
       >Modalidade</label>
-      <!-- <select
-        id="esfera"
-        v-model.trim="esfera"
+      <select
+        id="tipo"
+        v-model.trim="tipo"
         class="inputtext mb1"
-        name="esfera"
+        name="tipo"
       >
         <option value="" />
         <option
-          v-for="item in Object.values(esferasDeTransferencia)"
-          :key="item.valor"
-          :value="item.valor"
+          v-for="(tipo, id) in tipos"
+          :key="id"
+          :value="tipo.value"
         >
-          {{ item.nome }}
+          {{ tipo.name }}
         </option>
-      </select> -->
+      </select>
     </div>
 
     <div class="f0">
@@ -119,34 +118,34 @@
         :key="item.id"
       >
         <td>
-          {{ item.desc_orgao_sup_programa }}
+          {{ item.desc_orgao_sup_programa || ' - ' }}
         </td>
         <td>
-          {{ item.nome_programa }}
+          {{ item.nome_programa || ' - ' }}
         </td>
         <td>
-          {{ item.cod_programa }}
+          {{ item.cod_programa || ' - ' }}
         </td>
         <td>
-          {{ item.sit_programa }}
+          {{ item.sit_programa || ' - ' }}
         </td>
         <td>
-          {{ item.data_disponibilizacao }}
+          {{ item.data_disponibilizacao || ' - ' }}
         </td>
         <td>
-          {{ item.dt_ini_receb }}
+          {{ item.dt_ini_receb || ' - ' }}
         </td>
         <td>
-          {{ item.dt_fim_receb }}
+          {{ item.dt_fim_receb || ' - ' }}
         </td>
         <td>
-          {{ item.modalidade_programa }}
+          {{ item.modalidade_programa || ' - ' }}
         </td>
         <td>
-          {{ item.acao_orcamentaria }}
+          {{ item.acao_orcamentaria || ' - ' }}
         </td>
         <td>
-          {{ item.avaliacao }}
+          {{ item.avaliacao || 'Não avaliado' }}
         </td>
         <td>
           <button
@@ -217,6 +216,21 @@ const palavras_chave = ref(route.query.palavras_chave);
 const {
   lista, chamadasPendentes, erro, paginação,
 } = storeToRefs(oportunidades);
+
+const tipos = [
+  {
+    value: 'voluntaria',
+    name: 'Voluntária',
+  },
+  {
+    value: 'especifica',
+    name: 'Específica',
+  },
+  {
+    value: 'emenda',
+    name: 'Emenda',
+  },
+];
 
 function atualizarUrl() {
   router.push({
