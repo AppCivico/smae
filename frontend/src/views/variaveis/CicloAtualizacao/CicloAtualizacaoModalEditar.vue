@@ -1,6 +1,7 @@
 <!-- eslint-disable max-len -->
 <template>
   <div class="ciclo-atualizacao-modal-editar">
+    {{ values }}
     <div class="editar-subtitulo flex">
       <svg
         class="editar-subtitulo__icone"
@@ -52,6 +53,45 @@
         <h2 class="valores-variaveis__titulo">
           Valores de variáveis
         </h2>
+
+        <AuxiliarDePreenchimento>
+          <div class="flex g2 end mb1">
+            <div class="f1">
+              <label class="label">Valor a aplicar</label>
+              <input
+                v-model="valorPadrao"
+                type="number"
+                class="inputtext light mb1"
+              >
+              <!-- :disabled="modoDePreenchimento === 'valor_acumulado'" -->
+            </div>
+            <button
+              type="button"
+              class="f0 mb1 btn bgnone outline tcprimary"
+              @click="preencherVaziosCom(valorPadrao)"
+            >
+              <!-- :disabled="valorPadrao === '' || modoDePreenchimento === 'valor_acumulado'" -->
+              Preencher vazios
+            </button>
+
+            <button
+              type="reset"
+              form="form"
+              class="f0 mb1 pl0 pr0 btn bgnone"
+              @click="limparFormulario"
+            >
+              &times; limpar tudo
+            </button>
+
+            <button
+              type="reset"
+              class="f0 mb1 pl0 pr0 btn bgnone"
+              @click.prevent="restaurarFormulario"
+            >
+              &excl; restaurar
+            </button>
+          </div>
+        </AuxiliarDePreenchimento>
 
         <table class="valores-variaveis-tabela mt4">
           <thead>
@@ -162,6 +202,7 @@ import { cicloAtualizacaoModalEditarSchema as schema } from '@/consts/formSchema
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 
 type VariaveisDados = {
   codigo: {
@@ -199,11 +240,14 @@ const valorInicial = {
   variaveis_dados: valorInicialVariaveis,
 };
 
-const { handleSubmit, errors, setFieldValue } = useForm({
+const {
+  handleSubmit, errors, setFieldValue, values, validateField,
+} = useForm({
   validationSchema: schema,
   initialValues: valorInicial,
 });
 
+const valorPadrao = ref<string>('');
 const variaveisDadosValores = ref(valorInicialVariaveis || []);
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco?.uploads || []);
 
@@ -297,6 +341,51 @@ function atualizarVariavelAcululado(variavelIndex: number, valor: string) {
     `variaveis_dados[${variavelIndex}].valor_realizado_acumulado` as any,
     novoValorAcumulado,
   );
+}
+
+function preencherVaziosCom(valor: number | string) {
+  if (!emFoco) {
+    throw new Error('Erro ao tentar preencher vazios');
+  }
+
+  emFoco.valores.forEach((item, itemIndex) => {
+    if (values.variaveis_dados && values.variaveis_dados[itemIndex].valor_realizado) {
+      return;
+    }
+
+    setFieldValue(
+      `variaveis_dados[${itemIndex}].valor_realizado` as any,
+      valor,
+    );
+
+    validateField(`variaveis_dados[${itemIndex}].valor_realizado` as any);
+  });
+}
+
+function limparFormulario() {
+  if (!emFoco) {
+    throw new Error('Erro ao tentar limpar formulario');
+  }
+
+  emFoco.valores.forEach((item, itemIndex) => {
+    setFieldValue(
+      `variaveis_dados[${itemIndex}].valor_realizado` as any,
+      '',
+    );
+  });
+}
+
+function restaurarFormulario() {
+  if (!emFoco) {
+    throw new Error('Erro ao tentar limpar formulario');
+  }
+
+  emFoco.valores.forEach((item, itemIndex) => {
+    setFieldValue(
+      `variaveis_dados[${itemIndex}].valor_realizado` as any,
+      item.valor_realizado,
+    );
+  });
 }
 </script>
 
