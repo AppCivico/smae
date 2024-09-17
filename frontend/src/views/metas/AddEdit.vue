@@ -1,9 +1,9 @@
 <script setup>
-import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
+import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
@@ -13,10 +13,13 @@ import { useSubtemasStore } from '@/stores/subtemas.store';
 import { useTagsStore } from '@/stores/tags.store';
 import { useTemasStore } from '@/stores/temas.store';
 import { useUsersStore } from '@/stores/users.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
-  computed, defineOptions, ref, unref,
+  computed,
+  defineOptions,
+  ref,
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
@@ -64,7 +67,15 @@ const { tempTags } = storeToRefs(TagsStore);
 const OrgansStore = useOrgansStore();
 
 const UserStore = useUsersStore();
-const { pessoasSimplificadas } = storeToRefs(UserStore);
+
+const EquipesStore = useEquipesStore();
+const { lista } = storeToRefs(EquipesStore);
+
+function pegaPsTecnicoCpCompleto(idsDasEquipes) {
+  const listaDeEquipes = lista.value;
+
+  return listaDeEquipes.filter((equipe) => idsDasEquipes.includes(equipe.id));
+}
 
 (async () => {
   if (meta_id) await MetasStore.getById(meta_id);
@@ -73,6 +84,7 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
   const promessas = [
     OrgansStore.getAllOrganResponsibles(),
     UserStore.buscarPessoasSimplificadas({ coordenador_responsavel_cp: true }),
+    EquipesStore.buscarTudo(),
   ];
 
   await Promise.allSettled(promessas);
@@ -114,11 +126,9 @@ const valoresIniciais = computed(() => ({
 async function onSubmit(values) {
   try {
     const er = [];
-    values.orgaos_participantes = unref(orgaos_participantes);
-    values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
-      if (x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
-      return x.orgao_id;
-    });
+
+    // remove orgaos_participantes pois a api gera sozinha esse valor agora
+    values.orgaos_participantes = [];
 
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
@@ -191,20 +201,6 @@ async function checkClose() {
       throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
     }
   });
-}
-function addOrgao(obj, r) {
-  obj.push({
-    orgao_id: null, responsavel: r ?? false, participantes: [], busca: '',
-  });
-}
-function removeOrgao(obj, i) {
-  obj.splice(i, 1);
-}
-
-function filterResponsible(orgao_id) {
-  const r = OrgansStore.organResponsibles;
-  const v = r.length ? r.find((x) => x.id == orgao_id) : false;
-  return v?.responsible ?? [];
 }
 
 watch(() => activePdm.value.id, async (novoValor) => {
@@ -432,140 +428,40 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
       <hr class="mt2 mb2">
 
-      <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
-      <div class="flex center g2">
-        <label class="f1 label tc300">Órgão <span class="tvermelho">*</span></label>
-        <label class="f1 label tc300">Responsável <span class="tvermelho">*</span></label>
-        <div style="flex-basis: 30px;" />
-      </div>
-      <template
-        v-for="(item, index) in orgaos_participantes"
-        :key="index"
-      >
+      <fieldset>
+        <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
         <div
-          v-if="item.responsavel"
-          class="flex mb1 g2"
+          class="flex flexwrap g2 mb1"
         >
-          <div class="f1">
-            <select
-              v-if="OrgansStore.organResponsibles.length"
-              v-model="item.orgao_id"
-              class="inputtext light"
-              @change="item.participantes = []"
-            >
-              <option
-                v-for="(o, k) in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id
-                  || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
-                :key="k"
-                :value="o.id"
-                :title="o.descricao?.length > 36 ? o.descricao : null"
-              >
-                {{ o.sigla }} - {{ truncate(o.descricao, 36) }}
-              </option>
-            </select>
-          </div>
-          <div class="f1">
-            <AutocompleteField
-              :controlador="item"
-              :grupo="filterResponsible(item.orgao_id)"
-              label="nome_exibicao"
+          <div class="f1 mb1">
+            <CampoDeEquipesComBuscaPorOrgao
+              v-model="values.ps_ponto_focal.equipes"
+              :equipes-ids="activePdm.ps_ponto_focal?.equipes || []"
+              :valores-iniciais="valoresIniciais.ps_ponto_focal?.equipes"
+              name="ps_ponto_focal.equipes"
+              perfis-permitidos="PontoFocalPS"
             />
           </div>
-          <div style="flex-basis: 30px;">
-            <a
-              class="addlink mt1"
-              @click="removeOrgao(orgaos_participantes, index)"
-            ><svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg></a>
-          </div>
         </div>
-      </template>
-      <a
-        class="addlink"
-        @click="addOrgao(orgaos_participantes, true)"
-      ><svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão responsável</span></a>
-
-      <hr class="mt2 mb2">
-
-      <label class="label">Órgãos participantes</label>
-      <div class="flex center g2">
-        <label class="f1 label tc300">Órgão</label>
-        <label class="f1 label tc300">Responsável</label>
-        <div style="flex-basis: 30px;" />
-      </div>
-      <template
-        v-for="(item, index) in orgaos_participantes"
-        :key="index"
-      >
-        <div
-          v-if="!item.responsavel"
-          class="flex mb1 g2"
-        >
-          <div class="f1">
-            <select
-              v-if="OrgansStore.organResponsibles.length"
-              v-model="item.orgao_id"
-              class="inputtext light"
-              @change="item.participantes = []"
-            >
-              <option
-                v-for="o in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
-                :key="o.id"
-                :value="o.id"
-                :title="o.descricao?.length > 36 ? o.descricao : null"
-              >
-                {{ o.sigla }} - {{ truncate(o.descricao, 36) }}
-              </option>
-            </select>
-          </div>
-          <div class="f1">
-            <AutocompleteField
-              :controlador="item"
-              :grupo="filterResponsible(item.orgao_id)"
-              label="nome_exibicao"
-            />
-          </div>
-          <div style="flex-basis: 30px;">
-            <a
-              class="addlink mt1"
-              @click="removeOrgao(orgaos_participantes, index)"
-            ><svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg></a>
-          </div>
-        </div>
-      </template>
-      <a
-        class="addlink"
-        @click="addOrgao(orgaos_participantes, false)"
-      ><svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+      </fieldset>
 
       <hr class="mt2 mb2">
 
       <label class="label">
-        Responsável na coordenadoria de planejamento
+        Equipes responsáveis na coordenadoria de planejamento
         <span class="tvermelho">*</span>
       </label>
-      <div class="flex">
-        <div
-          v-if="pessoasSimplificadas.length"
-          class="f1"
-        >
-          <AutocompleteField
-            :controlador="coordenadores_cp"
-            :grupo="pessoasSimplificadas"
-            label="nome_exibicao"
-          />
-        </div>
+
+      <div>
+        <AutocompleteField
+          name="values.ps_tecnico_cp.equipes"
+          :controlador="{
+            busca: '',
+            participantes: values.ps_tecnico_cp.equipes,
+          }"
+          :grupo="pegaPsTecnicoCpCompleto(activePdm.ps_tecnico_cp.equipes)"
+          label="titulo"
+        />
       </div>
 
       <FormErrorsList :errors="errors" />
