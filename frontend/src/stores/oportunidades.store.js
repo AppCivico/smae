@@ -11,6 +11,12 @@ export const useOportunidadesStore = defineStore('oportunidadesStore', {
       lista: false,
       emFoco: false,
     },
+
+    paginação: {
+      temMais: false,
+      tokenDaPróximaPágina: '',
+    },
+
     erro: null,
   }),
   actions: {
@@ -19,8 +25,22 @@ export const useOportunidadesStore = defineStore('oportunidadesStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/transfere-gov/lista`, params);
-        this.lista = linhas;
+        const {
+          linhas,
+          tem_mais: temMais,
+          token_proxima_pagina: tokenDaPróximaPágina,
+        } = await this.requestS.get(
+          `${baseUrl}/transfere-gov/transferencia`,
+          params,
+        );
+        if (Array.isArray(linhas)) {
+          this.lista = params.token_proxima_pagina
+            ? this.lista.concat(linhas)
+            : linhas;
+
+          this.paginação.temMais = temMais || false;
+          this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
+        }
       } catch (erro) {
         this.erro = erro;
       }
