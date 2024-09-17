@@ -93,11 +93,12 @@
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
               >
                 <Field
+                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado"
                   :class="[
                     'inputtext light',
                     {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado`)}
                   ]"
-                  type="text"
+                  type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                 />
               </td>
@@ -112,7 +113,7 @@
                     'inputtext light f1',
                     {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)}
                   ]"
-                  type="text"
+                  type="number"
                   disabled
                 />
               </td>
@@ -185,13 +186,15 @@ const $route = useRoute();
 
 const { emFoco, enviarDados } = useCicloAtualizacaoStore();
 
+const valorInicialVariaveis = emFoco?.valores.map((item) => ({
+  variavel_id: item.variavel.id,
+  valor_realizado: item.valor_realizado,
+  valor_realizado_acumulado: item.valor_realizado_acumulado,
+}));
+
 const valorInicial = {
   analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
-  variaveis_dados: emFoco?.valores.map((item) => ({
-    variavel_id: item.variavel.id,
-    valor_realizado: item.valor_realizado,
-    valor_realizado_acumulado: item.valor_realizado_acumulado,
-  })),
+  variaveis_dados: valorInicialVariaveis,
 };
 
 const { handleSubmit, errors } = useForm({
@@ -199,6 +202,7 @@ const { handleSubmit, errors } = useForm({
   initialValues: valorInicial,
 });
 
+const variaveisDadosValores = ref(valorInicialVariaveis || []);
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco?.uploads || []);
 
 const onSubmit = handleSubmit(async (valores) => {
@@ -240,15 +244,15 @@ const variaveisDados = computed<VariaveisDados[]>(() => {
 });
 
 const valoresCalculados = computed<ValoresAcumulados>(() => {
-  if (!emFoco) {
+  if (!variaveisDadosValores.value) {
     return {
       valor_realizado: 0,
       valor_realizado_acumulado: 0,
     };
   }
 
-  return emFoco.valores.reduce<ValoresAcumulados>((amount, item) => {
-  // eslint-disable-next-line no-param-reassign
+  return variaveisDadosValores.value.reduce<ValoresAcumulados>((amount, item) => {
+    // eslint-disable-next-line no-param-reassign
     amount.valor_realizado += Number(item.valor_realizado);
     // eslint-disable-next-line no-param-reassign
     amount.valor_realizado_acumulado += Number(item.valor_realizado_acumulado);

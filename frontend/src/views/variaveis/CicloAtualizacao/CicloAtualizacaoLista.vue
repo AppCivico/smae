@@ -178,7 +178,7 @@ watch(() => $route.query, (query) => {
 }
 
 .listagem-item {
-  background-color: #F9F9F9;
+  background-color: #e6e6e6;
   border-radius: 5px;
   padding: 5px 0;
 }

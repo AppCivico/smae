@@ -102,12 +102,10 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
         uploads: dados.uploads.map((item) => item.download_token),
       };
 
-      console.log(dadosASeremEnviados);
-
-      // await this.requestS.patch(
-      //   `${baseUrl}/plano-setorial-variavel-ciclo`,
-      //   dadosASeremEnviados,
-      // );
+      await this.requestS.patch(
+        `${baseUrl}/plano-setorial-variavel-ciclo`,
+        dadosASeremEnviados,
+      );
     },
   },
   getters: {
