@@ -588,7 +588,7 @@ export class VariavelCicloService {
         const valores = await this.prisma.serieVariavel.findMany({
             where: {
                 OR: [
-                    { variavel_id: variavel_id },
+                    variavel.variaveis_filhas.length > 0 ? {} : { variavel_id: variavel_id },
                     {
                         variavel: {
                             id: {
