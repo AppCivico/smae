@@ -3,6 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TransfereGovDto {
     id: number;
@@ -77,6 +78,7 @@ export class FilterTransfereGovTransferenciasDto {
 
     @IsOptional()
     @IsEnum(TransfereGovOportunidadeTipo)
+    @ApiProperty({ enum: TransfereGovOportunidadeTipo, enumName: 'TransfereGovOportunidadeTipo' })
     tipo?: TransfereGovOportunidadeTipo;
 
     @IsOptional()
