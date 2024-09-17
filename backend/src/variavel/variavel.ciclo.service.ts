@@ -884,13 +884,14 @@ export class VariavelCicloService {
                 referencia_data: referencia_data,
                 removido_em: null,
             },
+            select: { arquivo_id: true, id: true },
         });
 
-        const seenUploads = new Set<number>();
+        const existingArquivoIds = new Set<number>();
         for (const upload of uploads) {
-            const uploadId = this.uploadService.checkUploadOrDownloadToken(upload.upload_token);
-            const exitingDoc = existingDocs.find((doc) => doc.arquivo_id === uploadId);
-            seenUploads.add(uploadId);
+            const uploadArquivoId = this.uploadService.checkUploadOrDownloadToken(upload.upload_token);
+            const exitingDoc = existingDocs.find((doc) => doc.arquivo_id === uploadArquivoId);
+            existingArquivoIds.add(uploadArquivoId);
 
             if (exitingDoc) {
                 await prismaTx.variavelGlobalCicloDocumento.update({
@@ -905,7 +906,7 @@ export class VariavelCicloService {
                         variavel_id: variavel_id,
                         referencia_data: referencia_data,
                         descricao: upload.descricao,
-                        arquivo_id: uploadId,
+                        arquivo_id: uploadArquivoId,
                         criado_por: user.id,
                     },
                 });
@@ -913,16 +914,19 @@ export class VariavelCicloService {
         }
 
         // deleta os que não estão no array de uploads
-        for (const doc of existingDocs) {
-            if (!seenUploads.has(doc.arquivo_id)) {
-                await prismaTx.variavelGlobalCicloDocumento.update({
-                    where: { id: doc.id },
-                    data: {
-                        removido_em: new Date(),
-                        removido_por: user.id,
-                    },
-                });
-            }
+        const removidos = existingDocs.filter((doc) => !existingArquivoIds.has(doc.arquivo_id));
+        if (removidos.length > 0) {
+            await prismaTx.variavelGlobalCicloDocumento.updateMany({
+                where: {
+                    arquivo_id: { in: removidos.map((doc) => doc.arquivo_id) },
+                    variavel_id: variavel_id,
+                    referencia_data: referencia_data,
+                },
+                data: {
+                    removido_em: new Date(),
+                    removido_por: user.id,
+                },
+            });
         }
     }
 }
