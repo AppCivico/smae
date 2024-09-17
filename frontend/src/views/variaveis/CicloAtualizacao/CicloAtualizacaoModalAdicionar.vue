@@ -36,10 +36,7 @@
 
     <hr>
 
-    <form
-      class="mt1 flex column"
-      @submit="onSubmit"
-    >
+    <form class="mt1 flex column">
       <article class="formulario mt1">
         <div class="flex g4">
           <div class="f1 formulario__item formulario__item--valor_realizado">
@@ -111,13 +108,23 @@
         />
       </article>
 
-      <button
-        class="btn outline center mt3 bgnone tcprimary"
-        type="submit"
-        :disabled="bloqueado"
-      >
-        Salvar
-      </button>
+      <div class="flex justifycenter mt3 g1">
+        <button
+          class="btn outline bgnone tcprimary"
+          :disabled="bloqueado"
+          @click.prevent="submit({ aprovar: false })"
+        >
+          Salvar
+        </button>
+
+        <button
+          class="btn outline"
+          :disabled="bloqueado"
+          @click.prevent="submit({ aprovar: true })"
+        >
+          Salvar e submeter
+        </button>
+      </div>
     </form>
   </div>
 </template>
@@ -160,7 +167,7 @@ const valorInicial = {
   analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
 };
 
-const { handleSubmit, setFieldValue } = useForm({
+const { handleSubmit, setFieldValue, validate } = useForm({
   validationSchema: schema,
   initialValues: valorInicial,
 });
@@ -186,27 +193,34 @@ function atualizarVariavelAcululado(valor: string) {
   );
 }
 
-const onSubmit = handleSubmit(async (valores) => {
+async function submit({ aprovar = false }) {
   if (!emFoco) {
     throw new Error('Erro ao tentar submeter dados');
   }
 
-  await enviarDados({
-    variavel_id: emFoco.variavel.id,
-    analise_qualitativa: valores.analise_qualitativa,
-    aprovar: false,
-    data_referencia: $route.params.dataReferencia as string,
-    uploads: arquivosLocais.value,
-    valores: [{
-      variavel_id: emFoco.variavel.id,
-      valor_realizado: valores.valor_realizado,
-      valor_realizado_acumulado: valores.valor_realizado_acumulado,
-    }],
-    pedido_complementacao: undefined,
-  });
+  const { valid } = await validate();
+  if (!valid) {
+    return;
+  }
 
-  $emit('enviado');
-});
+  handleSubmit(async (valores) => {
+    await enviarDados({
+      variavel_id: emFoco.variavel.id,
+      analise_qualitativa: valores.analise_qualitativa,
+      aprovar,
+      data_referencia: $route.params.dataReferencia as string,
+      uploads: arquivosLocais.value,
+      valores: [{
+        variavel_id: emFoco.variavel.id,
+        valor_realizado: valores.valor_realizado,
+        valor_realizado_acumulado: valores.valor_realizado_acumulado,
+      }],
+      pedido_complementacao: undefined,
+    });
+
+    $emit('enviado');
+  });
+}
 
 function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
   arquivosLocais.value.push({
