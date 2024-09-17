@@ -485,6 +485,7 @@ export class TransfereGovSyncService {
                     dt_fim_receb: item.dt_fim_receb,
                     modalidade_programa: item.modalidade_programa,
                     acao_orcamentaria: item.acao_orcamentaria,
+                    natureza_juridica_programa: item.natureza_juridica_programa,
                 }) satisfies TransfereGovTransferenciasDto
         );
 

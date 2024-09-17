@@ -1,9 +1,8 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Transform, Type, plainToClass } from 'class-transformer';
-import { IsArray, IsDate, IsEnum, IsNumber, IsString, ValidateNested, validate } from 'class-validator';
+import { IsArray, IsDate, IsNumber, IsString, ValidateNested, validate } from 'class-validator';
 import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
-import { TransfereGovOportunidadeTipo } from '@prisma/client';
 
 export class TransfereGovError extends Error {
     constructor(msg: string) {
