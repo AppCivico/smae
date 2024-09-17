@@ -544,6 +544,6 @@ export class TransfereGovSyncService {
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'variavel', input);
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'transfere_gov_oportunidade', input);
     }
 }
