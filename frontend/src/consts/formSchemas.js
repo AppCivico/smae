@@ -3753,7 +3753,7 @@ export const obra = projeto.concat(obras).shape({
     .nullable(),
 });
 
-export const comunidadosGeraisFiltrosSchemaTipoOpcoes = [
+export const comunicadosGeraisFiltrosSchemaTipoOpcoes = [
   '',
   'Geral',
   'Individual',
@@ -3761,10 +3761,18 @@ export const comunidadosGeraisFiltrosSchemaTipoOpcoes = [
   'Bancada',
 ];
 
-export const comunidadosGeraisFiltrosSchema = object().shape({
+export const comunicadosGeraisFiltrosSchema = object().shape({
   palavra_chave: string().label('palavra-chave'),
   data_inicio: date()
     .label('Início do período')
+    .nullable()
+    .transform((v) => {
+      if (v.toString() === 'Invalid Date') {
+        return null;
+      }
+
+      return v;
+    })
     .test(
       'verificar-datas',
       (dataInicio, { resolve, createError, options }) => {
@@ -3793,8 +3801,15 @@ export const comunidadosGeraisFiltrosSchema = object().shape({
       },
     ),
   data_fim: date()
-    // .default('')
     .label('Fim do período')
+    .nullable()
+    .transform((v) => {
+      if (v.toString() === 'Invalid Date') {
+        return null;
+      }
+
+      return v;
+    })
     .test('verificar-datas', (dataFim, { resolve, createError, options }) => {
       if (!dataFim) {
         return true;
@@ -3819,7 +3834,7 @@ export const comunidadosGeraisFiltrosSchema = object().shape({
 
       return true;
     }),
-  tipo: mixed().label('Tipo').oneOf(comunidadosGeraisFiltrosSchemaTipoOpcoes),
+  tipo: mixed().label('Tipo').oneOf(comunicadosGeraisFiltrosSchemaTipoOpcoes),
 });
 
 export const cicloAtualizacaoModalAdicionarSchema = object().shape({

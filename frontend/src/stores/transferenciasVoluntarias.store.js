@@ -1,6 +1,6 @@
+import { defineStore } from 'pinia';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

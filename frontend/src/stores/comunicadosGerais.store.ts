@@ -48,14 +48,24 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
       buscandoMais,
     }: FiltroDadosGerais) {
       try {
-        const resposta: PaginatedDto<NotaComunicadoItemDto> = await this.requestS.get(`${baseUrl}`, {
+        const params = {
           data_inicio,
           data_fim,
           palavra_chave,
           lido,
           tipo,
           token_proxima_pagina: token_paginacao,
-        });
+        };
+        const valoresQuery = Object.keys(params).reduce<any>((amount, item) => {
+          if (params[item]) {
+            // eslint-disable-next-line no-param-reassign
+            amount[item] = params[item];
+          }
+
+          return amount;
+        }, {});
+
+        const resposta: PaginatedDto<NotaComunicadoItemDto> = await this.requestS.get(`${baseUrl}`, valoresQuery);
 
         if (!buscandoMais) {
           this.dados = resposta.linhas;

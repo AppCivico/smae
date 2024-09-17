@@ -6,7 +6,7 @@ import { Field, useForm, ErrorMessage } from 'vee-validate';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import { comunidadosGeraisFiltrosSchema, comunidadosGeraisFiltrosSchemaTipoOpcoes } from '@/consts/formSchemas';
+import { comunicadosGeraisFiltrosSchema, comunicadosGeraisFiltrosSchemaTipoOpcoes } from '@/consts/formSchemas';
 
 type FieldsProps = {
   class?: string
@@ -15,7 +15,7 @@ type FieldsProps = {
   opcoes?: string[]
 };
 
-const schema = comunidadosGeraisFiltrosSchema;
+const schema = comunicadosGeraisFiltrosSchema;
 
 const $route = useRoute();
 const $router = useRouter();
@@ -23,14 +23,14 @@ const $router = useRouter();
 const campos = computed<FieldsProps[]>(() => [
   { class: 'fg999', nome: 'palavra_chave', tipo: 'text' },
   {
-    class: 'fb25', nome: 'tipo', tipo: 'select', opcoes: comunidadosGeraisFiltrosSchemaTipoOpcoes,
+    class: 'fb25', nome: 'tipo', tipo: 'select', opcoes: comunicadosGeraisFiltrosSchemaTipoOpcoes,
   },
   { class: 'fb25', nome: 'data_inicio', tipo: 'date' },
   { class: 'fb25', nome: 'data_fim', tipo: 'date' },
 ]);
 
 const { handleSubmit, isSubmitting, setValues } = useForm({
-  validationSchema: comunidadosGeraisFiltrosSchema,
+  validationSchema: comunicadosGeraisFiltrosSchema,
   initialValues: $route.query,
 });
 
