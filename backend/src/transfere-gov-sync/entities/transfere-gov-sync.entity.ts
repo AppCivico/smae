@@ -95,5 +95,6 @@ export class FilterTransfereGovTransferenciasDto {
 export class UpdateTransfereGovTransferenciaDto {
     @IsOptional()
     @IsEnum(TransfereGovOportunidadeAvaliacao)
+    @ApiProperty({ enum: TransfereGovOportunidadeAvaliacao, enumName: 'TransfereGovOportunidadeAvaliacao' })
     avaliacao?: TransfereGovOportunidadeAvaliacao;
 }
