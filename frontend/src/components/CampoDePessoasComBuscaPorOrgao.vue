@@ -25,6 +25,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  orgaoLabel: {
+    type: String,
+    default: '',
+  },
   // necessária para que o vee-validate não se perca
   name: {
     type: String,
@@ -213,7 +217,9 @@ watch(() => props.prontoParaMontagem, () => {
         <label
           :for="`${$props.name}__orgao--${idx}`"
           class="label"
-        >Órgão</label>
+        >
+          {{ props.orgaoLabel ? props.orgaoLabel : 'Órgão' }}
+        </label>
         <select
           :id="`${$props.name}__orgao--${idx}`"
           v-model="listaDeÓrgãos[idx].id"

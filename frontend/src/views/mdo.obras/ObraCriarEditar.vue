@@ -1662,6 +1662,7 @@ watch(itemParaEdicao, (novoValor) => {
         <CampoDePessoasComBuscaPorOrgao
           v-model="values.colaboradores_no_orgao"
           name="participantes"
+          orgao-label="Órgão Colaborador"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
           :pronto-para-montagem="montarCampoEstático"
         />
