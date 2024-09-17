@@ -38,9 +38,6 @@ export class TransfGovTransferencia {
     @IsNumber()
     cod_orgao_sup_programa: number;
 
-    @IsEnum(TransfereGovOportunidadeTipo)
-    tipo?: TransfereGovOportunidadeTipo;
-
     @IsNumber()
     id_programa: number;
 
