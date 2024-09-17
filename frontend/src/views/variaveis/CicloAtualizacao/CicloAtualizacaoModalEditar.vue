@@ -10,7 +10,7 @@
 
       <div class="editar-subtitulo__conteudo">
         <h3 class="editar-subtitulo__conteudo-variavel">
-          <strong>102 postes instalados</strong> - postes fotovoltaicos São Paulo
+          <strong>{{ emFoco?.variavel.codigo }}</strong> - {{ emFoco?.variavel.titulo }}
         </h3>
       </div>
     </div>
@@ -50,7 +50,7 @@
 
       <article class="valores-variaveis mt4">
         <h2 class="valores-variaveis__titulo">
-          Valores de variáveis calculadas
+          Valores de variáveis
         </h2>
 
         <table class="valores-variaveis-tabela mt4">
@@ -59,7 +59,9 @@
               <th>CÓDIGO</th>
               <th>REFERÊNCIA</th>
               <th>VALOR REALIZADO</th>
-              <th>VALOR REALIZADO ACUMULADO</th>
+              <th v-if="emFoco?.variavel.acumulativa">
+                VALOR REALIZADO ACUMULADO
+              </th>
             </tr>
           </thead>
 
@@ -101,6 +103,7 @@
               </td>
 
               <td
+                v-if="emFoco?.variavel.acumulativa"
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
               >
                 <Field
@@ -110,7 +113,7 @@
                     {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)}
                   ]"
                   type="text"
-                  :disabled="!emFoco?.variavel.acumulativa"
+                  disabled
                 />
               </td>
 
@@ -125,7 +128,11 @@
               <td />
               <td />
               <td>{{ valoresCalculados.valor_realizado }}</td>
-              <td>{{ valoresCalculados.valor_realizado_acumulado }}</td>
+              <td
+                v-if="emFoco?.variavel.acumulativa"
+              >
+                {{ valoresCalculados.valor_realizado_acumulado }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -181,6 +188,7 @@ const { emFoco, enviarDados } = useCicloAtualizacaoStore();
 const valorInicial = {
   analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
   variaveis_dados: emFoco?.valores.map((item) => ({
+    variavel_id: item.variavel.id,
     valor_realizado: item.valor_realizado,
     valor_realizado_acumulado: item.valor_realizado_acumulado,
   })),

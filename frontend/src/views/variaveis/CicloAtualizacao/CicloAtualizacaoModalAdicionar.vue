@@ -174,6 +174,7 @@ const onSubmit = handleSubmit(async (valores) => {
     data_referencia: $route.params.dataReferencia as string,
     uploads: arquivosLocais.value,
     valores: [{
+      variavel_id: emFoco.variavel.id,
       valor_realizado: valores.valor_realizado,
       valor_realizado_acumulado: valores.valor_realizado_acumulado,
     }],

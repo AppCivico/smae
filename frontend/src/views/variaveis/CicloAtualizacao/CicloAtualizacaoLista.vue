@@ -48,6 +48,7 @@
         </div>
 
         <h5 class="listagem-item__conteudo f1">
+          <strong>{{ cicloAtualizacao.codigo }}</strong> -
           {{ truncate(cicloAtualizacao.titulo, 60) }}
         </h5>
 

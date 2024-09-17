@@ -45,6 +45,7 @@ type DadosASeremEnviados = {
   }[];
   valores: [
     {
+      variavel_id: number;
       valor_realizado?: string | null;
       valor_realizado_acumulado?: string | null;
     },
@@ -97,14 +98,16 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
     async enviarDados(dados: DadosASeremEnviados) {
       const dadosASeremEnviados = {
         ...dados,
-        valores: dados.valores.map((item) => ({ ...item, variavel_id: dados.variavel_id })),
+        // valores: dados.valores.map((item) => ({ ...item, variavel_id: dados.variavel_id })),
         uploads: dados.uploads.map((item) => item.download_token),
       };
 
-      await this.requestS.patch(
-        `${baseUrl}/plano-setorial-variavel-ciclo`,
-        dadosASeremEnviados,
-      );
+      console.log(dadosASeremEnviados);
+
+      // await this.requestS.patch(
+      //   `${baseUrl}/plano-setorial-variavel-ciclo`,
+      //   dadosASeremEnviados,
+      // );
     },
   },
   getters: {
