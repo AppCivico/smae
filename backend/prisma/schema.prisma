@@ -7092,6 +7092,7 @@ model TransfereGovOportunidade {
     dt_fim_receb               DateTime                           @db.Date()
     modalidade_programa        String
     acao_orcamentaria          String
+    vetores_busca              Unsupported("tsvector")?           @default(dbgenerated())
 
     criado_em     DateTime  @default(now())
     atualizado_em DateTime? @updatedAt

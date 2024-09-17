@@ -34,6 +34,7 @@ import {
 } from './entities/transfere-gov-sync.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import * as crypto from 'crypto';
+import { PrismaHelpers } from 'src/common/PrismaHelpers';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -456,11 +457,18 @@ export class TransfereGovSyncService {
             ipp = decodedPageToken.ipp;
         }
 
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavras_chave);
+
         const dbRows = await this.prisma.transfereGovOportunidade.findMany({
             where: {
                 ano_disponibilizacao: filters.ano,
                 tipo: filters.tipo,
                 transferencia_incorporada: false,
+
+                // Filtro por palavras-chave com tsvector
+                id: {
+                    in: palavrasChave != undefined ? palavrasChave : undefined,
+                },
             },
             skip: offset,
             take: ipp + 1,
@@ -533,5 +541,9 @@ export class TransfereGovSyncService {
     private jsonFlatHash(obj: any): string {
         const sortedJson = convertToJsonString(obj);
         return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
+    }
+
+    async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'variavel', input);
     }
 }
