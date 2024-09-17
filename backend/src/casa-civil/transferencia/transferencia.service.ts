@@ -644,6 +644,11 @@ export class TransferenciaService {
                                 valor: true,
                             },
                         },
+                        distribuicao_recursos: {
+                            where: {
+                                removido_em: null,
+                            },
+                        },
                     },
                 });
 
@@ -798,7 +803,8 @@ export class TransferenciaService {
                     dto.custeio != undefined ||
                     dto.investimento != undefined ||
                     dto.valor_contrapartida != undefined ||
-                    dto.valor_total
+                    dto.valor_total ||
+                    dto.valor
                 ) {
                     const outrasDistribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
                         where: {
@@ -831,12 +837,14 @@ export class TransferenciaService {
                             investimento: true,
                             valor_contrapartida: true,
                             valor_total: true,
+                            valor: true,
                         },
                     });
 
                     let sumCusteio: number = 0;
                     let sumInvestimento: number = 0;
                     let sumContrapartida: number = 0;
+                    let sumRepasse: number = 0;
                     let sumTotal: number = 0;
 
                     for (const distRow of outrasDistribuicoes) {
@@ -844,6 +852,7 @@ export class TransferenciaService {
                         sumContrapartida += distRow.valor_contrapartida.toNumber();
                         sumInvestimento += distRow.investimento.toNumber();
                         sumTotal += distRow.valor_total.toNumber();
+                        sumRepasse += distRow.valor.toNumber();
                     }
 
                     if (self.custeio && dto.custeio != self.custeio.toNumber()) {
@@ -878,6 +887,14 @@ export class TransferenciaService {
                         if (self.valor_total && sumTotal && sumTotal > self.valor_total.toNumber())
                             throw new HttpException(
                                 'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.valor && dto.valor != self.valor.toNumber()) {
+                        if (self.valor && sumRepasse && sumRepasse > self.valor.toNumber())
+                            throw new HttpException(
+                                'Soma de repasse de todas as distribuições não pode ser superior ao valor de repasse da transferência.',
                                 400
                             );
                     }
