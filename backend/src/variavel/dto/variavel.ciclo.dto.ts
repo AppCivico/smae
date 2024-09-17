@@ -55,6 +55,7 @@ export class VariavelGlobalCicloDto {
      * @example "1"
      */
     id: number;
+    codigo: string;
     titulo: string;
     fase: VariavelFase;
 

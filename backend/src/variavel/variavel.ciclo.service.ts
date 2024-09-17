@@ -157,6 +157,7 @@ export class VariavelCicloService {
                     select: {
                         id: true,
                         titulo: true,
+                        codigo: true,
                     },
                 },
             },
@@ -170,6 +171,7 @@ export class VariavelCicloService {
                 proximo_periodo_abertura: Date2YMD.toString(v.proximo_periodo_abertura),
                 ultimo_periodo_valido: Date2YMD.toString(v.ultimo_periodo_valido),
                 pedido_complementacao: v.pedido_complementacao,
+                codigo: v.variavel.codigo,
             } satisfies VariavelGlobalCicloDto;
         });
 
