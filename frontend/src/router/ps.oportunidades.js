@@ -1,9 +1,9 @@
-import ComunicadosGeraisLista from '@/views/comunicadosGerais/ComunicadosGeraisLista.vue';
-import ComunicadosGeraisRaiz from '@/views/comunicadosGerais/ComunicadosGeraisRaiz.vue';
+import OportunidadesLista from '@/views/ps.oportunidades/OportunidadesLista.vue';
+import OportunidadesRaiz from '@/views/ps.oportunidades/OportunidadesRaiz.vue';
 
 export default {
   path: '/oportunidades',
-  component: ComunicadosGeraisRaiz,
+  component: OportunidadesRaiz,
   meta: {
     título: 'Oportunidades',
     rotaPrescindeDeChave: true,
@@ -18,7 +18,7 @@ export default {
     {
       name: 'OportunidadesLista',
       path: '',
-      component: ComunicadosGeraisLista,
+      component: OportunidadesLista,
       meta: {
         título: 'Oportunidades',
       },
