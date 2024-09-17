@@ -1,0 +1,119 @@
+<template>
+  <SmallModal
+    :active="modalVisivel"
+    @close="fecharModal"
+  >
+    <section class="ciclo-atualizacao-editar">
+      <header class="flex spacebetween center mb2 g2">
+        <h1 class="ciclo-atualizacao-editar__titulo">
+          {{ conteudoEscolhido.titulo }}
+        </h1>
+
+        <hr class="f1">
+
+        <button
+          class="btn round-full"
+          @click="fecharModal"
+        >
+          <svg
+            width="24"
+            height="24"
+          ><use xlink:href="#i_x" /></svg>
+        </button>
+      </header>
+
+      <component
+        :is="conteudoEscolhido.componente"
+        v-if="cicloAtualizacaoStore.emFoco"
+        @enviado="fecharModal"
+      />
+    </section>
+  </SmallModal>
+</template>
+
+<script lang="ts" setup>
+import type { Component } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import {
+  ref, computed, onMounted,
+} from 'vue';
+import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
+import SmallModal from '@/components/SmallModal.vue';
+
+import CicloAtualizacaoModalAdicionar from './CicloAtualizacaoModalAdicionar.vue';
+import CicloAtualizacaoModalEditar from './CicloAtualizacaoModalEditar.vue';
+
+type ConteudoOpcao = {
+  titulo: string,
+  componente: Component
+};
+
+type Opcoes = 'adicionar' | 'editar';
+
+type ConteudoOpcoes = {
+  [key in Opcoes]: ConteudoOpcao
+};
+
+const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+
+const modalVisivel = ref<boolean>(true);
+
+const $route = useRoute();
+const $router = useRouter();
+
+function fecharModal() {
+  const { state } = window.history;
+
+  if (state.back.includes('/variaveis/ciclo-atualizacao')) {
+    $router.push(state.back);
+  }
+
+  $router.push({
+    name: 'cicloAtualizacao',
+    query: {
+      aba: 'Preenchimento',
+    },
+  });
+}
+
+onMounted(() => {
+  const cicloAtualizacaoId = $route.params.cicloAtualizacaoId as string;
+  const dataReferencia = $route.params.dataReferencia as string;
+
+  if (!cicloAtualizacaoId) {
+    fecharModal();
+  }
+
+  cicloAtualizacaoStore.obterCicloPorId(cicloAtualizacaoId, dataReferencia);
+});
+
+const conteudoEscolhido = computed<ConteudoOpcao>(() => {
+  const opcoes: ConteudoOpcoes = {
+    adicionar: {
+      titulo: 'Adicionar valor realizado',
+      componente: CicloAtualizacaoModalAdicionar,
+    },
+    editar: {
+      titulo: 'Edição de valores realizados em lote',
+      componente: CicloAtualizacaoModalEditar,
+    },
+  };
+
+  if (cicloAtualizacaoStore.emFoco?.possui_variaveis_filhas) {
+    return opcoes.editar;
+  }
+
+  return opcoes.adicionar;
+});
+</script>
+
+<style lang="less" scoped>
+.ciclo-atualizacao-editar__titulo {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 39px;
+  color: #233B5C;
+  margin: 0;
+}
+</style>

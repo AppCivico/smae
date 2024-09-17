@@ -1010,6 +1010,9 @@ p {
 .addlink {
   display: inline-block;
   cursor: pointer;
+  border: none;
+  background-color: transparent;
+
   .t12;
   .w900;
   .tc600;
@@ -1035,6 +1038,7 @@ p {
 
   &.disabled {
     cursor: default;
+    pointer-events: none;
     .tc200;
   }
 }
@@ -1296,6 +1300,12 @@ p {
   &.round {
     padding: 1em 0;
     width: calc(3em + 4px);
+  }
+
+  &.round-full {
+    padding: 1em 0;
+    width: calc(3em + 4px);
+    height: calc(3em + 4px);
   }
 
   &.block {

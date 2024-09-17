@@ -1,4 +1,18 @@
 /* eslint-disable no-template-curly-in-string */
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
+import { isBefore, isAfter } from 'date-fns';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -20,20 +34,6 @@ import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
-import { isBefore, isAfter } from 'date-fns';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -314,6 +314,7 @@ export const arquivoSimples = object()
       .label('Descrição')
       .required(),
     tipo_documento_id: string()
+      .label('Tipo de Documento')
       .nullable(),
   });
 
@@ -3819,4 +3820,21 @@ export const comunidadosGeraisFiltrosSchema = object().shape({
       return true;
     }),
   tipo: mixed().label('Tipo').oneOf(comunidadosGeraisFiltrosSchemaTipoOpcoes),
+});
+
+export const cicloAtualizacaoModalAdicionarSchema = object().shape({
+  valor_realizado: string().label('valor realizado').required(),
+  valor_realizado_acumulado: string().required()
+    .label('valor realizado acumulado'),
+  analise_qualitativa: string().label('análise qualitativa'),
+});
+
+export const cicloAtualizacaoModalEditarSchema = object().shape({
+  analise_qualitativa: string().label('análise qualitativa'),
+  variaveis_dados: array().of(
+    object().shape({
+      valor_realizado: string().label('valor realizado').required(),
+      valor_realizado_acumulado: string().label('valor realizado acumulado').required(),
+    }),
+  ),
 });

@@ -31,6 +31,7 @@ export default {
       'CadastroVariavelGlobal.administrador_no_orgao',
       'CadastroMetaPS.listar',
     ],
+    rotasParaMenuSecundário: ['variaveisListar', 'cicloAtualizacao'],
   },
   children: [
     {
@@ -87,6 +88,26 @@ export default {
             ],
             rotaDeEscape: 'variaveisListar',
             título: () => useVariaveisGlobaisStore()?.emFoco?.nome || 'Editar Variável',
+          },
+        },
+      ],
+    },
+    {
+      name: 'cicloAtualizacao',
+      path: 'ciclo-atualizacao',
+      component: () => import('@/views/variaveis/CicloAtualizacao/CicloAtualizacaoLista.vue'),
+      meta: {
+        título: 'Ciclo de Atualização',
+      },
+      children: [
+        {
+          name: 'cicloAtualizacao.editar',
+          path: ':cicloAtualizacaoId/:dataReferencia',
+          component: () => import(
+            '@/views/variaveis/CicloAtualizacao/CicloAtualizacaoModal.vue'
+          ),
+          meta: {
+            título: 'Editar Ciclo de Atualização',
           },
         },
       ],
