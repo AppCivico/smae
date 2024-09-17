@@ -471,6 +471,7 @@ export class TransfereGovSyncService {
             (item) =>
                 ({
                     id: item.id,
+                    id_programa: item.id_programa,
                     tipo: item.tipo,
                     avaliacao: item.avaliacao,
                     cod_orgao_sup_programa: item.cod_orgao_sup_programa,

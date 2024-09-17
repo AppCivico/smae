@@ -7076,12 +7076,12 @@ model TransfereGovOportunidade {
     hash                       String
     tipo                       TransfereGovOportunidadeTipo
     avaliacao                  TransfereGovOportunidadeAvaliacao?
-    id_programa                Int
+    id_programa                BigInt
     natureza_juridica_programa String
     transferencia_incorporada  Boolean                            @default(false)
-    cod_orgao_sup_programa     Int
+    cod_orgao_sup_programa     BigInt
     desc_orgao_sup_programa    String
-    cod_programa               Int
+    cod_programa               BigInt
     nome_programa              String
     sit_programa               String
     ano_disponibilizacao       Int

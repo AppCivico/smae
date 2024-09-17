@@ -51,9 +51,10 @@ export class TransfereGovTransferenciasDto {
     id: number;
     tipo: TransfereGovOportunidadeTipo;
     avaliacao: TransfereGovOportunidadeAvaliacao | null;
-    cod_orgao_sup_programa: number;
+    id_programa: bigint;
+    cod_orgao_sup_programa: bigint;
     desc_orgao_sup_programa: string;
-    cod_programa: number;
+    cod_programa: bigint;
     nome_programa: string;
     sit_programa: string;
     ano_disponibilizacao: number;
