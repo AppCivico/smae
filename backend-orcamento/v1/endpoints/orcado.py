@@ -5,7 +5,7 @@ from core.exceptions import EmptyData, UnexpectedResponse
 
 from typing import Union
 
-from core.dao import DaoOrcadoProjeto, DaoOrcadoDotacao
+from core.dao import DaoOrcadoProjeto
 from core.schemas.orcado_projeto import OrcadoProjeto as schm_orcado
 from core.schemas.orcado_projeto import RetornoOrcado as schm_retorno
 
@@ -15,15 +15,9 @@ from config import SOF_API_TOKEN
 app = APIRouter()
 
 
-def get_dao_projeto():
+def get_dao():
 
     dao = DaoOrcadoProjeto(auth_token=SOF_API_TOKEN)
-    
-    return dao
-
-def get_dao_dotacao():
-
-    dao = DaoOrcadoDotacao(auth_token=SOF_API_TOKEN)
     
     return dao
 
@@ -51,13 +45,7 @@ def build_response(dao, endpoint_name, **params):
 
 @app.get("/orcado_projeto", response_model=schm_orcado, tags=['Orcado'])
 def orcado_projeto(ano:int, mes:int, orgao:int, proj_atividade: int,
-                fonte: str, unidade: int=None, dao: DaoOrcadoProjeto = Depends(get_dao_projeto)):
+                fonte: str, unidade: int=None, dao: DaoOrcadoProjeto = Depends(get_dao)):
 
    return build_response(dao, 'orcado_projeto', ano=ano, mes=mes, orgao=orgao,
                     unidade=unidade, proj_atividade=proj_atividade, fonte=fonte)
-
-
-@app.get("/orcado_dotacao", response_model=schm_orcado, tags=['Orcado'])
-def orcado_dotacao(ano:int, mes:int, dotacao:str, dao: DaoOrcadoProjeto = Depends(get_dao_dotacao)):
-
-   return build_response(dao, 'orcado_dotacao', ano=ano, mes=mes, dotacao=dotacao)
