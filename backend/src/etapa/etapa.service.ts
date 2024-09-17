@@ -114,19 +114,7 @@ export class EtapaService {
                     select: { id: true },
                 });
 
-                if (tipo === 'PS') {
-                    if (dto.ps_ponto_focal) {
-                        await this.upsertPSPerfis(
-                            etapa.id,
-                            dto.ps_ponto_focal,
-                            'PONTO_FOCAL',
-                            [],
-                            user,
-                            prismaTx,
-                            meta
-                        );
-                    }
-                } else {
+                if (tipo === 'PDM') {
                     if (Array.isArray(dto.responsaveis))
                         await prismaTx.etapaResponsavel.createMany({
                             data: await this.buildEtapaResponsaveis(etapa.id, dto.responsaveis),
@@ -140,7 +128,7 @@ export class EtapaService {
                 };
                 await this.cronogramaEtapaService.update(tipo, dadosUpsertCronogramaEtapa, user, prismaTx);
 
-                if (dto.regiao_id || dto.termino_real || dto.geolocalizacao || dto.variavel) {
+                if (dto.regiao_id || dto.termino_real || dto.geolocalizacao || dto.variavel || dto.ps_ponto_focal) {
                     this.logger.log('encaminhando para método de atualização e validações restantes...');
                     await this.update(
                         tipo,
@@ -150,6 +138,7 @@ export class EtapaService {
                             termino_real: dto.termino_real,
                             geolocalizacao: dto.geolocalizacao,
                             variavel: dto.variavel,
+                            ps_ponto_focal: dto.ps_ponto_focal,
                         },
                         user,
                         prismaTx
@@ -163,14 +152,37 @@ export class EtapaService {
         return created;
     }
 
-    private async getPSPontoFocalEquipeIds(prismaTx: Prisma.TransactionClient, meta: MetaItemDto): Promise<number[]> {
+    private async getPSPontoFocalEquipeIds(
+        prismaTx: Prisma.TransactionClient,
+        meta: MetaItemDto,
+        relacionamento: 'META' | 'INICIATIVA' | 'ATIVIDADE',
+        relacionamentoId: number
+    ): Promise<number[]> {
+        const baseWhere: Prisma.PdmPerfilWhereInput = {
+            removido_em: null,
+            tipo: 'PONTO_FOCAL',
+            pdm_id: meta.pdm_id,
+        };
+
+        let specificWhere: Prisma.PdmPerfilWhereInput = {};
+
+        switch (relacionamento) {
+            case 'META':
+                specificWhere = { meta_id: relacionamentoId };
+                break;
+            case 'INICIATIVA':
+                specificWhere = { iniciativa_id: relacionamentoId };
+                break;
+            case 'ATIVIDADE':
+                specificWhere = { atividade_id: relacionamentoId };
+                break;
+        }
+
         const rows = await prismaTx.pdmPerfil.findMany({
             where: {
-                removido_em: null,
-                relacionamento: 'META',
-                tipo: 'PONTO_FOCAL',
-                pdm_id: meta.pdm_id,
-                meta_id: meta.id,
+                ...baseWhere,
+                ...specificWhere,
+                relacionamento: relacionamento,
             },
             select: {
                 equipe_id: true,
@@ -183,7 +195,6 @@ export class EtapaService {
     private async lockCronograma(cronogramaId: number) {
         await this.prisma.$queryRaw`SELECT id FROM cronograma WHERE id = ${cronogramaId} FOR UPDATE`;
     }
-
 
     async update(
         tipo: TipoPdm,
@@ -378,7 +389,46 @@ export class EtapaService {
 
             if (tipo === 'PS') {
                 if (dto.ps_ponto_focal) {
-                    await this.upsertPSPerfis(self.id, dto.ps_ponto_focal, 'PONTO_FOCAL', [], user, prismaTx, meta);
+                    const etapaInfo = await prismaTx.etapa.findFirstOrThrow({
+                        where: { id },
+                        select: {
+                            cronograma: {
+                                select: {
+                                    meta_id: true,
+                                    iniciativa_id: true,
+                                    atividade_id: true,
+                                },
+                            },
+                        },
+                    });
+
+                    let relacionamento: 'META' | 'INICIATIVA' | 'ATIVIDADE';
+                    let relacionamentoId: number;
+
+                    if (etapaInfo.cronograma.meta_id) {
+                        relacionamento = 'META';
+                        relacionamentoId = etapaInfo.cronograma.meta_id;
+                    } else if (etapaInfo.cronograma.iniciativa_id) {
+                        relacionamento = 'INICIATIVA';
+                        relacionamentoId = etapaInfo.cronograma.iniciativa_id;
+                    } else if (etapaInfo.cronograma.atividade_id) {
+                        relacionamento = 'ATIVIDADE';
+                        relacionamentoId = etapaInfo.cronograma.atividade_id;
+                    } else {
+                        throw new BadRequestException('Etapa não está associada a uma meta, iniciativa ou atividade');
+                    }
+
+                    await this.upsertPSPerfis(
+                        self.id,
+                        dto.ps_ponto_focal,
+                        'PONTO_FOCAL',
+                        [],
+                        user,
+                        prismaTx,
+                        meta,
+                        relacionamento,
+                        relacionamentoId
+                    );
                 }
             } else {
                 await this.updateResponsaveis(dto.responsaveis, self, prismaTx);
@@ -541,12 +591,16 @@ export class EtapaService {
         currentPdmPerfis: { id: number; tipo: string; equipe_id: number }[],
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient,
-        meta: MetaItemDto
+        meta: MetaItemDto,
+        relacionamento: 'META' | 'INICIATIVA' | 'ATIVIDADE',
+        relacionamentoId: number
     ) {
-        const pdmEquipes = await this.getPSPontoFocalEquipeIds(prismaTx, meta);
+        const pdmEquipes = await this.getPSPontoFocalEquipeIds(prismaTx, meta, relacionamento, relacionamentoId);
         for (const equipe_id of newEquipes.equipes) {
             if (!pdmEquipes.includes(equipe_id))
-                throw new BadRequestException(`Equipe ${equipe_id} não é um ponto focal da meta ${meta.id}`);
+                throw new BadRequestException(
+                    `Equipe ${equipe_id} não é um ponto focal do ${relacionamento.toLowerCase()} ${relacionamentoId}`
+                );
         }
 
         const currentEquipes = currentPdmPerfis.filter((p) => p.tipo === tipo).map((p) => p.equipe_id);
@@ -579,12 +633,15 @@ export class EtapaService {
                 data: {
                     etapa_id: etapaId,
                     equipe_id: equipeId,
-                    relacionamento: 'ETAPA',
+                    relacionamento: relacionamento,
                     tipo: tipo,
                     criado_por: user.id,
                     criado_em: new Date(),
                     orgao_id: equipe.orgao_id,
                     pdm_id: meta.pdm_id,
+                    meta_id: relacionamento === 'META' ? relacionamentoId : undefined,
+                    iniciativa_id: relacionamento === 'INICIATIVA' ? relacionamentoId : undefined,
+                    atividade_id: relacionamento === 'ATIVIDADE' ? relacionamentoId : undefined,
                 },
             });
         }
