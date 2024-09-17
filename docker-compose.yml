@@ -175,6 +175,20 @@ services:
         max-file: "2"
         max-size: 100MB
 
+  smae_transferegov_transferencias:
+    container_name: "${API_CONTAINER_NAME}_transferegov_transferencias"
+    build:
+      context: ./backend-transfere-gov-transferencias/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
   smae_sei:
     container_name: "${API_CONTAINER_NAME}_sei"
     build:
@@ -183,7 +197,7 @@ services:
     restart: unless-stopped
     environment:
       host_sei: "${SEI_HOST}" # eg: https://treinamentosei4.prefeitura.sp.gov.br/sei
-      endpoint_wsdl: "${SEI_ENDPOINT_WSDL}"  # eg: controlador_ws.php?servico=sei
+      endpoint_wsdl: "${SEI_ENDPOINT_WSDL}" # eg: controlador_ws.php?servico=sei
       sigla_sistema: "${SEI_SIGLA_SISTEMA}" # eg: SEI
       identificacao_servico: "${SEI_API_TOKEN}" # eg: awsf...
     networks:
@@ -311,7 +325,6 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
 
-
   metabase_pgbackups:
     image: prodrigestivill/postgres-backup-local
     restart: unless-stopped
@@ -334,9 +347,9 @@ services:
       - BACKUP_KEEP_MONTHS=12
       - HEALTHCHECK_PORT=8080
 
-
 networks:
   smae_network:
+
 
 volumes:
   pgdata:

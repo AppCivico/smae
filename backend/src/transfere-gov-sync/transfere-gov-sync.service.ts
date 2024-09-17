@@ -1,7 +1,13 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ComunicadoTipo, ComunicadoTransfereGov, Prisma } from '@prisma/client';
+import {
+    ComunicadoTipo,
+    ComunicadoTransfereGov,
+    Prisma,
+    TransfereGovOportunidade,
+    TransfereGovOportunidadeTipo,
+} from '@prisma/client';
 import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
@@ -14,7 +20,9 @@ import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     TransfGovComunicado,
+    TransfGovTransferencia,
     TransfereGovApiService,
+    TransfereGovApiTransferenciasService,
     TransfereGovError,
 } from '../transfere-gov-api/transfere-gov-api.service';
 import {
@@ -25,6 +33,8 @@ import {
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import * as crypto from 'crypto';
+const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -38,6 +48,7 @@ export class TransfereGovSyncService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly transfereGovApi: TransfereGovApiService,
+        private readonly transfereGovApiTransferencias: TransfereGovApiTransferenciasService,
         private readonly blocosService: BlocoNotaService,
         private readonly notaService: NotaService,
         private readonly jwtService: JwtService,
@@ -299,6 +310,137 @@ export class TransfereGovSyncService {
         };
     }
 
+    async manualSyncTransferencias(): Promise<TransfereGovOportunidade[]> {
+        this.logger.log('Iniciando sync manual TransfereGOV Transferências');
+        const newItems = await this.syncAllEndpointsTransferencias();
+        return newItems;
+    }
+
+    private transformOportunidade(
+        oportunidade: TransfGovTransferencia,
+        tipo: TransfereGovOportunidadeTipo
+    ): Prisma.TransfereGovOportunidadeCreateInput {
+        const hash = this.jsonFlatHash(oportunidade);
+
+        return {
+            hash: hash,
+            tipo: tipo,
+            id_programa: oportunidade.id_programa,
+            natureza_juridica_programa: oportunidade.natureza_juridica_programa,
+            cod_orgao_sup_programa: oportunidade.cod_orgao_sup_programa,
+            desc_orgao_sup_programa: oportunidade.desc_orgao_sup_programa,
+            cod_programa: oportunidade.cod_programa,
+            nome_programa: oportunidade.nome_programa,
+            sit_programa: oportunidade.sit_programa,
+            ano_disponibilizacao: oportunidade.ano_disponibilizacao,
+            data_disponibilizacao: oportunidade.data_disponibilizacao,
+            dt_ini_receb: oportunidade.dt_ini_receb,
+            dt_fim_receb: oportunidade.dt_fim_receb,
+            modalidade_programa: oportunidade.modalidade_programa,
+            acao_orcamentaria: oportunidade.acao_orcamentaria,
+        };
+    }
+
+    private async syncOportunidades(
+        oportunidades: TransfGovTransferencia[],
+        tipo: TransfereGovOportunidadeTipo
+    ): Promise<TransfereGovOportunidade[]> {
+        const newItems: TransfereGovOportunidade[] = [];
+
+        const now = new Date();
+        for (const oportunidade of oportunidades) {
+            const transformedOportunidade = this.transformOportunidade(oportunidade, tipo);
+
+            try {
+                const result = await this.prisma.transfereGovOportunidade.upsert({
+                    where: {
+                        hash: transformedOportunidade.hash,
+                    },
+                    update: transformedOportunidade,
+                    create: {
+                        ...transformedOportunidade,
+                        criado_em: now,
+                        atualizado_em: now,
+                    },
+                });
+
+                newItems.push(result);
+            } catch (error) {
+                this.logger.error(`Erro ao atualizar oportunidades: ${error.message}`);
+            }
+        }
+
+        return newItems;
+    }
+
+    private async syncOportunidadesEndpoint(
+        endpoint: () => Promise<any[]>,
+        tipo: TransfereGovOportunidadeTipo
+    ): Promise<TransfereGovOportunidade[]> {
+        try {
+            this.logger.log(`Iniciando sync oportunidades ${tipo}`);
+            const oportunidades = await endpoint();
+            const newItems = await this.syncOportunidades(oportunidades, tipo);
+            this.logger.log(`Synced ${oportunidades.length} ${tipo} oportunidades, ${newItems.length} novos itens`);
+            return newItems;
+        } catch (error) {
+            if (error instanceof HttpException) {
+                this.logger.error(`HTTP erro syncing ${tipo} oportunidades: ${error.getStatus()} - ${error.message}`);
+            } else if (error instanceof TransfereGovError) {
+                this.logger.error(`TransfereGov erro syncing ${tipo} oportunidades: ${error.message}`);
+            } else {
+                this.logger.error(`Erro: syncing ${tipo} oportunidades: ${error.message}`);
+            }
+            return [];
+        }
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    async handleTransfereGovTransferenciasCron() {
+        if (process.env['DISABLE_TRANSFERE_GOV_CRONTAB']) return;
+
+        this.logger.log('Iniciando TransfereGOV sync');
+
+        try {
+            await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                const locked: { locked: boolean }[] = await prisma.$queryRaw`
+                    SELECT pg_try_advisory_xact_lock(${JOB_TRANSFERE_GOV_LOCK}) as locked
+                `;
+                if (!locked[0].locked) {
+                    return;
+                }
+
+                await this.syncAllEndpointsTransferencias();
+            });
+        } catch (error) {
+            this.logger.error(`Erro no sync TransfereGOV: ${error.message}`);
+        }
+    }
+
+    private async syncAllEndpointsTransferencias(): Promise<TransfereGovOportunidade[]> {
+        const newItems: TransfereGovOportunidade[] = [];
+
+        // Add oportunidades sync
+        newItems.push(
+            ...(await this.syncOportunidadesEndpoint(
+                () => this.transfereGovApiTransferencias.getEspecificas(),
+                'Especifica'
+            ))
+        );
+        newItems.push(
+            ...(await this.syncOportunidadesEndpoint(
+                () => this.transfereGovApiTransferencias.getVoluntarias(),
+                'Voluntaria'
+            ))
+        );
+        newItems.push(
+            ...(await this.syncOportunidadesEndpoint(() => this.transfereGovApiTransferencias.getEmendas(), 'Emenda'))
+        );
+
+        this.logger.log(`Sync TransfereGOV finalizado com sucesso. Novos items: ${newItems.length}`);
+        return newItems;
+    }
+
     async listaTransferencias(
         filters: FilterTransfereGovTransferenciasDto
     ): Promise<PaginatedDto<TransfereGovTransferenciasDto>> {
@@ -384,5 +526,10 @@ export class TransfereGovSyncService {
 
     private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         return this.jwtService.sign(opt);
+    }
+
+    private jsonFlatHash(obj: any): string {
+        const sortedJson = convertToJsonString(obj);
+        return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
     }
 }

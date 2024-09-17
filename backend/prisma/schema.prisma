@@ -7073,23 +7073,27 @@ enum TransfereGovOportunidadeAvaliacao {
 model TransfereGovOportunidade {
     id Int @id @default(autoincrement())
 
-    tipo                      TransfereGovOportunidadeTipo
-    avaliacao                 TransfereGovOportunidadeAvaliacao?
-    transferencia_incorporada Boolean                            @default(false)
-    cod_orgao_sup_programa    String
-    desc_orgao_sup_programa   String
-    cod_programa              String
-    nome_programa             String
-    sit_programa              String
-    ano_disponibilizacao      Int
-    data_disponibilizacao     DateTime                           @db.Date()
-    dt_ini_receb              DateTime                           @db.Date()
-    dt_fim_receb              DateTime                           @db.Date()
-    modalidade_programa       String
-    acao_orcamentaria         String
+    hash                       String
+    tipo                       TransfereGovOportunidadeTipo
+    avaliacao                  TransfereGovOportunidadeAvaliacao?
+    id_programa                String
+    natureza_juridica_programa String
+    transferencia_incorporada  Boolean                            @default(false)
+    cod_orgao_sup_programa     String
+    desc_orgao_sup_programa    String
+    cod_programa               String
+    nome_programa              String
+    sit_programa               String
+    ano_disponibilizacao       Int
+    data_disponibilizacao      DateTime                           @db.Date()
+    dt_ini_receb               DateTime                           @db.Date()
+    dt_fim_receb               DateTime                           @db.Date()
+    modalidade_programa        String
+    acao_orcamentaria          String
 
     criado_em     DateTime  @default(now())
     atualizado_em DateTime? @updatedAt
 
+    @@unique([hash])
     @@map("transfere_gov_oportunidade")
 }

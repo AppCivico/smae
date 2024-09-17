@@ -35,6 +35,13 @@ export class TransfereGovController {
         return await this.transfereGovSyncService.listaComunicados(params);
     }
 
+    @Post('sync-transferencias')
+    @ApiBearerAuth('access-token')
+    async syncTransferencias(): Promise<TransfereGovSyncDto> {
+        const newItems = await this.transfereGovSyncService.manualSyncTransferencias();
+        return { novos_itens: newItems.map((item) => item.id) };
+    }
+
     @Get('transferencia')
     @ApiBearerAuth('access-token')
     @ApiPaginatedResponse(TransfereGovTransferenciasDto)
