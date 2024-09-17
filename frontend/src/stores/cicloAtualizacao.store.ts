@@ -109,11 +109,18 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
     },
     async enviarDados(dados: DadosASeremEnviados) {
       try {
+        const dadosASeremEnviados = {
+          ...dados,
+          uploads: dados.uploads.map((item) => ({
+            upload_token: item.download_token,
+            descricao: item.descricao,
+          })),
+        };
         this.carregando = true;
 
         await this.requestS.patch(
           `${baseUrl}/plano-setorial-variavel-ciclo`,
-          dados,
+          dadosASeremEnviados,
         );
       } finally {
         this.carregando = false;
