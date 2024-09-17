@@ -1,7 +1,6 @@
 <!-- eslint-disable max-len -->
 <template>
   <div class="ciclo-atualizacao-modal-editar">
-    {{ values }}
     <div class="editar-subtitulo flex">
       <svg
         class="editar-subtitulo__icone"
