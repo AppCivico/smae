@@ -40,7 +40,7 @@ BEGIN
         WHERE variavel_id = v_record.id;
     ELSE
 
-        v_corrente := v_current_date < v_last_valid_period + periodicidade_intervalo(v_record.periodicidade);
+        v_corrente := v_current_date <= v_last_valid_period + periodicidade_intervalo(v_record.periodicidade);
 
         INSERT INTO variavel_ciclo_corrente(variavel_id, ultimo_periodo_valido, fase, proximo_periodo_abertura, eh_corrente)
         VALUES (

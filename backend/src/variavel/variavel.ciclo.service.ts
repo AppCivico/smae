@@ -247,18 +247,13 @@ export class VariavelCicloService {
 
             // uploads se existirem
             if (dto.uploads && Array.isArray(dto.uploads)) {
-                for (const upload of dto.uploads) {
-                    await this.upsertVariavelGlobalCicloDocumento(
-                        dto.variavel_id,
-                        new Date(dto.data_referencia),
-                        {
-                            descricao: upload.descricao,
-                            upload_token: upload.upload_token,
-                        },
-                        user,
-                        prismaTxn
-                    );
-                }
+                await this.upsertVariavelGlobalCicloDocumento(
+                    dto.variavel_id,
+                    new Date(dto.data_referencia),
+                    dto.uploads,
+                    user,
+                    prismaTxn
+                );
             }
 
             let conferida: boolean = false;
@@ -879,38 +874,55 @@ export class VariavelCicloService {
     async upsertVariavelGlobalCicloDocumento(
         variavel_id: number,
         referencia_data: Date,
-        dto: UpsertVariavelGlobalCicloDocumentoDto,
+        uploads: UpsertVariavelGlobalCicloDocumentoDto[],
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient
     ): Promise<void> {
-        const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
-
-        const existingDoc = await prismaTx.variavelGlobalCicloDocumento.findFirst({
+        const existingDocs = await prismaTx.variavelGlobalCicloDocumento.findMany({
             where: {
                 variavel_id: variavel_id,
                 referencia_data: referencia_data,
-                arquivo_id: uploadId,
                 removido_em: null,
             },
         });
 
-        if (existingDoc) {
-            await prismaTx.variavelGlobalCicloDocumento.update({
-                where: { id: existingDoc.id },
-                data: {
-                    descricao: dto.descricao,
-                },
-            });
-        } else {
-            await prismaTx.variavelGlobalCicloDocumento.create({
-                data: {
-                    variavel_id: variavel_id,
-                    referencia_data: referencia_data,
-                    descricao: dto.descricao,
-                    arquivo_id: uploadId,
-                    criado_por: user.id,
-                },
-            });
+        const seenUploads = new Set<number>();
+        for (const upload of uploads) {
+            const uploadId = this.uploadService.checkUploadOrDownloadToken(upload.upload_token);
+            const exitingDoc = existingDocs.find((doc) => doc.arquivo_id === uploadId);
+            seenUploads.add(uploadId);
+
+            if (exitingDoc) {
+                await prismaTx.variavelGlobalCicloDocumento.update({
+                    where: { id: exitingDoc.id },
+                    data: {
+                        descricao: upload.descricao,
+                    },
+                });
+            } else {
+                await prismaTx.variavelGlobalCicloDocumento.create({
+                    data: {
+                        variavel_id: variavel_id,
+                        referencia_data: referencia_data,
+                        descricao: upload.descricao,
+                        arquivo_id: uploadId,
+                        criado_por: user.id,
+                    },
+                });
+            }
+        }
+
+        // deleta os que não estão no array de uploads
+        for (const doc of existingDocs) {
+            if (!seenUploads.has(doc.arquivo_id)) {
+                await prismaTx.variavelGlobalCicloDocumento.update({
+                    where: { id: doc.id },
+                    data: {
+                        removido_em: new Date(),
+                        removido_por: user.id,
+                    },
+                });
+            }
         }
     }
 }
