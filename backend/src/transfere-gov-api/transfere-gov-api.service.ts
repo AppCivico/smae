@@ -53,16 +53,19 @@ export class TransfGovTransferencia {
     @IsString()
     sit_programa: string;
 
-    @IsString()
+    @IsDate()
+    @Transform(DateTransformDMY)
     data_disponibilizacao: string;
 
     @IsNumber()
     ano_disponibilizacao: number;
 
-    @IsString()
+    @IsDate()
+    @Transform(DateTransformDMY)
     dt_ini_receb: string;
 
-    @IsString()
+    @IsDate()
+    @Transform(DateTransformDMY)
     dt_fim_receb: string;
 
     @IsString()
