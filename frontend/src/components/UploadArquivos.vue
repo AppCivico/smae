@@ -19,7 +19,7 @@
           </td>
 
           <td>
-            -
+            {{ arquivo.descricao }}
           </td>
 
           <td>
@@ -224,6 +224,7 @@ const listaArquivos = computed(() => {
   if (props.arquivos.length === 0) {
     return [{
       nome_original: '-',
+      descricao: '-',
       download_token: '-',
     }];
   }
