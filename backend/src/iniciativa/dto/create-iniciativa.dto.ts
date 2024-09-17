@@ -5,6 +5,7 @@ import {
     IsArray,
     IsBoolean,
     IsInt,
+    IsObject,
     IsOptional,
     IsString,
     MaxLength,
@@ -12,6 +13,7 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
 
 export class IniciativaOrgaoParticipante {
     /**
@@ -97,6 +99,7 @@ export class CreateIniciativaDto {
     /**
      * Quais são os orgaos participantes e seus membros responsáveis
      */
+    @IsOptional()
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
     @ValidateNested({ each: true })
     @Type(() => IniciativaOrgaoParticipante)
@@ -106,11 +109,9 @@ export class CreateIniciativaDto {
      * ID das pessoas que são coordenadores
      * @example "[1, 2, 3]"
      */
+    @IsOptional()
     @IsArray({
         message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
-    })
-    @ArrayMinSize(1, {
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item',
     })
     @ArrayMaxSize(100, {
         message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items',
@@ -136,4 +137,18 @@ export class CreateIniciativaDto {
     @IsString({ each: true })
     @IsArray()
     geolocalizacao?: string[];
+
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePSEquipeTecnicoCPDto)
+    @ValidateNested()
+    @IsObject()
+    ps_tecnico_cp?: CreatePSEquipeTecnicoCPDto;
+
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePSEquipePontoFocalDto)
+    @ValidateNested()
+    @IsObject()
+    ps_ponto_focal?: CreatePSEquipePontoFocalDto;
 }

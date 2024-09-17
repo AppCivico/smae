@@ -30,6 +30,7 @@ import {
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PdmService } from '../pdm/pdm.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
+import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -115,37 +116,25 @@ export class MetaService {
                 });
 
                 if (tipo === 'PDM') {
-                    if (!op) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
+                    if (!op || op.length == 0)
+                        throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
                     await prismaTx.metaOrgao.createMany({
                         data: await this.buildOrgaosParticipantes(meta.id, op),
                     });
 
-                    if (!cp) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
+                    if (!cp || cp.length == 0) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
                     await prismaTx.metaResponsavel.createMany({
                         data: await this.buildMetaResponsaveis(meta.id, op, cp),
                     });
                 } else if (tipo === 'PS') {
                     if (psTecnicoCP) {
-                        for (const equipe_id of psTecnicoCP.equipes) {
-                            const pdmPerfil = pdm.PdmPerfil.find((r) => r.equipe.id == equipe_id && r.tipo == 'CP');
-                            if (!pdmPerfil) {
-                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
-                            }
-                        }
+                        validatePSEquipes(psTecnicoCP.equipes, pdm.PdmPerfil, 'CP', pdm.id);
 
-                        await this.upsertPSPerfis(meta.id, psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
+                        await upsertPSPerfis(meta.id, 'meta', psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
                     }
                     if (psPontoFocal) {
-                        for (const equipe_id of psPontoFocal.equipes) {
-                            const pdmPerfil = pdm.PdmPerfil.find(
-                                (r) => r.equipe.id == equipe_id && r.tipo == 'PONTO_FOCAL'
-                            );
-                            if (!pdmPerfil) {
-                                throw new HttpException(`Equipe ${equipe_id} não existe no PDM ${pdm.id}`, 400);
-                            }
-                        }
-
-                        await this.upsertPSPerfis(meta.id, psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
+                        validatePSEquipes(psPontoFocal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                        await upsertPSPerfis(meta.id, 'meta', psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
                     }
 
                     const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
@@ -789,6 +778,7 @@ export class MetaService {
 
                 if (tipo === 'PDM') {
                     if (op) {
+                        if (op.length == 0) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
                         // Caso os orgaos_participantes estejam atrelados a Iniciativa ou Atividade
                         // Não podem ser excluídos
                         await this.checkHasOrgaosParticipantesChildren(meta.id, op);
@@ -799,6 +789,8 @@ export class MetaService {
                         });
 
                         if (cp) {
+                            if (cp.length == 0) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
+
                             await prismaTx.metaResponsavel.deleteMany({
                                 where: {
                                     meta_id: id,
@@ -824,23 +816,11 @@ export class MetaService {
                     });
 
                     if (psTecnicoCP) {
-                        for (const equipe_id of psTecnicoCP.equipes) {
-                            const pdmPerfil = detailPdm.PdmPerfil.find(
-                                (r) => r.equipe.id == equipe_id && r.tipo == 'CP'
-                            );
-                            if (!pdmPerfil) {
-                                throw new HttpException(
-                                    `Equipe ${equipe_id} não existe no PDM ${pdm.id}: CP, aceitos: ${detailPdm.PdmPerfil.filter(
-                                        (r) => r.tipo == 'CP'
-                                    ).map((r) => r.equipe.id)}
-                                    `,
-                                    400
-                                );
-                            }
-                        }
+                        validatePSEquipes(psTecnicoCP.equipes, detailPdm.PdmPerfil, 'CP', pdm.id);
 
-                        await this.upsertPSPerfis(
+                        await upsertPSPerfis(
                             meta.id,
+                            'meta',
                             psTecnicoCP,
                             'CP',
                             currentPdmPerfis,
@@ -851,22 +831,11 @@ export class MetaService {
                     }
 
                     if (psPontoFocal) {
-                        for (const equipe_id of psPontoFocal.equipes) {
-                            const pdmPerfil = detailPdm.PdmPerfil.find(
-                                (r) => r.equipe.id == equipe_id && r.tipo == 'PONTO_FOCAL'
-                            );
-                            if (!pdmPerfil) {
-                                throw new HttpException(
-                                    `Equipe ${equipe_id} não existe no PDM ${pdm.id}: PONTO_FOCAL, aceitos: ${detailPdm.PdmPerfil.filter(
-                                        (r) => r.tipo == 'PONTO_FOCAL'
-                                    ).map((r) => r.equipe.id)}
-                                    `,
-                                    400
-                                );
-                            }
-                        }
-                        await this.upsertPSPerfis(
+                        validatePSEquipes(psPontoFocal.equipes, detailPdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+
+                        await upsertPSPerfis(
                             meta.id,
+                            'meta',
                             psPontoFocal,
                             'PONTO_FOCAL',
                             currentPdmPerfis,
@@ -924,56 +893,6 @@ export class MetaService {
         );
 
         return { id };
-    }
-
-    private async upsertPSPerfis(
-        metaId: number,
-        newEquipes: CreatePSEquipeTecnicoCPDto | CreatePSEquipePontoFocalDto,
-        tipo: 'CP' | 'PONTO_FOCAL',
-        currentPdmPerfis: { id: number; tipo: string; equipe_id: number }[],
-        user: PessoaFromJwt,
-        prismaTx: Prisma.TransactionClient,
-        pdmId: number
-    ) {
-        const currentEquipes = currentPdmPerfis.filter((p) => p.tipo === tipo).map((p) => p.equipe_id);
-        const equipesToAdd = newEquipes.equipes.filter((e) => !currentEquipes.includes(e));
-        const equipesToRemove = currentEquipes.filter((e) => !newEquipes.equipes.includes(e));
-
-        for (const equipeId of equipesToRemove) {
-            await prismaTx.pdmPerfil.updateMany({
-                where: {
-                    meta_id: metaId,
-                    equipe_id: equipeId,
-                    tipo: tipo,
-                },
-                data: {
-                    removido_em: new Date(),
-                    removido_por: user.id,
-                },
-            });
-        }
-
-        for (const equipeId of equipesToAdd) {
-            const equipe = await prismaTx.grupoResponsavelEquipe.findFirst({
-                where: { id: equipeId, removido_em: null },
-                select: { orgao_id: true },
-            });
-
-            if (!equipe) throw new HttpException(`Equipe ${equipeId} não encontrada`, 400);
-
-            await prismaTx.pdmPerfil.create({
-                data: {
-                    pdm_id: pdmId,
-                    meta_id: metaId,
-                    equipe_id: equipeId,
-                    relacionamento: 'META',
-                    tipo: tipo,
-                    criado_por: user.id,
-                    criado_em: new Date(),
-                    orgao_id: equipe.orgao_id,
-                },
-            });
-        }
     }
 
     private async calculaOrgaosPelaEquipe(

@@ -849,6 +849,8 @@ enum PdmPerfilRelacionamento {
     PDM
     META
     ETAPA
+    INICIATIVA
+    ATIVIDADE
 }
 
 model PdmPerfil {
@@ -859,6 +861,12 @@ model PdmPerfil {
 
     meta_id Int?
     meta    Meta? @relation(fields: [meta_id], references: [id])
+
+    atividade_id Int?
+    atividade    Atividade? @relation(fields: [atividade_id], references: [id])
+
+    iniciativa_id Int?
+    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
 
     etapa_id Int?
     etapa    Etapa? @relation(fields: [etapa_id], references: [id])
@@ -2049,6 +2057,7 @@ model Iniciativa {
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
     ProjetoOrigem                      ProjetoOrigem[]
+    PdmPerfil                          PdmPerfil[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2135,6 +2144,7 @@ model Atividade {
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
     ProjetoOrigem                      ProjetoOrigem[]
+    PdmPerfil                          PdmPerfil[]
 
     @@index([iniciativa_id])
     @@map("atividade")

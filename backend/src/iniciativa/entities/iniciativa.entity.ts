@@ -2,6 +2,7 @@ import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { MetaIniAtvTag } from '../../meta/entities/meta.entity';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
 
 export class IdDesc {
     id: number;
@@ -34,4 +35,6 @@ export class Iniciativa {
     ativo: boolean;
     cronograma: CronogramaAtrasoGrau | null;
     geolocalizacao: GeolocalizacaoDto[];
+    ps_tecnico_cp: CreatePSEquipeTecnicoCPDto;
+    ps_ponto_focal: CreatePSEquipePontoFocalDto;
 }

@@ -13,6 +13,7 @@ import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-i
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
+import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 
 @Injectable()
 export class IniciativaService {
@@ -35,8 +36,8 @@ export class IniciativaService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const op = dto.orgaos_participantes!;
-                const cp = dto.coordenadores_cp!;
+                const op = dto.orgaos_participantes;
+                const cp = dto.coordenadores_cp;
                 const tags = dto.tags || [];
                 const geolocalizacao = dto.geolocalizacao;
                 delete dto.orgaos_participantes;
@@ -73,13 +74,56 @@ export class IniciativaService {
                     select: { id: true },
                 });
 
-                await prismaTx.iniciativaOrgao.createMany({
-                    data: await this.buildOrgaosParticipantes(iniciativa.id, op),
-                });
+                if (tipo === 'PDM') {
+                    if (!op) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
 
-                await prismaTx.iniciativaResponsavel.createMany({
-                    data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
-                });
+                    await prismaTx.iniciativaOrgao.createMany({
+                        data: await this.buildOrgaosParticipantes(iniciativa.id, op),
+                    });
+
+                    if (!cp) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
+                    await prismaTx.iniciativaResponsavel.createMany({
+                        data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
+                    });
+                } else {
+                    const pdm = await this.prisma.pdm.findFirstOrThrow({
+                        where: { Meta: { some: { removido_em: null, id: dto.meta_id } } },
+                        select: {
+                            id: true,
+                            PdmPerfil: {
+                                where: { removido_em: null, relacionamento: 'PDM' },
+                                select: { equipe: { select: { id: true } }, tipo: true },
+                            },
+                        },
+                    });
+
+                    if (dto.ps_tecnico_cp) {
+                        validatePSEquipes(dto.ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
+                        await upsertPSPerfis(
+                            iniciativa.id,
+                            'iniciativa',
+                            dto.ps_tecnico_cp,
+                            'CP',
+                            [],
+                            user,
+                            prismaTx,
+                            dto.meta_id
+                        );
+                    }
+                    if (dto.ps_ponto_focal) {
+                        validatePSEquipes(dto.ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                        await upsertPSPerfis(
+                            iniciativa.id,
+                            'iniciativa',
+                            dto.ps_ponto_focal,
+                            'PONTO_FOCAL',
+                            [],
+                            user,
+                            prismaTx,
+                            dto.meta_id
+                        );
+                    }
+                }
 
                 await prismaTx.iniciativaTag.createMany({
                     data: await this.buildIniciativaTags(iniciativa.id, tags),
@@ -260,6 +304,13 @@ export class IniciativaService {
                         tag: { descricao: 'asc' },
                     },
                 },
+                PdmPerfil: {
+                    where: { removido_em: null },
+                    select: {
+                        equipe_id: true,
+                        tipo: true,
+                    },
+                },
             },
         });
 
@@ -334,6 +385,12 @@ export class IniciativaService {
                 ativo: dbIniciativa.ativo,
                 cronograma: cronogramaAtraso,
                 geolocalizacao: geolocalizacao.get(dbIniciativa.id) || [],
+                ps_tecnico_cp: {
+                    equipes: dbIniciativa.PdmPerfil.filter((r) => r.tipo == 'CP').map((r) => r.equipe_id),
+                },
+                ps_ponto_focal: {
+                    equipes: dbIniciativa.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => r.equipe_id),
+                },
             });
         }
 
@@ -351,14 +408,17 @@ export class IniciativaService {
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const op = dto.orgaos_participantes!;
-            const cp = dto.coordenadores_cp!;
+            const op = dto.orgaos_participantes;
+            const cp = dto.coordenadores_cp;
             const tags = dto.tags!;
             const geolocalizacao = dto.geolocalizacao;
             delete dto.orgaos_participantes;
             delete dto.coordenadores_cp;
             delete dto.tags;
             delete dto.geolocalizacao;
+
+            if (tipo === 'PDM' && cp && !op)
+                throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
             if (dto.codigo) {
                 const codigoJaEmUso = await prismaTx.iniciativa.count({
@@ -396,23 +456,85 @@ export class IniciativaService {
                 },
                 select: { id: true },
             });
-            await Promise.all([
-                prismaTx.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } }),
-                prismaTx.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } }),
-                prismaTx.iniciativaTag.deleteMany({ where: { iniciativa_id: id } }),
-            ]);
 
-            await Promise.all([
-                prismaTx.iniciativaOrgao.createMany({
-                    data: await this.buildOrgaosParticipantes(iniciativa.id, op),
-                }),
-                prismaTx.iniciativaResponsavel.createMany({
-                    data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
-                }),
-                prismaTx.iniciativaTag.createMany({
-                    data: await this.buildIniciativaTags(iniciativa.id, tags),
-                }),
-            ]);
+            if (tipo === 'PDM') {
+                if (op) {
+                    if (op.length == 0) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
+
+                    await prismaTx.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } });
+                    await prismaTx.iniciativaOrgao.createMany({
+                        data: await this.buildOrgaosParticipantes(iniciativa.id, op),
+                    });
+
+                    if (cp) {
+                        if (cp.length == 0) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
+                        await prismaTx.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } });
+                        await prismaTx.iniciativaResponsavel.createMany({
+                            data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
+                        });
+                    }
+                }
+            } else {
+                const pdm = await prismaTx.pdm.findFirstOrThrow({
+                    where: { Meta: { some: { removido_em: null, iniciativa: { some: { id, removido_em: null } } } } },
+                    select: {
+                        id: true,
+                        PdmPerfil: {
+                            where: { removido_em: null, relacionamento: 'PDM' },
+                            select: { equipe: { select: { id: true } }, tipo: true },
+                        },
+                    },
+                });
+
+                const currentPdmPerfis = await prismaTx.pdmPerfil.findMany({
+                    where: {
+                        iniciativa_id: id,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        tipo: true,
+                        equipe_id: true,
+                    },
+                });
+
+                if (dto.ps_tecnico_cp) {
+                    validatePSEquipes(dto.ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
+                    await upsertPSPerfis(
+                        id,
+                        'iniciativa',
+                        dto.ps_tecnico_cp,
+                        'CP',
+                        currentPdmPerfis,
+                        user,
+                        prismaTx,
+                        self.meta_id
+                    );
+                }
+
+                if (dto.ps_ponto_focal) {
+                    validatePSEquipes(dto.ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                    await upsertPSPerfis(
+                        id,
+                        'iniciativa',
+                        dto.ps_ponto_focal,
+                        'PONTO_FOCAL',
+                        currentPdmPerfis,
+                        user,
+                        prismaTx,
+                        self.meta_id
+                    );
+                }
+            }
+
+            if (Array.isArray(tags)) {
+                await prismaTx.iniciativaTag.deleteMany({ where: { iniciativa_id: id } });
+                await Promise.all([
+                    prismaTx.iniciativaTag.createMany({
+                        data: await this.buildIniciativaTags(iniciativa.id, tags),
+                    }),
+                ]);
+            }
 
             const indicador = await prismaTx.indicador.findFirst({
                 where: {
