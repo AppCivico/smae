@@ -10,7 +10,6 @@ import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
 import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
 import {
@@ -19,6 +18,7 @@ import {
     FilterVariavelAnaliseQualitativaGetDto,
     FilterVariavelGlobalCicloDto,
     UpsertVariavelGlobalCicloDocumentoDto,
+    VariavelAnaliseDocumento,
     VariavelAnaliseQualitativaResponseDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
@@ -693,14 +693,16 @@ export class VariavelCicloService {
         return Array.from(valoresMap.values());
     }
 
-    private formatarUploads(uploads: UploadArquivoInterface[]): ArquivoBaseDto[] {
+    private formatarUploads(uploads: UploadArquivoInterface[]): VariavelAnaliseDocumento[] {
         return uploads.map((upload) => {
             const arquivo = upload.arquivo;
+            const token = this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO);
             return {
-                ...arquivo,
+                download_token: token.download_token,
                 descricao: upload.descricao,
-                ...this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-            };
+                id: arquivo.id,
+                nome_original: arquivo.nome_original,
+            } satisfies VariavelAnaliseDocumento;
         });
     }
 

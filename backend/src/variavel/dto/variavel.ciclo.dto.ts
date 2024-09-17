@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { VariavelFase } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -158,6 +158,13 @@ export class AnaliseQualitativaDto {
     criador_nome: string;
 }
 
+export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
+    'id',
+    'nome_original',
+    'download_token',
+    'descricao',
+]) {}
+
 export class VariavelAnaliseQualitativaResponseDto {
     variavel: VariavelResumo;
 
@@ -167,8 +174,8 @@ export class VariavelAnaliseQualitativaResponseDto {
     @ApiProperty({ description: 'Valores da variável e suas filhas', type: [VariavelValorDto] })
     valores: VariavelValorDto[];
 
-    @ApiProperty({ description: 'Uploads associados', type: [ArquivoBaseDto] })
-    uploads: ArquivoBaseDto[];
+    @ApiProperty({ description: 'Uploads associados', type: [VariavelAnaliseDocumento] })
+    uploads: VariavelAnaliseDocumento[];
 
     possui_variaveis_filhas: boolean;
 }
