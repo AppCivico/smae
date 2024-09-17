@@ -597,7 +597,16 @@ export class VariavelCicloService {
         // Buscar valores da variável e suas filhas
         const valores = await this.prisma.serieVariavel.findMany({
             where: {
-                OR: [{ variavel_id: variavel_id }, { variavel: { variavel_mae_id: variavel_id } }],
+                OR: [
+                    { variavel_id: variavel_id },
+                    {
+                        variavel: {
+                            id: {
+                                in: variavel.variaveis_filhas.map((v) => v.id),
+                            },
+                        },
+                    },
+                ],
                 data_valor: data_referencia,
                 serie: { in: ['Realizado', 'RealizadoAcumulado'] },
             },
