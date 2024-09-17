@@ -35,20 +35,20 @@ export class TransfGovComunicado {
 }
 
 export class TransfGovTransferencia {
-    @IsString()
-    cod_orgao_sup_programa: string;
+    @IsNumber()
+    cod_orgao_sup_programa: number;
 
     @IsEnum(TransfereGovOportunidadeTipo)
-    tipo: TransfereGovOportunidadeTipo;
+    tipo?: TransfereGovOportunidadeTipo;
 
-    @IsString()
-    id_programa: string;
+    @IsNumber()
+    id_programa: number;
 
     @IsString()
     desc_orgao_sup_programa: string;
 
-    @IsString()
-    cod_programa: string;
+    @IsNumber()
+    cod_programa: number;
 
     @IsString()
     nome_programa: string;
