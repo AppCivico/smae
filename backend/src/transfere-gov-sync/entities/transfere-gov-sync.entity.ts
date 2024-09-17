@@ -85,6 +85,7 @@ export class FilterTransfereGovTransferenciasDto {
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     ano?: number;
 
     @IsOptional()
