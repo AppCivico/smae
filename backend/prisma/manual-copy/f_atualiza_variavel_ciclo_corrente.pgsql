@@ -42,7 +42,7 @@ BEGIN
 
         v_corrente := v_current_date < v_last_valid_period + periodicidade_intervalo(v_record.periodicidade);
 
-        INSERT INTO variavel_ciclo_corrente(variavel_id, ultimo_periodo_valido, fase, proximo_periodo_abertura, v_corrente)
+        INSERT INTO variavel_ciclo_corrente(variavel_id, ultimo_periodo_valido, fase, proximo_periodo_abertura, eh_corrente)
         VALUES (
             v_record.id,
             v_last_valid_period,
@@ -54,7 +54,7 @@ BEGIN
             DO UPDATE SET
                 ultimo_periodo_valido = EXCLUDED.ultimo_periodo_valido,
                 proximo_periodo_abertura = EXCLUDED.proximo_periodo_abertura,
-                v_corrente = EXCLUDED.v_corrente;
+                eh_corrente = EXCLUDED.eh_corrente;
         IF NOT FOUND THEN
             RAISE EXCEPTION 'Falha ao atualizar variavel_ciclo_corrente para variável ID %', p_variavel_id;
         END IF;
