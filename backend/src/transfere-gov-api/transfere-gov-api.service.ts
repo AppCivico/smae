@@ -76,6 +76,9 @@ export class TransfGovTransferencia {
 
     @IsString()
     natureza_juridica_programa: string;
+
+    @IsString()
+    uf_programa: string;
 }
 
 class ApiResponseComunicados {
@@ -234,7 +237,7 @@ export class TransfereGovApiTransferenciasService {
 
                 totalPaginas = apiResponse.pages;
 
-                transferencias.push(...apiResponse.items);
+                transferencias.push(...apiResponse.items.filter((item) => item.uf_programa == 'SP'));
             } catch (error: any) {
                 this.logger.debug(`${endpoint} falhou: ${error}`);
                 let body = '';
