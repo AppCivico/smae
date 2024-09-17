@@ -64,9 +64,13 @@
             name="descricao"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.descricao }"
+            :class="{ 'error': errors.descricao && !carregando }"
+            :disabled="carregando"
           />
-          <div class="error-msg">
+          <div
+            v-if="!carregando"
+            class="error-msg"
+          >
             {{ errors.descricao }}
           </div>
         </div>
@@ -83,6 +87,7 @@
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.tipo_documento_id }"
+            :disabled="carregando"
           >
             <option value="">
               Selecione
@@ -103,7 +108,7 @@
       </div>
 
       <div class="flex g2 mb2">
-        <div class="f1">
+        <div class="">
           <LabelFromYup
             name="arquivo"
             :schema="uploadSchema"
@@ -140,6 +145,13 @@
             {{ errors.arquivo }}
           </div>
         </div>
+
+        <div v-if="carregando">
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_spin" /></svg>
+        </div>
       </div>
     </form>
   </article>
@@ -160,6 +172,7 @@ import LabelFromYup from './LabelFromYup.vue';
 export type ArquivoAdicionado = {
   nome_original: string,
   download_token: string
+  descricao: string | null
 };
 
 type ArquivoRequisitos = {
@@ -188,7 +201,10 @@ const {
 
 const fileStore = useFileStore();
 const documentTypesStore = useDocumentTypesStore();
+
 const { tempDocumentTypes } = storeToRefs(documentTypesStore);
+const { carregando } = storeToRefs(fileStore);
+
 documentTypesStore.clear();
 documentTypesStore.filterDocumentTypes();
 
@@ -199,7 +215,9 @@ const arquivoRequisitos = ref<ArquivoRequisitos>({
 });
 
 const podeAdicionar = computed<boolean>(() => (
-  !!(arquivoRequisitos.value.descricao && arquivoRequisitos.value.tipo_documento_id)
+  !!(
+    arquivoRequisitos.value.descricao && arquivoRequisitos.value.tipo_documento_id
+  ) && !carregando.value
 ));
 
 const listaArquivos = computed(() => {
@@ -218,7 +236,7 @@ function iniciarAdicionarAquivo(): void {
 }
 
 const submit = handleSubmit(async (values) => {
-  const { token, nomeOriginal } = await fileStore.upload({
+  const { token, nomeOriginal, descricao } = await fileStore.upload({
     tipo_id: values.tipo_documento_id,
     descricao: values.descricao,
   }, values.arquivo);
@@ -226,6 +244,7 @@ const submit = handleSubmit(async (values) => {
   const arquivo = {
     nome_original: nomeOriginal,
     download_token: token,
+    descricao,
   };
 
   $emit('novo-arquivo', arquivo);

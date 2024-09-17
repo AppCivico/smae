@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { defineStore } from 'pinia';
 
 import type {
   VariavelGlobalCicloDto,
@@ -8,7 +9,7 @@ import type {
 
 import type { PaginatedDto } from '@/../../backend/src/common/dto/paginated.dto';
 
-import { defineStore } from 'pinia';
+import { useFileStore } from './file.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -26,6 +27,7 @@ interface Estado {
   tokenProximaPagina: string | null;
   erro: null | unknown;
   emFoco: VariavelAnaliseQualitativaResponseDto | null;
+  carregando: boolean;
 }
 
 type Paginacao = {
@@ -42,6 +44,7 @@ type DadosASeremEnviados = {
   uploads: {
     nome_original: string;
     download_token: string;
+    descricao: string | null;
   }[];
   valores: [
     {
@@ -54,6 +57,8 @@ type DadosASeremEnviados = {
   pedido_complementacao?: string;
 };
 
+const fileStore = useFileStore();
+
 export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
   state: (): Estado => ({
     erro: null,
@@ -61,6 +66,7 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
     dados: [],
     tokenProximaPagina: null,
     emFoco: null,
+    carregando: false,
   }),
   actions: {
     async getCiclosAtualizacao({
@@ -87,24 +93,31 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
       }
     },
     async obterCicloPorId(id: string, dataReferencia: string): Promise<void> {
-      const resposta: VariavelAnaliseQualitativaResponseDto = await this.requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
-        variavel_id: id,
-        data_referencia: dataReferencia,
-      });
+      this.emFoco = null;
+      this.carregando = true;
 
-      this.emFoco = resposta;
+      try {
+        const resposta: VariavelAnaliseQualitativaResponseDto = await this.requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
+          variavel_id: id,
+          data_referencia: dataReferencia,
+        });
+
+        this.emFoco = resposta;
+      } finally {
+        this.carregando = false;
+      }
     },
     async enviarDados(dados: DadosASeremEnviados) {
-      const dadosASeremEnviados = {
-        ...dados,
-        // valores: dados.valores.map((item) => ({ ...item, variavel_id: dados.variavel_id })),
-        uploads: dados.uploads.map((item) => item.download_token),
-      };
+      try {
+        this.carregando = true;
 
-      await this.requestS.patch(
-        `${baseUrl}/plano-setorial-variavel-ciclo`,
-        dadosASeremEnviados,
-      );
+        await this.requestS.patch(
+          `${baseUrl}/plano-setorial-variavel-ciclo`,
+          dados,
+        );
+      } finally {
+        this.carregando = false;
+      }
     },
   },
   getters: {
@@ -118,6 +131,9 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
         tokenProximaPagina: state.tokenProximaPagina || undefined,
         temMais: state.temMais,
       };
+    },
+    bloqueado(state): boolean {
+      return state.carregando || fileStore.carregando;
     },
   },
 });

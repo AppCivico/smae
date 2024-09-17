@@ -13,6 +13,7 @@ type OpcoesArquivo = {
 export type NovoArquivo = {
   token: string;
   nomeOriginal: string;
+  descricao: string | null;
 };
 
 interface Estado {
@@ -51,9 +52,12 @@ export const useFileStore = defineStore('FileStore', {
           formData,
         );
 
+        console.log(arquivoAtualizado);
+
         return {
           token: arquivoAtualizado.upload_token,
           nomeOriginal: file.name,
+          descricao: opcoes.descricao,
         };
       } catch (e) {
         this.erro = e;

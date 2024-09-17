@@ -143,6 +143,7 @@
       <button
         class="btn outline center mt3 bgnone tcprimary"
         type="submit"
+        :disabled="bloqueado"
       >
         Salvar
       </button>
@@ -153,7 +154,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { Field, useForm } from 'vee-validate';
 
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 
@@ -185,7 +186,7 @@ const $emit = defineEmits<Emits>();
 
 const $route = useRoute();
 
-const { emFoco, enviarDados } = useCicloAtualizacaoStore();
+const { emFoco, enviarDados, bloqueado } = useCicloAtualizacaoStore();
 
 const valorInicialVariaveis = emFoco?.valores.map((item) => ({
   variavel_id: item.variavel.id,
@@ -262,10 +263,11 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
-function adicionarNovoArquivo({ nome_original, download_token }: ArquivoAdicionado) {
+function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
   arquivosLocais.value.push({
     nome_original,
     download_token,
+    descricao,
   });
 }
 

@@ -114,6 +114,7 @@
       <button
         class="btn outline center mt3 bgnone tcprimary"
         type="submit"
+        :disabled="bloqueado"
       >
         Salvar
       </button>
@@ -149,7 +150,7 @@ const $emit = defineEmits<Emits>();
 
 const $route = useRoute();
 
-const { emFoco, enviarDados } = useCicloAtualizacaoStore();
+const { emFoco, enviarDados, bloqueado } = useCicloAtualizacaoStore();
 
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco?.uploads || []);
 
@@ -207,10 +208,11 @@ const onSubmit = handleSubmit(async (valores) => {
   $emit('enviado');
 });
 
-function adicionarNovoArquivo({ nome_original, download_token }: ArquivoAdicionado) {
+function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
   arquivosLocais.value.push({
     nome_original,
     download_token,
+    descricao,
   });
 }
 
