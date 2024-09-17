@@ -554,17 +554,7 @@ export class VariavelCicloService {
                 unidade_medida: { select: { id: true, sigla: true, descricao: true } },
                 variaveis_filhas: {
                     where: { removido_em: null, tipo: 'Global' },
-                    select: {
-                        id: true,
-                        suspendida_em: true,
-                        variavel_categorica_id: true,
-                        casas_decimais: true,
-                        periodicidade: true,
-                        acumulativa: true,
-                        codigo: true,
-                        titulo: true,
-                        valor_base: true,
-                    },
+                    select: { id: true },
                 },
             },
         });
