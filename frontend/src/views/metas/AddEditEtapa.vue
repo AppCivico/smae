@@ -416,7 +416,7 @@ function maskDate(el) {
             name="values.ps_ponto_focal.equipes"
             :controlador="{
               busca: '',
-              participantes: values.ps_ponto_focal.equipes,
+              participantes: values?.ps_ponto_focal?.equipes || [],
             }"
             :grupo="pegaPsTecnicoCpCompleto(singleMeta.ps_ponto_focal.equipes)"
             label="titulo"

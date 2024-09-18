@@ -389,7 +389,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
               name="values.ps_ponto_focal.equipes"
               :controlador="{
                 busca: '',
-                participantes: values.ps_ponto_focal.equipes,
+                participantes: values?.ps_ponto_focal?.equipes || [],
               }"
               :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa.ps_ponto_focal.equipes)"
               label="titulo"
