@@ -17,6 +17,7 @@ import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { VariavelResumo } from './list-variavel.dto';
+import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -47,6 +48,11 @@ export class FilterVariavelGlobalCicloDto {
     @IsInt()
     @Transform(NumberTransform)
     simular_usuario?: number;
+
+    @IsArray()
+    @IsOptional()
+    @Transform(NumberArrayTransformOrEmpty)
+    variavel_id?: number[];
 }
 
 export class VariavelGlobalCicloDto {

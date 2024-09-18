@@ -107,7 +107,12 @@ export class VariavelCicloService {
             pessoaId = filters.simular_usuario ?? pessoaId;
         }
 
-        const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [{}];
+        const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
+            {
+                id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
+                removido_em: null,
+            },
+        ];
 
         if (pdmIds) {
             whereConditions.push({

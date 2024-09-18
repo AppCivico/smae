@@ -2,59 +2,119 @@ CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente(p_variavel_id int)
     RETURNS void
     AS $$
 DECLARE
-    v_record RECORD;
-    v_last_valid_period date;
-    v_current_date date := date_trunc('month', CURRENT_DATE AT TIME ZONE 'America/Sao_Paulo');
-    v_threshold_date date;
-    v_corrente boolean;
+    v_registro RECORD;
+    v_ultimo_periodo_valido DATE;
+    v_data_atual DATE := date_trunc('month', CURRENT_DATE AT TIME ZONE 'America/Sao_Paulo');
+    v_data_limite DATE;
+    v_corrente BOOLEAN;
+    v_proximo_periodo DATE;
+    v_fase_corrente "VariavelFase";
+    v_dias_desde_inicio INT;
 BEGIN
+    -- Busca o registro da variável com o nome da coluna atualizado
     SELECT
         id,
         periodicidade,
         atraso_meses,
+        fim_medicao,
         inicio_medicao,
-        periodicidade_intervalo(periodicidade) * atraso_meses as atraso_intervalo
-         INTO v_record
-    FROM
-        variavel
+        periodo_preenchimento,
+        periodo_validacao,
+        periodo_liberacao,
+        periodicidade_intervalo(periodicidade) * atraso_meses AS intervalo_atraso
+    INTO v_registro
+    FROM variavel
     WHERE
         id = p_variavel_id
         AND tipo = 'Global'
         AND variavel_mae_id IS NULL
         AND removido_em IS NULL;
 
-    IF v_record IS NULL THEN
+
+    IF v_registro IS NULL THEN
         RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
         RETURN;
     END IF;
 
-    SELECT
-        ultimo_periodo_valido(v_record.periodicidade, v_record.atraso_meses) INTO v_last_valid_period;
+    IF v_registro.inicio_medicao IS NULL THEN
+        RAISE NOTICE 'Variável % sem data de início', p_variavel_id;
+        RETURN;
+    END IF;
 
-    -- Calcula o período limite para a variável
-    v_threshold_date := v_current_date - v_record.atraso_intervalo - periodicidade_intervalo(v_record.periodicidade);
+    SELECT coalesce(fase, 'Preenchimento'::"VariavelFase") INTO v_fase_corrente
+    FROM variavel_ciclo_corrente
+    WHERE variavel_id = p_variavel_id;
 
-    -- Verifica se o último período válido é anterior à data limite
-    IF v_last_valid_period < v_threshold_date THEN
+    -- Calcula o último período válido usando a função atualizada
+    v_ultimo_periodo_valido := ultimo_periodo_valido(
+        v_registro.periodicidade,
+        v_registro.atraso_meses,
+        v_registro.inicio_medicao
+    );
+
+    --RAISE NOTICE 'v_registro: %', v_registro;
+
+    -- Calcula o próximo período após o último período válido
+    v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
+    --RAISE NOTICE 'v_ultimo_periodo_valido: %', v_ultimo_periodo_valido;
+
+    -- Se há fim de medição, a data limite é o fim de medição
+    -- Senão, a data limite é o próximo período (não há fim de medição, basicamente)
+    v_data_limite := coalesce(v_registro.fim_medicao, v_proximo_periodo) + v_registro.intervalo_atraso;
+
+    --RAISE NOTICE 'v_data_limite: %', v_data_limite;
+
+    -- Deleta se a data atual for igual ou posterior à data limite
+    IF v_data_atual >= v_data_limite THEN
+        --RAISE NOTICE 'Deletando variavel_ciclo_corrente para variável ID %', p_variavel_id;
         DELETE FROM variavel_ciclo_corrente
-        WHERE variavel_id = v_record.id;
+        WHERE variavel_id = p_variavel_id;
     ELSE
+        -- Determina se a data atual está dentro do intervalo válido
+        v_corrente := v_data_atual <= v_proximo_periodo;
+        --RAISE NOTICE 'v_corrente: %', v_corrente;
 
-        v_corrente := v_current_date <= v_last_valid_period + periodicidade_intervalo(v_record.periodicidade);
+        IF (v_corrente) THEN
+            -- Calcula o número de dias desde o início da medição
+            v_dias_desde_inicio := v_data_atual - v_ultimo_periodo_valido;
 
-        INSERT INTO variavel_ciclo_corrente(variavel_id, ultimo_periodo_valido, fase, proximo_periodo_abertura, eh_corrente)
+            -- Determina a fase atual com base nos períodos definidos
+            IF v_dias_desde_inicio BETWEEN v_registro.periodo_preenchimento[1] AND v_registro.periodo_preenchimento[2] THEN
+                v_fase_corrente := 'Preenchimento'::"VariavelFase";
+            ELSIF v_dias_desde_inicio BETWEEN v_registro.periodo_validacao[1] AND v_registro.periodo_validacao[2] THEN
+                v_fase_corrente := 'Validacao'::"VariavelFase";
+            ELSIF v_dias_desde_inicio BETWEEN v_registro.periodo_liberacao[1] AND v_registro.periodo_liberacao[2] THEN
+                v_fase_corrente := 'Liberacao'::"VariavelFase";
+            ELSE
+                -- Se estiver fora de todos os períodos, pode ser bug no cadastro agora
+                v_corrente := FALSE;
+            END IF;
+
+            --periodo_preenchimento  | {1,10}
+            --periodo_liberacao      | {16,22}
+            --periodo_validacao      | {11,15}
+        END IF;
+
+        INSERT INTO variavel_ciclo_corrente(
+            variavel_id,
+            ultimo_periodo_valido,
+            fase,
+            proximo_periodo_abertura,
+            eh_corrente
+        )
         VALUES (
-            v_record.id,
-            v_last_valid_period,
-            'Preenchimento',
-            v_last_valid_period + v_record.atraso_intervalo,
+            v_registro.id,
+            v_ultimo_periodo_valido,
+            v_fase_corrente,
+            v_proximo_periodo,
             v_corrente
-    )
+        )
         ON CONFLICT (variavel_id)
             DO UPDATE SET
                 ultimo_periodo_valido = EXCLUDED.ultimo_periodo_valido,
                 proximo_periodo_abertura = EXCLUDED.proximo_periodo_abertura,
                 eh_corrente = EXCLUDED.eh_corrente;
+
         IF NOT FOUND THEN
             RAISE EXCEPTION 'Falha ao atualizar variavel_ciclo_corrente para variável ID %', p_variavel_id;
         END IF;
@@ -66,7 +126,8 @@ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION f_atualiza_todas_variaveis( )
         RETURNS void AS
-$$ DECLARE v_record RECORD;
+$$
+DECLARE v_record RECORD;
 
 BEGIN
     FOR v_record IN (
