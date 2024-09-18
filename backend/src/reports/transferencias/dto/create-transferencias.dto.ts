@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export enum TipoRelatorioTransferencia {
@@ -26,6 +26,7 @@ export class CreateRelTransferenciasDto {
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     ano?: number;
 
     @IsOptional()
