@@ -219,16 +219,15 @@
       />
     </div>
     <div class="f0">
-      <form @submit.prevent="editAvaliacao($event)">
+      <form @submit.prevent="editAvaliacao">
         <label
           for="avaliacao"
           class="label tc300"
         >Avaliação</label>
-        <select
-          id="avaliacao"
-          v-model.trim="tipo"
-          class="inputtext mb1"
+        <Field
           name="avaliacao"
+          as="select"
+          class="inputtext light mb1"
         >
           <option value="" />
           <option
@@ -241,7 +240,7 @@
           >
             Selecionada
           </option>
-        </select>
+        </Field>
         <button class="btn outline bgnone tcprimary mtauto mb1">
           Salvar
         </button>
@@ -253,6 +252,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
+import { Field, useForm } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
@@ -270,6 +270,13 @@ const oportundiadeID = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
 const palavraChave = ref(route.query.palavra_chave);
+
+const {
+  errors, isSubmitting, setFieldValue, handleSubmit,
+} = useForm({
+//   initialValues: SingleAnalise,
+//   validationSchema: schema,
+});
 
 const {
   lista, chamadasPendentes, erro, paginação,
@@ -305,6 +312,17 @@ function atualizarUrl() {
     },
   });
 }
+
+const editAvaliacao = handleSubmit.withControlled(async (values) => {
+  try {
+    await oportunidades.salvarItem(
+      oportundiadeID.value,
+      { avaliacao: values.avaliacao },
+    );
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
 
 watch([
   () => route.query.ano,
