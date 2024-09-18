@@ -268,7 +268,7 @@ const alertStore = useAlertStore();
 const oportundiadeID = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
-const palavras_chave = ref(route.query.palavras_chave);
+const palavraChave = ref(route.query.palavra_chave);
 
 const {
   lista, chamadasPendentes, erro, paginação,
