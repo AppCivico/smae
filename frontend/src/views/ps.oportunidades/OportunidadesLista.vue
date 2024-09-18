@@ -63,8 +63,6 @@
       Filtrar
     </button>
   </form>
-  <!-- <pre>{{ lista }}</pre> -->
-
   <table class="tablemain mb1">
     <col>
     <col>
@@ -256,7 +254,6 @@ import dateToField from '@/helpers/dateToField';
 const route = useRoute();
 const router = useRouter();
 const oportunidades = useOportunidadesStore();
-// const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
 
 const alertStore = useAlertStore();
 
@@ -295,7 +292,6 @@ const tipos = [
 function editarOportunidade(id) {
   showModal.value = true;
   oportundiadeID.value = id;
-  console.log('editarOportunidade id:', id);
 }
 
 function atualizarUrl() {
@@ -340,7 +336,6 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
         palavras_chave: palavraChaveParaBusca,
       });
       showModal.value = false;
-    //   router.push({ name: 'OportunidadesLista' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -352,7 +347,6 @@ watch([
   () => route.query.tipo,
   () => route.query.palavras_chave,
 ], () => {
-  console.log('entrou no watch');
   let {
     ano: anoParaBusca,
     tipo: tipoParaBusca,
