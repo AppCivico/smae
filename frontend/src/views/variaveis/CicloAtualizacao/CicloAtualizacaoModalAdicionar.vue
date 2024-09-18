@@ -1,7 +1,6 @@
 <template>
   <div class="ciclo-atualizacao-modal-adicionar">
     <div class="adicionar-subtitulo flex">
-      {{ errors }}
       <svg
         class="adicionar-subtitulo__icone"
         width="32"
@@ -168,9 +167,7 @@ const valorInicial = {
   analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
 };
 
-const {
-  handleSubmit, setFieldValue, validate, errors,
-} = useForm({
+const { handleSubmit, setFieldValue } = useForm({
   validationSchema: schema,
   initialValues: valorInicial,
 });
