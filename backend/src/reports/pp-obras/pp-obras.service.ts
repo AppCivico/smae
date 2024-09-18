@@ -547,7 +547,8 @@ export class PPObrasService implements ReportableService {
             projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
             projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
             empreendimento.id AS empreendimento_id,
-            empreendimento.identificador AS empreendimento_identificador
+            empreendimento.identificador AS empreendimento_identificador,
+            projeto.mdo_observacoes
         FROM projeto
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
@@ -617,6 +618,7 @@ export class PPObrasService implements ReportableService {
                 n_unidades_habitacionais: db.n_unidades_habitacionais ? db.n_unidades_habitacionais : null,
                 programa_habitacional: db.programa_habitacional ? db.programa_habitacional : null,
                 pontos_focais_colaboradores: db.pontos_focais_colaboradores,
+                observacoes: db.mdo_observacoes ? db.mdo_observacoes : null,
                 orgao_executor: db.orgao_executor_id
                     ? {
                           id: db.orgao_executor_id,
@@ -863,7 +865,7 @@ export class PPObrasService implements ReportableService {
                 WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_reajustado,
             (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
