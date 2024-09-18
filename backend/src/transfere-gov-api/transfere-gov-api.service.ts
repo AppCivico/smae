@@ -236,7 +236,13 @@ export class TransfereGovApiTransferenciasService {
 
                 totalPaginas = apiResponse.pages;
 
-                transferencias.push(...apiResponse.items.filter((item) => item.uf_programa == 'SP'));
+                transferencias.push(
+                    ...apiResponse.items.filter(
+                        (item) =>
+                            item.uf_programa == 'SP' &&
+                            item.natureza_juridica_programa == 'Administração Pública Municipal'
+                    )
+                );
             } catch (error: any) {
                 this.logger.debug(`${endpoint} falhou: ${error}`);
                 let body = '';
