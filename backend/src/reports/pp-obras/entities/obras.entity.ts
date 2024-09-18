@@ -37,8 +37,7 @@ export class RelObrasDto {
     @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
     origem_tipo: ProjetoOrigemTipo;
     descricao: string | null;
-    //objeto: string;
-    //objetivo: string;
+    observacoes: string | null;
     inicio_planejado: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;

@@ -23,7 +23,7 @@ import { CommonBaseModule } from './common/services/base.module';
 import { ContentInterceptor } from './content.interceptor';
 import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { DistribuicaoRecursoModule } from './distribuicao-recurso/distribuicao-recurso.module';
+import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';

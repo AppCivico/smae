@@ -4,7 +4,7 @@ import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prism
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { DistribuicaoRecursoService } from 'src/distribuicao-recurso/distribuicao-recurso.service';
+import { DistribuicaoRecursoService } from 'src/casa-civil/distribuicao-recurso/distribuicao-recurso.service';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -666,78 +666,6 @@ export class TransferenciaService {
                     });
                 }
 
-                // Tratando upsert de parlamentares.
-                const operations = [];
-                if (dto.parlamentares?.length) {
-                    const sumValor = dto.parlamentares
-                        .filter((e) => e.valor)
-                        .reduce((acc, curr) => acc + +curr.valor!, 0);
-
-                    if (+sumValor > +dto.valor!)
-                        throw new HttpException(
-                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
-                            400
-                        );
-
-                    for (const relParlamentar of dto.parlamentares) {
-                        if (relParlamentar.id) {
-                            const row = self.parlamentar.find((e) => e.id == relParlamentar.id);
-                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
-
-                            if (
-                                row.objeto !== relParlamentar.objeto ||
-                                row.valor?.toNumber() !== relParlamentar.valor ||
-                                row.parlamentar_id !== relParlamentar.parlamentar_id
-                            ) {
-                                // Caso o valor seja modificado, deve ser verificado se o novo valor é, no mínimo, superior ao valor cadastrado em distribuições.
-                                if (relParlamentar.valor && row.valor?.toNumber() != relParlamentar.valor) {
-                                    const distribuicoes = await prismaTxn.distribuicaoParlamentar.findMany({
-                                        where: {
-                                            distribuicao_recurso: {
-                                                transferencia_id: id,
-                                                removido_em: null,
-                                            },
-                                            parlamentar_id: row.parlamentar_id,
-                                            removido_em: null,
-                                            valor: { not: null },
-                                        },
-                                        select: {
-                                            valor: true,
-                                        },
-                                    });
-
-                                    const sumDistribuicoes = distribuicoes.reduce(
-                                        (acc, curr) => acc + curr.valor!.toNumber(),
-                                        0
-                                    );
-
-                                    if (+sumDistribuicoes > +relParlamentar.valor)
-                                        throw new HttpException(
-                                            'valor| O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
-                                            400
-                                        );
-                                }
-
-                                operations.push(
-                                    prismaTxn.transferenciaParlamentar.update({
-                                        where: { id: relParlamentar.id },
-                                        data: {
-                                            valor: relParlamentar.valor,
-                                            objeto: relParlamentar.objeto,
-                                            atualizado_em: agora,
-                                            atualizado_por: user.id,
-                                        },
-                                    })
-                                );
-                            }
-                        } else {
-                            // Não haverá create aqui.
-                        }
-                    }
-                }
-
-                if (operations.length) await Promise.all(operations);
-
                 // Criando a primeira distribuição.
                 const jaTemDistribuicao = await prismaTxn.distribuicaoRecurso.count({
                     where: {
@@ -899,6 +827,78 @@ export class TransferenciaService {
                             );
                     }
                 }
+
+                // Tratando upsert de parlamentares.
+                const operations = [];
+                if (dto.parlamentares?.length) {
+                    const sumValor = dto.parlamentares
+                        .filter((e) => e.valor)
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
+
+                    if (+sumValor > +dto.valor!)
+                        throw new HttpException(
+                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
+                            400
+                        );
+
+                    for (const relParlamentar of dto.parlamentares) {
+                        if (relParlamentar.id) {
+                            const row = self.parlamentar.find((e) => e.id == relParlamentar.id);
+                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
+
+                            if (
+                                row.objeto !== relParlamentar.objeto ||
+                                row.valor?.toNumber() !== relParlamentar.valor ||
+                                row.parlamentar_id !== relParlamentar.parlamentar_id
+                            ) {
+                                // Caso o valor seja modificado, deve ser verificado se o novo valor é, no mínimo, superior ao valor cadastrado em distribuições.
+                                if (relParlamentar.valor && row.valor?.toNumber() != relParlamentar.valor) {
+                                    const distribuicoes = await prismaTxn.distribuicaoParlamentar.findMany({
+                                        where: {
+                                            distribuicao_recurso: {
+                                                transferencia_id: id,
+                                                removido_em: null,
+                                            },
+                                            parlamentar_id: row.parlamentar_id,
+                                            removido_em: null,
+                                            valor: { not: null },
+                                        },
+                                        select: {
+                                            valor: true,
+                                        },
+                                    });
+
+                                    const sumDistribuicoes = distribuicoes.reduce(
+                                        (acc, curr) => acc + curr.valor!.toNumber(),
+                                        0
+                                    );
+
+                                    if (+sumDistribuicoes > +relParlamentar.valor)
+                                        throw new HttpException(
+                                            'valor| O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
+                                            400
+                                        );
+                                }
+
+                                operations.push(
+                                    prismaTxn.transferenciaParlamentar.update({
+                                        where: { id: relParlamentar.id },
+                                        data: {
+                                            valor: relParlamentar.valor,
+                                            objeto: relParlamentar.objeto,
+                                            atualizado_em: agora,
+                                            atualizado_por: user.id,
+                                        },
+                                    })
+                                );
+                            }
+                        } else {
+                            // Não haverá create aqui.
+                        }
+                    }
+                }
+
+                if (operations.length) await Promise.all(operations);
 
                 return transferencia;
             }

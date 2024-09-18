@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -9,7 +9,6 @@ import {
     ProjetoOrigemTipo,
     ProjetoStatus,
     StatusContrato,
-    StatusRisco,
 } from '@prisma/client';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
@@ -92,6 +91,7 @@ class RetornoDbProjeto {
     pontos_focais_colaboradores: string;
     responsavel_id: number;
     responsavel_nome_exibicao: string;
+    mdo_observacoes?: string;
 
     programa_habitacional?: string;
     n_unidades_habitacionais?: number;
@@ -551,7 +551,8 @@ export class PPObrasService implements ReportableService {
             projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
             projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
             empreendimento.id AS empreendimento_id,
-            empreendimento.identificador AS empreendimento_identificador
+            empreendimento.identificador AS empreendimento_identificador,
+            projeto.mdo_observacoes
         FROM projeto
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
@@ -642,6 +643,7 @@ export class PPObrasService implements ReportableService {
                 n_unidades_atendidas: db.n_unidades_atendidas ? db.n_unidades_atendidas : null,
                 programa_habitacional: db.programa_habitacional ? db.programa_habitacional : null,
                 pontos_focais_colaboradores: db.pontos_focais_colaboradores,
+                observacoes: db.mdo_observacoes ? db.mdo_observacoes : null,
                 orgao_executor: db.orgao_executor_id
                     ? {
                           id: db.orgao_executor_id,

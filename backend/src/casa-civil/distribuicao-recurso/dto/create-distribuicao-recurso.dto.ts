@@ -9,10 +9,10 @@ import {
     MaxLength,
     MinLength,
     ValidateIf,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
-import { DateTransform } from '../../auth/transforms/date.transform';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
@@ -240,4 +240,3 @@ export class CreateDistribuicaoParlamentarDto {
     @ValidateIf((object, value) => value !== null)
     valor?: number;
 }
-
