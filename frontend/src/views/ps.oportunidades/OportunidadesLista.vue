@@ -229,9 +229,15 @@
             Selecionada
           </option>
         </Field>
-        <button class="btn outline bgnone tcprimary mtauto mb1">
-          Salvar
-        </button>
+        <div class="flex spacebetween center mb2">
+          <hr class="mr2 f1">
+          <button
+            class="btn big"
+          >
+            Salvar
+          </button>
+          <hr class="ml2 f1">
+        </div>
       </form>
     </div>
   </SmallModal>
@@ -303,10 +309,29 @@ function atualizarUrl() {
 
 const editAvaliacao = handleSubmit.withControlled(async (values) => {
   try {
-    await oportunidades.salvarItem(
+    const msg = 'Dados salvos com sucesso!';
+    const resposta = await oportunidades.salvarItem(
       oportundiadeID.value,
       { avaliacao: values.avaliacao },
     );
+    if (resposta) {
+      alertStore.success(msg);
+
+      let { ano: anoParaBusca, palavras_chave: palavraChaveParaBusca } = route.query;
+      if (typeof anoParaBusca === 'string') {
+        anoParaBusca = anoParaBusca.trim();
+      }
+      if (typeof palavraChaveParaBusca === 'string') {
+        palavraChaveParaBusca = palavraChaveParaBusca.trim();
+      }
+      oportunidades.$reset();
+      oportunidades.buscarTudo({
+        ano: anoParaBusca,
+        palavras_chave: palavraChaveParaBusca,
+      });
+      showModal.value = false;
+    //   router.push({ name: 'OportunidadesLista' });
+    }
   } catch (error) {
     alertStore.error(error);
   }
