@@ -90,12 +90,13 @@ BEGIN
                 v_fase_corrente := 'Liberacao'::"VariavelFase";
             ELSE
                 -- Se estiver fora de todos os períodos, pode ser bug no cadastro agora
-                v_corrente := FALSE;
+                -- depois que chegar no fim, deixa aberto para 'sempre'
+                v_corrente := CASE WHEN v_dias_desde_inicio >= v_registro.periodo_liberacao[2] THEN true ELSE false END;
             END IF;
 
             --periodo_preenchimento  | {1,10}
-            --periodo_liberacao      | {16,22}
             --periodo_validacao      | {11,15}
+            --periodo_liberacao      | {16,22}
         END IF;
 
         INSERT INTO variavel_ciclo_corrente(
