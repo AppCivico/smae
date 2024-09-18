@@ -130,13 +130,13 @@
           {{ item.sit_programa || ' - ' }}
         </td>
         <td>
-          {{ item.data_disponibilizacao || ' - ' }}
+          {{ dateToField(item.data_disponibilizacao) || ' - ' }}
         </td>
         <td>
-          {{ item.dt_ini_receb || ' - ' }}
+          {{ dateToField(item.dt_ini_receb) || ' - ' }}
         </td>
         <td>
-          {{ item.dt_fim_receb || ' - ' }}
+          {{ dateToField(item.dt_fim_receb) || ' - ' }}
         </td>
         <td>
           {{ item.modalidade_programa || ' - ' }}
@@ -257,6 +257,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
 import SmallModal from '@/components/SmallModal.vue';
+import dateToField from '@/helpers/dateToField';
 
 const route = useRoute();
 const router = useRouter();
