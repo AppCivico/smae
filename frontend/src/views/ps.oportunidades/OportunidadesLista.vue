@@ -263,6 +263,7 @@ const alertStore = useAlertStore();
 const oportundiadeID = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
+const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
 const {
@@ -278,15 +279,15 @@ const {
 
 const tipos = [
   {
-    value: 'voluntaria',
+    value: 'Voluntaria',
     name: 'Voluntária',
   },
   {
-    value: 'especifica',
+    value: 'Especifica',
     name: 'Específica',
   },
   {
-    value: 'emenda',
+    value: 'Emenda',
     name: 'Emenda',
   },
 ];
@@ -302,6 +303,7 @@ function atualizarUrl() {
     query: {
       ...route.query,
       ano: ano.value || undefined,
+      tipo: tipo.value || undefined,
       palavras_chave: palavraChave.value || undefined,
     },
   });
@@ -317,9 +319,16 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
     if (resposta) {
       alertStore.success(msg);
 
-      let { ano: anoParaBusca, palavras_chave: palavraChaveParaBusca } = route.query;
+      let {
+        ano: anoParaBusca,
+        tipo: tipoParaBusca,
+        palavras_chave: palavraChaveParaBusca,
+      } = route.query;
       if (typeof anoParaBusca === 'string') {
         anoParaBusca = anoParaBusca.trim();
+      }
+      if (typeof tipoParaBusca === 'string') {
+        tipoParaBusca = tipoParaBusca.trim();
       }
       if (typeof palavraChaveParaBusca === 'string') {
         palavraChaveParaBusca = palavraChaveParaBusca.trim();
@@ -327,6 +336,7 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
       oportunidades.$reset();
       oportunidades.buscarTudo({
         ano: anoParaBusca,
+        tipo: tipoParaBusca,
         palavras_chave: palavraChaveParaBusca,
       });
       showModal.value = false;
@@ -339,12 +349,20 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
 
 watch([
   () => route.query.ano,
+  () => route.query.tipo,
   () => route.query.palavras_chave,
 ], () => {
   console.log('entrou no watch');
-  let { ano: anoParaBusca, palavras_chave: palavraChaveParaBusca } = route.query;
+  let {
+    ano: anoParaBusca,
+    tipo: tipoParaBusca,
+    palavras_chave: palavraChaveParaBusca,
+  } = route.query;
   if (typeof anoParaBusca === 'string') {
     anoParaBusca = anoParaBusca.trim();
+  }
+  if (typeof tipoParaBusca === 'string') {
+    tipoParaBusca = tipoParaBusca.trim();
   }
   if (typeof palavraChaveParaBusca === 'string') {
     palavraChaveParaBusca = palavraChaveParaBusca.trim();
@@ -352,6 +370,7 @@ watch([
   oportunidades.$reset();
   oportunidades.buscarTudo({
     ano: anoParaBusca,
+    tipo: tipoParaBusca,
     palavras_chave: palavraChaveParaBusca,
   });
 }, { immediate: true });
