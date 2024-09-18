@@ -50,6 +50,13 @@ export class AtividadeService {
                 const orgaos_participantes = dto.orgaos_participantes;
                 const coordenadores_cp = dto.coordenadores_cp;
                 const tags = dto.tags;
+                const ps_tecnico_cp = dto.ps_tecnico_cp;
+                const ps_ponto_focal = dto.ps_ponto_focal;
+                delete dto.orgaos_participantes;
+                delete dto.coordenadores_cp;
+                delete dto.tags;
+                delete dto.ps_tecnico_cp;
+                delete dto.ps_ponto_focal;
 
                 const codigoJaEmUso = await prismaTx.atividade.count({
                     where: {
@@ -141,12 +148,12 @@ export class AtividadeService {
                         },
                     });
 
-                    if (dto.ps_tecnico_cp) {
-                        validatePSEquipes(dto.ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
+                    if (ps_tecnico_cp) {
+                        validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
                         await upsertPSPerfis(
                             atividade.id,
                             'atividade',
-                            dto.ps_tecnico_cp,
+                            ps_tecnico_cp,
                             'CP',
                             [],
                             user,
@@ -155,12 +162,12 @@ export class AtividadeService {
                         );
                     }
 
-                    if (dto.ps_ponto_focal) {
-                        validatePSEquipes(dto.ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                    if (ps_ponto_focal) {
+                        validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
                         await upsertPSPerfis(
                             atividade.id,
                             'atividade',
-                            dto.ps_ponto_focal,
+                            ps_ponto_focal,
                             'PONTO_FOCAL',
                             [],
                             user,
@@ -170,9 +177,10 @@ export class AtividadeService {
                     }
                 }
 
-                await prismaTx.atividadeTag.createMany({
-                    data: await this.buildAtividadeTags(atividade.id, tags),
-                });
+                if (Array.isArray(tags))
+                    await prismaTx.atividadeTag.createMany({
+                        data: await this.buildAtividadeTags(atividade.id, tags),
+                    });
 
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.atividade_id = atividade.id;
@@ -458,7 +466,13 @@ export class AtividadeService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const op = dto.orgaos_participantes;
             const cp = dto.coordenadores_cp;
+            const ps_tecnico_cp = dto.ps_tecnico_cp;
+            const ps_ponto_focal = dto.ps_ponto_focal;
             const tags = dto.tags;
+            delete dto.orgaos_participantes;
+            delete dto.coordenadores_cp;
+            delete dto.ps_tecnico_cp;
+            delete dto.ps_ponto_focal;
 
             if (tipo === 'PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
@@ -561,12 +575,12 @@ export class AtividadeService {
                     },
                 });
 
-                if (dto.ps_tecnico_cp) {
-                    validatePSEquipes(dto.ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
+                if (ps_tecnico_cp) {
+                    validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
                     await upsertPSPerfis(
                         id,
                         'atividade',
-                        dto.ps_tecnico_cp,
+                        ps_tecnico_cp,
                         'CP',
                         currentPdmPerfis,
                         user,
@@ -575,12 +589,12 @@ export class AtividadeService {
                     );
                 }
 
-                if (dto.ps_ponto_focal) {
-                    validatePSEquipes(dto.ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                if (ps_ponto_focal) {
+                    validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
                     await upsertPSPerfis(
                         id,
                         'atividade',
-                        dto.ps_ponto_focal,
+                        ps_ponto_focal,
                         'PONTO_FOCAL',
                         currentPdmPerfis,
                         user,

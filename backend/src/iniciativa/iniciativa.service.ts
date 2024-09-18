@@ -40,10 +40,14 @@ export class IniciativaService {
                 const cp = dto.coordenadores_cp;
                 const tags = dto.tags || [];
                 const geolocalizacao = dto.geolocalizacao;
+                const ps_tecnico_cp = dto.ps_tecnico_cp;
+                const ps_ponto_focal = dto.ps_ponto_focal;
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
                 delete dto.tags;
                 delete dto.geolocalizacao;
+                delete dto.ps_ponto_focal;
+                delete dto.ps_tecnico_cp;
 
                 const codigoJaEmUso = await prismaTx.iniciativa.count({
                     where: {
@@ -97,12 +101,12 @@ export class IniciativaService {
                         },
                     });
 
-                    if (dto.ps_tecnico_cp) {
-                        validatePSEquipes(dto.ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
+                    if (ps_tecnico_cp) {
+                        validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
                         await upsertPSPerfis(
                             iniciativa.id,
                             'iniciativa',
-                            dto.ps_tecnico_cp,
+                            ps_tecnico_cp,
                             'CP',
                             [],
                             user,
@@ -110,12 +114,12 @@ export class IniciativaService {
                             dto.meta_id
                         );
                     }
-                    if (dto.ps_ponto_focal) {
-                        validatePSEquipes(dto.ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                    if (ps_ponto_focal) {
+                        validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
                         await upsertPSPerfis(
                             iniciativa.id,
                             'iniciativa',
-                            dto.ps_ponto_focal,
+                            ps_ponto_focal,
                             'PONTO_FOCAL',
                             [],
                             user,
@@ -410,12 +414,16 @@ export class IniciativaService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const op = dto.orgaos_participantes;
             const cp = dto.coordenadores_cp;
-            const tags = dto.tags!;
+            const tags = dto.tags;
             const geolocalizacao = dto.geolocalizacao;
+            const ps_tecnico_cp = dto.ps_tecnico_cp;
+            const ps_ponto_focal = dto.ps_ponto_focal;
             delete dto.orgaos_participantes;
             delete dto.coordenadores_cp;
             delete dto.tags;
             delete dto.geolocalizacao;
+            delete dto.ps_tecnico_cp;
+            delete dto.ps_ponto_focal;
 
             if (tipo === 'PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
@@ -498,12 +506,12 @@ export class IniciativaService {
                     },
                 });
 
-                if (dto.ps_tecnico_cp) {
-                    validatePSEquipes(dto.ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
+                if (ps_tecnico_cp) {
+                    validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
                     await upsertPSPerfis(
                         id,
                         'iniciativa',
-                        dto.ps_tecnico_cp,
+                        ps_tecnico_cp,
                         'CP',
                         currentPdmPerfis,
                         user,
@@ -512,12 +520,12 @@ export class IniciativaService {
                     );
                 }
 
-                if (dto.ps_ponto_focal) {
-                    validatePSEquipes(dto.ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                if (ps_ponto_focal) {
+                    validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
                     await upsertPSPerfis(
                         id,
                         'iniciativa',
-                        dto.ps_ponto_focal,
+                        ps_ponto_focal,
                         'PONTO_FOCAL',
                         currentPdmPerfis,
                         user,
