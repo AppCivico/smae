@@ -150,7 +150,7 @@
             class="like-a__text"
             arial-label="editar"
             title="editar"
-            @click="editarOportunidade(item.id)"
+            @click="editarOportunidade(item.id, item.avaliacao )"
           >
             <svg
               width="20"
@@ -258,16 +258,18 @@ const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
 
 const oportundiadeID = ref(null);
+const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
 const {
-  errors, isSubmitting, setFieldValue, handleSubmit,
+  setFieldValue, handleSubmit,
 } = useForm({
-//   initialValues: SingleAnalise,
-//   validationSchema: schema,
+  initialValues: {
+    avaliacao: oportunidadeAvaliacao.value,
+  },
 });
 
 const {
@@ -289,9 +291,10 @@ const tipos = [
   },
 ];
 
-function editarOportunidade(id) {
+function editarOportunidade(id, avaliacao) {
   showModal.value = true;
   oportundiadeID.value = id;
+  oportunidadeAvaliacao.value = avaliacao;
 }
 
 function atualizarUrl() {
@@ -340,6 +343,10 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   } catch (error) {
     alertStore.error(error);
   }
+});
+
+watch(oportundiadeID, () => {
+  setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
 
 watch([
