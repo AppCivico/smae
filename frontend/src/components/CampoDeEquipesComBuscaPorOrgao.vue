@@ -156,7 +156,7 @@ async function montar(valoresIniciais) {
         if (Array.isArray(linhas)) {
           // se o componente receber os ids possíveis de equipes,
           // retornar apenas as equipes selecionadas
-          if (props.equipesIds) {
+          if (props.equipesIds.length) {
             const equipesFiltradas = linhas.filter((equipe) => props.equipesIds
               .includes(equipe.id));
             equipes.value = equipesFiltradas;
