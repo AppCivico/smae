@@ -177,6 +177,7 @@ export class CreateVariavelBaseDto {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     assuntos?: number[];
 
+    @IsOptional()
     @ValidateNested()
     @Type(() => VariaveisPeriodosDto)
     @IsObject()
