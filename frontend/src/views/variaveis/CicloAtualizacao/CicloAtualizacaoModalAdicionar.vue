@@ -1,6 +1,7 @@
 <template>
   <div class="ciclo-atualizacao-modal-adicionar">
     <div class="adicionar-subtitulo flex">
+      {{ errors }}
       <svg
         class="adicionar-subtitulo__icone"
         width="32"
@@ -167,7 +168,9 @@ const valorInicial = {
   analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
 };
 
-const { handleSubmit, setFieldValue, validate } = useForm({
+const {
+  handleSubmit, setFieldValue, validate, errors,
+} = useForm({
   validationSchema: schema,
   initialValues: valorInicial,
 });
@@ -193,17 +196,12 @@ function atualizarVariavelAcululado(valor: string) {
   );
 }
 
-async function submit({ aprovar = false }) {
+const submit = ({ aprovar = false }) => {
   if (!emFoco) {
     throw new Error('Erro ao tentar submeter dados');
   }
 
-  const { valid } = await validate();
-  if (!valid) {
-    return;
-  }
-
-  handleSubmit(async (valores) => {
+  handleSubmit.withControlled(async (valores) => {
     await enviarDados({
       variavel_id: emFoco.variavel.id,
       analise_qualitativa: valores.analise_qualitativa,
@@ -219,8 +217,8 @@ async function submit({ aprovar = false }) {
     });
 
     $emit('enviado');
-  });
-}
+  })();
+};
 
 function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
   arquivosLocais.value.push({

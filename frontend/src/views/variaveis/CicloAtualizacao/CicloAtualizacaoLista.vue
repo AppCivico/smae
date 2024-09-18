@@ -178,9 +178,10 @@ watch(() => $route.query, (query) => {
 }
 
 .listagem-item {
-  background-color: #e6e6e6;
   border-radius: 5px;
   padding: 5px 0;
+  background-color: #F9F9F9;
+  border-bottom: 2px solid #B8C0CC;
 }
 
 .listagem-item__conteudo {
