@@ -4,6 +4,7 @@ import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPor
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
@@ -20,6 +21,7 @@ import {
   computed,
   defineOptions,
   ref,
+  unref,
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
@@ -127,8 +129,19 @@ async function onSubmit(values) {
   try {
     const er = [];
 
-    // remove orgaos_participantes pois a api gera sozinha esse valor agora
-    values.orgaos_participantes = [];
+    // remove orgaos_participantes de plano setorial pois a api
+    // gera sozinha esse valor agora
+    if (route.meta.entidadeMãe === 'planoSetorial') {
+      values.orgaos_participantes = [];
+    }
+
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.orgaos_participantes = unref(orgaos_participantes);
+      values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
+        if (x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
+        return x.orgao_id;
+      });
+    }
 
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
@@ -201,6 +214,21 @@ async function checkClose() {
       throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
     }
   });
+}
+
+function addOrgao(obj, r) {
+  obj.push({
+    orgao_id: null, responsavel: r ?? false, participantes: [], busca: '',
+  });
+}
+function removeOrgao(obj, i) {
+  obj.splice(i, 1);
+}
+
+function filterResponsible(orgao_id) {
+  const r = OrgansStore.organResponsibles;
+  const v = r.length ? r.find((x) => x.id == orgao_id) : false;
+  return v?.responsible ?? [];
 }
 
 watch(() => activePdm.value.id, async (novoValor) => {
@@ -428,7 +456,127 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
       <hr class="mt2 mb2">
 
-      <fieldset>
+      <template v-if="$route.meta.entidadeMãe === 'pdm'">
+        <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
+        <div class="flex center g2">
+          <label class="f1 label tc300">Órgão <span class="tvermelho">*</span></label>
+          <label class="f1 label tc300">Responsável <span class="tvermelho">*</span></label>
+          <div style="flex-basis: 30px;" />
+        </div>
+        <template
+          v-for="(item, index) in orgaos_participantes"
+          :key="index"
+        >
+          <div
+            v-if="item.responsavel"
+            class="flex mb1 g2"
+          >
+            <div class="f1">
+              <select
+                v-if="OrgansStore.organResponsibles.length"
+                v-model="item.orgao_id"
+                class="inputtext light"
+                @change="item.participantes = []"
+              >
+                <option
+                  v-for="(o, k) in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id
+|| !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
+                  :key="k"
+                  :value="o.id"
+                  :title="o.descricao?.length > 36 ? o.descricao : null"
+                >
+                  {{ o.sigla }} - {{ truncate(o.descricao, 36) }}
+                </option>
+              </select>
+            </div>
+            <div class="f1">
+              <AutocompleteField
+                :controlador="item"
+                :grupo="filterResponsible(item.orgao_id)"
+                label="nome_exibicao"
+              />
+            </div>
+            <div style="flex-basis: 30px;">
+              <a
+                class="addlink mt1"
+                @click="removeOrgao(orgaos_participantes, index)"
+              ><svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg></a>
+            </div>
+          </div>
+        </template>
+        <a
+          class="addlink"
+          @click="addOrgao(orgaos_participantes, true)"
+        ><svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão responsável</span></a>
+
+        <hr class="mt2 mb2">
+
+        <label class="label">Órgãos participantes</label>
+        <div class="flex center g2">
+          <label class="f1 label tc300">Órgão</label>
+          <label class="f1 label tc300">Responsável</label>
+          <div style="flex-basis: 30px;" />
+        </div>
+        <template
+          v-for="(item, index) in orgaos_participantes"
+          :key="index"
+        >
+          <div
+            v-if="!item.responsavel"
+            class="flex mb1 g2"
+          >
+            <div class="f1">
+              <select
+                v-if="OrgansStore.organResponsibles.length"
+                v-model="item.orgao_id"
+                class="inputtext light"
+                @change="item.participantes = []"
+              >
+                <option
+                  v-for="o in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
+                  :key="o.id"
+                  :value="o.id"
+                  :title="o.descricao?.length > 36 ? o.descricao : null"
+                >
+                  {{ o.sigla }} - {{ truncate(o.descricao, 36) }}
+                </option>
+              </select>
+            </div>
+            <div class="f1">
+              <AutocompleteField
+                :controlador="item"
+                :grupo="filterResponsible(item.orgao_id)"
+                label="nome_exibicao"
+              />
+            </div>
+
+            <div style="flex-basis: 30px;">
+              <a
+                class="addlink mt1"
+                @click="removeOrgao(orgaos_participantes, index)"
+              ><svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg></a>
+            </div>
+          </div>
+        </template>
+        <a
+          class="addlink"
+          @click="addOrgao(orgaos_participantes, false)"
+        ><svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+      </template>
+
+      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
         <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
         <div
           class="flex flexwrap g2 mb1"
@@ -445,24 +593,25 @@ watch(() => activePdm.value.id, async (novoValor) => {
         </div>
       </fieldset>
 
-      <hr class="mt2 mb2">
+      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <hr class="mt2 mb2">
+        <label class="label">
+          Equipes responsáveis na coordenadoria de planejamento
+          <span class="tvermelho">*</span>
+        </label>
 
-      <label class="label">
-        Equipes responsáveis na coordenadoria de planejamento
-        <span class="tvermelho">*</span>
-      </label>
-
-      <div>
-        <AutocompleteField
-          name="values.ps_tecnico_cp.equipes"
-          :controlador="{
-            busca: '',
-            participantes: values.ps_tecnico_cp.equipes,
-          }"
-          :grupo="pegaPsTecnicoCpCompleto(activePdm.ps_tecnico_cp.equipes)"
-          label="titulo"
-        />
-      </div>
+        <div>
+          <AutocompleteField
+            name="values.ps_tecnico_cp.equipes"
+            :controlador="{
+              busca: '',
+              participantes: values.ps_tecnico_cp.equipes,
+            }"
+            :grupo="pegaPsTecnicoCpCompleto(activePdm.ps_tecnico_cp.equipes)"
+            label="titulo"
+          />
+        </div>
+      </template>
 
       <FormErrorsList :errors="errors" />
 
