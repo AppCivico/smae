@@ -200,11 +200,13 @@ export class VariavelService {
             codigo = dto.codigo;
             indicador = await this.buscaIndicadorParaVariavel(dto.indicador_id);
 
+            if (!indicador.atividade_id && !indicador.iniciativa_id && !indicador.meta_id)
+                throw new BadRequestException('Indicador sem atividade, iniciativa ou meta');
             const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
                 where: {
-                    meta_id: indicador.meta_id ?? undefined,
-                    iniciativa_id: indicador.iniciativa_id,
-                    atividade_id: indicador.atividade_id,
+                    meta_id: indicador.meta_id ? indicador.meta_id : undefined,
+                    iniciativa_id: indicador.iniciativa_id ? indicador.iniciativa_id : undefined,
+                    atividade_id: indicador.atividade_id ? indicador.atividade_id : undefined,
                 },
                 select: { meta_id: true },
             });
