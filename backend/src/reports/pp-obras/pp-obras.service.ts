@@ -438,7 +438,7 @@ export class PPObrasService implements ReportableService {
         }
 
         if (filters.periodo) {
-            whereConditions.push(`projeto.termino_planejado <= $${paramIndex}`);
+            whereConditions.push(`projeto.previsao_inicio >= $${paramIndex}`);
             queryParams.push(filters.periodo);
             paramIndex++;
         }
