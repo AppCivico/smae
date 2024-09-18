@@ -99,6 +99,7 @@ class RetornoDbProjeto {
     orgao_id: number;
     orgao_sigla: string;
     orgao_descricao: string;
+    mdo_observacoes: string | null;
 
     projeto_etapa: string | null;
 
