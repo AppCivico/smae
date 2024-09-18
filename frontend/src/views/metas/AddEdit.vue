@@ -69,6 +69,7 @@ const { tempTags } = storeToRefs(TagsStore);
 const OrgansStore = useOrgansStore();
 
 const UserStore = useUsersStore();
+const { pessoasSimplificadas } = storeToRefs(UserStore);
 
 const EquipesStore = useEquipesStore();
 const { lista } = storeToRefs(EquipesStore);
@@ -593,8 +594,28 @@ watch(() => activePdm.value.id, async (novoValor) => {
         </div>
       </fieldset>
 
+      <hr class="mt2 mb2">
+
+      <template v-if="$route.meta.entidadeMãe === 'pdm'">
+        <label class="label">
+          Responsável na coordenadoria de planejamento
+          <span class="tvermelho">*</span>
+        </label>
+        <div class="flex">
+          <div
+            v-if="pessoasSimplificadas.length"
+            class="f1"
+          >
+            <AutocompleteField
+              :controlador="coordenadores_cp"
+              :grupo="pessoasSimplificadas"
+              label="nome_exibicao"
+            />
+          </div>
+        </div>
+      </template>
+
       <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <hr class="mt2 mb2">
         <label class="label">
           Equipes responsáveis na coordenadoria de planejamento
           <span class="tvermelho">*</span>
