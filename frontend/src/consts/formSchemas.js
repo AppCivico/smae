@@ -2747,7 +2747,7 @@ export const relatórioDePortfolioObras = object({
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
     periodo: date()
-      .label('Início do período')
+      .label('Obras que iniciam a partir de')
       .max(dataMax)
       .min(new Date(2003, 0, 1))
       .nullable()
