@@ -143,7 +143,7 @@
           {{ item.acao_orcamentaria || ' - ' }}
         </td>
         <td>
-          {{ item.avaliacao || 'Não avaliado' }}
+          {{ item.avaliacao || ' - ' }}
         </td>
         <td>
           <button
