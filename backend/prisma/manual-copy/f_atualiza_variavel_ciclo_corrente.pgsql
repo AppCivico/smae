@@ -41,7 +41,7 @@ BEGIN
         RETURN;
     END IF;
 
-    SELECT coalesce(fase, 'Preenchimento'::"VariavelFase") INTO v_fase_corrente
+    SELECT fase INTO v_fase_corrente
     FROM variavel_ciclo_corrente
     WHERE variavel_id = p_variavel_id;
 
@@ -106,7 +106,7 @@ BEGIN
         VALUES (
             v_registro.id,
             v_ultimo_periodo_valido,
-            v_fase_corrente,
+            coalesce(v_fase_corrente, 'Preenchimento'::"VariavelFase"),
             v_proximo_periodo,
             v_corrente
         )
