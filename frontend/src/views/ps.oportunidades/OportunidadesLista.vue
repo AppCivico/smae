@@ -48,14 +48,14 @@
 
     <div class="f0">
       <label
-        for="palavras_chave"
+        for="palavra_chave"
         class="label tc300"
       >Palavra-chave</label>
       <input
-        id="palavras_chave"
+        id="palavra_chave"
         v-model.trim="palavraChave"
         class="inputtext"
-        name="palavras_chave"
+        name="palavra_chave"
         type="text"
       >
     </div>
@@ -193,6 +193,19 @@
   >
     carregar mais
   </button>
+
+  <button
+    v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
+    :disabled="chamadasPendentes.lista"
+    class="btn bgnone outline center"
+    @click="oportunidades.buscarTudo({
+      ...route.query,
+      token_proxima_pagina: paginação.tokenDaPróximaPágina
+    })"
+  >
+    carregar mais
+  </button>
+
   <SmallModal v-if="showModal">
     <div class="flex spacebetween center mb2">
       <h2>
@@ -206,28 +219,33 @@
       />
     </div>
     <div class="f0">
-      <label
-        for="avaliacao"
-        class="label tc300"
-      >Avaliação</label>
-      <select
-        id="avaliacao"
-        v-model.trim="tipo"
-        class="inputtext mb1"
-        name="avaliacao"
-      >
-        <option value="" />
-        <option
-          value="Inadequada"
+      <form @submit.prevent="editAvaliacao($event)">
+        <label
+          for="avaliacao"
+          class="label tc300"
+        >Avaliação</label>
+        <select
+          id="avaliacao"
+          v-model.trim="tipo"
+          class="inputtext mb1"
+          name="avaliacao"
         >
-          Inadequada
-        </option>
-        <option
-          value="Selecionada"
-        >
-          Selecionada
-        </option>
-      </select>
+          <option value="" />
+          <option
+            value="Inadequada"
+          >
+            Inadequada
+          </option>
+          <option
+            value="Selecionada"
+          >
+            Selecionada
+          </option>
+        </select>
+        <button class="btn outline bgnone tcprimary mtauto mb1">
+          Salvar
+        </button>
+      </form>
     </div>
   </SmallModal>
 </template>
@@ -247,6 +265,7 @@ const oportunidades = useOportunidadesStore();
 
 const alertStore = useAlertStore();
 
+const oportundiadeID = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
 const palavras_chave = ref(route.query.palavras_chave);
@@ -271,7 +290,8 @@ const tipos = [
 ];
 
 function editarOportunidade(id) {
-  this.showModal = true;
+  showModal.value = true;
+  oportundiadeID.value = id;
   console.log('editarOportunidade id:', id);
 }
 
