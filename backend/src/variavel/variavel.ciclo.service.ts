@@ -160,6 +160,7 @@ export class VariavelCicloService {
                 fase: filters.fase,
                 eh_corrente: true,
             },
+            orderBy: [{ 'variavel': { codigo: 'asc' } }],
             include: {
                 variavel: {
                     select: {
