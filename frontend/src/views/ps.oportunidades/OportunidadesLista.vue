@@ -194,18 +194,6 @@
     carregar mais
   </button>
 
-  <button
-    v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
-    :disabled="chamadasPendentes.lista"
-    class="btn bgnone outline center"
-    @click="oportunidades.buscarTudo({
-      ...route.query,
-      token_proxima_pagina: paginação.tokenDaPróximaPágina
-    })"
-  >
-    carregar mais
-  </button>
-
   <SmallModal v-if="showModal">
     <div class="flex spacebetween center mb2">
       <h2>
