@@ -159,6 +159,10 @@ const ciclosAtualizacao = computed(() => {
 watch(() => $route.query, (query) => {
   const { aba, ...params } = query;
 
+  if (Object.keys(query).length === 0) {
+    return;
+  }
+
   cicloAtualizacaoStore.getCiclosAtualizacao({
     ...params,
     fase: aba,
