@@ -67,9 +67,9 @@ export class TransfereGovTransferenciasDto {
 }
 
 export enum AvaliacaoFilter {
-    NaoSeAplica = 1,
-    Selecionada = 2,
-    NaoAvaliada = 3,
+    NaoSeAplica = 'NaoSeAplica',
+    Selecionada = 'Selecionada',
+    NaoAvaliada = 'NaoAvaliada',
 }
 export class FilterTransfereGovTransferenciasDto {
     @IsOptional()

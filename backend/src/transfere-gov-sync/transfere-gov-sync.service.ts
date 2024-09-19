@@ -462,9 +462,9 @@ export class TransfereGovSyncService {
 
         let filterAvaliacao: TransfereGovOportunidadeAvaliacao | null | undefined = undefined;
         if (filters.avaliacao) {
-            if (filters.avaliacao === 1) {
+            if (filters.avaliacao === 'NaoSeAplica') {
                 filterAvaliacao = TransfereGovOportunidadeAvaliacao.NaoSeAplica;
-            } else if (filters.avaliacao === 2) {
+            } else if (filters.avaliacao === 'Selecionada') {
                 filterAvaliacao = TransfereGovOportunidadeAvaliacao.Selecionada;
             } else {
                 filterAvaliacao = null;
