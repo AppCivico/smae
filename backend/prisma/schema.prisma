@@ -848,7 +848,6 @@ enum PdmPerfilTipo {
 enum PdmPerfilRelacionamento {
     PDM
     META
-    ETAPA
     INICIATIVA
     ATIVIDADE
 }
