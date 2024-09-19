@@ -111,7 +111,7 @@ export class IniciativaService {
                             [],
                             user,
                             prismaTx,
-                            dto.meta_id
+                            pdm.id
                         );
                     }
                     if (ps_ponto_focal) {
@@ -124,7 +124,7 @@ export class IniciativaService {
                             [],
                             user,
                             prismaTx,
-                            dto.meta_id
+                            pdm.id
                         );
                     }
                 }
@@ -516,7 +516,7 @@ export class IniciativaService {
                         currentPdmPerfis,
                         user,
                         prismaTx,
-                        self.meta_id
+                        pdm.id
                     );
                 }
 
@@ -530,7 +530,7 @@ export class IniciativaService {
                         currentPdmPerfis,
                         user,
                         prismaTx,
-                        self.meta_id
+                        pdm.id
                     );
                 }
             }

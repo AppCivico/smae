@@ -158,7 +158,7 @@ export class AtividadeService {
                             [],
                             user,
                             prismaTx,
-                            iniciativa.meta_id
+                            pdm.id
                         );
                     }
 
@@ -172,7 +172,7 @@ export class AtividadeService {
                             [],
                             user,
                             prismaTx,
-                            iniciativa.meta_id
+                            pdm.id
                         );
                     }
                 }
@@ -585,7 +585,7 @@ export class AtividadeService {
                         currentPdmPerfis,
                         user,
                         prismaTx,
-                        self.iniciativa.meta_id
+                        pdm.id
                     );
                 }
 
@@ -599,7 +599,7 @@ export class AtividadeService {
                         currentPdmPerfis,
                         user,
                         prismaTx,
-                        self.iniciativa.meta_id
+                        pdm.id
                     );
                 }
             }

@@ -14,7 +14,10 @@ BEGIN
         ) THEN
             RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
                 'message', 'Deve existir uma linha PDM correspondente com o mesmo pdm_id, equipe_id e tipo que não esteja removida.',
-                'code', 400
+                'code', 400,
+                'pdm_id', NEW.pdm_id,
+                'equipe_id', NEW.equipe_id,
+                'tipo', NEW.tipo
             );
         END IF;
     END IF;
