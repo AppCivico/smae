@@ -595,6 +595,7 @@ export class EtapaService {
         relacionamento: 'META' | 'INICIATIVA' | 'ATIVIDADE',
         relacionamentoId: number
     ) {
+        newEquipes.equipes = [...new Set(newEquipes.equipes)];
         const pdmEquipes = await this.getPSPontoFocalEquipeIds(prismaTx, meta, relacionamento, relacionamentoId);
         for (const equipe_id of newEquipes.equipes) {
             if (!pdmEquipes.includes(equipe_id))
@@ -610,6 +611,9 @@ export class EtapaService {
         for (const equipeId of equipesToRemove) {
             await prismaTx.pdmPerfil.updateMany({
                 where: {
+                    meta_id: relacionamento === 'META' ? relacionamentoId : undefined,
+                    iniciativa_id: relacionamento === 'INICIATIVA' ? relacionamentoId : undefined,
+                    atividade_id: relacionamento === 'ATIVIDADE' ? relacionamentoId : undefined,
                     etapa_id: etapaId,
                     equipe_id: equipeId,
                     tipo: tipo,
