@@ -63,6 +63,7 @@
       Filtrar
     </button>
   </form>
+  <h2>Transferências disponíveis</h2>
   <table class="tablemain mb1">
     <col>
     <col>
@@ -143,7 +144,9 @@
           {{ item.acao_orcamentaria || ' - ' }}
         </td>
         <td>
-          {{ item.avaliacao || ' - ' }}
+          <span class="avaliacao">
+            {{ item.avaliacao || ' Não avaliada' }}
+          </span>
         </td>
         <td>
           <button
@@ -377,3 +380,11 @@ watch([
 }, { immediate: true });
 
 </script>
+<style lang="less" scoped>
+.avaliacao {
+  background-color: @cinza-claro-azulado;
+  padding: 5px 10px;
+  border-radius: 12px;
+  display: inline-block;
+}
+</style>
