@@ -10,6 +10,27 @@
   >
     <div class="f0">
       <label
+        for="tipo"
+        class="label tc300"
+      >Avaliação</label>
+      <select
+        id="tipo"
+        v-model.trim="avaliacao"
+        class="inputtext mb1"
+        name="tipo"
+      >
+        <option value="" />
+        <option
+          v-for="(avaliacao, id) in avaliacoes"
+          :key="id"
+          :value="avaliacao.value"
+        >
+          {{ avaliacao.name }}
+        </option>
+      </select>
+    </div>
+    <div class="f0">
+      <label
         for="ano"
         class="label tc300"
       >Ano</label>
@@ -227,9 +248,9 @@
         >
           <option value="" />
           <option
-            value="Inadequada"
+            value="NaoSeAplica"
           >
-            Inadequada
+            Não se aplica
           </option>
           <option
             value="Selecionada"
@@ -271,6 +292,7 @@ const oportundiadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
+const avaliacao = ref(route.query.avaliacao);
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
@@ -301,10 +323,25 @@ const tipos = [
   },
 ];
 
-function editarOportunidade(id, avaliacao) {
+const avaliacoes = [
+  {
+    value: 'Selecionada',
+    name: 'Selecionada',
+  },
+  {
+    value: 'NaoSeAplica',
+    name: 'Não se aplica',
+  },
+  {
+    value: null,
+    name: 'Não avaliada',
+  },
+];
+
+function editarOportunidade(id, avaliacaoOportunidade) {
   showModal.value = true;
   oportundiadeID.value = id;
-  oportunidadeAvaliacao.value = avaliacao;
+  oportunidadeAvaliacao.value = avaliacaoOportunidade;
 }
 
 function atualizarUrl() {
@@ -312,6 +349,7 @@ function atualizarUrl() {
     query: {
       ...route.query,
       ano: ano.value || undefined,
+      avaliacao: avaliacao.value || undefined,
       tipo: tipo.value || undefined,
       palavras_chave: palavraChave.value || undefined,
     },
@@ -336,6 +374,9 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
       if (typeof anoParaBusca === 'string') {
         anoParaBusca = anoParaBusca.trim();
       }
+      if (typeof avaliacaoParaBusca === 'string') {
+        avaliacaoParaBusca = avaliacaoParaBusca.trim();
+      }
       if (typeof tipoParaBusca === 'string') {
         tipoParaBusca = tipoParaBusca.trim();
       }
@@ -345,6 +386,7 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
       oportunidades.$reset();
       oportunidades.buscarTudo({
         ano: anoParaBusca,
+        avaliacao: avaliacaoParaBusca,
         tipo: tipoParaBusca,
         palavras_chave: palavraChaveParaBusca,
       });
@@ -361,16 +403,21 @@ watch(oportundiadeID, () => {
 
 watch([
   () => route.query.ano,
+  () => route.query.avaliacao,
   () => route.query.tipo,
   () => route.query.palavras_chave,
 ], () => {
   let {
     ano: anoParaBusca,
+    avaliacao: avaliacaoParaBusca,
     tipo: tipoParaBusca,
     palavras_chave: palavraChaveParaBusca,
   } = route.query;
   if (typeof anoParaBusca === 'string') {
     anoParaBusca = anoParaBusca.trim();
+  }
+  if (typeof avaliacaoParaBusca === 'string') {
+    avaliacaoParaBusca = avaliacaoParaBusca.trim();
   }
   if (typeof tipoParaBusca === 'string') {
     tipoParaBusca = tipoParaBusca.trim();
@@ -381,6 +428,7 @@ watch([
   oportunidades.$reset();
   oportunidades.buscarTudo({
     ano: anoParaBusca,
+    avaliacao: avaliacaoParaBusca,
     tipo: tipoParaBusca,
     palavras_chave: palavraChaveParaBusca,
   });
@@ -393,5 +441,8 @@ watch([
   padding: 5px 10px;
   border-radius: 12px;
   display: inline-block;
+}
+.hiddenOption {
+  display: none;
 }
 </style>
