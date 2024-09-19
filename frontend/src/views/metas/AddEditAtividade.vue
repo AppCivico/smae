@@ -1,6 +1,8 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import { useEquipesStore } from '@/stores/equipes.store';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -31,6 +33,9 @@ IniciativasStore.getById(meta_id, iniciativa_id);
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
 AtividadesStore.clearEdit();
+
+const EquipesStore = useEquipesStore();
+EquipesStore.buscarTudo();
 
 const orgaos_participantes = ref([
   {
@@ -307,80 +312,120 @@ function filterResponsible(orgao_id) {
 
       <hr class="mt2 mb2">
 
-      <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
-      <div class="flex center g2">
-        <label class="f1 label tc300">Órgão</label>
-        <label class="f1 label tc300">Responsável</label>
-        <div style="flex-basis: 30px;" />
-      </div>
-      <template
-        v-for="(item, index) in orgaos_participantes"
-        :key="index"
-      >
-        <div class="flex mb1 g2">
-          <div class="f1">
-            <select
-              v-if="organsAvailable.length"
-              v-model="item.orgao_id"
-              class="inputtext"
-              @change="item.participantes=[]"
-            >
-              <option
-                v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
-                :key="o.orgao_id"
-                :value="o.orgao_id"
-                :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
+      <template v-if="$route.meta.entidadeMãe === 'pdm'">
+        <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
+        <div class="flex center g2">
+          <label class="f1 label tc300">Órgão</label>
+          <label class="f1 label tc300">Responsável</label>
+          <div style="flex-basis: 30px;" />
+        </div>
+        <template
+          v-for="(item, index) in orgaos_participantes"
+          :key="index"
+        >
+          <div class="flex mb1 g2">
+            <div class="f1">
+              <select
+                v-if="organsAvailable.length"
+                v-model="item.orgao_id"
+                class="inputtext"
+                @change="item.participantes=[]"
               >
-                {{ o.orgao.sigla }} - {{ truncate(o.orgao.descricao, 36) }}
-              </option>
-            </select>
+                <option
+                  v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
+                  :key="o.orgao_id"
+                  :value="o.orgao_id"
+                  :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
+                >
+                  {{ o.orgao.sigla }} - {{ truncate(o.orgao.descricao, 36) }}
+                </option>
+              </select>
+            </div>
+            <div class="f1">
+              <AutocompleteField
+                :controlador="item"
+                :grupo="filterResponsible(item.orgao_id)"
+                label="nome_exibicao"
+              />
+            </div>
+            <div style="flex-basis: 30px;">
+              <a
+                v-if="index"
+                class="addlink mt1"
+                @click="removeOrgao(orgaos_participantes,index)"
+              ><svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg></a>
+            </div>
           </div>
-          <div class="f1">
-            <AutocompleteField
-              :controlador="item"
-              :grupo="filterResponsible(item.orgao_id)"
-              label="nome_exibicao"
+        </template>
+        <a
+          class="addlink"
+          @click="addOrgao(orgaos_participantes,true)"
+        ><svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+      </template>
+
+      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
+        <div
+          class="flex flexwrap g2 mb1"
+        >
+          <div class="f1 mb1">
+            <CampoDeEquipesComBuscaPorOrgao
+              v-model="singleAtividade.ps_ponto_focal.equipes"
+              :equipes-ids="singleIniciativa.ps_ponto_focal?.equipes"
+              :valores-iniciais="singleAtividade.ps_ponto_focal?.equipes"
+              name="ps_ponto_focal.equipes"
+              perfis-permitidos="PontoFocalPS"
             />
           </div>
-          <div style="flex-basis: 30px;">
-            <a
-              v-if="index"
-              class="addlink mt1"
-              @click="removeOrgao(orgaos_participantes,index)"
-            ><svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg></a>
-          </div>
         </div>
-      </template>
-      <a
-        class="addlink"
-        @click="addOrgao(orgaos_participantes,true)"
-      ><svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+      </fieldset>
 
       <hr class="mt2 mb2">
 
-      <label class="label">
-        Responsável na coordenadoria de planejamento&nbsp;<span
-          class="tvermelho"
-        >*</span>
-      </label>
-      <div class="flex">
-        <div
-          v-if="coordsAvailable.length"
-          class="f1"
-        >
+      <template v-if="$route.meta.entidadeMãe === 'pdm'">
+        <label class="label">
+          Responsável na coordenadoria de planejamento&nbsp;<span
+            class="tvermelho"
+          >*</span>
+        </label>
+        <div class="flex">
+          <div
+            v-if="coordsAvailable.length"
+            class="f1"
+          >
+            <AutocompleteField
+              :controlador="coordenadores_cp"
+              :grupo="coordsAvailable"
+              label="nome_exibicao"
+            />
+          </div>
+        </div>
+      </template>
+
+      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <label class="label">
+          Equipes responsáveis na coordenadoria de planejamento
+          <span class="tvermelho">*</span>
+        </label>
+
+        <div>
           <AutocompleteField
-            :controlador="coordenadores_cp"
-            :grupo="coordsAvailable"
-            label="nome_exibicao"
+            name="values.ps_tecnico_cp.equipes"
+            :controlador="{
+              busca: '',
+              participantes: singleIniciativa.ps_tecnico_cp.equipes,
+            }"
+            :grupo="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes)"
+            label="titulo"
           />
         </div>
-      </div>
+      </template>
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">

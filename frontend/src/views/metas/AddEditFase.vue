@@ -1,5 +1,5 @@
 <script setup>
-import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
@@ -386,7 +386,6 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         <div class="flex mb1">
           <div class="f1">
             <AutocompleteField
-              name="values.ps_ponto_focal.equipes"
               :controlador="{
                 busca: '',
                 participantes: values?.ps_ponto_focal?.equipes || [],
