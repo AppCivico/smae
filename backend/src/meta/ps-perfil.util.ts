@@ -21,6 +21,7 @@ export async function upsertPSPerfis(
     for (const equipeId of equipesToRemove) {
         await prismaTx.pdmPerfil.updateMany({
             where: {
+                removido_em: null,
                 [entityType + '_id']: entityId,
                 equipe_id: equipeId,
                 tipo: tipo,

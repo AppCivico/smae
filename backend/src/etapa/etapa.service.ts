@@ -619,6 +619,7 @@ export class EtapaService {
         for (const equipeId of equipesToRemove) {
             await prismaTx.pdmPerfil.updateMany({
                 where: {
+                    removido_em: null,
                     meta_id: relacionamento === 'META' ? relacionamentoId : undefined,
                     iniciativa_id: relacionamento === 'INICIATIVA' ? relacionamentoId : undefined,
                     atividade_id: relacionamento === 'ATIVIDADE' ? relacionamentoId : undefined,
