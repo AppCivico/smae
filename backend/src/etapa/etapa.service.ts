@@ -290,6 +290,14 @@ export class EtapaService {
                         select: { id: true, nivel_regionalizacao: true },
                     },
                     variavel_id: true,
+                    PdmPerfil: {
+                        where: { removido_em: null },
+                        select: {
+                            id: true,
+                            tipo: true,
+                            equipe_id: true,
+                        },
+                    },
                 },
             });
 
@@ -422,7 +430,7 @@ export class EtapaService {
                         self.id,
                         dto.ps_ponto_focal,
                         'PONTO_FOCAL',
-                        [],
+                        self.PdmPerfil.map((p) => ({ id: p.id, tipo: p.tipo, equipe_id: p.equipe_id })),
                         user,
                         prismaTx,
                         meta,
