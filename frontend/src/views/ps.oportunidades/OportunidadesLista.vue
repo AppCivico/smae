@@ -75,11 +75,15 @@
     <col>
     <col>
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th>
           Órgão
+        </th>
+        <th>
+          Modalidade
         </th>
         <th>
           Programa
@@ -100,7 +104,7 @@
           Fim das propostas
         </th>
         <th>
-          Modalidade
+          Modalidade do programa
         </th>
         <th>
           Ação Orçamentária
@@ -118,6 +122,9 @@
       >
         <td>
           {{ item.desc_orgao_sup_programa || ' - ' }}
+        </td>
+        <td>
+          {{ item.tipo || ' - ' }}
         </td>
         <td>
           {{ item.nome_programa || ' - ' }}
@@ -166,17 +173,17 @@
         <td />
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="11">
+        <td colspan="12">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="11">
+        <td colspan="12">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="11">
+        <td colspan="12">
           Nenhum resultado encontrado.
         </td>
       </tr>
