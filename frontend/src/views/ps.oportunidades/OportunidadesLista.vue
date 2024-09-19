@@ -173,7 +173,7 @@
         </td>
         <td>
           <span class="avaliacao">
-            {{ item.avaliacao || ' Não avaliada' }}
+            {{ avaliacoes.find(a => a.value === item.avaliacao)?.name }}
           </span>
         </td>
         <td>
