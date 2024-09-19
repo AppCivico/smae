@@ -85,6 +85,8 @@ export const useEquipesStore = defineStore('equipesStore', {
       };
     },
 
+    equipesPorIds: ({ lista }) => (ids) => lista.filter((equipe) => ids.includes(equipe.id)),
+
     equipesPorOrgaoIdPorPerfil: ({ lista }) => lista.reduce((acc, grupo) => {
       if (!acc[grupo.orgao_id]) {
         acc[grupo.orgao_id] = {};
