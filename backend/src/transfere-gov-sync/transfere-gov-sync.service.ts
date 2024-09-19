@@ -464,7 +464,7 @@ export class TransfereGovSyncService {
                 ano_disponibilizacao: filters.ano,
                 tipo: filters.tipo,
                 transferencia_incorporada: false,
-
+                avaliacao: filters.avaliacao,
                 // Filtro por palavras-chave com tsvector
                 id: {
                     in: palavrasChave != undefined ? palavrasChave : undefined,

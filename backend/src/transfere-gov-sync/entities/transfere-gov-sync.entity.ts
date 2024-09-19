@@ -91,6 +91,11 @@ export class FilterTransfereGovTransferenciasDto {
     @IsOptional()
     @IsString()
     palavras_chave?: string;
+
+    @IsOptional()
+    @IsEnum(TransfereGovOportunidadeAvaliacao)
+    @ApiProperty({ enum: TransfereGovOportunidadeAvaliacao, enumName: 'TransfereGovOportunidadeAvaliacao' })
+    avaliacao?: TransfereGovOportunidadeAvaliacao | null;
 }
 
 export class UpdateTransfereGovTransferenciaDto {
