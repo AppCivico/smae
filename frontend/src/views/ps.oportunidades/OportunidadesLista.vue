@@ -442,7 +442,4 @@ watch([
   border-radius: 12px;
   display: inline-block;
 }
-.hiddenOption {
-  display: none;
-}
 </style>
