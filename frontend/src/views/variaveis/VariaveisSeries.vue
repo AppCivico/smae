@@ -5,6 +5,7 @@ import {
 import { storeToRefs } from 'pinia';
 import { Field, useForm, useIsFormDirty } from 'vee-validate';
 
+import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@/../../backend/src/variavel/entities/variavel.entity';
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
@@ -18,8 +19,6 @@ import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-
-import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@/../../backend/src/variavel/entities/variavel.entity';
 
 type TiposValidos = 'Previsto' | 'PrevistoAcumulado' | 'Realizado' | 'RealizadoAcumulado';
 
@@ -285,7 +284,28 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
     <div class="flex g2 end mb1">
       <div class="f1">
         <label class="label">Valor a aplicar</label>
+        <select
+          v-if="seriesAgrupadas?.variavel?.variavel_categorica_id"
+          v-model="valorPadrao"
+          :disabled="modoDePreenchimento === 'valor_acumulado'"
+          class="inputtext light"
+        >
+          <option value="">
+            ---
+          </option>
+
+          <option
+            v-for="item in opcoesVariaveisCategoricas"
+            :key="item.id"
+            :value="item.valor_variavel"
+          >
+            {{ item.titulo }}
+            {{ item.descricao && truncate(`- ${item.descricao}`, 55) }}
+          </option>
+        </select>
+
         <input
+          v-else
           v-model="valorPadrao"
           type="number"
           class="inputtext light mb1"

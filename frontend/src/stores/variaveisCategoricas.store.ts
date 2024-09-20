@@ -1,4 +1,4 @@
-import type { ListVariavelCategoricaDto } from '@/../../backend/src/variavel-categorica/dto/variavel-categorica.dto';
+import type { ListVariavelCategoricaDto, VariavelCategoricaItem } from '@/../../backend/src/variavel-categorica/dto/variavel-categorica.dto';
 
 import { defineStore } from 'pinia';
 
@@ -18,7 +18,7 @@ interface Erros {
 
 interface Estado {
   lista: Lista;
-  emFoco: Record<string, unknown>; // deveria usar os tipos do backend
+  emFoco: VariavelCategoricaItem;
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 

@@ -44,12 +44,32 @@
               name="valor_realizado"
               :schema="schema"
             />
+
             <Field
+              v-if="!temCategorica"
               class="inputtext light "
               type="text"
               name="valor_realizado"
               @update:model-value="atualizarVariavelAcululado"
             />
+            <Field
+              v-else
+              class="inputtext light "
+              as="select"
+              name="valor_realizado"
+            >
+              <option value="">
+                -
+              </option>
+
+              <option
+                v-for="variaveisCategoricasValor in variaveisCategoricasValores"
+                :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
+                :value="variaveisCategoricasValor.valor_variavel"
+              >
+                {{ variaveisCategoricasValor.titulo }}
+              </option>
+            </Field>
 
             <ErrorMessage
               name="valor_realizado"
@@ -130,19 +150,21 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-
-import { useRoute } from 'vue-router';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
+import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 
 import { cicloAtualizacaoModalAdicionarSchema as schema } from '@/consts/formSchemas';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
-import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
 type VariavelConfiguracaoItem = {
   label: string
@@ -157,14 +179,17 @@ const $emit = defineEmits<Emits>();
 
 const $route = useRoute();
 
-const { emFoco, enviarDados, bloqueado } = useCicloAtualizacaoStore();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
-const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco?.uploads || []);
+const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
+
+const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
 
 const valorInicial = {
-  valor_realizado: emFoco?.valores[0]?.valor_realizado,
-  valor_realizado_acumulado: emFoco?.valores[0]?.valor_realizado_acumulado,
-  analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
+  valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
+  valor_realizado_acumulado: emFoco.value?.valores[0]?.valor_realizado_acumulado,
+  analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
 };
 
 const { handleSubmit, setFieldValue } = useForm({
@@ -172,8 +197,37 @@ const { handleSubmit, setFieldValue } = useForm({
   initialValues: valorInicial,
 });
 
+const variaveisCategoricasValores = computed(() => {
+  if (!variaveisCategoricasStore.emFoco) {
+    return [];
+  }
+
+  return variaveisCategoricasStore.emFoco.valores;
+});
+
+const dataCicloAtualizacao = computed<string>(() => (
+  format(new Date($route.params.dataReferencia as string), 'MMMM yyyy', { locale: ptBR })
+));
+
+const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
+  if (!emFoco.value) {
+    return [];
+  }
+
+  return [
+    {
+      label: 'UNIDADE DE MEDIDA',
+      valor: emFoco ? `${emFoco.value.variavel.unidade_medida.sigla} (${emFoco.value.variavel.unidade_medida.descricao})` : '-',
+    },
+    {
+      label: 'NÚMERO DE CASAS DECIMAIS',
+      valor: emFoco.value.variavel.casas_decimais,
+    },
+  ];
+});
+
 function atualizarVariavelAcululado(valor: string) {
-  const valorAtual = emFoco?.valores[0];
+  const valorAtual = emFoco.value?.valores[0];
 
   if (!valorAtual) {
     throw new Error('Valor atual não encontrado');
@@ -194,19 +248,19 @@ function atualizarVariavelAcululado(valor: string) {
 }
 
 const submit = ({ aprovar = false }) => {
-  if (!emFoco) {
-    throw new Error('Erro ao tentar submeter dados');
-  }
-
   handleSubmit.withControlled(async (valores) => {
-    await enviarDados({
-      variavel_id: emFoco.variavel.id,
+    if (!emFoco.value) {
+      throw new Error('Erro ao tentar submeter dados');
+    }
+
+    await cicloAtualizacaoStore.enviarDados({
+      variavel_id: emFoco.value.variavel.id,
       analise_qualitativa: valores.analise_qualitativa,
       aprovar,
       data_referencia: $route.params.dataReferencia as string,
       uploads: arquivosLocais.value,
       valores: [{
-        variavel_id: emFoco.variavel.id,
+        variavel_id: emFoco.value.variavel.id,
         valor_realizado: valores.valor_realizado,
         valor_realizado_acumulado: valores.valor_realizado_acumulado,
       }],
@@ -228,27 +282,6 @@ function adicionarNovoArquivo({ nome_original, download_token, descricao }: Arqu
 function removerArquivo(arquivoIndex: number) {
   arquivosLocais.value.splice(arquivoIndex, 1);
 }
-
-const dataCicloAtualizacao = computed<string>(() => (
-  format(new Date($route.params.dataReferencia as string), 'MMMM yyyy', { locale: ptBR })
-));
-
-const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
-  if (!emFoco) {
-    return [];
-  }
-
-  return [
-    {
-      label: 'UNIDADE DE MEDIDA',
-      valor: emFoco ? `${emFoco.variavel.unidade_medida.sigla} (${emFoco.variavel.unidade_medida.descricao})` : '-',
-    },
-    {
-      label: 'NÚMERO DE CASAS DECIMAIS',
-      valor: emFoco?.variavel.casas_decimais,
-    },
-  ];
-});
 
 </script>
 

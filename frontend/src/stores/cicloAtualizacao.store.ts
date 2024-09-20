@@ -46,13 +46,11 @@ type DadosASeremEnviados = {
     download_token: string;
     descricao: string | null;
   }[];
-  valores: [
-    {
-      variavel_id: number;
-      valor_realizado?: string | null;
-      valor_realizado_acumulado?: string | null;
-    },
-  ];
+  valores: {
+    variavel_id: number;
+    valor_realizado: string | null;
+    valor_realizado_acumulado: string | null;
+  } [];
   aprovar: boolean;
   pedido_complementacao?: string;
 };
@@ -138,6 +136,9 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
         tokenProximaPagina: state.tokenProximaPagina || undefined,
         temMais: state.temMais,
       };
+    },
+    temCategorica(state): boolean {
+      return !!state.emFoco?.variavel.variavel_categorica_id;
     },
     bloqueado(state): boolean {
       return state.carregando || fileStore.carregando;
