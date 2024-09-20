@@ -55,8 +55,10 @@ BEGIN
     FROM
          ciclo_fisico cf
      JOIN ciclo_fisico_fase cfs on cfs.id = cf.ciclo_fase_atual_id
+     JOIN pdm p ON p.id = cf.pdm_id
      WHERE cf.id = pCicloFisicoIdAtual
-     AND ativo
+     AND cf.ativo
+     AND p.tipo = 'PDM'
     LIMIT 1;
 
     SELECT coalesce(cfs.ciclo_fase, v_fase) INTO v_fase
@@ -451,7 +453,7 @@ BEGIN
         SELECT sv.variavel_id, sv.data_valor, mvp.meta_id
         FROM serie_variavel sv
         JOIN mv_variavel_pdm mvp ON sv.variavel_id = mvp.variavel_id
-        JOIN pdm on pdm.id = mvp.pdm_id
+        JOIN pdm on pdm.id = mvp.pdm_id AND pdm.tipo = 'PDM'
         JOIN variavel v on v.id = sv.variavel_id
         WHERE sv.serie = 'PrevistoAcumulado' AND mvp.meta_id = pMetaId
         and sv.data_valor < date_trunc('month', (now() - ( v.atraso_meses || ' month')::interval) at time zone 'America/Sao_Paulo')
@@ -523,4 +525,5 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null ;
+delete from meta_status_consolidado_cf;
+select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo and tipo='PDM') and removido_em is null ;
