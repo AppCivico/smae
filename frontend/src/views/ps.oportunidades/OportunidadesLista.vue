@@ -397,30 +397,8 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   }
 });
 
-onMounted(() => {
-  if (!Object.keys(route.query).length) {
-    router.replace({
-      query: {
-        ...route.query,
-        avaliacao: 'NaoAvaliada',
-      },
-    });
-  }
-});
-
 watch(oportundiadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
-});
-
-watch(route.query, () => {
-  if (!Object.keys(route.query).length) {
-    router.replace({
-      query: {
-        ...route.query,
-        avaliacao: 'NaoAvaliada',
-      },
-    });
-  }
 });
 
 watch([
@@ -429,6 +407,14 @@ watch([
   () => route.query.tipo,
   () => route.query.palavras_chave,
 ], () => {
+  if (!route.query.ano) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: 'NaoAvaliada',
+      },
+    });
+  }
   let {
     ano: anoParaBusca,
     avaliacao: avaliacaoParaBusca,
