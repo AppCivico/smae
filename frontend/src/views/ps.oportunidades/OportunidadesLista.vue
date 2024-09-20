@@ -15,17 +15,17 @@
       >Avaliação</label>
       <select
         id="tipo"
-        v-model.trim="avaliacao"
+        v-model.trim="avaliacaoFiltro"
         class="inputtext mb1"
         name="tipo"
       >
         <option value="" />
         <option
-          v-for="(avaliacao, id) in avaliacoes"
+          v-for="(item, id) in avaliacoes"
           :key="id"
-          :value="avaliacao.value"
+          :value="item.value"
         >
-          {{ avaliacao.name }}
+          {{ item.name }}
         </option>
       </select>
     </div>
@@ -274,7 +274,7 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { Field, useForm } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -292,7 +292,7 @@ const oportundiadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
-const avaliacao = ref(route.query.avaliacao);
+const avaliacaoFiltro = ref(route.query.avaliacao);
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
@@ -349,7 +349,7 @@ function atualizarUrl() {
     query: {
       ...route.query,
       ano: ano.value || undefined,
-      avaliacao: avaliacao.value || undefined,
+      avaliacao: avaliacaoFiltro.value || undefined,
       tipo: tipo.value || undefined,
       palavras_chave: palavraChave.value || undefined,
     },
@@ -397,6 +397,17 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   }
 });
 
+onMounted(() => {
+  if (!Object.keys(route.query).length) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: 'NaoAvaliada',
+      },
+    });
+  }
+});
+
 watch(oportundiadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
@@ -432,6 +443,7 @@ watch([
     tipo: tipoParaBusca,
     palavras_chave: palavraChaveParaBusca,
   });
+  avaliacaoFiltro.value = route.query.avaliacao;
 }, { immediate: true });
 
 </script>
