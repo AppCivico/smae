@@ -717,5 +717,3 @@ $$
 LANGUAGE plpgsql;
 
 
-delete from meta_status_consolidado_cf;
-select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo and tipo='PDM') and removido_em is null ;
