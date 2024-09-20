@@ -412,6 +412,17 @@ watch(oportundiadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
 
+watch(route.query, () => {
+  if (!Object.keys(route.query).length) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: 'NaoAvaliada',
+      },
+    });
+  }
+});
+
 watch([
   () => route.query.ano,
   () => route.query.avaliacao,
