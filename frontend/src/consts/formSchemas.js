@@ -1346,6 +1346,13 @@ export const obras = object({
     .nullable(),
 });
 
+export const oportunidadeFiltros = object({
+  tipo: string(),
+  avaliacao: string(),
+  ano: number(),
+  palavras_chave: string(),
+});
+
 export const orçamentoRealizado = object({
   dotacao: string()
     .label('Dotação')
