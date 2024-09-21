@@ -406,4 +406,8 @@ watch(
   border-radius: 12px;
   display: inline-block;
 }
+
+h2{
+  color: #025B97;
+}
 </style>
