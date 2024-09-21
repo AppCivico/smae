@@ -478,6 +478,8 @@ export class EquipeRespService {
                 pdm: { select: { tipo: true, nome: true } },
                 etapa: { select: { titulo: true } },
                 meta: { select: { titulo: true } },
+                iniciativa: { select: { titulo: true } },
+                atividade: { select: { titulo: true } },
             },
         });
         if (emUsoPdm.length) {
@@ -490,8 +492,11 @@ export class EquipeRespService {
                     case 'META':
                         mensagem = `Meta ${item.meta?.titulo || 'Desconhecida'} do PDM ${item.pdm.nome}`;
                         break;
-                    case 'ETAPA':
-                        mensagem = `Etapa ${item.etapa?.titulo || 'Desconhecida'} do PDM ${item.pdm.nome}`;
+                    case 'INICIATIVA':
+                        mensagem = `Iniciativa ${item.iniciativa?.titulo || 'Desconhecida'} do PDM ${item.pdm.nome}`;
+                        break;
+                    case 'ATIVIDADE':
+                        mensagem = `Atividade ${item.atividade?.titulo || 'Desconhecida'} do PDM ${item.pdm.nome}`;
                         break;
                     default:
                         mensagem = `Relacionamento desconhecido do PDM ${item.pdm.nome}`;
