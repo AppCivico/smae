@@ -42,7 +42,7 @@ interface ICicloCorrente {
 }
 
 interface ValorSerieInterface {
-    variavel: VariavelResumoInput;
+    variavel_id: number;
     serie: string;
     valor_nominal: { toString: () => string };
 }
@@ -560,9 +560,21 @@ export class VariavelCicloService {
                 titulo: true,
                 valor_base: true,
                 unidade_medida: { select: { id: true, sigla: true, descricao: true } },
+
                 variaveis_filhas: {
                     where: { removido_em: null, tipo: 'Global' },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        suspendida_em: true,
+                        variavel_categorica_id: true,
+                        casas_decimais: true,
+                        periodicidade: true,
+                        acumulativa: true,
+                        codigo: true,
+                        titulo: true,
+                        valor_base: true,
+                        unidade_medida: { select: { id: true, sigla: true, descricao: true } },
+                    },
                 },
             },
         });
@@ -610,20 +622,6 @@ export class VariavelCicloService {
             },
             select: {
                 variavel_id: true,
-                variavel: {
-                    select: {
-                        id: true,
-                        suspendida_em: true,
-                        variavel_categorica_id: true,
-                        casas_decimais: true,
-                        periodicidade: true,
-                        acumulativa: true,
-                        codigo: true,
-                        titulo: true,
-                        valor_base: true,
-                        unidade_medida: { select: { id: true, sigla: true, descricao: true } },
-                    },
-                },
                 serie: true,
                 valor_nominal: true,
             },
@@ -640,7 +638,11 @@ export class VariavelCicloService {
         });
 
         // Processar e formatar os resultados
-        const valoresFormatados = this.formatarValores(valores, ultimaAnalise?.valores as any as IUltimaAnaliseValor[]);
+        const valoresFormatados = this.formatarValores(
+            variavel,
+            valores,
+            ultimaAnalise?.valores as any as IUltimaAnaliseValor[]
+        );
         const uploadsFormatados = this.formatarUploads(uploads);
 
         return {
@@ -659,22 +661,27 @@ export class VariavelCicloService {
     }
 
     private formatarValores(
+        variavel: VariavelResumoInput & { variaveis_filhas: VariavelResumoInput[] },
         valores: ValorSerieInterface[],
         ultimaAnaliseValores?: IUltimaAnaliseValor[]
     ): VariavelValorDto[] {
         const valoresMap = new Map<number, VariavelValorDto>();
 
-        for (const valor of valores) {
-            if (!valoresMap.has(valor.variavel.id)) {
-                valoresMap.set(valor.variavel.id, {
-                    variavel: this.formatarVariavelResumo(valor.variavel),
-                    valor_realizado: null,
-                    valor_realizado_acumulado: null,
-                    analise_qualitativa: null,
-                });
-            }
+        const todasVariaveis = [...variavel.variaveis_filhas];
+        if (todasVariaveis.length === 0) todasVariaveis.push(variavel); // Se não tem filhas, adiciona a mãe
 
-            const valorDto = valoresMap.get(valor.variavel.id);
+        for (const v of todasVariaveis) {
+            valoresMap.set(v.id, {
+                variavel: this.formatarVariavelResumo(v),
+                valor_realizado: null,
+                valor_realizado_acumulado: null,
+                analise_qualitativa: null,
+            });
+        }
+
+        // Preenche os serieVariavel
+        for (const valor of valores) {
+            const valorDto = valoresMap.get(valor.variavel_id);
             if (!valorDto) continue;
 
             if (valor.serie === 'Realizado') {
@@ -682,10 +689,13 @@ export class VariavelCicloService {
             } else if (valor.serie === 'RealizadoAcumulado') {
                 valorDto.valor_realizado_acumulado = valor.valor_nominal.toString();
             }
+        }
 
-            if (ultimaAnaliseValores && Array.isArray(ultimaAnaliseValores)) {
-                const analiseValor = ultimaAnaliseValores.find((v) => v.variavel_id === valor.variavel.id);
-                if (analiseValor) {
+        // Preenche as analises
+        if (ultimaAnaliseValores && Array.isArray(ultimaAnaliseValores)) {
+            for (const analiseValor of ultimaAnaliseValores) {
+                const valorDto = valoresMap.get(analiseValor.variavel_id);
+                if (valorDto) {
                     valorDto.analise_qualitativa = analiseValor.analise_qualitativa || null;
                 }
             }
