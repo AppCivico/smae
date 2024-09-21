@@ -72,16 +72,16 @@
 
       <div class="f0">
         <label
-          for="palavra_chave"
+          for="palavras_chave"
           class="label tc300"
         >Palavra-chave</label>
-        <input
-          id="palavra_chave"
+        <Field
+          id="palavras_chave"
           v-model.trim="palavraChave"
           class="inputtext"
-          name="palavra_chave"
+          name="palavras_chave"
           type="text"
-        >
+        />
       </div>
       <button class="btn outline bgnone tcprimary mtauto mb1">
         Filtrar
@@ -363,7 +363,10 @@ const atualizarFiltro = handleSubmit.withControlled((values) => {
   router.replace({
     query: {
       ...route.query,
-      ...values,
+      avaliacao: values.avaliacao || undefined,
+      ano: values.ano || undefined,
+      tipo: values.tipo || undefined,
+      palavras_chave: values.palavras_chave || undefined,
     },
   });
 });
