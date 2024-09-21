@@ -248,6 +248,7 @@ export class VariavelCicloService {
                     criado_por: user.id,
                     ultima_revisao: true,
                     valores: dto.valores as any,
+                    fase: cicloCorrente.fase,
                 },
             });
 
@@ -256,6 +257,7 @@ export class VariavelCicloService {
                 await this.upsertVariavelGlobalCicloDocumento(
                     dto.variavel_id,
                     new Date(dto.data_referencia),
+                    cicloCorrente.fase,
                     dto.uploads,
                     user,
                     prismaTxn
@@ -890,6 +892,7 @@ export class VariavelCicloService {
     async upsertVariavelGlobalCicloDocumento(
         variavel_id: number,
         referencia_data: Date,
+        fase: VariavelFase,
         uploads: UpsertVariavelGlobalCicloDocumentoDto[],
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient
@@ -924,6 +927,7 @@ export class VariavelCicloService {
                         descricao: upload.descricao,
                         arquivo_id: uploadArquivoId,
                         criado_por: user.id,
+                        fase: fase,
                     },
                 });
             }

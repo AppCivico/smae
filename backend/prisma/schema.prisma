@@ -7015,7 +7015,8 @@ model VariavelGlobalCicloAnalise {
     id          Int @id @default(autoincrement())
     variavel_id Int
 
-    referencia_data            DateTime @db.Date
+    fase                       VariavelFase
+    referencia_data            DateTime     @db.Date
     informacoes_complementares String?
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -7040,6 +7041,7 @@ model VariavelGlobalCicloDocumento {
     id          Int @id @default(autoincrement())
     variavel_id Int
 
+    fase                       VariavelFase
     referencia_data DateTime @db.Date
     descricao       String?
 
