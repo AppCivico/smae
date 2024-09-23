@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { OrcamentoModule } from '../orcamento/orcamento.module';
-import { ProjetoOrcamentoController } from './projeto-orcamento.controller';
+import { ProjetoMDOOrcamentoController, ProjetoOrcamentoController } from './projeto-orcamento.controller';
 
 @Module({
     imports: [OrcamentoModule],
-    controllers: [ProjetoOrcamentoController],
+    controllers: [ProjetoOrcamentoController, ProjetoMDOOrcamentoController],
 })
 export class ProjetoOrcamentoModule {}

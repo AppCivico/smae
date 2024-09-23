@@ -17,3 +17,16 @@ export class ProjetoPrevisaoCustoController {
         return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
     }
 }
+
+@ApiTags('Relatórios - API')
+@Controller('relatorio/projeto-previsao-custo-mdo')
+export class ProjetoMDOPrevisaoCustoController {
+    constructor(private readonly previsaoCustoService: PrevisaoCustoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['Reports.executar.MDO'])
+    async create(@Body() createPrevisaoCustDto: CreateRelProjetoPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
+        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
+    }
+}
