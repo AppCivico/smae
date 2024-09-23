@@ -350,6 +350,15 @@ const avaliacoes = [
   },
 ];
 
+if (!route.query.avaliacao) {
+  router.replace({
+    query: {
+      ...route.query,
+      avaliacao: valoresIniciais.avaliacao,
+    },
+  });
+}
+
 function editarOportunidade(id, avaliacaoOportunidade) {
   showModal.value = true;
   oportunidadeID.value = id;
