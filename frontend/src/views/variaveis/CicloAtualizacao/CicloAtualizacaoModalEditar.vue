@@ -281,7 +281,7 @@ const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   variavel_id: item.variavel.id,
   valor_realizado: item.valor_realizado,
-  valor_realizado_acumulado: item.valor_realizado_acumulado,
+  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa ? item.valor_realizado_acumulado : '0',
 }));
 
 const valorInicial = {
