@@ -309,7 +309,7 @@ export class DistribuicaoRecursoService {
 
                 const statusBaseRegistrada = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
                     where: {
-                        tipo: DistribuicaoStatusTipo.Registrada,
+                        tipo: DistribuicaoStatusTipo.NaoIniciado,
                     },
                     select: {
                         id: true,
