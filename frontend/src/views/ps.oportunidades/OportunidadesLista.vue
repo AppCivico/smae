@@ -321,10 +321,6 @@ const {
   lista, chamadasPendentes, erro, paginação,
 } = storeToRefs(oportunidades);
 
-const valoresIniciais = {
-  avaliacao: 'NaoAvaliada',
-};
-
 const tipos = [
   {
     value: 'Voluntaria',
@@ -371,6 +367,8 @@ function editarOportunidade(id, avaliacaoOportunidade) {
 }
 
 function buscarOportunidades() {
+  console.log('entrou no buscarOportunidades');
+  console.log('route.query,: ', route.query);
   oportunidades.$reset();
   oportunidades.buscarTudo(
     route.query,
