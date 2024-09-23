@@ -402,7 +402,7 @@ watch(
     buscarOportunidades();
     setValues(route.query);
   },
-  { deep: true },
+  { deep: true, immediate: true },
 );
 
 </script>
