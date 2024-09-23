@@ -1,11 +1,11 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
-import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { useEquipesStore } from '@/stores/equipes.store';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
@@ -356,7 +356,7 @@ function filterResponsible(orgao_id) {
               <select
                 v-if="organsAvailable.length"
                 v-model="item.orgao_id"
-                class="inputtext"
+                class="inputtext light"
                 @change="item.participantes=[]"
               >
                 <option
