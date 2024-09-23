@@ -285,7 +285,7 @@
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { Field, useForm } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
 import SmallModal from '@/components/SmallModal.vue';
@@ -294,7 +294,6 @@ import dateToField from '@/helpers/dateToField';
 import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
 
 const route = useRoute();
-const router = useRouter();
 const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
 
@@ -351,15 +350,6 @@ const avaliacoes = [
   },
 ];
 
-if (!route.query.avaliacao) {
-  router.replace({
-    query: {
-      ...route.query,
-      avaliacao: valoresIniciais.avaliacao,
-    },
-  });
-}
-
 function editarOportunidade(id, avaliacaoOportunidade) {
   showModal.value = true;
   oportunidadeID.value = id;
@@ -367,8 +357,6 @@ function editarOportunidade(id, avaliacaoOportunidade) {
 }
 
 function buscarOportunidades() {
-  console.log('entrou no buscarOportunidades');
-  console.log('route.query,: ', route.query);
   oportunidades.$reset();
   oportunidades.buscarTudo(
     route.query,
