@@ -306,7 +306,7 @@ const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
-const avaliacaoFiltro = ref(route.query.avaliacao || 'NaoAvaliada');
+const avaliacaoFiltro = ref(route.query.avaliacao || valoresIniciais.avaliacao);
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
