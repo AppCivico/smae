@@ -285,7 +285,7 @@
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { Field, useForm } from 'vee-validate';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
 import SmallModal from '@/components/SmallModal.vue';
@@ -294,8 +294,13 @@ import dateToField from '@/helpers/dateToField';
 import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
 
 const route = useRoute();
+const router = useRouter();
 const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
+
+const valoresIniciais = {
+  avaliacao: 'NaoAvaliada',
+};
 
 const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
