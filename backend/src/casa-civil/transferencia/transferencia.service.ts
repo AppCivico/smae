@@ -1202,7 +1202,7 @@ export class TransferenciaService {
                         status: {
                             take: 1,
                             where: { removido_em: null },
-                            orderBy: { data_troca: 'asc' },
+                            orderBy: { data_troca: 'desc' },
                             select: {
                                 status: {
                                     select: {
