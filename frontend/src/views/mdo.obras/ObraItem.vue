@@ -72,7 +72,7 @@ onUnmounted(() => {
     v-bind="$attrs"
     class="t12 uc w700 tamarelo"
   >
-    <small class="lc">Portfolio</small>
+    <small class="lc">Portfólio</small>
     {{ portfolioMdoStore.portfoliosPorId[obrasStore?.emFoco?.portfolio_id]?.titulo }}
   </div>
   <router-view />

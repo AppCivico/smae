@@ -403,12 +403,12 @@ watch(itemParaEdicao, (novoValor) => {
                 name: 'obrasTrocarPortfolio'
               }"
               class="ml05 tipinfo"
-              aria-label="Trocar de portfolio"
+              aria-label="Trocar de portfólio"
             >
               <svg
                 width="10"
                 height="10"
-              ><use xlink:href="#i_edit" /></svg><div>Trocar de portfolio</div>
+              ><use xlink:href="#i_edit" /></svg><div>Trocar de portfólio</div>
             </router-link>
           </template>
         -->

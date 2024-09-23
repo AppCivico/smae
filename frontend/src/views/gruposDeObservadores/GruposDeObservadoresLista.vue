@@ -85,7 +85,7 @@ if (!Array.isArray(organs) || !organs.length) {
         <td>
           <ul>
             <li v-if="!item.portfolios?.length">
-              Nenhum portfolio associado
+              Nenhum portfólio associado
             </li>
             <li
               v-for="portfolio in item.portfolios"

@@ -44,10 +44,10 @@ const valoresIniciais = computed(() => ({
 }));
 
 const schema = object({
-  portfolio_id: number('O projeto precisa pertencer a um portfolio')
+  portfolio_id: number('O projeto precisa pertencer a um portfólio')
     .label('Portfólio')
-    .min(1, 'Selecione ao menos um portfolio')
-    .required('O projeto precisa pertencer a um portfolio'),
+    .min(1, 'Selecione ao menos um portfólio')
+    .required('O projeto precisa pertencer a um portfólio'),
 });
 
 const {

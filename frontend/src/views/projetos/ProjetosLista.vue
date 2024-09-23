@@ -213,7 +213,7 @@ watch(props, (novoValor) => {
               width="20"
               height="20"
             ><use xlink:href="#i_+" /></svg>
-            <span>Adicionar projeto a esse portfolio</span>
+            <span>Adicionar projeto a esse portfólio</span>
           </router-link>
         </details>
       </div>
