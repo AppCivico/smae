@@ -216,7 +216,7 @@ export default {
               name: 'projetosTrocarPortfolio',
               component: () => import('@/views/projetos/TransferirDePortfolio.vue'),
               meta: {
-                título: 'Transferir de portfolio',
+                título: 'Transferir de portfólio',
                 rotaDeEscape: 'projetosEditar',
               },
               props: ({ params }) => ({

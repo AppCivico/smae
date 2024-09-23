@@ -1266,7 +1266,7 @@ export const obras = object({
     .label('Ponto focal responsável')
     .nullable(),
   portfolios_compartilhados: array()
-    .label('Compartilhar com portfolios')
+    .label('Compartilhar com portfólios')
     .nullable(),
   portfolio_id: number()
     .label('Nome do portfólio')
@@ -1688,7 +1688,7 @@ export const portfolio = object({
     .required(),
   titulo: string()
     .label('Nome')
-    .required('Um portfolio requer um título'),
+    .required('Um portfólio requer um título'),
 });
 
 export const painelExterno = object({
@@ -2488,15 +2488,15 @@ export const projeto = object()
       ),
 
     portfolios_compartilhados: array()
-      .label('Compartilhar com portfolios')
+      .label('Compartilhar com portfólios')
       .nullable(),
     publico_alvo: string()
       .label('Público alvo')
       .nullable(),
-    portfolio_id: number('O projeto precisa pertencer a um portfolio')
+    portfolio_id: number('O projeto precisa pertencer a um portfólio')
       .label('Portfólio')
-      .min(1, 'Selecione ao menos um portfolio')
-      .required('O projeto precisa pertencer a um portfolio'),
+      .min(1, 'Selecione ao menos um portfólio')
+      .required('O projeto precisa pertencer a um portfólio'),
     premissas: array()
       .label('Premissas')
       .of(
@@ -2655,7 +2655,7 @@ export const relatórioDePrevisãoDeCustoPortfolio = object()
       .required(),
     parametros: object({
       portfolio_id: number()
-        .label('Portfolio')
+        .label('Portfólio')
         .min(1, '${label} é obrigatório')
         .required()
         .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
@@ -2677,7 +2677,7 @@ export const relatórioDeProjeto = object({
     .required(),
   parametros: object({
     portfolio_id: number()
-      .label('Portfolio')
+      .label('Portfólio')
       .min(1, '${label} é obrigatório')
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
@@ -2707,7 +2707,7 @@ export const relatórioDeStatus = object({
       .nullable()
       .transform((v) => (!v ? null : v)),
     portfolio_id: number()
-      .label('Portfolio')
+      .label('Portfólio')
       .required()
       .min(1, '${label} é obrigatório'),
     projeto_id: number()
@@ -2728,7 +2728,7 @@ export const relatórioDePortfolio = object({
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
     portfolio_id: number()
-      .label('Portfolio')
+      .label('Portfólio')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .required(),
     status: mixed()
@@ -2759,7 +2759,7 @@ export const relatórioDePortfolioObras = object({
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
     portfolio_id: number()
-      .label('Portfolio')
+      .label('Portfólio')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .required(),
     grupo_tematico_id: number()
@@ -2779,6 +2779,29 @@ export const relatórioDePortfolioObras = object({
   }),
   salvar_arquivo: boolean(),
 });
+
+export const relatórioDePrevisãoDeCustoPortfolioObras = object()
+  .shape({
+    fonte: string()
+      .required(),
+    parametros: object({
+      portfolio_id: number()
+        .label('Portfólio')
+        .min(1, '${label} é obrigatório')
+        .required()
+        .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+      obra_id: number()
+        .label('Obra')
+        .min(1, '${label} é obrigatório')
+        .nullable()
+        .transform((v) => (v === null || Number.isNaN(v) ? null : v)),
+      periodo_ano: mixed()
+        .label('Período')
+        .oneOf(['Corrente', 'Anterior'])
+        .required(),
+    }),
+    salvar_arquivo: boolean(),
+  });
 
 export const relatórioDeTransferênciasVoluntárias = object({
   fonte: string()
@@ -2920,7 +2943,7 @@ export const relatórioOrçamentárioPortfolio = object({
   salvar_arquivo: boolean(),
   parametros: object({
     portfolio_id: number()
-      .label('Portfolio')
+      .label('Portfólio')
       .min(1, '${label} é obrigatório')
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),

@@ -90,6 +90,14 @@ const RelatóriosDeStatusObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/RelatoriosDeStatusObras.vue'),
   loadingComponent: LoadingComponent,
 });
+const NovoRelatórioDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolioObras.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolioObras.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/relatorios',
@@ -127,6 +135,7 @@ export default {
       // MDO
       'RelatóriosDePortfolioObras',
       'RelatóriosDeStatusObras',
+      'RelatóriosDePrevisãoDeCustoPortfolioObras',
     ],
   },
 
@@ -215,7 +224,7 @@ export default {
     {
       path: 'orcamentarios-portfolio',
       meta: {
-        título: 'Relatórios orçamentários de portfolio',
+        título: 'Relatórios orçamentários de portfólio',
         títuloParaMenu: 'Execução orçamentária',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
@@ -230,7 +239,7 @@ export default {
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPortfolio',
           meta: {
-            título: 'Novo relatório orçamentário de portfolio',
+            título: 'Novo relatório orçamentário de portfólio',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolio',
           },
         },
@@ -365,7 +374,7 @@ export default {
     {
       path: 'previsao-de-custo-portfolio',
       meta: {
-        título: 'Relatórios de previsão de custo de portfolio',
+        título: 'Relatórios de previsão de custo de portfólio',
         títuloParaMenu: 'Previsão de custo',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
@@ -380,7 +389,7 @@ export default {
           name: 'novoRelatórioDePrevisãoDeCustoPortfolio',
           component: NovoRelatórioDePrevisãoDeCustoPortfolio,
           meta: {
-            título: 'Novo relatório de previsão de custo de portfolio',
+            título: 'Novo relatório de previsão de custo de portfólio',
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPortfolio',
           },
         },
@@ -390,8 +399,8 @@ export default {
     {
       path: 'portfolio',
       meta: {
-        título: 'Relatórios de portfolio',
-        títuloParaMenu: 'Relatório de portfolio',
+        título: 'Relatórios de portfólio',
+        títuloParaMenu: 'Relatório de portfólio',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -405,7 +414,7 @@ export default {
           path: 'novo',
           name: 'novoRelatórioDePortfolio',
           meta: {
-            título: 'Novo relatório de portfolio',
+            título: 'Novo relatório de portfólio',
             rotaDeEscape: 'RelatóriosDePortfolio',
           },
         },
@@ -440,8 +449,8 @@ export default {
     {
       path: 'portfolio-obras',
       meta: {
-        título: 'Relatórios de portfolio de Obras',
-        títuloParaMenu: 'Relatório de portfolio',
+        título: 'Relatórios de portfólio de Obras',
+        títuloParaMenu: 'Relatório de portfólio',
         limitarÀsPermissões: 'Reports.executar.MDO',
       },
       children: [
@@ -455,7 +464,7 @@ export default {
           path: 'novo',
           name: 'novoRelatórioDePortfolioObras',
           meta: {
-            título: 'Novo relatório de portfolio',
+            título: 'Novo relatório de portfólio',
             rotaDeEscape: 'RelatóriosDePortfolioObras',
           },
         },
@@ -482,6 +491,31 @@ export default {
           meta: {
             título: 'Novo relatório de status',
             rotaDeEscape: 'RelatóriosDeStatusObras',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'previsao-de-custo-portfolio-obras',
+      meta: {
+        título: 'Relatórios de previsão de custo de portfólio de obras',
+        títuloParaMenu: 'Previsão de custo',
+        limitarÀsPermissões: 'Reports.executar.MDO',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDePrevisãoDeCustoPortfolioObras',
+          component: RelatóriosDePrevisãoDeCustoPortfolioObras,
+        },
+        {
+          path: 'novo',
+          name: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
+          component: NovoRelatórioDePrevisãoDeCustoPortfolioObras,
+          meta: {
+            título: 'Novo relatório de previsão de custo de portfólio de obras',
+            rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPortfolioObras',
           },
         },
       ],

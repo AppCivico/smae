@@ -17,7 +17,7 @@ async function excluirPainel(id) {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
       portfolioStore.buscarTudo();
-      alertStore.success('Portfolio removido.');
+      alertStore.success('Portfólio removido.');
     }
   }, 'Remover');
 }
