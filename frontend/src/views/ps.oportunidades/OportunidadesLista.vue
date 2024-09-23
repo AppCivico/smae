@@ -199,7 +199,6 @@
             </svg>
           </button>
         </td>
-        <td />
       </tr>
       <tr v-if="chamadasPendentes.lista">
         <td colspan="12">
