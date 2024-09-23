@@ -22,7 +22,6 @@ export class ClassificacaoController {
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroClassificacao.listar'])
     @Get()
     async findAll(): Promise<ListClassificacaoDto> {
         return { linhas: await this.classficacaoService.findAll() };

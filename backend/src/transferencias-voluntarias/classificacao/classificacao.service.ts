@@ -15,6 +15,7 @@ export class ClassificacaoService {
                 if (await this.prisma.classificacao.count({
                             where: {
                                 nome: { equals: dto.nome, mode: 'insensitive' },
+                                transferencia_tipo_id : dto.transferencia_tipo_id,
                                 removido_em: null,
                             }, }) >0 ) {
                     throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
@@ -22,7 +23,8 @@ export class ClassificacaoService {
                 return  await prismaTxn.classificacao.create({
                     data: {
                         nome: dto.nome,
-                        tipoTransferencia: dto.transferenciaTipo.id,
+                        transferencia_tipo_id: dto.transferencia_tipo_id,
+                        //transferencia_tipo_id: 9,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
@@ -38,7 +40,7 @@ export class ClassificacaoService {
             select: {
                 id: true,
                 nome: true,
-                transferenciaTipo: true,
+                transferencia_tipo_id: true,
             },
         });
         return rows;
@@ -55,7 +57,7 @@ export class ClassificacaoService {
                     where: { id },
                     data: {
                         nome: dto.nome,
-                        tipoTransferencia: dto.transferenciaTipo.id,
+                        transferencia_tipo_id: dto.transferencia_tipo_id,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
                     },
@@ -68,7 +70,7 @@ export class ClassificacaoService {
                 const similarExists = await this.prisma.classificacao.count({
                     where: {
                         nome: { endsWith: classificacao.nome, mode: 'insensitive' },
-                        tipoTransferencia: classificacao.transferenciaTipo.id,
+                        transferencia_tipo_id: classificacao.transferenciaTipo.id,
                         removido_em: null,
                     },
                 });

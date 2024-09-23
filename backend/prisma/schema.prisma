@@ -478,9 +478,9 @@ model Pessoa {
     VarGlobPedidoComplementacaoAtendeu   VariavelGlobalPedidoComplementacao[] @relation("atendeu")
     VarGlobPedidoComplementacaoRemovedor VariavelGlobalPedidoComplementacao[] @relation("removedor")
 
-    ClassificacaoQCriei  Classificacao[] @relation("Criador")
-    ClassificacaoQAtualizei Classificacao[] @relation("Atualizador")
-    ClassificacaoQRemovi    Classificacao[] @relation("Removedor")
+    ClassificacaoQCriei  Classificacao[] @relation("criador")
+    ClassificacaoQAtualizei Classificacao[] @relation("atualizador")
+    ClassificacaoQRemovi    Classificacao[] @relation("removedor")
 
     projetosRevisao ProjetoPessoaRevisao[]
 
@@ -7109,17 +7109,17 @@ model TransfereGovOportunidade {
 model Classificacao{
     id Int @id @default(autoincrement())
     nome      String
-    tipoTransferencia Int
+    transferencia_tipo_id Int
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
-    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
-    transferenciaTipo TransferenciaTipo @relation("classificacoes",fields: [tipoTransferencia],references: [id])
+    criador     Pessoa  @relation("criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("removedor", fields: [removido_por], references: [id])
+    transferenciaTipo TransferenciaTipo @relation("classificacoes",fields: [transferencia_tipo_id],references: [id])
 
     @@index([nome])
     @@map("classificacao")

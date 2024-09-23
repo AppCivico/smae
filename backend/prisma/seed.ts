@@ -112,6 +112,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroObjetivoEstrategico: ['', null],
     CadastroEtapa: ['', null],
     CadastroGrupoPaineisExternas: ['', null],
+    CadastroClassificacao:['Cadastro de Classificacao','CasaCivil']
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
@@ -492,6 +493,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PS.ponto_focal', 'Plano Setorial - Ponto Focal'],
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
+    ],
+    CadastroClassificacao: [
+        ['CadastroClassificacao.editar','Editar Classificação'],
+        ['CadastroClassificacao.inserir','Incluir Classificação'],
+        ['CadastroClassificacao.listar','Listar Classificações'],
+        ['CadastroClassificacao.remover','Excluir Classificações']
     ],
 };
 
@@ -935,6 +942,9 @@ const PerfilAcessoConfig: {
             'CadastroCronogramaTransferencia.listar',
             'CadastroCronogramaTransferencia.remover',
             'AndamentoWorkflow.listar',
+            'CadastroClassificacao.editar',
+            'CadastroClassificacao.inserir',
+            'CadastroClassificacao.remover',
         ],
     },
     {
