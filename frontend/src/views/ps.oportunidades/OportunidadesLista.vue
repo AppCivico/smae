@@ -281,18 +281,20 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
-import { Field, useForm } from 'vee-validate';
-import { useRoute } from 'vue-router';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
-import SmallModal from '@/components/SmallModal.vue';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import dateToField from '@/helpers/dateToField';
-import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
+const router = useRouter();
+
 const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
 
@@ -379,18 +381,28 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   }
 });
 
+onMounted(() => {
+  // PRA-FAZER: Isso aqui dará problema se quem usar abrir essa rota por um link compartilhado
+  if (route.query.avaliacao === undefined) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: valoresIniciais.avaliacao,
+      },
+    });
+  } else {
+    buscarOportunidades();
+  }
+});
+
 watch(oportunidadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
 
 watch(
   () => route.query,
-  () => {
-    buscarOportunidades();
-  },
-  { immediate: true },
+  buscarOportunidades,
 );
-
 </script>
 <style lang="less" scoped>
 .avaliacao {
@@ -400,7 +412,7 @@ watch(
   display: inline-block;
 }
 
-h2{
+h2 {
   color: #025B97;
 }
 </style>
