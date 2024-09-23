@@ -83,7 +83,10 @@
           type="text"
         />
       </div>
-      <button class="btn outline bgnone tcprimary mtauto mb1">
+      <button
+        class="btn outline bgnone tcprimary mtauto mb1"
+        type="submit"
+      >
         Filtrar
       </button>
     </form>
