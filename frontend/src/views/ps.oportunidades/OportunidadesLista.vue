@@ -389,7 +389,7 @@ watch(
   () => {
     buscarOportunidades();
   },
-  { deep: true, immediate: true },
+  { immediate: true },
 );
 
 </script>
