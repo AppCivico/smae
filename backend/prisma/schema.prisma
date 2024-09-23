@@ -6602,8 +6602,8 @@ model DistribuicaoRecursoStatus {
     status_id Int?
     status    DistribuicaoStatus? @relation(fields: [status_id], references: [id])
 
-    orgao_responsavel_id Int
-    orgao_responsavel    Orgao @relation(fields: [orgao_responsavel_id], references: [id])
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao? @relation(fields: [orgao_responsavel_id], references: [id])
 
     nome_responsavel String
     motivo           String
@@ -7041,8 +7041,8 @@ model VariavelGlobalCicloDocumento {
     id          Int @id @default(autoincrement())
     variavel_id Int
 
-    fase                       VariavelFase
-    referencia_data DateTime @db.Date
+    fase            VariavelFase
+    referencia_data DateTime     @db.Date
     descricao       String?
 
     arquivo_id Int

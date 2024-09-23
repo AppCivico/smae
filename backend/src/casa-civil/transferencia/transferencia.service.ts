@@ -1263,7 +1263,7 @@ export class TransferenciaService {
             valor_distribuido: row.distribuicao_recursos
                 .filter((e) => {
                     const statusTipo: DistribuicaoStatusTipo | undefined =
-                        e.status[0]?.status?.tipo ?? e.status[0]?.status_base?.tipo;
+                        e.status[0]?.status?.tipo || e.status[0]?.status_base?.tipo;
                     console.log('=======================================');
                     console.log(e);
                     console.log(statusTipo);
@@ -1273,7 +1273,8 @@ export class TransferenciaService {
                         statusTipo != DistribuicaoStatusTipo.Declinada &&
                         statusTipo != DistribuicaoStatusTipo.Redirecionada &&
                         statusTipo != DistribuicaoStatusTipo.Cancelada &&
-                        statusTipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
+                        statusTipo != DistribuicaoStatusTipo.ImpedidaTecnicamente &&
+                        statusTipo != DistribuicaoStatusTipo.Terminal
                     );
                 })
                 .reduce((acc, curr) => acc + curr.valor.toNumber(), 0),

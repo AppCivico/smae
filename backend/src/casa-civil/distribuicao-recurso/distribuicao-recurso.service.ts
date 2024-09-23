@@ -307,6 +307,15 @@ export class DistribuicaoRecursoService {
                     }
                 }
 
+                const statusBaseRegistrada = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
+                    where: {
+                        tipo: DistribuicaoStatusTipo.Registrada,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                     data: {
                         transferencia_id: dto.transferencia_id,
@@ -361,6 +370,15 @@ export class DistribuicaoRecursoService {
                                         criado_por: user.id,
                                     };
                                 }),
+                            },
+                        },
+                        status: {
+                            create: {
+                                status_base_id: statusBaseRegistrada.id,
+                                data_troca: agora,
+                                nome_responsavel: '',
+                                motivo: '',
+                                criado_por: user.id,
                             },
                         },
                     },
@@ -607,10 +625,12 @@ export class DistribuicaoRecursoService {
                         ),
                         motivo: status.motivo,
                         nome_responsavel: status.nome_responsavel,
-                        orgao_responsavel: {
-                            id: status.orgao_responsavel.id,
-                            sigla: status.orgao_responsavel.sigla,
-                        },
+                        orgao_responsavel: status.orgao_responsavel
+                            ? {
+                                  id: status.orgao_responsavel.id,
+                                  sigla: status.orgao_responsavel.sigla,
+                              }
+                            : null,
                         status_customizado: status.status
                             ? {
                                   id: status.status.id,
@@ -761,10 +781,12 @@ export class DistribuicaoRecursoService {
                 dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
                 motivo: r.motivo,
                 nome_responsavel: r.nome_responsavel,
-                orgao_responsavel: {
-                    id: r.orgao_responsavel.id,
-                    sigla: r.orgao_responsavel.sigla,
-                },
+                orgao_responsavel: r.orgao_responsavel
+                    ? {
+                          id: r.orgao_responsavel.id,
+                          sigla: r.orgao_responsavel.sigla,
+                      }
+                    : null,
                 status_customizado: r.status
                     ? {
                           id: r.status.id,

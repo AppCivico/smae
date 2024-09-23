@@ -87,7 +87,7 @@ export class DistribuicaoHistoricoStatusDto {
     data_troca: Date;
     dias_no_status: number;
     motivo: string;
-    orgao_responsavel: IdSigla;
+    orgao_responsavel: IdSigla | null;
     status_customizado: StatusDistListDto | null;
     status_base: StatusDistListDto | null;
 }
