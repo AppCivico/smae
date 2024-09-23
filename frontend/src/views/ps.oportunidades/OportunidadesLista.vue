@@ -293,7 +293,7 @@ const router = useRouter();
 const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
 
-const oportundiadeID = ref(null);
+const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
@@ -348,7 +348,7 @@ const avaliacoes = [
 
 function editarOportunidade(id, avaliacaoOportunidade) {
   showModal.value = true;
-  oportundiadeID.value = id;
+  oportunidadeID.value = id;
   oportunidadeAvaliacao.value = avaliacaoOportunidade;
 }
 
@@ -375,7 +375,7 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   try {
     const msg = 'Dados salvos com sucesso!';
     const resposta = await oportunidades.salvarItem(
-      oportundiadeID.value,
+      oportunidadeID.value,
       { avaliacao: values.avaliacao },
     );
     if (resposta) {
@@ -388,7 +388,7 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   }
 });
 
-watch(oportundiadeID, () => {
+watch(oportunidadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
 
