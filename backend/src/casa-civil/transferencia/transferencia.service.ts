@@ -1264,6 +1264,10 @@ export class TransferenciaService {
                 .filter((e) => {
                     const statusTipo: DistribuicaoStatusTipo | undefined =
                         e.status[0]?.status?.tipo ?? e.status[0]?.status_base?.tipo;
+                    console.log('=======================================');
+                    console.log(e);
+                    console.log(statusTipo);
+                    console.log('=======================================');
 
                     return (
                         statusTipo != DistribuicaoStatusTipo.Declinada &&
