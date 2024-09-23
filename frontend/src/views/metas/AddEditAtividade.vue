@@ -223,7 +223,7 @@ function filterResponsible(orgao_id) {
   </div>
   <template v-if="oktogo && !(singleAtividade?.loading || singleAtividade?.error)">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="atividade_id ? singleAtividade : virtualParent"
       @submit="onSubmit"
@@ -376,7 +376,7 @@ function filterResponsible(orgao_id) {
         >
           <div class="f1 mb1">
             <CampoDeEquipesComBuscaPorOrgao
-              v-model="singleAtividade.ps_ponto_focal.equipes"
+              v-model="values.ps_ponto_focal.equipes"
               :equipes-ids="singleIniciativa.ps_ponto_focal?.equipes"
               :valores-iniciais="singleAtividade.ps_ponto_focal?.equipes"
               name="ps_ponto_focal.equipes"

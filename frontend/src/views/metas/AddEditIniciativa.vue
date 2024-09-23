@@ -1,7 +1,7 @@
 <script setup>
-import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
-import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
+import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
@@ -76,7 +76,6 @@ if (iniciativa_id) {
 (async () => {
   await MetasStore.getById(meta_id);
   if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
-
   singleMeta.value.orgaos_participantes?.forEach((x) => {
     x.orgao_id = x.orgao.id;
     organsAvailable.value.push(x);
@@ -124,8 +123,10 @@ async function onSubmit(values) {
       return x.orgao_id;
     });
 
-    values.coordenadores_cp = coordenadores_cp.value.participantes;
-    if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.coordenadores_cp = coordenadores_cp.value.participantes;
+      if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    }
 
     if (!values.meta_id) values.meta_id = meta_id;
     values.compoe_indicador_meta = !!values.compoe_indicador_meta;
@@ -238,7 +239,11 @@ function filterResponsible(orgao_id) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </header>
-  <template v-if="oktogo && !(singleIniciativa?.loading || singleIniciativa?.error)">
+  <template
+    v-if="oktogo &&
+      !(singleIniciativa?.loading || singleIniciativa?.error)
+      && !(singleMeta?.loading || singleMeta?.error)"
+  >
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
@@ -314,7 +319,6 @@ function filterResponsible(orgao_id) {
       >
         <label class="block">
           <Field
-            v-model="compoe_indicador_meta"
             name="compoe_indicador_meta"
             type="checkbox"
             value="1"
@@ -398,14 +402,14 @@ function filterResponsible(orgao_id) {
       </template>
 
       <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
+        <label class="label">Órgãos responsáveis</label>
         <div
           class="flex flexwrap g2 mb1"
         >
           <div class="f1 mb1">
             <CampoDeEquipesComBuscaPorOrgao
               v-model="values.ps_ponto_focal.equipes"
-              :equipes-ids="singleMeta.ps_ponto_focal?.equipes || []"
+              :equipes-ids="singleMeta.ps_ponto_focal?.equipes"
               :valores-iniciais="valoresIniciais.ps_ponto_focal?.equipes"
               name="ps_ponto_focal.equipes"
               perfis-permitidos="PontoFocalPS"
@@ -439,14 +443,14 @@ function filterResponsible(orgao_id) {
       <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
         <label class="label">
           Equipes responsáveis na coordenadoria de planejamento
-          <span class="tvermelho">*</span>
         </label>
 
         <div>
           <AutocompleteField
+            name="ps_tecnico_cp.equipes"
             :controlador="{
               busca: '',
-              participantes: values.ps_tecnico_cp?.equipes,
+              participantes: values.ps_tecnico_cp?.equipes || [],
             }"
             :grupo="EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp?.equipes)"
             label="titulo"
