@@ -269,6 +269,7 @@
           <hr class="mr2 f1">
           <button
             class="btn big"
+            type="submit"
           >
             Salvar
           </button>
