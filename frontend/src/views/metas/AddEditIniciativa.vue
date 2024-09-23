@@ -65,6 +65,10 @@ const coordsAvailable = ref([]);
 const valoresIniciais = computed(() => ({
   ...singleIniciativa.value,
 
+  ps_ponto_focal: {
+    equipes: singleIniciativa.value?.ps_ponto_focal?.equipes || [],
+  },
+
   tags: Array.isArray(singleIniciativa.value?.tags)
     ? singleIniciativa.value.tags.map((tag) => tag.id)
     : [],
