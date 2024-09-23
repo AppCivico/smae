@@ -61,11 +61,11 @@
         >
           <option value="" />
           <option
-            v-for="(tipo, id) in tipos"
+            v-for="(item, id) in tipos"
             :key="id"
-            :value="tipo.value"
+            :value="item.value"
           >
-            {{ tipo.name }}
+            {{ item.name }}
           </option>
         </Field>
       </div>
