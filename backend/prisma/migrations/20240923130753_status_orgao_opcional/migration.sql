@@ -62,7 +62,7 @@ BEGIN
             v.periodicidade,
             coalesce(
                     fim_medicao,
-                    case v.inicio_medicao is null then null else ultimo_periodo_valido( v.periodicidade::"Periodicidade" , 0, v.inicio_medicao) end
+                    case when v.inicio_medicao is null then null else ultimo_periodo_valido( v.periodicidade::"Periodicidade" , 0, v.inicio_medicao) end
             ) AS fim_medicao
         FROM variavel v
         JOIN formula_composta_variavel fcv ON fcv.variavel_id = v.id
