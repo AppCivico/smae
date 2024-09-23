@@ -46,6 +46,8 @@ function aplicarFiltros(evento: SubmitEvent): void {
         parametros[nomeDoCampo] = valor
           || props.valoresIniciais[nomeDoCampo];
       }
+    } else if (valor === '') {
+      parametros[nomeDoCampo] = '';
     } else {
       parametros[nomeDoCampo] = props.valoresIniciais[nomeDoCampo];
     }
