@@ -4,18 +4,19 @@
     <hr class="ml2 f1">
   </div>
   <FormularioQueryString
+    v-slot="{ capturarEnvio}"
     :valores-iniciais="valoresIniciais"
   >
     <form
       class="flex flexwrap bottom mb2 g1"
-      @submit.prevent="atualizarFiltro"
+      @submit.prevent="capturarEnvio"
     >
       <div class="f0">
         <label
           for="avaliacao"
           class="label tc300"
         >Avaliação</label>
-        <Field
+        <select
           v-model.trim="avaliacaoFiltro"
           class="inputtext mb1"
           name="avaliacao"
@@ -29,14 +30,14 @@
           >
             {{ item.name }}
           </option>
-        </Field>
+        </select>
       </div>
       <div class="f0">
         <label
           for="ano"
           class="label tc300"
         >Ano</label>
-        <Field
+        <input
           id="ano"
           v-model.number="ano"
           inputmode="numeric"
@@ -45,14 +46,14 @@
           type="number"
           min="2003"
           max="9999"
-        />
+        >
       </div>
       <div class="f0">
         <label
           for="tipo"
           class="label tc300"
         >Modalidade</label>
-        <Field
+        <select
           id="tipo"
           v-model.trim="tipo"
           class="inputtext mb1"
@@ -67,7 +68,7 @@
           >
             {{ item.name }}
           </option>
-        </Field>
+        </select>
       </div>
 
       <div class="f0">
@@ -75,13 +76,13 @@
           for="palavras_chave"
           class="label tc300"
         >Palavra-chave</label>
-        <Field
+        <input
           id="palavras_chave"
           v-model.trim="palavraChave"
           class="inputtext"
           name="palavras_chave"
           type="text"
-        />
+        >
       </div>
       <button
         class="btn outline bgnone tcprimary mtauto mb1"
@@ -282,9 +283,9 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { Field, useForm } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
 import SmallModal from '@/components/SmallModal.vue';
@@ -293,7 +294,6 @@ import dateToField from '@/helpers/dateToField';
 import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
 
 const route = useRoute();
-const router = useRouter();
 const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
 
@@ -301,12 +301,12 @@ const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
-const avaliacaoFiltro = ref(route.query.avaliacao);
+const avaliacaoFiltro = ref(route.query.avaliacao || 'NaoAvaliada');
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
 const {
-  setFieldValue, handleSubmit, setValues,
+  setFieldValue, handleSubmit,
 } = useForm({
   initialValues: route.query,
   validationSchema: schema,
@@ -316,9 +316,9 @@ const {
   lista, chamadasPendentes, erro, paginação,
 } = storeToRefs(oportunidades);
 
-const valoresIniciais = computed(() => ({
+const valoresIniciais = {
   avaliacao: 'NaoAvaliada',
-}));
+};
 
 const tipos = [
   {
@@ -363,18 +363,6 @@ function buscarOportunidades() {
   );
 }
 
-const atualizarFiltro = handleSubmit.withControlled((values) => {
-  router.replace({
-    query: {
-      ...route.query,
-      avaliacao: values.avaliacao || undefined,
-      ano: values.ano || undefined,
-      tipo: values.tipo || undefined,
-      palavras_chave: values.palavras_chave || undefined,
-    },
-  });
-});
-
 const editAvaliacao = handleSubmit.withControlled(async (values) => {
   try {
     const msg = 'Dados salvos com sucesso!';
@@ -400,7 +388,6 @@ watch(
   () => route.query,
   () => {
     buscarOportunidades();
-    setValues(route.query);
   },
   { deep: true, immediate: true },
 );
