@@ -97,6 +97,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             theClass = CreateRelPdmOrcamentoExecutadoDto;
             break;
         case 'ProjetoOrcamento':
+        case 'ObrasOrcamento':
             theClass = CreateRelProjetoOrcamentoDto;
             break;
         case 'Indicadores':
@@ -109,6 +110,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             theClass = CreateRelPdmPrevisaoCustoDto;
             break;
         case 'ProjetoPrevisaoCusto':
+        case 'ObrasPrevisaoCusto':
             theClass = CreateRelProjetoPrevisaoCustoDto;
             break;
         case 'Projeto':
