@@ -752,9 +752,10 @@ export class VariavelService {
         const liberacao_fim = liberacao_inicio + p.liberacao_duracao - 1;
 
         // Não deixa vazar do periodo da variavel
-        if (preenchimento_fim > maxDias) throw new BadRequestException(`Preenchimento: Duração excedê o ${maxDias}`);
-        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração excedê o ${maxDias}`);
-        if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração excedê o ${maxDias}`);
+        if (preenchimento_fim > maxDias)
+            throw new BadRequestException(`Preenchimento: Duração total excede o ${maxDias} dias`);
+        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração total excede o ${maxDias} dias`);
+        if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração total excede o ${maxDias} dias`);
 
         return {
             periodo_preenchimento: [p.preenchimento_inicio, preenchimento_fim],
