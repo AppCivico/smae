@@ -1240,7 +1240,7 @@ export class DistribuicaoRecursoService {
                         });
 
                         let sumValor = rowsParlamentarDist
-                            .filter((e) => e.valor && e.id != relParlamentar.id)
+                            .filter((e) => e.valor != null)
                             .filter((e) => {
                                 const statusUltimaRow = e.distribuicao_recurso.status[0];
                                 if (!statusUltimaRow) return true;
@@ -1263,10 +1263,10 @@ export class DistribuicaoRecursoService {
                         sumValor += +relParlamentar.valor!;
 
                         console.log('\n==========================');
-                        console.log(rowsParlamentarDist.filter((e) => e.valor && e.id != relParlamentar.id));
+                        console.log(rowsParlamentarDist.filter((e) => e.valor != null));
                         console.log(
                             rowsParlamentarDist
-                                .filter((e) => e.valor && e.id != relParlamentar.id)
+                                .filter((e) => e.valor != null)
                                 .filter((e) => {
                                     const statusUltimaRow = e.distribuicao_recurso.status[0];
                                     if (!statusUltimaRow) return true;
