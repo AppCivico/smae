@@ -507,7 +507,7 @@ export default {
         </div>
         <div class="f2">
           <label class="label">
-            Defasagem da medição (Meses)&nbsp;<span class="tvermelho">*</span>
+            Defasagem da medição &nbsp;<span class="tvermelho">*</span>
           </label>
           <Field
             name="atraso_meses"

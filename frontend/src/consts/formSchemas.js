@@ -3493,7 +3493,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   atraso_meses: number()
-    .label('Defasagem da medição (Meses)')
+    .label('Defasagem da medição')
     .min(0)
     .integer(),
   casas_decimais: number()

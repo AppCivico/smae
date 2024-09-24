@@ -93,7 +93,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
         [
           { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? format(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
-          { label: 'Defasagem da medição (meses)', valor: emFoco.value.atraso_meses },
+          { label: 'Defasagem da medição', valor: emFoco.value.atraso_meses },
         ],
       ],
     },
