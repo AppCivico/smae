@@ -56,7 +56,9 @@ BEGIN
          ciclo_fisico cf
      JOIN ciclo_fisico_fase cfs on cfs.id = cf.ciclo_fase_atual_id
      JOIN pdm p ON p.id = cf.pdm_id
+     JOIN meta m ON m.pdm_id = p.id
      WHERE cf.id = pCicloFisicoIdAtual
+     AND m.id = pMetaId
      AND cf.ativo
      AND p.tipo = 'PDM'
     LIMIT 1;
@@ -69,7 +71,9 @@ BEGIN
     v_debug := v_debug || ' fase=' || v_fase;
 --
     if (v_pdm_id is null) then
-        delete from meta_status_consolidado_cf where meta_id = pMetaId;
+        DELETE FROM meta_status_consolidado_cf WHERE meta_id = pMetaId;
+        DELETE FROM meta_status_atraso_consolidado_mes WHERE meta_id = pMetaId;
+        DELETE FROM meta_status_atraso_variavel WHERE meta_id = pMetaId;
         RETURN v_debug || ' sem cf';
     end if;
 
@@ -526,4 +530,6 @@ LANGUAGE plpgsql;
 
 
 delete from meta_status_consolidado_cf;
+DELETE FROM meta_status_atraso_consolidado_mes;
+DELETE FROM meta_status_atraso_variavel;
 select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo and tipo='PDM') and removido_em is null ;
