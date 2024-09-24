@@ -932,7 +932,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             <Field
               name="periodos.preenchimento_duracao"
               type="number"
-              :min="values.periodos?.preenchimento_inicio || 1"
+              :min="1"
               max="31"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.preenchimento_duracao'] }"
@@ -953,7 +953,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             <Field
               name="periodos.validacao_duracao"
               type="number"
-              :min="values.periodos?.preenchimento_inicio || 1"
+              :min="1"
               max="31"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.validacao_duracao'] }"

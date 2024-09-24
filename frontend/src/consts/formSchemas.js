@@ -3566,7 +3566,6 @@ export const variavelGlobal = object({
     preenchimento_duracao: number()
       .label('Duração do preenchimento')
       .max(31)
-      .min(ref('periodos.preenchimento_inicio'), 'Precisa ser posterior ao dia de início')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
