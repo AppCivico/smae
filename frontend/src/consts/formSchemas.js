@@ -3565,19 +3565,16 @@ export const variavelGlobal = object({
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     preenchimento_duracao: number()
       .label('Duração do preenchimento')
-      .max(31)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     validacao_duracao: number()
       .label('Duração da validação')
-      .max(31)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     liberacao_duracao: number()
       .label('Duração da liberação')
-      .max(31)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
