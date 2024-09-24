@@ -1211,10 +1211,6 @@ export class DistribuicaoRecursoService {
                                 distribuicao_recurso: {
                                     id: id,
                                     removido_em: null,
-                                    transferencia: {
-                                        id: self.transferencia_id,
-                                        removido_em: null,
-                                    },
                                 },
                             },
                             select: {
@@ -1263,6 +1259,7 @@ export class DistribuicaoRecursoService {
                         sumValor += +relParlamentar.valor!;
 
                         console.log('\n==========================');
+                        console.log(relParlamentar);
                         console.log(rowsParlamentarDist);
                         console.log(+sumValor);
                         console.log(+valorNaTransf);
