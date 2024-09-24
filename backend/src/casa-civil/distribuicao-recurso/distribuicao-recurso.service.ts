@@ -1215,48 +1215,50 @@ export class DistribuicaoRecursoService {
                                         id: self.transferencia_id,
                                         removido_em: null,
                                     },
-                                    status: {
-                                        some: {
-                                            OR: [
-                                                {
-                                                    status_base: {
-                                                        tipo: {
-                                                            notIn: [
-                                                                DistribuicaoStatusTipo.Declinada,
-                                                                DistribuicaoStatusTipo.Cancelada,
-                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                                DistribuicaoStatusTipo.Redirecionada,
-                                                                DistribuicaoStatusTipo.Terminal,
-                                                            ],
-                                                        },
-                                                    },
-                                                },
-                                                {
-                                                    status: {
-                                                        tipo: {
-                                                            notIn: [
-                                                                DistribuicaoStatusTipo.Declinada,
-                                                                DistribuicaoStatusTipo.Cancelada,
-                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                                DistribuicaoStatusTipo.Redirecionada,
-                                                                DistribuicaoStatusTipo.Terminal,
-                                                            ],
-                                                        },
-                                                    },
-                                                },
-                                            ],
-                                        },
-                                    },
                                 },
                             },
                             select: {
                                 id: true,
                                 valor: true,
+                                distribuicao_recurso: {
+                                    select: {
+                                        status: {
+                                            take: 1,
+                                            orderBy: { data_troca: 'desc' },
+                                            select: {
+                                                status_base: {
+                                                    select: {
+                                                        tipo: true,
+                                                    },
+                                                },
+                                                status: {
+                                                    select: {
+                                                        tipo: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         });
 
                         let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor)
+                            .filter((e) => {
+                                const statusUltimaRow = e.distribuicao_recurso.status[0];
+                                if (!statusUltimaRow) return true;
+
+                                const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                return (
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Cancelado &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Redirecionada &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Declinada &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
+                                );
+                            })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 
