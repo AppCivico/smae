@@ -4,8 +4,14 @@ import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
 import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
 import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
-import { CreateRelProjetoOrcamentoDto } from 'src/reports/projeto-orcamento/dto/create-projeto-orcamento.dto';
-import { CreateRelProjetoPrevisaoCustoDto } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
+import {
+    CreateRelObrasOrcamentoDto,
+    CreateRelProjetoOrcamentoDto,
+} from 'src/reports/projeto-orcamento/dto/create-projeto-orcamento.dto';
+import {
+    CreateRelProjetoPrevisaoCustoDto,
+    CreateRelObrasPrevisaoCustoDto,
+} from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { PdmCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
@@ -30,9 +36,11 @@ export class CreateReportDto {
         oneOf: refs(
             PdmCreateOrcamentoExecutadoDto,
             CreateRelProjetoOrcamentoDto,
+            CreateRelObrasOrcamentoDto,
             CreateRelIndicadorDto,
             CreateRelMonitoramentoMensalDto,
             CreateRelPrevisaoCustoDto,
+            CreateRelObrasPrevisaoCustoDto,
             CreateRelProjetoDto,
             CreateRelProjetosDto,
             CreateRelProjetoStatusDto,

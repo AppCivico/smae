@@ -3349,6 +3349,8 @@ enum FonteRelatorio {
     Transferencias
     ObraStatus
     Obras
+    ObrasOrcamento
+    ObrasPrevisaoCusto
 }
 
 model Relatorio {

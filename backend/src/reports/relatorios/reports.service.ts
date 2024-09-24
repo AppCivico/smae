@@ -207,6 +207,7 @@ export class ReportsService {
         switch (dto.fonte) {
             case 'Orcamento':
             case 'ProjetoOrcamento':
+            case 'ObrasOrcamento':
                 service = this.orcamentoService;
                 break;
             case 'Indicadores':
@@ -217,6 +218,7 @@ export class ReportsService {
                 break;
             case 'PrevisaoCusto':
             case 'ProjetoPrevisaoCusto':
+            case 'ObrasPrevisaoCusto':
                 service = this.previsaoCustoService;
                 break;
             case 'Projeto':

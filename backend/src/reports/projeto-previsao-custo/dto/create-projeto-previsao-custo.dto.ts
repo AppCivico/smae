@@ -19,3 +19,5 @@ export class CreateRelProjetoPrevisaoCustoDto extends OmitType(SuperCreateRelPre
     @Transform(({ value }: any) => +value)
     portfolio_id: number;
 }
+
+export class CreateRelObrasPrevisaoCustoDto extends CreateRelProjetoPrevisaoCustoDto {}
