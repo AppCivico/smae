@@ -5555,6 +5555,7 @@ model Transferencia {
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
+    classificacao_id Int?
 
     criador                        Pessoa                           @relation("Criador", fields: [criado_por], references: [id])
     atualizador                    Pessoa?                          @relation("Atualizador", fields: [atualizado_por], references: [id])
@@ -5568,6 +5569,7 @@ model Transferencia {
     ViewNotasTransferencias        ViewNotasTransferencias[]
     ViewDashboardAnalise           ViewTransferenciaAnalise[]
     parlamentar                    TransferenciaParlamentar[]
+    classificacaoOject             Classificacao? @relation("classificacao",fields: [classificacao_id],references: [id])
 
     @@map("transferencia")
 }
@@ -7121,6 +7123,7 @@ model Classificacao{
     atualizador Pessoa? @relation("atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("removedor", fields: [removido_por], references: [id])
     transferenciaTipo TransferenciaTipo @relation("classificacoes",fields: [transferencia_tipo_id],references: [id])
+    transferencias Transferencia[] @relation("classificacao")
 
     @@index([nome])
     @@map("classificacao")

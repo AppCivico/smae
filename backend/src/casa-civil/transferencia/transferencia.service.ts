@@ -49,6 +49,15 @@ export class TransferenciaService {
                 });
                 if (!tipoExiste) throw new HttpException('tipo_id| Tipo não encontrado.', 400);
 
+                /*Validação para caso seja informada a classificação realize a validação de existência
+                 */
+                if (dto.classificacao_id != null) {
+                    const tipoExiste = await prismaTxn.classificacao.count({
+                        where: { id: dto.classificacao_id, removido_em: null },
+                    });
+                    if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
+                }
+
                 // Tratando workflow
                 // Caso tenha um workflow ativo para o tipo de transferência.
                 // Ele deve ser automaticamente o workflow selecionado.
@@ -139,6 +148,7 @@ export class TransferenciaService {
                                     : [],
                             },
                         },
+                        classificacao_id: dto.classificacao_id
                     },
                     select: { id: true },
                 });
@@ -292,6 +302,16 @@ export class TransferenciaService {
                 });
                 if (!self) throw new HttpException('id| Transferência não encontrada', 404);
 
+                /*Validação para caso seja informada a classificação realize a validação de existência
+                 */
+                if (dto.classificacao_id != null) {
+                    const tipoExiste = await prismaTxn.classificacao.count({
+                        where: { id: id, removido_em: null },
+                    });
+                    if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
+                }
+
+
                 if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
                     const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
                     // Verificando match de esferas.
@@ -401,6 +421,7 @@ export class TransferenciaService {
                         numero_identificacao: dto.numero_identificacao,
                         atualizado_por: user.id,
                         atualizado_em: agora,
+                        classificacao_id: dto.classificacao_id,
                     },
                     select: { id: true },
                 });
@@ -614,6 +635,7 @@ export class TransferenciaService {
                         criado_por: user.id,
                         atualizado_por: user.id,
                         atualizado_em: agora,
+                        classificacao_id : dto.classificacao_id
                     },
                     select: { id: true },
                 });
