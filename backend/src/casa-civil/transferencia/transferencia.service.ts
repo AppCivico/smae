@@ -686,7 +686,7 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
-                    const distribuicao = await this.distribuicaoService.create(
+                    await this.distribuicaoService.create(
                         {
                             transferencia_id: transferencia.id,
                             dotacao: self.dotacao ? self.dotacao : undefined,

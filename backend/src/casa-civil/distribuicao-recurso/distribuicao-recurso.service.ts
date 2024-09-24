@@ -1246,7 +1246,10 @@ export class DistribuicaoRecursoService {
                                 if (!statusUltimaRow) return true;
 
                                 const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                console.log('\n==========================');
                                 console.log(statusConfig);
+                                console.log('\n==========================');
+
                                 return (
                                     statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
                                     statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
@@ -1260,6 +1263,26 @@ export class DistribuicaoRecursoService {
                         sumValor += +relParlamentar.valor!;
 
                         console.log('\n==========================');
+                        console.log(rowsParlamentarDist.filter((e) => e.valor && e.id != relParlamentar.id));
+                        console.log(
+                            rowsParlamentarDist
+                                .filter((e) => e.valor && e.id != relParlamentar.id)
+                                .filter((e) => {
+                                    const statusUltimaRow = e.distribuicao_recurso.status[0];
+                                    if (!statusUltimaRow) return true;
+
+                                    const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                    console.log(statusConfig);
+                                    return (
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Cancelado &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Redirecionada &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Declinada &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
+                                    );
+                                })
+                        );
                         console.log(relParlamentar);
                         console.log(rowsParlamentarDist);
                         console.log(+sumValor);
