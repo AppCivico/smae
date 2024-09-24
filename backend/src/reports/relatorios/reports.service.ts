@@ -79,7 +79,12 @@ export class ReportsService {
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
         // Ajusta o tipo de relatório para MDO, se for de status de obra
-        if (dto.fonte == 'ObraStatus') {
+        if (
+            dto.fonte == 'ObraStatus' ||
+            dto.fonte === 'Obras' ||
+            dto.fonte === 'ObrasOrcamento' ||
+            dto.fonte === 'ObrasPrevisaoCusto'
+        ) {
             parametros.tipo = 'MDO';
         }
 
