@@ -117,6 +117,14 @@ const schema = computed(() => metaSchema(activePdm.value));
 const valoresIniciais = computed(() => ({
   ...singleMeta.value,
 
+  ps_ponto_focal: {
+    equipes: singleMeta.value?.ps_ponto_focal?.equipes || [],
+  },
+
+  ps_tecnico_cp: {
+    equipes: singleMeta.value?.ps_tecnico_cp?.equipes || [],
+  },
+
   macro_tema_id: singleMeta.value.macro_tema?.id || route.params.macro_tema_id,
   sub_tema_id: singleMeta.value.sub_tema?.id || route.params.sub_tema_id,
   tema_id: singleMeta.value.tema?.id || route.params.tema_id,
@@ -144,8 +152,10 @@ async function onSubmit(values) {
       });
     }
 
-    values.coordenadores_cp = coordenadores_cp.value.participantes;
-    if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.coordenadores_cp = coordenadores_cp.value.participantes;
+      if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    }
 
     if (!values.pdm_id) values.pdm_id = activePdm.value.id;
 

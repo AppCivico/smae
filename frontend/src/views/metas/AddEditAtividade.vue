@@ -44,7 +44,15 @@ const orgaos_participantes = ref([
 ]);
 const coordenadores_cp = ref({ participantes: [], busca: '' });
 
-const virtualParent = ref({});
+const virtualParent = ref({
+  ps_ponto_focal: {
+    equipes: singleIniciativa.value?.ps_ponto_focal?.equipes || [],
+  },
+
+  ps_tecnico_cp: {
+    equipes: singleIniciativa.value?.ps_tecnico_cp?.equipes || [],
+  },
+});
 let title = 'Cadastro de';
 
 const organsAvailable = ref([]);
@@ -106,8 +114,10 @@ async function onSubmit(values) {
       return x.orgao_id;
     });
 
-    values.coordenadores_cp = coordenadores_cp.value.participantes;
-    if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.coordenadores_cp = coordenadores_cp.value.participantes;
+      if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    }
 
     if (!values.iniciativa_id) values.iniciativa_id = iniciativa_id;
     values.compoe_indicador_iniciativa = !!values.compoe_indicador_iniciativa;
@@ -419,9 +429,9 @@ function filterResponsible(orgao_id) {
             name="values.ps_tecnico_cp.equipes"
             :controlador="{
               busca: '',
-              participantes: singleIniciativa.ps_tecnico_cp.equipes,
+              participantes: values.ps_tecnico_cp.equipes,
             }"
-            :grupo="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes)"
+            :grupo="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes)"
             label="titulo"
           />
         </div>
