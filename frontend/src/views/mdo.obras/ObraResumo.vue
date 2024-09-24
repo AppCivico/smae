@@ -654,14 +654,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_colaborador.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_colaborador }} - {{ emFoco?.secretario_colaborador }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.colaboradores_no_orgao.spec.label }}
           </dt>
           <dd class="t13">
@@ -677,6 +669,9 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               </li>
             </ul>
           </dd>
+        </div>
+        <div class="f1 mb1">
+          <!-- aqui só pra ajustar o layout -->
         </div>
       </dl>
 
