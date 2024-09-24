@@ -3573,7 +3573,6 @@ export const variavelGlobal = object({
     validacao_duracao: number()
       .label('Duração da validação')
       .max(31)
-      .min(ref('periodos.preenchimento_inicio'), 'Precisa ser posterior ao preenchimento')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
