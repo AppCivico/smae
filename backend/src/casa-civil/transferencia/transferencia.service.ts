@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
@@ -1072,6 +1072,7 @@ export class TransferenciaService {
                         },
                     },
                 },
+                classificacao_id : true,
             },
         });
 
@@ -1121,6 +1122,7 @@ export class TransferenciaService {
                     r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
+                classificacao_id: r.classificacao_id,
             };
         });
 
@@ -1242,6 +1244,7 @@ export class TransferenciaService {
                         },
                     },
                 },
+                classificacao_id : true,
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
@@ -1304,6 +1307,7 @@ export class TransferenciaService {
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
             orgao_concedente: row.orgao_concedente,
+            classificacao_id: row.classificacao_id,
         } satisfies TransferenciaDetailDto;
     }
 
