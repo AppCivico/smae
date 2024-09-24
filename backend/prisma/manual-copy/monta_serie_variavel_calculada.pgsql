@@ -16,9 +16,9 @@ DECLARE
     vReferencia VARCHAR;
     resultado DOUBLE PRECISION;
     vStartTime timestamp;
-    vPeriodo DATE; -- Loop variable for generate_series
-    vVariavelFormula RECORD; -- To store individual FormulaCompostaVariavel row
-    skip_period BOOLEAN; -- Flag to skip the current period if any resultado is NULL
+    vPeriodo DATE;
+    vVariavelFormula RECORD;
+    skip_period BOOLEAN;
 BEGIN
     vStartTime := clock_timestamp();
 
@@ -51,7 +51,10 @@ BEGIN
             v.id,
             v.inicio_medicao,
             v.periodicidade,
-            coalesce(fim_medicao, ultimo_periodo_valido( v.periodicidade::"Periodicidade" , 0)) AS fim_medicao
+            coalesce(
+                    fim_medicao,
+                    case when v.inicio_medicao is null then null else ultimo_periodo_valido( v.periodicidade::"Periodicidade" , 0, v.inicio_medicao) end
+            ) AS fim_medicao
         FROM variavel v
         JOIN formula_composta_variavel fcv ON fcv.variavel_id = v.id
         AND fcv.formula_composta_id = vFormulaCompostaId
@@ -64,6 +67,10 @@ BEGIN
     FROM varPeriodos vp
     GROUP BY 1
     LIMIT 1;
+
+    IF vPeriodicidade IS NULL THEN
+        RETURN 'FormulaComposta sem periodo, provavelmente faltando data de inicio de medicao - ' || pVariavelId;
+    END IF;
 
     -- Loop through each Serie
     FOR vSerieAtual IN

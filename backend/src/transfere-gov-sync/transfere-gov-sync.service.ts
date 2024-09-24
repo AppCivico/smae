@@ -6,6 +6,7 @@ import {
     ComunicadoTransfereGov,
     Prisma,
     TransfereGovOportunidade,
+    TransfereGovOportunidadeAvaliacao,
     TransfereGovOportunidadeTipo,
 } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -459,12 +460,23 @@ export class TransfereGovSyncService {
 
         const palavrasChave = await this.buscaIdsPalavraChave(filters.palavras_chave);
 
+        let filterAvaliacao: TransfereGovOportunidadeAvaliacao | null | undefined = undefined;
+        if (filters.avaliacao) {
+            if (filters.avaliacao === 'NaoSeAplica') {
+                filterAvaliacao = TransfereGovOportunidadeAvaliacao.NaoSeAplica;
+            } else if (filters.avaliacao === 'Selecionada') {
+                filterAvaliacao = TransfereGovOportunidadeAvaliacao.Selecionada;
+            } else {
+                filterAvaliacao = null;
+            }
+        }
+
         const dbRows = await this.prisma.transfereGovOportunidade.findMany({
             where: {
                 ano_disponibilizacao: filters.ano,
                 tipo: filters.tipo,
                 transferencia_incorporada: false,
-
+                avaliacao: filterAvaliacao,
                 // Filtro por palavras-chave com tsvector
                 id: {
                     in: palavrasChave != undefined ? palavrasChave : undefined,

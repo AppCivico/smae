@@ -17,3 +17,16 @@ export class ProjetoOrcamentoController {
         return await this.orcamentoExecutadoService.asJSON(createPrevisaoCustDto);
     }
 }
+
+@ApiTags('Relatórios - API')
+@Controller('relatorio/projeto-orcamento-mdo')
+export class ProjetoMDOOrcamentoController {
+    constructor(private readonly orcamentoExecutadoService: OrcamentoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['Reports.executar.MDO'])
+    async create(@Body() createPrevisaoCustDto: CreateRelProjetoOrcamentoDto): Promise<ListOrcamentoExecutadoDto> {
+        return await this.orcamentoExecutadoService.asJSON(createPrevisaoCustDto);
+    }
+}

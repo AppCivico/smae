@@ -58,18 +58,35 @@
             <div class="f1">
               <label class="label">Valor a aplicar</label>
               <input
+                v-if="!temCategorica"
                 v-model="valorPadrao"
                 type="number"
                 class="inputtext light mb1"
               >
-              <!-- :disabled="modoDePreenchimento === 'valor_acumulado'" -->
+              <select
+                v-else
+                v-model="valorPadrao"
+                class="inputtext light"
+              >
+                <option value="">
+                  -
+                </option>
+
+                <option
+                  v-for="variaveisCategoricasValor in variaveisCategoricasValores"
+                  :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
+                  :value="variaveisCategoricasValor.valor_variavel"
+                >
+                  {{ variaveisCategoricasValor.titulo }}
+                  {{ variaveisCategoricasValor.descricao && truncate(`- ${variaveisCategoricasValor.descricao}`, 55) }}
+                </option>
+              </select>
             </div>
             <button
               type="button"
               class="f0 mb1 btn bgnone outline tcprimary"
               @click="preencherVaziosCom(valorPadrao)"
             >
-              <!-- :disabled="valorPadrao === '' || modoDePreenchimento === 'valor_acumulado'" -->
               Preencher vazios
             </button>
 
@@ -132,6 +149,7 @@
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
               >
                 <Field
+                  v-if="!temCategorica"
                   v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado"
                   :class="[
                     'inputtext light',
@@ -141,6 +159,28 @@
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                   @update:model-value="atualizarVariavelAcululado(variavelDadoIndex, $event)"
                 />
+                <Field
+                  v-else
+                  :class="[
+                    'inputtext light',
+                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado`)}
+                  ]"
+                  as="select"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                >
+                  <option value="">
+                    -
+                  </option>
+
+                  <option
+                    v-for="variaveisCategoricasValor in variaveisCategoricasValores"
+                    :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
+                    :value="variaveisCategoricasValor.valor_variavel"
+                  >
+                    {{ variaveisCategoricasValor.titulo }}
+                    {{ variaveisCategoricasValor.descricao && truncate(`- ${variaveisCategoricasValor.descricao}`, 55) }}
+                  </option>
+                </Field>
               </td>
 
               <td
@@ -165,7 +205,10 @@
               />
             </tr>
 
-            <tr class="valores-variaveis-tabela__linha-calculada">
+            <tr
+              v-if="!temCategorica"
+              class="valores-variaveis-tabela__linha-calculada"
+            >
               <td />
               <td />
               <td>{{ valoresCalculados.valor_realizado }}</td>
@@ -191,11 +234,15 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { Field, useForm } from 'vee-validate';
 
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+
+import truncate from '@/helpers/truncate';
 
 import { cicloAtualizacaoModalEditarSchema as schema } from '@/consts/formSchemas';
 
@@ -226,16 +273,19 @@ const $emit = defineEmits<Emits>();
 
 const $route = useRoute();
 
-const { emFoco, enviarDados, bloqueado } = useCicloAtualizacaoStore();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
-const valorInicialVariaveis = emFoco?.valores.map((item) => ({
+const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
+
+const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   variavel_id: item.variavel.id,
   valor_realizado: item.valor_realizado,
-  valor_realizado_acumulado: item.valor_realizado_acumulado,
+  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa ? item.valor_realizado_acumulado : '0',
 }));
 
 const valorInicial = {
-  analise_qualitativa: emFoco?.ultima_analise?.analise_qualitativa,
+  analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
   variaveis_dados: valorInicialVariaveis,
 };
 
@@ -248,32 +298,22 @@ const {
 
 const valorPadrao = ref<string>('');
 const variaveisDadosValores = ref(valorInicialVariaveis || []);
-const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco?.uploads || []);
+const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
 
-const onSubmit = handleSubmit(async (valores) => {
-  if (!emFoco) {
-    throw new Error('Erro ao tentar submeter dados');
-  }
-
-  await enviarDados({
-    variavel_id: emFoco.variavel.id,
-    analise_qualitativa: valores.analise_qualitativa,
-    aprovar: false,
-    data_referencia: $route.params.dataReferencia as string,
-    uploads: arquivosLocais.value,
-    valores: valores.variaveis_dados || [],
-    pedido_complementacao: undefined,
-  });
-
-  $emit('enviado');
-});
-
-const variaveisDados = computed<VariaveisDados[]>(() => {
-  if (!emFoco) {
+const variaveisCategoricasValores = computed(() => {
+  if (!variaveisCategoricasStore.emFoco) {
     return [];
   }
 
-  return emFoco.valores.map<VariaveisDados>(
+  return variaveisCategoricasStore.emFoco.valores;
+});
+
+const variaveisDados = computed<VariaveisDados[]>(() => {
+  if (!emFoco.value) {
+    return [];
+  }
+
+  return emFoco.value.valores.map<VariaveisDados>(
     (item) => (
       {
         codigo: {
@@ -306,6 +346,24 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
+const onSubmit = handleSubmit(async (valores) => {
+  if (!emFoco.value) {
+    throw new Error('Erro ao tentar submeter dados');
+  }
+
+  await cicloAtualizacaoStore.enviarDados({
+    variavel_id: emFoco.value.variavel.id,
+    analise_qualitativa: valores.analise_qualitativa,
+    aprovar: false,
+    data_referencia: $route.params.dataReferencia as string,
+    uploads: arquivosLocais.value,
+    valores: valores.variaveis_dados || [],
+    pedido_complementacao: undefined,
+  });
+
+  $emit('enviado');
+});
+
 function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
   arquivosLocais.value.push({
     nome_original,
@@ -328,9 +386,9 @@ function temErro(caminho: string) {
 }
 
 function atualizarVariavelAcululado(variavelIndex: number, valor: string) {
-  const valorVariavelInicial = Number(emFoco?.valores[variavelIndex].valor_realizado);
+  const valorVariavelInicial = Number(emFoco.value?.valores[variavelIndex].valor_realizado);
   const valorVariavelAcululadoInicial = Number(
-    emFoco?.valores[variavelIndex].valor_realizado_acumulado,
+    emFoco.value?.valores[variavelIndex].valor_realizado_acumulado,
   );
   const novoValor = Number(valor);
 
@@ -343,11 +401,11 @@ function atualizarVariavelAcululado(variavelIndex: number, valor: string) {
 }
 
 function preencherVaziosCom(valor: number | string) {
-  if (!emFoco) {
+  if (!emFoco.value) {
     throw new Error('Erro ao tentar preencher vazios');
   }
 
-  emFoco.valores.forEach((item, itemIndex) => {
+  emFoco.value.valores.forEach((item, itemIndex) => {
     if (values.variaveis_dados && values.variaveis_dados[itemIndex].valor_realizado) {
       return;
     }
@@ -362,11 +420,11 @@ function preencherVaziosCom(valor: number | string) {
 }
 
 function limparFormulario() {
-  if (!emFoco) {
+  if (!emFoco.value) {
     throw new Error('Erro ao tentar limpar formulario');
   }
 
-  emFoco.valores.forEach((item, itemIndex) => {
+  emFoco.value.valores.forEach((item, itemIndex) => {
     setFieldValue(
       `variaveis_dados[${itemIndex}].valor_realizado` as any,
       '',
@@ -375,11 +433,11 @@ function limparFormulario() {
 }
 
 function restaurarFormulario() {
-  if (!emFoco) {
+  if (!emFoco.value) {
     throw new Error('Erro ao tentar limpar formulario');
   }
 
-  emFoco.valores.forEach((item, itemIndex) => {
+  emFoco.value.valores.forEach((item, itemIndex) => {
     setFieldValue(
       `variaveis_dados[${itemIndex}].valor_realizado` as any,
       item.valor_realizado,

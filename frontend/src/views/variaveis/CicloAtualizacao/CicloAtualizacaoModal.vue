@@ -33,12 +33,13 @@
 
 <script lang="ts" setup>
 import type { Component } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
-import {
-  ref, computed, onMounted,
-} from 'vue';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+
 import SmallModal from '@/components/SmallModal.vue';
 
 import CicloAtualizacaoModalAdicionar from './CicloAtualizacaoModalAdicionar.vue';
@@ -56,6 +57,9 @@ type ConteudoOpcoes = {
 };
 
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
+
+const { emFoco, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
 const modalVisivel = ref<boolean>(true);
 
@@ -87,6 +91,17 @@ onMounted(async () => {
 
   try {
     await cicloAtualizacaoStore.obterCicloPorId(cicloAtualizacaoId, dataReferencia);
+
+    if (temCategorica.value) {
+      const variavelCategoricaId = emFoco.value?.variavel.variavel_categorica_id;
+      if (!variavelCategoricaId) {
+        throw new Error('Erro ao tentar buscar variável categorica ID');
+      }
+
+      await variaveisCategoricasStore.buscarItem(
+        variavelCategoricaId,
+      );
+    }
   } catch (err) {
     fecharModal();
   }

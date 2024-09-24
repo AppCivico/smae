@@ -66,6 +66,11 @@ export class TransfereGovTransferenciasDto {
     acao_orcamentaria: string;
 }
 
+export enum AvaliacaoFilter {
+    NaoSeAplica = 'NaoSeAplica',
+    Selecionada = 'Selecionada',
+    NaoAvaliada = 'NaoAvaliada',
+}
 export class FilterTransfereGovTransferenciasDto {
     @IsOptional()
     @IsString()
@@ -91,6 +96,11 @@ export class FilterTransfereGovTransferenciasDto {
     @IsOptional()
     @IsString()
     palavras_chave?: string;
+
+    @IsOptional()
+    @IsEnum(AvaliacaoFilter)
+    @ApiProperty({ enum: AvaliacaoFilter, enumName: 'AvaliacaoFilter' })
+    avaliacao?: AvaliacaoFilter;
 }
 
 export class UpdateTransfereGovTransferenciaDto {

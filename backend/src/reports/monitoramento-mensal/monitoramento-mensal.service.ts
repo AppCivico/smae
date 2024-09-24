@@ -166,7 +166,7 @@ export class MonitoramentoMensalService implements ReportableService {
             out.push({
                 name:
                     'painel-' +
-                    painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-\._]/g, '') +
+                    painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-._]/g, '') +
                     '.' +
                     painel.id +
                     '.' +

@@ -73,10 +73,15 @@ const {
   validationSchema: schema.value,
 });
 
-const pessoasDisponíveis = computed(() => (!values.orgao_responsavel_id
-  ? pessoasSimplificadas.value
-  : pessoasSimplificadas.value
-    .filter((x) => (x.orgao_id === Number(values.orgao_responsavel_id)))));
+const pessoasDisponíveis = computed(() => {
+  if (!Array.isArray(pessoasSimplificadas.value)) {
+    return [];
+  }
+
+  return !values.orgao_responsavel_id
+    ? pessoasSimplificadas.value
+    : pessoasSimplificadas.value.filter((x) => x.orgao_id === Number(values.orgao_responsavel_id));
+});
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);

@@ -852,7 +852,6 @@ enum PdmPerfilTipo {
 enum PdmPerfilRelacionamento {
     PDM
     META
-    ETAPA
     INICIATIVA
     ATIVIDADE
 }
@@ -6608,8 +6607,8 @@ model DistribuicaoRecursoStatus {
     status_id Int?
     status    DistribuicaoStatus? @relation(fields: [status_id], references: [id])
 
-    orgao_responsavel_id Int
-    orgao_responsavel    Orgao @relation(fields: [orgao_responsavel_id], references: [id])
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao? @relation(fields: [orgao_responsavel_id], references: [id])
 
     nome_responsavel String
     motivo           String
@@ -7021,7 +7020,8 @@ model VariavelGlobalCicloAnalise {
     id          Int @id @default(autoincrement())
     variavel_id Int
 
-    referencia_data            DateTime @db.Date
+    fase                       VariavelFase
+    referencia_data            DateTime     @db.Date
     informacoes_complementares String?
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -7046,8 +7046,9 @@ model VariavelGlobalCicloDocumento {
     id          Int @id @default(autoincrement())
     variavel_id Int
 
-    referencia_data DateTime @db.Date
-    descricao      String?
+    fase            VariavelFase
+    referencia_data DateTime     @db.Date
+    descricao       String?
 
     arquivo_id Int
     arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
@@ -7073,7 +7074,7 @@ enum TransfereGovOportunidadeTipo {
 }
 
 enum TransfereGovOportunidadeAvaliacao {
-    Inadequada
+    NaoSeAplica
     Selecionada
 }
 

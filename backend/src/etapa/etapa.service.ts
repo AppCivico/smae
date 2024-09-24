@@ -290,6 +290,14 @@ export class EtapaService {
                         select: { id: true, nivel_regionalizacao: true },
                     },
                     variavel_id: true,
+                    PdmPerfil: {
+                        where: { removido_em: null },
+                        select: {
+                            id: true,
+                            tipo: true,
+                            equipe_id: true,
+                        },
+                    },
                 },
             });
 
@@ -422,7 +430,7 @@ export class EtapaService {
                         self.id,
                         dto.ps_ponto_focal,
                         'PONTO_FOCAL',
-                        [],
+                        self.PdmPerfil.map((p) => ({ id: p.id, tipo: p.tipo, equipe_id: p.equipe_id })),
                         user,
                         prismaTx,
                         meta,
@@ -595,6 +603,7 @@ export class EtapaService {
         relacionamento: 'META' | 'INICIATIVA' | 'ATIVIDADE',
         relacionamentoId: number
     ) {
+        newEquipes.equipes = [...new Set(newEquipes.equipes)];
         const pdmEquipes = await this.getPSPontoFocalEquipeIds(prismaTx, meta, relacionamento, relacionamentoId);
         for (const equipe_id of newEquipes.equipes) {
             if (!pdmEquipes.includes(equipe_id))
@@ -610,6 +619,10 @@ export class EtapaService {
         for (const equipeId of equipesToRemove) {
             await prismaTx.pdmPerfil.updateMany({
                 where: {
+                    removido_em: null,
+                    meta_id: relacionamento === 'META' ? relacionamentoId : undefined,
+                    iniciativa_id: relacionamento === 'INICIATIVA' ? relacionamentoId : undefined,
+                    atividade_id: relacionamento === 'ATIVIDADE' ? relacionamentoId : undefined,
                     etapa_id: etapaId,
                     equipe_id: equipeId,
                     tipo: tipo,

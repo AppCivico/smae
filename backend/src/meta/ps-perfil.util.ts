@@ -13,6 +13,7 @@ export async function upsertPSPerfis(
     prismaTx: Prisma.TransactionClient,
     pdmId: number
 ) {
+    newEquipes.equipes = [...new Set(newEquipes.equipes)];
     const currentEquipes = currentPdmPerfis.filter((p) => p.tipo === tipo).map((p) => p.equipe_id);
     const equipesToAdd = newEquipes.equipes.filter((e) => !currentEquipes.includes(e));
     const equipesToRemove = currentEquipes.filter((e) => !newEquipes.equipes.includes(e));
@@ -20,6 +21,7 @@ export async function upsertPSPerfis(
     for (const equipeId of equipesToRemove) {
         await prismaTx.pdmPerfil.updateMany({
             where: {
+                removido_em: null,
                 [entityType + '_id']: entityId,
                 equipe_id: equipeId,
                 tipo: tipo,
@@ -58,10 +60,7 @@ export async function upsertPSPerfis(
             },
         });
     }
-
-
 }
-
 
 export function validatePSEquipes(
     equipes: number[],

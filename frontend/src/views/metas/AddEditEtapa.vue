@@ -63,7 +63,6 @@ if (!regions.length) RegionsStore.getAll();
 
 const EquipesStore = useEquipesStore();
 EquipesStore.buscarTudo();
-const { lista } = storeToRefs(EquipesStore);
 
 let title = 'Adicionar etapa';
 
@@ -174,12 +173,6 @@ if (etapa_id) {
     }
   }
 })();
-
-function pegaPsTecnicoCpCompleto(idsDasEquipes) {
-  const listaDeEquipes = lista.value;
-
-  return listaDeEquipes.filter((equipe) => idsDasEquipes.includes(equipe.id));
-}
 
 async function onSubmit(values) {
   try {
@@ -413,12 +406,12 @@ function maskDate(el) {
       <div class="flex">
         <div class="f1 mb1">
           <AutocompleteField
-            name="values.ps_ponto_focal.equipes"
+            name="ps_ponto_focal.equipes"
             :controlador="{
               busca: '',
               participantes: values?.ps_ponto_focal?.equipes || [],
             }"
-            :grupo="pegaPsTecnicoCpCompleto(singleMeta.ps_ponto_focal.equipes)"
+            :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
             label="titulo"
           />
         </div>

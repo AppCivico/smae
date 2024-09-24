@@ -56,10 +56,12 @@ export class DistribuicaoRecursoStatusService {
                 dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
                 motivo: r.motivo,
                 nome_responsavel: r.nome_responsavel,
-                orgao_responsavel: {
-                    id: r.orgao_responsavel.id,
-                    sigla: r.orgao_responsavel.sigla,
-                },
+                orgao_responsavel: r.orgao_responsavel
+                    ? {
+                          id: r.orgao_responsavel.id,
+                          sigla: r.orgao_responsavel.sigla,
+                      }
+                    : null,
                 status_customizado: r.status
                     ? {
                           id: r.status.id,

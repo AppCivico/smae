@@ -3,68 +3,98 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
   </div>
-
-  <form
-    class="flex flexwrap bottom mb2 g1"
-    @submit.prevent="atualizarUrl"
+  <FormularioQueryString
+    v-slot="{ capturarEnvio}"
+    :valores-iniciais="valoresIniciais"
   >
-    <div class="f0">
-      <label
-        for="ano"
-        class="label tc300"
-      >Ano</label>
-      <input
-        id="ano"
-        v-model.number="ano"
-        inputmode="numeric"
-        class="inputtext mb1"
-        name="ano"
-        type="number"
-        min="2003"
-        max="9999"
-      >
-    </div>
-    <div class="f0">
-      <label
-        for="tipo"
-        class="label tc300"
-      >Modalidade</label>
-      <select
-        id="tipo"
-        v-model.trim="tipo"
-        class="inputtext mb1"
-        name="tipo"
-      >
-        <option value="" />
-        <option
-          v-for="(tipo, id) in tipos"
-          :key="id"
-          :value="tipo.value"
+    <form
+      class="flex flexwrap bottom mb2 g1"
+      @submit.prevent="capturarEnvio"
+    >
+      <div class="f0">
+        <label
+          for="avaliacao"
+          class="label tc300"
+        >Avaliação</label>
+        <select
+          v-model.trim="avaliacaoFiltro"
+          class="inputtext mb1"
+          name="avaliacao"
+          as="select"
         >
-          {{ tipo.name }}
-        </option>
-      </select>
-    </div>
+          <option value="" />
+          <option
+            v-for="(item, id) in avaliacoes"
+            :key="id"
+            :value="item.value"
+          >
+            {{ item.name }}
+          </option>
+        </select>
+      </div>
+      <div class="f0">
+        <label
+          for="ano"
+          class="label tc300"
+        >Ano</label>
+        <input
+          id="ano"
+          v-model.number="ano"
+          inputmode="numeric"
+          class="inputtext mb1"
+          name="ano"
+          type="number"
+          min="2003"
+          max="9999"
+        >
+      </div>
+      <div class="f0">
+        <label
+          for="tipo"
+          class="label tc300"
+        >Modalidade</label>
+        <select
+          id="tipo"
+          v-model.trim="tipo"
+          class="inputtext mb1"
+          name="tipo"
+          as="select"
+        >
+          <option value="" />
+          <option
+            v-for="(item, id) in tipos"
+            :key="id"
+            :value="item.value"
+          >
+            {{ item.name }}
+          </option>
+        </select>
+      </div>
 
-    <div class="f0">
-      <label
-        for="palavra_chave"
-        class="label tc300"
-      >Palavra-chave</label>
-      <input
-        id="palavra_chave"
-        v-model.trim="palavraChave"
-        class="inputtext"
-        name="palavra_chave"
-        type="text"
+      <div class="f0">
+        <label
+          for="palavras_chave"
+          class="label tc300"
+        >Palavra-chave</label>
+        <input
+          id="palavras_chave"
+          v-model.trim="palavraChave"
+          class="inputtext"
+          name="palavras_chave"
+          type="text"
+        >
+      </div>
+      <button
+        class="btn outline bgnone tcprimary mtauto mb1"
+        type="submit"
       >
-    </div>
-    <button class="btn outline bgnone tcprimary mtauto mb1">
-      Filtrar
-    </button>
-  </form>
+        Filtrar
+      </button>
+    </form>
+  </FormularioQueryString>
   <h2>Transferências disponíveis</h2>
   <table class="tablemain mb1">
+    <col>
     <col>
     <col>
     <col>
@@ -80,6 +110,9 @@
       <tr>
         <th>
           Órgão
+        </th>
+        <th>
+          Modalidade
         </th>
         <th>
           Programa
@@ -100,7 +133,7 @@
           Fim das propostas
         </th>
         <th>
-          Modalidade
+          Modalidade do programa
         </th>
         <th>
           Ação Orçamentária
@@ -118,6 +151,9 @@
       >
         <td>
           {{ item.desc_orgao_sup_programa || ' - ' }}
+        </td>
+        <td>
+          {{ item.tipo || ' - ' }}
         </td>
         <td>
           {{ item.nome_programa || ' - ' }}
@@ -145,7 +181,7 @@
         </td>
         <td>
           <span class="avaliacao">
-            {{ item.avaliacao || ' Não avaliada' }}
+            {{ avaliacoes.find(a => a.value === item.avaliacao)?.name || ' Não avaliada ' }}
           </span>
         </td>
         <td>
@@ -163,20 +199,19 @@
             </svg>
           </button>
         </td>
-        <td />
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="11">
+        <td colspan="12">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="11">
+        <td colspan="12">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="11">
+        <td colspan="12">
           Nenhum resultado encontrado.
         </td>
       </tr>
@@ -220,9 +255,9 @@
         >
           <option value="" />
           <option
-            value="Inadequada"
+            value="NaoSeAplica"
           >
-            Inadequada
+            Não se aplica
           </option>
           <option
             value="Selecionada"
@@ -234,6 +269,7 @@
           <hr class="mr2 f1">
           <button
             class="btn big"
+            type="submit"
           >
             Salvar
           </button>
@@ -245,34 +281,40 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
-import { Field, useForm } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
-import SmallModal from '@/components/SmallModal.vue';
-import dateToField from '@/helpers/dateToField';
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const oportunidades = useOportunidadesStore();
 
+const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
 
-const oportundiadeID = ref(null);
+const valoresIniciais = {
+  avaliacao: 'NaoAvaliada',
+};
+
+const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
+const avaliacaoFiltro = ref(route.query.avaliacao || valoresIniciais.avaliacao);
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
 const {
   setFieldValue, handleSubmit,
 } = useForm({
-  initialValues: {
-    avaliacao: oportunidadeAvaliacao.value,
-  },
+  initialValues: route.query,
+  validationSchema: schema,
 });
 
 const {
@@ -294,53 +336,44 @@ const tipos = [
   },
 ];
 
-function editarOportunidade(id, avaliacao) {
+const avaliacoes = [
+  {
+    value: 'Selecionada',
+    name: 'Selecionada',
+  },
+  {
+    value: 'NaoSeAplica',
+    name: 'Não se aplica',
+  },
+  {
+    value: 'NaoAvaliada',
+    name: 'Não avaliada',
+  },
+];
+
+function editarOportunidade(id, avaliacaoOportunidade) {
   showModal.value = true;
-  oportundiadeID.value = id;
-  oportunidadeAvaliacao.value = avaliacao;
+  oportunidadeID.value = id;
+  oportunidadeAvaliacao.value = avaliacaoOportunidade;
 }
 
-function atualizarUrl() {
-  router.push({
-    query: {
-      ...route.query,
-      ano: ano.value || undefined,
-      tipo: tipo.value || undefined,
-      palavras_chave: palavraChave.value || undefined,
-    },
-  });
+function buscarOportunidades() {
+  oportunidades.$reset();
+  oportunidades.buscarTudo(
+    route.query,
+  );
 }
 
 const editAvaliacao = handleSubmit.withControlled(async (values) => {
   try {
     const msg = 'Dados salvos com sucesso!';
     const resposta = await oportunidades.salvarItem(
-      oportundiadeID.value,
+      oportunidadeID.value,
       { avaliacao: values.avaliacao },
     );
     if (resposta) {
       alertStore.success(msg);
-
-      let {
-        ano: anoParaBusca,
-        tipo: tipoParaBusca,
-        palavras_chave: palavraChaveParaBusca,
-      } = route.query;
-      if (typeof anoParaBusca === 'string') {
-        anoParaBusca = anoParaBusca.trim();
-      }
-      if (typeof tipoParaBusca === 'string') {
-        tipoParaBusca = tipoParaBusca.trim();
-      }
-      if (typeof palavraChaveParaBusca === 'string') {
-        palavraChaveParaBusca = palavraChaveParaBusca.trim();
-      }
-      oportunidades.$reset();
-      oportunidades.buscarTudo({
-        ano: anoParaBusca,
-        tipo: tipoParaBusca,
-        palavras_chave: palavraChaveParaBusca,
-      });
+      buscarOportunidades();
       showModal.value = false;
     }
   } catch (error) {
@@ -348,37 +381,28 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   }
 });
 
-watch(oportundiadeID, () => {
+onMounted(() => {
+  // PRA-FAZER: Isso aqui dará problema se quem usar abrir essa rota por um link compartilhado
+  if (route.query.avaliacao === undefined) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: valoresIniciais.avaliacao,
+      },
+    });
+  } else {
+    buscarOportunidades();
+  }
+});
+
+watch(oportunidadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
 
-watch([
-  () => route.query.ano,
-  () => route.query.tipo,
-  () => route.query.palavras_chave,
-], () => {
-  let {
-    ano: anoParaBusca,
-    tipo: tipoParaBusca,
-    palavras_chave: palavraChaveParaBusca,
-  } = route.query;
-  if (typeof anoParaBusca === 'string') {
-    anoParaBusca = anoParaBusca.trim();
-  }
-  if (typeof tipoParaBusca === 'string') {
-    tipoParaBusca = tipoParaBusca.trim();
-  }
-  if (typeof palavraChaveParaBusca === 'string') {
-    palavraChaveParaBusca = palavraChaveParaBusca.trim();
-  }
-  oportunidades.$reset();
-  oportunidades.buscarTudo({
-    ano: anoParaBusca,
-    tipo: tipoParaBusca,
-    palavras_chave: palavraChaveParaBusca,
-  });
-}, { immediate: true });
-
+watch(
+  () => route.query,
+  buscarOportunidades,
+);
 </script>
 <style lang="less" scoped>
 .avaliacao {
@@ -386,5 +410,9 @@ watch([
   padding: 5px 10px;
   border-radius: 12px;
   display: inline-block;
+}
+
+h2 {
+  color: #025B97;
 }
 </style>
