@@ -1,7 +1,7 @@
 CREATE TABLE classificacao (
        id serial4 NOT NULL,
        nome text NOT NULL,
-       transferencia_tipo_id int4 NULL,
+       transferencia_tipo_id int4 NOT NULL,
        criado_por int4 NOT NULL,
        criado_em timestamptz(6) DEFAULT CURRENT_TIMESTAMP NOT NULL,
        atualizado_por int4 NULL,
