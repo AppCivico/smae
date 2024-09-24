@@ -1246,6 +1246,7 @@ export class DistribuicaoRecursoService {
                                 if (!statusUltimaRow) return true;
 
                                 const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                console.log(statusConfig);
                                 return (
                                     statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
                                     statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&

@@ -686,16 +686,6 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
-                    // Criada com status base de "Registrada".
-                    const status = await prismaTxn.distribuicaoStatusBase.findFirstOrThrow({
-                        where: {
-                            tipo: DistribuicaoStatusTipo.NaoIniciado,
-                        },
-                        select: {
-                            id: true,
-                        },
-                    });
-
                     const distribuicao = await this.distribuicaoService.create(
                         {
                             transferencia_id: transferencia.id,
@@ -712,18 +702,6 @@ export class TransferenciaService {
                         user,
                         true
                     );
-
-                    await prismaTxn.distribuicaoRecursoStatus.create({
-                        data: {
-                            distribuicao_id: distribuicao.id,
-                            status_base_id: status.id,
-                            data_troca: new Date(Date.now()),
-                            orgao_responsavel_id: orgaoCasaCivil.id,
-                            nome_responsavel: 'SERI',
-                            motivo: 'Distribuição criada automaticamente',
-                            criado_por: user.id,
-                        },
-                    });
                 }
 
                 // Tratando controles de limites de valores.
