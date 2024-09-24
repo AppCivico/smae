@@ -6,6 +6,11 @@
       <hr class="f1">
     </header>
 
+    <CicloAtualizacaoListaFiltro
+      v-if="temEquipes"
+      class="mb3"
+    />
+
     <div class="flex spacebetween">
       <EnvelopeDeAbas
         :meta-dados-por-id="tabs"
@@ -48,7 +53,14 @@
         </div>
 
         <h5 class="listagem-item__conteudo f1">
-          <strong>{{ cicloAtualizacao.codigo }}</strong> -
+          <strong
+            :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}"
+          >
+            {{ cicloAtualizacao.codigo }}
+            <div v-if="cicloAtualizacao.temAtraso">
+              Atualização com atraso
+            </div>
+          </strong> -
           {{ truncate(cicloAtualizacao.titulo, 60) }}
         </h5>
 
@@ -82,12 +94,16 @@
 <script lang="ts" setup>
 import { useRoute } from 'vue-router';
 
-import { watch, computed } from 'vue';
+import { watch, computed, onMounted } from 'vue';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
+
 import truncate from '@/helpers/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
+
+import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
 type IconOpcoes = 'complementacao' | 'coleta';
 
@@ -103,9 +119,13 @@ type IconsMap = {
 
 type VariavelCicloComIcone = VariavelCiclo & {
   icone: IconForma
+  temAtraso: boolean
 };
 
+const equipesStore = useEquipesStore();
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+
+const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
 const $route = useRoute();
 
@@ -149,6 +169,7 @@ const ciclosAtualizacao = computed(() => {
   const ciclosComIcone = cicloAtualizacaoStore.ciclosAtualizacao.map<VariavelCicloComIcone>(
     (item) => ({
       ...item,
+      temAtraso: item.id % 2 === 0,
       icone: getIcons(item.pedido_complementacao ? 'complementacao' : 'coleta'),
     }),
   );
@@ -167,7 +188,13 @@ watch(() => $route.query, (query) => {
     ...params,
     fase: aba,
   });
-}, { immediate: true });
+}, { immediate: true, deep: true });
+
+onMounted(() => {
+  if (!temEquipes.value) {
+    equipesStore.buscarTudo();
+  }
+});
 </script>
 
 <style lang="less" scoped>

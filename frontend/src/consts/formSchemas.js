@@ -3858,3 +3858,13 @@ export const cicloAtualizacaoModalEditarSchema = object().shape({
     }),
   ),
 });
+
+export const cicloAtualizacaoFiltrosSchema = (opcoes) => object().shape({
+  codigo: string().label('Código'),
+  nome_variavel: string().label('Nome variável'),
+  referencia: string().label('Referencia'),
+  equipe: mixed().label('Equipe').nullable().oneOf([
+    '',
+    ...opcoes.map((item) => item.id),
+  ]),
+});

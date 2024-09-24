@@ -1,0 +1,128 @@
+<script setup lang="ts">
+import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { Field, useForm, ErrorMessage } from 'vee-validate';
+
+import { useEquipesStore } from '@/stores/equipes.store';
+
+import { cicloAtualizacaoFiltrosSchema } from '@/consts/formSchemas';
+
+import LabelFromYup from '@/components/LabelFromYup.vue';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+
+type FieldsProps = {
+  class?: string
+  nome: string
+  tipo: string
+  opcoes?: any
+};
+
+const equipesStore = useEquipesStore();
+
+const equipes = computed(() => equipesStore.lista);
+const schema = computed(() => cicloAtualizacaoFiltrosSchema(equipes.value));
+
+const $route = useRoute();
+const $router = useRouter();
+
+const campos = computed<FieldsProps[]>(() => [
+  { class: 'fg999', nome: 'codigo', tipo: 'text' },
+  { class: 'fb25', nome: 'nome_variavel', tipo: 'text' },
+  {
+    class: 'fb25', nome: 'equipe', tipo: 'select', opcoes: equipes.value,
+  },
+  { class: 'fb25', nome: 'referencia', tipo: 'text' },
+]);
+
+const { handleSubmit, isSubmitting, setValues } = useForm({
+  validationSchema: schema,
+  initialValues: $route.query,
+});
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const parametros = Object.keys(valoresControlados).reduce((amount, item) => {
+    amount[item] = valoresControlados[item] || undefined;
+
+    return amount;
+  }, {});
+
+  $router.replace({
+    query: {
+      ...$route.query,
+      ...parametros,
+    },
+  });
+});
+
+watch(() => $route.query, (val) => {
+  setValues(val);
+}, { deep: true });
+
+const valoresIniciais = computed(() => ({
+  aba: 'Preenchimento',
+}));
+</script>
+
+<template>
+  <section class="comunicados-gerais-filtro">
+    <FormularioQueryString
+      :valores-iniciais="valoresIniciais"
+    >
+      <form
+        class="flex center g2"
+        @submit="onSubmit"
+      >
+        <div class="flex g2 fg999">
+          <div
+            v-for="campo in campos"
+            :key="campo.nome"
+            :class="['f1', campo.class]"
+          >
+            <LabelFromYup
+              :name="campo.nome"
+              :schema="schema"
+            />
+
+            <Field
+              v-if="campo.tipo !== 'select'"
+              class="inputtext light mb1"
+              :name="campo.nome"
+              :type="campo.tipo"
+            />
+            <Field
+              v-else
+              class="inputtext light mb1"
+              :name="campo.nome"
+              as="select"
+            >
+              <option value="">
+                -
+              </option>
+
+              <option
+                v-for="opcao in campo.opcoes"
+                :key="`ciclo-atualizacao-equipe--${opcao.id}`"
+                :value="opcao.id"
+              >
+                {{ opcao.orgao.sigla }} - {{ opcao.titulo }}
+              </option>
+            </Field>
+
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="campo.nome"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="btn"
+          :disabled="isSubmitting"
+        >
+          Filtrar
+        </button>
+      </form>
+    </FormularioQueryString>
+  </section>
+</template>
