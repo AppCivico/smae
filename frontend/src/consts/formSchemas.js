@@ -3558,7 +3558,6 @@ export const variavelGlobal = object({
   periodos: object({
     preenchimento_inicio: number()
       .label('Dia inicio do preenchimento')
-      .max(31)
       .min(1)
       .positive()
       .required()
