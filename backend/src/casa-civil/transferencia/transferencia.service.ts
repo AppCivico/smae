@@ -741,20 +741,30 @@ export class TransferenciaService {
                                 some: {
                                     OR: [
                                         {
-                                            AND: [
-                                                { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                                {
-                                                    NOT: {
-                                                        status_base: { tipo: DistribuicaoStatusTipo.Redirecionada },
-                                                    },
+                                            status_base: {
+                                                tipo: {
+                                                    notIn: [
+                                                        DistribuicaoStatusTipo.Declinada,
+                                                        DistribuicaoStatusTipo.Cancelada,
+                                                        DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                        DistribuicaoStatusTipo.Redirecionada,
+                                                        DistribuicaoStatusTipo.Terminal,
+                                                    ],
                                                 },
-                                            ],
+                                            },
                                         },
                                         {
-                                            AND: [
-                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
-                                            ],
+                                            status: {
+                                                tipo: {
+                                                    notIn: [
+                                                        DistribuicaoStatusTipo.Declinada,
+                                                        DistribuicaoStatusTipo.Cancelada,
+                                                        DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                        DistribuicaoStatusTipo.Redirecionada,
+                                                        DistribuicaoStatusTipo.Terminal,
+                                                    ],
+                                                },
+                                            },
                                         },
                                     ],
                                 },
