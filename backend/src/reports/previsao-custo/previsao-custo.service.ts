@@ -82,9 +82,9 @@ export class PrevisaoCustoService implements ReportableService {
 
     private expandirParteDotacao(parte_dotacao: string): string {
         const partes = parte_dotacao.split('.');
-        if ((partes[1] = '*')) partes[1] = '**';
-        if ((partes[4] = '*')) partes[4] = '****';
-        if ((partes[7] = '*')) partes[7] = '********';
+        if (partes[1] === '*') partes[1] = '**';
+        if (partes[4] === '*') partes[4] = '****';
+        if (partes[7] === '*') partes[7] = '********';
         return partes.join('.');
     }
 
