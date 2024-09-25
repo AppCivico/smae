@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@date-fns/utc": "^2.1.0",
     "@tiptap/starter-kit": "^2.0.0-beta.202",
     "@tiptap/vue-3": "^2.0.0-beta.202",
     "@vue/eslint-config-typescript": "^13.0.0",

@@ -150,6 +150,7 @@
 </template>
 
 <script lang="ts" setup>
+import { UTCDate } from '@date-fns/utc';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
@@ -206,7 +207,7 @@ const variaveisCategoricasValores = computed(() => {
 });
 
 const dataCicloAtualizacao = computed<string>(() => (
-  format(new Date($route.params.dataReferencia as string), 'MMMM yyyy', { locale: ptBR })
+  format(new UTCDate(`${$route.params.dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
 ));
 
 const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
