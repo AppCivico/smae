@@ -32,11 +32,15 @@ export class PrevisaoCustoService implements ReportableService {
             filtroMetas = metas.map((r) => r.id);
         }
 
-        if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
+        if (
+            dto.ano === undefined &&
+            (dto.periodo_ano === undefined || dto.periodo_ano !== PeriodoRelatorioPrevisaoCustoDto.Corrente)
+        )
+            throw new HttpException('Ano de referência não informado', 400);
+
+        if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente || !dto.ano) {
             ano = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
         } else {
-            if (!dto.ano) throw new HttpException('Ano deve ser enviado', 400);
-
             ano = dto.ano;
         }
 
