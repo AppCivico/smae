@@ -145,6 +145,10 @@ export class CreateTransferenciaDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreateTransferenciaParlamentarDto)
     parlamentares?: CreateTransferenciaParlamentarDto[];
+
+    @IsOptional()
+    @IsInt()
+    classificacao_id?: number;
 }
 
 export class CreateTransferenciaParlamentarDto {

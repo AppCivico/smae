@@ -2,7 +2,7 @@ import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
-    IsBoolean,
+    IsBoolean, IsInt,
     IsNumber,
     IsNumberString,
     IsOptional,
@@ -134,6 +134,10 @@ export class CompletarTransferenciaDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => UpdateTransferenciaParlamentarDto)
     parlamentares?: UpdateTransferenciaParlamentarDto[];
+
+    @IsOptional()
+    @IsInt()
+    classificacao_id?: number;
 }
 export class UpdateTransferenciaParlamentarDto extends PartialType(
     OmitType(CreateTransferenciaParlamentarDto, ['cargo', 'partido_id'])

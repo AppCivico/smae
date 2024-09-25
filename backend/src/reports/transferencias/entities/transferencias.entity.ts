@@ -69,6 +69,8 @@ export class RelTransferenciasDto {
         conclusao_suspensiva: string | null;
         registro_sei: string | null;
     } | null;
+    tipo_transferencia :string;
+    classificacao : string | null;
 }
 
 export class TransferenciasRelatorioDto {

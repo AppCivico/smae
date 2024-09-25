@@ -478,6 +478,10 @@ model Pessoa {
     VarGlobPedidoComplementacaoAtendeu   VariavelGlobalPedidoComplementacao[] @relation("atendeu")
     VarGlobPedidoComplementacaoRemovedor VariavelGlobalPedidoComplementacao[] @relation("removedor")
 
+    ClassificacaoQCriei  Classificacao[] @relation("criador")
+    ClassificacaoQAtualizei Classificacao[] @relation("atualizador")
+    ClassificacaoQRemovi    Classificacao[] @relation("removedor")
+
     projetosRevisao ProjetoPessoaRevisao[]
 
     @@index([email])
@@ -5473,6 +5477,7 @@ model TransferenciaTipo {
     statuses_distribuicao DistribuicaoStatus[]
 
     @@map("transferencia_tipo")
+    Classificacao Classificacao[] @relation("classificacoes")
 }
 
 enum TransferenciaInterface {
@@ -5552,6 +5557,7 @@ model Transferencia {
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
+    classificacao_id Int?
 
     criador                        Pessoa                           @relation("Criador", fields: [criado_por], references: [id])
     atualizador                    Pessoa?                          @relation("Atualizador", fields: [atualizado_por], references: [id])
@@ -5565,6 +5571,7 @@ model Transferencia {
     ViewNotasTransferencias        ViewNotasTransferencias[]
     ViewDashboardAnalise           ViewTransferenciaAnalise[]
     parlamentar                    TransferenciaParlamentar[]
+    classificacaoOject             Classificacao? @relation("classificacao",fields: [classificacao_id],references: [id])
 
     @@map("transferencia")
 }
@@ -7102,4 +7109,25 @@ model TransfereGovOportunidade {
 
     @@unique([hash])
     @@map("transfere_gov_oportunidade")
+}
+
+model Classificacao{
+    id Int @id @default(autoincrement())
+    nome      String
+    transferencia_tipo_id Int
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+    criador     Pessoa  @relation("criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("removedor", fields: [removido_por], references: [id])
+    transferenciaTipo TransferenciaTipo @relation("classificacoes",fields: [transferencia_tipo_id],references: [id])
+    transferencias Transferencia[] @relation("classificacao")
+
+    @@index([nome])
+    @@map("classificacao")
+
 }

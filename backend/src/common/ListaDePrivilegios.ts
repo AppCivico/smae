@@ -198,4 +198,8 @@ export type ListaDePrivilegios =
     | 'CadastroGrupoVariavel.colaborador_responsavel'
     | 'SMAE.GrupoVariavel.participante'
     | 'SMAE.GrupoVariavel.colaborador'
-    | 'CadastroVariavelGlobal.administrador';
+    | 'CadastroVariavelGlobal.administrador'
+    | 'CadastroClassificacao.inserir'
+    | 'CadastroClassificacao.editar'
+    | 'CadastroClassificacao.remover'
+    | 'CadastroClassificacao.listar';

@@ -50,6 +50,7 @@ import { WorkflowFluxoModule } from './workflow/configuracao/fluxo/workflow-flux
 import { WorkflowSituacaoModule } from './workflow/configuracao/situacao/workflow-situacao.module';
 import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowModule } from './workflow/configuracao/workflow.module';
+import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 
 // Hacks pro JS
 /*
@@ -103,6 +104,7 @@ import { WorkflowModule } from './workflow/configuracao/workflow.module';
         PessoaPrivilegioModule,
         CommonBaseModule,
         TaskModule,
+        ClassificacaoModule,
     ],
     controllers: [AppController],
     providers: [
