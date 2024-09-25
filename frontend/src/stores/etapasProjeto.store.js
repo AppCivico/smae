@@ -26,7 +26,7 @@ function caminhoParaApi(rotaMeta) {
   throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
-export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
+export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${prefixo}.etapasProjetos` : 'etapasProjetos', {
   state: () => ({
     lista: [],
     chamadasPendentes: {
@@ -103,4 +103,4 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
       }, {});
     },
   },
-});
+})();
