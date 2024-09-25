@@ -121,22 +121,20 @@
             <td class="cell--minimum">
               {{ statusObras[item.status]?.nome || item.status }}
             </td>
-            <td>
-              <label class="comunicado-geral-item__footer-lido">
-                <input
-                  v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
-                  v-model="item.revisado"
-                  type="checkbox"
-                  class="interruptor"
-                  @click.prevent="marcarComoRevisado(item.id, $event)"
-                >
-              </label>
+            <td class="text-center">
+              <input
+                v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+                v-model="item.revisado"
+                type="checkbox"
+                class="interruptor"
+                :aria-label="`Marcar como revisada a obra ${item.nome}`"
+                @click.prevent="marcarComoRevisado(item.id, $event)"
+              >
             </td>
             <td
               v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
             >
               <router-link
-
                 :to="{ name: 'obrasEditar', params: { obraId: item.id } }"
                 class="ml1 mr1 tprimary"
               >
