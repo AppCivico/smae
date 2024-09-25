@@ -188,8 +188,8 @@ import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
-import { useAuthStore } from '@/stores/auth.store';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -216,8 +216,10 @@ async function excluirObra(id, nome) {
 }
 
 async function marcarComoRevisado(id, event) {
+  // eslint-disable-next-line no-param-reassign
   event.target.ariaBusy = 'true';
   await obrasStore.marcarComoRevisado(id, event.target.checked);
+  // eslint-disable-next-line no-param-reassign
   event.target.ariaBusy = 'false';
 }
 
