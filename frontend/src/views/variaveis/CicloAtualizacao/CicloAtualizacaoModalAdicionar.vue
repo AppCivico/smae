@@ -138,7 +138,7 @@
         </button>
 
         <button
-          class="btn outline"
+          class="btn"
           :disabled="bloqueado"
           @click.prevent="submit({ aprovar: true })"
         >
