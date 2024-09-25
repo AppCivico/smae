@@ -93,7 +93,7 @@ export class PrevisaoCustoService implements ReportableService {
         const dados = await this.asJSON(params);
         await ctx.progress(50);
 
-        const pdm = await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } });
+        const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
 
         const out: FileOutput[] = [];
 
