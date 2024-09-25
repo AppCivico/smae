@@ -627,8 +627,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
       <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
         <label class="label">
-          Equipes responsáveis na coordenadoria de planejamento
-          <span class="tvermelho">*</span>
+          Equipe Técnica de Administração do Plano
         </label>
 
         <div>

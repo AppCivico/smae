@@ -446,7 +446,7 @@ function filterResponsible(orgao_id) {
 
       <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
         <label class="label">
-          Equipes responsáveis na coordenadoria de planejamento
+          Equipe Técnica de Administração do Plano
         </label>
 
         <div>
