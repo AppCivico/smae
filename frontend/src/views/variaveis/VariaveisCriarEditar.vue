@@ -199,6 +199,12 @@ async function iniciar() {
   }
 }
 
+function redefinirCamposDeGrupos() {
+  resetField('medicao_grupo_ids', { value: [] });
+  resetField('validacao_grupo_ids', { value: [] });
+  resetField('liberacao_grupo_ids', { value: [] });
+}
+
 iniciar();
 
 watch(itemParaEdicao, (novoValor) => {
@@ -758,6 +764,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             class="inputtext light mb1"
             :class="{ error: errors.orgao_id }"
             :aria-busy="organs.loading"
+            @change="redefinirCamposDeGrupos"
           >
             <option
               v-for="orgao in órgãosComoLista"
