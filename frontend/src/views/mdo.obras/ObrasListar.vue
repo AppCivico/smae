@@ -33,6 +33,11 @@
       />
     </FormularioQueryString>
 
+    <MenuPaginacao
+      class="mt2 bgb"
+      v-bind="paginacao"
+    />
+
     <div
       role="region"
       aria-labelledby="titulo-da-pagina"
