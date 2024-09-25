@@ -166,6 +166,10 @@ services:
     build:
       context: ./backend-transfere-gov/
       dockerfile: Dockerfile
+    environment:
+      DOWNLOAD_TTL_SECS: ${TRANSFEREGOV_TRANSFERENCIAS_DOWNLOAD_TTL_SECS}
+      MAX_RETRIES: ${TRANSFEREGOV_TRANSFERENCIAS_MAX_RETRIES}
+      COD_PROPONENTE_CIDADE: ${TRANSFEREGOV_TRANSFERENCIAS_COD_PROPONENTE_CIDADE}
     restart: unless-stopped
     networks:
       - smae_network
