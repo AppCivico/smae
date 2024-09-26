@@ -66,7 +66,7 @@ export default {
       children: [
         {
           name: `${entidadeMãe}.variaveisDetalhe`,
-          path: '/:variavelId/detalhar',
+          path: 'detalhes',
           component: () => import('@/views/variaveis/VariaveisDetalhe.vue'),
           meta: {
             rotaDeEscape: 'variaveisListar',
