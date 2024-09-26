@@ -6,6 +6,9 @@ import statusObras from '@/consts/statusObras';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
+
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
@@ -29,12 +32,14 @@ const MetasStore = useMetasStore();
 const { activePdm, singleMeta, relacionadosMeta } = storeToRefs(MetasStore);
 const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
+const EquipesStore = useEquipesStore();
 
 async function iniciar() {
   const promessas = [];
 
   if (meta_id && singleMeta.value.id != meta_id) {
     promessas.push(MetasStore.getById(meta_id));
+    promessas.push(EquipesStore.buscarTudo());
   }
   if (meta_id && !activePdm.value.id) {
     promessas.push(MetasStore.getPdM());
@@ -132,40 +137,33 @@ iniciar();
         <hr class="mt2 mb2">
         <div class="flex g2">
           <div
-            v-if="singleMeta.orgaos_participantes.filter(x => x.responsavel)"
+            v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgão responsável
+              Equipes Responsáveis
             </div>
             <div class="t13">
-              {{ singleMeta.orgaos_participantes.filter((x) =>
-                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes),
+                false,
+                'titulo',
+              ) }}
             </div>
           </div>
           <div
-            v-if="singleMeta.orgaos_participantes.filter(x => !x.responsavel).length"
+            v-if="EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes).length"
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgão participante
+              Equipe técnica do administrador do plano
             </div>
             <div class="t13">
-              {{
-                singleMeta.orgaos_participantes
-                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
-              }}
-            </div>
-          </div>
-          <div
-            v-if="singleMeta.coordenadores_cp"
-            class="mr2 f1"
-          >
-            <div class="t12 uc w700 mb05 tamarelo">
-              Responsável na coordenadoria de planejamento
-            </div>
-            <div class="t13">
-              {{ singleMeta.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes),
+                false,
+                'titulo',
+              ) }}
             </div>
           </div>
         </div>
