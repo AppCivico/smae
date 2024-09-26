@@ -20,7 +20,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
-import { MIN_DTO_SAFE_NUM } from '../common/dto/consts';
+import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { Object2Hash } from '../common/object2hash';
@@ -1377,10 +1377,14 @@ export class VariavelService {
             }
         }
 
+        let variavel_categorica_id: number | undefined | null = filters.variavel_categorica_id ?? undefined;
+        if (variavel_categorica_id === VAR_CATEGORICA_AS_NULL) variavel_categorica_id = null;
+
         const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
             {
                 AND: firstSet,
                 removido_em: null,
+                variavel_categorica_id: variavel_categorica_id,
                 VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
                     ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
                     : undefined,
