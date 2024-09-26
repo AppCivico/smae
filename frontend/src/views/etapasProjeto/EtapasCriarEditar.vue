@@ -35,7 +35,7 @@ async function onSubmit(_, { controlledValues }) {
   } else if (route.meta.prefixoParaFilhas === 'mdo') {
     redirect = 'mdo.etapasListar';
   } else if (route.meta.prefixoParaFilhas === 'projeto') {
-    redirect = 'etapasDoProjetoListar';
+    redirect = 'projeto.etapasListar';
   }
   try {
     const msg = props.etapaId

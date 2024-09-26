@@ -74,7 +74,7 @@ const rotasParaMenuSecundário = [
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
       'mdo.etapasListar',
-      'etapasDoProjetoListar',
+      'projeto.etapasListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
@@ -516,7 +516,7 @@ export default [
 
         children: [
           {
-            name: 'etapasDoProjetoListar',
+            name: 'projeto.etapasListar',
             path: '',
             component: EtapasLista,
             meta: {
@@ -524,17 +524,17 @@ export default [
             },
           },
           {
-            name: 'etapaDoProjetoCriar',
+            name: 'projeto.etapaCriar',
             path: 'novo',
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa do projeto',
-              rotaDeEscape: 'etapasDoProjetoListar',
+              rotaDeEscape: 'projeto.etapasListar',
             },
           },
           {
             path: ':etapaId',
-            name: 'novaEtapaDoProjetoEditar',
+            name: 'projeto.etapaEditar',
             component: EtapasCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -545,7 +545,7 @@ export default [
 
             meta: {
               título: 'Editar etapa do projeto',
-              rotaDeEscape: 'etapasDoProjetoListar',
+              rotaDeEscape: 'projeto.etapasListar',
             },
           },
         ],

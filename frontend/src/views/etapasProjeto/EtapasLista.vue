@@ -55,7 +55,7 @@ const listaPreparada = computed(() => {
     if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.prefixoParaFilhas === 'projeto') {
       item.editar = {
         rota: {
-          name: 'novaEtapaDoProjetoEditar',
+          name: 'projeto.etapaEditar',
           params: {
             etapaId: x.id,
           },
@@ -121,7 +121,7 @@ const listaPreparada = computed(() => {
             ? 'etapasCriar'
             : temPermissãoPara('CadastroProjetoEtapaMDO.inserir') && $route.meta.prefixoParaFilhas === 'mdo'
               ? 'mdo.etapaCriar'
-              : 'etapaDoProjetoCriar'
+              : 'projeto.etapaCriar'
       }"
       class="btn big ml2"
     >
