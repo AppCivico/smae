@@ -111,15 +111,15 @@ iniciar();
         </div>
 
         <div
-          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
+          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
           class="mr2"
         >
           <div class="t12 uc w700 mb05 tamarelo">
-            Equipe técnica do administrador do plano
+            Equipes Responsáveis
           </div>
           <div class="t13">
             {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes),
+              EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
               false,
               'titulo',
             ) }}
