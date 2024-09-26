@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmallModal from '@/components/SmallModal.vue';
@@ -8,9 +11,6 @@ import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGl
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
-import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -52,6 +52,7 @@ watchEffect(() => {
     plano_setorial_id: route.query.plano_setorial_id,
     regiao_id: route.query.regiao_id,
     titulo: route.query.titulo,
+    variavel_categorica_id: route.query.variavel_categorica_id,
 
     pagina: route.query.pagina,
 
