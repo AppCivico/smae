@@ -73,7 +73,7 @@ const rotasParaMenuSecundário = [
       'gerenciarCategorias',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
-      'etapasDaObraListar',
+      'mdo.etapasListar',
       'etapasDoProjetoListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
@@ -497,7 +497,7 @@ export default [
             }),
             meta: {
               título: 'Editar etapa da obra',
-              rotaDeEscape: 'etapasDaObraListar',
+              rotaDeEscape: 'mdo.etapasListar',
             },
           },
         ],
