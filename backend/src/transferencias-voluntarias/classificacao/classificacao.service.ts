@@ -65,7 +65,7 @@ export class ClassificacaoService {
         dto: ClassificacaoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const updated = await this.prisma.$transaction(
+        return await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const classificacao = await prismaTxn.classificacao.update({
                     where: { id },
@@ -94,7 +94,7 @@ export class ClassificacaoService {
             }
         );
 
-        return updated;
+        //return updated;
     }
     async remove(id: number, user: PessoaFromJwt) {
         await this.prisma.classificacao.update({
