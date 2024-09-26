@@ -469,7 +469,7 @@ export default [
         props: true,
         children: [
           {
-            name: 'mdo.etapaListar',
+            name: 'mdo.etapasListar',
             path: '',
             component: EtapasLista,
             meta: {
@@ -482,7 +482,7 @@ export default [
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa da obra',
-              rotaDeEscape: 'mdo.etapaListar',
+              rotaDeEscape: 'mdo.etapasListar',
             },
           },
           {
