@@ -138,7 +138,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
 
 <template>
   <header class="flex spacebetween center mb2 g2">
-    <TítuloDePágina id="titulo-da-pagina" />
+    <TítuloDePágina />
 
     <hr class="f1">
   </header>

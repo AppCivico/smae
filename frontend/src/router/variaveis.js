@@ -71,7 +71,8 @@ export default {
           meta: {
             rotaDeEscape: 'variaveisListar',
             rotasParaMigalhasDePão: ['variaveisListar'],
-            título: 'Resumo Variável',
+            título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Resumo Variável',
+            títuloParaMenu: 'Detalhes',
           },
         },
         {
@@ -87,7 +88,7 @@ export default {
               'CadastroVariavelGlobal.administrador_no_orgao',
             ],
             rotaDeEscape: 'variaveisListar',
-            título: () => useVariaveisGlobaisStore()?.emFoco?.nome || 'Editar Variável',
+            título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Editar Variável',
           },
         },
       ],
