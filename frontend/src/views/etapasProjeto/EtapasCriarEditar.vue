@@ -31,7 +31,7 @@ async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
   let redirect;
   if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
-    redirect = 'etapasListar';
+    redirect = 'TransferenciasVoluntarias.etapasListar';
   } else if (route.meta.prefixoParaFilhas === 'mdo') {
     redirect = 'mdo.etapasListar';
   } else if (route.meta.prefixoParaFilhas === 'projeto') {

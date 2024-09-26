@@ -77,7 +77,7 @@ const listaPreparada = computed(() => {
     if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
       item.editar = {
         rota: {
-          name: 'etapasEditar',
+          name: 'TransferenciasVoluntarias.etapaEditar',
           params: {
             etapaId: x.id,
           },
@@ -118,7 +118,7 @@ const listaPreparada = computed(() => {
       :to="{
         name:
           $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
-            ? 'etapasCriar'
+            ? 'TransferenciasVoluntarias.etapaCriar'
             : temPermissãoPara('CadastroProjetoEtapaMDO.inserir') && $route.meta.prefixoParaFilhas === 'mdo'
               ? 'mdo.etapaCriar'
               : 'projeto.etapaCriar'
