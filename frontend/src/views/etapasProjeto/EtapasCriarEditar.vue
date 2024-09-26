@@ -1,42 +1,49 @@
 <script setup>
-import { etapasProjeto as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { etapasProjeto as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
 const alertStore = useAlertStore();
-const etapasProjetosStore = useEtapasProjetosStore();
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
+const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 const { chamadasPendentes, erro, etapasPorId } = storeToRefs(etapasProjetosStore);
 
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
-  etapaDoProjetoId: {
+  etapaId: {
     type: Number,
     default: 0,
   },
 });
 
-const emFoco = computed(() => etapasPorId.value[props.etapaDoProjetoId] || null);
+const emFoco = computed(() => etapasPorId.value[props.etapaId] || null);
 
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
-  const redirect = route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' ? 'etapasListar' : 'etapasDoProjetoListar';
+  let redirect;
+  if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+    redirect = 'etapasListar';
+  } else if (route.meta.prefixoParaFilhas === 'mdo') {
+    redirect = 'mdo.etapasListar';
+  } else if (route.meta.prefixoParaFilhas === 'projeto') {
+    redirect = 'etapasDoProjetoListar';
+  }
   try {
-    const msg = props.etapaDoProjetoId
+    const msg = props.etapaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.etapaDoProjetoId
-      ? await etapasProjetosStore.salvarItem(carga, props.etapaDoProjetoId)
+    const resposta = props.etapaId
+      ? await etapasProjetosStore.salvarItem(carga, props.etapaId)
       : await etapasProjetosStore.salvarItem(carga);
 
     if (resposta) {
@@ -78,14 +85,14 @@ function excluirEtapaDoProjeto(id) {
   <div class="flex spacebetween center mb2">
     <h1>
       <div
-        v-if="etapaDoProjetoId"
+        v-if="etapaId"
         class="t12 uc w700 tamarelo"
       >
         {{ "Editar etapa" }}
       </div>
       {{ emFoco?.descricao
         ? emFoco?.descricao
-        : etapaDoProjetoId
+        : etapaId
           ? "Etapa"
           : "Nova etapa" }}
     </h1>
@@ -94,7 +101,7 @@ function excluirEtapaDoProjeto(id) {
   </div>
 
   <Form
-    v-if="!etapaDoProjetoId || emFoco"
+    v-if="!etapaId || emFoco"
     v-slot="{ errors, isSubmitting }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="emFoco"

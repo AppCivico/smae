@@ -1,25 +1,25 @@
 <script setup>
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
-import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
-const etapasProjetosStore = useEtapasProjetosStore();
+const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
 
-async function excluirEtapa(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+async function excluirEtapa(id, nomeDaEtapa) {
+  alertStore.confirmAction(`Deseja mesmo remover "${nomeDaEtapa}"?`, async () => {
     if (await etapasProjetosStore.excluirItem(id)) {
       etapasProjetosStore.buscarTudo();
       alertStore.success('Etapa removida.');
@@ -52,12 +52,23 @@ const listaPreparada = computed(() => {
       nome: x.descricao,
     };
 
-    if (temPermissãoPara('CadastroProjetoEtapa.editar')) {
+    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.prefixoParaFilhas === 'projeto') {
       item.editar = {
         rota: {
           name: 'novaEtapaDoProjetoEditar',
           params: {
-            etapaDoProjetoId: x.id,
+            etapaId: x.id,
+          },
+        },
+      };
+    }
+
+    if (temPermissãoPara('CadastroProjetoEtapaMDO.editar') && route.meta.entidadeMãe === 'mdo') {
+      item.editar = {
+        rota: {
+          name: 'mdo.etapaEditar',
+          params: {
+            etapaId: x.id,
           },
         },
       };
@@ -74,9 +85,9 @@ const listaPreparada = computed(() => {
       };
     }
 
-    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
       item.excluir = {
-        ação: () => excluirEtapa(x.id),
+        ação: () => excluirEtapa(x.id, x.descricao),
       };
     }
 
@@ -103,8 +114,15 @@ const listaPreparada = computed(() => {
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir') || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
-      :to="{ name: $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' ? 'etapasCriar' : 'etapaDoProjetoCriar' }"
+      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir') || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
+      :to="{
+        name:
+          $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+            ? 'etapasCriar'
+            : temPermissãoPara('CadastroProjetoEtapaMDO.inserir') && $route.meta.prefixoParaFilhas === 'mdo'
+              ? 'mdo.etapaCriar'
+              : 'etapaDoProjetoCriar'
+      }"
       class="btn big ml2"
     >
       Nova etapa

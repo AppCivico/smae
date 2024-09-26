@@ -3,27 +3,21 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (
-    rotaMeta.prefixoParaFilhas === 'TransferenciasVoluntarias'
-    || rotaMeta.entidadeMãe === 'TransferenciasVoluntarias'
-  ) {
-    return 'workflow-etapa';
-  }
+  switch (true) {
+    case rotaMeta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+      || rotaMeta.entidadeMãe === 'TransferenciasVoluntarias':
+      return 'workflow-etapa';
 
-  if (
-    rotaMeta.prefixoParaFilhas === 'projeto'
-    || rotaMeta.entidadeMãe === 'projeto'
-  ) {
-    return 'projeto-etapa';
-  }
+    case rotaMeta.prefixoParaFilhas === 'projeto'
+      || rotaMeta.entidadeMãe === 'projeto':
+      return 'projeto-etapa';
 
-  if (
-    rotaMeta.entidadeMãe === 'obras'
-  ) {
-    return 'projeto-etapa-mdo';
-  }
+    case rotaMeta.prefixoParaFilhas === 'mdo':
+      return 'projeto-etapa-mdo';
 
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+  }
 }
 
 export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${prefixo}.etapasProjetos` : 'etapasProjetos', {
@@ -31,6 +25,7 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
     lista: [],
     chamadasPendentes: {
       lista: false,
+      emFoco: false,
     },
     erro: null,
   }),

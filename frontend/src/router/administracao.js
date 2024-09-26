@@ -73,6 +73,7 @@ const rotasParaMenuSecundário = [
       'gerenciarCategorias',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
+      'etapasDaObraListar',
       'etapasDoProjetoListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
@@ -454,6 +455,54 @@ export default [
         ],
       },
       {
+        path: 'etapa-de-obra',
+        component: EtapasRaiz,
+        meta: {
+          título: 'Etapas de obra',
+          prefixoParaFilhas: 'mdo',
+          entidadeMãe: 'mdo',
+          presenteNoMenu: true,
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroProjetoEtapaMDO.',
+          rotasParaMenuSecundário,
+        },
+        props: true,
+        children: [
+          {
+            name: 'mdo.etapaListar',
+            path: '',
+            component: EtapasLista,
+            meta: {
+              título: 'Etapas da obra',
+            },
+          },
+          {
+            name: 'mdo.etapaCriar',
+            path: 'novo',
+            component: EtapasCriarEditar,
+            meta: {
+              título: 'Nova etapa da obra',
+              rotaDeEscape: 'mdo.etapaListar',
+            },
+          },
+          {
+            path: ':etapaId',
+            name: 'mdo.etapaEditar',
+            component: EtapasCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
+              },
+            }),
+            meta: {
+              título: 'Editar etapa da obra',
+              rotaDeEscape: 'etapasDaObraListar',
+            },
+          },
+        ],
+      },
+      {
         path: 'etapa-de-projeto',
         component: EtapasRaiz,
         meta: {
@@ -484,13 +533,13 @@ export default [
             },
           },
           {
-            path: ':etapaDoProjetoId',
+            path: ':etapaId',
             name: 'novaEtapaDoProjetoEditar',
             component: EtapasCriarEditar,
             props: ({ params }) => ({
               ...params,
               ...{
-                etapaDoProjetoId: Number.parseInt(params.etapaDoProjetoId, 10) || undefined,
+                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
               },
             }),
 
