@@ -55,8 +55,9 @@ BEGIN
     --RAISE NOTICE 'v_registro: %', v_registro;
 
     -- Calcula o próximo período após o último período válido
+    RAISE NOTICE 'v_ultimo_periodo_valido: %', v_ultimo_periodo_valido;
     v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
-    --RAISE NOTICE 'v_ultimo_periodo_valido: %', v_ultimo_periodo_valido;
+    --RAISE NOTICE 'v_proximo_periodo: %', v_proximo_periodo;
 
     -- Se há fim de medição, a data limite é o fim de medição
     -- Senão, a data limite é o próximo período (não há fim de medição, basicamente)
@@ -66,12 +67,12 @@ BEGIN
 
     -- Deleta se a data atual for igual ou posterior à data limite
     IF v_data_atual >= v_data_limite THEN
-        --RAISE NOTICE 'Deletando variavel_ciclo_corrente para variável ID %', p_variavel_id;
+        RAISE NOTICE 'Deletando variavel_ciclo_corrente para variável ID %', p_variavel_id;
         DELETE FROM variavel_ciclo_corrente
         WHERE variavel_id = p_variavel_id;
     ELSE
         -- Determina se a data atual está dentro do intervalo válido
-        v_corrente := v_data_atual <= v_proximo_periodo;
+        v_corrente := v_data_atual < v_proximo_periodo;
         --RAISE NOTICE 'v_corrente: %', v_corrente;
 
         IF (v_corrente) THEN
@@ -123,7 +124,8 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-
+--select f_atualiza_variavel_ciclo_corrente( 6880 );
+--SELECT * from variavel_ciclo_corrente WHERE variavel_id = 6880;
 
 CREATE OR REPLACE FUNCTION f_atualiza_todas_variaveis( )
         RETURNS void AS
