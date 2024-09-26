@@ -104,8 +104,11 @@ function pegaPsTecnicoCpCompleto(idsDasEquipes) {
         orgaos_participantes.value.push(z);
       });
     }
-    if (singleMeta.value.coordenadores_cp) {
-      coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map((x) => x.id);
+
+    if (route.meta.entidadeMãe === 'pdm') {
+      if (singleMeta.value.coordenadores_cp) {
+        coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map((x) => x.id);
+      }
     }
   }
 
@@ -632,7 +635,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
         <div>
           <AutocompleteField
-            name="values.ps_tecnico_cp.equipes"
+            name="ps_tecnico_cp.equipes"
             :controlador="{
               busca: '',
               participantes: values.ps_tecnico_cp.equipes,

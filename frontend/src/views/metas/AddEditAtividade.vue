@@ -1,5 +1,5 @@
 <script setup>
-import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
@@ -46,11 +46,11 @@ const coordenadores_cp = ref({ participantes: [], busca: '' });
 
 const virtualParent = ref({
   ps_ponto_focal: {
-    equipes: singleIniciativa.value?.ps_ponto_focal?.equipes || [],
+    equipes: singleAtividade.value?.ps_ponto_focal?.equipes || [],
   },
 
   ps_tecnico_cp: {
-    equipes: singleIniciativa.value?.ps_tecnico_cp?.equipes || [],
+    equipes: singleAtividade.value?.ps_tecnico_cp?.equipes || [],
   },
 });
 let title = 'Cadastro de';
@@ -425,7 +425,7 @@ function filterResponsible(orgao_id) {
 
         <div>
           <AutocompleteField
-            name="values.ps_tecnico_cp.equipes"
+            name="ps_tecnico_cp.equipes"
             :controlador="{
               busca: '',
               participantes: values.ps_tecnico_cp.equipes,
