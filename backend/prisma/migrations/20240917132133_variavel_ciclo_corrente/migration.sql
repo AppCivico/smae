@@ -63,7 +63,7 @@ BEGIN
 
     -- Se há fim de medição, a data limite é o fim de medição
     -- Senão, a data limite é o próximo período (não há fim de medição, basicamente)
-    v_data_limite := coalesce(v_registro.fim_medicao, v_proximo_periodo) + v_registro.intervalo_atraso;
+    v_data_limite := coalesce(v_registro.fim_medicao, v_proximo_periodo - v_registro.intervalo_atraso) + v_registro.intervalo_atraso;
 
     --RAISE NOTICE 'v_data_limite: %', v_data_limite;
 
