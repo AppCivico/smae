@@ -23,8 +23,16 @@ export class ClassificacaoController {
 
     @ApiBearerAuth('access-token')
     @Get()
+    @Roles(['CadastroClassificacao.listar'])
     async findAll(): Promise<ListClassificacaoDto> {
         return { linhas: await this.classficacaoService.findAll() };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    @Roles(['CadastroClassificacao.listar'])
+    async findById(@Param() params: FindOneParams,): Promise<ClassificacaoDto> {
+        return await this.classficacaoService.findOne(+params.id) ;
     }
 
     @Patch(':id')

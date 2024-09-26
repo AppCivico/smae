@@ -34,17 +34,31 @@ export class ClassificacaoService {
         );
     }
     async findAll(): Promise<ClassificacaoDto[]> {
-        const rows = await this.prisma.classificacao.findMany({
+        return await this.prisma.classificacao.findMany({
             where: { removido_em: null },
             orderBy: { nome: 'asc' },
             select: {
                 id: true,
                 nome: true,
                 transferencia_tipo_id: true,
+                transferenciaTipo: true
             },
         });
-        return rows;
     }
+
+    async findOne(id: number): Promise<ClassificacaoDto> {
+        return await this.prisma.classificacao.findFirstOrThrow({
+            where :{id: id},
+            select :{
+                id: true,
+                nome: true,
+                transferencia_tipo_id: true,
+                transferenciaTipo: true
+            }
+        });
+    }
+
+
 
     async update(
         id: number,
