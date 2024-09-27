@@ -1626,6 +1626,7 @@ export class TransferenciaService {
             where: {
                 transferencia_id: transferencia_id,
                 data_inicio: { not: null },
+                removido_em: null,
             },
             select: {
                 workflow_etapa_id: true,
@@ -1636,6 +1637,7 @@ export class TransferenciaService {
                     },
                 },
                 tarefas: {
+                    where: { removido_em: null },
                     select: {
                         tarefaEspelhada: {
                             select: {
