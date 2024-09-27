@@ -128,7 +128,7 @@ watchEffect(() => {
             width="20"
             height="20"
           ><use xlink:href="#i_eye" /></svg>
-          <div>Detalhe da variável</div>
+          <div>Resumo da variável</div>
         </smae-link>
       </td>
 
