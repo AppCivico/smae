@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { CreateClassificacaoDto } from './dto/create-classificacao.dto';
+import { CreateClassificacaoDto, UpdateClassificacaoDto } from './dto/create-classificacao.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -34,6 +34,7 @@ export class ClassificacaoService {
             });
         });
     }
+
     async findAll(): Promise<ClassificacaoDto[]> {
         return await this.prisma.classificacao.findMany({
             where: { removido_em: null },
@@ -67,7 +68,7 @@ export class ClassificacaoService {
         });
     }
 
-    async update(id: number, dto: ClassificacaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(id: number, dto: UpdateClassificacaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
             const classificacao = await prismaTxn.classificacao.update({
                 where: { id },
@@ -94,9 +95,8 @@ export class ClassificacaoService {
 
             return { id };
         });
-
-        //return updated;
     }
+
     async remove(id: number, user: PessoaFromJwt) {
         await this.prisma.classificacao.update({
             where: { id },

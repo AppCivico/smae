@@ -5,14 +5,13 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { CreateClassificacaoDto } from './dto/create-classificacao.dto';
+import { CreateClassificacaoDto, UpdateClassificacaoDto } from './dto/create-classificacao.dto';
 import { ClassificacaoDto, ListClassificacaoDto } from './entities/classificacao.dto';
 import { FindOneParams } from '../../common/decorators/find-params';
 
-@ApiTags("Classificação")
-@Controller("classificacao")
+@ApiTags('Classificação')
+@Controller('classificacao')
 export class ClassificacaoController {
-
     constructor(private readonly classficacaoService: ClassificacaoService) {}
     @Post('')
     @ApiBearerAuth('access-token')
@@ -31,8 +30,8 @@ export class ClassificacaoController {
     @ApiBearerAuth('access-token')
     @Get(':id')
     @Roles(['CadastroClassificacao.listar'])
-    async findById(@Param() params: FindOneParams,): Promise<ClassificacaoDto> {
-        return await this.classficacaoService.findOne(+params.id) ;
+    async findById(@Param() params: FindOneParams): Promise<ClassificacaoDto> {
+        return await this.classficacaoService.findOne(+params.id);
     }
 
     @Patch(':id')
@@ -40,7 +39,7 @@ export class ClassificacaoController {
     @Roles(['CadastroClassificacao.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() dto: ClassificacaoDto,
+        @Body() dto: UpdateClassificacaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.classficacaoService.update(+params.id, dto, user);
@@ -55,5 +54,4 @@ export class ClassificacaoController {
         await this.classficacaoService.remove(+params.id, user);
         return '';
     }
-
 }
