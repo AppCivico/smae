@@ -438,6 +438,18 @@ export class TransferenciaService {
 
                 let workflow_id: number | undefined;
                 if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
+                    console.log('=========================================');
+                    const countdebug = await prismaTxn.tarefa.count({
+                        where: {
+                            tarefa_cronograma: {
+                                transferencia_id: id,
+                            },
+                            removido_em: null,
+                            OR: [{ transferencia_fase_id: { not: null } }, { transferencia_tarefa_id: { not: null } }],
+                        },
+                    });
+                    console.log(countdebug);
+                    console.log('=========================================');
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
                             transferencia_tipo_id: dto.tipo_id,
