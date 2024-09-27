@@ -189,7 +189,8 @@ const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
 
 const valorInicial = {
   valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
-  valor_realizado_acumulado: emFoco.value?.valores[0]?.valor_realizado_acumulado,
+  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
+    ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
   analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
 };
 
