@@ -186,7 +186,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Classificacao
         </dt>
         <dd>
-          {{ transferenciaEmFoco || '-' }}
+          {{ transferenciaEmFoco?.classificacao?.nome || '-' }}
         </dd>
       </div>
       <div class="f1 fb5">
@@ -1107,7 +1107,6 @@ section + section {
 .valores dl {
   border-bottom: 1px solid @c100;
 }
-
 
 .resumo-da-distribuicao-de-recursos {
   * + & {

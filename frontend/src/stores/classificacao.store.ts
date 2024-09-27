@@ -13,7 +13,7 @@ interface Estado {
 
 type ClassificacaoDados = {
   nome: string;
-  transferencia_tipo_id: string;
+  transferencia_tipo_id: number;
 };
 
 export const useClassificacaoStore = defineStore('classificacao', {

@@ -35,8 +35,8 @@
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
-        <td>{{ item.transferenciaTipo.esfera }}</td>
-        <td>{{ item.transferenciaTipo.nome }}</td>
+        <td>{{ item.transferencia_tipo.esfera }}</td>
+        <td>{{ item.transferencia_tipo.nome }}</td>
         <td>
           <router-link
             :to="{ name: 'classificacao.editar', params: { classificacaoId: item.id } }"
