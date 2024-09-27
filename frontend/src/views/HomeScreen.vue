@@ -85,7 +85,7 @@ async function iniciar() {
   requestS.get(`${baseUrl}/minha-conta`, { 'smae-sistemas': Object.keys(módulos).join(',') })
     .then((resposta) => {
       const { sessao: { sistemas } } = resposta;
-
+      sessao.value = resposta.sessao;
       if (Array.isArray(sistemas)) {
         módulosDisponíveis.value.splice(0, módulosDisponíveis.value.length, ...sistemas);
       }
