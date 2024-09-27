@@ -36,7 +36,14 @@ export class ClassificacaoService {
     async findAll(): Promise<ClassificacaoDto[]> {
         return await this.prisma.classificacao.findMany({
             where: { removido_em: null },
-            orderBy: { nome: 'asc' },
+            orderBy: [{
+                transferencia_tipo: { esfera: 'asc' },
+            },
+                {
+                    transferencia_tipo: { nome: 'asc' },
+                },
+                { nome: 'asc' },
+            ],
             select: {
                 id: true,
                 nome: true,
