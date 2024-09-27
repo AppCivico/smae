@@ -10,7 +10,7 @@ import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
-import { CachedMetasDto } from '../dto/create-projeto.dto';
+import { CachedMetasDto } from '../../../common/dto/origem-pdm.dto';
 
 export class ProjetoDto {
     id: number;

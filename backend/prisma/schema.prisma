@@ -28,9 +28,9 @@ model Pessoa {
     desativado_motivo   String?
     pessoa_fisica_id    Int?
 
-    ProjetoOrigemQcriei     ProjetoOrigem[] @relation("Criador")
-    ProjetoOrigemQAtualizei ProjetoOrigem[] @relation("Atualizador")
-    ProjetoOrigemQRemovi    ProjetoOrigem[] @relation("Removedor")
+    ProjetoOrigemQcriei     CompromissoOrigem[] @relation("Criador")
+    ProjetoOrigemQAtualizei CompromissoOrigem[] @relation("Atualizador")
+    ProjetoOrigemQRemovi    CompromissoOrigem[] @relation("Removedor")
 
     atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
@@ -1277,7 +1277,8 @@ model Meta {
     GeoEnderecoReferencia                  GeoLocalizacaoReferencia[]
     PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
     view_pdm_meta_iniciativa_atividade     view_pdm_meta_iniciativa_atividade[]
-    ProjetoOrigem                          ProjetoOrigem[]
+    ProjetoOrigem                          CompromissoOrigem[]                      @relation("fk")
+    ProjetoOrigemRel                       CompromissoOrigem[]                      @relation("rel")
     PdmPerfil                              PdmPerfil[]
 
     @@index([pdm_id])
@@ -2061,8 +2062,10 @@ model Iniciativa {
     OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
-    ProjetoOrigem                      ProjetoOrigem[]
+    ProjetoOrigem                      CompromissoOrigem[]                  @relation("fk")
+    ProjetoOrigemRel                   CompromissoOrigem[]                  @relation("rel")
     PdmPerfil                          PdmPerfil[]
+    CompromissoOrigem                  CompromissoOrigem[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2148,7 +2151,8 @@ model Atividade {
     OrcamentoPlanejadoZerado           OrcamentoPrevistoZerado[]
     GeoEnderecoReferencia              GeoLocalizacaoReferencia[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
-    ProjetoOrigem                      ProjetoOrigem[]
+    ProjetoOrigem                      CompromissoOrigem[]                  @relation("fk")
+    ProjetoOrigemRel                   CompromissoOrigem[]                  @relation("rel")
     PdmPerfil                          PdmPerfil[]
 
     @@index([iniciativa_id])
@@ -3718,8 +3722,8 @@ model Projeto {
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
 
-    tags          Int[]           @default([])
-    ProjetoOrigem ProjetoOrigem[]
+    tags          Int[]               @default([])
+    ProjetoOrigem CompromissoOrigem[]
 
     origem_cache Json @default("{}") @db.Json
 
@@ -3727,10 +3731,29 @@ model Projeto {
     @@map("projeto")
 }
 
-model ProjetoOrigem {
-    id             Int               @id @default(autoincrement())
-    projeto_id     Int
-    projeto        Projeto           @relation(fields: [projeto_id], references: [id])
+enum CompromissoOrigemRelacionamento {
+    Projeto
+    Meta
+    Iniciativa
+    Atividade
+}
+
+model CompromissoOrigem {
+    id             Int                             @id @default(autoincrement())
+    relacionamento CompromissoOrigemRelacionamento @default(Projeto)
+
+    projeto_id Int?
+    projeto    Projeto? @relation(fields: [projeto_id], references: [id])
+
+    rel_meta_id Int?
+    rel_meta    Meta? @relation("rel", fields: [rel_meta_id], references: [id])
+
+    rel_atividade_id Int?
+    rel_atividade    Atividade? @relation("rel", fields: [rel_atividade_id], references: [id])
+
+    rel_iniciativa_id Int?
+    rel_iniciativa    Iniciativa? @relation("rel", fields: [rel_iniciativa_id], references: [id])
+
     origem_tipo    ProjetoOrigemTipo @default(Outro)
     origem_eh_pdm  Boolean           @default(false)
     origem_outro   String?
@@ -3747,9 +3770,11 @@ model ProjetoOrigem {
     criador        Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
     atualizador    Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor      Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
-    meta           Meta?             @relation(fields: [meta_id], references: [id])
-    iniciativa     Iniciativa?       @relation(fields: [iniciativa_id], references: [id])
-    atividade      Atividade?        @relation(fields: [atividade_id], references: [id])
+    meta           Meta?             @relation("fk", fields: [meta_id], references: [id])
+    iniciativa     Iniciativa?       @relation("fk", fields: [iniciativa_id], references: [id])
+    atividade      Atividade?        @relation("fk", fields: [atividade_id], references: [id])
+    Iniciativa     Iniciativa?       @relation(fields: [iniciativaId], references: [id])
+    iniciativaId   Int?
 
     @@map("projeto_origem")
 }
@@ -5477,10 +5502,10 @@ model TransferenciaTipo {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     statuses_distribuicao DistribuicaoStatus[]
+    Classificacao         Classificacao[]      @relation("classificacoes")
 
     transferenciasAntigas TransferenciaHistorico[] @relation("tipoAntigoTransf")
     transferenciasNovas   TransferenciaHistorico[] @relation("tipoNovoTransf")
-    Classificacao         Classificacao[]          @relation("classificacoes")
 
     @@map("transferencia_tipo")
 }
