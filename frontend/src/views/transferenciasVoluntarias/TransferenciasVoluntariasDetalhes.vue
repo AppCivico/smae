@@ -651,7 +651,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </div>
 
   <div class="flex g2 flexwrap center mt3 mb2">
-    <h3 class="w400 tc300 mb0 t20">
+    <h3 class="w700 tc600 t20 mb0">
       Distribuição de Recursos
     </h3>
     <hr class="f1">
@@ -671,11 +671,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   <section
     v-for="distribuicao in listaDeDistribuicao"
     :key="distribuicao.id"
-    class="mb2 pt1"
+    class="mb2 card-shadow p2"
   >
-    <div class="mb1">
-      <dl class="mb1">
-        <dt class="t16 w700 mb05 tc500">
+    <div class="mb2">
+      <dl class="mb2">
+        <dt class="t16 w700 mb05 tamarelo">
           Gestor municipal
         </dt>
         <dd>
@@ -685,7 +685,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </dl>
       <dl class="f1">
-        <dt class="t16 w700 mb05 tc500">
+        <dt class="t16 w700 mb05 tamarelo">
           Objeto/Empreendimento
         </dt>
         <dd>
@@ -694,18 +694,18 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
 
-    <div class="flex flexwrap g2 mb2">
+    <div class="flex flexwrap g2 mb1">
       <div class="grid valores f1">
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb1 pb1">
+          <dt class="t16 w700 mb05 tamarelo">
             Valor do repasse
           </dt>
           <dd>
             {{ distribuicao.valor ? `R$${dinheiro(distribuicao.valor)}` : '-' }}
           </dd>
         </dl>
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb1 pb1">
+          <dt class="t16 w700 mb05 tamarelo">
             Valor contrapartida
           </dt>
           <dd>
@@ -714,8 +714,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               : '-' }}
           </dd>
         </dl>
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb1 pb1">
+          <dt class="t16 w700 mb05 tamarelo">
             Valor total
           </dt>
           <dd>
@@ -726,24 +726,24 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
       </div>
       <div class="grid f1">
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb2">
+          <dt class="t16 w700 mb05 tamarelo">
             Empenho
           </dt>
           <dd>
             {{ distribuicao.empenho ? 'Sim' : 'Não' }}
           </dd>
         </dl>
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb2">
+          <dt class="t16 w700 mb05 tamarelo">
             Programa orçamentário municipal
           </dt>
           <dd>
             {{ distribuicao.programa_orcamentario_municipal || '-' }}
           </dd>
         </dl>
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb2">
+          <dt class="t16 w700 mb05 tamarelo">
             Programa orçamentário estadual
           </dt>
           <dd>
@@ -752,8 +752,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
       </div>
       <div class="grid f1">
-        <dl class="mb1">
-          <dt class="t16 w700 mb05 tc500">
+        <dl class="mb2">
+          <dt class="t16 w700 mb05 tamarelo">
             Dotação orçamentária
           </dt>
           <dd>
@@ -764,115 +764,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
 
     <div>
-      <table
-        v-if="distribuicao.registros_sei?.length"
-        class="tablemain no-zebra horizontal-lines mb1"
-      >
-        <caption class="t16 w700 mb05 tc500 tl">
-          Números SEI
-        </caption>
-        <col class="col--botão-de-ação">
-        <col>
-        <col class="col--dataHora">
-        <col class="col--dataHora">
-        <col class="col--data">
-        <col>
-        <col>
-        <col>
-        <col class="col--botão-de-ação">
-
-        <thead>
-          <th />
-          <th class="cell--nowrap">
-            Código
-          </th>
-          <th>Tipo</th>
-          <th>Especificação</th>
-          <th>Alteração</th>
-          <th>Andamento</th>
-          <th>Unidade</th>
-          <th>Usuário SEI</th>
-          <th>Lido</th>
-          <th />
-        </thead>
-
-        <tbody class="transferencia-sei-body">
-          <tr
-            v-for="registro, idx in distribuicao.registros_sei"
-            :key="idx"
-            class="transferencia-sei-body__item"
-          >
-            <td>
-              <span
-                v-if="registro?.integracao_sei?.relatorio_sincronizado_em"
-                class="tipinfo right"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  color="#F2890D"
-                >
-                  <use xlink:href="#i_i" />
-                </svg>
-
-                <div>
-                  Sincronização:
-                  {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
-                </div>
-              </span>
-            </td>
-            <th class="cell--nowrap">
-              {{ registro?.processo_sei }}
-            </th>
-            <th>{{ registro?.integracao_sei?.json_resposta?.tipo }}</th>
-            <th>{{ registro?.integracao_sei?.json_resposta?.especificacao }}</th>
-            <td>
-              {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
-            </td>
-            <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
-            <td>
-              {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
-              -
-              {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.sigla }}
-            </td>
-            <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
-            <td>
-              <label
-                v-if="registro.integracao_sei"
-                class="transferencia-sei-body__item--lido flex column g05 start"
-              >
-                {{ registro.lido ? "Lido" : "Não lido" }}
-                <input
-                  type="checkbox"
-                  class="interruptor"
-                  :checked="registro.lido"
-                  @input="atualizaSeiLido(
-                    registro,
-                    distribuicao.id,
-                    $event.target.checked
-                  )"
-                >
-              </label>
-            </td>
-            <td>
-              <SmaeLink
-                v-if="registro?.integracao_sei?.link"
-                :to="registro?.integracao_sei?.link"
-                title="Abrir no site do SEI"
-                @click="atualizaSeiLido(registro, distribuicao.transferencia_id, true)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_link" /></svg>
-              </SmaeLink>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="flex g2 flexwrap mb1">
+      <div class="flex g2 flexwrap mb2">
         <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
+          <dt class="t16 w700 mb05 tamarelo">
             Número proposta
           </dt>
           <dd>
@@ -880,7 +774,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
         <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
+          <dt class="t16 w700 mb05 tamarelo">
             Número do convênio/pré convênio
           </dt>
           <dd>
@@ -888,9 +782,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
       </div>
-      <div class="flex g2 flexwrap mb1">
+      <div class="flex g2 flexwrap mb2">
         <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
+          <dt class="t16 w700 mb05 tamarelo">
             Número do contrato
           </dt>
           <dd>
@@ -898,7 +792,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
         <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
+          <dt class="t16 w700 mb05 tamarelo">
             Data de vigência
           </dt>
           <dd>
@@ -908,7 +802,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
         <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
+          <dt class="t16 w700 mb05 tamarelo">
             Motivo do aditamento
           </dt>
           <dd>
@@ -916,7 +810,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
         <dl class="f1">
-          <dt class="t16 w700 mb05 tc500">
+          <dt class="t16 w700 mb05 tamarelo">
             Data de conclusão da suspensiva
           </dt>
           <dd>
@@ -928,8 +822,115 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </div>
     </div>
 
+    <table
+      v-if="distribuicao.registros_sei?.length"
+      class="tablemain no-zebra horizontal-lines mb1"
+    >
+      <caption class="t16 w700 mb05 tamarelo tl">
+        Números SEI
+      </caption>
+      <col class="col--botão-de-ação">
+      <col>
+      <col class="col--dataHora">
+      <col class="col--dataHora">
+      <col class="col--data">
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+
+      <thead>
+        <th />
+        <th class="cell--nowrap">
+          Código
+        </th>
+        <th>Tipo</th>
+        <th>Especificação</th>
+        <th>Alteração</th>
+        <th>Andamento</th>
+        <th>Unidade</th>
+        <th>Usuário SEI</th>
+        <th>Lido</th>
+        <th />
+      </thead>
+
+      <tbody class="transferencia-sei-body">
+        <tr
+          v-for="registro, idx in distribuicao.registros_sei"
+          :key="idx"
+          class="transferencia-sei-body__item"
+        >
+          <td>
+            <span
+              v-if="registro?.integracao_sei?.relatorio_sincronizado_em"
+              class="tipinfo right"
+            >
+              <svg
+                width="24"
+                height="24"
+                color="#F2890D"
+              >
+                <use xlink:href="#i_i" />
+              </svg>
+
+              <div>
+                Sincronização:
+                {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
+              </div>
+            </span>
+          </td>
+          <th class="cell--nowrap">
+            {{ registro?.processo_sei }}
+          </th>
+          <th>{{ registro?.integracao_sei?.json_resposta?.tipo }}</th>
+          <th>{{ registro?.integracao_sei?.json_resposta?.especificacao }}</th>
+          <td>
+            {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
+          </td>
+          <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
+          <td>
+            {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
+            -
+            {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.sigla }}
+          </td>
+          <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
+          <td>
+            <label
+              v-if="registro.integracao_sei"
+              class="transferencia-sei-body__item--lido flex column g05 start"
+            >
+              {{ registro.lido ? "Lido" : "Não lido" }}
+              <input
+                type="checkbox"
+                class="interruptor"
+                :checked="registro.lido"
+                @input="atualizaSeiLido(
+                  registro,
+                  distribuicao.id,
+                  $event.target.checked
+                )"
+              >
+            </label>
+          </td>
+          <td>
+            <SmaeLink
+              v-if="registro?.integracao_sei?.link"
+              :to="registro?.integracao_sei?.link"
+              title="Abrir no site do SEI"
+              @click="atualizaSeiLido(registro, distribuicao.transferencia_id, true)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_link" /></svg>
+            </SmaeLink>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     <div class="flex g2 center mt3 mb2">
-      <h3 class="w400 tc300 t20 mb0">
+      <h3 class="w700 tc600 t20 mb0">
         Assinaturas
       </h3>
       <hr class="f1">
@@ -937,7 +938,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
     <div class="flex g2 flexwrap mb2">
       <dl class="f1">
-        <dt class="t16 w700 mb05 tc500">
+        <dt class="t16 w700 mb05 tamarelo">
           Data da assinatura do termo de aceite
         </dt>
         <dd v-if="distribuicao?.assinatura_termo_aceite">
@@ -945,7 +946,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </dl>
       <dl class="f1">
-        <dt class="t16 w700 mb05 tc500">
+        <dt class="t16 w700 mb05 tamarelo">
           Data da assinatura do representante do estado
         </dt>
         <dd v-if="distribuicao?.assinatura_estado">
@@ -953,7 +954,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </dl>
       <dl class="f1">
-        <dt class="t16 w700 mb05 tc500">
+        <dt class="t16 w700 mb05 tamarelo">
           Data da assinatura do representante do município
         </dt>
         <dd v-if="distribuicao?.assinatura_municipio">
@@ -1095,10 +1096,10 @@ section + section {
   line-height: 24px;
 }
 
-.valores {
-  border-right: solid 2px #B8C0CC;
-  border-radius: 12px;
+.valores dl {
+  border-bottom: 1px solid @c100;
 }
+
 
 .resumo-da-distribuicao-de-recursos {
   * + & {
