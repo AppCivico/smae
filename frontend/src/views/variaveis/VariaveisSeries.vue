@@ -273,223 +273,227 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
       @close="emit('close')"
     />
   </header>
+  <div v-if="Object.keys(SeriesAgrupadasPorAno).length">
+    <p class="label mb1">
+      {{ tituloIntroducao.introducao }}
+    </p>
 
-  <p class="label mb1">
-    {{ tituloIntroducao.introducao }}
-  </p>
-
-  <hr class="mb2">
-
-  <auxiliarDePreenchimento>
-    <div class="flex g2 end mb1">
-      <div class="f1">
-        <label class="label">Valor a aplicar</label>
-        <select
-          v-if="seriesAgrupadas?.variavel?.variavel_categorica_id"
-          v-model="valorPadrao"
-          :disabled="modoDePreenchimento === 'valor_acumulado'"
-          class="inputtext light"
-        >
-          <option value="">
-            ---
-          </option>
-
-          <option
-            v-for="item in opcoesVariaveisCategoricas"
-            :key="item.id"
-            :value="item.valor_variavel"
+    <hr class="mb2">
+    <auxiliarDePreenchimento>
+      <div class="flex g2 end mb1">
+        <div class="f1">
+          <label class="label">Valor a aplicar</label>
+          <select
+            v-if="seriesAgrupadas?.variavel?.variavel_categorica_id"
+            v-model="valorPadrao"
+            :disabled="modoDePreenchimento === 'valor_acumulado'"
+            class="inputtext light"
           >
-            {{ item.titulo }}
-            {{ item.descricao && truncate(`- ${item.descricao}`, 55) }}
-          </option>
-        </select>
+            <option value="">
+              ---
+            </option>
 
-        <input
-          v-else
-          v-model="valorPadrao"
-          type="number"
-          class="inputtext light mb1"
-          :disabled="modoDePreenchimento === 'valor_acumulado'"
-        >
-      </div>
-      <button
-        type="button"
-        class="f0 mb1 btn bgnone outline tcprimary"
-        :disabled="valorPadrao === '' || modoDePreenchimento === 'valor_acumulado'"
-        @click="preencherVaziosCom(valorPadrao)"
-      >
-        Preencher vazios
-      </button>
-
-      <button
-        type="reset"
-        form="form"
-        class="f0 mb1 pl0 pr0 btn bgnone"
-        @click="limparFormulário"
-      >
-        &times; limpar tudo
-      </button>
-
-      <button
-        type="reset"
-        class="f0 mb1 pl0 pr0 btn bgnone"
-        @click.prevent="resetForm()"
-      >
-        &excl; restaurar
-      </button>
-    </div>
-
-    <template v-if="seriesAgrupadas?.variavel?.acumulativa">
-      <hr class="mb2 f1">
-
-      <div class="flex mb2">
-        <label class="f1">
-          <input
-            v-model="modoDePreenchimento"
-            type="radio"
-            class="inputcheckbox"
-            value="valor_nominal"
-          ><span>Preencher por valor {{ $props.tipoDeValor?.toLowerCase() }}</span></label>
-        <label class="f1">
-          <input
-            v-model="modoDePreenchimento"
-            type="radio"
-            class="inputcheckbox"
-            value="valor_acumulado"
-          ><span>Preencher por valor acumulado</span></label>
-      </div>
-    </template>
-  </auxiliarDePreenchimento>
-
-  <hr class="mb2 f1">
-
-  <form
-    id="form"
-    @submit.prevent="onSubmit"
-  >
-    <details
-      v-for="(ano, chave) in SeriesAgrupadasPorAno"
-      :key="chave"
-      class="mb2"
-      :open="Object.keys(SeriesAgrupadasPorAno).length === 1"
-    >
-      <summary class="mb1">
-        <h3 class="w700 mb0">
-          {{ chave }}
-        </h3>
-      </summary>
-      <div class="details-content">
-        <table class="tablemain no-zebra mb1">
-          <thead>
-            <tr>
-              <th />
-              <th>Valor {{ $props.tipoDeValor }}</th>
-              <th v-if="seriesAgrupadas?.variavel?.acumulativa">
-                Valor Acumulado
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr
-              v-for="(serie, idx) in ano"
-              :key="idx"
+            <option
+              v-for="item in opcoesVariaveisCategoricas"
+              :key="item.id"
+              :value="item.valor_variavel"
             >
-              <th>
-                {{ dateToTitle(serie[$props.tipoDeValor as TiposValidos].periodo) }}
-              </th>
+              {{ item.titulo }}
+              {{ item.descricao && truncate(`- ${item.descricao}`, 55) }}
+            </option>
+          </select>
 
-              <td>
-                <Field
-                  v-if="seriesAgrupadas?.variavel?.variavel_categorica_id"
-                  :disabled="modoDePreenchimento === 'valor_acumulado'"
-                  :name="`${chave}[${idx}].${$props.tipoDeValor}.valor`"
-                  class="inputtext light"
-                  as="select"
-                >
-                  <option value="">
-                    ---
-                  </option>
+          <input
+            v-else
+            v-model="valorPadrao"
+            type="number"
+            class="inputtext light mb1"
+            :disabled="modoDePreenchimento === 'valor_acumulado'"
+          >
+        </div>
+        <button
+          type="button"
+          class="f0 mb1 btn bgnone outline tcprimary"
+          :disabled="valorPadrao === '' || modoDePreenchimento === 'valor_acumulado'"
+          @click="preencherVaziosCom(valorPadrao)"
+        >
+          Preencher vazios
+        </button>
 
-                  <option
-                    v-for="item in opcoesVariaveisCategoricas"
-                    :key="item.id"
-                    :value="item.valor_variavel"
-                  >
-                    {{ item.titulo }}
-                    {{ item.descricao && truncate(`- ${item.descricao}`, 55) }}
-                  </option>
-                </Field>
+        <button
+          type="reset"
+          form="form"
+          class="f0 mb1 pl0 pr0 btn bgnone"
+          @click="limparFormulário"
+        >
+          &times; limpar tudo
+        </button>
 
-                <Field
-                  v-else
-                  :disabled="modoDePreenchimento === 'valor_acumulado'"
-                  :name="`${chave}[${idx}].${$props.tipoDeValor}.valor`"
-                  :aria-label="serie[$props.tipoDeValor as TiposValidos].periodo"
-                  class="inputtext light"
-                  type="number"
-                  :step="geradorDeAtributoStep(seriesAgrupadas?.variavel?.casas_decimais)"
-                  @update:model-value="() => {
-                    if (
-                      modoDePreenchimento === 'valor_nominal'
-                      && seriesAgrupadas?.variavel?.acumulativa
-                    ) {
-                      atualizarAcumuladosEmCascata(chave, idx);
-                    }
-                  }"
-                />
-
-                <Field
-                  :name="`${chave}[${idx}].${$props.tipoDeValor}.referencia`"
-                  type="hidden"
-                />
-              </td>
-
-              <td v-if="seriesAgrupadas?.variavel?.acumulativa">
-                <Field
-                  :disabled="modoDePreenchimento === 'valor_nominal'"
-                  :name="`${chave}[${idx}].${$props.tipoDeValor}Acumulado.valor`"
-                  :aria-label="`Acumulado ${serie[$props.tipoDeValor as TiposValidos].periodo}`"
-                  type="number"
-                  class="inputtext light"
-                  @blur="($e) => {
-                    if ($e.target.value === '') {
-                      setFieldValue(`${chave}[${idx}].${$props.tipoDeValor}Acumulado.valor`, 0);
-                    }
-                  }"
-                  @update:model-value="($v) => {
-                    if (modoDePreenchimento === 'valor_acumulado') {
-                      atualizarAPartirDoAcumulado($v, chave, idx);
-                    }
-                  }"
-                />
-
-                <Field
-                  :name="`${chave}[${idx}].${$props.tipoDeValor}Acumulado.referencia`"
-                  type="hidden"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <button
+          type="reset"
+          class="f0 mb1 pl0 pr0 btn bgnone"
+          @click.prevent="resetForm()"
+        >
+          &excl; restaurar
+        </button>
       </div>
-    </details>
 
-    <LoadingComponent v-if="chamadasPendentes.emFoco" />
+      <template v-if="seriesAgrupadas?.variavel?.acumulativa">
+        <hr class="mb2 f1">
 
-    <ErrorComponent v-if="erros.emFoco" />
+        <div class="flex mb2">
+          <label class="f1">
+            <input
+              v-model="modoDePreenchimento"
+              type="radio"
+              class="inputcheckbox"
+              value="valor_nominal"
+            ><span>Preencher por valor {{ $props.tipoDeValor?.toLowerCase() }}</span></label>
+          <label class="f1">
+            <input
+              v-model="modoDePreenchimento"
+              type="radio"
+              class="inputcheckbox"
+              value="valor_acumulado"
+            ><span>Preencher por valor acumulado</span></label>
+        </div>
+      </template>
+    </auxiliarDePreenchimento>
 
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center mb2 mt2">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting"
+    <hr class="mb2 f1">
+    <form
+      id="form"
+      @submit.prevent="onSubmit"
+    >
+      <details
+        v-for="(ano, chave) in SeriesAgrupadasPorAno"
+        :key="chave"
+        class="mb2"
+        :open="Object.keys(SeriesAgrupadasPorAno).length === 1"
       >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
-    </div>
-  </form>
+        <summary class="mb1">
+          <h3 class="w700 mb0">
+            {{ chave }}
+          </h3>
+        </summary>
+        <div class="details-content">
+          <table class="tablemain no-zebra mb1">
+            <thead>
+              <tr>
+                <th />
+                <th>Valor {{ $props.tipoDeValor }}</th>
+                <th v-if="seriesAgrupadas?.variavel?.acumulativa">
+                  Valor Acumulado
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                v-for="(serie, idx) in ano"
+                :key="idx"
+              >
+                <th>
+                  {{ dateToTitle(serie[$props.tipoDeValor as TiposValidos].periodo) }}
+                </th>
+
+                <td>
+                  <Field
+                    v-if="seriesAgrupadas?.variavel?.variavel_categorica_id"
+                    :disabled="modoDePreenchimento === 'valor_acumulado'"
+                    :name="`${chave}[${idx}].${$props.tipoDeValor}.valor`"
+                    class="inputtext light"
+                    as="select"
+                  >
+                    <option value="">
+                      ---
+                    </option>
+
+                    <option
+                      v-for="item in opcoesVariaveisCategoricas"
+                      :key="item.id"
+                      :value="item.valor_variavel"
+                    >
+                      {{ item.titulo }}
+                      {{ item.descricao && truncate(`- ${item.descricao}`, 55) }}
+                    </option>
+                  </Field>
+
+                  <Field
+                    v-else
+                    :disabled="modoDePreenchimento === 'valor_acumulado'"
+                    :name="`${chave}[${idx}].${$props.tipoDeValor}.valor`"
+                    :aria-label="serie[$props.tipoDeValor as TiposValidos].periodo"
+                    class="inputtext light"
+                    type="number"
+                    :step="geradorDeAtributoStep(seriesAgrupadas?.variavel?.casas_decimais)"
+                    @update:model-value="() => {
+                      if (
+                        modoDePreenchimento === 'valor_nominal'
+                        && seriesAgrupadas?.variavel?.acumulativa
+                      ) {
+                        atualizarAcumuladosEmCascata(chave, idx);
+                      }
+                    }"
+                  />
+
+                  <Field
+                    :name="`${chave}[${idx}].${$props.tipoDeValor}.referencia`"
+                    type="hidden"
+                  />
+                </td>
+
+                <td v-if="seriesAgrupadas?.variavel?.acumulativa">
+                  <Field
+                    :disabled="modoDePreenchimento === 'valor_nominal'"
+                    :name="`${chave}[${idx}].${$props.tipoDeValor}Acumulado.valor`"
+                    :aria-label="`Acumulado ${serie[$props.tipoDeValor as TiposValidos].periodo}`"
+                    type="number"
+                    class="inputtext light"
+                    @blur="($e) => {
+                      if ($e.target.value === '') {
+                        setFieldValue(`${chave}[${idx}].${$props.tipoDeValor}Acumulado.valor`, 0);
+                      }
+                    }"
+                    @update:model-value="($v) => {
+                      if (modoDePreenchimento === 'valor_acumulado') {
+                        atualizarAPartirDoAcumulado($v, chave, idx);
+                      }
+                    }"
+                  />
+
+                  <Field
+                    :name="`${chave}[${idx}].${$props.tipoDeValor}Acumulado.referencia`"
+                    type="hidden"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <LoadingComponent v-if="chamadasPendentes.emFoco" />
+
+      <ErrorComponent v-if="erros.emFoco" />
+
+      <FormErrorsList :errors="errors" />
+
+      <div class="flex spacebetween center mb2 mt2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </form>
+  </div>
+  <div v-else>
+    <p class="w600 t18 tc">
+      Não há séries disponíveis
+    </p>
+  </div>
 </template>
