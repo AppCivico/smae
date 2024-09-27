@@ -62,6 +62,7 @@ import { PrismaHelpers } from '../common/PrismaHelpers';
 import { MetaService } from '../meta/meta.service';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { VariavelFiltroDataType, VariavelUtilService } from './variavel.util.service';
+import { DateTime } from 'luxon';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -2377,8 +2378,20 @@ export class VariavelService {
         if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
         const variavel = selfItem[0];
 
+        const series: Serie[] = [...ORDEM_SERIES_RETORNO];
+        if (filters.serie) {
+            series.length = 0;
+            for (const serie of ORDEM_SERIES_RETORNO) {
+                if (serie.toLowerCase().includes(filters.serie.toLowerCase())) {
+                    series.push(serie);
+                }
+            }
+            if (filters.serie == 'Realizado')
+                filters.data_fim = DateTime.now().startOf('month').toJSDate();
+        }
+
         // TODO adicionar limpeza da serie para quem for ponto focal
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
         const result: ListSeriesAgrupadas = {
