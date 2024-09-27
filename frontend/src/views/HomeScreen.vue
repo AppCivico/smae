@@ -1,4 +1,7 @@
-<script setup>
+<script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS.ts';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
@@ -12,9 +15,6 @@ import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useUsersStore } from '@/stores/users.store';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -23,6 +23,7 @@ const router = useRouter();
 
 const emEspera = ref(false);
 const erro = ref(null);
+const sessao = ref(null);
 
 const {
   sistemaEscolhido, dadosDoSistemaEscolhido,
@@ -105,6 +106,12 @@ iniciar();
     class="escolha-de-módulos flex flexwrap g2 spacebetween center p15"
   >
     <div class="escolha-de-módulos__cumprimento flex column">
+      <p
+        v-if="sessao"
+        class="w700 t36"
+      >
+        Olá, {{ sessao.nome_exibicao }}!
+      </p>
       <p class="w700 t64">
         Bem-vindo ao
         <abbr title="Sistema de Monitoramento e Acompanhamento Estratégico">
