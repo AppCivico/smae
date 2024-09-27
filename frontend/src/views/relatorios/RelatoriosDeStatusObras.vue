@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { relatórioDeStatus as schema } from '@/consts/formSchemas';
+import { relatórioDeStatusObra as schema } from '@/consts/formSchemas';
 import { prepararEtiquetas, prepararPortfoliosObras } from './helpers/preparadorDeColunaParametros';
 
 const relatóriosStore = useRelatoriosStore();

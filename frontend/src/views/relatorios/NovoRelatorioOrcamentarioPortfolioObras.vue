@@ -1,31 +1,31 @@
 <script setup>
-import { relatórioDePrevisãoDeCustoPortfolioObras as schema } from '@/consts/formSchemas';
+import { relatóriosOrçamentáriosPortfolioObras as schema } from '@/consts/formSchemas';
+import maskMonth from '@/helpers/maskMonth';
+import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
-const obrasStore = useObrasStore();
-const alertStore = useAlertStore();
 const portfolioObrasStore = usePortfolioObraStore();
+const alertStore = useAlertStore();
+const obrasStore = useObrasStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
-const { current, loading } = storeToRefs(relatoriosStore);
-
-const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
-  fonte: 'ObrasPrevisaoCusto',
+  fonte: 'ObrasOrcamento',
   parametros: {
-    ano: currentYear,
+    tipo: 'Analitico',
+    inicio: '',
+    fim: '',
     portfolio_id: 0,
-    projeto_id: null,
+    projeto_id: 0,
   },
   salvar_arquivo: false,
 }));
@@ -33,12 +33,10 @@ const initialValues = computed(() => ({
 async function onSubmit(values) {
   const carga = values;
   try {
+    carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
+    carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
     if (!carga.salvar_arquivo) {
       carga.salvar_arquivo = false;
-    }
-
-    if (carga.parametros.projeto_id === null) {
-      delete carga.parametros.projeto_id
     }
 
     const r = await relatoriosStore.insert(carga);
@@ -48,21 +46,17 @@ async function onSubmit(values) {
       alertStore.success(msg);
 
       if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        await router.push({ name: route.meta.rotaDeEscape });
+        router.push({ name: route.meta.rotaDeEscape });
       }
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
- 
-function iniciar() {
-  portfolioObrasStore.buscarTudo();
-  obrasStore.buscarTudo();
-}
 
-iniciar();
+portfolioObrasStore.buscarTudo();
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título || $route.name }}</h1>
@@ -90,7 +84,7 @@ iniciar();
             loading: portfolioObrasStore.chamadasPendentes.lista
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
-          @change="setFieldValue('parametros.projeto_id', null)"
+          @change="setFieldValue('parametros.projeto_id', 0)"
         >
           <option :value="0">
             Selecionar
@@ -110,65 +104,71 @@ iniciar();
           {{ errors['parametros.portfolio_id'] }}
         </div>
       </div>
-
       <div class="f1">
-        <LabelFromYup
-          name="projeto_id"
-          :schema="schema.fields.parametros"
-        />
+        <label
+          for="inicio"
+          class="label"
+        >mês/ano início <span class="tvermelho">*</span></label>
         <Field
-          name="parametros.projeto_id"
-          as="select"
-          class="inputtext light
-            mb1"
-          :class="{
-            error: errors['parametros.projeto_id'],
-            loading: obrasStore.chamadasPendentes.lista
-          }"
-          :disabled="obrasStore.chamadasPendentes.lista
-            || !obrasStore.obrasPorPortfolio?.[values.parametros.portfolio_id]?.length"
-        >
-          <option :value="null">
-            Selecionar
-          </option>
-          <option
-            v-for="item in (!values.parametros.portfolio_id
-              ? obrasStore.lista
-              : obrasStore.obrasPorPortfolio[values.parametros.portfolio_id] || []
-            )"
-            :key="item.id"
-            :value="item.id"
-          >
-            {{ item.id }} - {{ item.nome }}
-          </option>
-        </Field>
-        <div
-          v-if="errors['parametros.projeto_id']"
-          class="error-msg"
-        >
-          {{ errors['parametros.projeto_id'] }}
+          id="inicio"
+          placeholder="01/2003"
+          name="parametros.inicio"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametro.inicio'] }"
+          maxlength="7"
+          @keyup="maskMonth"
+        />
+        <div class="error-msg">
+          {{ errors['parametros.inicio'] }}
         </div>
       </div>
-
       <div class="f1">
-        <LabelFromYup
-            name="ano"
-            :schema="schema.fields.parametros"
-          />
+        <label
+          for="fim"
+          class="label"
+        >mês/ano final <span class="tvermelho">*</span></label>
         <Field
-          name="parametros.ano"
+          id="fim"
+          placeholder="01/2003"
+          name="parametros.fim"
           type="text"
-          class="inputtext light mb2"
-          maxlength="4"
-          :class="{ 'error': errors['parametros.ano'] }"
-        >
-        </Field>
-        <div
-          v-if="errors['parametros.ano']"
-          class="error-msg"
-        >
-          {{ errors['parametros.ano'] }}
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametros.fim'] }"
+          maxlength="7"
+          @keyup="maskMonth"
+        />
+        <div class="error-msg">
+          {{ errors['parametros.fim'] }}
         </div>
+      </div>
+    </div>
+
+    <div class="mb2">
+      <div class="pl2">
+        <label class="block mb1">
+          <Field
+            name="parametros.tipo"
+            type="radio"
+            value="Consolidado"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>Consolidado</span>
+        </label>
+        <label class="block mb1">
+          <Field
+            name="parametros.tipo"
+            type="radio"
+            value="Analitico"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>Analítico</span>
+        </label>
+      </div>
+      <div class="error-msg">
+        {{ errors['parametros.tipo'] }}
       </div>
     </div>
 
@@ -188,8 +188,6 @@ iniciar();
         {{ errors.salvar_arquivo }}
       </div>
     </div>
-
-    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">

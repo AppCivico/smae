@@ -39,6 +39,10 @@ import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
 
+// Carrega os anos possíveis - começa em 2003 e termina no corrente mais cinco
+const endYear = new Date().getFullYear() + 5;
+const startYear = 2003;;
+
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
   return this.test('teste', errorMessage, function __(value) {
     const { path, createError } = this;
@@ -2635,9 +2639,10 @@ export const relatórioDePrevisãoDeCustoPdM = object()
       meta_id: string()
         .label('Meta')
         .nullable(),
-      periodo_ano: mixed()
-        .label('Período')
-        .oneOf(['Corrente', 'Anterior'])
+      ano: number()
+        .label('Ano de referência')
+        .min(startYear, '${label} não pode ser menor do que ' + startYear)
+        .max(endYear, '${label} não pode ser maior do que ' + endYear)
         .required(),
       pdm_id: string()
         .label('PDM')
@@ -2664,9 +2669,10 @@ export const relatórioDePrevisãoDeCustoPortfolio = object()
         .min(1, '${label} é obrigatório')
         .nullable()
         .transform((v) => (v === null || Number.isNaN(v) ? null : v)),
-      periodo_ano: mixed()
-        .label('Período')
-        .oneOf(['Corrente', 'Anterior'])
+      ano: number()
+        .label('Ano de referência')
+        .min(startYear, '${label} não pode ser menor do que ' + startYear)
+        .max(endYear, '${label} não pode ser maior do que ' + endYear)
         .required(),
     }),
     salvar_arquivo: boolean(),
@@ -2712,6 +2718,35 @@ export const relatórioDeStatus = object({
       .min(1, '${label} é obrigatório'),
     projeto_id: number()
       .label('Projeto')
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+  }),
+  salvar_arquivo: boolean(),
+});
+
+
+export const relatórioDeStatusObra = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    periodo_inicio: date()
+      .label('Início do período')
+      .max(dataMax)
+      .min(new Date(2003, 0, 1))
+      .nullable()
+      .transform((v) => (!v ? null : v)),
+    periodo_fim: date()
+      .label('Final do período')
+      .max(dataMax)
+      .min(new Date(2003, 0, 1))
+      .nullable()
+      .transform((v) => (!v ? null : v)),
+    portfolio_id: number()
+      .label('Portfólio')
+      .required()
+      .min(1, '${label} é obrigatório'),
+    projeto_id: number()
+      .label('Obra')
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
@@ -2790,14 +2825,15 @@ export const relatórioDePrevisãoDeCustoPortfolioObras = object()
         .min(1, '${label} é obrigatório')
         .required()
         .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
-      obra_id: number()
+      projeto_id: number()
         .label('Obra')
         .min(1, '${label} é obrigatório')
         .nullable()
         .transform((v) => (v === null || Number.isNaN(v) ? null : v)),
-      periodo_ano: mixed()
-        .label('Período')
-        .oneOf(['Corrente', 'Anterior'])
+      ano: number()
+        .label('Ano de referência')
+        .min(startYear, '${label} não pode ser menor do que ' + startYear)
+        .max(endYear, '${label} não pode ser maior do que ' + endYear)
         .required(),
     }),
     salvar_arquivo: boolean(),
@@ -2938,6 +2974,34 @@ export const relatórioOrçamentárioPdM = object({
 });
 
 export const relatórioOrçamentárioPortfolio = object({
+  fonte: string()
+    .required(),
+  salvar_arquivo: boolean(),
+  parametros: object({
+    portfolio_id: number()
+      .label('Portfólio')
+      .min(1, '${label} é obrigatório')
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    inicio: string()
+      .label('Início')
+      .required()
+      .matches(regEx['month/year'], 'Formato inválido'),
+    fim: string()
+      .label('Fim')
+      .required()
+      .matches(regEx['month/year'], 'Formato inválido'),
+    tipo: mixed()
+      .label('Tipo')
+      .oneOf([
+        'Analitico',
+        'Consolidado',
+      ])
+      .required(),
+  }),
+});
+
+export const relatóriosOrçamentáriosPortfolioObras = object({
   fonte: string()
     .required(),
   salvar_arquivo: boolean(),

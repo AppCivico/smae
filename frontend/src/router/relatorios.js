@@ -98,6 +98,14 @@ const RelatóriosDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
+const NovoRelatórioOrçamentárioPortfolioObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosOrçamentáriosPortfolioObras = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPortfolioObras.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/relatorios',
@@ -136,6 +144,7 @@ export default {
       'RelatóriosDePortfolioObras',
       'RelatóriosDeStatusObras',
       'RelatóriosDePrevisãoDeCustoPortfolioObras',
+      'RelatóriosOrçamentáriosPortfolioObras',
     ],
   },
 
@@ -520,5 +529,31 @@ export default {
         },
       ],
     },
+
+    {
+      path: 'orcamentarios-portfolio-obras',
+      meta: {
+        título: 'Relatórios orçamentários de portfólio de obras',
+        títuloParaMenu: 'Execução orçamentária',
+        limitarÀsPermissões: 'Reports.executar.MDO',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosOrçamentáriosPortfolioObras',
+          component: RelatóriosOrçamentáriosPortfolioObras,
+        },
+        {
+          component: NovoRelatórioOrçamentárioPortfolioObras,
+          path: 'novo',
+          name: 'novoRelatórioOrçamentárioPortfolioObras',
+          meta: {
+            título: 'Novo relatório orçamentário de portfólio de obras',
+            rotaDeEscape: 'RelatóriosOrçamentáriosPortfolioObras',
+          },
+        },
+      ],
+    },
+
   ],
 };

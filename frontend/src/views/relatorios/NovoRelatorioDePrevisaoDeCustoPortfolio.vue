@@ -18,12 +18,12 @@ const route = useRoute();
 const router = useRouter();
 const { current, loading } = storeToRefs(relatoriosStore);
 
-const listaDePeríodos = ['Corrente', 'Anterior'];
+const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
   fonte: 'ProjetoPrevisaoCusto',
   parametros: {
-    periodo_ano: 'Corrente',
+    ano: currentYear,
     portfolio_id: 0,
     projeto_id: null,
   },
@@ -149,39 +149,27 @@ iniciar();
           {{ errors['parametros.projeto_id'] }}
         </div>
       </div>
-    </div>
 
-    <div class="f1">
-      <label
-        for="periodo_ano"
-        class="label"
-      >periodo <span class="tvermelho">*</span></label>
-      <Field
-        id="periodo_ano"
-        placeholder="01/2003"
-        name="parametros.periodo_ano"
-        as="select"
-        class="inputtext light mb1"
-        :class="{ 'error': errors['parametros.periodo_ano'] }"
-      >
-        <option value="">
-          Selecionar
-        </option>
-        <option
-          v-for="item, k in listaDePeríodos"
-          :key="k"
-          :value="item"
-          :selected="k == current.parametros?.periodo_ano"
+      <div class="f1">
+        <LabelFromYup
+            name="ano"
+            :schema="schema.fields.parametros"
+          />
+        <Field
+          name="parametros.ano"
+          type="text"
+          class="inputtext light mb2"
+          maxlength="4"
+          :class="{ 'error': errors['parametros.ano'] }"
         >
-          {{ item }}
-        </option>
-      </Field>
-      <div
-        v-if="errors['parametros.periodo_ano']"
-        class="error-msg"
-      >
-        {{ errors['parametros.periodo_ano'] }}
-      </div>
+        </Field>
+        <div
+          v-if="errors['parametros.ano']"
+          class="error-msg"
+        >
+          {{ errors['parametros.ano'] }}
+        </div>
+      </div>  
     </div>
 
     <div class="mb2">
