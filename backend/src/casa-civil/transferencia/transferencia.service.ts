@@ -438,18 +438,6 @@ export class TransferenciaService {
 
                 let workflow_id: number | undefined;
                 if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
-                    console.log('=========================================');
-                    const countdebug = await prismaTxn.tarefa.count({
-                        where: {
-                            tarefa_cronograma: {
-                                transferencia_id: id,
-                            },
-                            removido_em: null,
-                            OR: [{ transferencia_fase_id: { not: null } }, { transferencia_tarefa_id: { not: null } }],
-                        },
-                    });
-                    console.log(countdebug);
-                    console.log('=========================================');
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
                             transferencia_tipo_id: dto.tipo_id,
@@ -1677,5 +1665,80 @@ export class TransferenciaService {
                 workflow_fase_atual_id: andamentoPrimeiraFase.workflow_fase_id,
             },
         });
+    }
+
+    async limparWorkflowCronograma(
+        transferencia_id: number,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient | undefined
+    ) {
+        const agora = new Date(Date.now());
+
+        // TODO: tornar compatível com troca de tipo.
+        // Para essa func ser chamada no update.
+
+        const update = async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.transferenciaAndamento.updateMany({
+                where: { transferencia_id: transferencia_id },
+                data: {
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTxn.transferenciaAndamentoTarefa.updateMany({
+                where: {
+                    transferencia_andamento: {
+                        transferencia_id: transferencia_id,
+                    },
+                },
+                data: {
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTxn.tarefa.updateMany({
+                where: {
+                    tarefa_cronograma: {
+                        transferencia_id: transferencia_id,
+                    },
+                },
+                data: {
+                    transferencia_fase_id: null,
+                    transferencia_tarefa_id: null,
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTxn.tarefaCronograma.updateMany({
+                where: { transferencia_id: transferencia_id },
+                data: {
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            // Inserindo row no histórico de alterações.
+            await prismaTxn.transferenciaHistorico.create({
+                data: {
+                    transferencia_id: transferencia_id,
+                    acao: TransferenciaHistoricoAcao.DelecaoWorkflow,
+                    criado_por: user.id,
+                    criado_em: agora,
+                },
+            });
+        };
+
+        if (prismaTx) {
+            return update(prismaTx);
+        } else {
+            return this.prisma.$transaction(update, {
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
+            });
+        }
     }
 }

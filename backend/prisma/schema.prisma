@@ -5610,6 +5610,7 @@ model Transferencia {
 enum TransferenciaHistoricoAcao {
     TrocaTipo
     DelecaoWorkflow
+    ReaberturaFaseWorkflow
 }
 
 model TransferenciaHistorico {
@@ -5624,7 +5625,8 @@ model TransferenciaHistorico {
     tipo_novo_id Int?
     tipo_novo    TransferenciaTipo? @relation("tipoNovoTransf", fields: [tipo_novo_id], references: [id])
 
-    acao TransferenciaHistoricoAcao
+    acao        TransferenciaHistoricoAcao
+    dados_extra Json                       @default("{}")
 
     criado_por Int
     criador    Pessoa   @relation(fields: [criado_por], references: [id])
