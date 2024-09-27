@@ -285,6 +285,9 @@ export class TransferenciaService {
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const agora = new Date(Date.now());
+
+        let tipoIdAntes: number | undefined = undefined;
+        let tipoIdDepois: number | undefined = undefined;
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await prismaTxn.transferencia.findFirst({
@@ -301,6 +304,8 @@ export class TransferenciaService {
                     },
                 });
                 if (!self) throw new HttpException('id| Transferência não encontrada', 404);
+
+                tipoIdAntes = self.tipo_id;
 
                 /*Validação para caso seja informada a classificação realize a validação de existência
                  */
@@ -434,10 +439,13 @@ export class TransferenciaService {
                             criado_em: agora,
                         },
                     });
+
+                    tipoIdDepois = dto.tipo_id;
                 }
 
                 let workflow_id: number | undefined;
-                if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
+                //if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
+                if (!self.workflow_id) {
                     console.log('=========================================');
                     const countdebug = await prismaTxn.tarefa.count({
                         where: {
@@ -653,6 +661,23 @@ export class TransferenciaService {
                 return transferencia;
             }
         );
+
+        // Testando por fora da tx.
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            if (tipoIdAntes && tipoIdDepois && tipoIdAntes != tipoIdDepois) {
+                const workflow = await prismaTxn.workflow.findFirst({
+                    where: {
+                        transferencia_tipo_id: dto.tipo_id,
+                        removido_em: null,
+                        ativo: true,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+                if (workflow) await this.startWorkflow(id, workflow.id, prismaTxn, user);
+            }
+        });
 
         return updated;
     }
