@@ -191,6 +191,8 @@ const PermsPS: ListaDePrivilegios[] = [
 @ApiTags('Plano Setorial')
 @Controller('plano-setorial')
 export class PlanoSetorialController {
+    static readonly  WritePerms: ListaDePrivilegios[] = PermsPS;
+
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly pdmService: PdmService) {}
 
