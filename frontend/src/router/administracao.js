@@ -50,6 +50,10 @@ import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 
+import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
+import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
+import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
+
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
@@ -71,6 +75,7 @@ const rotasParaMenuSecundário = [
       'gerenciarUnidadesDeMedida',
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
+      'classificacao',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
       'mdo.etapasListar',
@@ -701,6 +706,32 @@ export default [
       {
         path: 'editar/:id',
         component: AddEditODS,
+      },
+    ],
+  },
+  {
+    path: '/classificacao',
+    meta: {
+      título: 'Classificação',
+      rotasParaMenuSecundário,
+      limitarÀsPermissões: 'CadastroClassificacao.',
+    },
+    component: ClassificacaoRaiz,
+    children: [
+      {
+        name: 'classificacao',
+        path: '',
+        component: ClassificacaoLista,
+      },
+      {
+        name: 'classificacao.novo',
+        path: 'novo',
+        component: ClassificacaoCriarEditar,
+      },
+      {
+        name: 'classificacao.editar',
+        path: ':classificacaoId',
+        component: ClassificacaoCriarEditar,
       },
     ],
   },

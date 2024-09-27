@@ -3854,3 +3854,12 @@ export const cicloAtualizacaoModalEditarSchema = object().shape({
     }),
   ),
 });
+
+export const classificacaoCriarEditarSchema = object().shape({
+  nome: string().label('Nome').required(),
+  esfera: string()
+    .label('Esfera')
+    .required()
+    .oneOf(Object.keys(esferasDeTransferencia)),
+  transferencia_tipo_id: string().label('Tipo').required(),
+});

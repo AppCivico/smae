@@ -1,7 +1,7 @@
-import $eventHub from '@/components/eventHub';
 import qs from 'qs';
 import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
+import $eventHub from '@/components/eventHub';
 
 // Stores
 import { useAuthStore } from '@/stores/auth.store';
@@ -124,6 +124,17 @@ router.afterEach((to) => {
 
 router.beforeEach((to, from, next) => {
   const { meta } = to;
+
+  // if (Object.keys(to.meta.defaultQuery).length && to.name !== from.name) {
+  //   next({
+  //     query: {
+  //       ...to.meta.defaultQuery,
+  //       ...to.query,
+  //     },
+  //   });
+
+  //   return;
+  // }
 
   if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
     $eventHub.emit('recebimentoIniciado', to); // Start progress bar
