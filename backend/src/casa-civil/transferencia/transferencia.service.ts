@@ -435,7 +435,7 @@ export class TransferenciaService {
                 }
 
                 let workflow_id: number | undefined;
-                if (!self.workflow_id) {
+                if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
                             transferencia_tipo_id: dto.tipo_id,
