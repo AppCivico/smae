@@ -33,12 +33,12 @@ const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.i
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
   : {}));
 
-const listaDePeríodos = ['Corrente', 'Anterior'];
+  const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
   fonte: 'PrevisaoCusto',
   parametros: {
-    periodo_ano: 'Corrente',
+    ano: currentYear,
     iniciativa_id: null,
     atividade_id: null,
     pdm_id: null,
@@ -272,60 +272,53 @@ iniciar();
       </div>
     </div>
 
-    <div class="mb2">
-      <LabelFromYup
-        name="tags"
-        :schema="schema.fields.parametros"
-      />
-      <AutocompleteField
-        name="parametros.tags"
-        :controlador="{ busca: '', participantes: values.parametros.tags || [] }"
-        :grupo="filtradasPorPdM(values.parametros.pdm_id)"
-        label="descricao"
-        :class="{
-          error: errors['parametros.tags'],
-          loading: filtradasPorPdM(values.parametros.pdm_id)?.loading,
-        }"
-      />
+    <div
+      class="flex g2 mb2"
+    >
 
-      <div
-        v-if="errors['parametros.tags']"
-        class="error-msg"
-      >
-        {{ errors['parametros.tags'] }}
-      </div>
-    </div>
 
-    <div class="f1">
-      <label
-        for="periodo_ano"
-        class="label"
-      >periodo <span class="tvermelho">*</span></label>
-      <Field
-        id="periodo_ano"
-        placeholder="01/2003"
-        name="parametros.periodo_ano"
-        as="select"
-        class="inputtext light mb1"
-        :class="{ 'error': errors['parametros.periodo_ano'] }"
-      >
-        <option value="">
-          Selecionar
-        </option>
-        <option
-          v-for="item, k in listaDePeríodos"
-          :key="k"
-          :value="item"
-          :selected="k == current.parametros?.periodo_ano"
+      <div class="f1">
+        <LabelFromYup
+          name="tags"
+          :schema="schema.fields.parametros"
+        />
+        <AutocompleteField
+          name="parametros.tags"
+          :controlador="{ busca: '', participantes: values.parametros.tags || [] }"
+          :grupo="filtradasPorPdM(values.parametros.pdm_id)"
+          label="descricao"
+          :class="{
+            error: errors['parametros.tags'],
+            loading: filtradasPorPdM(values.parametros.pdm_id)?.loading,
+          }"
+        />
+
+        <div
+          v-if="errors['parametros.tags']"
+          class="error-msg"
         >
-          {{ item }}
-        </option>
-      </Field>
-      <div
-        v-if="errors['parametros.periodo_ano']"
-        class="error-msg"
-      >
-        {{ errors['parametros.periodo_ano'] }}
+          {{ errors['parametros.tags'] }}
+        </div>
+      </div>
+      <div class="f1">
+        <LabelFromYup
+            name="ano"
+            :schema="schema.fields.parametros"
+          />
+        <Field
+          name="parametros.ano"
+          type="text"
+          class="inputtext light mb2"
+          maxlength="4"
+          :class="{ 'error': errors['parametros.ano'] }"
+        >
+        </Field>
+        <div
+          v-if="errors['parametros.ano']"
+          class="error-msg"
+        >
+          {{ errors['parametros.ano'] }}
+        </div>
       </div>
     </div>
 

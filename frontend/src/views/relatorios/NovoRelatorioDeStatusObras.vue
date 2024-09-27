@@ -1,5 +1,5 @@
 <script setup>
-import { relatórioDeStatus as schema } from '@/consts/formSchemas';
+import { relatórioDeStatusObra as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useObrasStore } from '@/stores/obras.store.js';

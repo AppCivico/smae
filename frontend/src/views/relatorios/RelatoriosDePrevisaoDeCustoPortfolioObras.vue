@@ -11,10 +11,10 @@ import { prepararEtiquetas, prepararPortfoliosObras } from './helpers/preparador
 const relatóriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 
-const fonte = 'Obras';
+const fonte = 'ObrasPrevisaoCusto';
 
 const etiquetasParaValoresDeParâmetros = ref({
-  portfolio_id: {},
+  portfolio_id: {}, 
 });
 
 const etiquetasParaParâmetros = prepararEtiquetas(schema);

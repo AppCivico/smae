@@ -40,6 +40,7 @@ function excluirRelatório(id) {
     </colgroup>
     <thead>
       <tr>
+        <th>criador</th>
         <th>mês/ano início</th>
         <th>mês/ano fim</th>
         <th>tipo</th>
@@ -56,6 +57,7 @@ function excluirRelatório(id) {
           v-for="item in relatoriosStore.lista"
           :key="item.id"
         >
+          <td>{{ item.criador?.nome_exibicao }}</td>
           <td>{{ dateToTitle(item.parametros.inicio) }}</td>
           <td>{{ dateToTitle(item.parametros.fim) }}</td>
           <td>{{ item.parametros.tipo }}</td>
