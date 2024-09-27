@@ -1116,7 +1116,20 @@ export class TransferenciaService {
                         },
                     },
                 },
-                classificacao_id: true,
+                classificacaoOject: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        transferencia_tipo: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                esfera: true,
+                                categoria: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -1166,8 +1179,8 @@ export class TransferenciaService {
                     r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
-                classificacao_id: r.classificacao_id,
-            };
+                classificacao: r.classificacaoOject ? r.classificacaoOject : null,
+            } satisfies TransferenciaDto;
         });
 
         return {

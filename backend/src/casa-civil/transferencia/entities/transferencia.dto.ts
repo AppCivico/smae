@@ -5,6 +5,7 @@ import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { ClassificacaoDto } from '../../../transferencias-voluntarias/classificacao/entities/classificacao.dto';
 
 export class TransferenciaDto {
     id: number;
@@ -29,7 +30,7 @@ export class TransferenciaDto {
     andamento_etapa: string | null;
     andamento_fase: string | null;
     fase_status: string | null;
-    classificacao_id: number | null;
+    classificacao: ClassificacaoDto | null;
 }
 
 export class ListTransferenciaDto {

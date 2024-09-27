@@ -1,10 +1,7 @@
-import { CreateClassificacaoDto } from '../dto/create-classificacao.dto';
-import { IsNumber } from 'class-validator';
 import { TransferenciaTipoDto } from '../../../casa-civil/transferencia/tipo/entities/transferencia-tipo.dto';
+import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 
-export class ClassificacaoDto extends CreateClassificacaoDto {
-    @IsNumber()
-    id: number;
+export class ClassificacaoDto extends IdNomeDto {
     transferencia_tipo: TransferenciaTipoDto;
 }
 
