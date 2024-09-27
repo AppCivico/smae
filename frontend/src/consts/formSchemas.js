@@ -2187,6 +2187,9 @@ export const transferenciasVoluntarias = object({
     .label('Tipo')
     .nullable()
     .required(),
+  classificacao_id: number()
+    .label('Classificação')
+    .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
     .nullable(),

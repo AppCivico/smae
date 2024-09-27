@@ -1,16 +1,4 @@
 <script setup>
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { usePartidosStore } from '@/stores/partidos.store';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field,
@@ -20,9 +8,24 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useClassificacaoStore } from '@/stores/classificacao.store';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
+const classificacaoStore = useClassificacaoStore();
 const partidoStore = usePartidosStore();
 const ÓrgãosStore = useOrgansStore();
 const ParlamentaresStore = useParlamentaresStore();
@@ -35,6 +38,7 @@ const {
   paginação: paginaçãoDeParlamentares,
 } = storeToRefs(ParlamentaresStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
+const { lista: classificacaoComoLista } = storeToRefs(classificacaoStore);
 const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const router = useRouter();
@@ -66,9 +70,14 @@ const tiposDisponíveis = computed(() => (values.esfera
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.esfera)
   : []));
 
+const classificacoesDisponiveis = computed(() => (values.tipo_id
+  ? classificacaoComoLista.value.filter((x) => x.id === values.tipo_id)
+  : []));
+
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   // necessário por causa de 🤬
   const cargaManipulada = nulificadorTotal(controlledValues);
+  console.log(cargaManipulada);
 
   try {
     let r;
@@ -111,6 +120,7 @@ function iniciar() {
   // Discutir uma implementação melhor
   ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
   TipoDeTransferenciaStore.buscarTudo();
+  classificacaoStore.buscarTudo();
   partidoStore.buscarTudo();
 }
 
@@ -188,7 +198,6 @@ watch(itemParaEdicao, (novosValores) => {
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
-          @change="setFieldValue('tipo_id', null)"
         >
           <option value="">
             Selecionar
@@ -229,6 +238,37 @@ watch(itemParaEdicao, (novosValores) => {
 
           <option
             v-for="item in tiposDisponíveis"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="classificacao_id"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="classificacao_id"
+          :schema="schema"
+        />
+        <Field
+          name="classificacao_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.classificacao_id,
+          }"
+          :disabled="!values.tipo_id || !classificacoesDisponiveis.length"
+        >
+          <option value="">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in classificacoesDisponiveis"
             :key="item"
             :value="item.id"
           >

@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  defineAsyncComponent,
+  nextTick, onMounted,
+  ref,
+} from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
@@ -8,12 +14,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  defineAsyncComponent,
-  nextTick, onMounted,
-  ref,
-} from 'vue';
 
 const AndamentoDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
@@ -179,6 +179,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dt>
         <dd>
           {{ transferenciaEmFoco?.tipo.nome || '-' }}
+        </dd>
+      </div>
+      <div class="f1 fb5">
+        <dt class="t16 w700 mb05 tc500">
+          Classificacao
+        </dt>
+        <dd>
+          {{ transferenciaEmFoco || '-' }}
         </dd>
       </div>
       <div class="f1 fb5">

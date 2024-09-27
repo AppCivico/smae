@@ -108,18 +108,11 @@
           class="btn big"
           :disabled="isSubmitting"
         >
-          {{ !estaEditando ? 'Salvar': 'Editar' }}
+          Salvar
         </button>
         <hr class="ml2 f1">
       </div>
     </form>
-
-    <button
-      class="btn amarelo big"
-      @click="removerItem"
-    >
-      Remover item
-    </button>
   </section>
 </template>
 
@@ -196,10 +189,4 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
   voltarLista();
 });
-
-async function removerItem() {
-  await classificacaoStore.deletarItem(params.classificacaoId);
-
-  voltarLista();
-}
 </script>
