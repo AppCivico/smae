@@ -14,6 +14,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
+import { UpsertOrigemDto } from '../../common/dto/origem-pdm.dto';
 
 export class MetaOrgaoParticipante {
     /**
@@ -172,6 +173,14 @@ export class CreateMetaDto {
     @ValidateNested()
     @IsObject()
     ps_ponto_focal?: CreatePSEquipePontoFocalDto;
+
+    @IsArray()
+    @IsOptional()
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(1000, { message: '$property| precisa ter no máximo 1000 items' })
+    @ValidateNested({ each: true })
+    @Type(() => UpsertOrigemDto)
+    origens_extra?: UpsertOrigemDto[];
 }
 
 export class DadosCodTituloAtividadeDto {

@@ -14,6 +14,7 @@ import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
 import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 
 @Injectable()
 export class IniciativaService {
@@ -42,12 +43,14 @@ export class IniciativaService {
                 const geolocalizacao = dto.geolocalizacao;
                 const ps_tecnico_cp = dto.ps_tecnico_cp;
                 const ps_ponto_focal = dto.ps_ponto_focal;
+                const origens_extra = dto.origens_extra;
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
                 delete dto.tags;
                 delete dto.geolocalizacao;
                 delete dto.ps_ponto_focal;
                 delete dto.ps_tecnico_cp;
+                delete dto.origens_extra;
 
                 const codigoJaEmUso = await prismaTx.iniciativa.count({
                     where: {
@@ -69,14 +72,27 @@ export class IniciativaService {
                 if (tituloJaEmUso > 0)
                     throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
 
+                const origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
                 const iniciativa = await prismaTx.iniciativa.create({
                     data: {
+                        origem_cache: origem_cache as any,
                         criado_por: user.id,
                         criado_em: now,
                         ...dto,
                     },
                     select: { id: true },
                 });
+
+                if (Array.isArray(origens_extra)) {
+                    await CompromissoOrigemHelper.upsert(
+                        iniciativa.id,
+                        'iniciativa',
+                        origens_extra,
+                        prismaTx,
+                        user,
+                        now
+                    );
+                }
 
                 if (tipo === 'PDM') {
                     if (!op) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
@@ -418,12 +434,14 @@ export class IniciativaService {
             const geolocalizacao = dto.geolocalizacao;
             const ps_tecnico_cp = dto.ps_tecnico_cp;
             const ps_ponto_focal = dto.ps_ponto_focal;
+            const origens_extra = dto.origens_extra;
             delete dto.orgaos_participantes;
             delete dto.coordenadores_cp;
             delete dto.tags;
             delete dto.geolocalizacao;
             delete dto.ps_tecnico_cp;
             delete dto.ps_ponto_focal;
+            delete dto.origens_extra;
 
             if (tipo === 'PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
@@ -454,9 +472,15 @@ export class IniciativaService {
                     throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
             }
 
+            let origem_cache: object | undefined = undefined;
+            if (Array.isArray(origens_extra)) {
+                origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
+            }
+
             const iniciativa = await prismaTx.iniciativa.update({
                 where: { id: id },
                 data: {
+                    origem_cache,
                     atualizado_por: user.id,
                     atualizado_em: now,
                     status: '',
@@ -464,6 +488,9 @@ export class IniciativaService {
                 },
                 select: { id: true },
             });
+            if (Array.isArray(origens_extra)) {
+                await CompromissoOrigemHelper.upsert(id, 'iniciativa', origens_extra, prismaTx, user, now);
+            }
 
             if (tipo === 'PDM') {
                 if (op) {

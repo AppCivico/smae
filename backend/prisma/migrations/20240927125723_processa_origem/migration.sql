@@ -26,3 +26,12 @@ ALTER TABLE "projeto_origem" ADD CONSTRAINT "projeto_origem_rel_iniciativa_id_fk
 
 -- AddForeignKey
 ALTER TABLE "projeto_origem" ADD CONSTRAINT "projeto_origem_iniciativaId_fkey" FOREIGN KEY ("iniciativaId") REFERENCES "iniciativa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "atividade" ADD COLUMN     "origem_cache" JSON NOT NULL DEFAULT '{}';
+
+-- AlterTable
+ALTER TABLE "iniciativa" ADD COLUMN     "origem_cache" JSON NOT NULL DEFAULT '{}';
+
+-- AlterTable
+ALTER TABLE "meta" ADD COLUMN     "origem_cache" JSON NOT NULL DEFAULT '{}';

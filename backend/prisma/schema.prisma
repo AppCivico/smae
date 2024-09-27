@@ -1229,6 +1229,8 @@ model Meta {
 
     ativo Boolean @default(true)
 
+    origem_cache Json @default("{}") @db.Json
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -2044,6 +2046,8 @@ model Iniciativa {
 
     ativo Boolean @default(true)
 
+    origem_cache Json @default("{}") @db.Json
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -2133,6 +2137,8 @@ model Atividade {
     removido_em    DateTime? @db.Timestamptz(6)
 
     ativo Boolean @default(true)
+
+    origem_cache Json @default("{}") @db.Json
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])

@@ -31,6 +31,7 @@ import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PdmService } from '../pdm/pdm.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -80,10 +81,12 @@ export class MetaService {
                 const tags = dto.tags;
                 delete dto.tags;
 
+                const origens_extra = dto.origens_extra;
                 const psTecnicoCP = dto.ps_tecnico_cp;
                 const psPontoFocal = dto.ps_ponto_focal;
                 delete dto.ps_tecnico_cp;
                 delete dto.ps_ponto_focal;
+                delete dto.origens_extra;
 
                 // Verificação de código da Meta.
                 const codigoJaEmUso = await prismaTx.meta.count({
@@ -104,8 +107,11 @@ export class MetaService {
                 });
                 if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe meta com este título', 400);
 
+                const origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
+
                 const meta = await prismaTx.meta.create({
                     data: {
+                        origem_cache: origem_cache as any,
                         criado_por: user.id,
                         criado_em: now,
                         status: '',
@@ -114,6 +120,10 @@ export class MetaService {
                     },
                     select: { id: true },
                 });
+
+                if (Array.isArray(origens_extra)) {
+                    await CompromissoOrigemHelper.upsert(meta.id, 'meta', origens_extra, prismaTx, user, now);
+                }
 
                 if (tipo === 'PDM') {
                     if (!op || op.length == 0)
@@ -727,12 +737,14 @@ export class MetaService {
         const geolocalizacao = updateMetaDto.geolocalizacao;
         const psTecnicoCP = updateMetaDto.ps_tecnico_cp;
         const psPontoFocal = updateMetaDto.ps_ponto_focal;
+        const origens_extra = updateMetaDto.origens_extra;
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
         delete updateMetaDto.tags;
         delete updateMetaDto.geolocalizacao;
         delete updateMetaDto.ps_tecnico_cp;
         delete updateMetaDto.ps_ponto_focal;
+        delete updateMetaDto.origens_extra;
         const now = new Date(Date.now());
         if (tipo === 'PDM' && cp && !op)
             throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
@@ -764,9 +776,15 @@ export class MetaService {
                     if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe outra meta com este título', 400);
                 }
 
+                let origem_cache: object | undefined = undefined;
+                if (Array.isArray(origens_extra)) {
+                    origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
+                }
+
                 const meta = await prismaTx.meta.update({
                     where: { id: id },
                     data: {
+                        origem_cache,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
                         status: '',
@@ -873,6 +891,10 @@ export class MetaService {
                     await prismaTx.metaTag.deleteMany({ where: { meta_id: id } });
                     if (Array.isArray(tags) && tags.length)
                         await prismaTx.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
+                }
+
+                if (Array.isArray(origens_extra)) {
+                    await CompromissoOrigemHelper.upsert(id, 'meta', origens_extra, prismaTx, user, now);
                 }
 
                 if (geolocalizacao) {
