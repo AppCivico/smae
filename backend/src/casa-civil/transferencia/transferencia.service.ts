@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -148,7 +148,7 @@ export class TransferenciaService {
                                     : [],
                             },
                         },
-                        classificacao_id: dto.classificacao_id
+                        classificacao_id: dto.classificacao_id,
                     },
                     select: { id: true },
                 });
@@ -311,7 +311,6 @@ export class TransferenciaService {
                     if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
                 }
 
-
                 if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
                     const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
                     // Verificando match de esferas.
@@ -379,8 +378,63 @@ export class TransferenciaService {
                         throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
                 }
 
-                let workflow_id: number | undefined;
+                // Caso o tipo da transferência seja modificado.
+                // O workflow e seu cronograma devem ser removidos.
+                if (self.tipo_id != dto.tipo_id) {
+                    await prismaTxn.transferenciaAndamento.updateMany({
+                        where: { transferencia_id: id },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
 
+                    await prismaTxn.transferenciaAndamentoTarefa.updateMany({
+                        where: {
+                            transferencia_andamento: {
+                                transferencia_id: id,
+                            },
+                        },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_cronograma: {
+                                transferencia_id: id,
+                            },
+                        },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    await prismaTxn.tarefaCronograma.updateMany({
+                        where: { transferencia_id: id },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    // Inserindo row no histórico de alterações.
+                    await prismaTxn.transferenciaHistorico.create({
+                        data: {
+                            transferencia_id: id,
+                            tipo_antigo_id: self.tipo_id,
+                            tipo_novo_id: dto.tipo_id,
+                            acao: TransferenciaHistoricoAcao.TrocaTipo,
+                            criado_por: user.id,
+                            criado_em: agora,
+                        },
+                    });
+                }
+
+                let workflow_id: number | undefined;
                 if (!self.workflow_id) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
@@ -635,7 +689,7 @@ export class TransferenciaService {
                         criado_por: user.id,
                         atualizado_por: user.id,
                         atualizado_em: agora,
-                        classificacao_id : dto.classificacao_id
+                        classificacao_id: dto.classificacao_id,
                     },
                     select: { id: true },
                 });
@@ -1060,7 +1114,7 @@ export class TransferenciaService {
                         },
                     },
                 },
-                classificacao_id : true,
+                classificacao_id: true,
             },
         });
 
@@ -1232,7 +1286,7 @@ export class TransferenciaService {
                         },
                     },
                 },
-                classificacao_id : true,
+                classificacao_id: true,
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
