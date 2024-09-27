@@ -63,7 +63,7 @@ export class ProjetoProxyPdmMetasController {
 }
 
 @ApiTags('Projeto de Obras')
-@Controller('projeto-mdo/proxy')
+@Controller(['projeto-mdo/proxy', 'auxiliar/proxy'])
 export class ProjetoMDOProxyPdmMetasController {
     static readonly ReadPerms: ListaDePrivilegios[] = [
         'ProjetoMDO.administrador',

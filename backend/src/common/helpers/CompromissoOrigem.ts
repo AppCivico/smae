@@ -19,12 +19,13 @@ export class CompromissoOrigemHelper {
             atividade: 'Meta',
         };
         const relacionamento = map[entityType];
+        const entityCol = entityType === 'projeto' ? entityType + '_id' : 'rel_' + entityType + '_id';
 
         const currentOrigens = await prismaTx.compromissoOrigem.findMany({
             where: {
-                [entityType + '_id']: entityId,
                 relacionamento,
                 removido_em: null,
+                [entityCol]: entityId,
             },
         });
 
@@ -78,7 +79,7 @@ export class CompromissoOrigemHelper {
                 prismaTx.compromissoOrigem.create({
                     data: {
                         relacionamento,
-                        [entityType + '_id']: entityId,
+                        [entityCol]: entityId,
                         origem_tipo: o.origem_tipo,
                         origem_outro: o.origem_outro,
                         meta_id: o.meta_id,
@@ -98,7 +99,7 @@ export class CompromissoOrigemHelper {
                     where: {
                         relacionamento,
                         id: { in: deleted },
-                        [entityType + '_id']: entityId,
+                        [entityCol]: entityId,
                         removido_em: null,
                     },
                     data: {
