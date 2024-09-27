@@ -4,8 +4,8 @@ import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmallModal from '@/components/SmallModal.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -121,7 +121,7 @@ watchEffect(() => {
         <smae-link
           type="button"
           class="tipinfo tprimary like-a__text"
-          :to="{ name: `.variaveisDetalhe`, params: { variavelId: variavel.id } }"
+          :to="{ name: `.variaveisResumo`, params: { variavelId: variavel.id } }"
           exibir-desabilitado
         >
           <svg

@@ -65,14 +65,14 @@ export default {
       },
       children: [
         {
-          name: `${entidadeMãe}.variaveisDetalhe`,
-          path: 'detalhes',
-          component: () => import('@/views/variaveis/VariaveisDetalhe.vue'),
+          name: `${entidadeMãe}.variaveisResumo`,
+          path: 'resumo',
+          component: () => import('@/views/variaveis/VariaveisResumo.vue'),
           meta: {
             rotaDeEscape: 'variaveisListar',
             rotasParaMigalhasDePão: ['variaveisListar'],
             título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Resumo Variável',
-            títuloParaMenu: 'Detalhes',
+            títuloParaMenu: 'Resumo',
           },
         },
         {

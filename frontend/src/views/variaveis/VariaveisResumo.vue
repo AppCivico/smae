@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 
-import { computed } from 'vue';
-import { format } from 'date-fns';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import VariaveisDetalheSessao from './partials/VariaveisDetalhe/VariaveisDetalheSessao.vue';
-import type { SessaoDeDetalheLinhas } from './partials/VariaveisDetalhe/VariaveisDetalheSessao.vue';
+import { format } from 'date-fns';
+import { computed } from 'vue';
+import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
+import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
 type SessaoDeDetalheOptions = 'propriedades' | 'orgao' | 'grupos' | 'variavel' | 'intervalos';
 
@@ -147,7 +147,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     v-if="sessoes"
     class="variavei-detalhe"
   >
-    <VariaveisDetalheSessao
+    <VariaveisResumoSessao
       :linhas="sessaoPrincipal"
       remover-divisoria
     />
@@ -172,7 +172,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       </ul>
     </article>
 
-    <VariaveisDetalheSessao
+    <VariaveisResumoSessao
       v-for="(sessao, sessaoIndex) in sessoes"
       :key="`sessao--${sessaoIndex}`"
       :titulo="sessao.titulo"
@@ -190,7 +190,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
   margin: 0;
 }
 
-.sessao__item{
+.sessao__item {
   max-width: 380px;
   padding: 24px 15px;
   font-size: 13px;
