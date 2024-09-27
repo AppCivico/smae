@@ -7189,7 +7189,7 @@ model Classificacao {
     criador               Pessoa            @relation("criador", fields: [criado_por], references: [id])
     atualizador           Pessoa?           @relation("atualizador", fields: [atualizado_por], references: [id])
     removedor             Pessoa?           @relation("removedor", fields: [removido_por], references: [id])
-    transferenciaTipo     TransferenciaTipo @relation("classificacoes", fields: [transferencia_tipo_id], references: [id])
+    transferencia_tipo    TransferenciaTipo @relation("classificacoes", fields: [transferencia_tipo_id], references: [id])
     transferencias        Transferencia[]   @relation("classificacao")
 
     @@index([nome])

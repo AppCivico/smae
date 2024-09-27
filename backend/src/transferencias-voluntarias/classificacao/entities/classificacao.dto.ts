@@ -5,7 +5,7 @@ import { TransferenciaTipoDto } from '../../../casa-civil/transferencia/tipo/ent
 export class ClassificacaoDto extends CreateClassificacaoDto{
     @IsNumber()
     id: number;
-    transferenciaTipo: TransferenciaTipoDto;
+    transferencia_tipo: TransferenciaTipoDto;
 }
 export class ListClassificacaoDto {
     linhas: ClassificacaoDto[];
