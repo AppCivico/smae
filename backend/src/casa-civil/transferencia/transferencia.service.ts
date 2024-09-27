@@ -408,6 +408,8 @@ export class TransferenciaService {
                             },
                         },
                         data: {
+                            transferencia_fase_id: null,
+                            transferencia_tarefa_id: null,
                             removido_em: agora,
                             removido_por: user.id,
                         },
