@@ -113,7 +113,7 @@ iniciar();
         Olá, {{ sessao.nome_exibicao }}!
       </p>
       <p class="w700 t64">
-        Bem-vindo ao
+        Bem-vindo(a) ao
         <abbr title="Sistema de Monitoramento e Acompanhamento Estratégico">
           SMAE
         </abbr>
