@@ -60,8 +60,8 @@ const sessaoPrincipal = computed<SessaoDeDetalheLinhas>(() => {
       { label: 'Código', valor: emFoco.value.codigo },
     ],
     [
-      { label: 'Nome', valor: obterTipo.value.nome },
       { label: 'Tipo de variável', valor: obterTipo.value.tipo },
+      { label: 'Nome', valor: obterTipo.value.nome },
     ],
     [
       { label: 'Descrição', valor: emFoco.value.descricao, col: 3 },
