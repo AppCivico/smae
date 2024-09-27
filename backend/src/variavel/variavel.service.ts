@@ -19,7 +19,7 @@ import {
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -2387,7 +2387,10 @@ export class VariavelService {
                 }
             }
             if (filters.serie == 'Realizado')
-                filters.data_fim = DateTime.now().startOf('month').toJSDate();
+                filters.data_fim = DateTime.local({ zone: SYSTEM_TIMEZONE })
+                    .startOf('month')
+                    .plus({ month: 1 })
+                    .toJSDate();
         }
 
         // TODO adicionar limpeza da serie para quem for ponto focal
