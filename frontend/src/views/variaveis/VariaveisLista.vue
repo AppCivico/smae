@@ -1,7 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
@@ -11,6 +8,9 @@ import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGl
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
+import { storeToRefs } from 'pinia';
+import { ref, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -106,7 +106,7 @@ watchEffect(() => {
 
   <TabelaDeVariaveisGlobais
     aria-labelledby="titulo-da-pagina"
-    numero-de-colunas-extras="4"
+    numero-de-colunas-extras="5"
   >
     <template #definicaoUltimasColunas>
       <col class="col--botão-de-ação">
