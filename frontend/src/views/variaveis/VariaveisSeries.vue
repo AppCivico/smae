@@ -246,7 +246,7 @@ function limparFormulário() {
 }
 
 watch(() => props.variavelId, (novoId) => {
-  variaveisGlobaisStore.buscarSerie(novoId);
+  variaveisGlobaisStore.buscarSerie(novoId, { serie: props.tipoDeValor });
   variaveisCategoricasStore.buscarTudo();
 }, {
   immediate: true,
