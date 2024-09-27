@@ -112,7 +112,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroObjetivoEstrategico: ['', null],
     CadastroEtapa: ['', null],
     CadastroGrupoPaineisExternas: ['', null],
-    CadastroClassificacao:['Cadastro de Classificacao','CasaCivil']
+    CadastroClassificacao: ['Cadastro de Classificacao', 'CasaCivil'],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
@@ -495,10 +495,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
     CadastroClassificacao: [
-        ['CadastroClassificacao.editar','Editar Classificação'],
-        ['CadastroClassificacao.inserir','Incluir Classificação'],
-        ['CadastroClassificacao.listar','Listar Classificações'],
-        ['CadastroClassificacao.remover','Excluir Classificações']
+        ['CadastroClassificacao.editar', 'Editar Classificação'],
+        ['CadastroClassificacao.inserir', 'Incluir Classificação'],
+        ['CadastroClassificacao.listar', 'Listar Classificações'],
+        ['CadastroClassificacao.remover', 'Excluir Classificações'],
     ],
 };
 
