@@ -7,6 +7,7 @@ import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
+import { CachedMetasDto } from '../../common/dto/origem-pdm.dto';
 
 export class IdDesc {
     id: number;
@@ -50,6 +51,7 @@ export class MetaItemDto {
     pode_editar: boolean;
     ps_tecnico_cp: CreatePSEquipeTecnicoCPDto;
     ps_ponto_focal: CreatePSEquipePontoFocalDto;
+    resumo_origens: CachedMetasDto;
 }
 
 export class MetaPdmDto {

@@ -15,6 +15,7 @@ import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
 import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
+import { CachedMetasDto } from '../common/dto/origem-pdm.dto';
 
 @Injectable()
 export class IniciativaService {
@@ -331,6 +332,7 @@ export class IniciativaService {
                         tipo: true,
                     },
                 },
+                origem_cache:true,
             },
         });
 
@@ -391,6 +393,7 @@ export class IniciativaService {
             }
 
             ret.push({
+                resumo_origens: dbIniciativa.origem_cache?.valueOf() as CachedMetasDto,
                 tags,
                 id: dbIniciativa.id,
                 titulo: dbIniciativa.titulo,

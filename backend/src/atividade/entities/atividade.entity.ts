@@ -4,6 +4,7 @@ import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { MetaIniAtvTag } from '../../meta/entities/meta.entity';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
+import { CachedMetasDto } from '../../common/dto/origem-pdm.dto';
 
 export class IdDesc {
     id: number;
@@ -33,4 +34,5 @@ export class Atividade {
     geolocalizacao: GeolocalizacaoDto[];
     ps_tecnico_cp: CreatePSEquipeTecnicoCPDto;
     ps_ponto_focal: CreatePSEquipePontoFocalDto;
+    resumo_origens: CachedMetasDto;
 }

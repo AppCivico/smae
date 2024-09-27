@@ -32,6 +32,7 @@ import { PdmService } from '../pdm/pdm.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
+import { CachedMetasDto } from '../common/dto/origem-pdm.dto';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -598,6 +599,7 @@ export class MetaService {
                               },
                           }
                         : undefined,
+                origem_cache: true,
             },
         });
 
@@ -691,6 +693,7 @@ export class MetaService {
             }
 
             ret.push({
+                resumo_origens: dbMeta.origem_cache?.valueOf() as CachedMetasDto,
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
                 contexto: dbMeta.contexto,

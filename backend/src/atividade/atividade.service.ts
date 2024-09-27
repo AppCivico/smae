@@ -16,6 +16,7 @@ import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
 import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
+import { CachedMetasDto } from '../common/dto/origem-pdm.dto';
 
 @Injectable()
 export class AtividadeService {
@@ -355,6 +356,7 @@ export class AtividadeService {
                         tipo: true,
                     },
                 },
+                origem_cache: true,
             },
         });
 
@@ -415,6 +417,7 @@ export class AtividadeService {
             }
 
             ret.push({
+                resumo_origens: dbAtividade.origem_cache?.valueOf() as CachedMetasDto,
                 tags,
                 id: dbAtividade.id,
                 titulo: dbAtividade.titulo,
