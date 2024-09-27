@@ -306,7 +306,7 @@ export class TransferenciaService {
                  */
                 if (dto.classificacao_id != null) {
                     const tipoExiste = await prismaTxn.classificacao.count({
-                        where: { id: id, removido_em: null },
+                        where: { id: dto.classificacao_id, removido_em: null },
                     });
                     if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
                 }
