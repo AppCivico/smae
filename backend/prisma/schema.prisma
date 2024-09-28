@@ -5607,7 +5607,7 @@ model Transferencia {
     ViewNotasTransferencias        ViewNotasTransferencias[]
     ViewDashboardAnalise           ViewTransferenciaAnalise[]
     parlamentar                    TransferenciaParlamentar[]
-    classificacaoOject             Classificacao?                   @relation("classificacao", fields: [classificacao_id], references: [id])
+    classificacao                  Classificacao?                   @relation("classificacao", fields: [classificacao_id], references: [id])
     historico                      TransferenciaHistorico[]
 
     @@map("transferencia")

@@ -30,7 +30,7 @@ export class TransferenciaDto {
     andamento_etapa: string | null;
     andamento_fase: string | null;
     fase_status: string | null;
-    classificacao: ClassificacaoDto | null;
+    classificacao_id: number | null;
 }
 
 export class ListTransferenciaDto {
@@ -86,7 +86,7 @@ export class TransferenciaDetailDto {
 
     bloco_nota_token: string;
 
-    classificacao_id: number | null;
+    classificacao: ClassificacaoDto | null;
 }
 
 export class ParlamentarTransferenciaDto {

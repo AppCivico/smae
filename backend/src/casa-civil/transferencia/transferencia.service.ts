@@ -1116,20 +1116,7 @@ export class TransferenciaService {
                         },
                     },
                 },
-                classificacaoOject: {
-                    select: {
-                        id: true,
-                        nome: true,
-                        transferencia_tipo: {
-                            select: {
-                                id: true,
-                                nome: true,
-                                esfera: true,
-                                categoria: true,
-                            },
-                        },
-                    },
-                },
+                classificacao_id: true,
             },
         });
 
@@ -1179,7 +1166,7 @@ export class TransferenciaService {
                     r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
-                classificacao: r.classificacaoOject ? r.classificacaoOject : null,
+                classificacao_id: r.classificacao_id,
             } satisfies TransferenciaDto;
         });
 
@@ -1301,7 +1288,20 @@ export class TransferenciaService {
                         },
                     },
                 },
-                classificacao_id: true,
+                classificacao: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        transferencia_tipo: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                esfera: true,
+                                categoria: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
@@ -1364,7 +1364,7 @@ export class TransferenciaService {
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
             orgao_concedente: row.orgao_concedente,
-            classificacao_id: row.classificacao_id,
+            classificacao: row.classificacao,
         } satisfies TransferenciaDetailDto;
     }
 
