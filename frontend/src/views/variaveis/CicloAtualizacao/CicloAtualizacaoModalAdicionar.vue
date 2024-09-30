@@ -37,87 +37,179 @@
     <hr>
 
     <form class="mt1 flex column">
-      <article class="formulario mt1">
-        <div class="flex g4">
-          <div class="f1 formulario__item formulario__item--valor_realizado">
+      <section :class="`formularios formularios--${fase}`">
+        <article
+          v-if="forumlariosAExibir.liberacao.exibir"
+          class="mt2 formulario formulario--liberacao"
+        >
+          <div class="formulario__item">
             <LabelFromYup
-              name="valor_realizado"
+              name="analise_qualitativa_liberador"
               :schema="schema"
             />
 
-            <Field
-              v-if="!temCategorica"
-              class="inputtext light "
-              type="text"
-              name="valor_realizado"
-              @update:model-value="atualizarVariavelAcumulado"
-            />
-            <Field
-              v-else
-              class="inputtext light "
-              as="select"
-              name="valor_realizado"
-            >
-              <option value="">
-                -
-              </option>
-
-              <option
-                v-for="variaveisCategoricasValor in variaveisCategoricasValores"
-                :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
-                :value="variaveisCategoricasValor.valor_variavel"
-              >
-                {{ variaveisCategoricasValor.titulo }}
-              </option>
-            </Field>
-
-            <ErrorMessage
-              name="valor_realizado"
-            />
-          </div>
-
-          <div
-            v-if="emFoco?.variavel.acumulativa"
-            :class="[
-              'f1 formulario__item formulario__item--valor_realizado_acumulado',
-              'formulario__item--disabled'
-            ]"
-          >
-            <LabelFromYup
-              name="valor_realizado_acumulado"
-              :schema="schema"
-            />
             <Field
               class="inputtext light f1"
-              type="text"
-              name="valor_realizado_acumulado"
-              disabled
+              as="textarea"
+              name="analise_qualitativa_liberador"
+              :disabled="!forumlariosAExibir.liberacao.liberado"
             />
 
             <ErrorMessage
-              name="valor_realizado_acumulado"
+              name="analise_qualitativa_liberador"
             />
           </div>
-        </div>
+        </article>
 
-        <div class="mt2  formulario__item formulario__item--analise_qualitativa">
-          <LabelFromYup
-            name="analise_qualitativa"
-            :schema="schema"
-          />
+        <article
+          v-if="forumlariosAExibir.aprovacao.exibir"
+          class="mt2 formulario formulario--aprovacao"
+        >
+          <div class="formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa_aprovador"
+              :schema="schema"
+            />
 
-          <Field
-            :style="{ height: '124px'}"
-            class="inputtext light f1"
-            as="textarea"
-            name="analise_qualitativa"
-          />
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa_aprovador"
+              :disabled="!forumlariosAExibir.aprovacao.liberado"
+            />
 
-          <ErrorMessage
-            name="analise_qualitativa"
-          />
-        </div>
-      </article>
+            <ErrorMessage
+              name="analise_qualitativa_aprovador"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="fase !== 'cadastro'"
+          class="mt2 formulario formulario--complementacao"
+        >
+          <div class="flex g025 center formulario__item">
+            <Field
+              class="inputcheckbox"
+              type="checkbox"
+              name="solicitar_complementacao"
+              :value="true"
+              :unchecked-value="false"
+            />
+
+            <LabelFromYup
+              class="mb0"
+              name="solicitar_complementacao"
+              :schema="schema"
+            />
+          </div>
+
+          <div class="formulario__item mt1">
+            <LabelFromYup
+              name="pedido_complementacao"
+              :schema="schema"
+            />
+
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="pedido_complementacao"
+              :disabled="!values.solicitar_complementacao"
+            />
+
+            <ErrorMessage
+              name="pedido_complementacao"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="forumlariosAExibir.cadastro.exibir"
+          class="mt2 formulario formulario--cadastro mt1"
+        >
+          <div class="flex g4">
+            <div class="f1 formulario__item formulario__item--valor_realizado">
+              <LabelFromYup
+                name="valor_realizado"
+                :schema="schema"
+              />
+
+              <Field
+                v-if="!temCategorica"
+                class="inputtext light "
+                type="text"
+                name="valor_realizado"
+                :disabled="!forumlariosAExibir.cadastro.liberado"
+                @update:model-value="atualizarVariavelAcumulado"
+              />
+              <Field
+                v-else
+                class="inputtext light "
+                as="select"
+                name="valor_realizado"
+                :disabled="!forumlariosAExibir.cadastro.liberado"
+              >
+                <option value="">
+                  -
+                </option>
+
+                <option
+                  v-for="variaveisCategoricasValor in variaveisCategoricasValores"
+                  :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
+                  :value="variaveisCategoricasValor.valor_variavel"
+                >
+                  {{ variaveisCategoricasValor.titulo }}
+                </option>
+              </Field>
+
+              <ErrorMessage
+                name="valor_realizado"
+              />
+            </div>
+
+            <div
+              v-if="emFoco?.variavel.acumulativa"
+              :class="[
+                'f1 formulario__item formulario__item--valor_realizado_acumulado',
+                'formulario__item--disabled'
+              ]"
+            >
+              <LabelFromYup
+                name="valor_realizado_acumulado"
+                :schema="schema"
+              />
+              <Field
+                class="inputtext light f1"
+                type="text"
+                name="valor_realizado_acumulado"
+                disabled
+              />
+
+              <ErrorMessage
+                name="valor_realizado_acumulado"
+              />
+            </div>
+          </div>
+
+          <div class="mt2 formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa"
+              :schema="schema"
+            />
+
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa"
+              :disabled="!forumlariosAExibir.cadastro.liberado"
+            />
+
+            <ErrorMessage
+              name="analise_qualitativa"
+            />
+          </div>
+        </article>
+      </section>
 
       <article class="upload-arquivos mt1">
         <UploadArquivos
@@ -162,7 +254,7 @@ import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 
-import { cicloAtualizacaoModalAdicionarSchema as schema } from '@/consts/formSchemas';
+import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
@@ -170,6 +262,20 @@ import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.stor
 type VariavelConfiguracaoItem = {
   label: string
   valor: string | number
+};
+
+type FaseOpcoes = 'cadastro' | 'aprovacao' | 'liberacao';
+type FormularioSituacao = {
+  exibir: boolean
+  liberado: boolean
+};
+
+type FormulariosTiposPosicao = {
+  [key in FaseOpcoes]: number
+};
+
+type FormulariosTiposSituacao = {
+  [key in FaseOpcoes]: FormularioSituacao
 };
 
 type Emits = {
@@ -188,16 +294,12 @@ const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
 
 const valorInicial = {
+  solicitar_complementacao: true,
   valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
   valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
     ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
   analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
 };
-
-const { handleSubmit, setFieldValue } = useForm({
-  validationSchema: schema,
-  initialValues: valorInicial,
-});
 
 const variaveisCategoricasValores = computed(() => {
   if (!variaveisCategoricasStore.emFoco) {
@@ -210,6 +312,41 @@ const variaveisCategoricasValores = computed(() => {
 const dataCicloAtualizacao = computed<string>(() => (
   format(new UTCDate(`${$route.params.dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
 ));
+
+const fase = computed<FaseOpcoes>(() =>
+  // 'cadastro' | 'aprovacao' | 'liberacao'
+  'liberacao');
+
+const fasePosicao = computed<number>(() => {
+  const fasePosicaoOpcoes: FormulariosTiposPosicao = {
+    cadastro: 1,
+    aprovacao: 2,
+    liberacao: 3,
+  };
+
+  return fasePosicaoOpcoes[fase.value] || 0;
+});
+
+const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(fasePosicao.value));
+
+const forumlariosAExibir = computed<FormulariosTiposSituacao>(() => {
+  const posicaoAtual = fasePosicao.value;
+
+  return {
+    cadastro: {
+      exibir: true,
+      liberado: posicaoAtual === 1,
+    },
+    aprovacao: {
+      exibir: posicaoAtual >= 2,
+      liberado: posicaoAtual === 2,
+    },
+    liberacao: {
+      exibir: posicaoAtual >= 3,
+      liberado: posicaoAtual === 3,
+    },
+  };
+});
 
 const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
   if (!emFoco.value) {
@@ -226,6 +363,11 @@ const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
       valor: emFoco.value.variavel.casas_decimais,
     },
   ];
+});
+
+const { handleSubmit, setFieldValue, values } = useForm({
+  validationSchema: schema.value,
+  initialValues: valorInicial,
 });
 
 function atualizarVariavelAcumulado(valor: string) {
@@ -310,6 +452,42 @@ function removerArquivo(arquivoIndex: number) {
   font-weight: 400;
 }
 
+.formularios {
+  display: grid;
+}
+
+.formularios--liberacao {
+  grid-template-areas:
+    'liberacao'
+    'complementacao'
+    'aprovacao'
+    'cadastro'
+  ;;
+}
+.formularios--aprovacao {
+  grid-template-areas:
+    'aprovacao'
+    'complementacao'
+    'cadastro'
+  ;
+}
+.formularios--cadastro {
+  display: block;
+}
+
+.formulario--liberacao {
+  grid-area: liberacao;
+}
+.formulario--aprovacao {
+  grid-area: aprovacao;
+}
+.formulario--complementacao {
+  grid-area: complementacao;
+}
+.formulario--cadastro {
+  grid-area: cadastro;
+}
+
 .variaveis-configuracoes__item-label, .variaveis-configuracoes__item-valor {
   font-size: 14px;
   line-height: 18px;
@@ -331,7 +509,7 @@ function removerArquivo(arquivoIndex: number) {
   opacity: 0.2;
 }
 
-.formulario__item--analise_qualitativa {
+.formulario__item {
   textarea {
     height: 124px;
   }
