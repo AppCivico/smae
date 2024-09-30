@@ -41,7 +41,7 @@ const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE
 
 // Carrega os anos possíveis - começa em 2003 e termina no corrente mais cinco
 const endYear = new Date().getFullYear() + 5;
-const startYear = 2003;;
+const startYear = 2003;
 
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
   return this.test('teste', errorMessage, function __(value) {
@@ -2191,7 +2191,7 @@ export const transferenciasVoluntarias = object({
     .label('Tipo')
     .nullable()
     .required(),
-  classificacao_id: number()
+  classificacao_id: string()
     .label('Classificação')
     .nullable(),
   clausula_suspensiva: boolean()
@@ -2644,8 +2644,8 @@ export const relatórioDePrevisãoDeCustoPdM = object()
         .nullable(),
       ano: number()
         .label('Ano de referência')
-        .min(startYear, '${label} não pode ser menor do que ' + startYear)
-        .max(endYear, '${label} não pode ser maior do que ' + endYear)
+        .min(startYear, `\${label} não pode ser menor do que ${startYear}`)
+        .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
       pdm_id: string()
         .label('PDM')
@@ -2674,8 +2674,8 @@ export const relatórioDePrevisãoDeCustoPortfolio = object()
         .transform((v) => (v === null || Number.isNaN(v) ? null : v)),
       ano: number()
         .label('Ano de referência')
-        .min(startYear, '${label} não pode ser menor do que ' + startYear)
-        .max(endYear, '${label} não pode ser maior do que ' + endYear)
+        .min(startYear, `\${label} não pode ser menor do que ${startYear}`)
+        .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
     }),
     salvar_arquivo: boolean(),
@@ -2726,7 +2726,6 @@ export const relatórioDeStatus = object({
   }),
   salvar_arquivo: boolean(),
 });
-
 
 export const relatórioDeStatusObra = object({
   fonte: string()
@@ -2835,8 +2834,8 @@ export const relatórioDePrevisãoDeCustoPortfolioObras = object()
         .transform((v) => (v === null || Number.isNaN(v) ? null : v)),
       ano: number()
         .label('Ano de referência')
-        .min(startYear, '${label} não pode ser menor do que ' + startYear)
-        .max(endYear, '${label} não pode ser maior do que ' + endYear)
+        .min(startYear, `\${label} não pode ser menor do que ${startYear}`)
+        .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
     }),
     salvar_arquivo: boolean(),
@@ -3928,12 +3927,33 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
   tipo: mixed().label('Tipo').oneOf(comunicadosGeraisFiltrosSchemaTipoOpcoes),
 });
 
-export const cicloAtualizacaoModalAdicionarSchema = object().shape({
-  valor_realizado: string().label('valor realizado').required(),
-  valor_realizado_acumulado: string().required()
-    .label('valor realizado acumulado'),
-  analise_qualitativa: string().label('análise qualitativa'),
-});
+export const cicloAtualizacaoModalAdicionarSchema = (posicao) => {
+  const schemaCampos = {
+    valor_realizado: string().label('valor realizado').required(),
+    valor_realizado_acumulado: string().required()
+      .label('valor realizado acumulado'),
+    analise_qualitativa: string().label('análise qualitativa'),
+  };
+
+  if (posicao !== 1) {
+    schemaCampos.solicitar_complementacao = boolean().label('Solicitar complementação');
+    schemaCampos.pedido_complementacao = string()
+      .label('Pedido de complementação')
+      .when('solicitar_complementacao', (solicitarComplementacao, field) => (
+        solicitarComplementacao ? field.required() : field.nullable()
+      ));
+  }
+
+  if (posicao >= 2) {
+    schemaCampos.analise_qualitativa_aprovador = string().label('análise qualitativa do aprovador').required();
+  }
+
+  if (posicao >= 3) {
+    schemaCampos.analise_qualitativa_liberador = string().label('análise qualitativa do liberador').required();
+  }
+
+  return object().shape(schemaCampos);
+};
 
 export const cicloAtualizacaoModalEditarSchema = object().shape({
   analise_qualitativa: string().label('análise qualitativa'),

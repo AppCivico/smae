@@ -245,7 +245,7 @@ watch(itemParaEdicao, (novosValores) => {
           </option>
         </Field>
         <ErrorMessage
-          name="classificacao_id"
+          name="tipo_id"
           class="error-msg"
         />
       </div>
@@ -276,7 +276,7 @@ watch(itemParaEdicao, (novosValores) => {
           </option>
         </Field>
         <ErrorMessage
-          name="tipo_id"
+          name="classificacao_id"
           class="error-msg"
         />
       </div>

@@ -68,12 +68,14 @@ export const useClassificacaoStore = defineStore('classificacao', {
         console.error('Erro ao tentar atualizar classificação', err);
       }
     },
-    async deletarItem(id: string): Promise<void> {
+    async deletarItem(id: string): Promise<boolean> {
       try {
         await this.requestS.delete(`${baseUrl}/${id}`);
+        return true;
       } catch (err) {
         this.erro = err;
         console.error('Erro ao tentar deletar classificação', err);
+        return false;
       }
     },
   },
