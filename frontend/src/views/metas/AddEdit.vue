@@ -104,8 +104,11 @@ function pegaPsTecnicoCpCompleto(idsDasEquipes) {
         orgaos_participantes.value.push(z);
       });
     }
-    if (singleMeta.value.coordenadores_cp) {
-      coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map((x) => x.id);
+
+    if (route.meta.entidadeMãe === 'pdm') {
+      if (singleMeta.value.coordenadores_cp) {
+        coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map((x) => x.id);
+      }
     }
   }
 
@@ -116,6 +119,14 @@ const schema = computed(() => metaSchema(activePdm.value));
 
 const valoresIniciais = computed(() => ({
   ...singleMeta.value,
+
+  ps_ponto_focal: {
+    equipes: singleMeta.value?.ps_ponto_focal?.equipes || [],
+  },
+
+  ps_tecnico_cp: {
+    equipes: singleMeta.value?.ps_tecnico_cp?.equipes || [],
+  },
 
   macro_tema_id: singleMeta.value.macro_tema?.id || route.params.macro_tema_id,
   sub_tema_id: singleMeta.value.sub_tema?.id || route.params.sub_tema_id,
@@ -144,8 +155,10 @@ async function onSubmit(values) {
       });
     }
 
-    values.coordenadores_cp = coordenadores_cp.value.participantes;
-    if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.coordenadores_cp = coordenadores_cp.value.participantes;
+      if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    }
 
     if (!values.pdm_id) values.pdm_id = activePdm.value.id;
 
@@ -617,13 +630,12 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
       <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
         <label class="label">
-          Equipes responsáveis na coordenadoria de planejamento
-          <span class="tvermelho">*</span>
+          Equipe Técnica de Administração do Plano
         </label>
 
         <div>
           <AutocompleteField
-            name="values.ps_tecnico_cp.equipes"
+            name="ps_tecnico_cp.equipes"
             :controlador="{
               busca: '',
               participantes: values.ps_tecnico_cp.equipes,

@@ -7,6 +7,8 @@ import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+import { useEquipesStore } from '@/stores/equipes.store';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const authStore = useAuthStore();
@@ -20,6 +22,9 @@ const { atividade_id } = route.params;
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
 MetasStore.getPdM();
+
+const EquipesStore = useEquipesStore();
+EquipesStore.buscarTudo();
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 
@@ -84,28 +89,34 @@ iniciar();
             {{ singleAtividade.codigo }}
           </div>
         </div>
-        <div class="mr2">
+        <div
+          v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
+          class="mr2"
+        >
           <div class="t12 uc w700 mb05 tamarelo">
-            Órgão responsável
+            Equipes responsáveis
           </div>
           <div class="t13">
-            {{ órgãosResponsáveisNaAtividadeEmFoco.map(x => x.orgao.descricao).join(', ') }}
+            {{ combinadorDeListas(
+              EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
+              false,
+              'titulo',
+            ) }}
           </div>
         </div>
-        <div class="mr2">
+        <div
+          v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
+          class="mr2"
+        >
           <div class="t12 uc w700 mb05 tamarelo">
-            Órgão participante
+            Equipe técnica do administrador do plano
           </div>
           <div class="t13">
-            {{ singleAtividade.orgaos_participantes.map(x => x.orgao.descricao).join(', ') }}
-          </div>
-        </div>
-        <div class="mr2">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Responsável na coordenadoria de planejamento
-          </div>
-          <div class="t13">
-            {{ singleAtividade.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+            {{ combinadorDeListas(
+              EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
+              false,
+              'titulo',
+            ) }}
           </div>
         </div>
       </div>

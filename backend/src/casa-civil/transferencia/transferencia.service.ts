@@ -1,6 +1,6 @@
-import { BadRequestException, HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -48,6 +48,15 @@ export class TransferenciaService {
                     where: { id: dto.tipo_id, removido_em: null },
                 });
                 if (!tipoExiste) throw new HttpException('tipo_id| Tipo não encontrado.', 400);
+
+                /*Validação para caso seja informada a classificação realize a validação de existência
+                 */
+                if (dto.classificacao_id != null) {
+                    const tipoExiste = await prismaTxn.classificacao.count({
+                        where: { id: dto.classificacao_id, removido_em: null },
+                    });
+                    if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
+                }
 
                 // Tratando workflow
                 // Caso tenha um workflow ativo para o tipo de transferência.
@@ -139,6 +148,7 @@ export class TransferenciaService {
                                     : [],
                             },
                         },
+                        classificacao_id: dto.classificacao_id,
                     },
                     select: { id: true },
                 });
@@ -292,6 +302,15 @@ export class TransferenciaService {
                 });
                 if (!self) throw new HttpException('id| Transferência não encontrada', 404);
 
+                /*Validação para caso seja informada a classificação realize a validação de existência
+                 */
+                if (dto.classificacao_id != null) {
+                    const tipoExiste = await prismaTxn.classificacao.count({
+                        where: { id: dto.classificacao_id, removido_em: null },
+                    });
+                    if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
+                }
+
                 if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
                     const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
                     // Verificando match de esferas.
@@ -359,9 +378,66 @@ export class TransferenciaService {
                         throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
                 }
 
-                let workflow_id: number | undefined;
+                // Caso o tipo da transferência seja modificado.
+                // O workflow e seu cronograma devem ser removidos.
+                if (self.tipo_id != dto.tipo_id) {
+                    await prismaTxn.transferenciaAndamento.updateMany({
+                        where: { transferencia_id: id },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
 
-                if (!self.workflow_id) {
+                    await prismaTxn.transferenciaAndamentoTarefa.updateMany({
+                        where: {
+                            transferencia_andamento: {
+                                transferencia_id: id,
+                            },
+                        },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_cronograma: {
+                                transferencia_id: id,
+                            },
+                        },
+                        data: {
+                            transferencia_fase_id: null,
+                            transferencia_tarefa_id: null,
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    await prismaTxn.tarefaCronograma.updateMany({
+                        where: { transferencia_id: id },
+                        data: {
+                            removido_em: agora,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    // Inserindo row no histórico de alterações.
+                    await prismaTxn.transferenciaHistorico.create({
+                        data: {
+                            transferencia_id: id,
+                            tipo_antigo_id: self.tipo_id,
+                            tipo_novo_id: dto.tipo_id,
+                            acao: TransferenciaHistoricoAcao.TrocaTipo,
+                            criado_por: user.id,
+                            criado_em: agora,
+                        },
+                    });
+                }
+
+                let workflow_id: number | undefined;
+                if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
                             transferencia_tipo_id: dto.tipo_id,
@@ -401,6 +477,7 @@ export class TransferenciaService {
                         numero_identificacao: dto.numero_identificacao,
                         atualizado_por: user.id,
                         atualizado_em: agora,
+                        classificacao_id: dto.classificacao_id,
                     },
                     select: { id: true },
                 });
@@ -614,6 +691,7 @@ export class TransferenciaService {
                         criado_por: user.id,
                         atualizado_por: user.id,
                         atualizado_em: agora,
+                        classificacao_id: dto.classificacao_id,
                     },
                     select: { id: true },
                 });
@@ -686,17 +764,7 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
-                    // Criada com status base de "Registrada".
-                    const status = await prismaTxn.distribuicaoStatusBase.findFirstOrThrow({
-                        where: {
-                            tipo: DistribuicaoStatusTipo.NaoIniciado,
-                        },
-                        select: {
-                            id: true,
-                        },
-                    });
-
-                    const distribuicao = await this.distribuicaoService.create(
+                    await this.distribuicaoService.create(
                         {
                             transferencia_id: transferencia.id,
                             dotacao: self.dotacao ? self.dotacao : undefined,
@@ -712,18 +780,6 @@ export class TransferenciaService {
                         user,
                         true
                     );
-
-                    await prismaTxn.distribuicaoRecursoStatus.create({
-                        data: {
-                            distribuicao_id: distribuicao.id,
-                            status_base_id: status.id,
-                            data_troca: new Date(Date.now()),
-                            orgao_responsavel_id: orgaoCasaCivil.id,
-                            nome_responsavel: 'SERI',
-                            motivo: 'Distribuição criada automaticamente',
-                            criado_por: user.id,
-                        },
-                    });
                 }
 
                 // Tratando controles de limites de valores.
@@ -741,20 +797,30 @@ export class TransferenciaService {
                                 some: {
                                     OR: [
                                         {
-                                            AND: [
-                                                { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                                {
-                                                    NOT: {
-                                                        status_base: { tipo: DistribuicaoStatusTipo.Redirecionada },
-                                                    },
+                                            status_base: {
+                                                tipo: {
+                                                    notIn: [
+                                                        DistribuicaoStatusTipo.Declinada,
+                                                        DistribuicaoStatusTipo.Cancelada,
+                                                        DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                        DistribuicaoStatusTipo.Redirecionada,
+                                                        DistribuicaoStatusTipo.Terminal,
+                                                    ],
                                                 },
-                                            ],
+                                            },
                                         },
                                         {
-                                            AND: [
-                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
-                                            ],
+                                            status: {
+                                                tipo: {
+                                                    notIn: [
+                                                        DistribuicaoStatusTipo.Declinada,
+                                                        DistribuicaoStatusTipo.Cancelada,
+                                                        DistribuicaoStatusTipo.ImpedidaTecnicamente,
+                                                        DistribuicaoStatusTipo.Redirecionada,
+                                                        DistribuicaoStatusTipo.Terminal,
+                                                    ],
+                                                },
+                                            },
                                         },
                                     ],
                                 },
@@ -1050,6 +1116,7 @@ export class TransferenciaService {
                         },
                     },
                 },
+                classificacao_id: true,
             },
         });
 
@@ -1099,6 +1166,7 @@ export class TransferenciaService {
                     r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
+                classificacao_id: r.classificacao_id,
             };
         });
 
@@ -1220,6 +1288,7 @@ export class TransferenciaService {
                         },
                     },
                 },
+                classificacao_id: true,
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
@@ -1282,6 +1351,7 @@ export class TransferenciaService {
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
             orgao_concedente: row.orgao_concedente,
+            classificacao_id: row.classificacao_id,
         } satisfies TransferenciaDetailDto;
     }
 
@@ -1544,6 +1614,7 @@ export class TransferenciaService {
             where: {
                 transferencia_id: transferencia_id,
                 data_inicio: { not: null },
+                removido_em: null,
             },
             select: {
                 workflow_etapa_id: true,
@@ -1554,6 +1625,7 @@ export class TransferenciaService {
                     },
                 },
                 tarefas: {
+                    where: { removido_em: null },
                     select: {
                         tarefaEspelhada: {
                             select: {
@@ -1593,5 +1665,80 @@ export class TransferenciaService {
                 workflow_fase_atual_id: andamentoPrimeiraFase.workflow_fase_id,
             },
         });
+    }
+
+    async limparWorkflowCronograma(
+        transferencia_id: number,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient | undefined
+    ) {
+        const agora = new Date(Date.now());
+
+        // TODO: tornar compatível com troca de tipo.
+        // Para essa func ser chamada no update.
+
+        const update = async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.transferenciaAndamento.updateMany({
+                where: { transferencia_id: transferencia_id },
+                data: {
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTxn.transferenciaAndamentoTarefa.updateMany({
+                where: {
+                    transferencia_andamento: {
+                        transferencia_id: transferencia_id,
+                    },
+                },
+                data: {
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTxn.tarefa.updateMany({
+                where: {
+                    tarefa_cronograma: {
+                        transferencia_id: transferencia_id,
+                    },
+                },
+                data: {
+                    transferencia_fase_id: null,
+                    transferencia_tarefa_id: null,
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTxn.tarefaCronograma.updateMany({
+                where: { transferencia_id: transferencia_id },
+                data: {
+                    removido_em: agora,
+                    removido_por: user.id,
+                },
+            });
+
+            // Inserindo row no histórico de alterações.
+            await prismaTxn.transferenciaHistorico.create({
+                data: {
+                    transferencia_id: transferencia_id,
+                    acao: TransferenciaHistoricoAcao.DelecaoWorkflow,
+                    criado_por: user.id,
+                    criado_em: agora,
+                },
+            });
+        };
+
+        if (prismaTx) {
+            return update(prismaTx);
+        } else {
+            return this.prisma.$transaction(update, {
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
+            });
+        }
     }
 }

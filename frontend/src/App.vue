@@ -28,7 +28,7 @@ onErrorCaptured((err) => {
     || err?.type === 'NAVIGATION_ABORTED'
     || err?.type === 4
   ) {
-    alertStore.confirmAction('Navegação abortada. Quer tentar recarregar a página para baixar uma nova versão? Dados não salvos serão perdidos.', () => {
+    alertStore.confirmAction('O sistema mudou de versão. Quer recarregar a página?', () => {
       window.location.reload();
     });
   } else if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {

@@ -89,6 +89,8 @@ class RetornoDbTransferencias {
     distribuicao_recurso_conclusao_suspensiva: Date | null;
     distribuicao_recurso_sei: string | null;
     distribuicao_recurso_orgao_gestor: string;
+    tipo_transferencia :string;
+    classificacao :string | null;
 }
 
 @Injectable()
@@ -136,6 +138,8 @@ export class TransferenciasService implements ReportableService {
                 t.secretaria_concedente_str,
                 t.interface,
                 t.esfera,
+                tt.nome as tipo_transferencia,
+                cl.nome as classificacao,
                 tp.cargo,
                 pa.id AS partido_id,
                 pa.sigla AS partido_sigla,
@@ -175,6 +179,7 @@ export class TransferenciasService implements ReportableService {
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
             LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
+            LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
             JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
             ${whereCond.whereString}
             `;
@@ -275,6 +280,18 @@ export class TransferenciasService implements ReportableService {
             paramIndex++;
         }
 
+        if (filters.gestor_municipal_id){
+            whereConditions.push(`dt.orgao_gestor_id = $${paramIndex}`);
+            queryParams.push(filters.gestor_municipal_id);
+            paramIndex++;
+        }
+
+        if (filters.parlamentar_id){
+            whereConditions.push(`tp.parlamentar_id = $${paramIndex}`);
+            queryParams.push(filters.parlamentar_id);
+            paramIndex++;
+        }
+
         whereConditions.push(`t.removido_em IS NULL`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
@@ -317,6 +334,8 @@ export class TransferenciasService implements ReportableService {
                 secretaria_concedente: db.secretaria_concedente_str,
                 interface: db.interface,
                 esfera: db.esfera,
+                tipo_transferencia: db.tipo_transferencia,
+                classificacao: db.classificacao,
                 cargo: db.cargo,
 
                 partido: db.partido_id

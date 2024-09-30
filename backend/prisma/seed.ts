@@ -112,6 +112,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroObjetivoEstrategico: ['', null],
     CadastroEtapa: ['', null],
     CadastroGrupoPaineisExternas: ['', null],
+    CadastroClassificacao: ['Cadastro de Classificacao', 'CasaCivil'],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
@@ -493,6 +494,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
+    CadastroClassificacao: [
+        ['CadastroClassificacao.editar', 'Editar Classificação'],
+        ['CadastroClassificacao.inserir', 'Incluir Classificação'],
+        ['CadastroClassificacao.listar', 'Listar Classificações'],
+        ['CadastroClassificacao.remover', 'Excluir Classificações'],
+    ],
 };
 
 const todosPrivilegios: ListaDePrivilegios[] = [];
@@ -644,7 +651,7 @@ const PerfilAcessoConfig: {
         descricao:
             'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
         privilegios: [
-            'CadastroPS.administrador',
+            'CadastroPS.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
             'CadastroVariavelGlobal.administrador',
             ...PSCadastroBasico, // Tema, Tags, etc...
             ...PSMetasReportsEAdmin, // Metas, Reports, Painel
@@ -935,6 +942,9 @@ const PerfilAcessoConfig: {
             'CadastroCronogramaTransferencia.listar',
             'CadastroCronogramaTransferencia.remover',
             'AndamentoWorkflow.listar',
+            'CadastroClassificacao.editar',
+            'CadastroClassificacao.inserir',
+            'CadastroClassificacao.remover',
         ],
     },
     {

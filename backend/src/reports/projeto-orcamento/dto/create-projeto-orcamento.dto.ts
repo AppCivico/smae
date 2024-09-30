@@ -17,3 +17,5 @@ export class CreateRelProjetoOrcamentoDto extends OmitType(SuperCreateOrcamentoE
     @Transform(({ value }: any) => +value)
     portfolio_id: number;
 }
+
+export class CreateRelObrasOrcamentoDto extends CreateRelProjetoOrcamentoDto {}

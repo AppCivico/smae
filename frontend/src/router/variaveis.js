@@ -65,13 +65,14 @@ export default {
       },
       children: [
         {
-          name: `${entidadeMãe}.variaveisDetalhe`,
-          path: '/:variavelId/detalhar',
-          component: () => import('@/views/variaveis/VariaveisDetalhe.vue'),
+          name: `${entidadeMãe}.variaveisResumo`,
+          path: 'resumo',
+          component: () => import('@/views/variaveis/VariaveisResumo.vue'),
           meta: {
             rotaDeEscape: 'variaveisListar',
             rotasParaMigalhasDePão: ['variaveisListar'],
-            título: 'Resumo Variável',
+            título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Resumo Variável',
+            títuloParaMenu: 'Resumo',
           },
         },
         {
@@ -87,7 +88,7 @@ export default {
               'CadastroVariavelGlobal.administrador_no_orgao',
             ],
             rotaDeEscape: 'variaveisListar',
-            título: () => useVariaveisGlobaisStore()?.emFoco?.nome || 'Editar Variável',
+            título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Editar Variável',
           },
         },
       ],

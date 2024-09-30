@@ -32,11 +32,15 @@ export class PrevisaoCustoService implements ReportableService {
             filtroMetas = metas.map((r) => r.id);
         }
 
-        if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
+        if (
+            dto.ano === undefined &&
+            (dto.periodo_ano === undefined || dto.periodo_ano !== PeriodoRelatorioPrevisaoCustoDto.Corrente)
+        )
+            throw new HttpException('Ano de referência não informado', 400);
+
+        if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente || !dto.ano) {
             ano = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
         } else {
-            if (!dto.ano) throw new HttpException('Ano deve ser enviado', 400);
-
             ano = dto.ano;
         }
 
@@ -82,9 +86,9 @@ export class PrevisaoCustoService implements ReportableService {
 
     private expandirParteDotacao(parte_dotacao: string): string {
         const partes = parte_dotacao.split('.');
-        if ((partes[1] = '*')) partes[1] = '**';
-        if ((partes[4] = '*')) partes[4] = '****';
-        if ((partes[7] = '*')) partes[7] = '********';
+        if (partes[1] === '*') partes[1] = '**';
+        if (partes[4] === '*') partes[4] = '****';
+        if (partes[7] === '*') partes[7] = '********';
         return partes.join('.');
     }
 
@@ -93,7 +97,7 @@ export class PrevisaoCustoService implements ReportableService {
         const dados = await this.asJSON(params);
         await ctx.progress(50);
 
-        const pdm = await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } });
+        const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
 
         const out: FileOutput[] = [];
 

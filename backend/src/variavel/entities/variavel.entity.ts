@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, Matches } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
@@ -82,6 +82,11 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
 }
 
 export class FilterSVNPeriodoDto {
+    @IsOptional()
+    @IsEnum(Serie, { message: 'Serie inválida' })
+    @ApiProperty({ enum: Serie, required: false })
+    serie?: Serie;
+
     @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)

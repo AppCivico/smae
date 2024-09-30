@@ -99,6 +99,7 @@ export class CreateAtividadeDto {
      * ID das pessoas que são coordenadores
      * @example "[1, 2, 3]"
      */
+    @IsOptional()
     @IsArray({
         message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
     })

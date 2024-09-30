@@ -1,5 +1,5 @@
 <script setup>
-import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
@@ -44,7 +44,15 @@ const orgaos_participantes = ref([
 ]);
 const coordenadores_cp = ref({ participantes: [], busca: '' });
 
-const virtualParent = ref({});
+const virtualParent = ref({
+  ps_ponto_focal: {
+    equipes: singleAtividade.value?.ps_ponto_focal?.equipes || [],
+  },
+
+  ps_tecnico_cp: {
+    equipes: singleAtividade.value?.ps_tecnico_cp?.equipes || [],
+  },
+});
 let title = 'Cadastro de';
 
 const organsAvailable = ref([]);
@@ -106,8 +114,10 @@ async function onSubmit(values) {
       return x.orgao_id;
     });
 
-    values.coordenadores_cp = coordenadores_cp.value.participantes;
-    if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.coordenadores_cp = coordenadores_cp.value.participantes;
+      if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+    }
 
     if (!values.iniciativa_id) values.iniciativa_id = iniciativa_id;
     values.compoe_indicador_iniciativa = !!values.compoe_indicador_iniciativa;
@@ -223,7 +233,7 @@ function filterResponsible(orgao_id) {
   </div>
   <template v-if="oktogo && !(singleAtividade?.loading || singleAtividade?.error)">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="atividade_id ? singleAtividade : virtualParent"
       @submit="onSubmit"
@@ -376,7 +386,7 @@ function filterResponsible(orgao_id) {
         >
           <div class="f1 mb1">
             <CampoDeEquipesComBuscaPorOrgao
-              v-model="singleAtividade.ps_ponto_focal.equipes"
+              v-model="values.ps_ponto_focal.equipes"
               :equipes-ids="singleIniciativa.ps_ponto_focal?.equipes"
               :valores-iniciais="singleAtividade.ps_ponto_focal?.equipes"
               name="ps_ponto_focal.equipes"
@@ -410,18 +420,17 @@ function filterResponsible(orgao_id) {
 
       <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
         <label class="label">
-          Equipes responsáveis na coordenadoria de planejamento
-          <span class="tvermelho">*</span>
+          Equipe Técnica de Administração do Plano
         </label>
 
         <div>
           <AutocompleteField
-            name="values.ps_tecnico_cp.equipes"
+            name="ps_tecnico_cp.equipes"
             :controlador="{
               busca: '',
-              participantes: singleIniciativa.ps_tecnico_cp.equipes,
+              participantes: values.ps_tecnico_cp.equipes,
             }"
-            :grupo="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes)"
+            :grupo="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes)"
             label="titulo"
           />
         </div>

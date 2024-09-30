@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { RecordWithId } from '../../../../src/common/dto/record-with-id.dto';
+import { RecordWithId } from '../../../common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
@@ -99,12 +99,27 @@ export class TransferenciaTipoService {
     }
 
     async removeTransferenciaTipo(id: number, user: PessoaFromJwt) {
-        await this.prisma.transferenciaTipo.update({
-            where: { id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        await this.prisma.$transaction(async (): Promise<void> => {
+            /*
+                Valida se existe alguma classificação relacionada ao tipo que está sendo excluído
+                para manter integridade referencial
+            */
+            const existsClassificacaoRelacionada = await this.prisma.classificacao.count({
+                where: {
+                    transferencia_tipo_id: id,
+                    removido_em: null,
+                },
+            });
+            if (existsClassificacaoRelacionada > 0)
+                throw new HttpException('Tipo de Transferencia não pode ser removida pois está relacionada a classificações', 400);
+
+            await this.prisma.transferenciaTipo.update({
+                where: { id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
         });
     }
 }

@@ -242,6 +242,7 @@ export class DistribuicaoRecursoService {
                                                                 DistribuicaoStatusTipo.Cancelada,
                                                                 DistribuicaoStatusTipo.ImpedidaTecnicamente,
                                                                 DistribuicaoStatusTipo.Redirecionada,
+                                                                DistribuicaoStatusTipo.Terminal,
                                                             ],
                                                         },
                                                     },
@@ -254,6 +255,7 @@ export class DistribuicaoRecursoService {
                                                                 DistribuicaoStatusTipo.Cancelada,
                                                                 DistribuicaoStatusTipo.ImpedidaTecnicamente,
                                                                 DistribuicaoStatusTipo.Redirecionada,
+                                                                DistribuicaoStatusTipo.Terminal,
                                                             ],
                                                         },
                                                     },
@@ -309,7 +311,7 @@ export class DistribuicaoRecursoService {
 
                 const statusBaseRegistrada = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
                     where: {
-                        tipo: DistribuicaoStatusTipo.Registrada,
+                        tipo: DistribuicaoStatusTipo.NaoIniciado,
                     },
                     select: {
                         id: true,
@@ -1203,60 +1205,85 @@ export class DistribuicaoRecursoService {
 
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
-                                id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
+                                //id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
                                 parlamentar_id: relParlamentar.parlamentar_id,
                                 removido_em: null,
                                 distribuicao_recurso: {
                                     id: id,
                                     removido_em: null,
-                                    transferencia: {
-                                        id: self.transferencia_id,
-                                        removido_em: null,
-                                    },
-                                    status: {
-                                        some: {
-                                            OR: [
-                                                {
-                                                    status_base: {
-                                                        tipo: {
-                                                            notIn: [
-                                                                DistribuicaoStatusTipo.Declinada,
-                                                                DistribuicaoStatusTipo.Cancelada,
-                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                                DistribuicaoStatusTipo.Redirecionada,
-                                                            ],
-                                                        },
-                                                    },
-                                                },
-                                                {
-                                                    status: {
-                                                        tipo: {
-                                                            notIn: [
-                                                                DistribuicaoStatusTipo.Declinada,
-                                                                DistribuicaoStatusTipo.Cancelada,
-                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                                DistribuicaoStatusTipo.Redirecionada,
-                                                            ],
-                                                        },
-                                                    },
-                                                },
-                                            ],
-                                        },
-                                    },
                                 },
                             },
                             select: {
                                 id: true,
                                 valor: true,
+                                distribuicao_recurso: {
+                                    select: {
+                                        status: {
+                                            take: 1,
+                                            orderBy: { data_troca: 'desc' },
+                                            select: {
+                                                status_base: {
+                                                    select: {
+                                                        tipo: true,
+                                                    },
+                                                },
+                                                status: {
+                                                    select: {
+                                                        tipo: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         });
 
                         let sumValor = rowsParlamentarDist
-                            .filter((e) => e.valor)
+                            .filter((e) => e.valor != null)
+                            .filter((e) => {
+                                const statusUltimaRow = e.distribuicao_recurso.status[0];
+                                if (!statusUltimaRow) return true;
+
+                                const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                console.log('\n==========================');
+                                console.log(statusConfig);
+                                console.log('\n==========================');
+
+                                return (
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Cancelado &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Redirecionada &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.Declinada &&
+                                    statusConfig?.tipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
+                                );
+                            })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 
                         console.log('\n==========================');
+                        console.log(rowsParlamentarDist.filter((e) => e.valor != null));
+                        console.log(
+                            rowsParlamentarDist
+                                .filter((e) => e.valor != null)
+                                .filter((e) => {
+                                    const statusUltimaRow = e.distribuicao_recurso.status[0];
+                                    if (!statusUltimaRow) return true;
+
+                                    const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                    console.log(statusConfig);
+                                    return (
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Cancelado &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Redirecionada &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.Declinada &&
+                                        statusConfig?.tipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
+                                    );
+                                })
+                        );
+                        console.log(relParlamentar);
                         console.log(rowsParlamentarDist);
                         console.log(+sumValor);
                         console.log(+valorNaTransf);

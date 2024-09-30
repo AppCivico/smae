@@ -79,7 +79,12 @@ export class ReportsService {
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
         // Ajusta o tipo de relatório para MDO, se for de status de obra
-        if (dto.fonte == 'ObraStatus') {
+        if (
+            dto.fonte == 'ObraStatus' ||
+            dto.fonte === 'Obras' ||
+            dto.fonte === 'ObrasOrcamento' ||
+            dto.fonte === 'ObrasPrevisaoCusto'
+        ) {
             parametros.tipo = 'MDO';
         }
 
@@ -207,6 +212,7 @@ export class ReportsService {
         switch (dto.fonte) {
             case 'Orcamento':
             case 'ProjetoOrcamento':
+            case 'ObrasOrcamento':
                 service = this.orcamentoService;
                 break;
             case 'Indicadores':
@@ -217,6 +223,7 @@ export class ReportsService {
                 break;
             case 'PrevisaoCusto':
             case 'ProjetoPrevisaoCusto':
+            case 'ObrasPrevisaoCusto':
                 service = this.previsaoCustoService;
                 break;
             case 'Projeto':

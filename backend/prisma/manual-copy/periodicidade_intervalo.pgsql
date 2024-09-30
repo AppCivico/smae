@@ -59,6 +59,9 @@ BEGIN
 
     numero_periodos := FLOOR(meses_desde_inicio::float / vMesesIntervalo);
 
+    -- Garantir que o número de períodos não seja negativo
+    numero_periodos := GREATEST(numero_periodos, 0);
+
     -- Calcula o último período válido alinhado com a periodicidade
     -- parte fundamental, btw, que faltou no código original
     vUltimoPeriodo := pInicioMedicao + (numero_periodos * vIntervalo);

@@ -8,9 +8,12 @@ import {
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
+import { useEquipesStore } from '@/stores/equipes.store';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const EquipesStore = useEquipesStore();
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -39,6 +42,7 @@ async function iniciar() {
 
   if (singleIniciativa.value.id != iniciativa_id) {
     promessas.push(IniciativasStore.getById(meta_id, iniciativa_id));
+    promessas.push(EquipesStore.buscarTudo());
   }
   if (!Atividades.value[iniciativa_id]) {
     promessas.push(AtividadesStore.getAll(iniciativa_id));
@@ -106,29 +110,35 @@ iniciar();
           </div>
         </div>
 
-        <div class="mr2">
+        <div
+          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
+          class="mr2"
+        >
           <div class="t12 uc w700 mb05 tamarelo">
-            Órgão responsável
+            Equipes Responsáveis
           </div>
           <div class="t13">
-            {{ órgãosResponsáveisNaIniciativaEmFoco.map(x => x.orgao.descricao).join(', ') }}
+            {{ combinadorDeListas(
+              EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
+              false,
+              'titulo',
+            ) }}
           </div>
         </div>
 
-        <div class="mr2">
+        <div
+          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
+          class="mr2"
+        >
           <div class="t12 uc w700 mb05 tamarelo">
-            Órgão participante
+            Equipe técnica do administrador do plano
           </div>
           <div class="t13">
-            {{ singleIniciativa.orgaos_participantes.map(x => x.orgao.descricao).join(', ') }}
-          </div>
-        </div>
-        <div class="mr2">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Responsável na coordenadoria de planejamento
-          </div>
-          <div class="t13">
-            {{ singleIniciativa.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+            {{ combinadorDeListas(
+              EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes),
+              false,
+              'titulo',
+            ) }}
           </div>
         </div>
       </div>

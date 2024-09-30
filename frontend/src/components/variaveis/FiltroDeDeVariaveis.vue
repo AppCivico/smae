@@ -62,6 +62,35 @@
       <div class="f1 fb20em">
         <label
           class="label"
+          for="variavel_categorica_idd"
+        >
+          Tipo de variavel
+        </label>
+        <select
+          id="variavel_categorica_id"
+          name="variavel_categorica_id"
+          class="inputtext light"
+        >
+          <option value="" />
+          <option :value="-2147483648">
+            Numérica
+          </option>
+          <optgroup label="Categórica">
+            <option
+              v-for="variavel, index in listaDeVariaveisCategoricas"
+              :key="index"
+              :value="variavel.id"
+              :title="variavel.descricao"
+            >
+              {{ variavel.titulo }}
+            </option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="f1 fb20em">
+        <label
+          class="label"
           for="codigo"
         >Código</label>
         <input
@@ -345,6 +374,10 @@
   </form>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
@@ -355,10 +388,7 @@ import { usePsMetasStore } from '@/stores/metasPs.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
-import { storeToRefs } from 'pinia';
-import {
-  computed, onUnmounted, ref, watch,
-} from 'vue';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 
 const props = defineProps({
   ariaBusy: {
@@ -424,6 +454,7 @@ const MetasStore = usePsMetasStore();
 const ÓrgãosStore = useOrgansStore();
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 const regionsStore = useRegionsStore();
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
 const {
   lista: listaDePlanosSetoriais,
@@ -453,6 +484,10 @@ const {
   regions, regiõesPorNívelOrdenadas,
 } = storeToRefs(regionsStore);
 
+const {
+  variaveisPositivas: listaDeVariaveisCategoricas,
+} = storeToRefs(variaveisCategoricasStore);
+
 const pronto = ref(false);
 
 const codigo = ref('');
@@ -477,6 +512,7 @@ async function iniciar() {
     ÓrgãosStore.getAll(),
     planosSetoriaisStore.buscarTudo(),
     regionsStore.getAll(),
+    variaveisCategoricasStore.buscarTudo(),
   ];
 
   codigo.value = props.valoresIniciais.codigo || '';

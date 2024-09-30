@@ -2191,6 +2191,9 @@ export const transferenciasVoluntarias = object({
     .label('Tipo')
     .nullable()
     .required(),
+  classificacao_id: number()
+    .label('Classificação')
+    .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
     .nullable(),
@@ -3580,7 +3583,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   atraso_meses: number()
-    .label('Defasagem da medição (Meses)')
+    .label('Defasagem da medição')
     .min(0)
     .integer(),
   casas_decimais: number()
@@ -3645,28 +3648,22 @@ export const variavelGlobal = object({
   periodos: object({
     preenchimento_inicio: number()
       .label('Dia inicio do preenchimento')
-      .max(31)
       .min(1)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     preenchimento_duracao: number()
       .label('Duração do preenchimento')
-      .max(31)
-      .min(ref('periodos.preenchimento_inicio'), 'Precisa ser posterior ao dia de início')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     validacao_duracao: number()
       .label('Duração da validação')
-      .max(31)
-      .min(ref('periodos.preenchimento_inicio'), 'Precisa ser posterior ao preenchimento')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     liberacao_duracao: number()
       .label('Duração da liberação')
-      .max(31)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
@@ -3946,4 +3943,13 @@ export const cicloAtualizacaoModalEditarSchema = object().shape({
       valor_realizado_acumulado: string().label('valor realizado acumulado').required(),
     }),
   ),
+});
+
+export const classificacaoCriarEditarSchema = object().shape({
+  nome: string().label('Nome').required(),
+  esfera: string()
+    .label('Esfera')
+    .required()
+    .oneOf(Object.keys(esferasDeTransferencia)),
+  transferencia_tipo_id: string().label('Tipo').required(),
 });

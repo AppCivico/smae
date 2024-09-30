@@ -1,8 +1,10 @@
 <script setup>
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
-const etapasProjetosStore = useEtapasProjetosStore();
+const route = useRoute();
+const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 
 etapasProjetosStore.buscarTudo();
 

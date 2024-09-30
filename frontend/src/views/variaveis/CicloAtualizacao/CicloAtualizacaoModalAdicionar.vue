@@ -50,7 +50,7 @@
               class="inputtext light "
               type="text"
               name="valor_realizado"
-              @update:model-value="atualizarVariavelAcululado"
+              @update:model-value="atualizarVariavelAcumulado"
             />
             <Field
               v-else
@@ -138,7 +138,7 @@
         </button>
 
         <button
-          class="btn outline"
+          class="btn"
           :disabled="bloqueado"
           @click.prevent="submit({ aprovar: true })"
         >
@@ -150,6 +150,7 @@
 </template>
 
 <script lang="ts" setup>
+import { UTCDate } from '@date-fns/utc';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
@@ -206,7 +207,7 @@ const variaveisCategoricasValores = computed(() => {
 });
 
 const dataCicloAtualizacao = computed<string>(() => (
-  format(new Date($route.params.dataReferencia as string), 'MMMM yyyy', { locale: ptBR })
+  format(new UTCDate(`${$route.params.dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
 ));
 
 const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
@@ -226,7 +227,7 @@ const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
   ];
 });
 
-function atualizarVariavelAcululado(valor: string) {
+function atualizarVariavelAcumulado(valor: string) {
   const valorAtual = emFoco.value?.valores[0];
 
   if (!valorAtual) {
@@ -234,12 +235,12 @@ function atualizarVariavelAcululado(valor: string) {
   }
 
   const valorVariavelInicial = Number(valorAtual.valor_realizado);
-  const valorVariavelAcululadoInicial = Number(
+  const valorVariavelAcumuladoInicial = Number(
     valorAtual.valor_realizado_acumulado,
   );
   const novoValor = Number(valor);
 
-  const novoValorAcumulado = (valorVariavelAcululadoInicial - valorVariavelInicial) + novoValor;
+  const novoValorAcumulado = (valorVariavelAcumuladoInicial - valorVariavelInicial) + novoValor;
 
   setFieldValue(
     'valor_realizado_acumulado',

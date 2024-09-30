@@ -33,6 +33,11 @@
       />
     </FormularioQueryString>
 
+    <MenuPaginacao
+      class="mt2 bgb"
+      v-bind="paginacao"
+    />
+
     <div
       role="region"
       aria-labelledby="titulo-da-pagina"
@@ -121,22 +126,20 @@
             <td class="cell--minimum">
               {{ statusObras[item.status]?.nome || item.status }}
             </td>
-            <td>
-              <label class="comunicado-geral-item__footer-lido">
-                <input
-                  v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
-                  v-model="item.revisado"
-                  type="checkbox"
-                  class="interruptor"
-                  @click.prevent="marcarComoRevisado(item.id, $event)"
-                >
-              </label>
+            <td class="text-center">
+              <input
+                v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
+                v-model="item.revisado"
+                type="checkbox"
+                class="interruptor"
+                :aria-label="`Marcar como revisada a obra ${item.nome}`"
+                @click.prevent="marcarComoRevisado(item.id, $event)"
+              >
             </td>
             <td
               v-if="temPermissãoPara(['ProjetoMDO.administrador', 'MDO.revisar_obra'])"
             >
               <router-link
-
                 :to="{ name: 'obrasEditar', params: { obraId: item.id } }"
                 class="ml1 mr1 tprimary"
               >
@@ -190,8 +193,8 @@ import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
-import { useAuthStore } from '@/stores/auth.store';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -218,8 +221,10 @@ async function excluirObra(id, nome) {
 }
 
 async function marcarComoRevisado(id, event) {
+  // eslint-disable-next-line no-param-reassign
   event.target.ariaBusy = 'true';
   await obrasStore.marcarComoRevisado(id, event.target.checked);
+  // eslint-disable-next-line no-param-reassign
   event.target.ariaBusy = 'false';
 }
 

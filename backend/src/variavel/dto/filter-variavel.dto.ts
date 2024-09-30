@@ -5,6 +5,7 @@ import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, 
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { AscDescEnum } from '../../pp/projeto/dto/filter-projeto.dto';
+import { VAR_CATEGORICA_AS_NULL } from '../../common/dto/consts';
 
 export class FilterVariavelDto {
     /**
@@ -120,6 +121,14 @@ export class FilterVariavelDto {
     @IsString()
     @MaxLength(60)
     titulo?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    @ApiProperty({
+        description: `ID da variável categórica, enviar ${VAR_CATEGORICA_AS_NULL} para retornar os registros com valor NULL`,
+    })
+    variavel_categorica_id?: number;
 }
 
 export const VariavelOrderEnum = {

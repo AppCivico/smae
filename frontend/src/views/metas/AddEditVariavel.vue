@@ -507,7 +507,7 @@ export default {
         </div>
         <div class="f2">
           <label class="label">
-            Defasagem da medição (Meses)&nbsp;<span class="tvermelho">*</span>
+            Defasagem da medição &nbsp;<span class="tvermelho">*</span>
           </label>
           <Field
             name="atraso_meses"
@@ -576,7 +576,7 @@ lastParent.orgaos_participantes:{{ lastParent.orgaos_participantes }}</textarea>
             v-for="(c, i) in [lastParent.orgaos_participantes.find((x) => x.orgao.id == orgao_id)]"
             :key="c?.orgao?.id || i"
           >
-            <template v-if="c.orgao">
+            <template v-if="c && c.orgao">
               <div class="suggestion search">
                 <input
                   v-model="responsaveisArr.busca"

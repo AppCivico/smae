@@ -1,12 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const route = useRoute();
@@ -179,6 +179,7 @@ watch([
     <col>
     <col>
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -198,6 +199,9 @@ watch([
         </th>
         <th>
           Parlamentar
+        </th>
+        <th>
+          Órgão Gestor
         </th>
         <th>
           Etapa
@@ -259,6 +263,9 @@ watch([
           {{ item.parlamentar?.length ? item.parlamentar?.map((e) => e.nome_popular).join(', ') : '-' }}
         </td>
         <td>
+          {{ item.orgao_gestor?.length ? item.orgao_gestor?.map((e) => e.sigla).join(', ') : '-' }}
+        </td>
+        <td>
           {{ item.andamento_etapa? item.andamento_etapa : '-' }}
         </td>
         <td>
@@ -311,17 +318,17 @@ watch([
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="11">
+        <td colspan="12">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="11">
+        <td colspan="12">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="11">
+        <td colspan="12">
           Nenhum resultado encontrado.
         </td>
       </tr>

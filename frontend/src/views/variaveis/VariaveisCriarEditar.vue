@@ -199,6 +199,12 @@ async function iniciar() {
   }
 }
 
+function redefinirCamposDeGrupos() {
+  resetField('medicao_grupo_ids', { value: [] });
+  resetField('validacao_grupo_ids', { value: [] });
+  resetField('liberacao_grupo_ids', { value: [] });
+}
+
 iniciar();
 
 watch(itemParaEdicao, (novoValor) => {
@@ -758,6 +764,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             class="inputtext light mb1"
             :class="{ error: errors.orgao_id }"
             :aria-busy="organs.loading"
+            @change="redefinirCamposDeGrupos"
           >
             <option
               v-for="orgao in órgãosComoLista"
@@ -915,7 +922,6 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               name="periodos.preenchimento_inicio"
               type="number"
               min="1"
-              max="31"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.preenchimento_inicio'] }"
             />
@@ -932,8 +938,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             <Field
               name="periodos.preenchimento_duracao"
               type="number"
-              :min="values.periodos?.preenchimento_inicio || 1"
-              max="31"
+              min="1"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.preenchimento_duracao'] }"
             />
@@ -953,8 +958,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             <Field
               name="periodos.validacao_duracao"
               type="number"
-              :min="values.periodos?.preenchimento_inicio || 1"
-              max="31"
+              min="1"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.validacao_duracao'] }"
             />
@@ -971,8 +975,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             <Field
               name="periodos.liberacao_duracao"
               type="number"
-              :min="1"
-              max="31"
+              min="1"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.liberacao_duracao'] }"
             />

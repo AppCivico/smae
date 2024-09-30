@@ -1,8 +1,8 @@
 <script setup>
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmallModal from '@/components/SmallModal.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -52,6 +52,7 @@ watchEffect(() => {
     plano_setorial_id: route.query.plano_setorial_id,
     regiao_id: route.query.regiao_id,
     titulo: route.query.titulo,
+    variavel_categorica_id: route.query.variavel_categorica_id,
 
     pagina: route.query.pagina,
 
@@ -105,7 +106,7 @@ watchEffect(() => {
 
   <TabelaDeVariaveisGlobais
     aria-labelledby="titulo-da-pagina"
-    numero-de-colunas-extras="4"
+    numero-de-colunas-extras="5"
   >
     <template #definicaoUltimasColunas>
       <col class="col--botão-de-ação">
@@ -120,14 +121,14 @@ watchEffect(() => {
         <smae-link
           type="button"
           class="tipinfo tprimary like-a__text"
-          :to="{ name: `.variaveisDetalhe`, params: { variavelId: variavel.id } }"
+          :to="{ name: `.variaveisResumo`, params: { variavelId: variavel.id } }"
           exibir-desabilitado
         >
           <svg
             width="20"
             height="20"
           ><use xlink:href="#i_eye" /></svg>
-          <div>Detalhe da variável</div>
+          <div>Resumo da variável</div>
         </smae-link>
       </td>
 

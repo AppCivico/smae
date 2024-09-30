@@ -19,8 +19,8 @@ import {
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
-import { MIN_DTO_SAFE_NUM } from '../common/dto/consts';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { Object2Hash } from '../common/object2hash';
@@ -62,6 +62,7 @@ import { PrismaHelpers } from '../common/PrismaHelpers';
 import { MetaService } from '../meta/meta.service';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { VariavelFiltroDataType, VariavelUtilService } from './variavel.util.service';
+import { DateTime } from 'luxon';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -752,9 +753,10 @@ export class VariavelService {
         const liberacao_fim = liberacao_inicio + p.liberacao_duracao - 1;
 
         // Não deixa vazar do periodo da variavel
-        if (preenchimento_fim > maxDias) throw new BadRequestException(`Preenchimento: Duração excedê o ${maxDias}`);
-        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração excedê o ${maxDias}`);
-        if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração excedê o ${maxDias}`);
+        if (preenchimento_fim > maxDias)
+            throw new BadRequestException(`Preenchimento: Duração total excede o ${maxDias} dias`);
+        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração total excede o ${maxDias} dias`);
+        if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração total excede o ${maxDias} dias`);
 
         return {
             periodo_preenchimento: [p.preenchimento_inicio, preenchimento_fim],
@@ -1376,10 +1378,14 @@ export class VariavelService {
             }
         }
 
+        let variavel_categorica_id: number | undefined | null = filters.variavel_categorica_id ?? undefined;
+        if (variavel_categorica_id === VAR_CATEGORICA_AS_NULL) variavel_categorica_id = null;
+
         const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
             {
                 AND: firstSet,
                 removido_em: null,
+                variavel_categorica_id: variavel_categorica_id,
                 VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
                     ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
                     : undefined,
@@ -2372,8 +2378,23 @@ export class VariavelService {
         if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
         const variavel = selfItem[0];
 
+        const series: Serie[] = [...ORDEM_SERIES_RETORNO];
+        if (filters.serie) {
+            series.length = 0;
+            for (const serie of ORDEM_SERIES_RETORNO) {
+                if (serie.toLowerCase().includes(filters.serie.toLowerCase())) {
+                    series.push(serie);
+                }
+            }
+            if (filters.serie == 'Realizado')
+                filters.data_fim = DateTime.local({ zone: SYSTEM_TIMEZONE })
+                    .startOf('month')
+                    .plus({ month: 1 })
+                    .toJSDate();
+        }
+
         // TODO adicionar limpeza da serie para quem for ponto focal
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, filters);
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
         const result: ListSeriesAgrupadas = {

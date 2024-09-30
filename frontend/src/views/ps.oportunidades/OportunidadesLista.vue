@@ -4,18 +4,19 @@
     <hr class="ml2 f1">
   </div>
   <FormularioQueryString
+    v-slot="{ capturarEnvio}"
     :valores-iniciais="valoresIniciais"
   >
     <form
       class="flex flexwrap bottom mb2 g1"
-      @submit.prevent="atualizarFiltro"
+      @submit.prevent="capturarEnvio"
     >
       <div class="f0">
         <label
           for="avaliacao"
           class="label tc300"
         >Avaliação</label>
-        <Field
+        <select
           v-model.trim="avaliacaoFiltro"
           class="inputtext mb1"
           name="avaliacao"
@@ -29,14 +30,14 @@
           >
             {{ item.name }}
           </option>
-        </Field>
+        </select>
       </div>
       <div class="f0">
         <label
           for="ano"
           class="label tc300"
         >Ano</label>
-        <Field
+        <input
           id="ano"
           v-model.number="ano"
           inputmode="numeric"
@@ -45,14 +46,14 @@
           type="number"
           min="2003"
           max="9999"
-        />
+        >
       </div>
       <div class="f0">
         <label
           for="tipo"
           class="label tc300"
         >Modalidade</label>
-        <Field
+        <select
           id="tipo"
           v-model.trim="tipo"
           class="inputtext mb1"
@@ -67,7 +68,7 @@
           >
             {{ item.name }}
           </option>
-        </Field>
+        </select>
       </div>
 
       <div class="f0">
@@ -75,13 +76,13 @@
           for="palavras_chave"
           class="label tc300"
         >Palavra-chave</label>
-        <Field
+        <input
           id="palavras_chave"
           v-model.trim="palavraChave"
           class="inputtext"
           name="palavras_chave"
           type="text"
-        />
+        >
       </div>
       <button
         class="btn outline bgnone tcprimary mtauto mb1"
@@ -198,7 +199,6 @@
             </svg>
           </button>
         </td>
-        <td />
       </tr>
       <tr v-if="chamadasPendentes.lista">
         <td colspan="12">
@@ -281,32 +281,37 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref, watch, computed } from 'vue';
-import { Field, useForm } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
-import SmallModal from '@/components/SmallModal.vue';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import dateToField from '@/helpers/dateToField';
-import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
+
 const oportunidades = useOportunidadesStore();
 const alertStore = useAlertStore();
+
+const valoresIniciais = {
+  avaliacao: 'NaoAvaliada',
+};
 
 const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
 const ano = ref(route.query.ano);
-const avaliacaoFiltro = ref(route.query.avaliacao);
+const avaliacaoFiltro = ref(route.query.avaliacao || valoresIniciais.avaliacao);
 const tipo = ref(route.query.tipo);
 const palavraChave = ref(route.query.palavra_chave);
 
 const {
-  setFieldValue, handleSubmit, setValues,
+  setFieldValue, handleSubmit,
 } = useForm({
   initialValues: route.query,
   validationSchema: schema,
@@ -315,10 +320,6 @@ const {
 const {
   lista, chamadasPendentes, erro, paginação,
 } = storeToRefs(oportunidades);
-
-const valoresIniciais = computed(() => ({
-  avaliacao: 'NaoAvaliada',
-}));
 
 const tipos = [
   {
@@ -363,18 +364,6 @@ function buscarOportunidades() {
   );
 }
 
-const atualizarFiltro = handleSubmit.withControlled((values) => {
-  router.replace({
-    query: {
-      ...route.query,
-      avaliacao: values.avaliacao || undefined,
-      ano: values.ano || undefined,
-      tipo: values.tipo || undefined,
-      palavras_chave: values.palavras_chave || undefined,
-    },
-  });
-});
-
 const editAvaliacao = handleSubmit.withControlled(async (values) => {
   try {
     const msg = 'Dados salvos com sucesso!';
@@ -392,19 +381,28 @@ const editAvaliacao = handleSubmit.withControlled(async (values) => {
   }
 });
 
+onMounted(() => {
+  // PRA-FAZER: Isso aqui dará problema se quem usar abrir essa rota por um link compartilhado
+  if (route.query.avaliacao === undefined) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: valoresIniciais.avaliacao,
+      },
+    });
+  } else {
+    buscarOportunidades();
+  }
+});
+
 watch(oportunidadeID, () => {
   setFieldValue('avaliacao', oportunidadeAvaliacao.value);
 });
 
 watch(
   () => route.query,
-  () => {
-    buscarOportunidades();
-    setValues(route.query);
-  },
-  { deep: true },
+  buscarOportunidades,
 );
-
 </script>
 <style lang="less" scoped>
 .avaliacao {
@@ -412,9 +410,5 @@ watch(
   padding: 5px 10px;
   border-radius: 12px;
   display: inline-block;
-}
-
-h2{
-  color: #025B97;
 }
 </style>

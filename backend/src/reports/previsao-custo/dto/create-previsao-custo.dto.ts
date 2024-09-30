@@ -15,13 +15,18 @@ export class PrevisaoCustoParams {
     /**
      * @example "Corrente"
      */
-    @ApiProperty({ enum: PeriodoRelatorioPrevisaoCustoDto, enumName: 'PeriodoRelatorioPrevisaoCustoDto' })
+    @IsOptional()
+    @ApiProperty({
+        enum: PeriodoRelatorioPrevisaoCustoDto,
+        enumName: 'PeriodoRelatorioPrevisaoCustoDto',
+        deprecated: true,
+    })
     @IsEnum(PeriodoRelatorioPrevisaoCustoDto, {
         message:
             '$property| Precisa ser um dos seguintes valores: ' +
             Object.values(PeriodoRelatorioPrevisaoCustoDto).join(', '),
     })
-    periodo_ano: PeriodoRelatorioPrevisaoCustoDto;
+    periodo_ano?: PeriodoRelatorioPrevisaoCustoDto;
 
     /**
      * @example "2022"

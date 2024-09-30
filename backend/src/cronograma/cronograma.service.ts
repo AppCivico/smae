@@ -39,7 +39,15 @@ export class CronogramaService {
                     data: {
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
-                        ...createCronogramaDto,
+
+                        ativo: true,
+                        meta_id: createCronogramaDto.meta_id,
+                        iniciativa_id: createCronogramaDto.iniciativa_id,
+                        atividade_id: createCronogramaDto.atividade_id,
+                        descricao: createCronogramaDto.descricao,
+                        observacao: createCronogramaDto.observacao,
+                        regionalizavel: createCronogramaDto.regionalizavel,
+                        nivel_regionalizacao: createCronogramaDto.nivel_regionalizacao,
                     },
                     select: { id: true },
                 });
@@ -128,7 +136,12 @@ export class CronogramaService {
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-                    ...updateCronogoramaDto,
+
+                    ativo: true,
+                    descricao: updateCronogoramaDto.descricao,
+                    observacao: updateCronogoramaDto.observacao,
+                    regionalizavel: updateCronogoramaDto.regionalizavel,
+                    nivel_regionalizacao: updateCronogoramaDto.nivel_regionalizacao,
                 },
                 select: { id: true },
             });

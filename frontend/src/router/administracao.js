@@ -50,6 +50,10 @@ import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 
+import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
+import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
+import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
+
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
@@ -71,9 +75,11 @@ const rotasParaMenuSecundário = [
       'gerenciarUnidadesDeMedida',
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
+      'classificacao',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
-      'etapasDoProjetoListar',
+      'mdo.etapasListar',
+      'projeto.etapasListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
@@ -454,6 +460,54 @@ export default [
         ],
       },
       {
+        path: 'etapa-de-obra',
+        component: EtapasRaiz,
+        meta: {
+          título: 'Etapas de obra',
+          prefixoParaFilhas: 'mdo',
+          entidadeMãe: 'mdo',
+          presenteNoMenu: true,
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroProjetoEtapaMDO.',
+          rotasParaMenuSecundário,
+        },
+        props: true,
+        children: [
+          {
+            name: 'mdo.etapasListar',
+            path: '',
+            component: EtapasLista,
+            meta: {
+              título: 'Etapas da obra',
+            },
+          },
+          {
+            name: 'mdo.etapaCriar',
+            path: 'novo',
+            component: EtapasCriarEditar,
+            meta: {
+              título: 'Nova etapa da obra',
+              rotaDeEscape: 'mdo.etapasListar',
+            },
+          },
+          {
+            path: ':etapaId',
+            name: 'mdo.etapaEditar',
+            component: EtapasCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
+              },
+            }),
+            meta: {
+              título: 'Editar etapa da obra',
+              rotaDeEscape: 'mdo.etapasListar',
+            },
+          },
+        ],
+      },
+      {
         path: 'etapa-de-projeto',
         component: EtapasRaiz,
         meta: {
@@ -467,7 +521,7 @@ export default [
 
         children: [
           {
-            name: 'etapasDoProjetoListar',
+            name: 'projeto.etapasListar',
             path: '',
             component: EtapasLista,
             meta: {
@@ -475,28 +529,28 @@ export default [
             },
           },
           {
-            name: 'etapaDoProjetoCriar',
+            name: 'projeto.etapaCriar',
             path: 'novo',
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa do projeto',
-              rotaDeEscape: 'etapasDoProjetoListar',
+              rotaDeEscape: 'projeto.etapasListar',
             },
           },
           {
-            path: ':etapaDoProjetoId',
-            name: 'novaEtapaDoProjetoEditar',
+            path: ':etapaId',
+            name: 'projeto.etapaEditar',
             component: EtapasCriarEditar,
             props: ({ params }) => ({
               ...params,
               ...{
-                etapaDoProjetoId: Number.parseInt(params.etapaDoProjetoId, 10) || undefined,
+                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
               },
             }),
 
             meta: {
               título: 'Editar etapa do projeto',
-              rotaDeEscape: 'etapasDoProjetoListar',
+              rotaDeEscape: 'projeto.etapasListar',
             },
           },
         ],
@@ -652,6 +706,32 @@ export default [
       {
         path: 'editar/:id',
         component: AddEditODS,
+      },
+    ],
+  },
+  {
+    path: '/classificacao',
+    meta: {
+      título: 'Classificação',
+      rotasParaMenuSecundário,
+      limitarÀsPermissões: 'CadastroClassificacao.',
+    },
+    component: ClassificacaoRaiz,
+    children: [
+      {
+        name: 'classificacao',
+        path: '',
+        component: ClassificacaoLista,
+      },
+      {
+        name: 'classificacao.novo',
+        path: 'novo',
+        component: ClassificacaoCriarEditar,
+      },
+      {
+        name: 'classificacao.editar',
+        path: ':classificacaoId',
+        component: ClassificacaoCriarEditar,
       },
     ],
   },

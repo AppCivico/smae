@@ -615,7 +615,7 @@ export class OrcamentoService implements ReportableService {
 
     async toFileOutput(params: SuperCreateOrcamentoExecutadoDto, ctx: ReportContext): Promise<FileOutput[]> {
         const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params);
-        const pdm = await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } });
+        const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
         await ctx.progress(1);
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
@@ -704,7 +704,6 @@ export class OrcamentoService implements ReportableService {
                     'dotacao_mes_utilizado',
                     'smae_valor_empenhado',
                     'smae_valor_liquidado',
-                    ,
                     'smae_percentual_empenhado',
                     'smae_percentual_liquidado',
                     'logs',
