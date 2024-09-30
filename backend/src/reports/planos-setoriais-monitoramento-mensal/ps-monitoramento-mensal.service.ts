@@ -6,11 +6,13 @@ import {
     ReportContext,
     UtilsService,
 } from '../utils/utils.service';
-import { RelPsMonitoramentoMensalFilterDTO } from './dto/create-ps-monitoramento-mensal-filter.dto';
+import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import { RelPsMonitoramentoMensalVariaveis } from './entities/ps-monitoramento-mensal.entity';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { Prisma } from '@prisma/client';
+import { IndicadoresService } from '../indicadores/indicadores.service';
+import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 
 const {
     Parser,
@@ -24,8 +26,9 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
+        private readonly indicadoresService: IndicadoresService
     ) {}
-    async asJSON(params: RelPsMonitoramentoMensalFilterDTO): Promise<RelPsMonitoramentoMensalVariaveis[]> {
+    async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitoramentoMensalVariaveis[]> {
 
         //Prepara o filtro
         const filtroMetasTags = new FiltroMetasIniAtividadeDto();
@@ -153,32 +156,33 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
     }
 
-    async toFileOutput(params: RelPsMonitoramentoMensalFilterDTO, ctx: ReportContext): Promise<FileOutput[]> {
+    //TODO implementar paginação para evitar memory overflow
+    async toFileOutput(params: CreatePsMonitoramentoMensalFilterDto, ctx: ReportContext): Promise<FileOutput[]> {
         const rows = await this.asJSON(params);
         await ctx.progress(40);
         //Cabeçalho Arquivo
         const fieldsCSV = [
             { value: 'codigo_indicador', label: 'Código do Indicador' },
             { value: 'titulo_indicador', label: 'Título do Indicador' },
-            { value: 'id_indicador', label: 'ID do Indicador' },
+            { value: 'indicador_id', label: 'ID do Indicador' },
             { value: 'variavel_codigo', label: 'Código da Variável' },
             { value: 'variavel_titulo', label: 'Título da Variável'},
-            { value: 'id_iniciativa', label: 'ID da Variável'},
+            { value: 'variavel_id', label: 'ID da Variável'},
             { value: 'municipio', label: 'Município' },
-            { value: 'id_municipio', label: 'Código do Município' },
+            { value: 'municipio_id', label: 'Código do Município' },
             { value: 'regiao', label: 'Região'},
             { value: 'regiao_id', label: 'ID da Região'},
             { value: 'subprefeitura', label: 'Subprefeitura' },
             { value: 'id_subprefeitura', label: 'ID da Subprefeitura' },
             { value: 'distrito', label: 'Distrito' },
-            { value: 'id_distrito', label: 'ID do Distrito' },
+            { value: 'distrito_id', label: 'ID do Distrito' },
             { value: 'serie', label: 'Serie' },
             { value: 'data_referencia', label: 'Data de Referencia' },
             { value: 'valor', label: 'Valor' },
             { value: 'data_preenchimento', label: 'Data de Preenchimento' },
-            { value: 'anl_coleta', label: 'Analise Qualitativa Coleta' },
-            { value: 'anl_aprovador', label: 'Analise Qualitativa Aprovador' },
-            { value: 'anl_liberador', label: 'Analise Qualitativa Liberador' },
+            { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
+            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Aprovador' },
+            { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
         ];
 
         const out: FileOutput[] = [];
@@ -194,6 +198,25 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
                 name: 'monitoramento-mensal-variaveis-ps.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
+        }
+
+        //Transfere as informacoes dos filtros
+        const indicadoresInput:CreateRelIndicadorDto = new CreateRelIndicadorDto();
+        indicadoresInput.mes = params.mes;
+        indicadoresInput.ano = params.ano;
+        indicadoresInput.pdm_id = params.plano_setorial_id;
+        indicadoresInput.tags  = params.tags;
+        indicadoresInput.metas_ids = params.metas;
+        indicadoresInput.tipo = 'Mensal';
+
+        const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput,ctx);
+        if (indicadores){
+            if (indicadores[0]) {
+                out.push(indicadores[0]);
+            }
+            if (indicadores[1]) {
+                out.push(indicadores[1]);
+            }
         }
         return out;
     }

@@ -9,8 +9,8 @@ import {
     CreateRelProjetoOrcamentoDto,
 } from 'src/reports/projeto-orcamento/dto/create-projeto-orcamento.dto';
 import {
-    CreateRelProjetoPrevisaoCustoDto,
     CreateRelObrasPrevisaoCustoDto,
+    CreateRelProjetoPrevisaoCustoDto,
 } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
@@ -18,6 +18,10 @@ import { PdmCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcam
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
+import {
+    CreatePsMonitoramentoMensalFilterDto
+} from '../../planos-setoriais-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
+
 
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
@@ -46,7 +50,8 @@ export class CreateReportDto {
             CreateRelProjetoStatusDto,
             CreateRelObraStatusDto,
             CreateRelObrasDto,
-            CreateRelProjetoPrevisaoCustoDto
+            CreateRelProjetoPrevisaoCustoDto,
+            CreatePsMonitoramentoMensalFilterDto,
         ),
     })
     parametros: any;

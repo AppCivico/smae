@@ -3348,6 +3348,7 @@ enum TipoRelatorio {
     Consolidado
     Analitico
     Geral
+    Mensal
 }
 
 enum FonteRelatorio {
@@ -3370,6 +3371,7 @@ enum FonteRelatorio {
     PSPrevisaoCusto
     PSOrcamento
     CasaCivilAtvPendentes
+    PlanoSetoriaisMonitoramentoMensal
 }
 
 model Relatorio {

@@ -34,6 +34,9 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
+import {
+    MonitoramentoMensalVariaveisPs
+} from '../planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -225,7 +228,6 @@ export class ReportsService {
             case 'PrevisaoCusto':
             case 'ProjetoPrevisaoCusto':
             case 'ObrasPrevisaoCusto':
-            case 'PSPrevisaoCusto':
                 service = this.previsaoCustoService;
                 break;
             case 'Projeto':
@@ -249,6 +251,9 @@ export class ReportsService {
                 break;
             case 'TribunalDeContas':
                 service = this.tribunalDeContasService;
+                break;
+            case 'PlanoSetoriaisMonitoramentoMensal':
+                service = this.monitoramentoMensalVariaveisPs;
                 break;
             case 'CasaCivilAtvPendentes':
                 throw 'CasaCivilAtvPendentes não implementado';

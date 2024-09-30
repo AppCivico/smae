@@ -1,7 +1,7 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class RelPsMonitoramentoMensalFilterDTO {
+export class CreatePsMonitoramentoMensalFilterDto {
 
     @IsInt()
     plano_setorial_id:number;

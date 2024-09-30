@@ -64,6 +64,8 @@ export class IndicadorParams {
     @IsOptional()
     @IsBoolean()
     analitico_desde_o_inicio?: boolean;
+
+    mes:number
 }
 
 export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {}
