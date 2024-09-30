@@ -98,6 +98,15 @@ export class ClassificacaoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const existsTransferenciaRelacionada = await this.prisma.transferencia.count({
+            where: {
+                classificacao_id: id,
+                removido_em: null,
+            },
+        });
+        if (existsTransferenciaRelacionada > 0)
+            throw new HttpException('Classificacao não pode ser removida pois está relacionada a Transferencia(s)', 400);
+
         await this.prisma.classificacao.update({
             where: { id },
             data: {
