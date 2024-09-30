@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
-import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateWorkflowDto {
     @IsNumber()

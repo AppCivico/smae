@@ -1,4 +1,4 @@
-import { WorkflowEtapaDto } from 'src/workflow/configuracao/etapa/entities/workflow-etapa.entity';
+import { WorkflowEtapaDto } from '../../etapa/entities/workflow-etapa.entity';
 
 export class WorkflowFluxoDto {
     id: number;

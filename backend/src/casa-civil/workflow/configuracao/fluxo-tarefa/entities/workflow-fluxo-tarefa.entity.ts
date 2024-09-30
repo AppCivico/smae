@@ -1,6 +1,6 @@
 import { WorkflowResponsabilidade } from '@prisma/client';
 import { IsEnum } from 'class-validator';
-import { WorkflowTarefaDto } from 'src/workflow/configuracao/tarefa/entities/workflow-tarefa.entity';
+import { WorkflowTarefaDto } from '../../tarefa/entities/workflow-tarefa.entity';
 
 export class WorkflowFluxoTarefaDto {
     id: number;

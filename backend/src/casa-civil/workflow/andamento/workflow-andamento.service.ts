@@ -1,13 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
 import { AndamentoFaseDto, AndamentoTarefaDto, WorkflowAndamentoDto } from './entities/workflow-andamento.entity';
 import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
 import { DateTime } from 'luxon';
+import { WorkflowService } from '../configuracao/workflow.service';
 
 @Injectable()
 export class WorkflowAndamentoService {

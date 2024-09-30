@@ -7,7 +7,7 @@ import {
     UpdateWorkflowAndamentoFaseDto,
     WorkflowFinalizarIniciarFaseDto,
 } from './dto/patch-workflow-andamento-fase.dto';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
+import { WorkflowService } from '../../configuracao/workflow.service';
 
 @Injectable()
 export class WorkflowAndamentoFaseService {

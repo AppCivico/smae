@@ -1,13 +1,13 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { DateTime } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
 import { WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class WorkflowService {

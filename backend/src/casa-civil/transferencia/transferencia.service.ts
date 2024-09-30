@@ -8,7 +8,6 @@ import { DistribuicaoRecursoService } from 'src/casa-civil/distribuicao-recurso/
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { UploadService } from 'src/upload/upload.service';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -27,6 +26,7 @@ import {
     TransferenciaHistoricoDto,
 } from './entities/transferencia.dto';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
+import { WorkflowService } from '../workflow/configuracao/workflow.service';
 
 class NextPageTokenJwtBody {
     offset: number;

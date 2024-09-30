@@ -2,12 +2,12 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdNomeExibicao } from 'src/meta/entities/meta.entity';
 import {
+    WorkflowDetailDto,
     DetailWorkflowFluxoDto,
     DetailWorkflowFluxoFaseDto,
     DetailWorkflowFluxoFaseTarefaDto,
-    WorkflowDetailDto,
-} from 'src/workflow/configuracao/entities/workflow.entity';
-import { WorkflowSituacaoDto } from 'src/workflow/configuracao/situacao/entities/workflow-situacao.entity';
+} from '../../configuracao/entities/workflow.entity';
+import { WorkflowSituacaoDto } from '../../configuracao/situacao/entities/workflow-situacao.entity';
 
 export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto, ['transferencia_tipo'])) {
     @ApiProperty({ type: () => [WorkflowAndamentoFluxoDto] })
