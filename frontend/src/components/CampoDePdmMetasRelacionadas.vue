@@ -1,0 +1,351 @@
+<script setup>
+import tiposDePlanos from '@/consts/tiposDePlanos';
+import truncate from '@/helpers/truncate';
+import { usePdmMetasStore } from '@/stores/pdmMetas.store';
+import { storeToRefs } from 'pinia';
+import { useField } from 'vee-validate';
+import { ref, watch, watchEffect } from 'vue';
+
+const emit = defineEmits(['update:modelValue']);
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    required: true,
+  },
+  etiquetaBotaoAdicao: {
+    type: String,
+    default: 'Adicionar',
+  },
+  titulo: {
+    type: String,
+    default: 'Relacionamentos',
+  },
+  valoresIniciais: {
+    type: Array,
+    default: () => [],
+  },
+  // necessária para que o vee-validate não se perca
+  name: {
+    type: String,
+    required: true,
+    default: '',
+  },
+});
+
+const pdmMetasStore = usePdmMetasStore();
+const {
+  arvoreDeMetas,
+  pdmsPorId,
+  pdmsSimplificados,
+  planosAgrupadosPorTipo,
+  chamadasPendentes,
+  erros,
+} = storeToRefs(pdmMetasStore);
+
+const campoPronto = ref(false);
+
+const valores = ref([]);
+const promessas = [];
+
+const { handleChange, resetField } = useField(props.name, undefined, {
+  initialValue: valores.value,
+});
+
+function buscarArvoreDeMetas(valorOuEvento) {
+  const idDaMeta = valorOuEvento.target?.value || valorOuEvento;
+
+  if (idDaMeta && !arvoreDeMetas.value?.[idDaMeta]) {
+    pdmMetasStore.buscarArvoreDeMetas({ meta_ids: idDaMeta });
+  }
+}
+
+function redefinirValores(indice, propriedadeMae) {
+  switch (propriedadeMae) {
+    case 'pdm':
+      delete valores.value[indice].meta_id;
+    // fall through
+    case 'meta':
+      delete valores.value[indice].iniciativa_id;
+    // fall through
+    case 'iniciativa':
+    default:
+      delete valores.value[indice].atividade_id;
+  }
+}
+
+function removerLinha(indice) {
+  valores.value.splice(indice, 1);
+}
+
+function adicionarLinha() {
+  valores.value.push({
+    origem_tipo: 'PdmSistema',
+  });
+}
+
+watchEffect(async () => {
+  await Promise.allSettled(promessas);
+
+  campoPronto.value = false;
+  promessas.splice(0);
+
+  if (!pdmsSimplificados.value.length && !chamadasPendentes.value.pdmsSimplificados) {
+    promessas.push(pdmMetasStore.buscarPdms());
+  }
+
+  if (Array.isArray(props.valoresIniciais) && props.valoresIniciais.length) {
+    props.valoresIniciais.forEach((valor) => {
+      if (valor.meta_id && !arvoreDeMetas.value[valor.meta_id]) {
+        promessas.push(pdmMetasStore.buscarArvoreDeMetas({ meta_ids: valor.meta_id }));
+      }
+    });
+  }
+
+  Promise.all(promessas)
+    .then(() => {
+      campoPronto.value = true;
+    })
+    .catch((erro) => {
+      console.error('Erro ao montar CampoDePdmMetasRelacionadas', erro);
+      throw erro;
+    });
+
+  if (Array.isArray(props.valoresIniciais)) {
+    valores.value = props.valoresIniciais.map((origem) => ({
+      atividade_id: origem?.atividade_id || origem?.atividade?.id || null,
+      id: origem?.id || null,
+      iniciativa_id: origem?.iniciativa_id || origem?.iniciativa?.id || null,
+      meta_id: origem?.meta_id || origem?.meta?.id || null,
+      origem_tipo: origem?.origem_tipo || origem?.origem_tipo || null,
+      pdm_escolhido: origem?.pdm_escolhido || origem?.pdm?.id || null,
+    }));
+  }
+
+  resetField({
+    value: valores.value,
+  });
+});
+
+watch(valores, (novoValor) => {
+  handleChange(novoValor);
+  emit('update:modelValue', novoValor);
+}, { deep: true });
+</script>
+<template>
+  <fieldset
+    class="campo-de-equipes"
+    :aria-busy="!campoPronto"
+  >
+    <legend class="mb1">
+      {{ $props.titulo }}
+    </legend>
+
+    <div
+      v-for="(item, idx) in valores"
+      :key="item.id"
+      class="flex g2 mb1"
+    >
+      <input
+        v-model="valores[idx].id"
+        :name="`${$props.name}[${idx}].id`"
+        type="hidden"
+      >
+      <input
+        :name="`${$props.name}[${idx}].origem_tipo`"
+        value="PdmSistema"
+        type="hidden"
+      >
+
+      <div class="flex f1 flexwrap g2">
+        <div class="f1 fb10em">
+          <label
+            :for="`${$props.name}__pdm--${idx}`"
+            class="label"
+          >
+            Programa de metas&nbsp;<span class="tvermelho">*</span>
+          </label>
+          <select
+            :id="`${$props.name}[${idx}].pdm_escolhido`"
+            v-model="valores[idx].pdm_escolhido"
+            :name="`${$props.name}[${idx}].pdm_escolhido`"
+            class="inputtext light mb1"
+            :aria-busy="chamadasPendentes?.pdmsSimplificados"
+            :disabled="!pdmsSimplificados?.length"
+            @change="redefinirValores(idx, 'pdm')"
+          >
+            <option
+              value=""
+              :selected="!valores?.[idx]?.pdm_escolhido"
+            >
+              Selecionar
+            </option>
+            <optgroup
+              v-for="(grupo, chave) in planosAgrupadosPorTipo"
+              :key="chave"
+              :label="tiposDePlanos[chave]?.nome || chave"
+            >
+              <option
+                v-for="plano in grupo"
+                :key="plano.id"
+                :value="plano.id"
+                :disabled="!pdmsPorId[plano.id]?.metas?.length"
+              >
+                {{ plano.nome }}
+                <template v-if="!pdmsPorId[plano.id]?.metas?.length">
+                  (sem metas disponíveis)
+                </template>
+              </option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="f1 fb10em">
+          <label
+            class="label"
+            :for="`${$props.name}[${idx}].meta_id`"
+          >Meta</label>
+          <select
+            :id="`${$props.name}[${idx}].meta_id`"
+            v-model="valores[idx].meta_id"
+            :name="`${$props.name}[${idx}].meta_id`"
+            class="inputtext light mb1"
+            :disabled="!pdmsPorId[valores[idx]?.pdm_escolhido]?.metas?.length"
+            @change="($e) => {
+              redefinirValores(idx, 'meta');
+              buscarArvoreDeMetas($e.target.value);
+            }"
+          >
+            <option
+              value=""
+              :selected="!valores?.[idx]?.meta_id"
+            >
+              Selecionar
+            </option>
+            <option
+              v-for="pdm in pdmsPorId[valores[idx]?.pdm_escolhido]?.metas"
+              :key="pdm.id"
+              :value="pdm.id"
+              :title="pdm.titulo"
+            >
+              {{ pdm.codigo }} - {{ truncate(pdm.titulo, 36) }}
+            </option>
+          </select>
+        </div>
+        <div class="f1 fb10em">
+          <label
+            class="label"
+            :for="`${$props.name}[${idx}].iniciativa_id`"
+          >Iniciativa</label>
+          <select
+            :id="`${$props.name}[${idx}].iniciativa_id`"
+            v-model="valores[idx].iniciativa_id"
+            :name="`${$props.name}[${idx}].iniciativa_id`"
+            class="inputtext light mb1"
+            :aria-busy="chamadasPendentes?.arvoreDeMetas"
+            :disabled="!Object.keys(
+              arvoreDeMetas?.[valores[idx].meta_id]?.iniciativas || {}
+            )?.length"
+            @change="redefinirValores(idx, 'iniciativa')"
+          >
+            <option
+              value=""
+              :selected="!valores?.[idx]?.iniciativa_id"
+            >
+              Selecionar
+            </option>
+            <option
+              v-for="iniciativa in arvoreDeMetas?.[valores[idx].meta_id]?.iniciativas"
+              :key="iniciativa.id"
+              :value="iniciativa.id"
+              :title="iniciativa.titulo"
+            >
+              {{ iniciativa.codigo }} - {{ truncate(iniciativa.titulo, 36) }}
+            </option>
+          </select>
+        </div>
+        <div class="f1 fb10em">
+          <label
+            class="label"
+            :for="`${$props.name}[${idx}].atividade_id`"
+          >Atividade</label>
+          <select
+            :id="`${$props.name}[${idx}].atividade_id`"
+            v-model="valores[idx].atividade_id"
+            :name="`${$props.name}[${idx}].atividade_id`"
+            class="inputtext light mb1"
+            :aria-busy="chamadasPendentes?.arvoreDeMetas"
+            :disabled="!Object.keys(arvoreDeMetas?.[valores[idx].meta_id]
+              ?.iniciativas?.[valores[idx].iniciativa_id]?.atividades
+              || {})?.length"
+          >
+            <option
+              value=""
+              :selected="!valores?.[idx]?.atividade_id"
+            >
+              Selecionar
+            </option>
+            <option
+              v-for="atividade in arvoreDeMetas?.[valores?.[idx].meta_id]
+                ?.iniciativas?.[valores?.[idx].iniciativa_id]?.atividades"
+              :key="atividade.id"
+              :value="atividade.id"
+              :title="atividade.titulo"
+            >
+              {{ atividade.codigo }} - {{ truncate(atividade.titulo, 36) }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <button
+        class="like-a__text addlink"
+        type="button"
+        arial-label="excluir"
+        title="excluir"
+        @click="removerLinha(idx)"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
+    </div>
+
+    <button
+      class="like-a__text addlink"
+      type="button"
+      :disabled="!pdmsSimplificados.length || !Array.isArray(valores)"
+      @click="adicionarLinha"
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg>
+      {{ $props.etiquetaBotaoAdicao }}
+    </button>
+
+    <ErrorComponent
+      v-for="erro in erros"
+      :key="erro"
+      :erro="erro"
+    />
+
+    <slot name="rodape" />
+
+    <div
+      v-scrollLockDebug
+      class="flex flexwrap g2 mb2"
+    >
+      <textarea
+        readonly
+        rows="15"
+        class="f1"
+      >$props.modelValue:{{ $props.modelValue }}</textarea>
+      <textarea
+        readonly
+        rows="15"
+        class="f1"
+      >valores:{{ valores }}</textarea>
+    </div>
+  </fieldset>
+</template>

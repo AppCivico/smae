@@ -1,6 +1,10 @@
 import type { DadosCodTituloAtividadeDto, DadosCodTituloIniciativaDto } from '@/../../backend/src/meta/dto/create-meta.dto';
 
-const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): any => {
+type AtividadesPorId = {
+  [k: number]: DadosCodTituloAtividadeDto;
+};
+
+const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): AtividadesPorId => {
   const resultado: { [k: number]: DadosCodTituloAtividadeDto } = {};
   atividades.forEach((atividade: DadosCodTituloAtividadeDto) => {
     resultado[atividade.id] = atividade;
@@ -8,8 +12,14 @@ const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): any => {
   return resultado;
 };
 
+type ArvoreDeIniciativas = {
+  [k: number]: Omit<DadosCodTituloAtividadeDto, 'atividades'> & {
+    atividades: AtividadesPorId;
+  };
+};
+
 export default (iniciativas: DadosCodTituloIniciativaDto[]) => {
-  const resultado: { [k: number]: DadosCodTituloIniciativaDto } = {};
+  const resultado: ArvoreDeIniciativas = {};
   iniciativas.forEach((iniciativa: DadosCodTituloIniciativaDto) => {
     resultado[iniciativa.id] = {
       ...iniciativa,
