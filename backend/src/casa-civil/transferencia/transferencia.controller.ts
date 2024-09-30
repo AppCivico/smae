@@ -5,7 +5,12 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { TransferenciaService } from './transferencia.service';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
-import { ListTransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
+import {
+    ListTransferenciaAnexoDto,
+    ListTransferenciaHistoricoDto,
+    TransferenciaDetailDto,
+    TransferenciaDto,
+} from './entities/transferencia.dto';
 import {
     CompletarTransferenciaDto,
     UpdateTransferenciaAnexoDto,
@@ -15,7 +20,7 @@ import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params'
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
-import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
+import { FilterTransferenciaDto, FilterTransferenciaHistoricoDto } from './dto/filter-transferencia.dto';
 
 @ApiTags('Transferência')
 @Controller('transferencia')
@@ -74,6 +79,17 @@ export class TransferenciaController {
     @Roles(['CadastroTransferencia.editar'])
     async limparWorkflow(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         return await this.transferenciaService.limparWorkflowCronograma(+params.id, user, undefined);
+    }
+
+    @Get(':id/historico')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.listar'])
+    async findHistorico(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterTransferenciaHistoricoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListTransferenciaHistoricoDto> {
+        return { linhas: await this.transferenciaService.findTransferenciaHistorico(params.id, filters, user) };
     }
 
     @Delete(':id')

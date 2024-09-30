@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
+import {
+    ParlamentarCargo,
+    TransferenciaHistoricoAcao,
+    TransferenciaInterface,
+    TransferenciaTipoEsfera,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { ClassificacaoDto } from '../../../transferencias-voluntarias/classificacao/entities/classificacao.dto';
+import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 
 export class TransferenciaDto {
     id: number;
@@ -88,7 +94,7 @@ export class TransferenciaDetailDto {
     bloco_nota_token: string;
 
     classificacao: ClassificacaoDto | null;
-    classificacao_id: number|null;
+    classificacao_id: number | null;
 }
 
 export class ParlamentarTransferenciaDto {
@@ -112,4 +118,18 @@ export class TransferenciaAnexoDto {
 
 export class ListTransferenciaAnexoDto {
     linhas: TransferenciaAnexoDto[];
+}
+
+export class TransferenciaHistoricoDto {
+    tipo_antigo: IdNomeDto | null;
+    tipo_novo: IdNomeDto | null;
+    @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao' })
+    acao: TransferenciaHistoricoAcao;
+    dados_extra: any;
+    criador: IdNomeExibicaoDto;
+    criado_em: Date;
+}
+
+export class ListTransferenciaHistoricoDto {
+    linhas: TransferenciaHistoricoDto[];
 }

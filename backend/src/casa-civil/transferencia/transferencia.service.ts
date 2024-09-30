@@ -14,13 +14,18 @@ import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service
 import { PrismaService } from '../../prisma/prisma.service';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
-import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
+import { FilterTransferenciaDto, FilterTransferenciaHistoricoDto } from './dto/filter-transferencia.dto';
 import {
     CompletarTransferenciaDto,
     UpdateTransferenciaAnexoDto,
     UpdateTransferenciaDto,
 } from './dto/update-transferencia.dto';
-import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
+import {
+    TransferenciaAnexoDto,
+    TransferenciaDetailDto,
+    TransferenciaDto,
+    TransferenciaHistoricoDto,
+} from './entities/transferencia.dto';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 
 class NextPageTokenJwtBody {
@@ -1117,7 +1122,7 @@ export class TransferenciaService {
                     },
                 },
                 classificacao_id: true,
-                classificacao:{
+                classificacao: {
                     select: {
                         id: true,
                         nome: true,
@@ -1784,5 +1789,58 @@ export class TransferenciaService {
                 timeout: 50000,
             });
         }
+    }
+
+    async findTransferenciaHistorico(
+        id: number,
+        filters: FilterTransferenciaHistoricoDto,
+        user: PessoaFromJwt
+    ): Promise<TransferenciaHistoricoDto[]> {
+        // Disparando o findOne pois lá já há validações.
+        await this.findOneTransferencia(id, user);
+
+        const rows = await this.prisma.transferenciaHistorico.findMany({
+            where: {
+                transferencia_id: id,
+                acao: {
+                    in: filters.acao,
+                },
+            },
+            orderBy: { criado_em: 'desc' },
+            select: {
+                acao: true,
+                dados_extra: true,
+                criado_em: true,
+                tipo_antigo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                },
+                tipo_novo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                },
+                criador: {
+                    select: {
+                        id: true,
+                        nome_exibicao: true,
+                    },
+                },
+            },
+        });
+
+        return rows.map((r) => {
+            return {
+                acao: r.acao,
+                dados_extra: r.dados_extra,
+                criado_em: r.criado_em,
+                tipo_antigo: r.tipo_antigo,
+                tipo_novo: r.tipo_novo,
+                criador: r.criador,
+            } satisfies TransferenciaHistoricoDto;
+        });
     }
 }
