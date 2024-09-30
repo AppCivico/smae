@@ -4,12 +4,11 @@ import { Readable } from 'stream';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
-import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { DateTime } from 'luxon';
 import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common/helpers/Streaming';
-
 const BATCH_SIZE = 500;
 const CREATE_TEMP_TABLE = 'CREATE TEMP TABLE _report_data ON COMMIT DROP AS';
 class RetornoDb {

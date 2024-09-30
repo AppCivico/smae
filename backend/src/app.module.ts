@@ -40,7 +40,6 @@ import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TaskModule } from './task/task.module';
-
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
 import { WorkflowAndamentoModule } from './casa-civil/workflow/andamento/workflow-andamento.module';
@@ -52,6 +51,9 @@ import { WorkflowFluxoModule } from './casa-civil/workflow/configuracao/fluxo/wo
 import { WorkflowSituacaoModule } from './casa-civil/workflow/configuracao/situacao/workflow-situacao.module';
 import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
+import {
+    PsMonitoramentoMensalModule
+} from './reports/planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.module';
 
 // Hacks pro JS
 /*
