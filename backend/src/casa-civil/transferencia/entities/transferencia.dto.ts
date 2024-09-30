@@ -88,6 +88,7 @@ export class TransferenciaDetailDto {
     bloco_nota_token: string;
 
     classificacao: ClassificacaoDto | null;
+    classificacao_id: number|null;
 }
 
 export class ParlamentarTransferenciaDto {

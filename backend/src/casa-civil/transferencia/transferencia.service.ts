@@ -1317,6 +1317,7 @@ export class TransferenciaService {
                         },
                     },
                 },
+                classificacao_id: true,
                 classificacao: {
                     select: {
                         id: true,
@@ -1394,6 +1395,7 @@ export class TransferenciaService {
             secretaria_concedente: row.secretaria_concedente_str,
             orgao_concedente: row.orgao_concedente,
             classificacao: row.classificacao,
+            classificacao_id: row.classificacao_id,
         } satisfies TransferenciaDetailDto;
     }
 
