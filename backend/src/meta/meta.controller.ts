@@ -12,7 +12,7 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -26,6 +26,7 @@ import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { MetaItemDto, RelacionadosDTO } from './entities/meta.entity';
 import { MetaService } from './meta.service';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 
 @ApiTags('Meta')
 @Controller('meta')
@@ -78,6 +79,7 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
+    @ApiExtraModels(ResumoOrigensMetasItemDto, DetalheOrigensDto)
     @Roles(MetaController.ReadPerm)
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<MetaItemDto> {
         const r = await this.metaService.findAll(this.tipoPdm, { id: params.id }, user);

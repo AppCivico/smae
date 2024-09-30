@@ -42,9 +42,9 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
 } from './dto/mf-meta.dto';
 
-import { MetasService } from './metas.service';
-import { MetaService } from '../../meta/meta.service';
 import { CheckArrayContains } from '../../common/helpers/CheckArrayContains';
+import { MetaService } from '../../meta/meta.service';
+import { MetasService } from './metas.service';
 
 const DISP_ENDPOINT_MONIT = 'Variáveis disponíveis apenas durante o monitoramento físico';
 const DISP_ENDPOINT_MONIT_E_ADMIN =
