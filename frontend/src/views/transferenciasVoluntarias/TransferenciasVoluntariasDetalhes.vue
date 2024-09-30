@@ -181,6 +181,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferenciaEmFoco?.tipo.nome || '-' }}
         </dd>
       </div>
+      <div class="f1 fb5em">
+        <dt class="t16 w700 mb05 tc500">
+          Classificação
+        </dt>
+        <dd>
+          {{ transferenciaEmFoco?.classificacao || '-' }}
+        </dd>
+      </div>
       <div class="f1 fb5">
         <dt class="t16 w700 mb05 tc500">
           Classificacao
@@ -268,10 +276,19 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt class="t16 w700 mb05 tc500">
-          Parlamentar
+          Nome de urna
         </dt>
         <dd>
           {{ parlamentar.parlamentar.nome_popular || '-' }}
+        </dd>
+      </dl>
+
+      <dl class="f1">
+        <dt class="t16 w700 mb05 tc500">
+          Nome civil
+        </dt>
+        <dd>
+          {{ parlamentar.parlamentar.nome || '-' }}
         </dd>
       </dl>
 
@@ -283,7 +300,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ parlamentar.partido.sigla || '-' }}
         </dd>
       </dl>
+    </div>
 
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt class="t16 w700 mb05 tc500">
           Cargo
@@ -524,6 +543,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
       <dl class="f1 mb1">
         <dt class="t16 w700 mb05 tc500">
+          Número da demanda
+        </dt>
+        <dd>
+          {{ transferenciaEmFoco?.demanda || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t16 w700 mb05 tc500">
           Observações
         </dt>
         <dd>
@@ -720,6 +747,22 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ distribuicao.valor_contrapartida
               ? `R$${dinheiro(distribuicao.valor_contrapartida)}`
               : '-' }}
+          </dd>
+        </dl>
+        <dl class="mb1 pb1">
+          <dt class="t16 w700 mb05 tamarelo">
+            Custeio
+          </dt>
+          <dd>
+            {{ distribuicao.custeio ? `R$${dinheiro(distribuicao.custeio)}` : '-' }}
+          </dd>
+        </dl>
+        <dl class="mb1 pb1">
+          <dt class="t16 w700 mb05 tamarelo">
+            Investimento
+          </dt>
+          <dd>
+            {{ distribuicao.investimento ? `R$${dinheiro(distribuicao.investimento)}` : '-' }}
           </dd>
         </dl>
         <dl class="mb1 pb1">
