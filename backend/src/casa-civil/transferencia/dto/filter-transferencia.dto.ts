@@ -49,8 +49,9 @@ export class FilterTransferenciaDto {
 
 export class FilterTransferenciaHistoricoDto {
     @IsOptional()
-    @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao' })
+    @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao', isArray: true })
     @IsEnum(TransferenciaHistoricoAcao, {
+        each: true,
         message:
             '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaHistoricoAcao).join(', '),
     })
