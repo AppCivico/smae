@@ -1117,7 +1117,20 @@ export class TransferenciaService {
                     },
                 },
                 classificacao_id: true,
-
+                classificacao:{
+                    select: {
+                        id: true,
+                        nome: true,
+                        transferencia_tipo: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                esfera: true,
+                                categoria: true,
+                            },
+                        },
+                    },
+                },
                 distribuicao_recursos: {
                     where: { removido_em: null },
                     select: {
@@ -1179,7 +1192,7 @@ export class TransferenciaService {
                     r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
-                classificacao_id: r.classificacao_id,
+                classificacao: r.classificacao,
                 orgao_gestor: r.distribuicao_recursos.length
                     ? r.distribuicao_recursos.map((e) => e.orgao_gestor)
                     : null,
