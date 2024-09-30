@@ -71,7 +71,7 @@ const tiposDisponíveis = computed(() => (values.esfera
   : []));
 
 const classificacoesDisponiveis = computed(() => (values.tipo_id
-  ? classificacaoComoLista.value.filter((x) => x.id === values.tipo_id)
+  ? classificacaoComoLista.value.filter((x) => x.transferencia_tipo_id === values.tipo_id)
   : []));
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
