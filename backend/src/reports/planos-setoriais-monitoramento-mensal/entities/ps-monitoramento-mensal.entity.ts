@@ -12,19 +12,19 @@ export class RelMonitoramentoMensalPsIndicadores {
 }
 
 export class RelPsMonitoramentoMensalVariaveis {
-    id_indicador: number;
+    indicador_id: number;
     codigo_indicador: string;
     titulo_indicador:string;
-    id_variavel:number;
+    variavel_id:number;
     codigo_variavel:string;
     titulo_variavel:string;
-    id_municipio:number;
+    municipio_id:number;
     municipio:string;
-    id_regiao:number;
+    regiao_id:number;
     regiao:string;
-    id_subprefeitura:number;
+    subprefeitura_id:number;
     subprefeitura:string;
-    id_distrito:number;
+    distrito_id:number;
     distrito:string;
     serie:string;
     data_referencia:string;

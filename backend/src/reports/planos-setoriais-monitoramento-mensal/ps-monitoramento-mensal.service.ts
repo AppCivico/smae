@@ -42,18 +42,80 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
 
         const paramMesAno = params.ano + "-"+ params.mes + "-01";
         const linhasVariaveis = await this.prisma.$queryRaw`select
-                            i.id as id_indicador,
+                            i.id as indicador_id,
                             i.codigo    as codigo_indicador,
                             i.titulo    as titulo_indicador,
-                            v.id        as id_variavel,
+                            v.id        as variavel_id,
                             v.codigo    as codigo_variavel,
                             v.titulo    as titulo_variavel,
-                            1           as id_municipio,
-                            ''          as municipio,
-                            r.id        as id_regiao,
-                            r.descricao as regiao,
-                            1           as id_distrito,
-                            ''          as distrito,
+                            case
+                                when r.nivel = 1 then r.descricao
+                                when r.nivel = 2 then (select mun.descricao from regiao mun where mun.id = r.parente_id)
+                                when r.nivel = 3 then (select mun.descricao
+                                                       from regiao rr
+                                                                inner join regiao mun on rr.parente_id = mun.id
+                                                       where r.parente_id = rr.id)
+                                when r.nivel = 4 then (select mun.descricao
+                                                       from regiao rr
+                                                                inner join regiao mun on rr.parente_id = mun.id
+                                                                inner join regiao dist
+                                                                           on dist.id = rr.parente_id
+                                                       where r.parente_id = rr.id)
+                                end as municipio,
+                            case
+                                when r.nivel = 1 then r.id
+                                when r.nivel = 2 then (select mun.id from regiao mun where mun.id = r.parente_id)
+                                when r.nivel = 3 then (select mun.id
+                                                       from regiao rr
+                                                                inner join regiao mun on rr.parente_id = mun.id
+                                                       where r.parente_id = rr.id)
+                                when r.nivel = 4 then (select mun.id
+                                                       from regiao rr
+                                                                inner join regiao mun on rr.parente_id = mun.id
+                                                                inner join regiao dist
+                                                                           on dist.id = rr.parente_id
+                                                       where r.parente_id = rr.id)
+                                end as municipio_id,
+                            case
+                                when r.nivel = 1 then null
+                                when r.nivel = 2 then r.descricao
+                                when r.nivel = 3 then (select reg.descricao from regiao reg where reg.id = r.parente_id)
+                                when r.nivel = 4 then (select reg.descricao
+                                                       from regiao rr
+                                                                inner join regiao reg on rr.parente_id = reg.id
+                                                                inner join regiao dist
+                                                                           on dist.id = rr.parente_id
+                                                       where r.parente_id = rr.id)
+                                end as regiao,
+                            case
+                                when r.nivel = 1 then null
+                                when r.nivel = 2 then r.id
+                                when r.nivel = 3 then (select reg.id from regiao reg where reg.id = r.parente_id)
+                                when r.nivel = 4 then (select reg.id
+                                                       from regiao rr
+                                                                inner join regiao reg on rr.parente_id = reg.id
+                                                                inner join regiao dist
+                                                                           on dist.id = rr.parente_id
+                                                       where r.parente_id = rr.id)
+                                end as regiao_id,
+                            case
+                                when r.nivel in (1, 2) then null
+                                when r.nivel = 3 then r.id
+                                when r.nivel = 4 then (select reg.id from regiao reg where reg.id = r.parente_id)
+                                end as subprefeitura_id,
+                            case
+                                when r.nivel in (1, 2) then null
+                                when r.nivel = 3 then r.descricao
+                                when r.nivel = 4 then (select reg.descricao from regiao reg where reg.id = r.parente_id)
+                                end as subprefeitura,
+                            case
+                                when r.nivel in (1, 2, 3) then null
+                                when r.nivel = 4 then r.descricao
+                                end as distrito,
+                            case
+                                when r.nivel in (1, 2, 3) then null
+                                when r.nivel = 4 then r.id
+                                end as distrito_id,
                             sv.serie,
                             sv.data_valor,
                             sv.valor_nominal,
