@@ -3,20 +3,20 @@ import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
+import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
+import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
-import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
-import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
-import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
-import { CachedMetasDto } from '../common/dto/origem-pdm.dto';
+import { AtividadeDto, AtividadeOrgao } from './entities/atividade.entity';
 
 @Injectable()
 export class AtividadeService {
@@ -365,7 +365,7 @@ export class AtividadeService {
         const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
         const tags: MetaIniAtvTag[] = [];
-        const ret: Atividade[] = [];
+        const ret: AtividadeDto[] = [];
         for (const dbAtividade of listActive) {
             const coordenadores_cp: IdNomeExibicaoDto[] = [];
             const orgaos: Record<number, AtividadeOrgao> = {};
@@ -416,8 +416,18 @@ export class AtividadeService {
                 });
             }
 
+            let origens_extra: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto =
+                dbAtividade.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
+
+            if (filters?.id)
+                origens_extra = await CompromissoOrigemHelper.buscaOrigensComDetalhes(
+                    'atividade',
+                    dbAtividade.id,
+                    this.prisma
+                );
+
             ret.push({
-                resumo_origens: dbAtividade.origem_cache?.valueOf() as CachedMetasDto,
+                origens_extra: origens_extra,
                 tags,
                 id: dbAtividade.id,
                 titulo: dbAtividade.titulo,

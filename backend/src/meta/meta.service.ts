@@ -5,9 +5,14 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
+import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
+import { PdmService } from '../pdm/pdm.service';
+import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateMetaDto,
@@ -27,12 +32,7 @@ import {
     MetaPdmDto,
     RelacionadosDTO,
 } from './entities/meta.entity';
-import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
-import { PdmService } from '../pdm/pdm.service';
-import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
-import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
-import { CachedMetasDto } from '../common/dto/origem-pdm.dto';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -692,8 +692,15 @@ export class MetaService {
                 podeEditar = true; // TODO plano setorial
             }
 
+            let resumoOrigem: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto =
+                dbMeta.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
+
+            if (filters?.id) {
+                resumoOrigem = await CompromissoOrigemHelper.buscaOrigensComDetalhes('meta', dbMeta.id, this.prisma);
+            }
+
             ret.push({
-                resumo_origens: dbMeta.origem_cache?.valueOf() as CachedMetasDto,
+                origens_extra: resumoOrigem,
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
                 contexto: dbMeta.contexto,
@@ -783,6 +790,7 @@ export class MetaService {
                 if (Array.isArray(origens_extra)) {
                     origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
                 }
+                console.log(origem_cache);
 
                 const meta = await prismaTx.meta.update({
                     where: { id: id },

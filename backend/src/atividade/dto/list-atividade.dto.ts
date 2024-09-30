@@ -1,5 +1,5 @@
-import { Atividade } from '../entities/atividade.entity';
+import { AtividadeDto } from '../entities/atividade.entity';
 
 export class ListAtividadeDto {
-    linhas: Atividade[];
+    linhas: AtividadeDto[];
 }

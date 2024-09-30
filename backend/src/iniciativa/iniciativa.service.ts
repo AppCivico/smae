@@ -12,10 +12,10 @@ import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
-import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
+import { IdNomeExibicao, IniciativaDto, IniciativaOrgao } from './entities/iniciativa.entity';
 import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
-import { CachedMetasDto } from '../common/dto/origem-pdm.dto';
+import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 
 @Injectable()
 export class IniciativaService {
@@ -332,7 +332,7 @@ export class IniciativaService {
                         tipo: true,
                     },
                 },
-                origem_cache:true,
+                origem_cache: true,
             },
         });
 
@@ -341,7 +341,7 @@ export class IniciativaService {
         const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
         const tags: MetaIniAtvTag[] = [];
-        const ret: Iniciativa[] = [];
+        const ret: IniciativaDto[] = [];
         for (const dbIniciativa of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, IniciativaOrgao> = {};
@@ -392,8 +392,19 @@ export class IniciativaService {
                 });
             }
 
+            let origens_extra: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto =
+                dbIniciativa.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
+
+            if (filters?.id) {
+                origens_extra = await CompromissoOrigemHelper.buscaOrigensComDetalhes(
+                    'iniciativa',
+                    dbIniciativa.id,
+                    this.prisma
+                );
+            }
+
             ret.push({
-                resumo_origens: dbIniciativa.origem_cache?.valueOf() as CachedMetasDto,
+                origens_extra: origens_extra,
                 tags,
                 id: dbIniciativa.id,
                 titulo: dbIniciativa.titulo,

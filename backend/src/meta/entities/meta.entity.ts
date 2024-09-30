@@ -3,11 +3,11 @@ import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
-import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
-import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
+import { ResumoDetalheOrigensDto } from '../../common/dto/origem-pdm.dto';
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
-import { CachedMetasDto } from '../../common/dto/origem-pdm.dto';
+import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
 
 export class IdDesc {
     id: number;
@@ -31,7 +31,7 @@ export class MetaIniAtvTag {
     download_token: string | null;
 }
 
-export class MetaItemDto {
+export class MetaItemDto extends ResumoDetalheOrigensDto {
     id: number;
     status: string;
     pdm_id: number;
@@ -51,7 +51,6 @@ export class MetaItemDto {
     pode_editar: boolean;
     ps_tecnico_cp: CreatePSEquipeTecnicoCPDto;
     ps_ponto_focal: CreatePSEquipePontoFocalDto;
-    resumo_origens: CachedMetasDto;
 }
 
 export class MetaPdmDto {

@@ -1,7 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { ProjetoOrigemTipo } from "@prisma/client";
-import { Transform, TransformFnParams } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
+import { ApiProperty, refs } from '@nestjs/swagger';
+import { ProjetoOrigemTipo } from '@prisma/client';
+import { Transform, TransformFnParams } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
 export class UpsertOrigemDto {
     @IsOptional()
@@ -66,12 +66,33 @@ export class UpsertOrigemDto {
     meta_codigo?: string | null;
 }
 
-export class CachedMetasItem {
+export class ResumoOrigensMetasItem {
     id: number | null;
     pdm_id: number | null;
     codigo: string;
 }
 
-export class CachedMetasDto {
-    metas: CachedMetasItem[];
+export class ResumoOrigensMetasItemDto {
+    metas: ResumoOrigensMetasItem[];
+}
+
+export class DetalheOrigensDto {
+    id: number;
+    origem_tipo: ProjetoOrigemTipo;
+    origem_outro: string | null;
+    meta_id: number | null;
+    iniciativa_id: number | null;
+    atividade_id: number | null;
+    meta_codigo: string | null;
+}
+
+export class DetalhesOrigensMetasItemDto {
+    detalhes: DetalheOrigensDto[];
+}
+
+export class ResumoDetalheOrigensDto {
+    @ApiProperty({
+        oneOf: refs(DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto),
+    })
+    origens_extra: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto;
 }

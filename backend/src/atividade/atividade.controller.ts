@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -12,6 +24,7 @@ import { CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { ListAtividadeDto } from './dto/list-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
+import { AtividadeDto } from './entities/atividade.entity';
 
 @ApiTags('Atividade')
 @Controller('atividade')
@@ -34,6 +47,16 @@ export class AtividadeController {
     @Roles(MetaController.ReadPerm)
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get(':id')
+    @Roles(MetaController.ReadPerm)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<AtividadeDto> {
+        const r = await this.atividadeService.findAll(this.tipoPdm, { id: params.id }, user);
+        if (!r.length) throw new HttpException('Atividade não encontrada.', 404);
+        return r[0];
     }
 
     @Patch(':id')
@@ -79,6 +102,16 @@ export class AtividadeSetorialController {
     @Roles(MetaSetorialController.ReadPerm)
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get(':id')
+    @Roles(MetaSetorialController.ReadPerm)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<AtividadeDto> {
+        const r = await this.atividadeService.findAll(this.tipoPdm, { id: params.id }, user);
+        if (!r.length) throw new HttpException('Atividade não encontrada.', 404);
+        return r[0];
     }
 
     @Patch(':id')

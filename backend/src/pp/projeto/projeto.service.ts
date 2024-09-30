@@ -47,7 +47,6 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
-import { CachedMetasDto } from '../../common/dto/origem-pdm.dto';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -821,7 +820,6 @@ export class ProjetoService {
                         descricao: true,
                     },
                 },
-                origem_cache: true,
             },
             orderBy: { codigo: 'asc' },
         });
@@ -840,7 +838,6 @@ export class ProjetoService {
             }
 
             ret.push({
-                resumo_origens: row.origem_cache?.valueOf() as CachedMetasDto,
                 id: row.id,
                 nome: row.nome,
                 status: row.status,
