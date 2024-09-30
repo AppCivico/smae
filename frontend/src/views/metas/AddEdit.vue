@@ -120,6 +120,10 @@ const schema = computed(() => metaSchema(activePdm.value));
 const valoresIniciais = computed(() => ({
   ...singleMeta.value,
 
+  coordenadores_cp: Array.isArray(singleMeta.coordenadores_cp)
+    ? singleMeta.coordenadores_cp.map((x) => x.id)
+    : [],
+
   ps_ponto_focal: {
     equipes: singleMeta.value?.ps_ponto_focal?.equipes || [],
   },
