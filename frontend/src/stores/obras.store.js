@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -303,6 +303,7 @@ export const useObrasStore = defineStore('obrasStore', {
             id: origem?.id || null,
             iniciativa_id: origem?.iniciativa?.id || null,
             meta_id: origem?.meta?.id || null,
+            origem_tipo: origem?.origem_tipo || 'PdmSistema',
             pdm_escolhido: origem?.pdm?.id || null,
           }))
           : [],

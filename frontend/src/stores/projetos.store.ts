@@ -330,6 +330,7 @@ export const useProjetosStore = defineStore('projetos', {
           id: origem?.id || null,
           iniciativa_id: origem?.iniciativa?.id || null,
           meta_id: origem?.meta?.id || null,
+          origem_tipo: origem?.origem_tipo || 'PdmSistema',
           pdm_escolhido: origem?.pdm?.id || null,
         }))
         : [],
