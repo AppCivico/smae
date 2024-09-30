@@ -57,13 +57,13 @@ BEGIN
     meses_desde_inicio := (EXTRACT(YEAR FROM vUltimoPeriodo) - EXTRACT(YEAR FROM pInicioMedicao)) * 12 +
                           (EXTRACT(MONTH FROM vUltimoPeriodo) - EXTRACT(MONTH FROM pInicioMedicao));
 
-    numero_periodos := FLOOR(meses_desde_inicio::float / vMesesIntervalo);
+    -- Arredonda pra CIMA o número de períodos
+    numero_periodos := CEILING(meses_desde_inicio::float / vMesesIntervalo);
 
     -- Garantir que o número de períodos não seja negativo
     numero_periodos := GREATEST(numero_periodos, 0);
 
     -- Calcula o último período válido alinhado com a periodicidade
-    -- parte fundamental, btw, que faltou no código original
     vUltimoPeriodo := pInicioMedicao + (numero_periodos * vIntervalo);
 
     RETURN vUltimoPeriodo;
