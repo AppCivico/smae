@@ -2,7 +2,7 @@ import { BadRequestException, HttpException } from '@nestjs/common';
 import { CompromissoOrigemRelacionamento, Prisma, ProjetoOrigemTipo } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto, UpsertOrigemDto } from '../dto/origem-pdm.dto';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto, UpsertOrigemDto } from '../dto/origem-pdm.dto';
 
 export class CompromissoOrigemHelper {
     static async upsert(
@@ -248,7 +248,7 @@ export class CompromissoOrigemHelper {
         entityType: 'projeto' | 'meta' | 'iniciativa' | 'atividade',
         entityId: number,
         prismaTx: PrismaService
-    ): Promise<DetalhesOrigensMetasItemDto> {
+    ): Promise<DetalheOrigensDto[]> {
         const relacionamento = CompromissoOrigemHelper.getRelacionamento(entityType);
         const entityColumn = CompromissoOrigemHelper.getEntityColumn(entityType);
 
@@ -262,23 +262,53 @@ export class CompromissoOrigemHelper {
                 id: true,
                 origem_tipo: true,
                 origem_outro: true,
-                meta_id: true,
-                iniciativa_id: true,
-                atividade_id: true,
+
+                meta: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                        pdm_id: true,
+                        pdm: {
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        },
+                    },
+                },
+                iniciativa: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                    },
+                },
+                atividade: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                    },
+                },
                 meta_codigo: true,
             },
         });
 
-        return {
-            detalhes: origens.map((origem) => ({
-                id: origem.id,
-                origem_tipo: origem.origem_tipo,
-                origem_outro: origem.origem_outro,
-                meta_id: origem.meta_id,
-                iniciativa_id: origem.iniciativa_id,
-                atividade_id: origem.atividade_id,
-                meta_codigo: origem.meta_codigo,
-            })),
-        };
+        return origens.map((origem) => ({
+            id: origem.id,
+            origem_tipo: origem.origem_tipo,
+            origem_outro: origem.origem_outro,
+            pdm: origem.meta
+                ? {
+                      id: origem.meta.pdm_id,
+                      nome: origem.meta.pdm.nome,
+                  }
+                : null,
+            meta: origem.meta,
+            iniciativa: origem.iniciativa,
+            atividade: origem.atividade,
+            meta_codigo: origem.meta_codigo,
+        }));
     }
 }

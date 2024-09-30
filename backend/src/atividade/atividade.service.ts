@@ -3,7 +3,7 @@ import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
-import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
@@ -416,7 +416,7 @@ export class AtividadeService {
                 });
             }
 
-            let origens_extra: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto =
+            let origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
                 dbAtividade.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
 
             if (filters?.id)

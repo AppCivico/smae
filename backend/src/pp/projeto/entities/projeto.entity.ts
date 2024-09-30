@@ -143,7 +143,6 @@ export class OrigemDetailItem {
     pdm: IdNomeDto | null;
     atividade: IdCodTituloDto | null;
     iniciativa: IdCodTituloDto | null;
-
     origem_tipo: ProjetoOrigemTipo;
     @ApiProperty({ deprecated: true, description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
     meta_codigo: string | null;

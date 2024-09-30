@@ -2,20 +2,20 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
+import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, IniciativaDto, IniciativaOrgao } from './entities/iniciativa.entity';
-import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
-import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
-import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 
 @Injectable()
 export class IniciativaService {
@@ -392,7 +392,7 @@ export class IniciativaService {
                 });
             }
 
-            let origens_extra: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto =
+            let origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
                 dbIniciativa.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
 
             if (filters?.id) {

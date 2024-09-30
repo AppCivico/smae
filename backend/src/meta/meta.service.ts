@@ -5,7 +5,7 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
-import { DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
@@ -692,7 +692,7 @@ export class MetaService {
                 podeEditar = true; // TODO plano setorial
             }
 
-            let resumoOrigem: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto =
+            let resumoOrigem: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
                 dbMeta.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
 
             if (filters?.id) {

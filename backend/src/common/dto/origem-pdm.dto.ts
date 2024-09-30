@@ -1,7 +1,10 @@
-import { ApiProperty, refs } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { ProjetoOrigemTipo } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { ProjetoMetaDetailDto } from '../../pp/projeto/entities/projeto.entity';
+import { IdNomeDto } from './IdNome.dto';
+import { IdCodTituloDto } from './IdCodTitulo.dto';
 
 export class UpsertOrigemDto {
     @IsOptional()
@@ -80,19 +83,20 @@ export class DetalheOrigensDto {
     id: number;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
-    meta_id: number | null;
-    iniciativa_id: number | null;
-    atividade_id: number | null;
+    meta: ProjetoMetaDetailDto | null;
+    pdm: IdNomeDto | null;
+    atividade: IdCodTituloDto | null;
+    iniciativa: IdCodTituloDto | null;
+    @ApiProperty({ deprecated: true, description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
     meta_codigo: string | null;
-}
-
-export class DetalhesOrigensMetasItemDto {
-    detalhes: DetalheOrigensDto[];
 }
 
 export class ResumoDetalheOrigensDto {
     @ApiProperty({
-        oneOf: refs(DetalhesOrigensMetasItemDto, ResumoOrigensMetasItemDto),
+        oneOf: [
+            { type: 'array', items: { $ref: getSchemaPath(DetalheOrigensDto) } },
+            { $ref: getSchemaPath(ResumoOrigensMetasItemDto) },
+        ],
     })
-    origens_extra: DetalhesOrigensMetasItemDto | ResumoOrigensMetasItemDto;
+    origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto;
 }
