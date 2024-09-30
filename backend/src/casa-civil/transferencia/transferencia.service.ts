@@ -1117,6 +1117,19 @@ export class TransferenciaService {
                     },
                 },
                 classificacao_id: true,
+
+                distribuicao_recursos: {
+                    where: { removido_em: null },
+                    select: {
+                        orgao_gestor: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -1167,6 +1180,9 @@ export class TransferenciaService {
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
                 classificacao_id: r.classificacao_id,
+                orgao_gestor: r.distribuicao_recursos.length
+                    ? r.distribuicao_recursos.map((e) => e.orgao_gestor)
+                    : null,
             } satisfies TransferenciaDto;
         });
 

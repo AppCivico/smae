@@ -26,6 +26,7 @@ export class TransferenciaDto {
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     esfera: TransferenciaTipoEsfera;
     orgao_concedente: IdSiglaDescricao;
+    orgao_gestor: IdSiglaDescricao[] | null;
     secretaria_concedente: string | null;
     andamento_etapa: string | null;
     andamento_fase: string | null;
