@@ -19,3 +19,18 @@ export class OrcamentoController {
         return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto);
     }
 }
+
+@ApiTags('Relatórios - API')
+@Controller('relatorio/plano-setorial-orcamento')
+export class PSOrcamentoController {
+    constructor(private readonly orcamentoExecutadoService: OrcamentoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['Reports.executar.PlanoSetorial'])
+    async create(
+        @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto
+    ): Promise<ListOrcamentoExecutadoDto> {
+        return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto);
+    }
+}

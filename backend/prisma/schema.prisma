@@ -3367,6 +3367,9 @@ enum FonteRelatorio {
     Obras
     ObrasOrcamento
     ObrasPrevisaoCusto
+    PSPrevisaoCusto
+    PSOrcamento
+    CasaCivilAtvPendentes
 }
 
 model Relatorio {

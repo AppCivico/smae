@@ -213,6 +213,7 @@ export class ReportsService {
             case 'Orcamento':
             case 'ProjetoOrcamento':
             case 'ObrasOrcamento':
+            case 'PSOrcamento':
                 service = this.orcamentoService;
                 break;
             case 'Indicadores':
@@ -224,6 +225,7 @@ export class ReportsService {
             case 'PrevisaoCusto':
             case 'ProjetoPrevisaoCusto':
             case 'ObrasPrevisaoCusto':
+            case 'PSPrevisaoCusto':
                 service = this.previsaoCustoService;
                 break;
             case 'Projeto':
@@ -248,6 +250,8 @@ export class ReportsService {
             case 'TribunalDeContas':
                 service = this.tribunalDeContasService;
                 break;
+            case 'CasaCivilAtvPendentes':
+                throw 'CasaCivilAtvPendentes não implementado';
             default:
                 dto.fonte satisfies never;
         }

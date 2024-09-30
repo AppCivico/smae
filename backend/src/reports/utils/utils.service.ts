@@ -98,6 +98,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'ProjetoOrcamento':
         case 'ObrasOrcamento':
+        case 'PSOrcamento':
             theClass = CreateRelProjetoOrcamentoDto;
             break;
         case 'Indicadores':
@@ -111,6 +112,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'ProjetoPrevisaoCusto':
         case 'ObrasPrevisaoCusto':
+        case 'PSPrevisaoCusto':
             theClass = CreateRelProjetoPrevisaoCustoDto;
             break;
         case 'Projeto':
@@ -137,6 +139,8 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         case 'TribunalDeContas':
             theClass = CreateRelTribunalDeContasDto;
             break;
+        case 'CasaCivilAtvPendentes':
+            throw new Error('Fonte CasaCivilAtvPendentes não implementada');
         default:
             fonte satisfies never;
     }
