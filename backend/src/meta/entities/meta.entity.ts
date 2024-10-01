@@ -56,6 +56,8 @@ export class MetaItemDto extends ResumoDetalheOrigensDto {
 export class MetaPdmDto {
     pdm_id: number;
     pdm_descricao: string;
+    pdm_rotulo_iniciativa: string;
+    pdm_rotulo_atividade: string;
 
     meta_id: number;
     meta_codigo: string;

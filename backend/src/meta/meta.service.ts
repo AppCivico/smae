@@ -1262,6 +1262,12 @@ export class MetaService {
                         id: true,
                         codigo: true,
                         titulo: true,
+                        pdm: {
+                            select: {
+                                rotulo_atividade: true,
+                                rotulo_iniciativa: true,
+                            },
+                        },
                         meta_orgao: {
                             where: { responsavel: true },
                             select: { orgao: { select: { id: true, sigla: true } } },
@@ -1306,6 +1312,8 @@ export class MetaService {
                     pdm_id: p.id,
                     pdm_descricao: p.nome,
                     meta_orgaos: m.meta_orgao.map((r) => r.orgao),
+                    pdm_rotulo_atividade: m.pdm.rotulo_atividade,
+                    pdm_rotulo_iniciativa: m.pdm.rotulo_iniciativa,
                 };
 
                 if (m.iniciativa && m.iniciativa.length > 0) {
