@@ -46,12 +46,12 @@ const observer = new ResizeObserver((entradas) => {
 
 onMounted(() => {
   alturaColapsado.value = visivelColapsado.value.clientHeight;
-  observer.observe(visivelColapsado.value)
-})
+  observer.observe(visivelColapsado.value);
+});
 
 onUnmounted(() => {
-  observer.disconnect()
-})
+  observer.disconnect();
+});
 
 </script>
 
