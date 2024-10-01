@@ -6,6 +6,7 @@ import {
   ref,
 } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
@@ -47,6 +48,7 @@ const {
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const listaDeStatus = ref(null);
+const ConfigurarWorkflow = ref(false);
 
 function rolarParaStatusCorrente() {
   if (listaDeStatus.value && Array.isArray(distribuicao?.historico_status)) {
@@ -66,9 +68,15 @@ function rolarParaStatusCorrente() {
   }
 }
 
-onMounted(() => {
-  // rolarParaStatusCorrente();
-});
+function deletarWorkflow() {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await workflowAndamento.deletarWorklow()) {
+      // workflowAndamento.buscar();
+      alertStore.success('Workflow deletado!');
+      ConfigurarWorkflow.value = false;
+    }
+  }, 'Deletar');
+}
 
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
@@ -116,6 +124,16 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     >
       <li class="f0">
         <button
+          v-if="transferenciaEmFoco?.workflow_id"
+          type="button"
+          class="btn bgnone outline tcprimary"
+          @click="ConfigurarWorkflow = true"
+        >
+          configurar workflow
+        </button>
+      </li>
+      <li class="f0">
+        <button
           type="button"
           class="btn"
           :disabled="!inícioDeFasePermitido"
@@ -137,7 +155,37 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
     </menu>
   </header>
+  <SmallModal v-if="ConfigurarWorkflow">
+    <div class="flex spacebetween center mb2">
+      <h2>
+        Configurar Workflow
+      </h2>
+      <hr class="ml2 f1">
 
+      <CheckClose
+        :apenas-modal="true"
+        :formulario-sujo="false"
+        @close="ConfigurarWorkflow = false"
+      />
+    </div>
+    <div class="flex justifycenter">
+      <button
+        type="button"
+        class="btn bgnone outline tcprimary mr1"
+        @click="deletarWorkflow()"
+      >
+        fechar e deletar workflow
+      </button>
+      <button
+        type="button"
+        class="btn"
+        @click="ConfigurarWorkflow = false"
+      >
+        fechar
+      </button>
+    </div>
+    <div />
+  </SmallModal>
   <AndamentoDoWorkflow
     v-if="temPermissãoPara('AndamentoWorkflow.listar') && transferenciaEmFoco?.workflow_id"
     class="mb2"
@@ -587,11 +635,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <ListaDeDistribuicaoItem
     v-for="distribuicao in listaDeDistribuicao"
-    :distribuicao="distribuicao"
     :key="distribuicao.id"
+    :distribuicao="distribuicao"
     class="mb2 card-shadow p2"
   />
-
 </template>
 <style scoped lang="less">
 .parlamentares{
