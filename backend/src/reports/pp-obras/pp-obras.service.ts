@@ -413,6 +413,13 @@ export class PPObrasService implements ReportableService {
 
         let paramIndex = 1;
 
+        // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
+        if (filters.tipo_projeto) {
+            whereConditions.push(`projeto.tipo = $${paramIndex}`);
+            queryParams.push(filters.tipo_projeto);
+            paramIndex++;
+        }
+
         if (filters.portfolio_id) {
             whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
             queryParams.push(filters.portfolio_id);
@@ -561,21 +568,21 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           LEFT JOIN LATERAL (
-                SELECT 
+                SELECT
                     unnest(array[
-                        projeto.portfolio_id, 
+                        projeto.portfolio_id,
                         portfolio_projeto_compartilhado.portfolio_id
                     ]) AS portfolio_id
-                FROM 
-                    portfolio_projeto_compartilhado 
-                WHERE 
+                FROM
+                    portfolio_projeto_compartilhado
+                WHERE
                     projeto.id = portfolio_projeto_compartilhado.projeto_id
                 UNION ALL
-                SELECT 
+                SELECT
                     projeto.portfolio_id AS portfolio_id
                 WHERE NOT EXISTS (
-                    SELECT 1 
-                    FROM portfolio_projeto_compartilhado 
+                    SELECT 1
+                    FROM portfolio_projeto_compartilhado
                     WHERE projeto.id = portfolio_projeto_compartilhado.projeto_id
                 )
             ) AS port_array ON true
@@ -890,7 +897,7 @@ export class PPObrasService implements ReportableService {
                 WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_reajustado,
             (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL

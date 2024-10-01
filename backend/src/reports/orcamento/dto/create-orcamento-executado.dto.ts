@@ -1,5 +1,5 @@
-import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
-import { TipoRelatorio } from '@prisma/client';
+import { ApiHideProperty, ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
+import { TipoProjeto, TipoRelatorio } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';
@@ -64,6 +64,11 @@ export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
     @Transform(({ value }: any) => +value)
     @IsOptional()
     portfolio_id?: number;
+
+    @IsOptional()
+    @IsEnum(TipoProjeto)
+    @ApiHideProperty()
+    tipo_projeto?: TipoProjeto;
 }
 
 // aqui remove os filtros do projeto

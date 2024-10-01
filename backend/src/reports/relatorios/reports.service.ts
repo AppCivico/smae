@@ -68,8 +68,10 @@ export class ReportsService {
         @Inject(forwardRef(() => PPObrasService)) private readonly ppObrasService: PPObrasService,
         @Inject(forwardRef(() => ParlamentaresService)) private readonly parlamentaresService: ParlamentaresService,
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
-        @Inject(forwardRef(() => TribunalDeContasService)) private readonly tribunalDeContasService: TribunalDeContasService,
-        @Inject(forwardRef(() => MonitoramentoMensalVariaveisPs)) private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalVariaveisPs,
+        @Inject(forwardRef(() => TribunalDeContasService))
+        private readonly tribunalDeContasService: TribunalDeContasService,
+        @Inject(forwardRef(() => MonitoramentoMensalVariaveisPs))
+        private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalVariaveisPs
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -86,7 +88,13 @@ export class ReportsService {
             dto.fonte === 'ObrasOrcamento' ||
             dto.fonte === 'ObrasPrevisaoCusto'
         ) {
-            parametros.tipo = 'MDO';
+            parametros.tipo_projeto = 'MDO';
+        } else if (dto.fonte === 'ProjetoOrcamento' || dto.fonte === 'ProjetoPrevisaoCusto') {
+            parametros.tipo_projeto = 'PP';
+        } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
+            parametros.tipo_pdm = 'PDM';
+        } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
+            parametros.tipo_pdm = 'PS';
         }
 
         const mockContext: ReportContext = {

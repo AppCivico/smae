@@ -1,6 +1,8 @@
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
+import { TipoPdm } from '@prisma/client';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 export class FiltroMetasIniAtividadeDto {
     @IsNumber()
@@ -41,4 +43,9 @@ export class FiltroMetasIniAtividadeDto {
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     tags?: number[];
+
+    @IsOptional()
+    @IsEnum(TipoPdm)
+    @ApiHideProperty()
+    tipo_pdm?: TipoPdm;
 }
