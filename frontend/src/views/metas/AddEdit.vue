@@ -594,8 +594,13 @@ watch(() => activePdm.value.id, async (novoValor) => {
         ><use xlink:href="#i_+" /></svg> <span>Adicionar órgão participante</span></a>
       </template>
 
-      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
+      <fieldset
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        class="mb2"
+      >
+        <legend class="label">
+          Órgãos responsáveis <span class="tvermelho">*</span>
+        </legend>
         <div
           class="flex flexwrap g2 mb1"
         >
@@ -613,11 +618,14 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
       <hr class="mt2 mb2">
 
-      <template v-if="$route.meta.entidadeMãe === 'pdm'">
-        <label class="label">
+      <fieldset
+        v-if="$route.meta.entidadeMãe === 'pdm'"
+        class="mb2"
+      >
+        <legend class="label">
           Responsável na coordenadoria de planejamento
           <span class="tvermelho">*</span>
-        </label>
+        </legend>
         <div class="flex">
           <div
             v-if="pessoasSimplificadas.length"
@@ -630,12 +638,15 @@ watch(() => activePdm.value.id, async (novoValor) => {
             />
           </div>
         </div>
-      </template>
+      </fieldset>
 
-      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <label class="label">
+      <fieldset
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        class="mb2"
+      >
+        <legend class="label">
           Equipe Técnica de Administração do Plano
-        </label>
+        </legend>
 
         <div>
           <AutocompleteField
@@ -648,7 +659,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             label="titulo"
           />
         </div>
-      </template>
+      </fieldset>
 
       <FormErrorsList :errors="errors" />
 

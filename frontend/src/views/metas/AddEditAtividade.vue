@@ -398,12 +398,12 @@ function filterResponsible(orgao_id) {
 
       <hr class="mt2 mb2">
 
-      <template v-if="$route.meta.entidadeMãe === 'pdm'">
-        <label class="label">
+      <fieldset v-if="$route.meta.entidadeMãe === 'pdm'">
+        <legend class="label">
           Responsável na coordenadoria de planejamento&nbsp;<span
             class="tvermelho"
           >*</span>
-        </label>
+        </legend>
         <div class="flex">
           <div
             v-if="coordsAvailable.length"
@@ -416,12 +416,12 @@ function filterResponsible(orgao_id) {
             />
           </div>
         </div>
-      </template>
+      </fieldset>
 
-      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <label class="label">
+      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <legend class="label">
           Equipe Técnica de Administração do Plano
-        </label>
+        </legend>
 
         <div>
           <AutocompleteField
@@ -434,7 +434,7 @@ function filterResponsible(orgao_id) {
             label="titulo"
           />
         </div>
-      </template>
+      </fieldset>
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
