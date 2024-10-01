@@ -64,8 +64,8 @@
               ? truncate(relacionamento.iniciativa_descricao)
               : null"
           >
-            <strong v-if="relacionamento.pdm_rotulo_iniciativa">
-              {{ relacionamento.pdm_rotulo_iniciativa }}
+            <strong v-if="relacionamento.iniciativa_descricao">
+              {{ relacionamento.pdm_rotulo_iniciativa || 'Iniciativa' }}
             </strong>
             {{ truncate(relacionamento.iniciativa_descricao, 36) || '-' }}
           </td>
@@ -75,8 +75,8 @@
               ? truncate(relacionamento.atividade_descricao)
               : null"
           >
-            <strong v-if="relacionamento.pdm_rotulo_atividade">
-              {{ relacionamento.pdm_rotulo_atividade }}
+            <strong v-if="relacionamento.atividade_descricao">
+              {{ relacionamento.pdm_rotulo_atividade || 'Atividade' }}
             </strong>
             {{ truncate(relacionamento.atividade_descricao, 36) || '-' }}
           </td>
