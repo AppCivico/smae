@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional, ValidateNested } from 'class-validator';
+import { NumberTransform } from 'src/auth/transforms/number.transform';
 
 export class UpdateWorkflowAndamentoFaseDto {
     @IsInt()
@@ -54,4 +55,10 @@ export class WorkflowFinalizarIniciarFaseDto {
     @IsInt()
     @Type(() => Number)
     fase_id: number;
+}
+
+export class WorkflowReabrirFaseAnteriorDto {
+    @IsInt()
+    @Transform(NumberTransform)
+    transferencia_id: number;
 }

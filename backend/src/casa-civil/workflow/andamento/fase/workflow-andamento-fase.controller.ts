@@ -7,6 +7,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import {
     UpdateWorkflowAndamentoFaseDto,
     WorkflowFinalizarIniciarFaseDto,
+    WorkflowReabrirFaseAnteriorDto,
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowAndamentoFaseService } from './workflow-andamento-fase.service';
 
@@ -43,5 +44,15 @@ export class WorkflowAndamentoFaseController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.workflowAndamentoFaseService.iniciarFase(dto, user);
+    }
+
+    @Post('reabrir-fase-anterior')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroWorkflows.inserir'])
+    async reabrirFase(
+        @Body() dto: WorkflowReabrirFaseAnteriorDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.workflowAndamentoFaseService.reabrirFaseAnterior(dto, user);
     }
 }

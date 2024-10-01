@@ -1,11 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
     UpdateWorkflowAndamentoFaseDto,
     WorkflowFinalizarIniciarFaseDto,
+    WorkflowReabrirFaseAnteriorDto,
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from '../../configuracao/workflow.service';
 
@@ -588,6 +589,207 @@ export class WorkflowAndamentoFaseService {
                 });
 
                 return { id: andamentoNovaFase.id };
+            }
+        );
+
+        return updated;
+    }
+
+    async reabrirFaseAnterior(dto: WorkflowReabrirFaseAnteriorDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Encontrado fase atual
+                const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        removido_em: null,
+                        data_inicio: { not: null },
+                    },
+                    orderBy: { data_inicio: 'desc' },
+                    select: {
+                        id: true,
+                        data_inicio: true,
+                        workflow_fase_id: true,
+                        workflow_etapa_id: true,
+                        tarefaEspelhada: {
+                            select: { id: true },
+                        },
+                        tarefas: {
+                            select: {
+                                tarefaEspelhada: {
+                                    select: { id: true },
+                                },
+                            },
+                        },
+                        orgao_responsavel: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                        workflow_situacao: {
+                            select: {
+                                id: true,
+                                tipo_situacao: true,
+                            },
+                        },
+                        pessoa_responsavel: {
+                            select: {
+                                id: true,
+                                nome_exibicao: true,
+                            },
+                        },
+                    },
+                });
+                if (!faseAtual) throw new HttpException('Não foi possível encontrar a fase atual', 400);
+
+                // Encontrando fase anterior
+                const faseAnterior = await prismaTxn.transferenciaAndamento.findFirst({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        removido_em: null,
+                        data_inicio: { not: null },
+                        // TODO: verificar se aqui não vai dar problema, pois a data_termino é date
+                        // Logo, pode rolar duas datas iguais.
+                        AND: [{ data_termino: { not: null } }, { data_termino: { lte: faseAtual.data_inicio! } }],
+                    },
+                    orderBy: [{ data_termino: 'desc' }],
+                    select: {
+                        id: true,
+                        workflow_fase_id: true,
+                        data_inicio: true,
+                        data_termino: true,
+                        tarefaEspelhada: {
+                            select: { id: true },
+                        },
+                        tarefas: {
+                            select: {
+                                id: true,
+                                tarefaEspelhada: {
+                                    select: { id: true },
+                                },
+                            },
+                        },
+                        orgao_responsavel: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                        workflow_situacao: {
+                            select: {
+                                id: true,
+                                tipo_situacao: true,
+                            },
+                        },
+                        pessoa_responsavel: {
+                            select: {
+                                id: true,
+                                nome_exibicao: true,
+                            },
+                        },
+                    },
+                });
+                if (!faseAnterior) throw new HttpException('Não foi possível encontrar a fase anterior', 400);
+
+                // Salvando dados de log.
+                await prismaTxn.transferenciaHistorico.create({
+                    data: {
+                        transferencia_id: dto.transferencia_id,
+                        criado_por: user.id,
+                        acao: TransferenciaHistoricoAcao.ReaberturaFaseWorkflow,
+                        dados_extra: JSON.stringify({
+                            faseIncompleta: {
+                                id: faseAtual.id,
+                                orgao_responsavel: faseAtual.orgao_responsavel,
+                                data_inicio: faseAtual.data_inicio,
+                                situacao: faseAtual.workflow_situacao,
+                                pessoa_responsavel: faseAtual.pessoa_responsavel,
+                            },
+                            faseReaberta: {
+                                id: faseAnterior.id,
+                                orgao_responsavel: faseAnterior.orgao_responsavel,
+                                data_inicio: faseAnterior.data_inicio,
+                                data_termino: faseAnterior.data_termino,
+                                situacao: faseAnterior.workflow_situacao,
+                                pessoa_responsavel: faseAnterior.pessoa_responsavel,
+                            },
+                        }),
+                    },
+                });
+
+                // Reabrindo fase anterior.
+                await prismaTxn.transferenciaAndamento.update({
+                    where: { id: faseAnterior.id },
+                    data: {
+                        data_termino: null,
+                        atualizado_em: new Date(Date.now()),
+                        atualizado_por: user.id,
+                    },
+                });
+
+                // Atualizando tarefa espelhada da fase reaberta.
+                await prismaTxn.tarefa.update({
+                    where: { id: faseAnterior.tarefaEspelhada[0].id },
+                    data: {
+                        percentual_concluido: 0,
+                        termino_real: null,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                });
+
+                // Reopen tasks in the previous phase
+                for (const tarefa of faseAnterior.tarefas) {
+                    await prismaTxn.transferenciaAndamentoTarefa.update({
+                        where: { id: tarefa.id },
+                        data: {
+                            feito: false,
+                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
+                        },
+                    });
+
+                    await prismaTxn.tarefa.update({
+                        where: { id: tarefa.tarefaEspelhada[0].id },
+                        data: {
+                            percentual_concluido: 0,
+                            termino_real: null,
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
+
+                // Close the current phase
+                await prismaTxn.transferenciaAndamento.update({
+                    where: { id: faseAtual.id },
+                    data: {
+                        data_inicio: null,
+                        atualizado_em: new Date(Date.now()),
+                        atualizado_por: user.id,
+                    },
+                });
+
+                // Update the mirrored task for the current phase
+                await prismaTxn.tarefa.update({
+                    where: { id: faseAtual.tarefaEspelhada[0].id },
+                    data: {
+                        inicio_real: null,
+                        percentual_concluido: 0,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                });
+
+                // Update the current phase in the transferencia
+                await prismaTxn.transferencia.update({
+                    where: { id: dto.transferencia_id },
+                    data: {
+                        workflow_fase_atual_id: faseAnterior.workflow_fase_id,
+                    },
+                });
+
+                return { id: faseAnterior.id };
             }
         );
 
