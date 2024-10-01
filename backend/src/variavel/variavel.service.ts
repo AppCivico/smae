@@ -2179,27 +2179,15 @@ export class VariavelService {
     }
 
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
+        const self = await this.findOne(tipo, variavelId, {}, user);
+        if (!self) throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
+
         const logger = LoggerWithLog('Remoção de variável');
         logger.debug(`Removendo variável ${variavelId}`);
 
         // TODO: pensar se quando apagar uma calculada, ou seja por side-effect talvez, precisa apagar a formula-composta
         // do autogerenciavel
-
-        // buscando apenas pelo indicador pai verdadeiro desta variavel
-        const selfVariavel = await this.prisma.variavel.findFirst({
-            where: {
-                id: variavelId,
-                tipo,
-            },
-            select: {
-                valor_base: true,
-                periodicidade: true,
-                variavel_categorica_id: true,
-            },
-        });
-        if (!selfVariavel)
-            throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
-        if (selfVariavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+        if (self.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new BadRequestException(
                 'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa.'
             );
@@ -2207,6 +2195,12 @@ export class VariavelService {
         if (tipo == 'PDM') {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
             await this.verificaEscritaNaMeta(variavelId, user);
+        }
+        if ('pode_editar' in self) {
+            const selfTyped = self as any as VariavelGlobalItemDto;
+            if (!selfTyped.pode_excluir) {
+                throw new BadRequestException('Você não tem permissão para remover esta variável.');
+            }
         }
 
         const now = new Date(Date.now());
@@ -3215,7 +3209,7 @@ export class VariavelService {
 
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
-                orgao_proprietario: detalhes.orgao_proprietario,
+                orgao_proprietario: detalhes.orgao_proprietario!,
                 medicao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
                     (e) => e.grupo_responsavel_equipe.perfil === 'Medicao'
                 ).map((e) => e.grupo_responsavel_equipe.id),

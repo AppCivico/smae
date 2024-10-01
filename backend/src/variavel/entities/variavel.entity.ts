@@ -1,8 +1,11 @@
 import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IsBoolean, IsEnum, IsOptional, IsString, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { DateYMD } from '../../common/date2ymd';
+import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
@@ -10,9 +13,6 @@ import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
-import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
-import { DateTransform } from '../../auth/transforms/date.transform';
-import { Transform } from 'class-transformer';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
