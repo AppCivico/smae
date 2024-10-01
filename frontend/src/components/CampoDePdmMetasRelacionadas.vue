@@ -235,7 +235,7 @@ watch(valores, (novoValor) => {
           <label
             class="label"
             :for="`${$props.name}[${idx}].iniciativa_id`"
-          >Iniciativa</label>
+          >{{ pdmsPorId[valores[idx]?.pdm_escolhido]?.rotulo_iniciativa || 'Iniciativa' }}</label>
           <select
             :id="`${$props.name}[${idx}].iniciativa_id`"
             v-model="valores[idx].iniciativa_id"
@@ -267,7 +267,7 @@ watch(valores, (novoValor) => {
           <label
             class="label"
             :for="`${$props.name}[${idx}].atividade_id`"
-          >Atividade</label>
+          >{{ pdmsPorId[valores[idx]?.pdm_escolhido]?.rotulo_atividade || 'Atividade' }}</label>
           <select
             :id="`${$props.name}[${idx}].atividade_id`"
             v-model="valores[idx].atividade_id"
