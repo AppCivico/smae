@@ -598,10 +598,24 @@ export class WorkflowAndamentoFaseService {
     async reabrirFaseAnterior(dto: WorkflowReabrirFaseAnteriorDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const transferencia = await prismaTxn.transferencia.findFirstOrThrow({
+                    where: { id: dto.transferencia_id },
+                    select: {
+                        workflow_etapa_atual_id: true,
+                        workflow_fase_atual_id: true,
+                    },
+                });
+
+                if (!transferencia.workflow_etapa_atual_id || !transferencia.workflow_fase_atual_id) {
+                    throw new HttpException('Transferência não possui etapa ou fase atual', 400);
+                }
+
                 // Encontrado fase atual
                 const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
                         transferencia_id: dto.transferencia_id,
+                        workflow_etapa_id: transferencia.workflow_etapa_atual_id!,
+                        workflow_fase_id: transferencia.workflow_fase_atual_id!,
                         removido_em: null,
                         data_inicio: { not: null },
                     },
@@ -657,6 +671,7 @@ export class WorkflowAndamentoFaseService {
                     orderBy: [{ data_termino: 'desc' }],
                     select: {
                         id: true,
+                        workflow_etapa_id: true,
                         workflow_fase_id: true,
                         data_inicio: true,
                         data_termino: true,
@@ -693,6 +708,11 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
                 if (!faseAnterior) throw new HttpException('Não foi possível encontrar a fase anterior', 400);
+
+                console.log('================================================');
+                console.log(faseAtual);
+                console.log(faseAnterior);
+                console.log('================================================');
 
                 // Salvando dados de log.
                 await prismaTxn.transferenciaHistorico.create({
@@ -761,7 +781,9 @@ export class WorkflowAndamentoFaseService {
                     });
                 }
 
-                // Close the current phase
+                // Fechando fase atual
+                // TODO melhoria: Caso a próxima fase não tenha sido aberta, a fase atual é a mesma que a fase anterior,
+                // Logo, é necessário apertar no botão "abrir fase".
                 await prismaTxn.transferenciaAndamento.update({
                     where: { id: faseAtual.id },
                     data: {
@@ -785,6 +807,7 @@ export class WorkflowAndamentoFaseService {
                 await prismaTxn.transferencia.update({
                     where: { id: dto.transferencia_id },
                     data: {
+                        workflow_etapa_atual_id: faseAnterior.workflow_etapa_id,
                         workflow_fase_atual_id: faseAnterior.workflow_fase_id,
                     },
                 });
