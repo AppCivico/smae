@@ -8,6 +8,7 @@ import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
@@ -79,7 +80,7 @@ export class MetaService {
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
 
-                const tags = dto.tags;
+                const tags = UniqueNumbers(dto.tags);
                 delete dto.tags;
 
                 const origens_extra = dto.origens_extra;
@@ -743,7 +744,7 @@ export class MetaService {
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
-        const tags = updateMetaDto.tags;
+        const tags = UniqueNumbers(updateMetaDto.tags);
         const geolocalizacao = updateMetaDto.geolocalizacao;
         const psTecnicoCP = updateMetaDto.ps_tecnico_cp;
         const psPontoFocal = updateMetaDto.ps_ponto_focal;

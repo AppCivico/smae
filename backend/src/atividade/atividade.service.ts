@@ -17,6 +17,7 @@ import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-ati
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { AtividadeDto, AtividadeOrgao } from './entities/atividade.entity';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 @Injectable()
 export class AtividadeService {
@@ -51,7 +52,7 @@ export class AtividadeService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const orgaos_participantes = dto.orgaos_participantes;
                 const coordenadores_cp = dto.coordenadores_cp;
-                const tags = dto.tags;
+                const tags = UniqueNumbers(dto.tags);
                 const ps_tecnico_cp = dto.ps_tecnico_cp;
                 const ps_ponto_focal = dto.ps_ponto_focal;
                 const origens_extra = dto.origens_extra;
@@ -494,7 +495,7 @@ export class AtividadeService {
             const cp = dto.coordenadores_cp;
             const ps_tecnico_cp = dto.ps_tecnico_cp;
             const ps_ponto_focal = dto.ps_ponto_focal;
-            const tags = dto.tags;
+            const tags = UniqueNumbers(dto.tags);
             const origens_extra = dto.origens_extra;
             delete dto.orgaos_participantes;
             delete dto.coordenadores_cp;

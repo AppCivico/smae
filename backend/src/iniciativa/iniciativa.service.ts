@@ -16,6 +16,7 @@ import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-i
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, IniciativaDto, IniciativaOrgao } from './entities/iniciativa.entity';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 @Injectable()
 export class IniciativaService {
@@ -40,7 +41,7 @@ export class IniciativaService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const op = dto.orgaos_participantes;
                 const cp = dto.coordenadores_cp;
-                const tags = dto.tags || [];
+                const tags = UniqueNumbers(dto.tags) || [];
                 const geolocalizacao = dto.geolocalizacao;
                 const ps_tecnico_cp = dto.ps_tecnico_cp;
                 const ps_ponto_focal = dto.ps_ponto_focal;
@@ -444,7 +445,7 @@ export class IniciativaService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const op = dto.orgaos_participantes;
             const cp = dto.coordenadores_cp;
-            const tags = dto.tags;
+            const tags = UniqueNumbers(dto.tags);
             const geolocalizacao = dto.geolocalizacao;
             const ps_tecnico_cp = dto.ps_tecnico_cp;
             const ps_ponto_focal = dto.ps_ponto_focal;
