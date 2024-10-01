@@ -582,29 +582,47 @@ export class VariavelCicloService {
         });
         if (!variavel) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
 
-        // Buscar a última análise qualitativa
-        const ultimaAnalise = await this.prisma.variavelGlobalCicloAnalise.findFirst({
-            where: {
-                variavel_id: variavel_id,
-                referencia_data: data_referencia,
-                ultima_revisao: true,
-            },
-            orderBy: { criado_em: 'desc' },
-            select: {
-                informacoes_complementares: true,
-                valores: true,
-                criado_em: true,
-                pessoaCriador: { select: { nome_exibicao: true } },
-            },
+        // sempre verifica se o periodo é válido, just in case...
+        const valid = await this.util.gerarPeriodoVariavelEntreDatas(variavel_id, null, {
+            data_valor: data_referencia,
         });
+        if (valid.length === 0) throw new BadRequestException('Período não é válido');
 
-        if (!ultimaAnalise) {
-            // verificar se o periodo é válido
-            const valid = await this.util.gerarPeriodoVariavelEntreDatas(variavel_id, null, {
-                data_valor: data_referencia,
+        // carrega a ultima linha de cada uma das analises
+        const fases: VariavelFase[] = ['Liberacao', 'Preenchimento', 'Validacao'];
+        const pQueries = fases.map(async (fase) => {
+            return await this.prisma.variavelGlobalCicloAnalise.findFirst({
+                where: {
+                    variavel_id: variavel_id,
+                    referencia_data: data_referencia,
+                    ultima_revisao: true,
+                    fase: fase,
+                },
+                orderBy: { criado_em: 'desc' },
+                select: {
+                    informacoes_complementares: true,
+                    valores: true,
+                    criado_em: true,
+                    pessoaCriador: { select: { nome_exibicao: true } },
+                    fase: true,
+                    ultima_revisao: true,
+                },
             });
-            if (valid.length === 0) throw new BadRequestException('Período não é válido');
-        }
+        });
+        const analisesDb = await Promise.all(pQueries);
+        const ultimaAnalise = analisesDb.find((a) => a?.ultima_revisao) || undefined;
+        const analises = analisesDb
+            .filter((result): result is NonNullable<typeof result> => result !== null)
+            .map(
+                (r) =>
+                    ({
+                        analise_qualitativa: r.informacoes_complementares ?? '',
+                        criado_em: r.criado_em,
+                        criador_nome: r.pessoaCriador.nome_exibicao,
+                        fase: r.fase,
+                        ultima_revisao: r.ultima_revisao,
+                    }) satisfies AnaliseQualitativaDto
+            );
 
         // Buscar valores da variável e suas filhas
         const valores = await this.prisma.serieVariavel.findMany({
@@ -650,13 +668,7 @@ export class VariavelCicloService {
         return {
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
-            ultima_analise: ultimaAnalise
-                ? ({
-                      analise_qualitativa: ultimaAnalise.informacoes_complementares ?? '',
-                      criado_em: ultimaAnalise.criado_em,
-                      criador_nome: ultimaAnalise.pessoaCriador.nome_exibicao,
-                  } satisfies AnaliseQualitativaDto)
-                : null,
+            analises,
             valores: valoresFormatados,
             uploads: uploadsFormatados,
         };

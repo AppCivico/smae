@@ -164,6 +164,8 @@ export class AnaliseQualitativaDto {
     analise_qualitativa: string;
     criado_em: Date;
     criador_nome: string;
+    fase: VariavelFase;
+    ultima_revisao: boolean;
 }
 
 export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
@@ -178,8 +180,8 @@ export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
 export class VariavelAnaliseQualitativaResponseDto {
     variavel: VariavelResumo;
 
-    @ApiProperty({ description: 'Última análise qualitativa' })
-    ultima_analise: AnaliseQualitativaDto | null;
+    @ApiProperty({ description: 'Análise qualitativas e outros envios' })
+    analises: AnaliseQualitativaDto[] | null;
 
     @ApiProperty({ description: 'Valores da variável e suas filhas', type: [VariavelValorDto] })
     valores: VariavelValorDto[];
