@@ -22,13 +22,19 @@ const defaultTransform = [flatten({ paths: [] })];
 
 
 @Injectable()
-export class MonitoramentoMensalVariaveisPs implements ReportableService {
+export class MonitoramentoMensalPs implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
         private readonly indicadoresService: IndicadoresService
     ) {}
     async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitoramentoMensalVariaveis[]> {
+        if (!params.mes){
+            throw new Error('O Mês deve ser informado!');
+        }
+        if (!params.ano){
+            throw new Error('O Ano deve ser informado!');
+        }
 
         //Prepara o filtro
         const filtroMetasTags = new FiltroMetasIniAtividadeDto();
@@ -44,7 +50,7 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
                 'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV');
 
         const paramMesAno = params.ano + "-"+ params.mes + "-01";
-        const linhasVariaveis = await this.prisma.$queryRaw`select
+        let sql:string = `select
                             i.id as indicador_id,
                             i.codigo    as codigo_indicador,
                             i.titulo    as titulo_indicador,
@@ -130,9 +136,10 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
                    from view_variaveis_pdm vvp
                             inner join indicador i on vvp.indicador_id = i.id
                             inner join variavel v on v.id = vvp.variavel_id
+                            :listar_variaveis_regionalizadas
                             inner join indicador_variavel iv on i.id = iv.indicador_id
                             left join regiao r on v.regiao_id = r.id
-                            left join serie_variavel sv on sv.variavel_id = v.id and sv.data_valor = ${paramMesAno}::date
+                            left join serie_variavel sv on sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
                             left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = v.id
                         and vgcaP.referencia_data = sv.data_valor
                         and vgcaP.fase = 'Preenchimento'
@@ -150,8 +157,17 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
                         and vgcaL.removido_em is null
                    where i.removido_em is null
                         and v.removido_em is null
-                        and vvp.meta_id IN (${Prisma.join(metasArr)})
-                        and vvp.pdm_id = ${params.plano_setorial_id}::int`;
+                        and vvp.meta_id IN (:metas)
+                        and vvp.pdm_id = ${params.plano_setorial_id}::int`
+
+        if (params.listar_variaveis_regionalizadas){
+            sql = sql.replace(":listar_variaveis_regionalizadas","inner join indicador_formula_variavel ifv on ifv.indicador_id = i.id and ifv.variavel_id = v.id");
+        }else{
+            sql = sql.replace(":listar_variaveis_regionalizadas","");
+        }
+        sql = sql.replace(":metas",metasArr.toString());
+        sql = sql.replace(":mesAno","'"+ paramMesAno + "'");
+        const linhasVariaveis  = await this.prisma.$queryRawUnsafe(sql);
 
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
     }
@@ -210,13 +226,8 @@ export class MonitoramentoMensalVariaveisPs implements ReportableService {
         indicadoresInput.tipo = 'Mensal';
 
         const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput,ctx);
-        if (indicadores){
-            if (indicadores[0]) {
-                out.push(indicadores[0]);
-            }
-            if (indicadores[1]) {
-                out.push(indicadores[1]);
-            }
+        for(const indicador of indicadores){
+            out.push(indicador);
         }
         return out;
     }

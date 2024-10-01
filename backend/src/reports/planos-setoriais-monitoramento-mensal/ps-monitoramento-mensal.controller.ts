@@ -2,13 +2,13 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { RelPsMonitoramentoMensalVariaveis } from './entities/ps-monitoramento-mensal.entity';
-import { MonitoramentoMensalVariaveisPs } from './ps-monitoramento-mensal.service';
+import { MonitoramentoMensalPs } from './ps-monitoramento-mensal.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/planos-setoriais-monitoramento-mensal')
 export class PsMonitoramentoMensalController {
-    constructor(private readonly monitoramentoMensalPsService: MonitoramentoMensalVariaveisPs) {}
+    constructor(private readonly monitoramentoMensalPsService: MonitoramentoMensalPs) {}
 
     @Post()
     @ApiBearerAuth('access-token')
