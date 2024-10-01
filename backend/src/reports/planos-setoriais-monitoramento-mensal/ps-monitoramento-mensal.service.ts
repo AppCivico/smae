@@ -128,9 +128,7 @@ export class MonitoramentoMensalPs implements ReportableService {
                             vgcaL.informacoes_complementares                         as analise_qualitativa_liberador
                    from view_variaveis_pdm vvp
                             inner join indicador i on vvp.indicador_id = i.id
-                            inner join variavel v on v.id = vvp.variavel_id
-                            :listar_variaveis_regionalizadas
-                            inner join indicador_variavel iv on i.id = iv.indicador_id
+                            inner join variavel v on v.id = vvp.variavel_id :listar_variaveis_regionalizadas
                             left join regiao r on v.regiao_id = r.id
                             left join serie_variavel sv on sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
                             left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = v.id
@@ -153,8 +151,8 @@ export class MonitoramentoMensalPs implements ReportableService {
                         and vvp.meta_id IN (:metas)
                         and vvp.pdm_id = ${params.plano_setorial_id}::int`
 
-        if (!params.listar_variaveis_regionalizadas){
-            sql = sql.replace(":listar_variaveis_regionalizadas","inner join indicador_formula_variavel ifv on ifv.indicador_id = i.id and ifv.variavel_id = v.id");
+        if (params.listar_variaveis_regionalizadas){
+            sql = sql.replace(":listar_variaveis_regionalizadas"," or v.variavel_mae_id = vvp.variavel_id ");
         }else{
             sql = sql.replace(":listar_variaveis_regionalizadas","");
         }

@@ -164,20 +164,12 @@ export class IndicadoresService implements ReportableService {
         this.invalidatePreparedStatement++;
         if (indicadoresOrVar.length == 0) return;
 
-        let queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
+        const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id`;
-
-        if (!dto.listar_variaveis_regionalizadas){
-            queryFromWhere = queryFromWhere.replace(":listar_variaveis_regionalizadas",
-                " join indicador_variavel iv on iv.indicador_id = i.id " +
-                " join indicador_formula_variavel ifv on ifv.indicador_id = i.id and ifv.variavel_id = iv.variavel_id");
-        }else{
-            queryFromWhere = queryFromWhere.replace(":listar_variaveis_regionalizadas","");
-        }
 
         const anoInicial = await this.capturaAnoSerieIndicadorInicial(dto, queryFromWhere);
 
@@ -387,7 +379,6 @@ export class IndicadoresService implements ReportableService {
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
         join orgao ON v.orgao_id = orgao.id
-        :listar_variaveis_regionalizadas
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
@@ -399,12 +390,6 @@ export class IndicadoresService implements ReportableService {
             const numbers = dto.regioes.map((n) => +n).join(',');
             queryFromWhere = `${queryFromWhere} AND v.regiao_id IN (${numbers})`;
         }
-        if (!dto.listar_variaveis_regionalizadas){
-            queryFromWhere = queryFromWhere.replace(":listar_variaveis_regionalizadas","join indicador_formula_variavel ifv on ifv.indicador_id = iv.indicador_id and ifv.variavel_id = iv.variavel_id");
-        }else{
-            queryFromWhere = queryFromWhere.replace(":listar_variaveis_regionalizadas","");
-        }
-
 
         const anoInicial = await this.capturaAnoSerieVariavelInicial(dto, queryFromWhere);
 
