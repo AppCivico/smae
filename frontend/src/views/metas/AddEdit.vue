@@ -278,7 +278,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
 <template>
   <MigalhasDeMetas class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TítuloDePágina
       :ícone="activePdm?.logo"
     >
@@ -294,7 +294,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
         height="12"
       ><use xlink:href="#i_x" /></svg>
     </button>
-  </div>
+  </header>
   <template v-if="oktogo && !(singleMeta?.loading || singleMeta?.error)">
     <Form
       v-slot="{ errors, isSubmitting, values }"
