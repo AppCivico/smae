@@ -647,7 +647,7 @@ const PerfilAcessoConfig: {
     },
 
     {
-        nome: atualizarNomePerfil('Administrador Geral do Plano Setorial', []),
+        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', ['Administrador Geral do Plano Setorial']),
         descricao:
             'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
         privilegios: [

@@ -166,13 +166,17 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tgr_update_variavel_ciclo_corrente
-AFTER UPDATE ON variavel
-FOR EACH ROW
-WHEN ((OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao OR
-      OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento OR
-      OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao OR
-      OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao))
-EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
+    AFTER UPDATE ON variavel
+    FOR EACH ROW
+    WHEN ((
+           OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao
+        OR OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento
+        OR OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao
+        OR OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao
+        OR OLD.atraso_meses IS DISTINCT FROM NEW.atraso_meses
+        )
+    )
+    EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
 
 CREATE TRIGGER tgr_insert_variavel_ciclo_corrente
 AFTER INSERT ON variavel

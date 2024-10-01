@@ -73,11 +73,13 @@ BEGIN
     ELSE
         -- Determina se a data atual está dentro do intervalo válido
         v_corrente := v_data_atual <= v_data_limite;
-        --RAISE NOTICE 'v_corrente: %', v_corrente;
+        raise notice 'v_data_atual: %', v_data_atual;
+        RAISE NOTICE 'v_corrente: %', v_corrente;
 
         IF (v_corrente) THEN
             -- Calcula o número de dias desde o início da medição
-            v_dias_desde_inicio := v_data_atual - v_ultimo_periodo_valido;
+            v_dias_desde_inicio := (v_data_atual - v_ultimo_periodo_valido)+1;
+            raise notice 'v_dias_desde_inicio: %', v_dias_desde_inicio;
 
             -- Determina a fase atual com base nos períodos definidos
             IF v_dias_desde_inicio BETWEEN v_registro.periodo_preenchimento[1] AND v_registro.periodo_preenchimento[2] THEN
@@ -124,7 +126,11 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+ select f_atualiza_variavel_ciclo_corrente(6883);
+
+
 select f_atualiza_variavel_ciclo_corrente (id) from variavel where tipo='Global' and variavel_mae_id is null;
+
 --SELECT * from variavel_ciclo_corrente WHERE variavel_id = 4633;
 --select f_atualiza_variavel_ciclo_corrente( 4633 );
 
@@ -179,7 +185,14 @@ LANGUAGE plpgsql;
 CREATE TRIGGER tgr_update_variavel_ciclo_corrente
     AFTER UPDATE ON variavel
     FOR EACH ROW
-    WHEN((OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao OR OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento OR OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao OR OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao))
+    WHEN ((
+           OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao
+        OR OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento
+        OR OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao
+        OR OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao
+        OR OLD.atraso_meses IS DISTINCT FROM NEW.atraso_meses
+        )
+    )
     EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
 
 CREATE TRIGGER tgr_insert_variavel_ciclo_corrente
