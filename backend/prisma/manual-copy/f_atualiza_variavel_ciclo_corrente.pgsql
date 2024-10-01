@@ -78,7 +78,7 @@ BEGIN
 
         IF (v_corrente) THEN
             -- Calcula o número de dias desde o início da medição
-            v_dias_desde_inicio := (v_data_atual - v_ultimo_periodo_valido)+1;
+            v_dias_desde_inicio := (v_data_atual - v_ultimo_periodo_valido) + 1;
             raise notice 'v_dias_desde_inicio: %', v_dias_desde_inicio;
 
             -- Determina a fase atual com base nos períodos definidos
