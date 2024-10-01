@@ -1,15 +1,16 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import PdmMetasRelacionados from '@/components/PdmMetasRelacionados.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
-import { useEquipesStore } from '@/stores/equipes.store';
-import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -391,6 +392,9 @@ iniciar();
             </tbody>
           </table>
         </div>
+
+        <PdmMetasRelacionados :relacionamentos="relacionadosIniciativa?.metas" />
+
         <div
           v-if="Atividades[iniciativa_id].loading"
           class="board_vazio"
