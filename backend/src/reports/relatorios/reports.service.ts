@@ -89,7 +89,12 @@ export class ReportsService {
             dto.fonte === 'ObrasPrevisaoCusto'
         ) {
             parametros.tipo_projeto = 'MDO';
-        } else if (dto.fonte === 'ProjetoOrcamento' || dto.fonte === 'ProjetoPrevisaoCusto') {
+        } else if (
+            dto.fonte === 'ProjetoOrcamento' ||
+            dto.fonte === 'ProjetoPrevisaoCusto' ||
+            dto.fonte === 'Projetos' ||
+            dto.fonte === 'Projeto'
+        ) {
             parametros.tipo_projeto = 'PP';
         } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             parametros.tipo_pdm = 'PDM';
