@@ -1221,6 +1221,68 @@ export class MetaService {
         const r = await this.findAll(tipo, { id: meta.id }, user); // check permissão
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
 
+        // Buscando relações DIRETAS do CompromissoOrigem
+        const metasOrigens = await this.prisma.compromissoOrigem.findMany({
+            where: {
+                OR: [
+                    {
+                        // diretas
+                        AND: [
+                            dto.meta_id
+                                ? {
+                                      rel_meta_id: dto.meta_id,
+                                      relacionamento: 'Meta',
+                                  }
+                                : {},
+                            dto.iniciativa_id
+                                ? {
+                                      rel_iniciativa_id: dto.iniciativa_id,
+                                      relacionamento: 'Iniciativa',
+                                  }
+                                : {},
+                            dto.atividade_id
+                                ? {
+                                      rel_atividade_id: dto.atividade_id,
+                                      relacionamento: 'Atividade',
+                                  }
+                                : {},
+                        ],
+                    },
+                    {
+                        // indiretas
+                        AND: [
+                            dto.meta_id
+                                ? {
+                                      meta_id: dto.meta_id,
+                                      atividade_id: null,
+                                      iniciativa_id: null,
+                                  }
+                                : {},
+                            dto.iniciativa_id
+                                ? {
+                                      iniciativa_id: dto.iniciativa_id,
+                                      atividade_id: null,
+                                  }
+                                : {},
+                            dto.atividade_id
+                                ? {
+                                      atividade_id: dto.atividade_id,
+                                  }
+                                : {},
+                        ],
+                    },
+                ],
+            },
+            select: {
+                rel_atividade_id: true,
+                rel_meta_id: true,
+                rel_iniciativa_id: true,
+            },
+        });
+        const metaIds = metasOrigens.filter((r) => r.rel_meta_id != null).map((r) => r.rel_meta_id!);
+        const iniIds = metasOrigens.filter((r) => r.rel_iniciativa_id != null).map((r) => r.rel_iniciativa_id!);
+        const atvIds = metasOrigens.filter((r) => r.rel_atividade_id != null).map((r) => r.rel_atividade_id!);
+
         const pdm = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
@@ -1245,6 +1307,32 @@ export class MetaService {
                                       iniciativa: {
                                           some: {
                                               atividade: { some: { id: dto.atividade_id } },
+                                          },
+                                      },
+                                  },
+                              }
+                            : undefined,
+                    },
+
+                    {
+                        Meta: metaIds.length ? { some: { id: { in: metaIds } } } : undefined,
+                    },
+                    {
+                        Meta: iniIds.length
+                            ? {
+                                  some: {
+                                      iniciativa: { some: { id: { in: iniIds } } },
+                                  },
+                              }
+                            : undefined,
+                    },
+                    {
+                        Meta: atvIds.length
+                            ? {
+                                  some: {
+                                      iniciativa: {
+                                          some: {
+                                              atividade: { some: { id: { in: atvIds } } },
                                           },
                                       },
                                   },
