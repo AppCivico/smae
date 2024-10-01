@@ -591,7 +591,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
         ><svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar órgão participante</span></a>
       </template>
 
       <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
