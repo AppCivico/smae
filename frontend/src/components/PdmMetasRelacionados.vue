@@ -111,11 +111,23 @@ const props = defineProps({
 });
 
 function combinadorDeOrgaos(relacionamento: MetaPdmDto): IdSigla[] {
-  return uniqBy([
-    ...relacionamento.meta_orgaos,
-    ...relacionamento.iniciativa_orgaos,
-    ...relacionamento.atividade_orgaos,
-  ], 'id');
+  let todosOsOrgaos: IdSigla[] = [];
+
+  if (Array.isArray(relacionamento.meta_orgaos)) {
+    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.meta_orgaos);
+  }
+
+  if (Array.isArray(relacionamento.iniciativa_orgaos)) {
+    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.iniciativa_orgaos);
+  }
+
+  if (Array.isArray(relacionamento.atividade_orgaos)) {
+    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.atividade_orgaos);
+  }
+
+  return todosOsOrgaos.length
+    ? uniqBy(todosOsOrgaos, 'id')
+    : todosOsOrgaos;
 }
 
 // eslint-disable-next-line max-len
