@@ -1,17 +1,18 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import { useEquipesStore } from '@/stores/equipes.store';
+import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref, unref } from 'vue';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, ref, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
@@ -44,7 +45,13 @@ const orgaos_participantes = ref([
 ]);
 const coordenadores_cp = ref({ participantes: [], busca: '' });
 
-const virtualParent = ref({
+const valoresIniciais = computed(() => ({
+  ...singleAtividade.value,
+
+  origens_extra: Array.isArray(singleAtividade.value?.origens_extra)
+    ? singleAtividade.value.origens_extra
+    : [],
+
   ps_ponto_focal: {
     equipes: singleAtividade.value?.ps_ponto_focal?.equipes || [],
   },
@@ -52,7 +59,8 @@ const virtualParent = ref({
   ps_tecnico_cp: {
     equipes: singleAtividade.value?.ps_tecnico_cp?.equipes || [],
   },
-});
+}));
+
 let title = 'Cadastro de';
 
 const organsAvailable = ref([]);
@@ -235,7 +243,7 @@ function filterResponsible(orgao_id) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="atividade_id ? singleAtividade : virtualParent"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <hr class="mt2 mb2">
@@ -435,6 +443,22 @@ function filterResponsible(orgao_id) {
           />
         </div>
       </fieldset>
+
+      <CampoDePdmMetasRelacionadas
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        titulo="Relacionamentos com outros compromissos"
+        :model-value="values.origens_extra"
+        :valores-iniciais="valoresIniciais.origens_extra"
+        name="origens_extra"
+        etiqueta-botao-adicao="Adicionar compromisso"
+      >
+        <template #rodape>
+          <ErrorMessage
+            class="error-msg"
+            name="origens_extra"
+          />
+        </template>
+      </CampoDePdmMetasRelacionadas>
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">

@@ -1,22 +1,22 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
+import {
+  useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,
+} from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 import {
   computed, defineOptions, ref, unref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
-
-import {
-  useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,
-} from '@/stores';
 
 defineOptions({
   inheritAttrs: false,
@@ -56,7 +56,6 @@ Promise.all([
   oktogo.value = true;
 });
 
-const virtualParent = ref({});
 let title = 'Cadastro de';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
@@ -64,6 +63,10 @@ const coordsAvailable = ref([]);
 
 const valoresIniciais = computed(() => ({
   ...singleIniciativa.value,
+
+  origens_extra: Array.isArray(singleIniciativa.value?.origens_extra)
+    ? singleIniciativa.value.origens_extra
+    : [],
 
   ps_ponto_focal: {
     equipes: singleIniciativa.value?.ps_ponto_focal?.equipes || [],
@@ -461,6 +464,22 @@ function filterResponsible(orgao_id) {
           />
         </div>
       </fieldset>
+
+      <CampoDePdmMetasRelacionadas
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        titulo="Relacionamentos com outros compromissos"
+        :model-value="values.origens_extra"
+        :valores-iniciais="valoresIniciais.origens_extra"
+        name="origens_extra"
+        etiqueta-botao-adicao="Adicionar compromisso"
+      >
+        <template #rodape>
+          <ErrorMessage
+            class="error-msg"
+            name="origens_extra"
+          />
+        </template>
+      </CampoDePdmMetasRelacionadas>
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">

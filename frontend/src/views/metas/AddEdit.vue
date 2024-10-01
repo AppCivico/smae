@@ -1,12 +1,14 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -14,9 +16,12 @@ import { useSubtemasStore } from '@/stores/subtemas.store';
 import { useTagsStore } from '@/stores/tags.store';
 import { useTemasStore } from '@/stores/temas.store';
 import { useUsersStore } from '@/stores/users.store';
-import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import {
+  ErrorMessage,
+  Field,
+  Form,
+} from 'vee-validate';
 import {
   computed,
   defineOptions,
@@ -135,6 +140,10 @@ const valoresIniciais = computed(() => ({
   macro_tema_id: singleMeta.value.macro_tema?.id || route.params.macro_tema_id,
   sub_tema_id: singleMeta.value.sub_tema?.id || route.params.sub_tema_id,
   tema_id: singleMeta.value.tema?.id || route.params.tema_id,
+
+  origens_extra: Array.isArray(singleMeta.value?.origens_extra)
+    ? singleMeta.value.origens_extra
+    : [],
 
   tags: Array.isArray(singleMeta.value?.tags)
     ? singleMeta.value.tags.map((tag) => tag.id)
@@ -660,6 +669,23 @@ watch(() => activePdm.value.id, async (novoValor) => {
           />
         </div>
       </fieldset>
+
+      <CampoDePdmMetasRelacionadas
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        titulo="Relacionamentos com outros compromissos"
+        :model-value="values.origens_extra"
+        :valores-iniciais="valoresIniciais.origens_extra"
+        name="origens_extra"
+        etiqueta-botao-adicao="Adicionar compromisso"
+        class="mb2"
+      >
+        <template #rodape>
+          <ErrorMessage
+            class="error-msg"
+            name="origens_extra"
+          />
+        </template>
+      </CampoDePdmMetasRelacionadas>
 
       <FormErrorsList :errors="errors" />
 
