@@ -25,6 +25,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  apenasPdms: {
+    type: Boolean,
+    default: true,
+  },
   // necessária para que o vee-validate não se perca
   name: {
     type: String,
@@ -91,7 +95,7 @@ watchEffect(async () => {
   promessas.splice(0);
 
   if (!pdmsSimplificados.value.length && !chamadasPendentes.value.pdmsSimplificados) {
-    promessas.push(pdmMetasStore.buscarPdms());
+    promessas.push(pdmMetasStore.buscarPdms({ apenas_pdm: props.apenasPdms }));
   }
 
   if (Array.isArray(props.valoresIniciais) && props.valoresIniciais.length) {

@@ -672,6 +672,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
 
       <CampoDePdmMetasRelacionadas
         v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        :apenas-pdms="false"
         titulo="Relacionamentos com outros compromissos"
         :model-value="values.origens_extra"
         :valores-iniciais="valoresIniciais.origens_extra"

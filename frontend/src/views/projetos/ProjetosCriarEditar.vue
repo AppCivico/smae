@@ -1121,6 +1121,7 @@ watch(emFoco, () => {
     </fieldset>
 
     <CampoDePdmMetasRelacionadas
+      :apenas-pdms="false"
       :titulo="schema.fields.origens_extra.spec.label"
       etiqueta-botao-adicao="Adicionar origem"
       :model-value="values.origens_extra"
