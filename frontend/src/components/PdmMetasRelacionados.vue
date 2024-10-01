@@ -28,7 +28,7 @@
             PdM / Plano Setorial
           </th>
           <th>Órgãos</th>
-          <th />
+          <th>Meta</th>
           <th />
           <th />
         </tr>
