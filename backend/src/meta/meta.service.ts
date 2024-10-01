@@ -1221,6 +1221,8 @@ export class MetaService {
         const r = await this.findAll(tipo, { id: meta.id }, user); // check permissão
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
 
+        console.log('--------------------');
+
         // Buscando relações DIRETAS do CompromissoOrigem
         const metasOrigens = await this.prisma.compromissoOrigem.findMany({
             where: {
@@ -1272,154 +1274,208 @@ export class MetaService {
                         ],
                     },
                 ],
+                removido_em: null,
+                relacionamento: { in: ['Meta', 'Iniciativa', 'Atividade'] },
             },
             select: {
-                rel_atividade_id: true,
-                rel_meta_id: true,
-                rel_iniciativa_id: true,
+                relacionamento: true,
+
+                atividade_id: true,
+                meta_id: true,
+                iniciativa_id: true,
             },
         });
-        const metaIds = metasOrigens.filter((r) => r.rel_meta_id != null).map((r) => r.rel_meta_id!);
-        const iniIds = metasOrigens.filter((r) => r.rel_iniciativa_id != null).map((r) => r.rel_iniciativa_id!);
-        const atvIds = metasOrigens.filter((r) => r.rel_atividade_id != null).map((r) => r.rel_atividade_id!);
 
-        const pdm = await this.prisma.pdm.findMany({
+        const metaIds = UniqueNumbers(metasOrigens.filter((r) => r.meta_id != null).map((r) => r.meta_id!));
+        const iniIds = UniqueNumbers(metasOrigens.filter((r) => r.iniciativa_id != null).map((r) => r.iniciativa_id!));
+        const atvIds = UniqueNumbers(metasOrigens.filter((r) => r.atividade_id != null).map((r) => r.atividade_id!));
+
+        const metas = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
-                NOT: { id: pdm_id },
-                OR: [
-                    {
-                        Meta: { some: { id: dto.meta_id } },
-                    },
-                    {
-                        Meta: dto.iniciativa_id
-                            ? {
-                                  some: {
-                                      iniciativa: { some: { id: dto.iniciativa_id } },
-                                  },
-                              }
-                            : undefined,
-                    },
-                    {
-                        Meta: dto.atividade_id
-                            ? {
-                                  some: {
-                                      iniciativa: {
-                                          some: {
-                                              atividade: { some: { id: dto.atividade_id } },
-                                          },
-                                      },
-                                  },
-                              }
-                            : undefined,
-                    },
-
-                    {
-                        Meta: metaIds.length ? { some: { id: { in: metaIds } } } : undefined,
-                    },
-                    {
-                        Meta: iniIds.length
-                            ? {
-                                  some: {
-                                      iniciativa: { some: { id: { in: iniIds } } },
-                                  },
-                              }
-                            : undefined,
-                    },
-                    {
-                        Meta: atvIds.length
-                            ? {
-                                  some: {
-                                      iniciativa: {
-                                          some: {
-                                              atividade: { some: { id: { in: atvIds } } },
-                                          },
-                                      },
-                                  },
-                              }
-                            : undefined,
-                    },
-                ],
+                NOT: { id: meta.id },
+                OR: [{ id: { in: metaIds } }],
             },
             select: {
                 id: true,
-                nome: true,
-                tipo: true,
-                Meta: {
+                codigo: true,
+                titulo: true,
+                pdm: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                        tipo: true,
+                        rotulo_atividade: true,
+                        rotulo_iniciativa: true,
+                    },
+                },
+                meta_orgao: {
+                    where: { responsavel: true },
+                    select: { orgao: { select: { id: true, sigla: true } } },
+                },
+            },
+        });
+        const iniciativas = await this.prisma.iniciativa.findMany({
+            where: {
+                removido_em: null,
+                NOT: { id: dto.iniciativa_id },
+                OR: [{ id: { in: iniIds } }],
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                iniciativa_orgao: {
+                    where: { responsavel: true },
+                    select: { orgao: { select: { id: true, sigla: true } } },
+                },
+                meta: {
                     select: {
                         id: true,
                         codigo: true,
                         titulo: true,
-                        pdm: {
-                            select: {
-                                rotulo_atividade: true,
-                                rotulo_iniciativa: true,
-                            },
-                        },
                         meta_orgao: {
                             where: { responsavel: true },
                             select: { orgao: { select: { id: true, sigla: true } } },
                         },
-                        iniciativa: {
+                        pdm: {
                             select: {
                                 id: true,
-                                codigo: true,
-                                titulo: true,
-                                iniciativa_orgao: {
-                                    where: { responsavel: true },
-                                    select: { orgao: { select: { id: true, sigla: true } } },
-                                },
-                                atividade: {
-                                    select: {
-                                        id: true,
-                                        codigo: true,
-                                        titulo: true,
-                                        atividade_orgao: {
-                                            where: { responsavel: true },
-                                            select: {
-                                                orgao: { select: { id: true, sigla: true } },
-                                            },
-                                        },
-                                    },
-                                },
+                                descricao: true,
+                                tipo: true,
+                                rotulo_atividade: true,
+                                rotulo_iniciativa: true,
                             },
                         },
                     },
                 },
             },
         });
+        const atividades = await this.prisma.atividade.findMany({
+            where: {
+                removido_em: null,
+                NOT: { id: dto.atividade_id },
+                OR: [{ id: { in: atvIds } }],
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                iniciativa: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        iniciativa_orgao: {
+                            where: { responsavel: true },
+                            select: { orgao: { select: { id: true, sigla: true } } },
+                        },
+                        meta: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                meta_orgao: {
+                                    where: { responsavel: true },
+                                    select: { orgao: { select: { id: true, sigla: true } } },
+                                },
+                                pdm: {
+                                    select: {
+                                        id: true,
+                                        descricao: true,
+                                        tipo: true,
+                                        rotulo_atividade: true,
+                                        rotulo_iniciativa: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                atividade_orgao: {
+                    where: { responsavel: true },
+                    select: { orgao: { select: { id: true, sigla: true } } },
+                },
+            },
+        });
 
-        const MetaPdmDto: MetaPdmDto[] = [];
-        for (const p of pdm) {
-            for (const m of p.Meta) {
-                const metaPdm: MetaPdmDto = {
-                    tipo: p.tipo,
-                    meta_id: m.id,
-                    meta_codigo: m.codigo,
-                    meta_titulo: m.titulo,
-                    pdm_id: p.id,
-                    pdm_descricao: p.nome,
-                    meta_orgaos: m.meta_orgao.map((r) => r.orgao),
-                    pdm_rotulo_atividade: m.pdm.rotulo_atividade,
-                    pdm_rotulo_iniciativa: m.pdm.rotulo_iniciativa,
+        const metaPdmDtoList: MetaPdmDto[] = [];
+
+        // Process Metas
+        for (const meta of metas) {
+            const metaPdm: MetaPdmDto = {
+                pdm_id: meta.pdm.id,
+                pdm_descricao: meta.pdm.descricao ?? '',
+                pdm_rotulo_iniciativa: meta.pdm.rotulo_iniciativa,
+                pdm_rotulo_atividade: meta.pdm.rotulo_atividade,
+                meta_id: meta.id,
+                meta_codigo: meta.codigo,
+                meta_titulo: meta.titulo,
+                meta_orgaos: meta.meta_orgao.map((o) => ({ id: o.orgao.id, sigla: o.orgao.sigla })),
+                tipo: meta.pdm.tipo,
+            };
+            metaPdmDtoList.push(metaPdm);
+        }
+
+        // Process Iniciativas
+        for (const iniciativa of iniciativas) {
+            let metaPdm = metaPdmDtoList.find((m) => m.meta_id === iniciativa.meta.id);
+            if (!metaPdm) {
+                metaPdm = {
+                    pdm_id: iniciativa.meta.pdm.id,
+                    pdm_descricao: iniciativa.meta.pdm.descricao ?? '',
+                    pdm_rotulo_iniciativa: iniciativa.meta.pdm.rotulo_iniciativa,
+                    pdm_rotulo_atividade: iniciativa.meta.pdm.rotulo_atividade,
+                    meta_id: iniciativa.meta.id,
+                    meta_codigo: iniciativa.meta.codigo,
+                    meta_titulo: iniciativa.meta.titulo,
+                    meta_orgaos: iniciativa.meta.meta_orgao.map((o) => ({ id: o.orgao.id, sigla: o.orgao.sigla })),
+                    tipo: iniciativa.meta.pdm.tipo,
                 };
-
-                if (m.iniciativa && m.iniciativa.length > 0) {
-                    metaPdm.iniciativa_id = m.iniciativa[0].id;
-                    metaPdm.iniciativa_codigo = m.iniciativa[0].codigo;
-                    metaPdm.iniciativa_descricao = m.iniciativa[0].titulo;
-                    metaPdm.iniciativa_orgaos = m.iniciativa[0].iniciativa_orgao.map((r) => r.orgao);
-
-                    if (m.iniciativa[0].atividade && m.iniciativa[0].atividade.length > 0) {
-                        metaPdm.atividade_id = m.iniciativa[0].atividade[0].id;
-                        metaPdm.atividade_codigo = m.iniciativa[0].atividade[0].codigo;
-                        metaPdm.atividade_descricao = m.iniciativa[0].atividade[0].titulo;
-                        metaPdm.atividade_orgaos = m.iniciativa[0].atividade[0].atividade_orgao.map((r) => r.orgao);
-                    }
-                }
-
-                MetaPdmDto.push(metaPdm);
+                metaPdmDtoList.push(metaPdm);
             }
+
+            metaPdm.iniciativa_id = iniciativa.id;
+            metaPdm.iniciativa_codigo = iniciativa.codigo;
+            metaPdm.iniciativa_descricao = iniciativa.titulo;
+            metaPdm.iniciativa_orgaos = iniciativa.iniciativa_orgao.map((o) => ({
+                id: o.orgao.id,
+                sigla: o.orgao.sigla,
+            }));
+        }
+
+        // Process Atividades
+        for (const atividade of atividades) {
+            let metaPdm = metaPdmDtoList.find((m) => m.iniciativa_id === atividade.iniciativa.id);
+            if (!metaPdm) {
+                metaPdm = {
+                    pdm_id: atividade.iniciativa.meta.pdm.id,
+                    pdm_descricao: atividade.iniciativa.meta.pdm.descricao ?? '',
+                    pdm_rotulo_iniciativa: atividade.iniciativa.meta.pdm.rotulo_iniciativa,
+                    pdm_rotulo_atividade: atividade.iniciativa.meta.pdm.rotulo_atividade,
+                    meta_id: atividade.iniciativa.meta.id,
+                    meta_codigo: atividade.iniciativa.meta.codigo,
+                    meta_titulo: atividade.iniciativa.meta.titulo,
+                    meta_orgaos: atividade.iniciativa.meta.meta_orgao.map((o) => ({
+                        id: o.orgao.id,
+                        sigla: o.orgao.sigla,
+                    })),
+                    iniciativa_id: atividade.iniciativa.id,
+                    iniciativa_codigo: atividade.iniciativa.codigo,
+                    iniciativa_descricao: atividade.iniciativa.titulo,
+                    iniciativa_orgaos: atividade.iniciativa.iniciativa_orgao.map((o) => ({
+                        id: o.orgao.id,
+                        sigla: o.orgao.sigla,
+                    })),
+                    tipo: atividade.iniciativa.meta.pdm.tipo,
+                };
+                metaPdmDtoList.push(metaPdm);
+            }
+
+            metaPdm.atividade_id = atividade.id;
+            metaPdm.atividade_codigo = atividade.codigo;
+            metaPdm.atividade_descricao = atividade.titulo;
+            metaPdm.atividade_orgaos = atividade.atividade_orgao.map((o) => ({ id: o.orgao.id, sigla: o.orgao.sigla }));
         }
 
         const projetos = await this.prisma.projeto.findMany({
@@ -1509,7 +1565,7 @@ export class MetaService {
         });
 
         return {
-            metas: MetaPdmDto,
+            metas: metaPdmDtoList,
             obras: projetos
                 .filter((p) => p.tipo === 'MDO')
                 .map((r) => {
