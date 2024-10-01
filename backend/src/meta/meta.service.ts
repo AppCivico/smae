@@ -1262,16 +1262,30 @@ export class MetaService {
                         id: true,
                         codigo: true,
                         titulo: true,
+                        meta_orgao: {
+                            where: { responsavel: true },
+                            select: { orgao: { select: { id: true, sigla: true } } },
+                        },
                         iniciativa: {
                             select: {
                                 id: true,
                                 codigo: true,
                                 titulo: true,
+                                iniciativa_orgao: {
+                                    where: { responsavel: true },
+                                    select: { orgao: { select: { id: true, sigla: true } } },
+                                },
                                 atividade: {
                                     select: {
                                         id: true,
                                         codigo: true,
                                         titulo: true,
+                                        atividade_orgao: {
+                                            where: { responsavel: true },
+                                            select: {
+                                                orgao: { select: { id: true, sigla: true } },
+                                            },
+                                        },
                                     },
                                 },
                             },
@@ -1291,17 +1305,20 @@ export class MetaService {
                     meta_titulo: m.titulo,
                     pdm_id: p.id,
                     pdm_descricao: p.nome,
+                    meta_orgaos: m.meta_orgao.map((r) => r.orgao),
                 };
 
                 if (m.iniciativa && m.iniciativa.length > 0) {
                     metaPdm.iniciativa_id = m.iniciativa[0].id;
                     metaPdm.iniciativa_codigo = m.iniciativa[0].codigo;
                     metaPdm.iniciativa_descricao = m.iniciativa[0].titulo;
+                    metaPdm.iniciativa_orgaos = m.iniciativa[0].iniciativa_orgao.map((r) => r.orgao);
 
                     if (m.iniciativa[0].atividade && m.iniciativa[0].atividade.length > 0) {
                         metaPdm.atividade_id = m.iniciativa[0].atividade[0].id;
                         metaPdm.atividade_codigo = m.iniciativa[0].atividade[0].codigo;
                         metaPdm.atividade_descricao = m.iniciativa[0].atividade[0].titulo;
+                        metaPdm.atividade_orgaos = m.iniciativa[0].atividade[0].atividade_orgao.map((r) => r.orgao);
                     }
                 }
 
@@ -1396,8 +1413,7 @@ export class MetaService {
         });
 
         return {
-            pdm_metas: MetaPdmDto.filter((p) => p.tipo === 'PDM'),
-            ps_metas: MetaPdmDto.filter((p) => p.tipo === 'PS'),
+            metas: MetaPdmDto,
             obras: projetos
                 .filter((p) => p.tipo === 'MDO')
                 .map((r) => {

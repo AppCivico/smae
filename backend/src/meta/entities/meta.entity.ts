@@ -1,6 +1,6 @@
 import { ProjetoStatus, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
-import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
@@ -54,17 +54,24 @@ export class MetaItemDto extends ResumoDetalheOrigensDto {
 }
 
 export class MetaPdmDto {
+    pdm_id: number;
+    pdm_descricao: string;
+
     meta_id: number;
     meta_codigo: string;
     meta_titulo: string;
-    pdm_id: number;
-    pdm_descricao: string;
+    meta_orgaos: IdSigla[];
+
     iniciativa_id?: number;
     iniciativa_codigo?: string;
     iniciativa_descricao?: string;
+    iniciativa_orgaos?: IdSigla[];
+
     atividade_id?: number;
     atividade_codigo?: string;
     atividade_descricao?: string;
+    atividade_orgaos?: IdSigla[];
+
     tipo: TipoPdm;
 }
 
@@ -84,8 +91,7 @@ export class IdProjetoDto extends IdCodNomeDto {
 }
 
 export class RelacionadosDTO {
-    pdm_metas: MetaPdmDto[];
-    ps_metas: MetaPdmDto[];
+    metas: MetaPdmDto[];
     obras: IdObrasDto[];
     projetos: IdProjetoDto[];
 }
