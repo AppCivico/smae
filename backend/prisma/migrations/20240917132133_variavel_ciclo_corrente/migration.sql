@@ -76,11 +76,10 @@ BEGIN
     ELSE
         -- Determina se a data atual está dentro do intervalo válido
         v_corrente := v_data_atual <= v_data_limite;
-        --RAISE NOTICE 'v_corrente: %', v_corrente;
 
         IF (v_corrente) THEN
             -- Calcula o número de dias desde o início da medição
-            v_dias_desde_inicio := v_data_atual - v_ultimo_periodo_valido;
+            v_dias_desde_inicio := (v_data_atual - v_ultimo_periodo_valido) + 1;
 
             -- Determina a fase atual com base nos períodos definidos
             IF v_dias_desde_inicio BETWEEN v_registro.periodo_preenchimento[1] AND v_registro.periodo_preenchimento[2] THEN
