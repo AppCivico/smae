@@ -595,9 +595,9 @@ export class VariavelCicloService {
                 where: {
                     variavel_id: variavel_id,
                     referencia_data: data_referencia,
-                    ultima_revisao: true,
                     fase: fase,
                 },
+                take: 1,
                 orderBy: { criado_em: 'desc' },
                 select: {
                     informacoes_complementares: true,
