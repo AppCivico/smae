@@ -31,6 +31,7 @@ import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PdmService } from '../pdm/pdm.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -77,7 +78,7 @@ export class MetaService {
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
 
-                const tags = dto.tags;
+                const tags = UniqueNumbers(dto.tags);
                 delete dto.tags;
 
                 const psTecnicoCP = dto.ps_tecnico_cp;
@@ -723,7 +724,7 @@ export class MetaService {
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
-        const tags = updateMetaDto.tags;
+        const tags = UniqueNumbers(updateMetaDto.tags);
         const geolocalizacao = updateMetaDto.geolocalizacao;
         const psTecnicoCP = updateMetaDto.ps_tecnico_cp;
         const psPontoFocal = updateMetaDto.ps_ponto_focal;
