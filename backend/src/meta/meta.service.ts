@@ -1221,8 +1221,6 @@ export class MetaService {
         const r = await this.findAll(tipo, { id: meta.id }, user); // check permissão
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
 
-        console.log('--------------------');
-
         // Buscando relações DIRETAS do CompromissoOrigem
         const metasOrigens = await this.prisma.compromissoOrigem.findMany({
             where: {

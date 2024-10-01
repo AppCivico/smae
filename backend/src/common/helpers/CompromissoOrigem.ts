@@ -24,7 +24,27 @@ export class CompromissoOrigemHelper {
             },
         });
 
-        const updated = origens
+        // Remove duplicados e self-relations
+        const uniqueOrigens = origens.reduce((acc, current) => {
+            const isDuplicate = acc.some(
+                (item) =>
+                    (item.atividade_id && item.atividade_id === current.atividade_id) ||
+                    (item.iniciativa_id && item.iniciativa_id === current.iniciativa_id) ||
+                    (item.meta_id && item.meta_id === current.meta_id)
+            );
+            const isSelfRelation =
+                (entityType === 'meta' && current.meta_id === entityId) ||
+                (entityType === 'iniciativa' && current.iniciativa_id === entityId) ||
+                (entityType === 'atividade' && current.atividade_id === entityId);
+
+            if (!isDuplicate && !isSelfRelation) {
+                return acc.concat([current]);
+            } else {
+                return acc;
+            }
+        }, [] as UpsertOrigemDto[]);
+
+        const updated = uniqueOrigens
             .filter((o) => o.id !== undefined)
             .filter((oNew) => {
                 const oOld = currentOrigens.find((o) => o.id === oNew.id);
@@ -41,14 +61,11 @@ export class CompromissoOrigemHelper {
                 throw new BadRequestException(`Registro anterior com ID ${oNew.id} não encontrado.`);
             });
 
-        const created = origens.filter((o) => o.id == undefined);
+        const created = uniqueOrigens.filter((o) => o.id == undefined);
 
-        const deleted = currentOrigens.filter((o) => !origens.some((oNew) => oNew.id === o.id)).map((o) => o.id);
+        const deleted = currentOrigens.filter((o) => !uniqueOrigens.some((oNew) => oNew.id === o.id)).map((o) => o.id);
 
         const operations = [];
-        console.log('updated', updated);
-        console.log('created', created);
-        console.log('deleted', deleted);
 
         for (const o of updated) {
             operations.push(
