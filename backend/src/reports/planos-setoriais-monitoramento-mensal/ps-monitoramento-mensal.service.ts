@@ -1,16 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import {
-    DefaultCsvOptions,
-    FileOutput,
-    ReportableService,
-    ReportContext,
-    UtilsService,
-} from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import { RelPsMonitoramentoMensalVariaveis } from './entities/ps-monitoramento-mensal.entity';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
-import { Prisma } from '@prisma/client';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 

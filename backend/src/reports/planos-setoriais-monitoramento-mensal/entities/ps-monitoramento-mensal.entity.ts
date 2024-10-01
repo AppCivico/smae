@@ -1,10 +1,10 @@
 export class RelMonitoramentoMensalPsIndicadores {
-    codigo_meta: string;
+    meta_codigo: string;
     titulo_meta:string;
-    codigo_iniciativa:string;
-    titulo_iniciativa:string;
-    codigo_indicador:string;
-    titulo_indicador:string;
+    iniciativa_codigo:string;
+    iniciativa_titulo:string;
+    indicador_codigo:string;
+    indicador_titulo:string;
     serie:string;
     data_referencia:string;
     valor:number;
@@ -13,11 +13,11 @@ export class RelMonitoramentoMensalPsIndicadores {
 
 export class RelPsMonitoramentoMensalVariaveis {
     indicador_id: number;
-    codigo_indicador: string;
-    titulo_indicador:string;
+    indicador_codigo: string;
+    indicador_titulo:string;
     variavel_id:number;
-    codigo_variavel:string;
-    titulo_variavel:string;
+    variavel_codigo:string;
+    variavel_titulo:string;
     municipio_id:number;
     municipio:string;
     regiao_id:number;
