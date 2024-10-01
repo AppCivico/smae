@@ -68,10 +68,16 @@ export class IndicadorParams {
     mes:number
 }
 
-export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {}
+export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {
+    @IsOptional()
+    @IsBoolean()
+    listar_variaveis_regionalizadas: boolean;
+}
 
 export class CreateRelIndicadorRegioesDto extends CreateRelIndicadorDto {
     @IsOptional()
     @Transform(NumberArrayTransformOrUndef)
     regioes?: number[];
+
+
 }

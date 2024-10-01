@@ -153,7 +153,7 @@ export class MonitoramentoMensalPs implements ReportableService {
                         and vvp.meta_id IN (:metas)
                         and vvp.pdm_id = ${params.plano_setorial_id}::int`
 
-        if (params.listar_variaveis_regionalizadas){
+        if (!params.listar_variaveis_regionalizadas){
             sql = sql.replace(":listar_variaveis_regionalizadas","inner join indicador_formula_variavel ifv on ifv.indicador_id = i.id and ifv.variavel_id = v.id");
         }else{
             sql = sql.replace(":listar_variaveis_regionalizadas","");
@@ -217,6 +217,7 @@ export class MonitoramentoMensalPs implements ReportableService {
         indicadoresInput.tags  = params.tags;
         indicadoresInput.metas_ids = params.metas;
         indicadoresInput.tipo = 'Mensal';
+        indicadoresInput.listar_variaveis_regionalizadas = params.listar_variaveis_regionalizadas;
 
         const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput,ctx);
         for(const indicador of indicadores){
