@@ -91,30 +91,6 @@ function adicionarLinha() {
 watchEffect(async () => {
   await Promise.allSettled(promessas);
 
-  campoPronto.value = false;
-  promessas.splice(0);
-
-  if (!pdmsSimplificados.value.length && !chamadasPendentes.value.pdmsSimplificados) {
-    promessas.push(pdmMetasStore.buscarPdms({ apenas_pdm: props.apenasPdms }));
-  }
-
-  if (Array.isArray(props.valoresIniciais) && props.valoresIniciais.length) {
-    props.valoresIniciais.forEach((valor) => {
-      if (valor.meta_id && !arvoreDeMetas.value[valor.meta_id]) {
-        promessas.push(pdmMetasStore.buscarArvoreDeMetas({ meta_ids: valor.meta_id }));
-      }
-    });
-  }
-
-  Promise.all(promessas)
-    .then(() => {
-      campoPronto.value = true;
-    })
-    .catch((erro) => {
-      console.error('Erro ao montar CampoDePdmMetasRelacionadas', erro);
-      throw erro;
-    });
-
   if (Array.isArray(props.valoresIniciais)) {
     valores.value = props.valoresIniciais.map((origem) => ({
       atividade_id: origem?.atividade_id || origem?.atividade?.id || null,
@@ -125,6 +101,35 @@ watchEffect(async () => {
       pdm_escolhido: origem?.pdm_escolhido || origem?.pdm?.id || null,
     }));
   }
+
+  campoPronto.value = false;
+  promessas.splice(0);
+
+  if (!pdmsSimplificados.value.length && !chamadasPendentes.value.pdmsSimplificados) {
+    promessas.push(pdmMetasStore.buscarPdms({ apenas_pdm: props.apenasPdms }));
+  }
+
+  if (valores.value.length) {
+    const metasBuscar = [];
+    valores.value.forEach((valor) => {
+      if (valor.meta_id && !arvoreDeMetas.value[valor.meta_id]) {
+        metasBuscar.push(valor.meta_id);
+      }
+    });
+
+    if (metasBuscar.length) {
+      promessas.push(pdmMetasStore.buscarArvoreDeMetas({ meta_ids: metasBuscar }));
+    }
+  }
+
+  Promise.all(promessas)
+    .then(() => {
+      campoPronto.value = true;
+    })
+    .catch((erro) => {
+      console.error('Erro ao montar CampoDePdmMetasRelacionadas', erro);
+      throw erro;
+    });
 
   resetField({
     value: valores.value,
