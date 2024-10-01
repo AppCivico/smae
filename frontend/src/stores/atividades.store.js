@@ -75,6 +75,25 @@ export const useAtividadesStore = defineStore({
         return false;
       }
     },
+    async getByIdReal(atividade_id) {
+      // mantendo o estilo já usado nesse store
+      try {
+        if (!atividade_id) {
+          throw 'Atividade inválida';
+        }
+        this.singleAtividade = { loading: true };
+
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${atividade_id}`);
+
+        this.singleAtividade = r.id ? r : false;
+
+        if (!this.singleAtividade) throw 'Atividade não encontrada';
+        return true;
+      } catch (error) {
+        this.singleAtividade = { error };
+        return false;
+      }
+    },
     async insert(params) {
       const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
       if (r.id) return r.id;

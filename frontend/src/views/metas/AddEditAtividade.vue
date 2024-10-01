@@ -72,7 +72,7 @@ if (atividade_id) {
 }
 (async () => {
   await IniciativasStore.getById(meta_id, iniciativa_id);
-  if (atividade_id) await AtividadesStore.getById(iniciativa_id, atividade_id);
+  if (atividade_id) await AtividadesStore.getByIdReal(atividade_id);
 
   singleIniciativa.value.orgaos_participantes?.forEach((x) => {
     x.orgao_id = x.orgao.id;

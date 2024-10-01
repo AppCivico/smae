@@ -82,7 +82,7 @@ if (iniciativa_id) {
 }
 (async () => {
   await MetasStore.getById(meta_id);
-  if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
+  if (iniciativa_id) await IniciativasStore.getByIdReal(iniciativa_id);
   singleMeta.value.orgaos_participantes?.forEach((x) => {
     x.orgao_id = x.orgao.id;
     organsAvailable.value.push(x);
