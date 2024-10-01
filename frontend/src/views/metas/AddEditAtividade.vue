@@ -452,6 +452,7 @@ function filterResponsible(orgao_id) {
         :valores-iniciais="valoresIniciais.origens_extra"
         name="origens_extra"
         etiqueta-botao-adicao="Adicionar compromisso"
+        class="mb2"
       >
         <template #rodape>
           <ErrorMessage

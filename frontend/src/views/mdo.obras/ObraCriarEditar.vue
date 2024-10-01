@@ -1137,6 +1137,7 @@ watch(itemParaEdicao, (novoValor) => {
       :model-value="values.origens_extra"
       :valores-iniciais="itemParaEdicao.origens_extra"
       name="origens_extra"
+      class="mb2"
     >
       <template #rodape>
         <ErrorMessage
