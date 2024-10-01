@@ -507,7 +507,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
               >
                 <option
                   v-for="(o, k) in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id
-|| !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
+                    || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
                   :key="k"
                   :value="o.id"
                   :title="o.descricao?.length > 36 ? o.descricao : null"
@@ -528,9 +528,9 @@ watch(() => activePdm.value.id, async (novoValor) => {
                 class="addlink mt1"
                 @click="removeOrgao(orgaos_participantes, index)"
               ><svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg></a>
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg></a>
             </div>
           </div>
         </template>
@@ -538,9 +538,9 @@ watch(() => activePdm.value.id, async (novoValor) => {
           class="addlink"
           @click="addOrgao(orgaos_participantes, true)"
         ><svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão responsável</span></a>
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão responsável</span></a>
 
         <hr class="mt2 mb2">
 
@@ -588,9 +588,9 @@ watch(() => activePdm.value.id, async (novoValor) => {
                 class="addlink mt1"
                 @click="removeOrgao(orgaos_participantes, index)"
               ><svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg></a>
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg></a>
             </div>
           </div>
         </template>
