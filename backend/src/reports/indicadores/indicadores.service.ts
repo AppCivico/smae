@@ -247,6 +247,9 @@ export class IndicadoresService implements ReportableService {
                 }
 
                 await this.streamRowsInto(null, stream, prismaTxn);
+            } else if (dto.tipo == 'Mensal' && dto.mes){
+                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano,dto.mes);
+                await this.streamRowsInto(null, stream, prismaTxn);
             }
         });
     }
@@ -331,6 +334,17 @@ export class IndicadoresService implements ReportableService {
                 .replace(':DATA:', 'dt.dt::date::text'),
             ano + '-01-01',
             ano + '-12-01',
+            '1 month'
+        );
+    }
+
+    private async rodaQueryMensalAnalitico(prismaTxn: Prisma.TransactionClient, sql: string, ano: number, mes:number) {
+        await prismaTxn.$queryRawUnsafe(
+            sql
+                .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+                .replace(':DATA:', 'dt.dt::date::text'),
+            ano + '-' + mes + '-01',
+            ano + '-' + mes + '-01',
             '1 month'
         );
     }
@@ -460,6 +474,9 @@ export class IndicadoresService implements ReportableService {
                     );
                 }
 
+                await this.streamRowsInto(regioes, stream, prismaTxn);
+            }else if (dto.tipo == 'Mensal' && dto.mes){
+                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano,dto.mes);
                 await this.streamRowsInto(regioes, stream, prismaTxn);
             }
         });

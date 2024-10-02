@@ -2,8 +2,8 @@ import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { DotacaoRealizado, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError, TrataDotacaoGrande } from '../sof-api/sof-api.service';
-import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
-import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from './entities/dotacao.entity';
+import { AnoDotacaoDto } from './dto/dotacao.dto';
+import { ValorPlanejadoDto, ValorRealizadoDotacaoDto } from './entities/dotacao.entity';
 
 type TipoAcaoOrcamentaria = 'custeio' | 'investimento' | '';
 
@@ -42,50 +42,6 @@ export class DotacaoService {
             }
         }
         return acao_orcamentaria;
-    }
-
-    /**
-     * @deprecated pois não é usado no sistema
-    /**/
-    async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
-        try {
-            // custeio é planejamento, de certa forma
-            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'planejado');
-            const r = await this.sof.orcadoProjeto({
-                ano: dto.ano,
-                mes: mesMaisAtual,
-                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.parte_dotacao),
-            });
-
-            const dotacao = r.data[0];
-
-            return {
-                val_orcado_atualizado: dotacao.val_orcado_atualizado,
-                val_orcado_inicial: dotacao.val_orcado_inicial,
-                saldo_disponivel: dotacao.saldo_disponivel,
-            };
-        } catch (error) {
-            if (error instanceof SofError) {
-                throw new HttpException(error.message, 400);
-            }
-
-            throw error;
-        }
-    }
-
-    private getDotacaoOrgaoUnidadeProjFonte(dotacao: string): {
-        orgao: string;
-        unidade: string;
-        proj_atividade: string;
-        fonte: string;
-    } {
-        const partes = dotacao.split('.');
-        return {
-            orgao: partes[0],
-            unidade: partes[1],
-            proj_atividade: partes.slice(5, 7).join(''),
-            fonte: partes[8],
-        };
     }
 
     async getOneProjetoAtividade(ano: number, dotacao: string): Promise<string> {

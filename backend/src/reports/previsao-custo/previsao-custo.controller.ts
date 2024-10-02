@@ -17,3 +17,16 @@ export class PrevisaoCustoController {
         return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
     }
 }
+
+@ApiTags('Relatórios - API')
+@Controller('relatorio/plano-setorial-previsao-custo')
+export class PSPrevisaoCustoController {
+    constructor(private readonly previsaoCustoService: PrevisaoCustoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['Reports.executar.PlanoSetorial'])
+    async create(@Body() createPrevisaoCustDto: CreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
+        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
+    }
+}

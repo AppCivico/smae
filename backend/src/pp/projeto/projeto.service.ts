@@ -21,7 +21,6 @@ import {
     UpdateProjetoDto,
 } from './dto/update-projeto.dto';
 import {
-    OrigemDetailItem,
     ProjetoDetailBaseMdo,
     ProjetoDetailDto,
     ProjetoDetailMdoDto,
@@ -30,7 +29,7 @@ import {
     ProjetoEquipeItemDto,
     ProjetoMdoDto,
     ProjetoMetaDetailDto,
-    ProjetoPermissoesDto,
+    ProjetoPermissoesDto
 } from './entities/projeto.entity';
 
 import { JwtService } from '@nestjs/jwt';
@@ -47,7 +46,6 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
-import { CachedMetasDto } from '../../common/dto/origem-pdm.dto';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -821,7 +819,6 @@ export class ProjetoService {
                         descricao: true,
                     },
                 },
-                origem_cache: true,
             },
             orderBy: { codigo: 'asc' },
         });
@@ -840,7 +837,6 @@ export class ProjetoService {
             }
 
             ret.push({
-                resumo_origens: row.origem_cache?.valueOf() as CachedMetasDto,
                 id: row.id,
                 nome: row.nome,
                 status: row.status,
@@ -1560,25 +1556,10 @@ export class ProjetoService {
 
         const tarefaCrono = projeto.TarefaCronograma[0] ? projeto.TarefaCronograma[0] : undefined;
 
+        const origens_extra = await CompromissoOrigemHelper.buscaOrigensComDetalhes('projeto', projeto.id, this.prisma);
+
         let ret: ProjetoDetailDto = {
-            origens_extra: projeto.ProjetoOrigem.map((po) => {
-                return {
-                    id: po.id,
-                    atividade: po.atividade,
-                    iniciativa: po.iniciativa,
-                    meta: po.meta
-                        ? {
-                              codigo: po.meta.codigo,
-                              id: po.meta.id,
-                              pdm_id: po.meta.pdm.id,
-                              titulo: po.meta.titulo,
-                          }
-                        : null,
-                    pdm: po.meta?.pdm ?? null,
-                    origem_tipo: po.origem_tipo,
-                    meta_codigo: po.meta_codigo,
-                } satisfies OrigemDetailItem;
-            }),
+            origens_extra: origens_extra,
             id: projeto.id,
             meta_id: projeto.meta_id,
             iniciativa_id: projeto.iniciativa_id,

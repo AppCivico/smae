@@ -8,20 +8,25 @@ import { DistribuicaoRecursoService } from 'src/casa-civil/distribuicao-recurso/
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { UploadService } from 'src/upload/upload.service';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
-import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
+import { FilterTransferenciaDto, FilterTransferenciaHistoricoDto } from './dto/filter-transferencia.dto';
 import {
     CompletarTransferenciaDto,
     UpdateTransferenciaAnexoDto,
     UpdateTransferenciaDto,
 } from './dto/update-transferencia.dto';
-import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
+import {
+    TransferenciaAnexoDto,
+    TransferenciaDetailDto,
+    TransferenciaDto,
+    TransferenciaHistoricoDto,
+} from './entities/transferencia.dto';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
+import { WorkflowService } from '../workflow/configuracao/workflow.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -1117,6 +1122,32 @@ export class TransferenciaService {
                     },
                 },
                 classificacao_id: true,
+                classificacao: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        transferencia_tipo: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                esfera: true,
+                                categoria: true,
+                            },
+                        },
+                    },
+                },
+                distribuicao_recursos: {
+                    where: { removido_em: null },
+                    select: {
+                        orgao_gestor: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -1166,8 +1197,11 @@ export class TransferenciaService {
                     r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
                         ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
                         : null,
-                classificacao_id: r.classificacao_id,
-            };
+                classificacao: r.classificacao,
+                orgao_gestor: r.distribuicao_recursos.length
+                    ? r.distribuicao_recursos.map((e) => e.orgao_gestor)
+                    : null,
+            } satisfies TransferenciaDto;
         });
 
         return {
@@ -1289,6 +1323,20 @@ export class TransferenciaService {
                     },
                 },
                 classificacao_id: true,
+                classificacao: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        transferencia_tipo: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                esfera: true,
+                                categoria: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
@@ -1351,6 +1399,7 @@ export class TransferenciaService {
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
             orgao_concedente: row.orgao_concedente,
+            classificacao: row.classificacao,
             classificacao_id: row.classificacao_id,
         } satisfies TransferenciaDetailDto;
     }
@@ -1677,6 +1726,17 @@ export class TransferenciaService {
         // TODO: tornar compatível com troca de tipo.
         // Para essa func ser chamada no update.
 
+        const transferencia = await this.prisma.transferencia.findFirstOrThrow({
+            where: {
+                id: transferencia_id,
+                removido_em: null,
+                workflow_id: { not: null },
+            },
+            select: {
+                workflow_id: true,
+            },
+        });
+
         const update = async (prismaTxn: Prisma.TransactionClient) => {
             await prismaTxn.transferenciaAndamento.updateMany({
                 where: { transferencia_id: transferencia_id },
@@ -1720,6 +1780,8 @@ export class TransferenciaService {
                 },
             });
 
+            await this.startWorkflow(transferencia_id, transferencia.workflow_id!, prismaTxn, user);
+
             // Inserindo row no histórico de alterações.
             await prismaTxn.transferenciaHistorico.create({
                 data: {
@@ -1740,5 +1802,60 @@ export class TransferenciaService {
                 timeout: 50000,
             });
         }
+    }
+
+    async findTransferenciaHistorico(
+        id: number,
+        filters: FilterTransferenciaHistoricoDto,
+        user: PessoaFromJwt
+    ): Promise<TransferenciaHistoricoDto[]> {
+        // Disparando o findOne pois lá já há validações.
+        await this.findOneTransferencia(id, user);
+
+        const rows = await this.prisma.transferenciaHistorico.findMany({
+            where: {
+                transferencia_id: id,
+                acao: {
+                    in: filters.acao,
+                },
+            },
+            orderBy: { criado_em: 'desc' },
+            select: {
+                acao: true,
+                dados_extra: true,
+                criado_em: true,
+                tipo_antigo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        esfera: true,
+                    },
+                },
+                tipo_novo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        esfera: true,
+                    },
+                },
+                criador: {
+                    select: {
+                        id: true,
+                        nome_exibicao: true,
+                    },
+                },
+            },
+        });
+
+        return rows.map((r) => {
+            return {
+                acao: r.acao,
+                dados_extra: r.dados_extra,
+                criado_em: r.criado_em,
+                tipo_antigo: r.tipo_antigo,
+                tipo_novo: r.tipo_novo,
+                criador: r.criador,
+            } satisfies TransferenciaHistoricoDto;
+        });
     }
 }

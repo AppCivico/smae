@@ -1,12 +1,13 @@
 import { ProjetoStatus, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
-import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
-import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
-import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
+import { ResumoDetalheOrigensDto } from '../../common/dto/origem-pdm.dto';
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
+import { IdDescRegiaoComParent } from '../../pp/projeto/entities/projeto.entity';
 
 export class IdDesc {
     id: number;
@@ -30,7 +31,7 @@ export class MetaIniAtvTag {
     download_token: string | null;
 }
 
-export class MetaItemDto {
+export class MetaItemDto extends ResumoDetalheOrigensDto {
     id: number;
     status: string;
     pdm_id: number;
@@ -53,17 +54,26 @@ export class MetaItemDto {
 }
 
 export class MetaPdmDto {
+    pdm_id: number;
+    pdm_descricao: string;
+    pdm_rotulo_iniciativa: string;
+    pdm_rotulo_atividade: string;
+
     meta_id: number;
     meta_codigo: string;
     meta_titulo: string;
-    pdm_id: number;
-    pdm_descricao: string;
+    meta_orgaos: IdSigla[];
+
     iniciativa_id?: number;
     iniciativa_codigo?: string;
     iniciativa_descricao?: string;
+    iniciativa_orgaos?: IdSigla[];
+
     atividade_id?: number;
     atividade_codigo?: string;
     atividade_descricao?: string;
+    atividade_orgaos?: IdSigla[];
+
     tipo: TipoPdm;
 }
 
@@ -83,8 +93,7 @@ export class IdProjetoDto extends IdCodNomeDto {
 }
 
 export class RelacionadosDTO {
-    pdm_metas: MetaPdmDto[];
-    ps_metas: MetaPdmDto[];
+    metas: MetaPdmDto[];
     obras: IdObrasDto[];
     projetos: IdProjetoDto[];
 }

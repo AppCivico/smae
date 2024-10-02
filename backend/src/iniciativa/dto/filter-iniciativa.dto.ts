@@ -10,4 +10,13 @@ export class FilterIniciativaDto {
     @IsInt({ message: '$property| meta_id' })
     @Type(() => Number)
     meta_id?: number;
+
+    /**
+     * Filtrar por id?
+     * @example ""
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| id' })
+    @Type(() => Number)
+    id?: number;
 }

@@ -80,6 +80,25 @@ export const useIniciativasStore = defineStore({
         this.singleIniciativa = { error };
       }
     },
+    async getByIdReal(iniciativa_id) {
+      // mantendo o estilo já usado nesse store
+      try {
+        if (!iniciativa_id) {
+          throw 'Iniciativa inválida';
+        }
+        this.singleIniciativa = { loading: true };
+
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${iniciativa_id}`);
+
+        this.singleIniciativa = r.id ? r : false;
+
+        if (!this.singleIniciativa) throw 'Iniciativa não encontrada';
+        return true;
+      } catch (error) {
+        this.singleIniciativa = { error };
+        return false;
+      }
+    },
     async insert(params) {
       const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
       if (r.id) {

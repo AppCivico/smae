@@ -17,6 +17,7 @@ import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transfe
 import { WriteStream } from 'fs';
 import { CreateRelObrasDto } from '../pp-obras/dto/create-obras.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
+import { CreatePsMonitoramentoMensalFilterDto } from '../planos-setoriais-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
 
 @Injectable()
 export class UtilsService {
@@ -27,6 +28,7 @@ export class UtilsService {
 
         const metas = await this.prisma.meta.findMany({
             where: {
+                pdm: filters.tipo_pdm ? { tipo: filters.tipo_pdm } : undefined,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
                 AND: [
@@ -98,6 +100,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'ProjetoOrcamento':
         case 'ObrasOrcamento':
+        case 'PSOrcamento':
             theClass = CreateRelProjetoOrcamentoDto;
             break;
         case 'Indicadores':
@@ -111,6 +114,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'ProjetoPrevisaoCusto':
         case 'ObrasPrevisaoCusto':
+        case 'PSPrevisaoCusto':
             theClass = CreateRelProjetoPrevisaoCustoDto;
             break;
         case 'Projeto':
@@ -137,6 +141,11 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         case 'TribunalDeContas':
             theClass = CreateRelTribunalDeContasDto;
             break;
+        case 'PlanoSetoriaisMonitoramentoMensal':
+            theClass = CreatePsMonitoramentoMensalFilterDto;
+            break;
+        case 'CasaCivilAtvPendentes':
+            throw new Error('Fonte CasaCivilAtvPendentes não implementada');
         default:
             fonte satisfies never;
     }

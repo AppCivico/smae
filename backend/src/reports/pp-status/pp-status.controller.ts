@@ -15,7 +15,7 @@ export class PPStatusController {
     @Roles(['Reports.executar.Projetos'])
     @ApiExtraModels(CreateRelObraStatusDto)
     async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
-        createProjetoStatusDto.tipo = 'PP';
+        createProjetoStatusDto.tipo_pdm = 'PP';
         return await this.projetoStatusService.asJSON(createProjetoStatusDto);
     }
 }
@@ -29,7 +29,7 @@ export class MDOStatusController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.MDO'])
     async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
-        createProjetoStatusDto.tipo = 'MDO';
+        createProjetoStatusDto.tipo_pdm = 'MDO';
         return await this.projetoStatusService.asJSON(createProjetoStatusDto);
     }
 }

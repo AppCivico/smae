@@ -19,9 +19,9 @@
 import { join } from 'lodash';
 
 export default function combinadorDeListas(
-  array: [Array<object | string | number>],
+  array: Array<object | string | number>,
   separadorFornecido?: string,
-  propriedade?: keyof object,
+  propriedade?: string,
 ): string {
   const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
     ? ', '
@@ -36,7 +36,7 @@ export default function combinadorDeListas(
 
   // Se for um array de objetos, combina os valores das propriedades
   if (propriedade) {
-    return join(array.map((obj) => obj[propriedade]), separador);
+    return join(array.map((obj) => obj[propriedade as keyof object]), separador);
   }
 
   // Se não apenas combina os items do array usando o separador

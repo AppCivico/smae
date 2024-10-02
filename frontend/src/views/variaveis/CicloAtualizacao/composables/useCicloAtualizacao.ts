@@ -1,0 +1,107 @@
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+
+import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
+
+import type { FaseOpcoes, FormulariosTiposPosicao, FormulariosTiposSituacao } from '../interfaces/CicloAtualizacaoTypes';
+
+export default function useCicloAtualizacao() {
+  const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+
+  const { emFoco } = storeToRefs(cicloAtualizacaoStore);
+
+  const $route = useRoute();
+
+  const fase = computed<FaseOpcoes>(
+    () => {
+      const faseAtual = emFoco.value?.fase;
+
+      if (!faseAtual || faseAtual === 'Preenchimento') {
+        return 'cadastro';
+      }
+
+      if (faseAtual === 'Validacao') {
+        return 'aprovacao';
+      }
+
+      return 'liberacao';
+    },
+  );
+
+  const fasePosicao = computed<number>(() => {
+    const fasePosicaoOpcoes: FormulariosTiposPosicao = {
+      cadastro: 1,
+      aprovacao: 2,
+      liberacao: 3,
+    };
+
+    return fasePosicaoOpcoes[fase.value] || 0;
+  });
+
+  const forumlariosAExibir = computed<FormulariosTiposSituacao>(() => {
+    const posicaoAtual = fasePosicao.value;
+
+    return {
+      cadastro: {
+        exibir: true,
+        liberado: posicaoAtual === 1,
+      },
+      aprovacao: {
+        exibir: posicaoAtual >= 2,
+        liberado: posicaoAtual === 2,
+      },
+      liberacao: {
+        exibir: posicaoAtual >= 3,
+        liberado: posicaoAtual === 3,
+      },
+    };
+  });
+
+  function obterValorAnalise() {
+    type Analises = {
+      analisePreenchimento?: string;
+      analiseAprovador?: string;
+      analiseLiberador?: string;
+    };
+
+    const analises: Analises = {};
+
+    console.log(emFoco.value?.analises);
+
+    const analisePreenchimento = emFoco.value?.analises?.find(
+      (item) => item.fase === 'Preenchimento',
+    );
+    if (analisePreenchimento) {
+      analises.analisePreenchimento = analisePreenchimento.analise_qualitativa;
+    }
+
+    const analiseAprovador = emFoco.value?.analises?.find(
+      (item) => item.fase === 'Validacao',
+    );
+    if (analiseAprovador) {
+      analises.analiseAprovador = analiseAprovador.analise_qualitativa;
+    }
+
+    const analiseLiberador = emFoco.value?.analises?.find(
+      (item) => item.fase === 'Liberador',
+    );
+    if (analiseLiberador) {
+      analises.analiseLiberador = analiseLiberador.analise_qualitativa;
+    }
+
+    return {
+      analise_qualitativa: analises.analisePreenchimento,
+      analise_qualitativa_aprovador: analises.analiseAprovador,
+      analise_qualitativa_liberador: analises.analiseLiberador,
+    };
+  }
+
+  return {
+    obterValorAnalise,
+    fase,
+    fasePosicao,
+    forumlariosAExibir,
+    dataReferencia: $route.params.dataReferencia as string,
+  };
+}

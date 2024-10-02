@@ -12,7 +12,7 @@ import {
     Query,
     Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -43,6 +43,7 @@ import {
 } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../../common/dto/origem-pdm.dto';
 
 export const PROJETO_READONLY_ROLES: ListaDePrivilegios[] = [
     'SMAE.gestor_de_projeto',
@@ -292,6 +293,7 @@ export class ProjetoMDOController {
     @Get()
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
+    @ApiExtraModels(ResumoOrigensMetasItemDto, DetalheOrigensDto)
     @ApiPaginatedWithPagesResponse(ProjetoMdoDto)
     async findAll(
         @Query() filters: FilterProjetoMDODto,

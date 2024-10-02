@@ -8,9 +8,9 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
+import { ResumoDetalheOrigensDto } from '../../../common/dto/origem-pdm.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
-import { CachedMetasDto } from '../../../common/dto/origem-pdm.dto';
 
 export class ProjetoDto {
     id: number;
@@ -26,7 +26,6 @@ export class ProjetoDto {
     eh_prioritario: boolean;
     meta: IdCodTituloDto | null;
     codigo: string | null;
-    resumo_origens: CachedMetasDto;
     portfolio: PortIdTituloModeloClonagemDto;
     portfolios_compartilhados: IdTituloDto[];
     geolocalizacao: GeolocalizacaoDto[];
@@ -139,17 +138,6 @@ export class ListProjetoSeiDto {
     linhas: ProjetoSeiDto[];
 }
 
-export class OrigemDetailItem {
-    id: number;
-    meta: ProjetoMetaDetailDto | null;
-    pdm: IdNomeDto | null;
-    atividade: IdCodTituloDto | null;
-    iniciativa: IdCodTituloDto | null;
-
-    origem_tipo: ProjetoOrigemTipo;
-    @ApiProperty({ deprecated: true, description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
-    meta_codigo: string | null;
-}
 export class IdTituloNivelMaxRegDto {
     id: number;
     titulo: string;
@@ -175,8 +163,7 @@ export class IdDescRegiaoComParent extends IdDesc {
     nivel: number;
 }
 
-export class ProjetoDetailDto {
-    origens_extra: OrigemDetailItem[];
+export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
     id: number;
     meta_id: number | null;
     iniciativa_id: number | null;

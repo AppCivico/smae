@@ -60,6 +60,8 @@ const {
   initialValues: itemParaEdicao,
   validationSchema: schema,
 });
+
+const tipoIdInicial = ref(itemParaEdicao?.value?.tipo_id);
 const esferaSelecionada = ref('');
 // const partidosDisponíveis = computed(() => (partidoComoLista));
 /* const outrosPartidos = computed(() => (
@@ -71,14 +73,10 @@ const tiposDisponíveis = computed(() => (values.esfera
   : []));
 
 const classificacoesDisponiveis = computed(() => (values.tipo_id
-  ? classificacaoComoLista.value.filter((x) => x.id === values.tipo_id)
+  ? classificacaoComoLista.value.filter((x) => x.transferencia_tipo_id === values.tipo_id)
   : []));
 
-const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
-  // necessário por causa de 🤬
-  const cargaManipulada = nulificadorTotal(controlledValues);
-  console.log(cargaManipulada);
-
+async function salvarTransferencia(cargaManipulada) {
   try {
     let r;
     const msg = props.transferenciaId
@@ -106,6 +104,17 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     }
   } catch (error) {
     alertStore.error(error);
+  }
+}
+
+const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
+  const cargaManipulada = nulificadorTotal(controlledValues);
+  if (tipoIdInicial.value && values?.tipo_id !== tipoIdInicial.value) {
+    alertStore.confirmAction(`A troca de tipo irá excluir todo workflow e cronograma da transferência ${itemParaEdicao?.value.identificador}. Deseja continuar?`, async () => {
+      await salvarTransferencia(cargaManipulada);
+    }, 'Continuar');
+  } else {
+    await salvarTransferencia(cargaManipulada);
   }
 });
 
@@ -141,6 +150,9 @@ function sugerirCamposDoMandato(parlamentarId, idx) {
 iniciar();
 
 watch(itemParaEdicao, (novosValores) => {
+  if (novosValores && novosValores.tipo_id !== undefined) {
+    tipoIdInicial.value = novosValores.tipo_id;
+  }
   resetForm({ values: novosValores });
 });
 </script>
@@ -215,7 +227,6 @@ watch(itemParaEdicao, (novosValores) => {
         </div>
       </div>
     </div>
-
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -245,7 +256,7 @@ watch(itemParaEdicao, (novosValores) => {
           </option>
         </Field>
         <ErrorMessage
-          name="classificacao_id"
+          name="tipo_id"
           class="error-msg"
         />
       </div>
@@ -276,7 +287,7 @@ watch(itemParaEdicao, (novosValores) => {
           </option>
         </Field>
         <ErrorMessage
-          name="tipo_id"
+          name="classificacao_id"
           class="error-msg"
         />
       </div>

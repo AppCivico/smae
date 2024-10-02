@@ -1617,8 +1617,10 @@ export class MetasService {
                     serie: CamposRealizadoParaSerie[campo],
                     data_valor: dto.data_valor,
                 },
-                select: { id: true, valor_nominal: true, ciclo_fisico_id: true },
+                select: { id: true, valor_nominal: true, ciclo_fisico_id: true, conferida: true },
             });
+
+            const novoConferida = ehPontoFocal ? false : true;
 
             if (existeValor && valor_nominal === '') {
                 // existe o valor, mas é pra remover, então bora
@@ -1642,7 +1644,7 @@ export class MetasService {
                         atualizado_em: now,
                         atualizado_por: user.id,
                         ciclo_fisico_id: dadosCiclo.id,
-                        conferida: ehPontoFocal ? false : true,
+                        conferida: novoConferida,
                         variavel_categorica_id: variavelInfo.variavel_categorica?.id,
                         variavel_categorica_valor_id: variavel_categorica_valor_id,
                     },
@@ -1650,7 +1652,11 @@ export class MetasService {
             } else if (existeValor && valor_nominal !== '') {
                 const valorModificado = existeValor.valor_nominal.toString() !== valor_nominal;
                 // se os valores mudaram, ou se faltava o ciclo_fisico_id
-                if (valorModificado || existeValor.ciclo_fisico_id === null) {
+                if (
+                    valorModificado ||
+                    existeValor.ciclo_fisico_id === null ||
+                    existeValor.conferida !== novoConferida
+                ) {
                     needRecalc = true;
 
                     await prismaTxn.serieVariavel.update({
@@ -1660,12 +1666,15 @@ export class MetasService {
                             atualizado_em: now,
                             atualizado_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
-                            conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
+                            conferida: novoConferida,
                             variavel_categorica_id: variavelInfo.variavel_categorica?.id,
                             variavel_categorica_valor_id: variavel_categorica_valor_id,
                         },
                     });
                 }
+
+                // TODO: know issue: se a variavel não é acumulativa, precisa atualizar o acumulado pra espelhar
+                // assim como nos outros casos onde há mudança na serie-variavel, por isso que gosto de triggers...
             }
         }
         return needRecalc;

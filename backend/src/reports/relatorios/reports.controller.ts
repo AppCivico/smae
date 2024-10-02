@@ -25,7 +25,13 @@ export class ReportsController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos', 'Reports.executar.MDO'])
+    @Roles([
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PDM',
+        'Reports.executar.Projetos',
+        'Reports.executar.MDO',
+        'Reports.executar.PlanoSetorial',
+    ])
     @ApiOkResponse({
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
         type: '',
@@ -63,7 +69,13 @@ export class ReportsController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos', 'Reports.executar.MDO'])
+    @Roles([
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PDM',
+        'Reports.executar.Projetos',
+        'Reports.executar.MDO',
+        'Reports.executar.PlanoSetorial',
+    ])
     @ApiPaginatedResponse(RelatorioDto)
     async findAll(@Query() filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
         return await this.reportsService.findAll(filters);
@@ -71,7 +83,13 @@ export class ReportsController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['Reports.remover.CasaCivil', 'Reports.remover.PDM', 'Reports.remover.Projetos', 'Reports.remover.MDO'])
+    @Roles([
+        'Reports.remover.CasaCivil',
+        'Reports.remover.PDM',
+        'Reports.remover.Projetos',
+        'Reports.remover.MDO',
+        'Reports.remover.PlanoSetorial',
+    ])
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async remover(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -163,8 +163,8 @@ onMounted(async () => {
 
     setValues({
       nome: classificacao.nome,
-      esfera: classificacao.transferenciaTipo.esfera,
-      transferencia_tipo_id: classificacao.transferenciaTipo.id.toString(),
+      esfera: classificacao.transferencia_tipo.esfera,
+      transferencia_tipo_id: classificacao.transferencia_tipo.id.toString(),
     });
   }
 });
@@ -178,7 +178,7 @@ function voltarLista() {
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const dados = {
     nome: valoresControlados.nome,
-    transferencia_tipo_id: valoresControlados.transferencia_tipo_id,
+    transferencia_tipo_id: Number(valoresControlados.transferencia_tipo_id),
   };
 
   if (estaEditando.value) {

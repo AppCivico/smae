@@ -1,14 +1,14 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
+import PdmMetasRelacionados from '@/components/PdmMetasRelacionados.vue';
 import statusObras from '@/consts/statusObras';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
-
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
@@ -455,6 +455,8 @@ iniciar();
               </tbody>
             </table>
           </div>
+
+          <PdmMetasRelacionados :relacionamentos="relacionadosMeta?.metas || []" />
         </template>
       </template>
       <template v-else-if="singleMeta.loading">

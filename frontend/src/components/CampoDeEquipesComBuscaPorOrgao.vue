@@ -79,7 +79,7 @@ const equipesPorOrgao = computed(() => equipes.value.reduce((acc, cur) => {
 }, {}));
 
 const { handleChange, resetField } = useField(props.name, undefined, {
-  initialValue: props.modelValue,
+  initialValue: props.valoresIniciais,
 });
 
 const orgaosDisponiveis = computed(() => {

@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
+import {
+    ParlamentarCargo,
+    TransferenciaHistoricoAcao,
+    TransferenciaInterface,
+    TransferenciaTipoEsfera,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { ClassificacaoDto } from '../../../transferencias-voluntarias/classificacao/entities/classificacao.dto';
+import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
+import { TransferenciaTipoCurtoDto } from '../tipo/entities/transferencia-tipo.dto';
 
 export class TransferenciaDto {
     id: number;
@@ -25,11 +33,12 @@ export class TransferenciaDto {
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     esfera: TransferenciaTipoEsfera;
     orgao_concedente: IdSiglaDescricao;
+    orgao_gestor: IdSiglaDescricao[] | null;
     secretaria_concedente: string | null;
     andamento_etapa: string | null;
     andamento_fase: string | null;
     fase_status: string | null;
-    classificacao_id: number | null;
+    classificacao: ClassificacaoDto | null;
 }
 
 export class ListTransferenciaDto {
@@ -85,6 +94,7 @@ export class TransferenciaDetailDto {
 
     bloco_nota_token: string;
 
+    classificacao: ClassificacaoDto | null;
     classificacao_id: number | null;
 }
 
@@ -109,4 +119,18 @@ export class TransferenciaAnexoDto {
 
 export class ListTransferenciaAnexoDto {
     linhas: TransferenciaAnexoDto[];
+}
+
+export class TransferenciaHistoricoDto {
+    tipo_antigo: TransferenciaTipoCurtoDto | null;
+    tipo_novo: TransferenciaTipoCurtoDto | null;
+    @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao' })
+    acao: TransferenciaHistoricoAcao;
+    dados_extra: any;
+    criador: IdNomeExibicaoDto;
+    criado_em: Date;
+}
+
+export class ListTransferenciaHistoricoDto {
+    linhas: TransferenciaHistoricoDto[];
 }

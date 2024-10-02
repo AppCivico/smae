@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferenciaTipoEsfera } from '@prisma/client';
+import { TransferenciaHistoricoAcao, TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsOptional, IsString, MaxLength, IsInt, Max, Min, IsEnum, IsBoolean } from 'class-validator';
 
@@ -45,4 +45,15 @@ export class FilterTransferenciaDto {
     @IsString()
     @MaxLength(250)
     palavra_chave?: string;
+}
+
+export class FilterTransferenciaHistoricoDto {
+    @IsOptional()
+    @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao', isArray: true })
+    @IsEnum(TransferenciaHistoricoAcao, {
+        each: true,
+        message:
+            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaHistoricoAcao).join(', '),
+    })
+    acao?: TransferenciaHistoricoAcao[];
 }

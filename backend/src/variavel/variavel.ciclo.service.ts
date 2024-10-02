@@ -17,6 +17,7 @@ import {
     BatchAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaGetDto,
     FilterVariavelGlobalCicloDto,
+    PSPedidoComplementacaoDto,
     UpsertVariavelGlobalCicloDocumentoDto,
     VariavelAnaliseDocumento,
     VariavelAnaliseQualitativaResponseDto,
@@ -266,26 +267,34 @@ export class VariavelCicloService {
 
             let conferida: boolean = false;
 
+            if (dto.aprovar && dto.pedido_complementacao)
+                throw new BadRequestException('Não é possível aprovar e pedir complementação ao mesmo tempo');
+
             // Troca de fase
             if (cicloCorrente.fase === 'Preenchimento') {
                 if (dto.aprovar) {
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
                 }
+
+                if (dto.pedido_complementacao)
+                    throw new BadRequestException('Não é possível pedir complementação nesta fase');
             } else if (cicloCorrente.fase === 'Validacao') {
                 if (dto.aprovar) {
                     // aqui poderia ter o mesmo "problema" de faltar alguma filha, mas ai o
                     // não temos como saber pq não temos campos para acompanhar isso, já que sempre
                     // estamos salvando o status apenas na variável mãe. No frontend é sempre enviado todas as filhas
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn, user);
                 } else if (dto.pedido_complementacao) {
+                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
+                    // cria o pedido depois
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
                         dto.pedido_complementacao,
+                        dto.data_referencia,
                         user,
                         prismaTxn,
                         now
                     );
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn);
                 }
             } else if (cicloCorrente.fase === 'Liberacao') {
                 if (dto.aprovar) {
@@ -295,14 +304,16 @@ export class VariavelCicloService {
                     const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
                     await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
                 } else if (dto.pedido_complementacao) {
+                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
+                    // cria o pedido após mover a fase
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
                         dto.pedido_complementacao,
+                        dto.data_referencia,
                         user,
                         prismaTxn,
                         now
                     );
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn);
                 }
             }
 
@@ -543,6 +554,17 @@ export class VariavelCicloService {
     ): Promise<VariavelAnaliseQualitativaResponseDto> {
         const { variavel_id, data_referencia } = dto;
 
+        const variavelCicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
+            where: {
+                variavel_id: variavel_id,
+                eh_corrente: true,
+            },
+            select: {
+                fase: true,
+            },
+        });
+        if (!variavelCicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
+
         const whereFilter = await this.getPermissionSet({}, user);
 
         const variavel = await this.prisma.variavel.findFirst({
@@ -582,29 +604,47 @@ export class VariavelCicloService {
         });
         if (!variavel) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
 
-        // Buscar a última análise qualitativa
-        const ultimaAnalise = await this.prisma.variavelGlobalCicloAnalise.findFirst({
-            where: {
-                variavel_id: variavel_id,
-                referencia_data: data_referencia,
-                ultima_revisao: true,
-            },
-            orderBy: { criado_em: 'desc' },
-            select: {
-                informacoes_complementares: true,
-                valores: true,
-                criado_em: true,
-                pessoaCriador: { select: { nome_exibicao: true } },
-            },
+        // sempre verifica se o periodo é válido, just in case...
+        const valid = await this.util.gerarPeriodoVariavelEntreDatas(variavel_id, null, {
+            data_valor: data_referencia,
         });
+        if (valid.length === 0) throw new BadRequestException('Período não é válido');
 
-        if (!ultimaAnalise) {
-            // verificar se o periodo é válido
-            const valid = await this.util.gerarPeriodoVariavelEntreDatas(variavel_id, null, {
-                data_valor: data_referencia,
+        // carrega a ultima linha de cada uma das analises
+        const fases: VariavelFase[] = ['Liberacao', 'Preenchimento', 'Validacao'];
+        const pQueries = fases.map(async (fase) => {
+            return await this.prisma.variavelGlobalCicloAnalise.findFirst({
+                where: {
+                    variavel_id: variavel_id,
+                    referencia_data: data_referencia,
+                    fase: fase,
+                },
+                take: 1,
+                orderBy: { criado_em: 'desc' },
+                select: {
+                    informacoes_complementares: true,
+                    valores: true,
+                    criado_em: true,
+                    pessoaCriador: { select: { nome_exibicao: true } },
+                    fase: true,
+                    ultima_revisao: true,
+                },
             });
-            if (valid.length === 0) throw new BadRequestException('Período não é válido');
-        }
+        });
+        const analisesDb = await Promise.all(pQueries);
+        const ultimaAnalise = analisesDb.find((a) => a?.ultima_revisao) || undefined;
+        const analises = analisesDb
+            .filter((result): result is NonNullable<typeof result> => result !== null)
+            .map(
+                (r) =>
+                    ({
+                        analise_qualitativa: r.informacoes_complementares ?? '',
+                        criado_em: r.criado_em,
+                        criador_nome: r.pessoaCriador.nome_exibicao,
+                        fase: r.fase,
+                        ultima_revisao: r.ultima_revisao,
+                    }) satisfies AnaliseQualitativaDto
+            );
 
         // Buscar valores da variável e suas filhas
         const valores = await this.prisma.serieVariavel.findMany({
@@ -647,16 +687,38 @@ export class VariavelCicloService {
         );
         const uploadsFormatados = this.formatarUploads(uploads);
 
+        const pedidoCompDb = await this.prisma.variavelGlobalPedidoComplementacao.findFirst({
+            where: {
+                variavel_id: variavel_id,
+                referencia_data: data_referencia,
+                atendido: false,
+                ultima_revisao: true,
+            },
+            select: {
+                pedido: true,
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                ultima_revisao: true,
+            },
+            orderBy: { criado_em: 'desc' },
+        });
+
+        const pedido_complementacao: PSPedidoComplementacaoDto | null = pedidoCompDb
+            ? {
+                  pedido: pedidoCompDb.pedido,
+                  criado_em: pedidoCompDb.criado_em,
+                  criador_nome: pedidoCompDb.pessoaCriador.nome_exibicao,
+              }
+            : null;
+
         return {
+            fase: variavelCicloCorrente.fase,
+            pedido_complementacao,
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
-            ultima_analise: ultimaAnalise
-                ? ({
-                      analise_qualitativa: ultimaAnalise.informacoes_complementares ?? '',
-                      criado_em: ultimaAnalise.criado_em,
-                      criador_nome: ultimaAnalise.pessoaCriador.nome_exibicao,
-                  } satisfies AnaliseQualitativaDto)
-                : null,
+            analises,
             valores: valoresFormatados,
             uploads: uploadsFormatados,
         };
@@ -731,11 +793,17 @@ export class VariavelCicloService {
         return Array.from(equipeSet);
     }
 
-    private async moveProximaFase(
+    private async moveFase(
         variavelId: number,
         nextPhase: VariavelFase,
-        prismaTxn: Prisma.TransactionClient
+        prismaTxn: Prisma.TransactionClient,
+        user: PessoaFromJwt
     ): Promise<void> {
+        await prismaTxn.variavelGlobalPedidoComplementacao.updateMany({
+            where: { variavel_id: variavelId, atendido: false, ultima_revisao: true },
+            data: { atendido: true, atendido_em: new Date(), atendido_por: user.id },
+        });
+
         await prismaTxn.variavelCicloCorrente.update({
             where: { variavel_id: variavelId },
             data: { fase: nextPhase },
@@ -745,6 +813,7 @@ export class VariavelCicloService {
     private async criaPedidoComplementacao(
         variavelId: number,
         pedido: string,
+        dataReferencia: Date,
         user: PessoaFromJwt,
         prismaTxn: Prisma.TransactionClient,
         now: Date
@@ -758,7 +827,8 @@ export class VariavelCicloService {
                 variavel_id: variavelId,
                 pedido: pedido,
                 criado_por: user.id,
-                referencia_data: now,
+                referencia_data: dataReferencia,
+                criado_em: now,
                 ultima_revisao: true,
                 atendido: false,
             },

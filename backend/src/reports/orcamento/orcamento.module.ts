@@ -3,12 +3,12 @@ import { DotacaoModule } from '../../dotacao/dotacao.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { PrevisaoCustoModule } from '../previsao-custo/previsao-custo.module';
 import { UtilsService } from '../utils/utils.service';
-import { OrcamentoController } from './orcamento.controller';
+import { OrcamentoController, PSOrcamentoController } from './orcamento.controller';
 import { OrcamentoService } from './orcamento.service';
 
 @Module({
     imports: [PrismaModule, DotacaoModule, PrevisaoCustoModule],
-    controllers: [OrcamentoController],
+    controllers: [OrcamentoController, PSOrcamentoController],
     providers: [OrcamentoService, UtilsService],
     exports: [OrcamentoService],
 })

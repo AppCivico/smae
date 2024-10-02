@@ -1,14 +1,15 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import PdmMetasRelacionados from '@/components/PdmMetasRelacionados.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
-import { useEquipesStore } from '@/stores/equipes.store';
-import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const authStore = useAuthStore();
@@ -284,6 +285,8 @@ iniciar();
           </tbody>
         </table>
       </div>
+
+      <PdmMetasRelacionados :relacionamentos="relacionadosAtividade?.metas" />
     </template>
     <template v-else-if="singleAtividade.loading">
       <div class="p1">

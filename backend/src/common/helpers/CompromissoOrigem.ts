@@ -1,7 +1,8 @@
-import { CompromissoOrigemRelacionamento, Prisma, ProjetoOrigemTipo } from '@prisma/client';
-import { CachedMetasDto, UpsertOrigemDto } from '../dto/origem-pdm.dto';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BadRequestException, HttpException } from '@nestjs/common';
+import { CompromissoOrigemRelacionamento, Prisma, ProjetoOrigemTipo } from '@prisma/client';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { PrismaService } from '../../prisma/prisma.service';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto, UpsertOrigemDto } from '../dto/origem-pdm.dto';
 
 export class CompromissoOrigemHelper {
     static async upsert(
@@ -12,14 +13,8 @@ export class CompromissoOrigemHelper {
         user: PessoaFromJwt,
         now: Date
     ): Promise<void> {
-        const map: Record<typeof entityType, CompromissoOrigemRelacionamento> = {
-            projeto: 'Projeto',
-            meta: 'Meta',
-            iniciativa: 'Iniciativa',
-            atividade: 'Meta',
-        };
-        const relacionamento = map[entityType];
-        const entityCol = entityType === 'projeto' ? entityType + '_id' : 'rel_' + entityType + '_id';
+        const relacionamento = CompromissoOrigemHelper.getRelacionamento(entityType);
+        const entityCol = CompromissoOrigemHelper.getEntityColumn(entityType);
 
         const currentOrigens = await prismaTx.compromissoOrigem.findMany({
             where: {
@@ -29,7 +24,27 @@ export class CompromissoOrigemHelper {
             },
         });
 
-        const updated = origens
+        // Remove duplicados e self-relations
+        const uniqueOrigens = origens.reduce((acc, current) => {
+            const isDuplicate = acc.some(
+                (item) =>
+                    (item.atividade_id && item.atividade_id === current.atividade_id) ||
+                    (item.iniciativa_id && item.iniciativa_id === current.iniciativa_id) ||
+                    (item.meta_id && item.meta_id === current.meta_id)
+            );
+            const isSelfRelation =
+                (entityType === 'meta' && current.meta_id === entityId) ||
+                (entityType === 'iniciativa' && current.iniciativa_id === entityId) ||
+                (entityType === 'atividade' && current.atividade_id === entityId);
+
+            if (!isDuplicate && !isSelfRelation) {
+                return acc.concat([current]);
+            } else {
+                return acc;
+            }
+        }, [] as UpsertOrigemDto[]);
+
+        const updated = uniqueOrigens
             .filter((o) => o.id !== undefined)
             .filter((oNew) => {
                 const oOld = currentOrigens.find((o) => o.id === oNew.id);
@@ -46,9 +61,9 @@ export class CompromissoOrigemHelper {
                 throw new BadRequestException(`Registro anterior com ID ${oNew.id} não encontrado.`);
             });
 
-        const created = origens.filter((o) => o.id == undefined);
+        const created = uniqueOrigens.filter((o) => o.id == undefined);
 
-        const deleted = currentOrigens.filter((o) => !origens.some((oNew) => oNew.id === o.id)).map((o) => o.id);
+        const deleted = currentOrigens.filter((o) => !uniqueOrigens.some((oNew) => oNew.id === o.id)).map((o) => o.id);
 
         const operations = [];
 
@@ -116,8 +131,8 @@ export class CompromissoOrigemHelper {
     static async processaOrigens(
         origens: UpsertOrigemDto[] | undefined,
         prisma: Prisma.TransactionClient
-    ): Promise<CachedMetasDto> {
-        const cached: CachedMetasDto = {
+    ): Promise<ResumoOrigensMetasItemDto> {
+        const cached: ResumoOrigensMetasItemDto = {
             metas: [],
         };
         if (!origens || (Array.isArray(origens) && origens.length == 0)) return cached;
@@ -228,5 +243,89 @@ export class CompromissoOrigemHelper {
             });
             return meta;
         }
+    }
+
+    private static getRelacionamento(
+        entityType: 'projeto' | 'meta' | 'iniciativa' | 'atividade'
+    ): CompromissoOrigemRelacionamento {
+        const map: Record<typeof entityType, CompromissoOrigemRelacionamento> = {
+            projeto: 'Projeto',
+            meta: 'Meta',
+            iniciativa: 'Iniciativa',
+            atividade: 'Meta',
+        };
+        return map[entityType];
+    }
+
+    private static getEntityColumn(entityType: 'projeto' | 'meta' | 'iniciativa' | 'atividade'): string {
+        return entityType === 'projeto' ? entityType + '_id' : 'rel_' + entityType + '_id';
+    }
+
+    static async buscaOrigensComDetalhes(
+        entityType: 'projeto' | 'meta' | 'iniciativa' | 'atividade',
+        entityId: number,
+        prismaTx: PrismaService
+    ): Promise<DetalheOrigensDto[]> {
+        const relacionamento = CompromissoOrigemHelper.getRelacionamento(entityType);
+        const entityColumn = CompromissoOrigemHelper.getEntityColumn(entityType);
+
+        const origens = await prismaTx.compromissoOrigem.findMany({
+            where: {
+                relacionamento,
+                [entityColumn]: entityId,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                origem_tipo: true,
+                origem_outro: true,
+
+                meta: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                        pdm_id: true,
+                        pdm: {
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        },
+                    },
+                },
+                iniciativa: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                    },
+                },
+                atividade: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                    },
+                },
+                meta_codigo: true,
+            },
+        });
+
+        return origens.map((origem) => ({
+            id: origem.id,
+            origem_tipo: origem.origem_tipo,
+            origem_outro: origem.origem_outro,
+            pdm: origem.meta
+                ? {
+                      id: origem.meta.pdm_id,
+                      nome: origem.meta.pdm.nome,
+                  }
+                : null,
+            meta: origem.meta,
+            iniciativa: origem.iniciativa,
+            atividade: origem.atividade,
+            meta_codigo: origem.meta_codigo,
+        }));
     }
 }

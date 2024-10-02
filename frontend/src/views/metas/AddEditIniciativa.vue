@@ -1,22 +1,22 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
+import {
+  useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,
+} from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 import {
   computed, defineOptions, ref, unref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
-
-import {
-  useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,
-} from '@/stores';
 
 defineOptions({
   inheritAttrs: false,
@@ -56,7 +56,6 @@ Promise.all([
   oktogo.value = true;
 });
 
-const virtualParent = ref({});
 let title = 'Cadastro de';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
@@ -64,6 +63,10 @@ const coordsAvailable = ref([]);
 
 const valoresIniciais = computed(() => ({
   ...singleIniciativa.value,
+
+  origens_extra: Array.isArray(singleIniciativa.value?.origens_extra)
+    ? singleIniciativa.value.origens_extra
+    : [],
 
   ps_ponto_focal: {
     equipes: singleIniciativa.value?.ps_ponto_focal?.equipes || [],
@@ -79,7 +82,7 @@ if (iniciativa_id) {
 }
 (async () => {
   await MetasStore.getById(meta_id);
-  if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
+  if (iniciativa_id) await IniciativasStore.getByIdReal(iniciativa_id);
   singleMeta.value.orgaos_participantes?.forEach((x) => {
     x.orgao_id = x.orgao.id;
     organsAvailable.value.push(x);
@@ -424,12 +427,12 @@ function filterResponsible(orgao_id) {
 
       <hr class="mt2 mb2">
 
-      <template v-if="$route.meta.entidadeMãe === 'pdm'">
-        <label class="label">
+      <fieldset v-if="$route.meta.entidadeMãe === 'pdm'">
+        <legend class="label">
           Responsável na coordenadoria de planejamento&nbsp;<span
             class="tvermelho"
           >*</span>
-        </label>
+        </legend>
         <div class="flex">
           <div
             v-if="coordsAvailable.length"
@@ -442,12 +445,12 @@ function filterResponsible(orgao_id) {
             />
           </div>
         </div>
-      </template>
+      </fieldset>
 
-      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <label class="label">
+      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <legend class="label">
           Equipe Técnica de Administração do Plano
-        </label>
+        </legend>
 
         <div>
           <AutocompleteField
@@ -460,7 +463,25 @@ function filterResponsible(orgao_id) {
             label="titulo"
           />
         </div>
-      </template>
+      </fieldset>
+
+      <CampoDePdmMetasRelacionadas
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        :apenas-pdms="false"
+        titulo="Relacionamentos com outros compromissos"
+        :model-value="values.origens_extra"
+        :valores-iniciais="valoresIniciais.origens_extra"
+        name="origens_extra"
+        etiqueta-botao-adicao="Adicionar compromisso"
+        class="mb2"
+      >
+        <template #rodape>
+          <ErrorMessage
+            class="error-msg"
+            name="origens_extra"
+          />
+        </template>
+      </CampoDePdmMetasRelacionadas>
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">

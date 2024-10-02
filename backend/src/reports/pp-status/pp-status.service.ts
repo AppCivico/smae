@@ -100,11 +100,11 @@ export class PPStatusService implements ReportableService {
     private async buscaProjetos(dto: CreateRelProjetoStatusDto) {
         return await this.prisma.projeto.findMany({
             where: {
-                tipo: dto.tipo,
+                tipo: dto.tipo_pdm,
                 id: dto.projeto_id ? dto.projeto_id : undefined,
                 removido_em: null,
                 portfolio: {
-                    tipo_projeto: dto.tipo,
+                    tipo_projeto: dto.tipo_pdm,
                     id: dto.portfolio_id,
                     modelo_clonagem: false,
                 },
@@ -165,7 +165,7 @@ export class PPStatusService implements ReportableService {
 
     private verificaParams(dto: CreateRelProjetoStatusDto) {
         if (!dto.portfolio_id) throw new HttpException('Faltando portfolio_id', 400);
-        if (!dto.tipo) dto.tipo = 'PP';
+        if (!dto.tipo_pdm) dto.tipo_pdm = 'PP';
     }
 
     async toFileOutput(params: CreateRelProjetoStatusDto, ctx: ReportContext): Promise<FileOutput[]> {
@@ -182,7 +182,7 @@ export class PPStatusService implements ReportableService {
         });
         const linhas = json2csvParser.parse(dados.linhas);
         out.push({
-            name: params.tipo == 'PP' ? 'projeto-status.csv' : 'obra-status.csv',
+            name: params.tipo_pdm == 'PP' ? 'projeto-status.csv' : 'obra-status.csv',
             buffer: Buffer.from(linhas, 'utf8'),
         });
         await ctx.progress(99);

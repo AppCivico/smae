@@ -34,6 +34,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
+import { MonitoramentoMensalPs } from '../planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -67,8 +68,8 @@ export class ReportsService {
         @Inject(forwardRef(() => PPObrasService)) private readonly ppObrasService: PPObrasService,
         @Inject(forwardRef(() => ParlamentaresService)) private readonly parlamentaresService: ParlamentaresService,
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
-        @Inject(forwardRef(() => TribunalDeContasService))
-        private readonly tribunalDeContasService: TribunalDeContasService
+        @Inject(forwardRef(() => TribunalDeContasService)) private readonly tribunalDeContasService: TribunalDeContasService,
+        @Inject(forwardRef(() => MonitoramentoMensalPs)) private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalPs,
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -85,7 +86,18 @@ export class ReportsService {
             dto.fonte === 'ObrasOrcamento' ||
             dto.fonte === 'ObrasPrevisaoCusto'
         ) {
-            parametros.tipo = 'MDO';
+            parametros.tipo_projeto = 'MDO';
+        } else if (
+            dto.fonte === 'ProjetoOrcamento' ||
+            dto.fonte === 'ProjetoPrevisaoCusto' ||
+            dto.fonte === 'Projetos' ||
+            dto.fonte === 'Projeto'
+        ) {
+            parametros.tipo_projeto = 'PP';
+        } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
+            parametros.tipo_pdm = 'PDM';
+        } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
+            parametros.tipo_pdm = 'PS';
         }
 
         const mockContext: ReportContext = {
@@ -213,6 +225,7 @@ export class ReportsService {
             case 'Orcamento':
             case 'ProjetoOrcamento':
             case 'ObrasOrcamento':
+            case 'PSOrcamento':
                 service = this.orcamentoService;
                 break;
             case 'Indicadores':
@@ -224,6 +237,7 @@ export class ReportsService {
             case 'PrevisaoCusto':
             case 'ProjetoPrevisaoCusto':
             case 'ObrasPrevisaoCusto':
+            case 'PSPrevisaoCusto':
                 service = this.previsaoCustoService;
                 break;
             case 'Projeto':
@@ -248,6 +262,11 @@ export class ReportsService {
             case 'TribunalDeContas':
                 service = this.tribunalDeContasService;
                 break;
+            case 'PlanoSetoriaisMonitoramentoMensal':
+                service = this.monitoramentoMensalVariaveisPs;
+                break;
+            case 'CasaCivilAtvPendentes':
+                throw 'CasaCivilAtvPendentes não implementado';
             default:
                 dto.fonte satisfies never;
         }

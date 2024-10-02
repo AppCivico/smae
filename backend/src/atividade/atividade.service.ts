@@ -3,18 +3,21 @@ import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
+import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
-import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
-import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
+import { AtividadeDto, AtividadeOrgao } from './entities/atividade.entity';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 @Injectable()
 export class AtividadeService {
@@ -49,14 +52,21 @@ export class AtividadeService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const orgaos_participantes = dto.orgaos_participantes;
                 const coordenadores_cp = dto.coordenadores_cp;
-                const tags = dto.tags;
+                const tags = UniqueNumbers(dto.tags);
                 const ps_tecnico_cp = dto.ps_tecnico_cp;
                 const ps_ponto_focal = dto.ps_ponto_focal;
+                const origens_extra = dto.origens_extra;
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
                 delete dto.tags;
                 delete dto.ps_tecnico_cp;
                 delete dto.ps_ponto_focal;
+                delete dto.origens_extra;
+
+                let origem_cache: object | undefined = undefined;
+                if (Array.isArray(origens_extra)) {
+                    origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
+                }
 
                 const codigoJaEmUso = await prismaTx.atividade.count({
                     where: {
@@ -94,6 +104,7 @@ export class AtividadeService {
 
                 const atividade = await prismaTx.atividade.create({
                     data: {
+                        origem_cache: origem_cache as any,
                         criado_por: user.id,
                         criado_em: now,
                         iniciativa_id: dto.iniciativa_id,
@@ -175,6 +186,10 @@ export class AtividadeService {
                             pdm.id
                         );
                     }
+                }
+
+                if (Array.isArray(origens_extra)) {
+                    await CompromissoOrigemHelper.upsert(atividade.id, 'atividade', origens_extra, prismaTx, user, now);
                 }
 
                 if (Array.isArray(tags))
@@ -283,13 +298,14 @@ export class AtividadeService {
         return arr;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto, user: PessoaFromJwt) {
         const iniciativa_id = filters?.iniciativa_id;
 
         const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.atividade.findMany({
             where: {
+                id: filters.id,
                 removido_em: null,
                 iniciativa_id: iniciativa_id,
                 iniciativa: { meta: { AND: metaFilterSet } },
@@ -342,6 +358,7 @@ export class AtividadeService {
                         tipo: true,
                     },
                 },
+                origem_cache: true,
             },
         });
 
@@ -350,7 +367,7 @@ export class AtividadeService {
         const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
         const tags: MetaIniAtvTag[] = [];
-        const ret: Atividade[] = [];
+        const ret: AtividadeDto[] = [];
         for (const dbAtividade of listActive) {
             const coordenadores_cp: IdNomeExibicaoDto[] = [];
             const orgaos: Record<number, AtividadeOrgao> = {};
@@ -401,7 +418,18 @@ export class AtividadeService {
                 });
             }
 
+            let origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
+                dbAtividade.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
+
+            if (filters.id)
+                origens_extra = await CompromissoOrigemHelper.buscaOrigensComDetalhes(
+                    'atividade',
+                    dbAtividade.id,
+                    this.prisma
+                );
+
             ret.push({
+                origens_extra: origens_extra,
                 tags,
                 id: dbAtividade.id,
                 titulo: dbAtividade.titulo,
@@ -468,11 +496,13 @@ export class AtividadeService {
             const cp = dto.coordenadores_cp;
             const ps_tecnico_cp = dto.ps_tecnico_cp;
             const ps_ponto_focal = dto.ps_ponto_focal;
-            const tags = dto.tags;
+            const tags = UniqueNumbers(dto.tags);
+            const origens_extra = dto.origens_extra;
             delete dto.orgaos_participantes;
             delete dto.coordenadores_cp;
             delete dto.ps_tecnico_cp;
             delete dto.ps_ponto_focal;
+            delete dto.origens_extra;
 
             if (tipo === 'PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
@@ -503,9 +533,15 @@ export class AtividadeService {
                     throw new HttpException('titulo| Já existe outra atividade com este título nesta iniciativa', 400);
             }
 
+            let origem_cache: object | undefined = undefined;
+            if (Array.isArray(origens_extra)) {
+                origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
+            }
+
             const atividade = await prismaTx.atividade.update({
                 where: { id: id },
                 data: {
+                    origem_cache: origem_cache as any,
                     atualizado_por: user.id,
                     atualizado_em: now,
                     status: '',
@@ -518,6 +554,9 @@ export class AtividadeService {
                 },
                 select: { id: true },
             });
+            if (Array.isArray(origens_extra)) {
+                await CompromissoOrigemHelper.upsert(atividade.id, 'atividade', origens_extra, prismaTx, user, now);
+            }
             if (Array.isArray(tags)) {
                 await prismaTx.atividadeTag.deleteMany({ where: { atividade_id: id } });
                 await prismaTx.atividadeTag.createMany({

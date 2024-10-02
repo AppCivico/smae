@@ -2,18 +2,21 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
+import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
-import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
-import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
+import { IdNomeExibicao, IniciativaDto, IniciativaOrgao } from './entities/iniciativa.entity';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 @Injectable()
 export class IniciativaService {
@@ -38,16 +41,18 @@ export class IniciativaService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const op = dto.orgaos_participantes;
                 const cp = dto.coordenadores_cp;
-                const tags = dto.tags || [];
+                const tags = UniqueNumbers(dto.tags) || [];
                 const geolocalizacao = dto.geolocalizacao;
                 const ps_tecnico_cp = dto.ps_tecnico_cp;
                 const ps_ponto_focal = dto.ps_ponto_focal;
+                const origens_extra = dto.origens_extra;
                 delete dto.orgaos_participantes;
                 delete dto.coordenadores_cp;
                 delete dto.tags;
                 delete dto.geolocalizacao;
                 delete dto.ps_ponto_focal;
                 delete dto.ps_tecnico_cp;
+                delete dto.origens_extra;
 
                 const codigoJaEmUso = await prismaTx.iniciativa.count({
                     where: {
@@ -69,14 +74,27 @@ export class IniciativaService {
                 if (tituloJaEmUso > 0)
                     throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
 
+                const origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
                 const iniciativa = await prismaTx.iniciativa.create({
                     data: {
+                        origem_cache: origem_cache as any,
                         criado_por: user.id,
                         criado_em: now,
                         ...dto,
                     },
                     select: { id: true },
                 });
+
+                if (Array.isArray(origens_extra)) {
+                    await CompromissoOrigemHelper.upsert(
+                        iniciativa.id,
+                        'iniciativa',
+                        origens_extra,
+                        prismaTx,
+                        user,
+                        now
+                    );
+                }
 
                 if (tipo === 'PDM') {
                     if (!op) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
@@ -253,13 +271,14 @@ export class IniciativaService {
         return arr;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto, user: PessoaFromJwt) {
         const meta_id = filters?.meta_id;
 
         const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.iniciativa.findMany({
             where: {
+                id: filters.id,
                 removido_em: null,
                 meta_id: meta_id ? meta_id : undefined,
                 meta: { AND: metaFilterSet },
@@ -315,6 +334,7 @@ export class IniciativaService {
                         tipo: true,
                     },
                 },
+                origem_cache: true,
             },
         });
 
@@ -323,7 +343,7 @@ export class IniciativaService {
         const geolocalizacao = await this.metaService.geolocService.carregaReferencias(geoDto);
 
         const tags: MetaIniAtvTag[] = [];
-        const ret: Iniciativa[] = [];
+        const ret: IniciativaDto[] = [];
         for (const dbIniciativa of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, IniciativaOrgao> = {};
@@ -374,7 +394,19 @@ export class IniciativaService {
                 });
             }
 
+            let origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
+                dbIniciativa.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
+
+            if (filters?.id) {
+                origens_extra = await CompromissoOrigemHelper.buscaOrigensComDetalhes(
+                    'iniciativa',
+                    dbIniciativa.id,
+                    this.prisma
+                );
+            }
+
             ret.push({
+                origens_extra: origens_extra,
                 tags,
                 id: dbIniciativa.id,
                 titulo: dbIniciativa.titulo,
@@ -414,16 +446,18 @@ export class IniciativaService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const op = dto.orgaos_participantes;
             const cp = dto.coordenadores_cp;
-            const tags = dto.tags;
+            const tags = UniqueNumbers(dto.tags);
             const geolocalizacao = dto.geolocalizacao;
             const ps_tecnico_cp = dto.ps_tecnico_cp;
             const ps_ponto_focal = dto.ps_ponto_focal;
+            const origens_extra = dto.origens_extra;
             delete dto.orgaos_participantes;
             delete dto.coordenadores_cp;
             delete dto.tags;
             delete dto.geolocalizacao;
             delete dto.ps_tecnico_cp;
             delete dto.ps_ponto_focal;
+            delete dto.origens_extra;
 
             if (tipo === 'PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
@@ -454,9 +488,15 @@ export class IniciativaService {
                     throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
             }
 
+            let origem_cache: object | undefined = undefined;
+            if (Array.isArray(origens_extra)) {
+                origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
+            }
+
             const iniciativa = await prismaTx.iniciativa.update({
                 where: { id: id },
                 data: {
+                    origem_cache,
                     atualizado_por: user.id,
                     atualizado_em: now,
                     status: '',
@@ -464,6 +504,9 @@ export class IniciativaService {
                 },
                 select: { id: true },
             });
+            if (Array.isArray(origens_extra)) {
+                await CompromissoOrigemHelper.upsert(id, 'iniciativa', origens_extra, prismaTx, user, now);
+            }
 
             if (tipo === 'PDM') {
                 if (op) {

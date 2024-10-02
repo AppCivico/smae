@@ -9,7 +9,7 @@ export class CreateRelProjetoStatusDto {
     @IsOptional()
     @IsEnum(TipoProjeto)
     @ApiHideProperty()
-    tipo?: TipoProjeto = 'PP';
+    tipo_pdm?: TipoProjeto = 'PP';
 
     @IsInt()
     @Transform(({ value }: any) => +value)

@@ -1,5 +1,5 @@
-import { ApiProperty, IntersectionType } from '@nestjs/swagger';
-import { ProjetoStatus } from '@prisma/client';
+import { ApiHideProperty, ApiProperty, IntersectionType } from '@nestjs/swagger';
+import { ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -14,8 +14,8 @@ import {
     MaxLength,
 } from 'class-validator';
 import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
-import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
+import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -59,6 +59,11 @@ export class FilterProjetoDto {
     @IsNumber()
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     portfolio_id?: number;
+
+    @IsOptional()
+    @IsEnum(TipoProjeto)
+    @ApiHideProperty()
+    tipo_projeto?: TipoProjeto;
 }
 
 export const AscDescEnum = {

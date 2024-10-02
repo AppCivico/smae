@@ -19,6 +19,8 @@ export class ProjetoProxyPdmMetasService {
                 nome: true,
                 ativo: true,
                 tipo: true,
+                rotulo_iniciativa: true,
+                rotulo_atividade: true,
                 Meta: {
                     where: {
                         removido_em: null,
@@ -40,6 +42,8 @@ export class ProjetoProxyPdmMetasService {
                 ativo: r.ativo,
                 tipo: r.tipo,
                 metas: r.Meta,
+                rotulo_atividade: r.rotulo_atividade,
+                rotulo_iniciativa: r.rotulo_iniciativa,
             } satisfies ProjetoProxyPdmMetaDto;
         });
     }

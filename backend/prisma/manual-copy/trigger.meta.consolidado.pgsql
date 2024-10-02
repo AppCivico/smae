@@ -42,10 +42,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_refresh_meta_etapa
-AFTER INSERT OR UPDATE ON etapa
-FOR EACH ROW
-EXECUTE FUNCTION f_etapa_refresh_meta_trigger();
 
 CREATE OR REPLACE FUNCTION f_meta_refresh_meta_trigger()
 RETURNS TRIGGER AS $$
@@ -55,11 +51,6 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_refresh_meta
-AFTER INSERT OR UPDATE ON meta
-FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_meta_trigger();
 
 CREATE OR REPLACE FUNCTION f_meta_refresh_serie_variavel_trigger()
 RETURNS TRIGGER AS $$
@@ -85,11 +76,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_refresh_meta_serie_variavel
-AFTER INSERT OR UPDATE OR DELETE ON serie_variavel
-FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_serie_variavel_trigger();
-
 
 CREATE OR REPLACE FUNCTION f_meta_refresh_generic_trigger()
 RETURNS TRIGGER AS $$
@@ -112,6 +98,24 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+
+DO
+$$BEGIN
+CREATE TRIGGER trg_refresh_meta_serie_variavel
+AFTER INSERT OR UPDATE OR DELETE ON serie_variavel
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_serie_variavel_trigger();
+
+CREATE TRIGGER trg_refresh_meta
+AFTER INSERT OR UPDATE ON meta
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_meta_trigger();
+
+CREATE TRIGGER trg_refresh_meta_etapa
+AFTER INSERT OR UPDATE ON etapa
+FOR EACH ROW
+EXECUTE FUNCTION f_etapa_refresh_meta_trigger();
 
 CREATE TRIGGER trg_refresh_meta_pdm_orcamento_realizado_config
 AFTER INSERT OR UPDATE OR DELETE ON pdm_orcamento_realizado_config
@@ -148,5 +152,9 @@ AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_analise
 FOR EACH ROW
 EXECUTE FUNCTION f_meta_refresh_generic_trigger();
 
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;
 
 

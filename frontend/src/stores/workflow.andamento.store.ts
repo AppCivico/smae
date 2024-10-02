@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { WorkflowAndamentoDto, WorkflowAndamentoFasesDto, WorkflowAndamentoFluxoDto } from '@/../../backend/src/workflow/andamento/entities/workflow-andamento.entity';
 import { defineStore } from 'pinia';
+import { WorkflowAndamentoDto, WorkflowAndamentoFasesDto, WorkflowAndamentoFluxoDto } from '@/../../backend/src/workflow/andamento/entities/workflow-andamento.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -62,6 +62,18 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.fase = false;
+        return false;
+      }
+    },
+
+    async deletarWorklow(transferênciaId?: number): Promise<boolean> {
+      const id = transferênciaId || Number(this.route.params.transferenciaId);
+      try {
+        const resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}/limpar-workflow`);
+        this.erro = null;
+        return !!resposta;
+      } catch (erro) {
+        this.erro = erro;
         return false;
       }
     },

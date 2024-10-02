@@ -1,4 +1,4 @@
-DROP PROCEDURE create_workflow_cronograma;
+DROP PROCEDURE if exists create_workflow_cronograma;
 CREATE OR REPLACE PROCEDURE create_workflow_cronograma (_transferencia_id INTEGER, _workflow_id INTEGER)
 LANGUAGE plpgsql
 AS $$
@@ -27,7 +27,7 @@ BEGIN
         INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, numero, nivel, orgao_id, recursos)
         SELECT
             _tarefa_cronograma_id,
-            etapa_de, 
+            etapa_de,
             etapa_de,
             numero,
             1,
@@ -116,7 +116,7 @@ BEGIN
         JOIN transferencia_andamento ta ON ta.id = taf.transferencia_andamento_id
             AND ta.transferencia_id = _transferencia_id AND ta.workflow_fase_id = f.fase_id
             AND ta.removido_em IS NULL
-        WHERE fluxo_tarefa.removido_em IS NULL 
+        WHERE fluxo_tarefa.removido_em IS NULL
         ORDER BY f.id ASC, fluxo_tarefa.ordem ASC
     )
         INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, recursos, numero, nivel, tarefa_pai_id, transferencia_tarefa_id, eh_marco, duracao_planejado, orgao_id)
@@ -177,7 +177,7 @@ BEGIN
                 FROM tarefa WHERE tarefa_cronograma_id = _tarefa_cronograma_id
                   AND nivel = 2
                 ORDER BY numero DESC
-                LIMIT 1 
+                LIMIT 1
             )
             WHEN EXISTS ( SELECT 1 FROM tarefa WHERE id = t1.tarefa_pai_id AND nivel = 2 )
             THEN (
@@ -195,7 +195,7 @@ BEGIN
         CASE
             WHEN (
                 EXISTS (SELECT 1 FROM tarefa WHERE id = t2.tarefa_pai_id AND nivel = 2 AND numero = 1) OR
-                ( (SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id) - 1 = 1 )    
+                ( (SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id) - 1 = 1 )
             )
             THEN cast('inicia_pro_inicio' as "TarefaDependenteTipo")
             ELSE cast('termina_pro_inicio' as "TarefaDependenteTipo")
@@ -206,7 +206,7 @@ BEGIN
     WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id AND t1.nivel = 3;
 
     -- Atualizando n_filhos_imediatos
-    UPDATE tarefa t SET 
+    UPDATE tarefa t SET
         n_filhos_imediatos = (SELECT COUNT(1) FROM tarefa WHERE tarefa_pai_id = t.id)
     WHERE t.n_filhos_imediatos = 0 AND EXISTS (SELECT 1 FROM tarefa WHERE tarefa_pai_id = t.id) AND tarefa_cronograma_id = _tarefa_cronograma_id;
 

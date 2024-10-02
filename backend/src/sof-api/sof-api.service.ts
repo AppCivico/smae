@@ -169,13 +169,6 @@ export class SofApiService {
         this.logger.debug(`API SOF configurada para usar endereço ${this.SOF_API_PREFIX}`);
     }
 
-    /**
-     * @deprecated pois retorna os valores errados
-    /**/
-    async orcadoProjeto(input: InputOrcadoProjeto): Promise<SuccessOrcadoResponse> {
-        return await this.doGetOrcadoRequest(input);
-    }
-
     // chamado pelo sincronizarDotacaoPlanejado
     async orcadoDotacao(input: InputOrcadoDotacao): Promise<SuccessOrcadoResponse> {
         return await this.doGetOrcadoDotacaoRequest(input);
@@ -217,52 +210,6 @@ export class SofApiService {
             if (error instanceof got.HTTPError) {
                 body = String(error.response.body);
                 this.logger.debug(`${endpoint}.res.body: ${body}`);
-            }
-
-            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`);
-        }
-    }
-
-    private async doGetOrcadoRequest(input: InputOrcadoProjeto): Promise<SuccessOrcadoResponse> {
-        let endpoint = 'v1/orcado/orcado_projeto';
-
-        endpoint += '?ano=' + encodeURIComponent(input.ano);
-        endpoint += '&mes=' + encodeURIComponent(input.mes);
-        endpoint += '&orgao=' + encodeURIComponent(input.orgao);
-        if (input.unidade != '*') endpoint += '&unidade=' + encodeURIComponent(input.unidade);
-        endpoint += '&proj_atividade=' + encodeURIComponent(input.proj_atividade);
-        endpoint += '&fonte=' + encodeURIComponent(input.fonte);
-
-        this.logger.debug(`chamando GET ${endpoint}`);
-        try {
-            const response: ApiResponse = await this.got.get<ApiResponse>(endpoint).json();
-            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
-            if ('metadados' in response && response.metadados.sucess) {
-                return {
-                    metadados: response.metadados,
-                    data: (response as SuccessOrcadoResponse).data.map((r) => {
-                        return {
-                            val_orcado_atualizado: Number(r.val_orcado_atualizado),
-                            val_orcado_inicial: Number(r.val_orcado_inicial),
-                            saldo_disponivel: Number(r.saldo_disponivel),
-                        };
-                    }),
-                };
-            }
-
-            throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
-        } catch (error: any) {
-            this.logger.debug(`${endpoint} falhou: ${error}`);
-            let body = '';
-            if (error instanceof got.HTTPError) {
-                body = String(error.response.body);
-                this.logger.debug(`${endpoint}.res.body: ${body}`);
-
-                if (error.response.statusCode == 404) {
-                    throw new HttpException('Não há resultados para a pesquisa, confira os valores informados.', 400);
-                } else if (error.response.statusCode == 422) {
-                    throw new HttpException(`Confira os valores informados: ${body}`, 400);
-                }
             }
 
             throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`);

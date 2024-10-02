@@ -1,7 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { ProjetoOrigemTipo } from "@prisma/client";
-import { Transform, TransformFnParams } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ProjetoOrigemTipo } from '@prisma/client';
+import { Transform, TransformFnParams } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { ProjetoMetaDetailDto } from '../../pp/projeto/entities/projeto.entity';
+import { IdNomeDto } from './IdNome.dto';
+import { IdCodTituloDto } from './IdCodTitulo.dto';
 
 export class UpsertOrigemDto {
     @IsOptional()
@@ -66,12 +69,34 @@ export class UpsertOrigemDto {
     meta_codigo?: string | null;
 }
 
-export class CachedMetasItem {
+export class ResumoOrigensMetasItem {
     id: number | null;
     pdm_id: number | null;
     codigo: string;
 }
 
-export class CachedMetasDto {
-    metas: CachedMetasItem[];
+export class ResumoOrigensMetasItemDto {
+    metas: ResumoOrigensMetasItem[];
+}
+
+export class DetalheOrigensDto {
+    id: number;
+    origem_tipo: ProjetoOrigemTipo;
+    origem_outro: string | null;
+    meta: ProjetoMetaDetailDto | null;
+    pdm: IdNomeDto | null;
+    atividade: IdCodTituloDto | null;
+    iniciativa: IdCodTituloDto | null;
+    @ApiProperty({ deprecated: true, description: 'Não usar mais. Use apenas tipo de origem_tipo=PdmSistema' })
+    meta_codigo: string | null;
+}
+
+export class ResumoDetalheOrigensDto {
+    @ApiProperty({
+        oneOf: [
+            { type: 'array', items: { $ref: getSchemaPath(DetalheOrigensDto) } },
+            { $ref: getSchemaPath(ResumoOrigensMetasItemDto) },
+        ],
+    })
+    origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto;
 }

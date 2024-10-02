@@ -40,17 +40,20 @@ import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TaskModule } from './task/task.module';
-import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-andamento-fase.module';
-import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
-import { WorkflowEtapaModule } from './workflow/configuracao/etapa/workflow-etapa.module';
-import { WorkflowFaseModule } from './workflow/configuracao/fase/workflow-fase.module';
-import { WorkflowfluxoFaseModule } from './workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
-import { WorkflowFluxoTarefaModule } from './workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
-import { WorkflowFluxoModule } from './workflow/configuracao/fluxo/workflow-fluxo.module';
-import { WorkflowSituacaoModule } from './workflow/configuracao/situacao/workflow-situacao.module';
-import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
-import { WorkflowModule } from './workflow/configuracao/workflow.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
+import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
+import { WorkflowAndamentoModule } from './casa-civil/workflow/andamento/workflow-andamento.module';
+import { WorkflowEtapaModule } from './casa-civil/workflow/configuracao/etapa/workflow-etapa.module';
+import { WorkflowFaseModule } from './casa-civil/workflow/configuracao/fase/workflow-fase.module';
+import { WorkflowfluxoFaseModule } from './casa-civil/workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
+import { WorkflowFluxoTarefaModule } from './casa-civil/workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
+import { WorkflowFluxoModule } from './casa-civil/workflow/configuracao/fluxo/workflow-fluxo.module';
+import { WorkflowSituacaoModule } from './casa-civil/workflow/configuracao/situacao/workflow-situacao.module';
+import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/workflow-tarefa.module';
+import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
+import {
+    PsMonitoramentoMensalModule
+} from './reports/planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.module';
 
 // Hacks pro JS
 /*

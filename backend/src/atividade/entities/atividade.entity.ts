@@ -1,6 +1,7 @@
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
+import { ResumoDetalheOrigensDto } from '../../common/dto/origem-pdm.dto';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { MetaIniAtvTag } from '../../meta/entities/meta.entity';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
@@ -16,7 +17,7 @@ export class AtividadeOrgao {
     participantes: IdNomeExibicaoDto[];
 }
 
-export class Atividade {
+export class AtividadeDto extends ResumoDetalheOrigensDto {
     id: number;
     tags: MetaIniAtvTag[];
     status: string | null;

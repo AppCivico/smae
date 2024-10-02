@@ -35,19 +35,8 @@
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
-        <td>{{ item.transferenciaTipo.esfera }}</td>
-        <td>{{ item.transferenciaTipo.nome }}</td>
-        <td>
-          <router-link
-            :to="{ name: 'classificacao.editar', params: { classificacaoId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
+        <td>{{ item.transferencia_tipo.esfera }}</td>
+        <td>{{ item.transferencia_tipo.nome }}</td>
         <td>
           <button
             class="like-a__text"
@@ -60,6 +49,17 @@
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
+        </td>
+        <td>
+          <router-link
+            :to="{ name: 'classificacao.editar', params: { classificacaoId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
         </td>
       </tr>
       <tr v-if="erro">
@@ -93,10 +93,11 @@ async function excluirClassificacao(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
-      await classificacaoStore.deletarItem(id);
-      classificacaoStore.$reset();
-      classificacaoStore.buscarTudo();
-      alertStore.success(`"${descricao}" removido.`);
+      if (await classificacaoStore.deletarItem(id)) {
+        classificacaoStore.$reset();
+        classificacaoStore.buscarTudo();
+        alertStore.success(`"${descricao}" removido.`);
+      }
     },
     'Remover',
   );

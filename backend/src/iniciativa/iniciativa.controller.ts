@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -12,6 +24,7 @@ import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { ListIniciativaDto } from './dto/list-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IniciativaService } from './iniciativa.service';
+import { IniciativaDto } from './entities/iniciativa.entity';
 
 @ApiTags('Iniciativa')
 @Controller('iniciativa')
@@ -37,6 +50,16 @@ export class IniciativaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIniciativaDto> {
         return { linhas: await this.iniciativaService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get(':id')
+    @Roles(MetaController.ReadPerm)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<IniciativaDto> {
+        const r = await this.iniciativaService.findAll(this.tipoPdm, { id: params.id }, user);
+        if (!r.length) throw new HttpException('Iniciativa não encontrada.', 404);
+        return r[0];
     }
 
     @Patch(':id')
@@ -85,6 +108,16 @@ export class IniciativaSetorialController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIniciativaDto> {
         return { linhas: await this.iniciativaService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get(':id')
+    @Roles(MetaSetorialController.ReadPerm)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<IniciativaDto> {
+        const r = await this.iniciativaService.findAll(this.tipoPdm, { id: params.id }, user);
+        if (!r.length) throw new HttpException('Iniciativa não encontrada.', 404);
+        return r[0];
     }
 
     @Patch(':id')

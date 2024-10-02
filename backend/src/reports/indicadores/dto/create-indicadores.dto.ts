@@ -64,12 +64,20 @@ export class IndicadorParams {
     @IsOptional()
     @IsBoolean()
     analitico_desde_o_inicio?: boolean;
+
+    mes:number
 }
 
-export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {}
+export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {
+    @IsOptional()
+    @IsBoolean()
+    listar_variaveis_regionalizadas: boolean;
+}
 
 export class CreateRelIndicadorRegioesDto extends CreateRelIndicadorDto {
     @IsOptional()
     @Transform(NumberArrayTransformOrUndef)
     regioes?: number[];
+
+
 }

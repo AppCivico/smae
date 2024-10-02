@@ -160,7 +160,7 @@ export class OrcamentoService implements ReportableService {
                 OrcamentoRealizado: {
                     meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                     projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                    ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
+                    ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id, tipo: dto.tipo_projeto } } : {}),
                     removido_em: null,
                     OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
                 },
