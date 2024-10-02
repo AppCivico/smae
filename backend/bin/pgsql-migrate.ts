@@ -27,10 +27,9 @@ type IFilenameHash = {
 async function main() {
     const pgsqlDir = process.env.PGSQL_DIR || './pgsql';
 
-    const createTablesPromise = createMigrationTables();
     try {
+        await createMigrationTables();
         await processPgsqlFiles(pgsqlDir);
-        await createTablesPromise;
 
         if (yargs && chokidar) {
             const argv = await yargs.option('watch', { alias: 'w', description: 'Watch mode', type: 'boolean' }).help()
