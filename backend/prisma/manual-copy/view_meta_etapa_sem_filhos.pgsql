@@ -1,4 +1,4 @@
-create view view_meta_etapa_sem_filhos as
+create or replace view view_meta_etapa_sem_filhos as
 select
 sub.cronograma_id,
 e.id,
