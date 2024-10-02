@@ -56,6 +56,9 @@
               ? truncate(relacionamento.meta_titulo)
               : null"
           >
+            <em v-if="relacionamento.meta_codigo">
+              {{ relacionamento.meta_codigo }} -
+            </em>
             {{ truncate(relacionamento.meta_titulo, 36) || '-' }}
           </td>
           <td
@@ -65,8 +68,11 @@
               : null"
           >
             <strong v-if="relacionamento.iniciativa_descricao">
-              {{ relacionamento.pdm_rotulo_iniciativa || 'Iniciativa' }}
+              {{ relacionamento.pdm_rotulo_iniciativa || 'Iniciativa' }}:
             </strong>
+            <em v-if="relacionamento.iniciativa_codigo">
+              {{ relacionamento.iniciativa_codigo }} -
+            </em>
             {{ truncate(relacionamento.iniciativa_descricao, 36) || '-' }}
           </td>
           <td
@@ -76,8 +82,11 @@
               : null"
           >
             <strong v-if="relacionamento.atividade_descricao">
-              {{ relacionamento.pdm_rotulo_atividade || 'Atividade' }}
+              {{ relacionamento.pdm_rotulo_atividade || 'Atividade' }}:
             </strong>
+            <em v-if="relacionamento.atividade_codigo">
+              {{ relacionamento.atividade_codigo }} -
+            </em>
             {{ truncate(relacionamento.atividade_descricao, 36) || '-' }}
           </td>
         </tr>
