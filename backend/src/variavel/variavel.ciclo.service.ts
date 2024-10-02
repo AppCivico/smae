@@ -290,6 +290,7 @@ export class VariavelCicloService {
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
                         dto.pedido_complementacao,
+                        dto.data_referencia,
                         user,
                         prismaTxn,
                         now
@@ -308,6 +309,7 @@ export class VariavelCicloService {
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
                         dto.pedido_complementacao,
+                        dto.data_referencia,
                         user,
                         prismaTxn,
                         now
@@ -811,6 +813,7 @@ export class VariavelCicloService {
     private async criaPedidoComplementacao(
         variavelId: number,
         pedido: string,
+        dataReferencia: Date,
         user: PessoaFromJwt,
         prismaTxn: Prisma.TransactionClient,
         now: Date
@@ -824,7 +827,8 @@ export class VariavelCicloService {
                 variavel_id: variavelId,
                 pedido: pedido,
                 criado_por: user.id,
-                referencia_data: now,
+                referencia_data: dataReferencia,
+                criado_em: now,
                 ultima_revisao: true,
                 atendido: false,
             },
