@@ -298,13 +298,14 @@ export class AtividadeService {
         return arr;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto, user: PessoaFromJwt) {
         const iniciativa_id = filters?.iniciativa_id;
 
         const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.atividade.findMany({
             where: {
+                id: filters.id,
                 removido_em: null,
                 iniciativa_id: iniciativa_id,
                 iniciativa: { meta: { AND: metaFilterSet } },
@@ -420,7 +421,7 @@ export class AtividadeService {
             let origens_extra: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
                 dbAtividade.origem_cache?.valueOf() as ResumoOrigensMetasItemDto;
 
-            if (filters?.id)
+            if (filters.id)
                 origens_extra = await CompromissoOrigemHelper.buscaOrigensComDetalhes(
                     'atividade',
                     dbAtividade.id,

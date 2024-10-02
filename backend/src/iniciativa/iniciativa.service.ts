@@ -271,13 +271,14 @@ export class IniciativaService {
         return arr;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto, user: PessoaFromJwt) {
         const meta_id = filters?.meta_id;
 
         const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
 
         const listActive = await this.prisma.iniciativa.findMany({
             where: {
+                id: filters.id,
                 removido_em: null,
                 meta_id: meta_id ? meta_id : undefined,
                 meta: { AND: metaFilterSet },
