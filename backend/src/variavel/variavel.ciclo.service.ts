@@ -267,6 +267,9 @@ export class VariavelCicloService {
 
             let conferida: boolean = false;
 
+            if (dto.aprovar && dto.pedido_complementacao)
+                throw new BadRequestException('Não é possível aprovar e pedir complementação ao mesmo tempo');
+
             // Troca de fase
             if (cicloCorrente.fase === 'Preenchimento') {
                 if (dto.aprovar) {
