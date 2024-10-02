@@ -25,6 +25,9 @@ export class PrevisaoCustoService implements ReportableService {
         let ano: number;
         let filtroMetas: number[] | undefined = undefined;
 
+        if (!dto.portfolio_id) dto.portfolio_id = undefined;
+        if (!dto.projeto_id) dto.projeto_id = undefined;
+
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
             const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
