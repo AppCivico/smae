@@ -4,9 +4,14 @@ import dinheiro from '@/helpers/dinheiro';
 import dateToField from '@/helpers/dateToField';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import { storeToRefs } from 'pinia';
-import { ref, defineProps, onMounted, onUnmounted } from 'vue';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import {
+  ref,
+  defineProps,
+  onMounted,
+  onUnmounted,
+} from 'vue';
 
 defineProps({
   distribuicao: {
@@ -149,16 +154,16 @@ onUnmounted(() => {
           >
             <ul
               ref="listaDeStatus"
-              class="flex pb1 andamento-fluxo__lista-de-fases"
+              class="flex mb2 andamento-fluxo__lista-de-fases"
             >
               <li
                 v-for="(status, index) in distribuicao.historico_status"
                 :key="status.id"
                 class="p1 tc andamento-fluxo__fase"
                 :class="index === distribuicao.historico_status.length - 1
-                && index === 0
-                ? 'andamento-fluxo__fase--iniciada'
-                : 'andamento-fluxo__fase--concluída'"
+                  && index === 0
+                  ? 'andamento-fluxo__fase--iniciada'
+                  : 'andamento-fluxo__fase--concluída'"
               >
                 <div class="status-item__header">
                   <dt class="w700 t16 andamento-fluxo__nome-da-fase">
@@ -210,12 +215,10 @@ onUnmounted(() => {
                     Valor do recurso
                   </dt>
                   <dd class="tc300">
-                    <strong
-                      v-if="parlamentar?.valor && transferenciaEmFoco?.valor"
-                    >
+                    <strong v-if="parlamentar?.valor && transferenciaEmFoco?.valor">
                       R$ {{ dinheiro(parlamentar.valor) || '0' }} ({{
-                      (parlamentar.valor / transferenciaEmFoco.valor *
-  100).toFixed() }}%)
+                        (parlamentar.valor / transferenciaEmFoco.valor * 100).toFixed()
+                      }}%)
                     </strong>
                   </dd>
                 </dl>
@@ -517,11 +520,11 @@ onUnmounted(() => {
         title="Fechar erro"
         @click="alternaExpandido"
       >
-          <svg
-            :class="estaExpandido ? 'rotacionado' : ''"
-            width="20"
-            height="20"
-          ><use xlink:href="#i_down" /></svg>
+        <svg
+          :class="estaExpandido ? 'rotacionado' : ''"
+          width="20"
+          height="20"
+        ><use xlink:href="#i_down" /></svg>
         Detalhamento
       </button>
     </div>
