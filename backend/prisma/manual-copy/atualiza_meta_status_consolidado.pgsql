@@ -528,8 +528,13 @@ END
 $$
 LANGUAGE plpgsql;
 
-
-delete from meta_status_consolidado_cf;
+DELETE FROM meta_status_consolidado_cf;
 DELETE FROM meta_status_atraso_consolidado_mes;
 DELETE FROM meta_status_atraso_variavel;
-select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo and tipo='PDM') and removido_em is null ;
+SELECT atualiza_meta_status_consolidado(
+    id,
+        (select id from ciclo_fisico where ativo AND pdm_id = (select id from pdm where ativo and tipo='PDM'))
+    )
+    FROM meta
+    WHERE pdm_id = (select id from pdm where ativo and tipo='PDM')
+AND removido_em IS NULL;

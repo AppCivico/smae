@@ -30,10 +30,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_recalculate_planos_de_acao_sem_dt_term
-AFTER INSERT OR UPDATE ON "plano_acao"
-FOR EACH ROW
-EXECUTE FUNCTION recalculate_planos_de_acao_sem_dt_term();
+--CREATE TRIGGER trigger_recalculate_planos_de_acao_sem_dt_term
+--AFTER INSERT OR UPDATE ON "plano_acao"
+--FOR EACH ROW
+--EXECUTE FUNCTION recalculate_planos_de_acao_sem_dt_term();
 
 
 CREATE OR REPLACE FUNCTION recalculate_projeto_riscos()
@@ -74,8 +74,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_recalculate_planos_de_acao_sem_dt_term
-AFTER INSERT OR UPDATE ON "projeto_risco"
-FOR EACH ROW
-EXECUTE FUNCTION recalculate_projeto_riscos();
-
+--CREATE TRIGGER trigger_recalculate_planos_de_acao_sem_dt_term
+--AFTER INSERT OR UPDATE ON "projeto_risco"
+--FOR EACH ROW
+--EXECUTE FUNCTION recalculate_projeto_riscos();

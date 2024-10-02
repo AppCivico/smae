@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION periodicidade_intervalo (p "Periodicidade")
         END;
 $$;
 
-create index idx_serie_variavel_variavel_id_data_valor on serie_variavel( serie, variavel_id , data_valor);
+create index if not exists idx_serie_variavel_variavel_id_data_valor on serie_variavel( serie, variavel_id , data_valor);
 
 CREATE OR REPLACE FUNCTION ultimo_periodo_valido(
     pPeriodicidade "Periodicidade",
@@ -70,7 +70,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-drop function ultimo_periodo_valido("Periodicidade", INT);
+drop function if exists ultimo_periodo_valido("Periodicidade", INT);
 
 /*
 CREATE OR REPLACE FUNCTION ultimo_periodo_valido(pPeriodicidade "Periodicidade", pAtrasoMeses INT)

@@ -1,34 +1,34 @@
 -- drop trigger trg_pp_tarefa_esticar_datas_do_pai_update on tarefa;
-CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update AFTER UPDATE ON tarefa
-    FOR EACH ROW
-    WHEN (
-        (OLD.inicio_planejado IS DISTINCT FROM NEW.inicio_planejado)
-        OR
-        (OLD.termino_planejado IS DISTINCT FROM NEW.termino_planejado)
-        OR
-        (OLD.duracao_planejado IS DISTINCT FROM NEW.duracao_planejado)
-        OR
-        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
-        OR
-        (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
-        OR
-        (OLD.duracao_real IS DISTINCT FROM NEW.duracao_real)
-        OR
-        (OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id)
-        OR
-        (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
-        OR
-        (OLD.percentual_concluido IS DISTINCT FROM NEW.percentual_concluido)
-        OR
-        (OLD.custo_estimado IS DISTINCT FROM NEW.custo_estimado)
-        OR
-        (OLD.custo_real IS DISTINCT FROM NEW.custo_real)
-    )
-    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
-
-CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_insert AFTER INSERT ON tarefa
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
+--CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update AFTER UPDATE ON tarefa
+--    FOR EACH ROW
+--    WHEN (
+--        (OLD.inicio_planejado IS DISTINCT FROM NEW.inicio_planejado)
+--        OR
+--        (OLD.termino_planejado IS DISTINCT FROM NEW.termino_planejado)
+--        OR
+--        (OLD.duracao_planejado IS DISTINCT FROM NEW.duracao_planejado)
+--        OR
+--        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
+--        OR
+--        (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
+--        OR
+--        (OLD.duracao_real IS DISTINCT FROM NEW.duracao_real)
+--        OR
+--        (OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id)
+--        OR
+--        (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
+--        OR
+--        (OLD.percentual_concluido IS DISTINCT FROM NEW.percentual_concluido)
+--        OR
+--        (OLD.custo_estimado IS DISTINCT FROM NEW.custo_estimado)
+--        OR
+--        (OLD.custo_real IS DISTINCT FROM NEW.custo_real)
+--    )
+--    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
+--
+--CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_insert AFTER INSERT ON tarefa
+--    FOR EACH ROW
+--    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
 
 
 CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_inc_counter() RETURNS trigger AS $emp_stamp$
@@ -55,13 +55,13 @@ BEGIN
 END;
 $emp_stamp$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_pp_tarefa_dependente_insert AFTER INSERT ON tarefa_dependente
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_inc_counter();
-
-CREATE TRIGGER trg_pp_tarefa_dependente_delete AFTER DELETE ON tarefa_dependente
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_dec_counter();
+--CREATE TRIGGER trg_pp_tarefa_dependente_insert AFTER INSERT ON tarefa_dependente
+--    FOR EACH ROW
+--    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_inc_counter();
+--
+--CREATE TRIGGER trg_pp_tarefa_dependente_delete AFTER DELETE ON tarefa_dependente
+--    FOR EACH ROW
+--    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_dec_counter();
 
 
 
@@ -204,7 +204,7 @@ LANGUAGE plpgsql;
 
 
 
-DROP FUNCTION atualiza_calendario_projeto(int);
+DROP FUNCTION IF exists atualiza_calendario_projeto(int);
 
 CREATE OR REPLACE FUNCTION atualiza_calendario_tarefa_cronograma(pTarefaCronoId int)
     RETURNS varchar

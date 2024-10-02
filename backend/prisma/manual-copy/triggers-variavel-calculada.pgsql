@@ -12,9 +12,9 @@ BEGIN
 END;
 $emp_stamp$
 LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_formula_composta_variavel_calculada
-    AFTER INSERT OR UPDATE ON formula_composta
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_formula_composta_variavel_calculada();
-
+--
+--CREATE TRIGGER trg_formula_composta_variavel_calculada
+--    AFTER INSERT OR UPDATE ON formula_composta
+--    FOR EACH ROW
+--    EXECUTE FUNCTION f_trg_formula_composta_variavel_calculada();
+--

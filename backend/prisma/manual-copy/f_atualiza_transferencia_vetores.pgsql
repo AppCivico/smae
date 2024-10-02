@@ -61,7 +61,11 @@ BEGIN
 END
 $$ LANGUAGE 'plpgsql';
 
-DROP TRIGGER trigger_transferencia_update_tsvector_update ON transferencia ;
+
+DO
+$$BEGIN
+
+-- DROP TRIGGER trigger_transferencia_update_tsvector_update ON transferencia ;
 CREATE TRIGGER trigger_transferencia_update_tsvector_update
 BEFORE UPDATE ON transferencia
 FOR EACH ROW
@@ -95,7 +99,7 @@ BEFORE INSERT ON transferencia
 FOR EACH ROW
 EXECUTE PROCEDURE f_transferencia_update_tsvector();
 
-DROP TRIGGER trigger_distribuicao_update_tsvector_insert;
+-- DROP TRIGGER trigger_distribuicao_update_tsvector_insert;
 CREATE TRIGGER trigger_distribuicao_update_tsvector_insert
 BEFORE INSERT ON distribuicao_recurso
 FOR EACH ROW
@@ -106,6 +110,10 @@ BEFORE UPDATE ON distribuicao_recurso
 FOR EACH ROW
 WHEN ( OLD.nome IS DISTINCT FROM NEW.nome )
 EXECUTE PROCEDURE f_transferencia_update_tsvector();
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;
 
 CREATE OR REPLACE FUNCTION f_transferencia_parlamentar_update_tsvector() RETURNS TRIGGER AS $$
 BEGIN
@@ -171,11 +179,17 @@ BEGIN
 END
 $$ LANGUAGE 'plpgsql';
 
+DO
+$$BEGIN
 CREATE TRIGGER trigger_transferencia_parlamentar_update_tsvector
 AFTER INSERT OR UPDATE ON transferencia_parlamentar
 FOR EACH ROW
 WHEN (NEW.removido_em IS NULL)
 EXECUTE PROCEDURE f_transferencia_parlamentar_update_tsvector();
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;
 
 CREATE OR REPLACE FUNCTION f_transfere_gov_oportunidade_update_tsvector() RETURNS TRIGGER AS $$
 BEGIN
@@ -203,8 +217,15 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
+
+DO
+$$BEGIN
 -- Trigger to call the function
 CREATE TRIGGER trigger_transfere_gov_oportunidade_update_tsvector
 BEFORE INSERT OR UPDATE ON transfere_gov_oportunidade
 FOR EACH ROW
 EXECUTE FUNCTION f_transfere_gov_oportunidade_update_tsvector();
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;

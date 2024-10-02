@@ -75,7 +75,8 @@ END
 $$
 LANGUAGE plpgsql;
 
-
+DO
+$$BEGIN
 CREATE TRIGGER perfil_privilegio_trigger
 AFTER INSERT OR UPDATE
 ON Perfil_Privilegio
@@ -90,6 +91,10 @@ WHEN (
     (OLD.modulo_id IS DISTINCT FROM NEW.modulo_id)
 )
 EXECUTE FUNCTION update_modulos_sistemas_priv_updated();
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;
 
 drop trigger if exists privilegio_trigger_update on privilegio;
 drop FUNCTION if exists update_modulos_sistemas_priv_updated();

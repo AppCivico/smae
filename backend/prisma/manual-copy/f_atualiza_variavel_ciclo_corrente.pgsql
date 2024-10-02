@@ -120,8 +120,7 @@ END;
 $$
 LANGUAGE plpgsql;
 
-select f_atualiza_variavel_ciclo_corrente(4648);
-
+--select f_atualiza_variavel_ciclo_corrente(4648);
 
 select f_atualiza_variavel_ciclo_corrente (id) from variavel where tipo='Global' and variavel_mae_id is null;
 
@@ -176,6 +175,8 @@ END;
 $$
 LANGUAGE plpgsql;
 
+DO
+$$BEGIN
 CREATE TRIGGER tgr_update_variavel_ciclo_corrente
     AFTER UPDATE ON variavel
     FOR EACH ROW
@@ -193,6 +194,10 @@ CREATE TRIGGER tgr_insert_variavel_ciclo_corrente
     AFTER INSERT ON variavel
     FOR EACH ROW
     EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;
 
 -- problemas pro futuro
 CREATE OR REPLACE FUNCTION f_variavel_periodos_redimensionados(

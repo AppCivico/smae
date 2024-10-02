@@ -123,7 +123,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER check_pdm_perfil_relations_trigger
-BEFORE INSERT OR UPDATE ON pdm_perfil
-FOR EACH ROW
-EXECUTE FUNCTION check_pdm_perfil_relations();
+--CREATE TRIGGER check_pdm_perfil_relations_trigger
+--BEFORE INSERT OR UPDATE ON pdm_perfil
+--FOR EACH ROW
+--EXECUTE FUNCTION check_pdm_perfil_relations();

@@ -66,11 +66,11 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE TRIGGER tgr_dotacao_change
-AFTER INSERT OR UPDATE -- sempre que tem um delete, tem um insert logo em seguida, que vai arrumar o banco
-ON dotacao_planejado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_soma_dotacao();
+--CREATE TRIGGER tgr_dotacao_change
+--AFTER INSERT OR UPDATE -- sempre que tem um delete, tem um insert logo em seguida, que vai arrumar o banco
+--ON dotacao_planejado
+--FOR EACH ROW
+--EXECUTE FUNCTION f_tgr_update_soma_dotacao();
 
 
 CREATE OR REPLACE FUNCTION f_tgr_update_soma_dotacao_realizado()
@@ -284,11 +284,11 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE TRIGGER tgr_dotacao_change_realizado
-AFTER INSERT OR UPDATE
-ON orcamento_realizado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_soma_dotacao_realizado();
+--CREATE TRIGGER tgr_dotacao_change_realizado
+--AFTER INSERT OR UPDATE
+--ON orcamento_realizado
+--FOR EACH ROW
+--EXECUTE FUNCTION f_tgr_update_soma_dotacao_realizado();
 
 
 CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger()
@@ -325,29 +325,29 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE TRIGGER tgr_ano_orcamento_projeto_realizado
-AFTER INSERT OR UPDATE
-ON orcamento_realizado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_previsto
-AFTER INSERT OR UPDATE
-ON meta_orcamento
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_planejado
-AFTER INSERT OR UPDATE
-ON orcamento_planejado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
-DROP TRIGGER tgr_ano_orcamento_projeto_tarefa on tarefa;
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_tarefa
-AFTER INSERT OR UPDATE
-ON tarefa
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger();
-
+--CREATE TRIGGER tgr_ano_orcamento_projeto_realizado
+--AFTER INSERT OR UPDATE
+--ON orcamento_realizado
+--FOR EACH ROW
+--EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+--
+--CREATE TRIGGER tgr_ano_orcamento_projeto_previsto
+--AFTER INSERT OR UPDATE
+--ON meta_orcamento
+--FOR EACH ROW
+--EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+--
+--CREATE TRIGGER tgr_ano_orcamento_projeto_planejado
+--AFTER INSERT OR UPDATE
+--ON orcamento_planejado
+--FOR EACH ROW
+--EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+--
+--DROP TRIGGER tgr_ano_orcamento_projeto_tarefa on tarefa;
+--
+--CREATE TRIGGER tgr_ano_orcamento_projeto_tarefa
+--AFTER INSERT OR UPDATE
+--ON tarefa
+--FOR EACH ROW
+--EXECUTE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger();
+--

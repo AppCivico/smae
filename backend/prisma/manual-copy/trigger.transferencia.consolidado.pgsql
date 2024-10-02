@@ -46,6 +46,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION f_transferencia_refresh_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    CALL add_refresh_transferencia_task(NEW.id);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+DO
+$$BEGIN
 CREATE TRIGGER trg_refresh_transferencia_tarefa_insert
 AFTER INSERT ON tarefa
 FOR EACH ROW
@@ -69,15 +82,6 @@ WHEN (
 )
 EXECUTE FUNCTION f_tarefa_refresh_transferencia_trigger();
 
-CREATE OR REPLACE FUNCTION f_transferencia_refresh_trigger()
-RETURNS TRIGGER AS $$
-BEGIN
-    CALL add_refresh_transferencia_task(NEW.id);
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trg_refresh_transferencia_insert
 AFTER INSERT ON transferencia
 FOR EACH ROW
@@ -90,3 +94,8 @@ WHEN (
     (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
 )
 EXECUTE FUNCTION f_transferencia_refresh_trigger();
+
+EXCEPTION
+   WHEN duplicate_object THEN
+      NULL;
+END;$$;

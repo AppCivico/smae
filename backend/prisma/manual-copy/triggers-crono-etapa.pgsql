@@ -175,52 +175,53 @@ BEGIN
 END;
 $emp_stamp$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT ON etapa
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
-
-CREATE TRIGGER trg_estapa_esticar_datas_do_pai_update AFTER  UPDATE ON etapa
-    FOR EACH ROW
-    WHEN (
-        (OLD.inicio_previsto IS DISTINCT FROM NEW.inicio_previsto)
-        OR
-        (OLD.termino_previsto IS DISTINCT FROM NEW.termino_previsto)
-        OR
-        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
-        OR
-        (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
-        OR
-        (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
-    )
-    EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
-
-CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
-BEGIN
-    PERFORM  atualiza_inicio_fim_cronograma(NEW.cronograma_id);
-    RETURN NEW;
-END;
-$emp_stamp$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_crono_estapa_resync();
-
-WITH RECURSIVE etapa_hierarchy AS (
-  SELECT id, etapa_pai_id
-  FROM etapa
-  WHERE etapa_pai_id IS NULL
-  UNION ALL
-  SELECT e.id, e.etapa_pai_id
-  FROM etapa e
-  INNER JOIN etapa_hierarchy eh ON e.etapa_pai_id = eh.id
-)
-UPDATE etapa e
-SET n_filhos_imediatos = (
-  SELECT COUNT(*)
-  FROM etapa_hierarchy eh
-  WHERE eh.etapa_pai_id = e.id
-)
-WHERE n_filhos_imediatos IS NULL;
+-- comentado mas isso aqui ta vivo, é usado, só n deve rodar sempre
+-- CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT ON etapa
+--     FOR EACH ROW
+--     EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
+--
+-- CREATE TRIGGER trg_estapa_esticar_datas_do_pai_update AFTER  UPDATE ON etapa
+--     FOR EACH ROW
+--     WHEN (
+--         (OLD.inicio_previsto IS DISTINCT FROM NEW.inicio_previsto)
+--         OR
+--         (OLD.termino_previsto IS DISTINCT FROM NEW.termino_previsto)
+--         OR
+--         (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
+--         OR
+--         (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
+--         OR
+--         (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
+--     )
+--     EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
+--
+-- CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
+-- BEGIN
+--     PERFORM  atualiza_inicio_fim_cronograma(NEW.cronograma_id);
+--     RETURN NEW;
+-- END;
+-- $emp_stamp$ LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
+--     FOR EACH ROW
+--     EXECUTE FUNCTION f_trg_crono_estapa_resync();
+--
+-- WITH RECURSIVE etapa_hierarchy AS (
+--   SELECT id, etapa_pai_id
+--   FROM etapa
+--   WHERE etapa_pai_id IS NULL
+--   UNION ALL
+--   SELECT e.id, e.etapa_pai_id
+--   FROM etapa e
+--   INNER JOIN etapa_hierarchy eh ON e.etapa_pai_id = eh.id
+-- )
+-- UPDATE etapa e
+-- SET n_filhos_imediatos = (
+--   SELECT COUNT(*)
+--   FROM etapa_hierarchy eh
+--   WHERE eh.etapa_pai_id = e.id
+-- )
+-- WHERE n_filhos_imediatos IS NULL;
 
 /* - removendo
 CREATE OR REPLACE FUNCTION increment_n_filhos_imediatos()
@@ -279,10 +280,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_update_n_filhos_imediatos
-AFTER INSERT OR UPDATE OR DELETE ON etapa
-FOR EACH ROW
-EXECUTE PROCEDURE update_n_filhos_imediatos();
+--CREATE TRIGGER trg_update_n_filhos_imediatos
+--AFTER INSERT OR UPDATE OR DELETE ON etapa
+--FOR EACH ROW
+--EXECUTE PROCEDURE update_n_filhos_imediatos();
 
 
 CREATE OR REPLACE FUNCTION calculate_percentual_execucao_for_id(p_id INTEGER, is_cronograma BOOLEAN DEFAULT FALSE)
@@ -348,10 +349,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_calculate_percentual_execucao
-AFTER INSERT OR UPDATE ON etapa
-FOR EACH ROW
-EXECUTE FUNCTION calculate_percentual_execucao_trigger();
+--CREATE TRIGGER trg_calculate_percentual_execucao
+--AFTER INSERT OR UPDATE ON etapa
+--FOR EACH ROW
+--EXECUTE FUNCTION calculate_percentual_execucao_trigger();
 
 CREATE OR REPLACE FUNCTION assert_geoloc_rule(e_id INTEGER, c_id INTEGER)
 RETURNS record
@@ -610,7 +611,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER etapa_update_variavel
-BEFORE INSERT OR UPDATE OR DELETE ON etapa
-FOR EACH ROW
-EXECUTE PROCEDURE f_tgr_atualiza_variavel_na_troca_da_etapa();
+--CREATE TRIGGER etapa_update_variavel
+--BEFORE INSERT OR UPDATE OR DELETE ON etapa
+--FOR EACH ROW
+--EXECUTE PROCEDURE f_tgr_atualiza_variavel_na_troca_da_etapa();

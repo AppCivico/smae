@@ -58,5 +58,6 @@ END
 $$
 LANGUAGE plpgsql;
 
-
-select atualiza_transferencia_status_consolidado(id) from transferencia where removido_em is null and id=65;
+SELECT atualiza_transferencia_status_consolidado(id)
+FROM transferencia
+WHERE removido_em IS NULL;

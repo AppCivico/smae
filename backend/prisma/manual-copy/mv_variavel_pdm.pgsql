@@ -32,10 +32,10 @@ join indicador i on  i.atividade_id = _a.id and i.removido_em is null
 join indicador_variavel iv on iv.indicador_id = i.id and iv.indicador_origem_id is null
 where m.removido_em is null and m.ativo = TRUE;
 
-CREATE INDEX mv_variavel_pdm__variavel_id
+CREATE INDEX IF NOT EXISTS mv_variavel_pdm__variavel_id
 ON mv_variavel_pdm (variavel_id);
 
-CREATE INDEX mv_variavel_pdm__meta_id
+CREATE INDEX IF NOT EXISTS mv_variavel_pdm__meta_id
 ON mv_variavel_pdm (meta_id);
 
 
