@@ -3371,7 +3371,7 @@ enum FonteRelatorio {
     PSPrevisaoCusto
     PSOrcamento
     CasaCivilAtvPendentes
-    PlanoSetoriaisMonitoramentoMensal
+    PSMonitoramentoMensal
 }
 
 model Relatorio {
