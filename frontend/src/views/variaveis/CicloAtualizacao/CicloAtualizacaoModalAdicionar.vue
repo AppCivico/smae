@@ -277,18 +277,26 @@ const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
 const {
-  fase, fasePosicao, forumlariosAExibir, dataReferencia,
+  fase, fasePosicao, forumlariosAExibir, dataReferencia, obterValorAnalise,
 } = useCicloAtualizacao();
 
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
 
-const valorInicial = {
-  solicitar_complementacao: false,
-  valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
-  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
-    ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
-  analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
-};
+function obterVariavelInicial() {
+  const valorInicial = {
+    solicitar_complementacao: false,
+    valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
+    valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
+      ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
+  };
+
+  const analises = obterValorAnalise();
+
+  return {
+    ...valorInicial,
+    ...analises,
+  };
+}
 
 const variaveisCategoricasValores = computed(() => {
   if (!variaveisCategoricasStore.emFoco) {
@@ -323,7 +331,7 @@ const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
 
 const { handleSubmit, setFieldValue, values } = useForm({
   validationSchema: schema.value,
-  initialValues: valorInicial,
+  initialValues: obterVariavelInicial(),
 });
 
 function atualizarVariavelAcumulado(valor: string) {

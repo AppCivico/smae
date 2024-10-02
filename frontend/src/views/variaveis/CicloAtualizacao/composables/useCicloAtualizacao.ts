@@ -15,7 +15,7 @@ export default function useCicloAtualizacao() {
 
   const fase = computed<FaseOpcoes>(
     () => {
-      const [ultimaAnalise] = emFoco.value?.analises || [];
+      const ultimaAnalise = emFoco.value?.analises?.at(-1) || undefined;
 
       if (!ultimaAnalise || ultimaAnalise.fase === 'Preenchimento') {
         return 'cadastro';
@@ -58,7 +58,47 @@ export default function useCicloAtualizacao() {
     };
   });
 
+  function obterValorAnalise() {
+    type Analises = {
+      analisePreenchimento?: string;
+      analiseAprovador?: string;
+      analiseLiberador?: string;
+    };
+
+    const analises: Analises = {};
+
+    console.log(emFoco.value?.analises);
+
+    const analisePreenchimento = emFoco.value?.analises?.find(
+      (item) => item.fase === 'Preenchimento',
+    );
+    if (analisePreenchimento) {
+      analises.analisePreenchimento = analisePreenchimento.fase;
+    }
+
+    const analiseAprovador = emFoco.value?.analises?.find(
+      (item) => item.fase === 'Validacao',
+    );
+    if (analiseAprovador) {
+      analises.analiseAprovador = analiseAprovador.fase;
+    }
+
+    const analiseLiberador = emFoco.value?.analises?.find(
+      (item) => item.fase === 'Liberador',
+    );
+    if (analiseLiberador) {
+      analises.analiseLiberador = analiseLiberador.fase;
+    }
+
+    return {
+      analise_qualitativa: analises.analisePreenchimento,
+      analise_qualitativa_aprovador: analises.analiseAprovador,
+      analise_qualitativa_liberador: analises.analiseLiberador,
+    };
+  }
+
   return {
+    obterValorAnalise,
     fase,
     fasePosicao,
     forumlariosAExibir,

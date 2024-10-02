@@ -74,6 +74,7 @@ function fecharModal() {
 
   if (state.back?.includes('/variaveis/ciclo-atualizacao')) {
     $router.push(state.back);
+    return;
   }
 
   $router.push({

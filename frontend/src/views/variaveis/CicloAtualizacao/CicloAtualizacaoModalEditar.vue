@@ -364,7 +364,7 @@ const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
 const {
-  fase, forumlariosAExibir, fasePosicao, dataReferencia,
+  fase, forumlariosAExibir, fasePosicao, dataReferencia, obterValorAnalise,
 } = useCicloAtualizacao();
 
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
@@ -373,11 +373,19 @@ const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   valor_realizado_acumulado: emFoco.value?.variavel.acumulativa ? item.valor_realizado_acumulado : '0',
 }));
 
-const valorInicial = {
-  solicitar_complementacao: false,
-  analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
-  variaveis_dados: valorInicialVariaveis,
-};
+function obterVariavelInicial() {
+  const valorInicial = {
+    solicitar_complementacao: false,
+    variaveis_dados: valorInicialVariaveis,
+  };
+
+  const analises = obterValorAnalise();
+
+  return {
+    ...valorInicial,
+    ...analises,
+  };
+}
 
 const schema = computed(() => cicloAtualizacaoModalEditarSchema(fasePosicao.value));
 
@@ -385,7 +393,7 @@ const {
   handleSubmit, errors, setFieldValue, values, validateField,
 } = useForm({
   validationSchema: schema,
-  initialValues: valorInicial,
+  initialValues: obterVariavelInicial(),
 });
 
 const valorPadrao = ref<string>('');
