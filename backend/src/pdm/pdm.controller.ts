@@ -191,7 +191,7 @@ const PermsPS: ListaDePrivilegios[] = [
 @ApiTags('Plano Setorial')
 @Controller('plano-setorial')
 export class PlanoSetorialController {
-    static readonly  WritePerms: ListaDePrivilegios[] = PermsPS;
+    static readonly WritePerms: ListaDePrivilegios[] = PermsPS;
 
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly pdmService: PdmService) {}
@@ -253,7 +253,13 @@ export class PlanoSetorialController {
         @Query() detail: FilterPdmDetailDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PlanoSetorialDto | DetalhePSDto> {
-        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly', detail.expandir_equipes);
+        const pdm = await this.pdmService.getDetail(
+            this.tipoPdm,
+            +params.id,
+            user,
+            'ReadOnly',
+            detail.expandir_equipes
+        );
 
         if (!detail.incluir_auxiliares) return pdm as PlanoSetorialDto;
 
