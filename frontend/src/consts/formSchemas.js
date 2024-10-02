@@ -3059,6 +3059,34 @@ export const relatórioMensal = object({
   salvar_arquivo: boolean(),
 });
 
+export const relatórioMensalPS = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    plano_setorial_id: string()
+      .label('Plano setorial')
+      .required(),
+    meta: array()
+      .label('Metas')
+      .nullable(),
+    mes: number()
+      .label('Mês')
+      .min(1)
+      .max(12)
+      .required('Escolha um mês'),
+    ano: number()
+      .label('Ano')
+      .min(2003, 'A partir de 2003')
+      .required(),
+    tags: array()
+      .label('Tags')
+      .nullable(),
+    listar_variaveis_regionalizadas: boolean()
+      .label('Listar variáveis regionalizadas em todos os níveis'),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioOrçamentárioPdM = object({
   fonte: string()
     .required(),

@@ -1,6 +1,6 @@
-import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
+import { defineAsyncComponent } from 'vue';
 
 const NovoMensal = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoMensal.vue'),
@@ -144,6 +144,10 @@ export default {
       'RelatóriosSemestraisOuAnuais',
       'RelatóriosDePrevisãoDeCustoPdM',
       'RelatóriosOrçamentáriosPdM',
+
+      /// PlanoSetorial
+      'planoSetorial.RelatóriosMensais',
+
       /// Projetos
       'RelatóriosDeProjeto',
       'RelatóriosDePortfolio',
@@ -200,6 +204,36 @@ export default {
         },
       ],
     },
+
+    {
+      path: 'ps/mensal',
+      component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisItemPS.vue'),
+      meta: {
+        entidadeMãe: 'planoSetorial',
+        título: 'Relatórios Mensais',
+        títuloParaMenu: 'Relatório Mensal',
+        limitarÀsPermissões: [
+          'Reports.executar.PlanoSetorial',
+        ],
+      },
+      children: [
+        {
+          path: '',
+          name: 'planoSetorial.RelatóriosMensais',
+          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisPS.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/planosSetoriais/NovoMensalPS.vue'),
+          path: 'novo',
+          name: 'planoSetorial.novoRelatórioMensal',
+          meta: {
+            título: 'Novo relatório mensal',
+            rotaDeEscape: 'planoSetorial.RelatóriosMensais',
+          },
+        },
+      ],
+    },
+
     {
       path: 'semestral-ou-anual',
       meta: {
