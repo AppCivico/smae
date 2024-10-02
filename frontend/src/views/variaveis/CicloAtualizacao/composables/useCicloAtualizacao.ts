@@ -73,21 +73,21 @@ export default function useCicloAtualizacao() {
       (item) => item.fase === 'Preenchimento',
     );
     if (analisePreenchimento) {
-      analises.analisePreenchimento = analisePreenchimento.fase;
+      analises.analisePreenchimento = analisePreenchimento.analise_qualitativa;
     }
 
     const analiseAprovador = emFoco.value?.analises?.find(
       (item) => item.fase === 'Validacao',
     );
     if (analiseAprovador) {
-      analises.analiseAprovador = analiseAprovador.fase;
+      analises.analiseAprovador = analiseAprovador.analise_qualitativa;
     }
 
     const analiseLiberador = emFoco.value?.analises?.find(
       (item) => item.fase === 'Liberador',
     );
     if (analiseLiberador) {
-      analises.analiseLiberador = analiseLiberador.fase;
+      analises.analiseLiberador = analiseLiberador.analise_qualitativa;
     }
 
     return {
