@@ -172,7 +172,7 @@ watch(valores, (novoValor) => {
             :for="`${$props.name}__pdm--${idx}`"
             class="label"
           >
-            Programa de metas&nbsp;<span class="tvermelho">*</span>
+            Programa de metas/Plano Setorial&nbsp;<span class="tvermelho">*</span>
           </label>
           <select
             :id="`${$props.name}[${idx}].pdm_escolhido`"
