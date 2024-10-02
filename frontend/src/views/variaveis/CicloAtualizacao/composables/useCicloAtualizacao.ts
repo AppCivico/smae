@@ -15,13 +15,13 @@ export default function useCicloAtualizacao() {
 
   const fase = computed<FaseOpcoes>(
     () => {
-      const ultimaAnalise = emFoco.value?.analises?.at(-1) || undefined;
+      const faseAtual = emFoco.value?.fase;
 
-      if (!ultimaAnalise || ultimaAnalise.fase === 'Preenchimento') {
+      if (!faseAtual || faseAtual === 'Preenchimento') {
         return 'cadastro';
       }
 
-      if (ultimaAnalise.fase === 'Validacao') {
+      if (faseAtual === 'Validacao') {
         return 'aprovacao';
       }
 
