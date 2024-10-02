@@ -11,7 +11,6 @@ export const useAuthStore = defineStore({
     token: JSON.parse(localStorage.getItem('token')),
     reducedtoken: null,
     returnUrl: null,
-    sistemaEscolhido: localStorage.getItem('sistemaEscolhido') || 'SMAE',
     permissions: JSON.parse(localStorage.getItem('permissions')),
   }),
   actions: {
@@ -140,6 +139,34 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
+    sistemaEscolhido: () => localStorage.getItem('sistemaEscolhido') || 'SMAE',
+    sistemaCorrente() {
+      if (!import.meta.env.VITE_HABILITAR_BETA) {
+        return this.sistemaEscolhido;
+      }
+
+      switch (this.route.meta.entidadeMãe) {
+        case 'projeto':
+        case 'portfolio':
+          return 'Projetos';
+
+        case 'mdo':
+        case 'obras':
+          return 'MDO';
+
+        case 'pdm':
+          return 'PDM';
+
+        case 'TransferenciasVoluntarias':
+          return 'CasaCivil';
+
+        case 'planoSetorial':
+          return 'PlanoSetorial';
+
+        default:
+          return this.sistemaEscolhido;
+      }
+    },
     dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => modulos[sistemaEscolhido] || {},
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissoes) => (Array.isArray(permissoes)
