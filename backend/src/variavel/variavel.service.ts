@@ -95,21 +95,21 @@ export type VariavelComCategorica = {
 function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
     switch (periodicidade) {
         case 'Mensal':
-            return 31;
+            return 28; // February
         case 'Bimestral':
-            return 62;
+            return 59; // February + March (28 + 31)
         case 'Trimestral':
-            return 92;
+            return 89; // February + March + April (28 + 31 + 30)
         case 'Quadrimestral':
-            return 123;
+            return 120; // February + March + April + May (28 + 31 + 30 + 31)
         case 'Semestral':
-            return 184;
+            return 180; // February + March + April + May + June + July (28 + 31 + 30 + 31 + 30 + 30)
         case 'Anual':
-            return 366;
+            return 365; // Non-leap year
         case 'Quinquenal':
-            return 1827;
+            return 1825; // 5 years
         case 'Secular':
-            return 36524;
+            return 36500; // 100 years
         default:
             periodicidade satisfies never;
     }
