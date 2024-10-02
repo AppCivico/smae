@@ -1,7 +1,7 @@
 <script setup>
 import tiposDePlanos from '@/consts/tiposDePlanos';
 import truncate from '@/helpers/truncate';
-import { usePdmMetasStore } from '@/stores/pdmMetas.store';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import { ref, watch, watchEffect } from 'vue';
@@ -37,15 +37,15 @@ const props = defineProps({
   },
 });
 
-const pdmMetasStore = usePdmMetasStore();
+const planosSimplificadosStore = usePlanosSimplificadosStore();
 const {
   arvoreDeMetas,
-  pdmsPorId,
-  pdmsSimplificados,
+  planosPorId,
+  planosSimplificados,
   planosAgrupadosPorTipo,
   chamadasPendentes,
   erros,
-} = storeToRefs(pdmMetasStore);
+} = storeToRefs(planosSimplificadosStore);
 
 const campoPronto = ref(false);
 
@@ -60,7 +60,7 @@ function buscarArvoreDeMetas(valorOuEvento) {
   const idDaMeta = valorOuEvento.target?.value || valorOuEvento;
 
   if (idDaMeta && !arvoreDeMetas.value?.[idDaMeta]) {
-    pdmMetasStore.buscarArvoreDeMetas({ meta_ids: idDaMeta });
+    planosSimplificadosStore.buscarArvoreDeMetas({ meta_ids: idDaMeta });
   }
 }
 
@@ -105,8 +105,8 @@ watchEffect(async () => {
   campoPronto.value = false;
   promessas.splice(0);
 
-  if (!pdmsSimplificados.value.length && !chamadasPendentes.value.pdmsSimplificados) {
-    promessas.push(pdmMetasStore.buscarPdms({ apenas_pdm: props.apenasPdms }));
+  if (!planosSimplificados.value.length && !chamadasPendentes.value.planosSimplificados) {
+    promessas.push(planosSimplificadosStore.buscarPlanos({ apenas_pdm: props.apenasPdms }));
   }
 
   if (valores.value.length) {
@@ -118,7 +118,7 @@ watchEffect(async () => {
     });
 
     if (metasBuscar.length) {
-      promessas.push(pdmMetasStore.buscarArvoreDeMetas({ meta_ids: metasBuscar }));
+      promessas.push(planosSimplificadosStore.buscarArvoreDeMetas({ meta_ids: metasBuscar }));
     }
   }
 
@@ -179,8 +179,8 @@ watch(valores, (novoValor) => {
             v-model="valores[idx].pdm_escolhido"
             :name="`${$props.name}[${idx}].pdm_escolhido`"
             class="inputtext light mb1"
-            :aria-busy="chamadasPendentes?.pdmsSimplificados"
-            :disabled="!pdmsSimplificados?.length"
+            :aria-busy="chamadasPendentes?.planosSimplificados"
+            :disabled="!planosSimplificados?.length"
             @change="redefinirValores(idx, 'pdm')"
           >
             <option
@@ -198,10 +198,10 @@ watch(valores, (novoValor) => {
                 v-for="plano in grupo"
                 :key="plano.id"
                 :value="plano.id"
-                :disabled="!pdmsPorId[plano.id]?.metas?.length"
+                :disabled="!planosPorId[plano.id]?.metas?.length"
               >
                 {{ plano.nome }}
-                <template v-if="!pdmsPorId[plano.id]?.metas?.length">
+                <template v-if="!planosPorId[plano.id]?.metas?.length">
                   (sem metas disponíveis)
                 </template>
               </option>
@@ -218,7 +218,7 @@ watch(valores, (novoValor) => {
             v-model="valores[idx].meta_id"
             :name="`${$props.name}[${idx}].meta_id`"
             class="inputtext light mb1"
-            :disabled="!pdmsPorId[valores[idx]?.pdm_escolhido]?.metas?.length"
+            :disabled="!planosPorId[valores[idx]?.pdm_escolhido]?.metas?.length"
             @change="($e) => {
               redefinirValores(idx, 'meta');
               buscarArvoreDeMetas($e.target.value);
@@ -231,7 +231,7 @@ watch(valores, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="pdm in pdmsPorId[valores[idx]?.pdm_escolhido]?.metas"
+              v-for="pdm in planosPorId[valores[idx]?.pdm_escolhido]?.metas"
               :key="pdm.id"
               :value="pdm.id"
               :title="pdm.titulo"
@@ -244,7 +244,7 @@ watch(valores, (novoValor) => {
           <label
             class="label"
             :for="`${$props.name}[${idx}].iniciativa_id`"
-          >{{ pdmsPorId[valores[idx]?.pdm_escolhido]?.rotulo_iniciativa || 'Iniciativa' }}</label>
+          >{{ planosPorId[valores[idx]?.pdm_escolhido]?.rotulo_iniciativa || 'Iniciativa' }}</label>
           <select
             :id="`${$props.name}[${idx}].iniciativa_id`"
             v-model="valores[idx].iniciativa_id"
@@ -276,7 +276,7 @@ watch(valores, (novoValor) => {
           <label
             class="label"
             :for="`${$props.name}[${idx}].atividade_id`"
-          >{{ pdmsPorId[valores[idx]?.pdm_escolhido]?.rotulo_atividade || 'Atividade' }}</label>
+          >{{ planosPorId[valores[idx]?.pdm_escolhido]?.rotulo_atividade || 'Atividade' }}</label>
           <select
             :id="`${$props.name}[${idx}].atividade_id`"
             v-model="valores[idx].atividade_id"
@@ -323,7 +323,7 @@ watch(valores, (novoValor) => {
     <button
       class="like-a__text addlink"
       type="button"
-      :disabled="!pdmsSimplificados.length || !Array.isArray(valores)"
+      :disabled="!planosSimplificados.length || !Array.isArray(valores)"
       @click="adicionarLinha"
     >
       <svg

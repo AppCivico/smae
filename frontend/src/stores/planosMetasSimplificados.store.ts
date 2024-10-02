@@ -11,47 +11,47 @@ import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type PdmsSimplificados = ListProjetoProxyPdmMetaDto['linhas'];
+type PlanosSimplificados = ListProjetoProxyPdmMetaDto['linhas'];
 type MetaSimplificada = ListDadosMetaIniciativaAtividadesDto['linhas'];
 
 interface ChamadasPendentes {
-  pdmsSimplificados: boolean;
+  planosSimplificados: boolean;
   arvoreDeMetas: boolean;
 }
 
 interface Estado {
-  pdmsSimplificados: PdmsSimplificados;
+  planosSimplificados: PlanosSimplificados;
   arvoreDeMetas: { [k: number]: MetaSimplificada };
 
   chamadasPendentes: ChamadasPendentes;
 
   erros: {
     arvoreDeMetas: unknown;
-    pdmsSimplificados: unknown;
+    planosSimplificados: unknown;
   };
 }
 
-export const usePdmMetasStore = defineStore('pdmMetas', {
+export const usePlanosSimplificadosStore = defineStore('pdmMetas', {
   state: (): Estado => ({
-    pdmsSimplificados: [],
+    planosSimplificados: [],
     arvoreDeMetas: {},
 
     chamadasPendentes: {
-      pdmsSimplificados: false,
+      planosSimplificados: false,
       arvoreDeMetas: false,
     },
     erros: {
-      pdmsSimplificados: null,
+      planosSimplificados: null,
       arvoreDeMetas: null,
     },
   }),
 
   getters: {
-    pdmsPorId: ({ pdmsSimplificados }) => pdmsSimplificados
+    planosPorId: ({ planosSimplificados }) => planosSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-    planosAgrupadosPorTipo: ({ pdmsSimplificados }) => {
-      const grupos = pdmsSimplificados.reduce((acc, cur) => {
+    planosAgrupadosPorTipo: ({ planosSimplificados }) => {
+      const grupos = planosSimplificados.reduce((acc, cur) => {
         if (!acc[cur.tipo]) {
           acc[cur.tipo] = [];
         }
@@ -75,18 +75,18 @@ export const usePdmMetasStore = defineStore('pdmMetas', {
     },
   },
   actions: {
-    async buscarPdms(params = {}): Promise<void> {
-      this.chamadasPendentes.pdmsSimplificados = true;
-      this.pdmsSimplificados = [];
-      this.erros.pdmsSimplificados = null;
+    async buscarPlanos(params = {}): Promise<void> {
+      this.chamadasPendentes.planosSimplificados = true;
+      this.planosSimplificados = [];
+      this.erros.planosSimplificados = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/auxiliar/proxy/pdm-e-metas`, params);
-        this.pdmsSimplificados = linhas;
+        this.planosSimplificados = linhas;
       } catch (erro: unknown) {
-        this.erros.pdmsSimplificados = erro;
+        this.erros.planosSimplificados = erro;
       }
-      this.chamadasPendentes.pdmsSimplificados = false;
+      this.chamadasPendentes.planosSimplificados = false;
     },
 
     async buscarArvoreDeMetas(params = {}): Promise<void> {
