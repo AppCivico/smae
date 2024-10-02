@@ -3927,43 +3927,69 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
   tipo: mixed().label('Tipo').oneOf(comunicadosGeraisFiltrosSchemaTipoOpcoes),
 });
 
+function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
+  const schemaCampos = {
+    analise_qualitativa: string().label('análise qualitativa'),
+  };
+
+  if (posicao !== 1) {
+    schemaCampos.solicitar_complementacao = boolean().label(
+      'Solicitar complementação',
+    );
+    schemaCampos.pedido_complementacao = string()
+      .label('Pedido de complementação')
+      .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.required() : field.nullable()));
+  }
+
+  if (posicao >= 2) {
+    schemaCampos.analise_qualitativa_aprovador = string()
+      .label('análise qualitativa do aprovador')
+      .required();
+  }
+
+  if (posicao >= 3) {
+    schemaCampos.analise_qualitativa_liberador = string()
+      .label('análise qualitativa do liberador')
+      .required();
+  }
+
+  return schemaCampos;
+}
+
 export const cicloAtualizacaoModalAdicionarSchema = (posicao) => {
   const schemaCampos = {
     valor_realizado: string().label('valor realizado').required(),
     valor_realizado_acumulado: string().required()
       .label('valor realizado acumulado'),
-    analise_qualitativa: string().label('análise qualitativa'),
   };
 
-  if (posicao !== 1) {
-    schemaCampos.solicitar_complementacao = boolean().label('Solicitar complementação');
-    schemaCampos.pedido_complementacao = string()
-      .label('Pedido de complementação')
-      .when('solicitar_complementacao', (solicitarComplementacao, field) => (
-        solicitarComplementacao ? field.required() : field.nullable()
-      ));
-  }
+  const camposCompartilhados = obterCicloAtaulizacaoCamposCompartilhados(posicao);
 
-  if (posicao >= 2) {
-    schemaCampos.analise_qualitativa_aprovador = string().label('análise qualitativa do aprovador').required();
-  }
-
-  if (posicao >= 3) {
-    schemaCampos.analise_qualitativa_liberador = string().label('análise qualitativa do liberador').required();
-  }
-
-  return object().shape(schemaCampos);
+  return object().shape({
+    ...schemaCampos,
+    ...camposCompartilhados,
+  });
 };
 
-export const cicloAtualizacaoModalEditarSchema = object().shape({
-  analise_qualitativa: string().label('análise qualitativa'),
-  variaveis_dados: array().of(
-    object().shape({
-      valor_realizado: string().label('valor realizado').required(),
-      valor_realizado_acumulado: string().label('valor realizado acumulado').required(),
-    }),
-  ),
-});
+export const cicloAtualizacaoModalEditarSchema = (posicao) => {
+  const schemaCampos = {
+    variaveis_dados: array().of(
+      object().shape({
+        valor_realizado: string().label('valor realizado').required(),
+        valor_realizado_acumulado: string()
+          .label('valor realizado acumulado')
+          .required(),
+      }),
+    ),
+  };
+
+  const camposCompartilhados = obterCicloAtaulizacaoCamposCompartilhados(posicao);
+
+  return object().shape({
+    ...schemaCampos,
+    ...camposCompartilhados,
+  });
+};
 
 export const classificacaoCriarEditarSchema = object().shape({
   nome: string().label('Nome').required(),

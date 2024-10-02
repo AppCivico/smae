@@ -45,12 +45,14 @@ import SmallModal from '@/components/SmallModal.vue';
 import CicloAtualizacaoModalAdicionar from './CicloAtualizacaoModalAdicionar.vue';
 import CicloAtualizacaoModalEditar from './CicloAtualizacaoModalEditar.vue';
 
+import useCicloAtualizacao from './composables/useCicloAtualizacao';
+
 type ConteudoOpcao = {
   titulo: string,
   componente: Component
 };
 
-type Opcoes = 'adicionar' | 'editar';
+type Opcoes = 'simples' | 'composta';
 
 type ConteudoOpcoes = {
   [key in Opcoes]: ConteudoOpcao
@@ -58,6 +60,7 @@ type ConteudoOpcoes = {
 
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
+const { fase } = useCicloAtualizacao();
 
 const { emFoco, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
@@ -108,22 +111,29 @@ onMounted(async () => {
 });
 
 const conteudoEscolhido = computed<ConteudoOpcao>(() => {
+  let tituloBase = 'Adicionar valor realizado';
+  if (fase.value === 'aprovacao') {
+    tituloBase = 'Fase de Aprovação';
+  } else if (fase.value === 'liberacao') {
+    tituloBase = 'Fase de Liberação';
+  }
+
   const opcoes: ConteudoOpcoes = {
-    adicionar: {
-      titulo: 'Adicionar valor realizado',
+    simples: {
+      titulo: tituloBase,
       componente: CicloAtualizacaoModalAdicionar,
     },
-    editar: {
-      titulo: 'Edição de valores realizados em lote',
+    composta: {
+      titulo: `${tituloBase} em Lote`,
       componente: CicloAtualizacaoModalEditar,
     },
   };
 
   if (cicloAtualizacaoStore.emFoco?.possui_variaveis_filhas) {
-    return opcoes.editar;
+    return opcoes.composta;
   }
 
-  return opcoes.adicionar;
+  return opcoes.simples;
 });
 </script>
 

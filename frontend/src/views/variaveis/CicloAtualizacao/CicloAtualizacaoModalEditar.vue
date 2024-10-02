@@ -21,23 +21,110 @@
     >
       <hr>
 
-      <div
-        class="formulario"
-      >
-        <div class="mt2 formulario__item formulario__item--analise_qualitativa">
-          <LabelFromYup
-            name="analise_qualitativa"
-            :schema="schema"
-          />
+      <section :class="`formularios formularios--${fase}`">
+        <article
+          v-if="forumlariosAExibir.liberacao.exibir"
+          class="mt2 formulario formulario--liberacao"
+        >
+          <div class="formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa_liberador"
+              :schema="schema"
+            />
 
-          <Field
-            :style="{ height: '124px'}"
-            class="inputtext light f1"
-            as="textarea"
-            name="analise_qualitativa"
-          />
-        </div>
-      </div>
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa_liberador"
+              :disabled="!forumlariosAExibir.liberacao.liberado"
+            />
+
+            <ErrorMessage
+              name="analise_qualitativa_liberador"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="forumlariosAExibir.aprovacao.exibir"
+          class="mt2 formulario formulario--aprovacao"
+        >
+          <div class="formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa_aprovador"
+              :schema="schema"
+            />
+
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa_aprovador"
+              :disabled="!forumlariosAExibir.aprovacao.liberado"
+            />
+
+            <ErrorMessage
+              name="analise_qualitativa_aprovador"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="fase !== 'cadastro'"
+          class="mt2 formulario formulario--complementacao"
+        >
+          <div class="flex g025 center formulario__item">
+            <Field
+              class="inputcheckbox"
+              type="checkbox"
+              name="solicitar_complementacao"
+              :value="true"
+              :unchecked-value="false"
+            />
+
+            <LabelFromYup
+              class="mb0"
+              name="solicitar_complementacao"
+              :schema="schema"
+            />
+          </div>
+
+          <div class="formulario__item mt1">
+            <LabelFromYup
+              name="pedido_complementacao"
+              :schema="schema"
+            />
+
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="pedido_complementacao"
+              :disabled="!values.solicitar_complementacao"
+            />
+
+            <ErrorMessage
+              name="pedido_complementacao"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="forumlariosAExibir.cadastro.exibir"
+          class="mt2 formulario formulario--cadastro mt1"
+        >
+          <div class="mt2 formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa"
+              :schema="schema"
+            />
+
+            <Field
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa"
+            />
+          </div>
+        </article>
+      </section>
 
       <article class="upload-arquivos mt1">
         <UploadArquivos
@@ -236,19 +323,19 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { Field, useForm } from 'vee-validate';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
 
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
 import truncate from '@/helpers/truncate';
 
-import { cicloAtualizacaoModalEditarSchema as schema } from '@/consts/formSchemas';
+import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariaveisDados = {
   codigo: {
@@ -271,12 +358,14 @@ type Emits = {
 
 const $emit = defineEmits<Emits>();
 
-const $route = useRoute();
-
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
+
+const {
+  fase, forumlariosAExibir, fasePosicao, dataReferencia,
+} = useCicloAtualizacao();
 
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   variavel_id: item.variavel.id,
@@ -285,9 +374,12 @@ const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
 }));
 
 const valorInicial = {
+  solicitar_complementacao: false,
   analise_qualitativa: emFoco.value?.ultima_analise?.analise_qualitativa,
   variaveis_dados: valorInicialVariaveis,
 };
+
+const schema = computed(() => cicloAtualizacaoModalEditarSchema(fasePosicao.value));
 
 const {
   handleSubmit, errors, setFieldValue, values, validateField,
@@ -346,16 +438,23 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
-const onSubmit = handleSubmit(async (valores) => {
+const onSubmit = handleSubmit.withControlled(async (valores: any) => {
   if (!emFoco.value) {
     throw new Error('Erro ao tentar submeter dados');
   }
 
+  let analiseFase = 'analise_qualitativa';
+  if (fase.value === 'aprovacao') {
+    analiseFase = 'analise_qualitativa_aprovador';
+  } else if (fase.value === 'liberacao') {
+    analiseFase = 'analise_qualitativa_liberador';
+  }
+
   await cicloAtualizacaoStore.enviarDados({
     variavel_id: emFoco.value.variavel.id,
-    analise_qualitativa: valores.analise_qualitativa,
+    analise_qualitativa: valores[analiseFase],
     aprovar: false,
-    data_referencia: $route.params.dataReferencia as string,
+    data_referencia: dataReferencia,
     uploads: arquivosLocais.value,
     valores: valores.variaveis_dados || [],
     pedido_complementacao: undefined,
@@ -466,7 +565,43 @@ function restaurarFormulario() {
   }
 }
 
-.formulario__item--analise_qualitativa {
+.formularios {
+  display: grid;
+}
+
+.formularios--liberacao {
+  grid-template-areas:
+    'liberacao'
+    'complementacao'
+    'aprovacao'
+    'cadastro'
+  ;;
+}
+.formularios--aprovacao {
+  grid-template-areas:
+    'aprovacao'
+    'complementacao'
+    'cadastro'
+  ;
+}
+.formularios--cadastro {
+  display: block;
+}
+
+.formulario--liberacao {
+  grid-area: liberacao;
+}
+.formulario--aprovacao {
+  grid-area: aprovacao;
+}
+.formulario--complementacao {
+  grid-area: complementacao;
+}
+.formulario--cadastro {
+  grid-area: cadastro;
+}
+
+.formulario__item {
   textarea {
     height: 124px;
   }

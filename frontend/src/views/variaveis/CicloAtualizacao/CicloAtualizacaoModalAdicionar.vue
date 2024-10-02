@@ -246,7 +246,6 @@ import { UTCDate } from '@date-fns/utc';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
-import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -259,23 +258,11 @@ import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
+import useCicloAtualizacao from './composables/useCicloAtualizacao';
+
 type VariavelConfiguracaoItem = {
   label: string
   valor: string | number
-};
-
-type FaseOpcoes = 'cadastro' | 'aprovacao' | 'liberacao';
-type FormularioSituacao = {
-  exibir: boolean
-  liberado: boolean
-};
-
-type FormulariosTiposPosicao = {
-  [key in FaseOpcoes]: number
-};
-
-type FormulariosTiposSituacao = {
-  [key in FaseOpcoes]: FormularioSituacao
 };
 
 type Emits = {
@@ -284,17 +271,19 @@ type Emits = {
 
 const $emit = defineEmits<Emits>();
 
-const $route = useRoute();
-
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
+const {
+  fase, fasePosicao, forumlariosAExibir, dataReferencia,
+} = useCicloAtualizacao();
+
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
 
 const valorInicial = {
-  solicitar_complementacao: true,
+  solicitar_complementacao: false,
   valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
   valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
     ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
@@ -310,43 +299,10 @@ const variaveisCategoricasValores = computed(() => {
 });
 
 const dataCicloAtualizacao = computed<string>(() => (
-  format(new UTCDate(`${$route.params.dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
+  format(new UTCDate(`${dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
 ));
 
-const fase = computed<FaseOpcoes>(() =>
-  // 'cadastro' | 'aprovacao' | 'liberacao'
-  'liberacao');
-
-const fasePosicao = computed<number>(() => {
-  const fasePosicaoOpcoes: FormulariosTiposPosicao = {
-    cadastro: 1,
-    aprovacao: 2,
-    liberacao: 3,
-  };
-
-  return fasePosicaoOpcoes[fase.value] || 0;
-});
-
 const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(fasePosicao.value));
-
-const forumlariosAExibir = computed<FormulariosTiposSituacao>(() => {
-  const posicaoAtual = fasePosicao.value;
-
-  return {
-    cadastro: {
-      exibir: true,
-      liberado: posicaoAtual === 1,
-    },
-    aprovacao: {
-      exibir: posicaoAtual >= 2,
-      liberado: posicaoAtual === 2,
-    },
-    liberacao: {
-      exibir: posicaoAtual >= 3,
-      liberado: posicaoAtual === 3,
-    },
-  };
-});
 
 const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
   if (!emFoco.value) {
@@ -392,16 +348,23 @@ function atualizarVariavelAcumulado(valor: string) {
 }
 
 const submit = ({ aprovar = false }) => {
-  handleSubmit.withControlled(async (valores) => {
+  handleSubmit.withControlled(async (valores: any) => {
     if (!emFoco.value) {
       throw new Error('Erro ao tentar submeter dados');
     }
 
+    let analiseFase = 'analise_qualitativa';
+    if (fase.value === 'aprovacao') {
+      analiseFase = 'analise_qualitativa_aprovador';
+    } else if (fase.value === 'liberacao') {
+      analiseFase = 'analise_qualitativa_liberador';
+    }
+
     await cicloAtualizacaoStore.enviarDados({
       variavel_id: emFoco.value.variavel.id,
-      analise_qualitativa: valores.analise_qualitativa,
+      analise_qualitativa: valores[analiseFase],
       aprovar,
-      data_referencia: $route.params.dataReferencia as string,
+      data_referencia: dataReferencia,
       uploads: arquivosLocais.value,
       valores: [{
         variavel_id: emFoco.value.variavel.id,
