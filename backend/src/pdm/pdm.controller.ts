@@ -243,7 +243,7 @@ export class PlanoSetorialController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...PermsPS, 'PS.ponto_focal'])
+    @Roles([...PermsPS, 'PS.ponto_focal', 'Reports.executar.PlanoSetorial'])
     @ApiExtraModels(PlanoSetorialDto, DetalhePSDto)
     @ApiOkResponse({
         schema: { anyOf: refs(PlanoSetorialDto, DetalhePSDto) },
