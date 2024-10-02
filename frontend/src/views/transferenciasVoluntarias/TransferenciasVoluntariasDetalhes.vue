@@ -6,7 +6,6 @@ import {
   ref,
 } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import TransitionExpand from '@/components/TransitionExpand.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
@@ -35,7 +34,6 @@ const alertStore = useAlertStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const workflowAndamento = useWorkflowAndamentoStore();
-const exibirHistórico = ref(false);
 
 const { emFoco: transferenciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const {
@@ -185,72 +183,65 @@ workflowAndamento.buscarHistorico();
         @close="ConfigurarWorkflow = false"
       />
     </div>
-    <button @click="exibirHistórico = !exibirHistórico">
-      Histórico
-    </button>
-    <TransitionExpand>
-      <div v-if="exibirHistórico">
-        <pre>
-          historicoDoWorkflow:{{ historicoDoWorkflow }}
-        </pre>
-        <div
-          v-for="(linha, index) in historicoDoWorkflow.linhas"
-          :key="index"
-          class="mb2"
-        >
-          <div v-if="linha.acao==='DelecaoWorkflow'">
-            <strong class="tc600">
-              <span class="tamarelo mr1">DELEÇÃO WORKFLOW </span>
-              {{ linha.criador.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
-            </strong>
-          </div>
-          <div v-if="linha.acao==='TrocaTipo'">
-            <strong class="tc600 mb1">
-              <span class="tamarelo mr1">
-                TROCA TIPO
-              </span>
-              {{ linha.criador.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
-            </strong>
-            <div class="flex">
-              <dl class="mr2">
-                <p class="tc500 w700 mb0">
-                  Tipo antigo
-                </p>
-                <div class="flex">
-                  <dt class="w700 mr1">
-                    Nome:
-                  </dt>
-                  <dd> {{ linha.tipo_antigo.nome }}</dd>
-                </div>
-                <div class="flex">
-                  <dt class="w700 mr1">
-                    Esfera:
-                  </dt>
-                  <dd>{{ linha.tipo_antigo.esfera }} </dd>
-                </div>
-              </dl>
-              <dl>
-                <p class="tc500 w700 mb0">
-                  Tipo novo
-                </p>
-                <div class="flex">
-                  <dt class="w700 mr1">
-                    Nome:
-                  </dt>
-                  <dd> {{ linha.tipo_novo.nome }}</dd>
-                </div>
-                <div class="flex">
-                  <dt class="w700 mr1">
-                    Esfera:
-                  </dt>
-                  <dd>{{ linha.tipo_novo.esfera }} </dd>
-                </div>
-              </dl>
-            </div>
+
+    <div>
+      <div
+        v-for="(linha, index) in historicoDoWorkflow.linhas"
+        :key="index"
+        class="mb2"
+      >
+        <div v-if="linha.acao==='DelecaoWorkflow'">
+          <strong class="tc600">
+            <span class="tamarelo mr1">DELEÇÃO WORKFLOW </span>
+            {{ linha.criador.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
+          </strong>
+        </div>
+        <div v-if="linha.acao==='TrocaTipo'">
+          <strong class="tc600">
+            <span class="tamarelo mr1">
+              TROCA TIPO
+            </span>
+            {{ linha.criador.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
+          </strong>
+          <div class="flex mt1">
+            <dl class="mr2">
+              <p class="tc500 w700 mb0">
+                Informação anterior
+              </p>
+              <div class="flex mt05">
+                <dt class="w700 mr1">
+                  Nome:
+                </dt>
+                <dd> {{ linha.tipo_antigo.nome }}</dd>
+              </div>
+              <div class="flex mt05">
+                <dt class="w700 mr1">
+                  Esfera:
+                </dt>
+                <dd>{{ linha.tipo_antigo.esfera }} </dd>
+              </div>
+            </dl>
+            <dl>
+              <p class="tc500 w700 mb0">
+                Informação nova
+              </p>
+              <div class="flex mt05">
+                <dt class="w700 mr1">
+                  Nome:
+                </dt>
+                <dd> {{ linha.tipo_novo.nome }}</dd>
+              </div>
+              <div class="flex mt05">
+                <dt class="w700 mr1">
+                  Esfera:
+                </dt>
+                <dd>{{ linha.tipo_novo.esfera }} </dd>
+              </div>
+            </dl>
           </div>
         </div>
       </div>
-    </TransitionExpand>
+    </div>
     <div class="flex justifycenter">
       <button
         type="button"
