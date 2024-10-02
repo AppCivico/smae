@@ -1726,6 +1726,17 @@ export class TransferenciaService {
         // TODO: tornar compatível com troca de tipo.
         // Para essa func ser chamada no update.
 
+        const transferencia = await this.prisma.transferencia.findFirstOrThrow({
+            where: {
+                id: transferencia_id,
+                removido_em: null,
+                workflow_id: { not: null },
+            },
+            select: {
+                workflow_id: true,
+            },
+        });
+
         const update = async (prismaTxn: Prisma.TransactionClient) => {
             await prismaTxn.transferenciaAndamento.updateMany({
                 where: { transferencia_id: transferencia_id },
@@ -1768,6 +1779,8 @@ export class TransferenciaService {
                     removido_por: user.id,
                 },
             });
+
+            await this.startWorkflow(transferencia_id, transferencia.workflow_id!, prismaTxn, user);
 
             // Inserindo row no histórico de alterações.
             await prismaTxn.transferenciaHistorico.create({
