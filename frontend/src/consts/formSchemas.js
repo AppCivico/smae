@@ -2604,6 +2604,30 @@ export const região = object()
       .nullable(),
   });
 
+export const relatórioDeAtividadesPendentes = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    partido_id: number()
+      .label('Partido')
+      .min(0, '${label} inválido')
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    cargo: mixed()
+      .label('Cargo')
+    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+      .oneOf([...Object.keys(cargosDeParlamentar), null])
+      .nullable()
+      .transform((v) => (v === '' ? null : v)),
+    eleicao_id: number()
+      .label('Eleição')
+      .min(1, 'Eleição inválida')
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioDeParlamentares = object({
   fonte: string()
     .required(),

@@ -1,6 +1,6 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const NovoMensal = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoMensal.vue'),
@@ -139,6 +139,7 @@ export default {
       'RelatóriosDeParlamentares',
       'RelatóriosDeTransferênciasVoluntárias',
       'RelatóriosDeTribunalDeContas',
+      'RelatóriosDeAtividadesPendentes',
 
       // MDO
       'RelatóriosDePortfolioObras',
@@ -325,6 +326,31 @@ export default {
           meta: {
             título: 'Novo relatório do tribunal de contas',
             rotaDeEscape: 'RelatóriosDeTribunalDeContas',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'atividades-pendentes',
+      meta: {
+        título: 'Atividades pendentes',
+        títuloParaMenu: 'Atividades pendentes',
+        // limitarÀsPermissões: 'Reports.executar.CasaCivil', // ver se é esse
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDeAtividadesPendentes',
+          component: () => import('@/views/relatorios/RelatoriosDeAtividadesPendentes.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/NovoRelatorioDeAtividadesPendentes.vue'),
+          path: 'novo',
+          name: 'novoRelatórioDeAtividadePendente',
+          meta: {
+            título: 'Nova atividade pendente',
+            rotaDeEscape: 'RelatóriosDeAtividadesPendentes',
           },
         },
       ],
