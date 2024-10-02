@@ -177,11 +177,21 @@ export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
     descricao: string | null;
 }
 
+export class PSPedidoComplementacaoDto {
+    @ApiProperty({ description: 'Pedido de complementação' })
+    pedido: string;
+    criado_em: Date;
+    criador_nome: string;
+}
+
 export class VariavelAnaliseQualitativaResponseDto {
     variavel: VariavelResumo;
 
     @ApiProperty({ description: 'Análise qualitativas e outros envios' })
     analises: AnaliseQualitativaDto[] | null;
+
+    @ApiProperty({ description: 'Ultimo pedido de complementacao' })
+    pedido_complementacao: PSPedidoComplementacaoDto | null;
 
     @ApiProperty({ description: 'Valores da variável e suas filhas', type: [VariavelValorDto] })
     valores: VariavelValorDto[];

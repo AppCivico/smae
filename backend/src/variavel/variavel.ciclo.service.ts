@@ -17,6 +17,7 @@ import {
     BatchAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaGetDto,
     FilterVariavelGlobalCicloDto,
+    PSPedidoComplementacaoDto,
     UpsertVariavelGlobalCicloDocumentoDto,
     VariavelAnaliseDocumento,
     VariavelAnaliseQualitativaResponseDto,
@@ -665,7 +666,34 @@ export class VariavelCicloService {
         );
         const uploadsFormatados = this.formatarUploads(uploads);
 
+        const pedidoCompDb = await this.prisma.variavelGlobalPedidoComplementacao.findFirst({
+            where: {
+                variavel_id: variavel_id,
+                referencia_data: data_referencia,
+                atendido: false,
+                ultima_revisao: true,
+            },
+            select: {
+                pedido: true,
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                ultima_revisao: true,
+            },
+            orderBy: { criado_em: 'desc' },
+        });
+
+        const pedido_complementacao: PSPedidoComplementacaoDto | null = pedidoCompDb
+            ? {
+                  pedido: pedidoCompDb.pedido,
+                  criado_em: pedidoCompDb.criado_em,
+                  criador_nome: pedidoCompDb.pessoaCriador.nome_exibicao,
+              }
+            : null;
+
         return {
+            pedido_complementacao,
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
             analises,
