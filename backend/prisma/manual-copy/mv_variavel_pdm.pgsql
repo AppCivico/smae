@@ -1,4 +1,4 @@
-create materialized view mv_variavel_pdm as
+create materialized view if not exists mv_variavel_pdm as
 select
 m.id as meta_id,
 m.pdm_id as pdm_id,
@@ -69,16 +69,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel
-AFTER INSERT OR UPDATE ON indicador_variavel
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
-
-
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
-AFTER DELETE ON indicador_variavel
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel
+--AFTER INSERT OR UPDATE ON indicador_variavel
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
+--
+--
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
+--AFTER DELETE ON indicador_variavel
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
 
 -- Trigger to refresh materialized view when changes occur in atividade
 CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_atividade()
@@ -103,13 +103,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_atividade
-AFTER UPDATE ON atividade
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_atividade();
-
-
--- Trigger to refresh materialized view when changes occur in iniciativa
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_atividade
+--AFTER UPDATE ON atividade
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_atividade();
+--
+--
+---- Trigger to refresh materialized view when changes occur in iniciativa
 CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_iniciativa()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -123,11 +123,11 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_iniciativa
-AFTER UPDATE ON iniciativa
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_iniciativa();
+--
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_iniciativa
+--AFTER UPDATE ON iniciativa
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_iniciativa();
 
 
 -- Trigger to refresh materialized view when changes occur in indicador
@@ -148,10 +148,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador
-AFTER UPDATE ON indicador
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador();
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador
+--AFTER UPDATE ON indicador
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador();
 
 
 -- Trigger to refresh materialized view when removido_em or ativo columns are changed in meta
@@ -165,13 +165,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_meta
-AFTER INSERT OR UPDATE ON meta
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_meta();
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_meta
+--AFTER INSERT OR UPDATE ON meta
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_meta();
 
-
-CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
-AFTER DELETE ON indicador_variavel
-FOR EACH ROW
-EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
+--CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
+--AFTER DELETE ON indicador_variavel
+--FOR EACH ROW
+--EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();

@@ -11,6 +11,7 @@ vStatusColeta varchar;
 vFaseColeta boolean;
 
 vStatusCrono int;
+vCronograma int[];
 
 BEGIN
     -- recebe o pdm_id apenas pq já está calculado no GET pra não ter que buscar novamente pelo ativo aqui dentro
