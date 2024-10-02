@@ -18,6 +18,7 @@ import { NumberTransform } from '../../auth/transforms/number.transform';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { VariavelResumo } from './list-variavel.dto';
 import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
+import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -71,6 +72,13 @@ export class VariavelGlobalCicloDto {
     ultimo_periodo_valido: string;
 
     pedido_complementacao: boolean;
+
+    atrasos: string[] | null;
+    equipes: IdTituloDto[];
+
+    @IsDateYMD({ nullable: true })
+    prazo: Date | null;
+    pode_editar: boolean;
 }
 
 export class VariavelGlobalAnaliseItemDto {

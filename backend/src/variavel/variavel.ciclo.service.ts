@@ -27,6 +27,7 @@ import {
 } from './dto/variavel.ciclo.dto';
 import { VariavelComCategorica, VariavelService } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
+import { IdTituloDto } from '../common/dto/IdTitulo.dto';
 
 interface ICicloCorrente {
     variavel: {
@@ -153,6 +154,13 @@ export class VariavelCicloService {
     ): Promise<VariavelGlobalCicloDto[]> {
         const whereFilter = await this.getPermissionSet(filters, user);
 
+        const mapPerfil: Record<VariavelFase, PerfilResponsavelEquipe> = {
+            Liberacao: 'Liberacao',
+            Preenchimento: 'Medicao',
+            Validacao: 'Validacao',
+        };
+        const minhasEquipes = await user.getEquipesColaborador(this.prisma);
+
         const variaveis = await this.prisma.variavelCicloCorrente.findMany({
             where: {
                 variavel: {
@@ -168,12 +176,51 @@ export class VariavelCicloService {
                         id: true,
                         titulo: true,
                         codigo: true,
+                        VariavelGrupoResponsavelEquipe: {
+                            where: {
+                                removido_em: null,
+
+                                grupo_responsavel_equipe: filters.fase
+                                    ? {
+                                          perfil: mapPerfil[filters.fase],
+                                      }
+                                    : undefined,
+                            },
+                            select: {
+                                grupo_responsavel_equipe: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
         });
 
         const rows = variaveis.map((v) => {
+            let pode_editar: boolean = false;
+            const atrasos: string[] = [];
+            let prazo: Date | null = null;
+            const equipesDb = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id);
+
+            const equipes: IdTituloDto[] = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => ({
+                id: e.grupo_responsavel_equipe.id,
+                titulo: e.grupo_responsavel_equipe.titulo,
+            }));
+
+            if (minhasEquipes.length > 0) {
+                pode_editar = equipesDb.some((e) => minhasEquipes.includes(e));
+            }
+            if (pode_editar) {
+                prazo = v.proximo_periodo_abertura;
+                if (v.variavel.id % 2 == 0) {
+                    atrasos.push('Atraso 1');
+                }
+            }
+
             return {
                 id: v.variavel.id,
                 titulo: v.variavel.titulo,
@@ -182,6 +229,10 @@ export class VariavelCicloService {
                 ultimo_periodo_valido: Date2YMD.toString(v.ultimo_periodo_valido),
                 pedido_complementacao: v.pedido_complementacao,
                 codigo: v.variavel.codigo,
+                atrasos,
+                equipes,
+                pode_editar,
+                prazo,
             } satisfies VariavelGlobalCicloDto;
         });
 
