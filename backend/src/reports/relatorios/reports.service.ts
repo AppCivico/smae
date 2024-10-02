@@ -266,7 +266,7 @@ export class ReportsService {
             case 'TribunalDeContas':
                 service = this.tribunalDeContasService;
                 break;
-            case 'PlanoSetoriaisMonitoramentoMensal':
+            case 'PSMonitoramentoMensal':
                 service = this.monitoramentoMensalVariaveisPs;
                 break;
             case 'CasaCivilAtvPendentes':
