@@ -2,7 +2,10 @@
 import { useObrasStore } from '@/stores/obras.store';
 import {
   computed,
+  defineOptions,
 } from 'vue';
+
+defineOptions({ inheritAttrs: false });
 
 const obraStore = useObrasStore();
 
