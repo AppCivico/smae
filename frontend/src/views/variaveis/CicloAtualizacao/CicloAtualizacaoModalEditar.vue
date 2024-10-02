@@ -243,6 +243,7 @@
                   ]"
                   type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                  :disabled="!forumlariosAExibir.cadastro.liberado"
                   @update:model-value="atualizarVariavelAcululado(variavelDadoIndex, $event)"
                 />
                 <Field
