@@ -18,6 +18,9 @@ import { WriteStream } from 'fs';
 import { CreateRelObrasDto } from '../pp-obras/dto/create-obras.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
 import { CreatePsMonitoramentoMensalFilterDto } from '../planos-setoriais-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
+import {
+    CreateCasaCivilAtividadesPendentesFilterDto
+} from '../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
 
 @Injectable()
 export class UtilsService {
@@ -145,7 +148,8 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             theClass = CreatePsMonitoramentoMensalFilterDto;
             break;
         case 'CasaCivilAtvPendentes':
-            throw new Error('Fonte CasaCivilAtvPendentes não implementada');
+            theClass = CreateCasaCivilAtividadesPendentesFilterDto;
+            break;
         default:
             fonte satisfies never;
     }

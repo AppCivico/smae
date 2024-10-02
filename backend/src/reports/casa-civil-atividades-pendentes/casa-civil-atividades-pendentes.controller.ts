@@ -2,7 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CasaCivilAtividadesPendentesService } from './casa-civil-atividades-pendentes.service';
-import { CreateCasaCivilAtividadesPendentesFilter } from './dto/create-casa-civil-atv-pend-filter.dto';
+import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 
 @ApiTags('Relatórios - API')
@@ -14,7 +14,7 @@ export class CasaCivilAtividadesPendentesController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.CasaCivil'])
     async create(
-        @Body() createOrcamentoExecutadoDto: CreateCasaCivilAtividadesPendentesFilter
+        @Body() createOrcamentoExecutadoDto: CreateCasaCivilAtividadesPendentesFilterDto
     ): Promise<RelCasaCivilAtividadesPendentes[]> {
         return await this.casaCivilAtividadesPendentes.asJSON(createOrcamentoExecutadoDto);
     }

@@ -1,16 +1,27 @@
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsOptional, ValidateIf } from 'class-validator';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { Transform } from 'class-transformer';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
-export class CreateCasaCivilAtividadesPendentesFilter {
+export class CreateCasaCivilAtividadesPendentesFilterDto {
 
-    @IsArray({ message: '$property| tipo_transferencia_id: precisa ser uma array.' })
-    tipos_transferencias:number[];
+    @IsOptional()
+    @IsArray({ message: '$property| tipo_id: precisa ser uma array.' })
+    tipo_id?:number[];
 
-    @IsString()
-    data_inicio: string;
+    @IsOptional()
+    @Transform(DateTransform)
+    @IsOnlyDate()
+    @ValidateIf((object, value) => value !== null)
+    data_inicio?: string;
 
-    @IsString()
-    data_termino: string;
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    @ValidateIf((object, value) => value !== null)
+    data_termino?: string;
 
-    @IsArray({ message: '$property| tipo_transferencia_id: precisa ser uma array.' })
-    orgao_id:number[];
+    @IsOptional()
+    @IsArray({ message: '$property| orgao_id: precisa ser uma array.' })
+    orgao_id?:number[];
 }

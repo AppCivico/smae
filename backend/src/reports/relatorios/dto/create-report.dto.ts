@@ -21,6 +21,9 @@ import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
 import {
     CreatePsMonitoramentoMensalFilterDto
 } from '../../planos-setoriais-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
+import {
+    CreateCasaCivilAtividadesPendentesFilterDto
+} from '../../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
 
 
 export class CreateReportDto {
@@ -52,6 +55,7 @@ export class CreateReportDto {
             CreateRelObrasDto,
             CreateRelProjetoPrevisaoCustoDto,
             CreatePsMonitoramentoMensalFilterDto,
+            CreateCasaCivilAtividadesPendentesFilterDto
         ),
     })
     parametros: any;
