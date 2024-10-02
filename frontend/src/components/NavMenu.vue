@@ -7,7 +7,7 @@ import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
 const {
-  sistemaEscolhido, dadosDoSistemaEscolhido, temPermissãoPara, user,
+  sistemaCorrente, dadosDoSistemaEscolhido, temPermissãoPara, user,
 } = storeToRefs(authStore);
 const router = useRouter();
 const route = useRoute();
@@ -65,7 +65,7 @@ onBeforeRouteUpdate(() => {
           aria-hidden="true"
         >
         <h2 class="cabeçalho__nome-do-módulo">
-          {{ dadosDoSistemaEscolhido?.nome || sistemaEscolhido }}
+          {{ dadosDoSistemaEscolhido?.nome || sistemaCorrente }}
         </h2>
       </div>
 
