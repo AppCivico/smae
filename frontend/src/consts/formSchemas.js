@@ -2976,6 +2976,34 @@ export const relatórioDeTribunalDeContas = object({
   salvar_arquivo: boolean(),
 });
 
+export const relatórioAtividadesPendentes = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    esfera: mixed()
+      .label('Esfera')
+      .required()
+      .oneOf(Object.keys(esferasDeTransferencia)),
+    tipo_id: number()
+      .label('Tipo')
+      .required(),
+    orgao_id: number()
+      .label('Órgão')
+      .min(1, 'Selecione um órgão')
+      .nullable(),
+    data_inicio: date()
+      .nullable()
+      .label('Data de início')
+      .transform((v) => (v === '' ? null : v)),
+    data_termino: date()
+      .nullable()
+      .min(ref('data_inicio'), 'Data de término deve ser posterior à data de início')
+      .label('Data de término previsto')
+      .transform((v) => (v === '' ? null : v)),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioMensal = object({
   fonte: string()
     .required(),

@@ -1,23 +1,27 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import TabelaBásica from '@/components/relatorios/TabelaBasica.vue';
-import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
+import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
+import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import {
+  prepararEtiquetas,
   prepararEsferaDeTransferência,
   prepararTipoTransferencia,
-  prepararEtiquetas,
 } from './helpers/preparadorDeColunaParametros';
+
 
 const relatóriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
-const fonte = 'TribunalDeContas';
+const fonte = 'CasaCivilAtvPendentes';
 const etiquetasParaValoresDeParâmetros = ref({
+  categoria: {},
   esfera: {},
   tipo_id: {},
+  id: {},
+  nome: {},
 });
 
 const etiquetasParaParâmetros = prepararEtiquetas(schema);
@@ -43,7 +47,6 @@ iniciar();
       Novo relatório
     </router-link>
   </div>
-  <h1>bom dia</h1>
   <TabelaBásica
     class="mb1"
     :etiquetas-para-valores-de-parâmetros="etiquetasParaValoresDeParâmetros"

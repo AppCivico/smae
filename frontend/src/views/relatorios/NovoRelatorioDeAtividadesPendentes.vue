@@ -6,10 +6,12 @@ import {
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LabelFromYup from '@/components/LabelFromYup.vue';
+import truncate from '@/helpers/truncate';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
+import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { useOrgansStore } from '@/stores/organs.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
@@ -17,23 +19,23 @@ const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaSto
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
+const ÓrgãosStore = useOrgansStore();
 
 const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'TribunalDeContas',
+  fonte: 'CasaCivilAtvPendentes',
   parametros: {
-    esfera: null,
-    ano_inicio: null,
-    ano_fim: null,
     tipo_id: null,
-    tipo: 'Geral',
+    data_inicio: null,
+    data_termino: null,
+    orgao_id: null,
   },
   salvar_arquivo: false,
-
 };
 
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 TipoDeTransferenciaStore.buscarTudo();
 
 const {
@@ -51,10 +53,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = 'Dados salvos com sucesso!';
 
-    // Converte os valores dos anos de string para number, atendendo o que a API espera
-    valoresControlados.parametros.ano_inicio = parseInt(valoresControlados.parametros.ano_inicio);
-    valoresControlados.parametros.ano_fim = parseInt(valoresControlados.parametros.ano_fim);
-
     if (await relatoriosStore.insert(valoresControlados)) {
       alertStore.success(msg);
       if (valoresControlados.salvar_arquivo && route.meta?.rotaDeEscape) {
@@ -66,6 +64,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
+ÓrgãosStore.getAll();
 const formularioSujo = useIsFormDirty();
 
 </script>
@@ -82,7 +81,6 @@ const formularioSujo = useIsFormDirty();
   <pre>tiposDisponíveis: {{ tiposDisponíveis }}</pre>
   /<pre>Lista: {{ tipoTransferenciaComoLista }}</pre>
 -->
-  <h1>aquiaqui</h1>
   <form
     :disabled="isSubmitting"
     @submit.prevent="onSubmit"
@@ -90,7 +88,7 @@ const formularioSujo = useIsFormDirty();
     <Field
       name="fonte"
       type="hidden"
-      value="TribunalDeContas"
+      value="CasaCivilAtvPendentes"
     />
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
@@ -121,73 +119,79 @@ const formularioSujo = useIsFormDirty();
         </div>
       </div>
 
-      <!--
+      <div class="f1">
         <LabelFromYup
-          name="esfera"
-          :schema="parametros"
+          name="orgao_id"
+          :schema="schema.fields.parametros"
         />
         <Field
-          v-model="esferaSelecionada"
-          name="parametros.esfera"
+          name="parametros.orgao_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors['parametros.esfera'] }"
-          @change="!$event.target.value ? setFieldValue('parametros.esfera',null) : null"
+          :class="{
+            error: errors['parametros.orgao_id'] ,
+            loading: ÓrgãosStore.organs?.loading,
+          }"
+          :disabled="!órgãosComoLista?.length"
+          @change="!$event.target.value ?
+            setFieldValue('parametros._id',null) : null"
         >
           <option value="">
             Selecionar
           </option>
+
           <option
-            v-for="item in Object.values(esferasDeTransferencia)"
-            :key="item.valor"
-            :value="item.valor"
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
           >
-            {{ item.nome }}
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
-        <div class="error-msg">
-          {{ errors['parametros.esfera'] }}
-        </div>
-
-    -->
-
-      <div class="f1">
-        <LabelFromYup
-          name="parametros.ano_inicio"
-          :schema="schema"
-        />
-        <Field
-          name="parametros.ano_inicio"
-          type="text"
-          class="inputtext light mb1"
-          :class="{
-            error: errors['parametros.ano_inicio'],
-          }"
-          @change="!$event.target.value ? setFieldValue('parametros.ano_inicio',null) : null"
-        />
         <ErrorMessage
-          class="error-msg mb1"
-          name="parametros.ano_inicio"
+          name="parametros.orgao_id"
+          class="error-msg"
         />
       </div>
 
       <div class="f1">
         <LabelFromYup
-          name="parametros.ano_fim"
+          name="parametros.data_inicio"
           :schema="schema"
         />
         <Field
-          name="parametros.ano_fim"
-          type="text"
+          name="parametros.data_inicio"
+          type="date"
           class="inputtext light mb1"
           :class="{
-            error: errors['parametros.ano_fim'],
+            error: errors['parametros.data_inicio'],
           }"
-          @change="!$event.target.value ? setFieldValue('parametros.ano_fim',null) : null"
+          @change="!$event.target.value ? setFieldValue('parametros.data_inicio',null) : null"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="parametros.ano_fim"
+          name="parametros.data_inicio"
+        />
+      </div>
+
+      <div class="f1">
+        <LabelFromYup
+          name="parametros.data_termino"
+          :schema="schema"
+        />
+        <Field
+          name="parametros.data_termino"
+          type="date"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['parametros.data_termino'],
+          }"
+          @change="!$event.target.value ? setFieldValue('parametros.data_termino',null) : null"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="parametros.data_termino"
         />
       </div>
     </div>
@@ -224,34 +228,6 @@ const formularioSujo = useIsFormDirty();
           name="parametros.tipo_id"
           class="error-msg"
         />
-      </div>
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Geral"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Geral</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Resumido"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Resumido</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors['parametros.tipo'] }}
       </div>
     </div>
 
