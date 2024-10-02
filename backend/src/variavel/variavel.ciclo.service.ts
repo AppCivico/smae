@@ -285,6 +285,8 @@ export class VariavelCicloService {
                     // estamos salvando o status apenas na variável mãe. No frontend é sempre enviado todas as filhas
                     await this.moveFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn, user);
                 } else if (dto.pedido_complementacao) {
+                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
+                    // cria o pedido depois
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
                         dto.pedido_complementacao,
@@ -292,7 +294,6 @@ export class VariavelCicloService {
                         prismaTxn,
                         now
                     );
-                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
                 }
             } else if (cicloCorrente.fase === 'Liberacao') {
                 if (dto.aprovar) {
@@ -302,6 +303,8 @@ export class VariavelCicloService {
                     const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
                     await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
                 } else if (dto.pedido_complementacao) {
+                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
+                    // cria o pedido após mover a fase
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
                         dto.pedido_complementacao,
@@ -309,7 +312,6 @@ export class VariavelCicloService {
                         prismaTxn,
                         now
                     );
-                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
                 }
             }
 
