@@ -1,6 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineStore } from 'pinia';
-import { WorkflowAndamentoDto, WorkflowAndamentoFasesDto, WorkflowAndamentoFluxoDto } from '@/../../backend/src/workflow/andamento/entities/workflow-andamento.entity';
+import type {
+  WorkflowAndamentoDto, WorkflowAndamentoFasesDto, WorkflowAndamentoFluxoDto, TransferenciaHistoricoDto,
+} from '@/../../backend/src/workflow/andamento/entities/workflow-andamento.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -8,23 +10,25 @@ interface ChamadasPendentes {
   workflow: boolean;
   fase: boolean;
   tarefas: boolean;
+  historico: boolean;
 }
 
 interface Estado {
   workflow: WorkflowAndamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
-
+  historico: TransferenciaHistoricoDto | null;
   erro: null | unknown;
 }
 
 export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   state: (): Estado => ({
     workflow: null,
-
+    historico: null,
     chamadasPendentes: {
       workflow: false,
       fase: false,
       tarefas: false,
+      historico: false,
     },
     erro: null,
   }),
@@ -45,6 +49,24 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
         this.erro = erro;
       }
       this.chamadasPendentes.workflow = false;
+    },
+
+    async buscarHistorico(transferênciaId?: number): Promise<void> {
+      console.log('entrou no buscar historico');
+      this.chamadasPendentes.historico = true;
+      const id = transferênciaId || Number(this.route.params.transferenciaId);
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/transferencia/${id}/historico`, {
+          id,
+        });
+
+        if (typeof resposta === 'object') {
+          this.historico = resposta;
+        }
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.historico = false;
     },
 
     async editarFase(params = {}): Promise<boolean> {
@@ -69,7 +91,9 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
     async deletarWorklow(transferênciaId?: number): Promise<boolean> {
       const id = transferênciaId || Number(this.route.params.transferenciaId);
       try {
-        const resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}/limpar-workflow`);
+        const resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}/limpar-workflow`, {
+          id,
+        });
         this.erro = null;
         return !!resposta;
       } catch (erro) {

@@ -6,6 +6,7 @@ import {
   ref,
 } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import TransitionExpand from '@/components/TransitionExpand.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
@@ -34,6 +35,7 @@ const alertStore = useAlertStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const workflowAndamento = useWorkflowAndamentoStore();
+const exibirHistórico = ref(false);
 
 const { emFoco: transferenciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const {
@@ -44,6 +46,7 @@ const {
   workflow,
   inícioDeFasePermitido,
   idDaPróximaFasePendente,
+  historico: historicoDoWorkflow,
 } = storeToRefs(workflowAndamento);
 const { temPermissãoPara } = storeToRefs(authStore);
 
@@ -107,8 +110,22 @@ function atualizaSeiLido(item, transferenciaId, lido) {
   });
 }
 
+function formatarData(data) {
+  const date = new Date(data);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Mês é baseado em zero, por isso é preciso adicionar +1
+  const year = date.getFullYear();
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${day}/${month}/${year}, ${hours}:${minutes}`;
+}
+
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+workflowAndamento.buscarHistorico();
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
@@ -168,6 +185,72 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         @close="ConfigurarWorkflow = false"
       />
     </div>
+    <button @click="exibirHistórico = !exibirHistórico">
+      Histórico
+    </button>
+    <TransitionExpand>
+      <div v-if="exibirHistórico">
+        <pre>
+          historicoDoWorkflow:{{ historicoDoWorkflow }}
+        </pre>
+        <div
+          v-for="(linha, index) in historicoDoWorkflow.linhas"
+          :key="index"
+          class="mb2"
+        >
+          <div v-if="linha.acao==='DelecaoWorkflow'">
+            <strong class="tc600">
+              <span class="tamarelo mr1">DELEÇÃO WORKFLOW </span>
+              {{ linha.criador.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
+            </strong>
+          </div>
+          <div v-if="linha.acao==='TrocaTipo'">
+            <strong class="tc600 mb1">
+              <span class="tamarelo mr1">
+                TROCA TIPO
+              </span>
+              {{ linha.criador.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
+            </strong>
+            <div class="flex">
+              <dl class="mr2">
+                <p class="tc500 w700 mb0">
+                  Tipo antigo
+                </p>
+                <div class="flex">
+                  <dt class="w700 mr1">
+                    Nome:
+                  </dt>
+                  <dd> {{ linha.tipo_antigo.nome }}</dd>
+                </div>
+                <div class="flex">
+                  <dt class="w700 mr1">
+                    Esfera:
+                  </dt>
+                  <dd>{{ linha.tipo_antigo.esfera }} </dd>
+                </div>
+              </dl>
+              <dl>
+                <p class="tc500 w700 mb0">
+                  Tipo novo
+                </p>
+                <div class="flex">
+                  <dt class="w700 mr1">
+                    Nome:
+                  </dt>
+                  <dd> {{ linha.tipo_novo.nome }}</dd>
+                </div>
+                <div class="flex">
+                  <dt class="w700 mr1">
+                    Esfera:
+                  </dt>
+                  <dd>{{ linha.tipo_novo.esfera }} </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </TransitionExpand>
     <div class="flex justifycenter">
       <button
         type="button"
