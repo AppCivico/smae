@@ -1815,12 +1815,14 @@ export class TransferenciaService {
                     select: {
                         id: true,
                         nome: true,
+                        esfera: true,
                     },
                 },
                 tipo_novo: {
                     select: {
                         id: true,
                         nome: true,
+                        esfera: true,
                     },
                 },
                 criador: {

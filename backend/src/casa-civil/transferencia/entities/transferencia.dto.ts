@@ -12,6 +12,7 @@ import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity'
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { ClassificacaoDto } from '../../../transferencias-voluntarias/classificacao/entities/classificacao.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
+import { TransferenciaTipoCurtoDto } from '../tipo/entities/transferencia-tipo.dto';
 
 export class TransferenciaDto {
     id: number;
@@ -121,8 +122,8 @@ export class ListTransferenciaAnexoDto {
 }
 
 export class TransferenciaHistoricoDto {
-    tipo_antigo: IdNomeDto | null;
-    tipo_novo: IdNomeDto | null;
+    tipo_antigo: TransferenciaTipoCurtoDto | null;
+    tipo_novo: TransferenciaTipoCurtoDto | null;
     @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao' })
     acao: TransferenciaHistoricoAcao;
     dados_extra: any;

@@ -13,3 +13,10 @@ export class TransferenciaTipoDto {
 export class ListTransferenciaTipoDto {
     linhas: TransferenciaTipoDto[];
 }
+
+export class TransferenciaTipoCurtoDto {
+    id: number;
+    nome: string;
+    @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
+    esfera: TransferenciaTipoEsfera;
+}
