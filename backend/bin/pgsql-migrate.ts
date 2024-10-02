@@ -7,6 +7,7 @@ import { Pool } from 'pg';
 const prisma = new PrismaClient();
 const logger = new Logger('PgsqlMigrate');
 
+let is_watch_mode = false;
 let ignore_added = true;
 
 let yargs: typeof import('yargs') | undefined;
@@ -36,6 +37,7 @@ async function main() {
                 .argv;
 
             if (argv.watch) {
+                is_watch_mode = true;
                 logger.log(`Watching ${pgsqlDir} for changes...`);
                 const watcher = chokidar.watch(pgsqlDir, { ignored: /(^\|[\\/\\])\../, persistent: true });
                 watcher
@@ -166,10 +168,11 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
                     [file.fileName, '[Errored]', file.content]
                 );
 
-                await connection.query(
-                    'INSERT INTO _migrate_pgsql_history (file_name, hash, sql, failed, error) VALUES ($1, $2, $3, true, $4)',
-                    [file.fileName, file.hash, file.content, error.message]
-                );
+                if (!is_watch_mode)
+                    await connection.query(
+                        'INSERT INTO _migrate_pgsql_history (file_name, hash, sql, failed, error) VALUES ($1, $2, $3, true, $4)',
+                        [file.fileName, file.hash, file.content, error.message]
+                    );
                 await connection.query('COMMIT');
             } catch (error) {
                 await connection.query('ROLLBACK');
