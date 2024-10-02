@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente(p_variavel_id int)
 DECLARE
     v_registro RECORD;
     v_ultimo_periodo_valido DATE;
-    v_data_atual DATE := (date_trunc('month', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date;
+    v_mes_atual DATE := (date_trunc('month', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date;
     v_data_limite DATE;
     v_corrente BOOLEAN;
     v_proximo_periodo DATE;
@@ -62,36 +62,35 @@ BEGIN
     -- Se há fim de medição, a data limite é o fim de medição
     -- Senão, a data limite é o próximo período (não há fim de medição, basicamente)
     v_data_limite := coalesce(v_registro.fim_medicao, v_proximo_periodo - v_registro.intervalo_atraso) + v_registro.intervalo_atraso;
-
     RAISE NOTICE 'v_data_limite: %', v_data_limite;
 
+    --v_data_limite := least(v_data_limite, v_mes_atual);
+    --RAISE NOTICE 'after least(v_data_limite, v_mes_atual): %', v_data_limite;
+
     -- Deleta se a data atual for igual ou posterior à data limite
-    IF v_data_atual >= v_data_limite and v_registro.fim_medicao is not null THEN
+    IF v_mes_atual >= v_data_limite and v_registro.fim_medicao is not null THEN
         RAISE NOTICE 'Deletando variavel_ciclo_corrente para variável ID %', p_variavel_id;
         DELETE FROM variavel_ciclo_corrente
         WHERE variavel_id = p_variavel_id;
     ELSE
         -- Determina se a data atual está dentro do intervalo válido
-        v_corrente := v_data_atual <= v_data_limite;
-        raise notice 'v_data_atual: %', v_data_atual;
+        v_corrente := v_mes_atual <= v_data_limite;
+        raise notice 'v_mes_atual: %', v_mes_atual;
         RAISE NOTICE 'v_corrente: %', v_corrente;
 
         IF (v_corrente) THEN
             -- Calcula o número de dias desde o início da medição
-            v_dias_desde_inicio := (v_data_atual - v_ultimo_periodo_valido) + 1;
+            v_dias_desde_inicio := (v_mes_atual - v_ultimo_periodo_valido) + 1;
             raise notice 'v_dias_desde_inicio: %', v_dias_desde_inicio;
 
-            -- Determina a fase atual com base nos períodos definidos
-            IF v_dias_desde_inicio BETWEEN v_registro.periodo_preenchimento[1] AND v_registro.periodo_preenchimento[2] THEN
-                v_fase_corrente := 'Preenchimento'::"VariavelFase";
-            ELSIF v_dias_desde_inicio BETWEEN v_registro.periodo_validacao[1] AND v_registro.periodo_validacao[2] THEN
-                v_fase_corrente := 'Validacao'::"VariavelFase";
-            ELSIF v_dias_desde_inicio BETWEEN v_registro.periodo_liberacao[1] AND v_registro.periodo_liberacao[2] THEN
-                v_fase_corrente := 'Liberacao'::"VariavelFase";
-            ELSE
-                -- Se estiver fora de todos os períodos, pode ser bug no cadastro agora
-                -- depois que chegar no fim, deixa aberto para 'sempre'
-                v_corrente := CASE WHEN v_dias_desde_inicio >= v_registro.periodo_liberacao[2] THEN true ELSE false END;
+            IF (v_registro.periodo_preenchimento[2] IS NOT NULL
+                AND (v_fase_corrente IS NULL OR v_fase_corrente = 'Preenchimento'))
+            THEN
+                IF v_dias_desde_inicio < v_registro.periodo_preenchimento[2] THEN
+                    -- esconde a fase de preenchimento enquanto não chegar na data
+                    v_corrente := false;
+                    RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[2];
+                END IF;
             END IF;
 
             --periodo_preenchimento  | {1,10}
@@ -126,7 +125,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
- select f_atualiza_variavel_ciclo_corrente(6883);
+select f_atualiza_variavel_ciclo_corrente(4648);
 
 
 select f_atualiza_variavel_ciclo_corrente (id) from variavel where tipo='Global' and variavel_mae_id is null;
