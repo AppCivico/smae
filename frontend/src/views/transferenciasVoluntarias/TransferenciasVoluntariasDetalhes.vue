@@ -108,6 +108,15 @@ function atualizaSeiLido(item, transferenciaId, lido) {
   });
 }
 
+function rabrirFase() {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await workflowAndamento.reabrirFase()) {
+      workflowAndamento.buscar();
+      alertStore.success('Fase reaberta!');
+    }
+  }, 'Reabrir');
+}
+
 function formatarData(data) {
   const date = new Date(data);
 
@@ -145,6 +154,16 @@ workflowAndamento.buscarHistorico();
           @click="ConfigurarWorkflow = true"
         >
           configurar workflow
+        </button>
+      </li>
+      <li class="f0">
+        <button
+          v-if="transferenciaEmFoco?.workflow_id"
+          type="button"
+          class="btn"
+          @click="rabrirFase()"
+        >
+          reabrir fase
         </button>
       </li>
       <li class="f0">

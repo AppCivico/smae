@@ -52,7 +52,6 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
     },
 
     async buscarHistorico(transferênciaId?: number): Promise<void> {
-      console.log('entrou no buscar historico');
       this.chamadasPendentes.historico = true;
       const id = transferênciaId || Number(this.route.params.transferenciaId);
       try {
@@ -76,6 +75,22 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
         const resposta = await this.requestS.patch(`${baseUrl}/workflow-andamento-fase`, {
           transferencia_id: Number(this.route.params.transferenciaId) || undefined,
           ...params,
+        });
+
+        this.chamadasPendentes.fase = false;
+        this.erro = null;
+        return !!resposta;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.fase = false;
+        return false;
+      }
+    },
+
+    async reabrirFase(transferênciaId?: number): Promise<boolean> {
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/workflow-andamento-fase/reabrir-fase-anterior`, {
+          transferencia_id: transferênciaId || Number(this.route.params.transferenciaId),
         });
 
         this.chamadasPendentes.fase = false;
