@@ -30,7 +30,6 @@ BEGIN
         AND variavel_mae_id IS NULL
         AND removido_em IS NULL;
 
-
     IF v_registro IS NULL THEN
         RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
         RETURN;
@@ -64,32 +63,27 @@ BEGIN
     v_data_limite := coalesce(v_registro.fim_medicao, v_proximo_periodo - v_registro.intervalo_atraso) + v_registro.intervalo_atraso;
     RAISE NOTICE 'v_data_limite: %', v_data_limite;
 
-    --v_data_limite := least(v_data_limite, v_mes_atual);
-    --RAISE NOTICE 'after least(v_data_limite, v_mes_atual): %', v_data_limite;
-
     -- Deleta se a data atual for igual ou posterior à data limite
-    IF v_mes_atual >= v_data_limite and v_registro.fim_medicao is not null THEN
+    IF v_mes_atual >= v_data_limite AND v_registro.fim_medicao IS NOT NULL THEN
         RAISE NOTICE 'Deletando variavel_ciclo_corrente para variável ID %', p_variavel_id;
         DELETE FROM variavel_ciclo_corrente
         WHERE variavel_id = p_variavel_id;
     ELSE
         -- Determina se a data atual está dentro do intervalo válido
         v_corrente := v_mes_atual <= v_data_limite;
-        raise notice 'v_mes_atual: %', v_mes_atual;
+        RAISE NOTICE 'v_mes_atual: %', v_mes_atual;
         RAISE NOTICE 'v_corrente: %', v_corrente;
 
-        IF (v_corrente) THEN
-            -- Calcula o número de dias desde o início da medição
-            v_dias_desde_inicio := (v_mes_atual - v_ultimo_periodo_valido) + 1;
-            raise notice 'v_dias_desde_inicio: %', v_dias_desde_inicio;
+        IF v_corrente THEN
+            -- **Updated Calculation Here**
+            v_dias_desde_inicio := (v_mes_atual - v_proximo_periodo) + 1;
+            RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
 
-            IF (v_registro.periodo_preenchimento[2] IS NOT NULL
-                AND (v_fase_corrente IS NULL OR v_fase_corrente = 'Preenchimento'))
-            THEN
-                IF v_dias_desde_inicio < v_registro.periodo_preenchimento[2] THEN
-                    -- esconde a fase de preenchimento enquanto não chegar na data
+            IF v_fase_corrente IS NULL OR v_fase_corrente = 'Preenchimento' THEN
+                IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
+                    -- Esconde a fase de preenchimento enquanto não chegar na data
                     v_corrente := false;
-                    RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[2];
+                    RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[1];
                 END IF;
             END IF;
 
@@ -108,7 +102,7 @@ BEGIN
         VALUES (
             v_registro.id,
             v_ultimo_periodo_valido,
-            coalesce(v_fase_corrente, 'Preenchimento'::"VariavelFase"),
+            COALESCE(v_fase_corrente, 'Preenchimento'::"VariavelFase"),
             v_proximo_periodo,
             v_corrente
         )
@@ -125,6 +119,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+
 select f_atualiza_variavel_ciclo_corrente(4648);
 
 
