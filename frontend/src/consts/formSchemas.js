@@ -1037,6 +1037,32 @@ export const meta = (activePdm) => object().shape({
       .required()
     : mixed()
       .nullable())),
+  origens_extra: array()
+    .label('Relacionamentos com outros compromissos')
+    .of(
+      object()
+        .shape({
+          atividade_id: number()
+            .label('Atividade')
+            .integer()
+            .nullable()
+            .positive(),
+          iniciativa_id: number()
+            .label('Iniciativa')
+            .integer()
+            .nullable()
+            .positive(),
+          meta_id: number()
+            .label('Meta')
+            .integer()
+            .positive(),
+          origem_tipo: mixed()
+            .label('Origem')
+            .required('Esse origem precisa de um Plano.')
+            .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
+        }),
+    ),
+
   pdm_id: string()
     .label('PdM')
     .nullable(),
