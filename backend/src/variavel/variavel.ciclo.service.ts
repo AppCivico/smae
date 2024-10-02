@@ -306,7 +306,7 @@ export class VariavelCicloService {
                         prismaTxn,
                         now
                     );
-                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
                 }
             }
 
