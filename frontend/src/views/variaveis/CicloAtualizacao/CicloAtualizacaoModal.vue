@@ -22,6 +22,20 @@
         </button>
       </header>
 
+      <div
+        v-if="emFoco?.pedido_complementacao"
+        class="complementacao mb2"
+      >
+        <div class="w700 t13 mb1">
+          Solicitação de complementação
+        </div>
+        <p>{{ emFoco?.pedido_complementacao.pedido }}</p>
+        <div class="t12 tc600">
+          {{ dateToDate(emFoco?.pedido_complementacao.criado_em) }},
+          {{ emFoco?.pedido_complementacao.criador_nome }}
+        </div>
+      </div>
+
       <component
         :is="conteudoEscolhido.componente"
         v-if="cicloAtualizacaoStore.emFoco"
@@ -37,6 +51,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
+import dateToDate from '@/helpers/dateToDate';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 

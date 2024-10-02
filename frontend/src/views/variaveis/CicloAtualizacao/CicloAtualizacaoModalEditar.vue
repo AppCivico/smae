@@ -285,9 +285,8 @@
               </td>
 
               <Field
-                :name="`variaveis_dados[${variavelDadoIndex}].referencia`"
+                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
                 type="hidden"
-                :model-value="variavelDadoIndex"
               />
             </tr>
 
