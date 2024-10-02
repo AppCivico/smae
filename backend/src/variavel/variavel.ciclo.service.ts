@@ -273,14 +273,14 @@ export class VariavelCicloService {
             // Troca de fase
             if (cicloCorrente.fase === 'Preenchimento') {
                 if (dto.aprovar) {
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
                 }
             } else if (cicloCorrente.fase === 'Validacao') {
                 if (dto.aprovar) {
                     // aqui poderia ter o mesmo "problema" de faltar alguma filha, mas ai o
                     // não temos como saber pq não temos campos para acompanhar isso, já que sempre
                     // estamos salvando o status apenas na variável mãe. No frontend é sempre enviado todas as filhas
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Liberacao', prismaTxn, user);
                 } else if (dto.pedido_complementacao) {
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
@@ -289,7 +289,7 @@ export class VariavelCicloService {
                         prismaTxn,
                         now
                     );
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
                 }
             } else if (cicloCorrente.fase === 'Liberacao') {
                 if (dto.aprovar) {
@@ -306,7 +306,7 @@ export class VariavelCicloService {
                         prismaTxn,
                         now
                     );
-                    await this.moveProximaFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
                 }
             }
 
@@ -774,11 +774,17 @@ export class VariavelCicloService {
         return Array.from(equipeSet);
     }
 
-    private async moveProximaFase(
+    private async moveFase(
         variavelId: number,
         nextPhase: VariavelFase,
-        prismaTxn: Prisma.TransactionClient
+        prismaTxn: Prisma.TransactionClient,
+        user: PessoaFromJwt
     ): Promise<void> {
+        await prismaTxn.variavelGlobalPedidoComplementacao.updateMany({
+            where: { variavel_id: variavelId, atendido: false, ultima_revisao: true },
+            data: { atendido: true, atendido_em: new Date(), atendido_por: user.id },
+        });
+
         await prismaTxn.variavelCicloCorrente.update({
             where: { variavel_id: variavelId },
             data: { fase: nextPhase },
