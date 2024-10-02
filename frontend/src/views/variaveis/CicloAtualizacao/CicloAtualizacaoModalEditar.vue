@@ -17,7 +17,6 @@
 
     <form
       class="mt1 flex column"
-      @submit="onSubmit"
     >
       <hr>
 
@@ -309,13 +308,23 @@
         </table>
       </article>
 
-      <button
-        class="btn outline center mt3 bgnone tcprimary"
-        type="submit"
-        :disabled="bloqueado"
-      >
-        Salvar
-      </button>
+      <div class="flex justifycenter mt3 g1">
+        <button
+          class="btn outline bgnone tcprimary"
+          :disabled="bloqueado"
+          @click.prevent="submit({ aprovar: false })"
+        >
+          Salvar
+        </button>
+
+        <button
+          class="btn"
+          :disabled="bloqueado"
+          @click.prevent="submit({ aprovar: true })"
+        >
+          Salvar e submeter
+        </button>
+      </div>
     </form>
   </div>
 </template>
@@ -446,30 +455,32 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
-const onSubmit = handleSubmit.withControlled(async (valores: any) => {
-  if (!emFoco.value) {
-    throw new Error('Erro ao tentar submeter dados');
-  }
+const submit = ({ aprovar = false }) => {
+  handleSubmit.withControlled(async (valores: any) => {
+    if (!emFoco.value) {
+      throw new Error('Erro ao tentar submeter dados');
+    }
 
-  let analiseFase = 'analise_qualitativa';
-  if (fase.value === 'aprovacao') {
-    analiseFase = 'analise_qualitativa_aprovador';
-  } else if (fase.value === 'liberacao') {
-    analiseFase = 'analise_qualitativa_liberador';
-  }
+    let analiseFase = 'analise_qualitativa';
+    if (fase.value === 'aprovacao') {
+      analiseFase = 'analise_qualitativa_aprovador';
+    } else if (fase.value === 'liberacao') {
+      analiseFase = 'analise_qualitativa_liberador';
+    }
 
-  await cicloAtualizacaoStore.enviarDados({
-    variavel_id: emFoco.value.variavel.id,
-    analise_qualitativa: valores[analiseFase],
-    aprovar: false,
-    data_referencia: dataReferencia,
-    uploads: arquivosLocais.value,
-    valores: valores.variaveis_dados || [],
-    pedido_complementacao: undefined,
-  });
+    await cicloAtualizacaoStore.enviarDados({
+      variavel_id: emFoco.value.variavel.id,
+      analise_qualitativa: valores[analiseFase],
+      aprovar,
+      data_referencia: dataReferencia,
+      uploads: arquivosLocais.value,
+      valores: valores.variaveis_dados || [],
+      pedido_complementacao: undefined,
+    });
 
-  $emit('enviado');
-});
+    $emit('enviado');
+  })();
+};
 
 function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
   arquivosLocais.value.push({
