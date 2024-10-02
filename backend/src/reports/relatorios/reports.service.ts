@@ -35,6 +35,9 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { MonitoramentoMensalPs } from '../planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.service';
+import {
+    CasaCivilAtividadesPendentesService
+} from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -70,6 +73,7 @@ export class ReportsService {
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
         @Inject(forwardRef(() => TribunalDeContasService)) private readonly tribunalDeContasService: TribunalDeContasService,
         @Inject(forwardRef(() => MonitoramentoMensalPs)) private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalPs,
+        @Inject(forwardRef(() => CasaCivilAtividadesPendentesService)) private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -266,7 +270,8 @@ export class ReportsService {
                 service = this.monitoramentoMensalVariaveisPs;
                 break;
             case 'CasaCivilAtvPendentes':
-                throw 'CasaCivilAtvPendentes não implementado';
+                service = this.casaCivilAtividadesPendentesService;
+                break;
             default:
                 dto.fonte satisfies never;
         }
