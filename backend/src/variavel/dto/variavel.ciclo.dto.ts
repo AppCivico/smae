@@ -186,6 +186,7 @@ export class PSPedidoComplementacaoDto {
 
 export class VariavelAnaliseQualitativaResponseDto {
     variavel: VariavelResumo;
+    fase: VariavelFase;
 
     @ApiProperty({ description: 'Análise qualitativas e outros envios' })
     analises: AnaliseQualitativaDto[] | null;

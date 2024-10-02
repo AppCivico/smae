@@ -552,6 +552,17 @@ export class VariavelCicloService {
     ): Promise<VariavelAnaliseQualitativaResponseDto> {
         const { variavel_id, data_referencia } = dto;
 
+        const variavelCicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
+            where: {
+                variavel_id: variavel_id,
+                eh_corrente: true,
+            },
+            select: {
+                fase: true,
+            },
+        });
+        if (!variavelCicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
+
         const whereFilter = await this.getPermissionSet({}, user);
 
         const variavel = await this.prisma.variavel.findFirst({
@@ -701,6 +712,7 @@ export class VariavelCicloService {
             : null;
 
         return {
+            fase: variavelCicloCorrente.fase,
             pedido_complementacao,
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
