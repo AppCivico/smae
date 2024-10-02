@@ -161,8 +161,12 @@ export class IndicadoresService implements ReportableService {
     }
 
     private async queryData(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, stream: Readable) {
+        //Tratamento para não ficar travado
+        if (indicadoresOrVar.length == 0) {
+            stream.push(null);
+            return;
+        }
         this.invalidatePreparedStatement++;
-        if (indicadoresOrVar.length == 0) return;
 
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         left join meta on meta.id = i.meta_id
