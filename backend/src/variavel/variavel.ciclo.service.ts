@@ -391,11 +391,11 @@ export class VariavelCicloService {
         }
 
         if (cicloCorrente.variavel.variaveis_filhas.length > 0) {
-            if (valorGlobalOuMae.length > 0) {
-                throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
-            }
             if (valorFilhas.length === 0) {
                 throw new BadRequestException('É necessário fornecer valores para as variáveis filhas');
+            }
+            if (valorGlobalOuMae.length > 0) {
+                throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
             }
         } else {
             if (valorGlobalOuMae.length === 0) {
