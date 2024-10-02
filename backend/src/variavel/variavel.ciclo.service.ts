@@ -275,6 +275,9 @@ export class VariavelCicloService {
                 if (dto.aprovar) {
                     await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
                 }
+
+                if (dto.pedido_complementacao)
+                    throw new BadRequestException('Não é possível pedir complementação nesta fase');
             } else if (cicloCorrente.fase === 'Validacao') {
                 if (dto.aprovar) {
                     // aqui poderia ter o mesmo "problema" de faltar alguma filha, mas ai o
