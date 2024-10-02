@@ -475,7 +475,7 @@ const submit = ({ aprovar = false }) => {
       data_referencia: dataReferencia,
       uploads: arquivosLocais.value,
       valores: valores.variaveis_dados || [],
-      pedido_complementacao: undefined,
+      pedido_complementacao: valores.pedido_complementacao,
     });
 
     $emit('enviado');

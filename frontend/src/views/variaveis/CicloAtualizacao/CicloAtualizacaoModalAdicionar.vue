@@ -379,7 +379,7 @@ const submit = ({ aprovar = false }) => {
         valor_realizado: valores.valor_realizado,
         valor_realizado_acumulado: valores.valor_realizado_acumulado,
       }],
-      pedido_complementacao: undefined,
+      pedido_complementacao: valores.pedido_complementacao,
     });
 
     $emit('enviado');
