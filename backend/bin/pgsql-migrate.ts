@@ -8,7 +8,9 @@ const prisma = new PrismaClient();
 const logger = new Logger('PgsqlMigrate');
 
 let ignore_added = true;
-let yargs: any, chokidar: any;
+
+let yargs: typeof import('yargs') | undefined;
+let chokidar: typeof import('chokidar') | undefined;
 try {
     yargs = require('yargs');
     chokidar = require('chokidar');
@@ -35,7 +37,7 @@ async function main() {
 
             if (argv.watch) {
                 logger.log(`Watching ${pgsqlDir} for changes...`);
-                const watcher = chokidar.watch(pgsqlDir, { ignored: /(^\|[\/\\])\../, persistent: true });
+                const watcher = chokidar.watch(pgsqlDir, { ignored: /(^\|[\\/\\])\../, persistent: true });
                 watcher
                     .on('add', (path: string) => handleFileChange(path, 'added'))
                     .on('change', (path: string) => handleFileChange(path, 'changed'))
