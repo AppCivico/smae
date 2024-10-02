@@ -470,7 +470,7 @@ const submit = ({ aprovar = false }) => {
 
     await cicloAtualizacaoStore.enviarDados({
       variavel_id: emFoco.value.variavel.id,
-      analise_qualitativa: valores[analiseFase],
+      analise_qualitativa: !valores.solicitar_complementacao ? valores[analiseFase] : undefined,
       aprovar,
       data_referencia: dataReferencia,
       uploads: arquivosLocais.value,
