@@ -5,6 +5,11 @@ import type { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-
 import type { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
+import mapIniciativas from './helpers/mapIniciativas';
+import type {
+  DadosCodTituloMetaDto,
+  ListDadosMetaIniciativaAtividadesDto,
+} from '@/../../backend/src/meta/dto/create-meta.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -14,12 +19,14 @@ interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
   arquivos: boolean;
+  arvoreDeMetas: boolean;
 }
 
 interface Erros {
   lista: null | unknown;
   emFoco: null | unknown;
   arquivos: null | unknown;
+  arvoreDeMetas: null | unknown;
 }
 
 type EmFoco = PlanoSetorialDto & { orcamento_config?: OrcamentoConfig[] | null };
@@ -28,7 +35,7 @@ interface Estado {
   lista: Lista;
   emFoco: EmFoco | null;
   arquivos: ListPdmDocument['linhas'] | [];
-
+  arvoreDeMetas: { [k: number]: unknown };
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 }
@@ -38,16 +45,19 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
     lista: [],
     emFoco: null,
     arquivos: [],
+    arvoreDeMetas: [],
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
       arquivos: false,
+      arvoreDeMetas: false,
     },
     erros: {
       lista: null,
       emFoco: null,
       arquivos: null,
+      arvoreDeMetas: null,
     },
   }),
   actions: {
@@ -174,6 +184,29 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
         return false;
       }
     },
+
+    async buscarArvoreDeMetas(params = {}): Promise<void> {
+      this.chamadasPendentes.arvoreDeMetas = true;
+      this.erros.arvoreDeMetas = null;
+
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
+
+        if (Array.isArray(linhas)) {
+          linhas.forEach((cur:DadosCodTituloMetaDto) => {
+            this.arvoreDeMetas[cur.id] = {
+              ...cur,
+              iniciativas: mapIniciativas(cur.iniciativas),
+            };
+          });
+        }
+      } catch (erro: unknown) {
+        this.erros.arvoreDeMetas = erro;
+      }
+      this.chamadasPendentes.arvoreDeMetas = false;
+    },
+
+
   },
 
   getters: {

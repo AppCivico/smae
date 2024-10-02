@@ -1,31 +1,33 @@
 <script setup>
-import { relatóriosOrçamentáriosPortfolioObras as schema } from '@/consts/formSchemas';
+import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
-//import { useObrasStore } from '@/stores/obras.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
+import { storeToRefs } from 'pinia';
 
-const portfolioObrasStore = usePortfolioObraStore();
 const alertStore = useAlertStore();
-//const obrasStore = useObrasStore();
+const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 
 const initialValues = computed(() => ({
-  fonte: 'ObrasOrcamento',
+  fonte: 'PSOrcamento',
   parametros: {
     tipo: 'Analitico',
+    pdm_id: 0,
+    portfolio_id: 0,
+    meta_id: 0,
+    tags: [],
     inicio: '',
     fim: '',
-    portfolio_id: 0,
-    projeto_id: 0,
+    orgaos: [],
   },
   salvar_arquivo: false,
 }));
@@ -54,7 +56,7 @@ async function onSubmit(values) {
   }
 }
 
-portfolioObrasStore.buscarTudo();
+PlanosSetoriaisStore.buscarTudo();
 </script>
 
 <template>
@@ -64,44 +66,37 @@ portfolioObrasStore.buscarTudo();
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
   >
     <div class="flex g2 mb2">
       <div class="f1">
-        <LabelFromYup
-          name="portfolio_id"
-          :schema="schema.fields.parametros"
-        />
+        <label class="label">
+          <abbr title="Plano Setorial">Plano Setorial</abbr>
+          <span class="tvermelho">*</span>
+        </label>
         <Field
-          name="parametros.portfolio_id"
+          name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"
-          :class="{
-            error: errors['parametros.portfolio_id'],
-            loading: portfolioObrasStore.chamadasPendentes.lista
-          }"
-          :disabled="portfolioObrasStore.chamadasPendentes.lista"
-          @change="setFieldValue('parametros.projeto_id', 0)"
+          :class="{ 'error': errors['parametros.pdm_id'] }"
+          :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading"
         >
-          <option :value="0">
+          <option value="">
             Selecionar
           </option>
           <option
-            v-for="item in portfolioObrasStore.lista"
+            v-for="item in PlanosSetoriaisStore.lista"
             :key="item.id"
             :value="item.id"
           >
-            {{ item.id }} - {{ item.titulo }}
+            {{ item.nome }}
           </option>
         </Field>
-        <div
-          v-if="errors['parametros.portfolio_id']"
-          class="error-msg"
-        >
-          {{ errors['parametros.portfolio_id'] }}
+        <div class="error-msg">
+          {{ errors['parametros.pdm_id'] }}
         </div>
       </div>
       <div class="f1">
@@ -194,7 +189,8 @@ portfolioObrasStore.buscarTudo();
       <button
         type="submit"
         class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading ||
+          isSubmitting"
       >
         {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
       </button>

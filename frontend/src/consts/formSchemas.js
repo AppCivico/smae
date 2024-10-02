@@ -2657,6 +2657,35 @@ export const relatórioDePrevisãoDeCustoPdM = object()
     salvar_arquivo: boolean(),
   });
 
+  export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
+  .shape({
+    fonte: string()
+      .required(),
+    parametros: object({
+      atividade_id: string()
+        .label('Atividade')
+        .nullable(),
+      iniciativa_id: string()
+        .label('Iniciativa')
+        .nullable(),
+      meta_id: string()
+        .label('Meta')
+        .nullable(),
+      ano: number()
+        .label('Ano de referência')
+        .min(startYear, '${label} não pode ser menor do que ' + startYear)
+        .max(endYear, '${label} não pode ser maior do que ' + endYear)
+        .required(),
+      pdm_id: string()
+        .label('Plano Setorial')
+        .required(),
+      tags: array()
+        .label('Tags')
+        .nullable(),
+    }),
+    salvar_arquivo: boolean(),
+  });
+
 export const relatórioDePrevisãoDeCustoPortfolio = object()
   .shape({
     fonte: string()
@@ -2960,6 +2989,30 @@ export const relatórioOrçamentárioPdM = object({
   parametros: object({
     pdm_id: string()
       .required('Escolha um PdM'),
+    inicio: string()
+      .required('Preencha a data')
+      .matches(regEx['month/year'], 'Formato inválido'),
+    fim: string()
+      .required('Preencha a data')
+      .matches(regEx['month/year'], 'Formato inválido'),
+    tipo: mixed()
+      .label('Tipo')
+      .oneOf([
+        'Analitico',
+        'Consolidado',
+      ])
+      .required('Escolha o tipo'),
+  }),
+});
+
+export const relatórioOrçamentárioPlanosSetoriais = object({
+  fonte: string()
+    .required(),
+  salvar_arquivo: boolean(),
+  parametros: object({
+    pdm_id: string()
+      .label('Plano Setorial')
+      .required('Escolha um Plano Setorial'),
     inicio: string()
       .required('Preencha a data')
       .matches(regEx['month/year'], 'Formato inválido'),

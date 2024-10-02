@@ -106,6 +106,22 @@ const RelatóriosOrçamentáriosPortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
+const RelatóriosDePrevisãoDeCustoPlanosSetoriais = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPlanosSetoriais.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioDePrevisãoDeCustoPlanosSetoriais = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPlanosSetoriais.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosOrçamentáriosPlanosSetoriais = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPlanosSetoriais.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioOrçamentárioPlanosSetoriais = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPlanosSetoriais.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/relatorios',
@@ -145,6 +161,10 @@ export default {
       'RelatóriosDeStatusObras',
       'RelatóriosDePrevisãoDeCustoPortfolioObras',
       'RelatóriosOrçamentáriosPortfolioObras',
+
+      // Planos Setoriais
+      'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+      'RelatóriosOrçamentáriosPlanosSetoriais',
     ],
   },
 
@@ -550,6 +570,57 @@ export default {
           meta: {
             título: 'Novo relatório orçamentário de portfólio de obras',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolioObras',
+          },
+        },
+      ],
+    },
+
+    // ******** Planos Setoriais ******** //
+    {
+      path: 'previsao-de-custo-planos-setoriais',
+      meta: {
+        entidadeMãe: 'planoSetorial',
+        título: 'Relatórios de previsão de custo de Planos Setoriais',
+        títuloParaMenu: 'Previsão de custo',
+        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+          component: RelatóriosDePrevisãoDeCustoPlanosSetoriais,
+        },
+        {
+          path: 'novo',
+          name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
+          component: NovoRelatórioDePrevisãoDeCustoPlanosSetoriais,
+          meta: {
+            título: 'Novo relatório de previsão de custo de Planos Setoriais',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'orcamentarios-planos-setoriais',
+      meta: {
+        título: 'Relatórios orçamentários de Planos Setoriais',
+        títuloParaMenu: 'Relatórios orçamentários',
+        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosOrçamentáriosPlanosSetoriais',
+          component: RelatóriosOrçamentáriosPlanosSetoriais,
+        },
+        {
+          component: NovoRelatórioOrçamentárioPlanosSetoriais,
+          path: 'novo',
+          name: 'novoRelatórioOrçamentárioPlanosSetoriais',
+          meta: {
+            título: 'Novo relatório orçamentário de Planos Setoriais',
+            rotaDeEscape: 'RelatóriosOrçamentáriosPlanosSetoriais',
           },
         },
       ],
