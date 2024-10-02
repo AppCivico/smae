@@ -2681,7 +2681,7 @@ export const relatórioDePrevisãoDeCustoPdM = object()
     salvar_arquivo: boolean(),
   });
 
-  export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
+export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
   .shape({
     fonte: string()
       .required(),
@@ -2697,8 +2697,8 @@ export const relatórioDePrevisãoDeCustoPdM = object()
         .nullable(),
       ano: number()
         .label('Ano de referência')
-        .min(startYear, '${label} não pode ser menor do que ' + startYear)
-        .max(endYear, '${label} não pode ser maior do que ' + endYear)
+        .min(startYear, `\${label} não pode ser menor do que ${startYear}`)
+        .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
       pdm_id: string()
         .label('Plano Setorial')
@@ -4021,13 +4021,13 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   if (posicao >= 2) {
     schemaCampos.analise_qualitativa_aprovador = string()
       .label('análise qualitativa do aprovador')
-      .required();
+      .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
   if (posicao >= 3) {
     schemaCampos.analise_qualitativa_liberador = string()
       .label('análise qualitativa do liberador')
-      .required();
+      .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
   return schemaCampos;
