@@ -69,12 +69,13 @@ function userToken(url: RequestInfo | URL): HeadersInit {
   const authStore = useAuthStore();
   const isLoggedIn = !!authStore.token;
   const isApiUrl = String(url).startsWith(import.meta.env.VITE_API_URL);
+
   if (isLoggedIn && isApiUrl) {
     const headers: HeadersInit = {
       Authorization: `Bearer ${authStore.token}`,
     };
-    if (authStore.sistemaEscolhido && authStore.sistemaEscolhido !== 'SMAE') {
-      headers['smae-sistemas'] = `SMAE,${authStore.sistemaEscolhido}`;
+    if (authStore.sistemaCorrente && authStore.sistemaCorrente !== 'SMAE') {
+      headers['smae-sistemas'] = `SMAE,${authStore.sistemaCorrente}`;
     }
     return headers;
   }
