@@ -348,7 +348,7 @@ export class VariavelCicloService {
                     const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
                     await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
                 } else if (dto.pedido_complementacao) {
-                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
                     // cria o pedido após mover a fase
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
