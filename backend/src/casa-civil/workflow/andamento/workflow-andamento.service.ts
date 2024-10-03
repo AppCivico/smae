@@ -110,7 +110,7 @@ export class WorkflowAndamentoService {
         const fasesConcluidas = await this.prisma.transferenciaAndamento.count({
             where: {
                 removido_em: null,
-                data_inicio: { not: null },
+                data_termino: { not: null },
                 transferencia_id: transferencia.id,
             },
         });
