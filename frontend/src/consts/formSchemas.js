@@ -2946,7 +2946,7 @@ export const relatórioDeTransferênciasVoluntárias = object({
       .label('Objeto/Empreendimento')
       .max(50000)
       .nullable(),
-      orgao_gestor_id: number()
+    orgao_gestor_id: number()
       .label('Gestor Municipal')
       .nullable(),
     parlamentar_id: number()
@@ -4092,7 +4092,7 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
 
 function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   const schemaCampos = {
-    analise_qualitativa: string().label('análise qualitativa'),
+    analise_qualitativa: string().label('análise qualitativa da coleta'),
   };
 
   if (posicao !== 1) {

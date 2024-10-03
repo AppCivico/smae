@@ -124,6 +124,7 @@
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
+              :disabled="!forumlariosAExibir.cadastro.liberado"
             />
           </div>
         </article>
