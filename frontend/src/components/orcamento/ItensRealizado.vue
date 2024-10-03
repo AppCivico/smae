@@ -4,6 +4,7 @@ import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { useMetasStore } from '@/stores/metas.store';
+import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import Big from 'big.js';
@@ -28,6 +29,7 @@ const props = defineProps({
 
 let MetasStore;
 let projetosStore;
+let obrasStore;
 
 const route = useRoute();
 
@@ -44,24 +46,38 @@ const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
   let mesesPermitidos = range(1, 13);
 
-  if (route.params.projetoId) {
-    if (!projetosStore) {
-      projetosStore = useProjetosStore();
-    }
+  switch (route.meta.entidadeMãe) {
+    case 'obras': // TODO: trocar todas as ocorrências para 'mdo'
+    case 'mdo':
+      if (!obrasStore) {
+        obrasStore = useObrasStore();
+      }
 
-    if (Array.isArray(projetosStore.emFoco?.portfolio?.orcamento_execucao_disponivel_meses)) {
-      mesesPermitidos = projetosStore.emFoco.portfolio.orcamento_execucao_disponivel_meses;
-    }
-  } else {
-    if (!MetasStore) {
-      MetasStore = useMetasStore();
-    }
-    if (Array.isArray(MetasStore.activePdm?.orcamento_config)) {
-      const configuraçõesParaEsseAno = MetasStore.activePdm.orcamento_config
-        .find((x) => x.ano_referencia === Number(route.params.ano));
+      if (Array.isArray(obrasStore.emFoco?.portfolio?.orcamento_execucao_disponivel_meses)) {
+        mesesPermitidos = obrasStore.emFoco.portfolio.orcamento_execucao_disponivel_meses;
+      }
+      break;
 
-      mesesPermitidos = configuraçõesParaEsseAno.execucao_disponivel_meses;
-    }
+    case 'projeto':
+      if (!projetosStore) {
+        projetosStore = useProjetosStore();
+      }
+
+      if (Array.isArray(projetosStore.emFoco?.portfolio?.orcamento_execucao_disponivel_meses)) {
+        mesesPermitidos = projetosStore.emFoco.portfolio.orcamento_execucao_disponivel_meses;
+      }
+      break;
+
+    default:
+      if (!MetasStore) {
+        MetasStore = useMetasStore();
+      }
+      if (Array.isArray(MetasStore.activePdm?.orcamento_config)) {
+        const configuraçõesParaEsseAno = MetasStore.activePdm.orcamento_config
+          .find((x) => x.ano_referencia === Number(route.params.ano));
+
+        mesesPermitidos = configuraçõesParaEsseAno.execucao_disponivel_meses;
+      }
   }
 
   return mesesPermitidos.filter((x) => !mesesSelecionados.value.includes(x));
