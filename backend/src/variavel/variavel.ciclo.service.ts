@@ -202,8 +202,8 @@ export class VariavelCicloService {
 
         const rows = variaveis.map((v) => {
             let pode_editar: boolean = false;
-            const atrasos: string[] = [];
-            let prazo: Date | null = null;
+            const atrasos: string[] = v.atrasos.map((a) => Date2YMD.toString(a));
+            const prazo: Date | null = v.prazo;
             const equipesDb = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id);
 
             const equipes: IdTituloDto[] = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => ({
@@ -213,12 +213,6 @@ export class VariavelCicloService {
 
             if (minhasEquipes.length > 0) {
                 pode_editar = equipesDb.some((e) => minhasEquipes.includes(e));
-            }
-            if (pode_editar) {
-                prazo = v.proximo_periodo_abertura;
-                if (v.variavel.id % 2 == 0) {
-                    atrasos.push('Atraso 1');
-                }
             }
 
             return {
