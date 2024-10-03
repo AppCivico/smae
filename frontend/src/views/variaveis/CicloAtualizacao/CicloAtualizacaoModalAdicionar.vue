@@ -242,10 +242,6 @@
 </template>
 
 <script lang="ts" setup>
-import { UTCDate } from '@date-fns/utc';
-import { format } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
-
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
