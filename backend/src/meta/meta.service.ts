@@ -1222,7 +1222,7 @@ export class MetaService {
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
 
         // Buscando relações DIRETAS do CompromissoOrigem
-        const metasOrigens = await this.prisma.compromissoOrigem.findMany({
+        const metasDiretas = await this.prisma.compromissoOrigem.findMany({
             where: {
                 OR: [
                     {
@@ -1284,118 +1284,74 @@ export class MetaService {
             },
         });
 
-        const metaIds = UniqueNumbers(metasOrigens.filter((r) => r.meta_id != null).map((r) => r.meta_id!));
-        const iniIds = UniqueNumbers(metasOrigens.filter((r) => r.iniciativa_id != null).map((r) => r.iniciativa_id!));
-        const atvIds = UniqueNumbers(metasOrigens.filter((r) => r.atividade_id != null).map((r) => r.atividade_id!));
+        const metaDiretaIds = UniqueNumbers(metasDiretas.filter((r) => r.meta_id != null).map((r) => r.meta_id!));
+        const iniDiretaIds = UniqueNumbers(
+            metasDiretas.filter((r) => r.iniciativa_id != null).map((r) => r.iniciativa_id!)
+        );
+        const atvDiretaIds = UniqueNumbers(
+            metasDiretas.filter((r) => r.atividade_id != null).map((r) => r.atividade_id!)
+        );
 
-        const metas = await this.prisma.meta.findMany({
+        const { metas, iniciativas, atividades } = await this.buscaDadosRelacionadoPorId(
+            metaDiretaIds,
+            iniDiretaIds,
+            atvDiretaIds
+        );
+
+        // Buscando relações Reversas do CompromissoOrigem
+        const metasReversas = await this.prisma.compromissoOrigem.findMany({
             where: {
+                OR: [
+                    {
+                        // reversas
+                        AND: [
+                            dto.meta_id
+                                ? {
+                                      meta_id: dto.meta_id,
+                                      atividade_id: null,
+                                      iniciativa_id: null,
+                                  }
+                                : {},
+                            dto.iniciativa_id
+                                ? {
+                                      iniciativa_id: dto.iniciativa_id,
+                                      atividade_id: null,
+                                  }
+                                : {},
+                            dto.atividade_id
+                                ? {
+                                      atividade_id: dto.atividade_id,
+                                  }
+                                : {},
+                        ],
+                    },
+                ],
                 removido_em: null,
-                NOT: { id: meta.id },
-                OR: [{ id: { in: metaIds } }],
+                relacionamento: { in: ['Meta', 'Iniciativa', 'Atividade'] },
             },
             select: {
-                id: true,
-                codigo: true,
-                titulo: true,
-                pdm: {
-                    select: {
-                        id: true,
-                        descricao: true,
-                        tipo: true,
-                        rotulo_atividade: true,
-                        rotulo_iniciativa: true,
-                    },
-                },
-                meta_orgao: {
-                    where: { responsavel: true },
-                    select: { orgao: { select: { id: true, sigla: true } } },
-                },
+                rel_atividade_id: true,
+                rel_meta_id: true,
+                rel_iniciativa_id: true,
             },
         });
-        const iniciativas = await this.prisma.iniciativa.findMany({
-            where: {
-                removido_em: null,
-                NOT: { id: dto.iniciativa_id },
-                OR: [{ id: { in: iniIds } }],
-            },
-            select: {
-                id: true,
-                codigo: true,
-                titulo: true,
-                iniciativa_orgao: {
-                    where: { responsavel: true },
-                    select: { orgao: { select: { id: true, sigla: true } } },
-                },
-                meta: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                        meta_orgao: {
-                            where: { responsavel: true },
-                            select: { orgao: { select: { id: true, sigla: true } } },
-                        },
-                        pdm: {
-                            select: {
-                                id: true,
-                                descricao: true,
-                                tipo: true,
-                                rotulo_atividade: true,
-                                rotulo_iniciativa: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-        const atividades = await this.prisma.atividade.findMany({
-            where: {
-                removido_em: null,
-                NOT: { id: dto.atividade_id },
-                OR: [{ id: { in: atvIds } }],
-            },
-            select: {
-                id: true,
-                codigo: true,
-                titulo: true,
-                iniciativa: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                        iniciativa_orgao: {
-                            where: { responsavel: true },
-                            select: { orgao: { select: { id: true, sigla: true } } },
-                        },
-                        meta: {
-                            select: {
-                                id: true,
-                                codigo: true,
-                                titulo: true,
-                                meta_orgao: {
-                                    where: { responsavel: true },
-                                    select: { orgao: { select: { id: true, sigla: true } } },
-                                },
-                                pdm: {
-                                    select: {
-                                        id: true,
-                                        descricao: true,
-                                        tipo: true,
-                                        rotulo_atividade: true,
-                                        rotulo_iniciativa: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                atividade_orgao: {
-                    where: { responsavel: true },
-                    select: { orgao: { select: { id: true, sigla: true } } },
-                },
-            },
-        });
+
+        const metaRevIds = UniqueNumbers(metasReversas.filter((r) => r.rel_meta_id != null).map((r) => r.rel_meta_id!));
+        const iniRevIds = UniqueNumbers(
+            metasReversas.filter((r) => r.rel_iniciativa_id != null).map((r) => r.rel_iniciativa_id!)
+        );
+        const atvRevIds = UniqueNumbers(
+            metasReversas.filter((r) => r.rel_atividade_id != null).map((r) => r.rel_atividade_id!)
+        );
+        const {
+            metas: revMetas,
+            iniciativas: revIni,
+            atividades: revAtiv,
+        } = await this.buscaDadosRelacionadoPorId(metaRevIds, iniRevIds, atvRevIds);
+
+        metas.push(...revMetas);
+        iniciativas.push(...revIni);
+        atividades.push(...revAtiv);
 
         const metaPdmDtoList: MetaPdmDto[] = [];
 
@@ -1602,5 +1558,114 @@ export class MetaService {
                     } satisfies IdProjetoDto;
                 }),
         };
+    }
+
+    private async buscaDadosRelacionadoPorId(metaIds: number[], iniIds: number[], atvIds: number[]) {
+        const metas = await this.prisma.meta.findMany({
+            where: {
+                removido_em: null,
+                OR: [{ id: { in: metaIds } }],
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                pdm: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                        tipo: true,
+                        rotulo_atividade: true,
+                        rotulo_iniciativa: true,
+                    },
+                },
+                meta_orgao: {
+                    where: { responsavel: true },
+                    select: { orgao: { select: { id: true, sigla: true } } },
+                },
+            },
+        });
+        const iniciativas = await this.prisma.iniciativa.findMany({
+            where: {
+                removido_em: null,
+                OR: [{ id: { in: iniIds } }],
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                iniciativa_orgao: {
+                    where: { responsavel: true },
+                    select: { orgao: { select: { id: true, sigla: true } } },
+                },
+                meta: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        meta_orgao: {
+                            where: { responsavel: true },
+                            select: { orgao: { select: { id: true, sigla: true } } },
+                        },
+                        pdm: {
+                            select: {
+                                id: true,
+                                descricao: true,
+                                tipo: true,
+                                rotulo_atividade: true,
+                                rotulo_iniciativa: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const atividades = await this.prisma.atividade.findMany({
+            where: {
+                removido_em: null,
+                OR: [{ id: { in: atvIds } }],
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                iniciativa: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        iniciativa_orgao: {
+                            where: { responsavel: true },
+                            select: { orgao: { select: { id: true, sigla: true } } },
+                        },
+                        meta: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                meta_orgao: {
+                                    where: { responsavel: true },
+                                    select: { orgao: { select: { id: true, sigla: true } } },
+                                },
+                                pdm: {
+                                    select: {
+                                        id: true,
+                                        descricao: true,
+                                        tipo: true,
+                                        rotulo_atividade: true,
+                                        rotulo_iniciativa: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                atividade_orgao: {
+                    where: { responsavel: true },
+                    select: { orgao: { select: { id: true, sigla: true } } },
+                },
+            },
+        });
+        return { metas, iniciativas, atividades };
     }
 }
