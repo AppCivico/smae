@@ -203,8 +203,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         @close="ConfigurarWorkflow = false"
       />
     </div>
-
-    <div>
+    <div v-if="historicoDoWorkflow?.linhas?.length">
       <div
         v-for="(linha, index) in historicoDoWorkflow?.linhas"
         :key="index"
@@ -333,6 +332,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </div>
         </div>
       </div>
+    </div>
+    <div
+      v-else
+      class="mb1"
+    >
+      Este workflow ainda <strong>não</strong> possui histórico.
     </div>
     <div class="flex justifycenter">
       <button
