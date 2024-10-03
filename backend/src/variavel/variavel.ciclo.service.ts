@@ -470,6 +470,10 @@ export class VariavelCicloService {
             if (valorGlobalOuMae.length > 0) {
                 throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
             }
+
+            if (valorFilhas.length != cicloCorrente.variavel.variaveis_filhas.length) {
+                throw new BadRequestException('Quantidade de valores fornecidos para as variáveis filhas não confere');
+            }
         } else {
             if (valorGlobalOuMae.length === 0) {
                 throw new BadRequestException('É necessário fornecer um valor para a variável');
