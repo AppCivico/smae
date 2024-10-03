@@ -83,7 +83,11 @@ function excluirRelatório(id) {
             :key="chave"
           >
             <template v-if="chave.startsWith('data_')">
-              {{ localizeDate(item.parametros[chave]) }}
+              {{
+                item.parametros[chave]
+                  ? localizeDate(item.parametros[chave])
+                  : ''
+              }}
             </template>
             <template v-else>
               {{ Array.isArray(item.parametros[chave])

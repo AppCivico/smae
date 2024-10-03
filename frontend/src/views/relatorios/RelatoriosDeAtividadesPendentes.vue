@@ -13,12 +13,12 @@ import {
   prepararÓrgãos,
 } from './helpers/preparadorDeColunaParametros';
 
-
 const relatóriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const fonte = 'CasaCivilAtvPendentes';
 const etiquetasParaValoresDeParâmetros = ref({
-  categoria: {},
+  data_inicio: {},
+  data_termino: {},
   esfera: {},
   tipo_id: {},
   id: {},
