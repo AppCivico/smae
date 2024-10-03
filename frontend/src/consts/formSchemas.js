@@ -2946,6 +2946,12 @@ export const relatórioDeTransferênciasVoluntárias = object({
       .label('Objeto/Empreendimento')
       .max(50000)
       .nullable(),
+      orgao_gestor_id: number()
+      .label('Gestor Municipal')
+      .nullable(),
+    parlamentar_id: number()
+      .label('Parlamentar')
+      .nullable(),
     orgao_concedente_id: number()
       .label('Órgão concedente')
       .min(1, 'Selecione um órgão responsável')
