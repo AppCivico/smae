@@ -564,7 +564,7 @@ export class WorkflowAndamentoFaseService {
                 });
 
                 await prismaTxn.tarefa.update({
-                    where: { id: andamentoNovaFase.tarefaEspelhada[0]!.id },
+                    where: { transferencia_fase_id: andamentoNovaFase.id },
                     data: {
                         inicio_real: new Date(Date.now()),
                         atualizado_em: new Date(Date.now()),
@@ -573,7 +573,7 @@ export class WorkflowAndamentoFaseService {
 
                 for (const tarefa of andamentoNovaFase.tarefas) {
                     await prismaTxn.tarefa.update({
-                        where: { id: tarefa.tarefaEspelhada[0]!.id },
+                        where: { id: tarefa.tarefaEspelhada[0].id },
                         data: {
                             inicio_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
