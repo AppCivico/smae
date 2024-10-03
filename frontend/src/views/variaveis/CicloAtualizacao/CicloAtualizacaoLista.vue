@@ -48,7 +48,14 @@
         </div>
 
         <h5 class="listagem-item__conteudo f1">
-          <strong>{{ cicloAtualizacao.codigo }}</strong> -
+          <strong
+            :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}"
+          >
+            {{ cicloAtualizacao.codigo }}
+            <div v-if="cicloAtualizacao.temAtraso">
+              Atualização com atraso: {{ cicloAtualizacao.atrasos?.length }}
+            </div>
+          </strong> -
           {{ truncate(cicloAtualizacao.titulo, 60) }}
         </h5>
 
@@ -103,6 +110,7 @@ type IconsMap = {
 
 type VariavelCicloComIcone = VariavelCiclo & {
   icone: IconForma
+  temAtraso: boolean
 };
 
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
@@ -149,6 +157,7 @@ const ciclosAtualizacao = computed(() => {
   const ciclosComIcone = cicloAtualizacaoStore.ciclosAtualizacao.map<VariavelCicloComIcone>(
     (item) => ({
       ...item,
+      temAtraso: !!(item.atrasos && item.atrasos.length !== 0),
       icone: getIcons(item.pedido_complementacao ? 'complementacao' : 'coleta'),
     }),
   );
