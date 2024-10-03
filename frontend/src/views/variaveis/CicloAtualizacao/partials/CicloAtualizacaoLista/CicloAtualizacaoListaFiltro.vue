@@ -2,8 +2,13 @@
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Field, useForm, ErrorMessage } from 'vee-validate';
+
+import maskMonth from '@/helpers/maskMonth';
+
 import { useEquipesStore } from '@/stores/equipes.store';
+
 import { cicloAtualizacaoFiltrosSchema } from '@/consts/formSchemas';
+
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 
@@ -12,6 +17,8 @@ type FieldsProps = {
   nome: string
   tipo: string
   opcoes?: any
+  placeholder?: string
+  mask?: (el: any) => void
 };
 const equipesStore = useEquipesStore();
 const equipes = computed(() => equipesStore.lista);
@@ -24,7 +31,9 @@ const campos = computed<FieldsProps[]>(() => [
   {
     class: 'fb25', nome: 'equipe_id', tipo: 'select', opcoes: equipes.value,
   },
-  { class: 'fb25', nome: 'referencia', tipo: 'text' },
+  {
+    class: 'fb25', nome: 'referencia', tipo: 'text', mask: maskMonth, placeholder: '01/2024',
+  },
 ]);
 const { handleSubmit, isSubmitting, setValues } = useForm({
   validationSchema: schema,
@@ -75,6 +84,9 @@ const valoresIniciais = computed(() => ({
               class="inputtext light mb1"
               :name="campo.nome"
               :type="campo.tipo"
+              :placeholder="campo.placeholder"
+              :maxlength="campo.mask && 7"
+              @keyup="campo.mask"
             />
             <Field
               v-else
