@@ -1,7 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoRelatorio } from '@prisma/client';
 import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -205,16 +205,12 @@ export class ReportsService {
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
-        //Fix para tratar tipos de relatório que são difentes de Consolidado/Analitico/Geral/Mensal
-        const tipo = parametros.tipo === 'MDO' ? null : parametros.tipo == 'Resumido'? null: parametros.tipo;
-
-
         const result = await this.prisma.relatorio.create({
             data: {
                 pdm_id: pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
-                tipo: tipo && tipo.length ? tipo : null,
+                tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
