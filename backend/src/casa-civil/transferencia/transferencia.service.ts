@@ -1850,7 +1850,7 @@ export class TransferenciaService {
         return rows.map((r) => {
             return {
                 acao: r.acao,
-                dados_extra: r.dados_extra,
+                dados_extra: typeof r.dados_extra === 'string' ? JSON.parse(r.dados_extra) : r.dados_extra,
                 criado_em: r.criado_em,
                 tipo_antigo: r.tipo_antigo,
                 tipo_novo: r.tipo_novo,
