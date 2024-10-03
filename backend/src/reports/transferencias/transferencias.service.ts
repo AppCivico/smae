@@ -280,9 +280,9 @@ export class TransferenciasService implements ReportableService {
             paramIndex++;
         }
 
-        if (filters.gestor_municipal_id){
+        if (filters.orgao_gestor_id){
             whereConditions.push(`dt.orgao_gestor_id = $${paramIndex}`);
-            queryParams.push(filters.gestor_municipal_id);
+            queryParams.push(filters.orgao_gestor_id);
             paramIndex++;
         }
 
