@@ -861,6 +861,8 @@ export class VariavelCicloService {
             where: { variavel_id: variavelId },
             data: { fase: nextPhase },
         });
+
+        await prismaTxn.$queryRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)`;
     }
 
     private async criaPedidoComplementacao(
