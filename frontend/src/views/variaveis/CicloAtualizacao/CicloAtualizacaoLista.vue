@@ -59,7 +59,10 @@
           {{ truncate(cicloAtualizacao.titulo, 60) }}
         </h5>
 
-        <div class="listagem-item__acoes">
+        <div
+          v-if="cicloAtualizacao.pode_editar"
+          class="listagem-item__acoes"
+        >
           <SmaeLink
             type="button"
             class="tipinfo tprimary like-a__text"
