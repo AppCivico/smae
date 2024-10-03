@@ -17,7 +17,7 @@ export class VariavelUtilService {
         let unsafeCicloCorrente = '';
         if (filtros?.ate_ciclo_corrente) {
             const data = await this.ultimoPeriodoValido(variavelId);
-            unsafeCicloCorrente = `and p.p <= ( ${data.toISOString()}::date )`;
+            unsafeCicloCorrente = `and p.p <= ( '${data.toISOString()}'::date )`;
         }
 
         const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
