@@ -44,6 +44,8 @@ type DadosMetaIniciativaAtividadesDto = {
     titulo: string;
 };
 
+type DirecaoTipo = 'dir' | 'rev';
+
 @Injectable()
 export class MetaService {
     private readonly logger = new Logger(MetaService.name);
@@ -1295,7 +1297,8 @@ export class MetaService {
         const { metas, iniciativas, atividades } = await this.buscaDadosRelacionadoPorId(
             metaDiretaIds,
             iniDiretaIds,
-            atvDiretaIds
+            atvDiretaIds,
+            'dir'
         );
 
         // Buscando relações Reversas do CompromissoOrigem
@@ -1347,7 +1350,7 @@ export class MetaService {
             metas: revMetas,
             iniciativas: revIni,
             atividades: revAtiv,
-        } = await this.buscaDadosRelacionadoPorId(metaRevIds, iniRevIds, atvRevIds);
+        } = await this.buscaDadosRelacionadoPorId(metaRevIds, iniRevIds, atvRevIds, 'rev');
 
         metas.push(...revMetas);
         iniciativas.push(...revIni);
@@ -1367,6 +1370,7 @@ export class MetaService {
                 meta_titulo: meta.titulo,
                 meta_orgaos: meta.meta_orgao.map((o) => ({ id: o.orgao.id, sigla: o.orgao.sigla })),
                 tipo: meta.pdm.tipo,
+                direcao: meta.direcao,
             };
             metaPdmDtoList.push(metaPdm);
         }
@@ -1385,6 +1389,7 @@ export class MetaService {
                     meta_titulo: iniciativa.meta.titulo,
                     meta_orgaos: iniciativa.meta.meta_orgao.map((o) => ({ id: o.orgao.id, sigla: o.orgao.sigla })),
                     tipo: iniciativa.meta.pdm.tipo,
+                    direcao: iniciativa.direcao,
                 };
                 metaPdmDtoList.push(metaPdm);
             }
@@ -1422,6 +1427,7 @@ export class MetaService {
                         sigla: o.orgao.sigla,
                     })),
                     tipo: atividade.iniciativa.meta.pdm.tipo,
+                    direcao: atividade.direcao,
                 };
                 metaPdmDtoList.push(metaPdm);
             }
@@ -1560,7 +1566,12 @@ export class MetaService {
         };
     }
 
-    private async buscaDadosRelacionadoPorId(metaIds: number[], iniIds: number[], atvIds: number[]) {
+    private async buscaDadosRelacionadoPorId(
+        metaIds: number[],
+        iniIds: number[],
+        atvIds: number[],
+        diretacao: DirecaoTipo
+    ) {
         const metas = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
@@ -1666,6 +1677,11 @@ export class MetaService {
                 },
             },
         });
-        return { metas, iniciativas, atividades };
+
+        return {
+            metas: metas.map((m) => ({ ...m, direcao: diretacao })),
+            iniciativas: iniciativas.map((i) => ({ ...i, direcao: diretacao })),
+            atividades: atividades.map((a) => ({ ...a, direcao: diretacao })),
+        };
     }
 }

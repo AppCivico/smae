@@ -75,6 +75,7 @@ export class MetaPdmDto {
     atividade_orgaos?: IdSigla[];
 
     tipo: TipoPdm;
+    direcao: string;
 }
 
 export class IdObrasDto {
