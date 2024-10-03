@@ -35,7 +35,6 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
-import { RemoveNumberIfPresent } from '../common/RemoveNumberIfPresent';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -1234,41 +1233,21 @@ export class MetaService {
                                 ? {
                                       rel_meta_id: dto.meta_id,
                                       relacionamento: 'Meta',
+                                      NOT: { meta_id: dto.meta_id },
                                   }
                                 : {},
                             dto.iniciativa_id
                                 ? {
                                       rel_iniciativa_id: dto.iniciativa_id,
                                       relacionamento: 'Iniciativa',
+                                      NOT: { iniciativa_id: dto.iniciativa_id },
                                   }
                                 : {},
                             dto.atividade_id
                                 ? {
                                       rel_atividade_id: dto.atividade_id,
                                       relacionamento: 'Atividade',
-                                  }
-                                : {},
-                        ],
-                    },
-                    {
-                        // indiretas
-                        AND: [
-                            dto.meta_id
-                                ? {
-                                      meta_id: dto.meta_id,
-                                      atividade_id: null,
-                                      iniciativa_id: null,
-                                  }
-                                : {},
-                            dto.iniciativa_id
-                                ? {
-                                      iniciativa_id: dto.iniciativa_id,
-                                      atividade_id: null,
-                                  }
-                                : {},
-                            dto.atividade_id
-                                ? {
-                                      atividade_id: dto.atividade_id,
+                                      NOT: { atividade_id: dto.atividade_id },
                                   }
                                 : {},
                         ],
@@ -1295,9 +1274,9 @@ export class MetaService {
         );
 
         const { metas, iniciativas, atividades } = await this.buscaDadosRelacionadoPorId(
-            RemoveNumberIfPresent(metaDiretaIds, dto.meta_id),
-            RemoveNumberIfPresent(iniDiretaIds, dto.iniciativa_id),
-            RemoveNumberIfPresent(atvDiretaIds, dto.atividade_id),
+            metaDiretaIds,
+            iniDiretaIds,
+            atvDiretaIds,
             'fwd'
         );
 
@@ -1350,12 +1329,7 @@ export class MetaService {
             metas: revMetas,
             iniciativas: revIni,
             atividades: revAtiv,
-        } = await this.buscaDadosRelacionadoPorId(
-            RemoveNumberIfPresent(metaRevIds, dto.meta_id),
-            RemoveNumberIfPresent(iniRevIds, dto.iniciativa_id),
-            RemoveNumberIfPresent(atvRevIds, dto.atividade_id),
-            'rev'
-        );
+        } = await this.buscaDadosRelacionadoPorId(metaRevIds, iniRevIds, atvRevIds, 'rev');
 
         metas.push(...revMetas);
         iniciativas.push(...revIni);
@@ -1363,10 +1337,10 @@ export class MetaService {
 
         const metaPdmDtoList: MetaPdmDto[] = [];
 
+        console.log('metas', metas);
+
         // Process Metas
         for (const meta of metas) {
-            if (dto.meta_id && meta.id === dto.meta_id) continue;
-
             const metaPdm: MetaPdmDto = {
                 pdm_id: meta.pdm.id,
                 pdm_descricao: meta.pdm.descricao ?? '',
@@ -1384,8 +1358,6 @@ export class MetaService {
 
         // Process Iniciativas
         for (const iniciativa of iniciativas) {
-            if (dto.iniciativa_id && iniciativa.id === dto.iniciativa_id) continue;
-
             let metaPdm = metaPdmDtoList.find((m) => m.meta_id === iniciativa.meta.id);
             if (!metaPdm) {
                 metaPdm = {
@@ -1414,8 +1386,6 @@ export class MetaService {
 
         // Process Atividades
         for (const atividade of atividades) {
-            if (dto.atividade_id && atividade.id === dto.atividade_id) continue;
-
             let metaPdm = metaPdmDtoList.find((m) => m.iniciativa_id === atividade.iniciativa.id);
             if (!metaPdm) {
                 metaPdm = {
