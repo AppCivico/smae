@@ -292,7 +292,11 @@ export class VariavelCicloService {
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
             // Cria uma nova analise qualitativa, marcando primeiro a última como falsa
             await prismaTxn.variavelGlobalCicloAnalise.updateMany({
-                where: { variavel_id: dto.variavel_id, ultima_revisao: true },
+                where: {
+                    variavel_id: dto.variavel_id,
+                    ultima_revisao: true,
+                    referencia_data: dto.data_referencia,
+                },
                 data: { ultima_revisao: false },
             });
             await prismaTxn.variavelGlobalCicloAnalise.create({

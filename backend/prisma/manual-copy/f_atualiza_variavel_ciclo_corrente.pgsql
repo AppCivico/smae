@@ -9,6 +9,7 @@ DECLARE
     v_corrente BOOLEAN;
     v_proximo_periodo DATE;
     v_fase_corrente "VariavelFase";
+    v_ultimo_p_valido_corrente DATE;
     v_dias_desde_inicio INT;
     v_atrasos DATE[] := ARRAY[]::DATE[];
     v_prazo DATE;
@@ -52,7 +53,8 @@ BEGIN
         RETURN;
     END IF;
 
-    SELECT fase INTO v_fase_corrente
+    SELECT fase, ultimo_periodo_valido
+         INTO v_fase_corrente, v_ultimo_p_valido_corrente
     FROM variavel_ciclo_corrente
     WHERE variavel_id = p_variavel_id;
     IF (v_fase_corrente IS NULL) THEN
@@ -93,10 +95,15 @@ BEGIN
         END IF;
     END LOOP;
 
+    -- ordena os atrasos de forma ascendente
+    v_atrasos := ARRAY(SELECT unnest(v_atrasos) ORDER BY 1);
+
     -- Se houver atrasos, calcula o prazo
-    IF array_length(v_atrasos, 1) > 0 THEN
-        -- ordena os atrasos de forma ascendente
-        v_atrasos := ARRAY(SELECT unnest(v_atrasos) ORDER BY 1);
+    -- e o atraso não é o mesmo do ciclo corrente (em progresso/preenchimento)
+    IF array_length(v_atrasos, 1) > 0 AND v_ultimo_p_valido_corrente != v_atrasos[1] THEN
+    raise notice 'v_atrasos: %', v_atrasos;
+    raise notice 'v_ultimo_p_valido_corrente: %', v_ultimo_p_valido_corrente;
+
 
         v_prazo := v_atrasos[1];
 
@@ -132,12 +139,17 @@ BEGIN
         RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
 
+        v_ultimo_periodo_valido := coalesce(v_atrasos[1], v_ultimo_p_valido_corrente);
+
         IF (v_fase_corrente = 'Preenchimento') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
         ELSIF (v_fase_corrente = 'Validacao') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_validacao_interval;
         ELSE
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_liberacao_interval;
+
+            -- em teoria, e estourar o prazo, e é um atraso, eh a hora de avançar sozinho
+
         END IF;
 
         v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
