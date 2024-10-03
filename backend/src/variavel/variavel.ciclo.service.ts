@@ -257,6 +257,10 @@ export class VariavelCicloService {
             },
         });
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
+        if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
+            throw new BadRequestException(
+                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
+            );
 
         //const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
         const userPerfil = await this.getPerfisEmEquipes(user.id);
@@ -598,16 +602,21 @@ export class VariavelCicloService {
     ): Promise<VariavelAnaliseQualitativaResponseDto> {
         const { variavel_id, data_referencia } = dto;
 
-        const variavelCicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
+        const cicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
             where: {
                 variavel_id: variavel_id,
                 eh_corrente: true,
             },
             select: {
                 fase: true,
+                ultimo_periodo_valido: true,
             },
         });
-        if (!variavelCicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
+        if (!cicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
+        if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
+            throw new BadRequestException(
+                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem`
+            );
 
         const whereFilter = await this.getPermissionSet({}, user);
 
@@ -758,7 +767,7 @@ export class VariavelCicloService {
             : null;
 
         return {
-            fase: variavelCicloCorrente.fase,
+            fase: cicloCorrente.fase,
             pedido_complementacao,
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
