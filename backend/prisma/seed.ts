@@ -647,7 +647,9 @@ const PerfilAcessoConfig: {
     },
 
     {
-        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', ['Administrador Geral do Plano Setorial']),
+        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', [
+            'Administrador Geral do Plano Setorial',
+        ]),
         descricao:
             'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
         privilegios: [
@@ -670,10 +672,9 @@ const PerfilAcessoConfig: {
     },
 
     {
-        nome: 'Ponto Focal Setorial',
-        descricao:
-            'Pode editar qualquer plano setorial na equipe em que faz parte como ponto focal. Pode registrar evolução quando parte da equipe de medição.',
-        privilegios: ['PS.ponto_focal', 'CadastroMetaPS.listar', 'CadastroPainelPS.visualizar'],
+        nome: atualizarNomePerfil('Ponto Focal Setorial', []),
+        descricao: '',
+        privilegios: false,
     },
 
     {
@@ -771,7 +772,12 @@ const PerfilAcessoConfig: {
         nome: atualizarNomePerfil('Participante em equipes', ['Participante de Grupo de Variáveis']),
         descricao:
             'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
-        privilegios: ['SMAE.GrupoVariavel.participante'],
+        privilegios: [
+            'SMAE.GrupoVariavel.participante',
+            'PS.ponto_focal',
+            'CadastroMetaPS.listar',
+            'CadastroPainelPS.visualizar',
+        ],
     },
 
     {
@@ -959,6 +965,8 @@ const PerfilAcessoConfig: {
             'CadastroCronogramaTransferencia.listar',
         ],
     },
+    removerNomePerfil('Administrador Coordenadoria de Planejamento Setorial'),
+    removerNomePerfil('Ponto Focal Setorial'),
     removerNomePerfil('Técnico CP'),
     removerNomePerfil('Orçamento'),
     removerNomePerfil('Unidade de Entregas'),
