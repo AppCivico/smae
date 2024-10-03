@@ -12,6 +12,10 @@
         <h3 class="editar-subtitulo__conteudo-variavel">
           <strong>{{ emFoco?.variavel.codigo }}</strong> - {{ emFoco?.variavel.titulo }}
         </h3>
+
+        <h4 class="editar-subtitulo__conteudo-data">
+          {{ dataCicloAtualizacao }}
+        </h4>
       </div>
     </div>
 
@@ -330,6 +334,10 @@
 </template>
 
 <script lang="ts" setup>
+import { UTCDate } from '@date-fns/utc';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -395,6 +403,10 @@ function obterVariavelInicial() {
     ...analises,
   };
 }
+
+const dataCicloAtualizacao = computed<string>(() => (
+  format(new UTCDate(`${dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
+));
 
 const schema = computed(() => cicloAtualizacaoModalEditarSchema(fasePosicao.value));
 
@@ -573,15 +585,23 @@ function restaurarFormulario() {
   color: #F2890D;
 }
 
-.editar-subtitulo__conteudo-variavel {
+.editar-subtitulo__conteudo-variavel, .editar-subtitulo__conteudo-data {
   font-size: 20px;
   line-height: 26px;
   margin: 0;
-  font-weight: 400;
 
   strong {
     font-weight: 700;
   }
+}
+
+.editar-subtitulo__conteudo-variavel {
+    font-weight: 400;
+
+}
+
+.editar-subtitulo__conteudo-data {
+  font-weight: 700;
 }
 
 .formularios {
