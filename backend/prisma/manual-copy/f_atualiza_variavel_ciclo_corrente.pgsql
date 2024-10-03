@@ -106,7 +106,7 @@ BEGIN
           AND referencia_data = v_atrasos[1]
           AND ultima_revisao = true;
 
-        IF v_quali IS NOT NULL THEN
+        IF v_quali.fase IS NOT NULL THEN
 
             IF v_quali.fase = 'Preenchimento' THEN
                 v_prazo := v_atrasos[1] + v_registro.dur_preench_interval;
@@ -116,12 +116,17 @@ BEGIN
                 v_prazo := v_atrasos[1] + v_registro.dur_liberacao_interval;
             END IF;
 
+            v_fase_corrente := v_quali.fase;
+
         ELSE
+            v_fase_corrente := 'Preenchimento';
             -- ? pensar aqui,
             v_prazo := v_atrasos[1] + v_registro.dur_preench_interval;
         END IF;
 
-        -- not really
+        v_ultimo_periodo_valido := v_atrasos[1];
+
+        -- prazo já tava atraso né... então ta estouradão
         v_proximo_periodo := v_prazo + v_registro.intervalo_atraso;
 
         RAISE NOTICE 'v_prazo: %', v_prazo;
@@ -201,6 +206,7 @@ BEGIN
                 proximo_periodo_abertura = EXCLUDED.proximo_periodo_abertura,
                 eh_corrente = EXCLUDED.eh_corrente,
                 prazo = EXCLUDED.prazo,
+                fase = EXCLUDED.fase,
                 atrasos = EXCLUDED.atrasos;
 
         IF NOT FOUND THEN
