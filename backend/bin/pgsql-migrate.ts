@@ -130,7 +130,7 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
     const connection = await pool.connect();
 
     for (const file of filesToUpdate) {
-        logger.log(`Updating ${file.fileName}...`);
+        logger.debug(`Updating ${file.fileName}...`);
         try {
             await connection.query('BEGIN');
 
@@ -196,7 +196,7 @@ async function calculateSHA256(filePath: string): Promise<string> {
 
 async function handleFileChange(filePath: string, changeType: 'added' | 'changed') {
     if (path.extname(filePath) === '.pgsql' && ignore_added == false) {
-        logger.log(`File ${filePath} has been ${changeType}`);
+        logger.verbose(`File ${filePath} has been ${changeType}`);
         await processPgsqlFiles(path.dirname(filePath));
     }
 }
