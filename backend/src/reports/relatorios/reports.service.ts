@@ -206,10 +206,8 @@ export class ReportsService {
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
         //Fix para tratar tipos de relatório que são difentes de Consolidado/Analitico/Geral/Mensal
-        let tipo = parametros.tipo === 'MDO' ? null : parametros.tipo;
-        if (tipo == "Resumido") {
-            tipo = "Consolidado";
-        }
+        const tipo = parametros.tipo === 'MDO' ? null : parametros.tipo == 'Resumido'? null: parametros.tipo;
+
 
         const result = await this.prisma.relatorio.create({
             data: {
