@@ -24,6 +24,7 @@ const erro = ref(null);
 onErrorCaptured((err) => {
   if (
     err?.message?.includes('Failed to fetch dynamically imported module')
+    || err?.message?.includes('Failed to load module script')
     || err?.message?.includes('error loading dynamically imported module')
     || err?.type === 'NAVIGATION_ABORTED'
     || err?.type === 4
