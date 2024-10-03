@@ -265,7 +265,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             <span class="tamarelo mr1">
               ABERTURA FASE:
             </span>
-            {{ formatarTexto(linha.dados_extra?.faseReaberta?.situacao?.tipo_situacao) || ' - ' }}
+            {{ formatarTexto(linha.dados_extra?.faseReaberta?.fase) || ' - ' }}
           </strong> <br>
           <strong class="tc600">{{ linha.criador?.nome_exibicao }} - {{ formatarData(linha.criado_em) }}</strong>
           <div class="flex mt1">
