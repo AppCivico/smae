@@ -46,6 +46,7 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
 
     @IsOptional()
     @IsInt()
+    @Transform(NumberTransform)
     equipe_id?: number;
 
     @IsOptional()
