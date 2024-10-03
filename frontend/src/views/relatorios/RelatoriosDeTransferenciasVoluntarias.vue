@@ -10,6 +10,7 @@ import {
   prepararEsferaDeTransferência,
   prepararEtiquetas,
   prepararInterfaceDeTransferência,
+  prepararParlamentares,
   prepararPartidos,
   prepararÓrgãos,
 } from './helpers/preparadorDeColunaParametros';
@@ -22,6 +23,8 @@ const etiquetasParaValoresDeParâmetros = ref({
   interface: {},
   orgao_concedente_id: {},
   partido_id: {},
+  parlamentar_id: {},
+  orgao_gestor_id: {},
 });
 
 const etiquetasParaParâmetros = prepararEtiquetas(schema);
@@ -31,8 +34,11 @@ async function iniciar() {
   relatóriosStore.getAll({ fonte });
   etiquetasParaValoresDeParâmetros.value.esfera = prepararEsferaDeTransferência();
   etiquetasParaValoresDeParâmetros.value.interface = prepararInterfaceDeTransferência();
-  etiquetasParaValoresDeParâmetros.value.orgao_concedente_id = prepararÓrgãos();
+  etiquetasParaValoresDeParâmetros.value.orgao_concedente_id = await prepararÓrgãos();
+  etiquetasParaValoresDeParâmetros.value.orgao_gestor_id = await prepararÓrgãos();
   etiquetasParaValoresDeParâmetros.value.partido_id = await prepararPartidos();
+  etiquetasParaValoresDeParâmetros.value.parlamentar_id = await prepararParlamentares();
+
 }
 
 iniciar();

@@ -7,6 +7,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
@@ -18,6 +19,7 @@ const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
 const partidosStore = usePartidosStore();
 const relatoriosStore = useRelatoriosStore();
+const ParlamentaresStore = useParlamentaresStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -34,12 +36,15 @@ const valoresIniciais = {
     partido_id: null,
     secretaria_concedente: null,
     tipo: 'Geral',
+    orgao_gestor_id: null,
+    parlamentar_id: null,
   },
   salvar_arquivo: false,
 };
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { lista: partidoComoLista } = storeToRefs(partidosStore);
+const { lista: parlamentarComoLista } = storeToRefs(ParlamentaresStore);
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, values,
@@ -47,6 +52,7 @@ const {
   initialValues: valoresIniciais,
   validationSchema: schema,
 });
+
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
@@ -67,6 +73,9 @@ const formularioSujo = useIsFormDirty();
 
 ÓrgãosStore.getAll();
 partidosStore.buscarTudo();
+ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
+
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -88,7 +97,9 @@ partidosStore.buscarTudo();
       type="hidden"
       value="Transferencias"
     />
-    <div class="flex flexwrap g2 mb2">
+    <div class="flex flexwrap g2 mb2"> <!-- Primeira linha da tela - Início -->
+
+      <!-- ESFERA -->
       <div class="f1">
         <LabelFromYup
           name="esfera"
@@ -117,6 +128,7 @@ partidosStore.buscarTudo();
         </div>
       </div>
 
+      <!-- INTERFACE -->
       <div class="f1">
         <LabelFromYup
           name="interface"
@@ -145,7 +157,146 @@ partidosStore.buscarTudo();
           {{ errors['parametros.interface'] }}
         </div>
       </div>
+
+      <!-- ANO -->
       <div class="f1">
+        <LabelFromYup
+          name="ano"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.ano"
+          type="text"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['parametros.ano'],
+          }"
+          @change="!$event.target.value ? setFieldValue('parametros.ano',null) : null"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="parametros.ano"
+        />
+      </div>
+     
+    </div> <!-- Primeira linha da tela - Fim -->
+
+    <div class="flex flexwrap g2 mb2"> <!-- Segunda linha da tela - Início -->
+     
+      <!-- GESTOR MUNICIPAL -->
+      <div class="f1 mb2">
+        <LabelFromYup
+          name="orgao_gestor_id"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.orgao_gestor_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['parametros.orgao_gestor_id'],
+            loading: ÓrgãosStore.organs?.loading,
+          }"
+          :disabled="!órgãosComoLista?.length"
+          @change="!$event.target.value ? setFieldValue('parametros.orgao_gestor_id',null) : null"
+        >
+          <option value="">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="parametros.orgao_gestor_id"
+          class="error-msg"
+        />
+      </div>
+
+      <!-- PARTIDO -->
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="partido_id"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.partido_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['parametros.partido_id'] ,
+            loading: partidosStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!partidoComoLista?.length"
+          @change="!$event.target.value ? setFieldValue('parametros.partido_id',null) : null"
+        >
+          <option value="">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in partidoComoLista"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="parametros.partido_id"
+          class="error-msg"
+        />
+      </div>
+
+      <!-- PARLAMENTAR -->
+      <div class="f1">
+        <LabelFromYup
+          name="parlamentar_id"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.parlamentar_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error:  errors['parametros.parlamentar_id'] ,
+            loading: ParlamentaresStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!parlamentarComoLista?.length"
+          @change="!$event.target.value ? setFieldValue('parametros.parlamentar_id',null) : null"
+        >
+          <option value="">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in parlamentarComoLista"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome_popular }}
+
+ 
+          </option>
+        </Field>
+        <ErrorMessage
+          name="parametros.parlamentar_id"
+          class="error-msg"
+        />
+      </div>
+
+    </div> <!-- Segunda linha da tela - Fim -->
+
+    <div class="flex flexwrap g2 mb2"> <!-- Terceira linha da tela - Início -->
+
+      <!-- ÓRGÃO CONCEDENTE -->
+      <div class="f1 mb2">
         <LabelFromYup
           name="orgao_concedente_id"
           :schema="schema.fields.parametros"
@@ -181,7 +332,8 @@ partidosStore.buscarTudo();
         />
       </div>
 
-      <div class="f1">
+      <!-- SECRETARIA CONCEDENTE -->
+      <div class="f1 mb1">
         <LabelFromYup
           name="secretaria_concedente"
           :schema="schema.fields.parametros"
@@ -202,63 +354,8 @@ partidosStore.buscarTudo();
           class="error-msg"
         />
       </div>
-    </div>
 
-    <div class="flex flexwrap g2 mb2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="partido_id"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.partido_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors['parametros.partido_id'] ,
-            loading: partidosStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!partidoComoLista?.length"
-          @change="!$event.target.value ? setFieldValue('parametros.partido_id',null) : null"
-        >
-          <option value="">
-            Selecionar
-          </option>
-
-          <option
-            v-for="item in partidoComoLista"
-            :key="item"
-            :value="item.id"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="parametros.partido_id"
-          class="error-msg"
-        />
-      </div>
-
-      <div class="f1">
-        <LabelFromYup
-          name="ano"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.ano"
-          type="text"
-          class="inputtext light mb1"
-          :class="{
-            error: errors['parametros.ano'],
-          }"
-          @change="!$event.target.value ? setFieldValue('parametros.ano',null) : null"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="parametros.ano"
-        />
-      </div>
-
+      <!-- GESTOR DO CONTRATO -->
       <div class="f1">
         <LabelFromYup
           name="gestor_contrato"
@@ -278,9 +375,12 @@ partidosStore.buscarTudo();
           name="parametros.gestor_contrato"
         />
       </div>
-    </div>
 
-    <div class="flex flexwrap g2 mb2">
+    </div> <!-- Terceira linha da tela - Fim -->
+
+    <div class="flex flexwrap g2 mb2"> <!-- Quarta linha da tela - Início -->
+
+      <!-- OBJETO -->
       <div class="f1">
         <LabelFromYup
           name="objeto"
@@ -301,7 +401,8 @@ partidosStore.buscarTudo();
           name="parametros.objeto"
         />
       </div>
-    </div>
+
+    </div> <!-- Quarta linha da tela - Fim -->
 
     <div class="mb2">
       <div class="pl2">
