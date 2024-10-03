@@ -14,6 +14,7 @@ export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto
     fluxo?: WorkflowAndamentoFluxoDto[] | undefined;
     possui_proxima_etapa: boolean;
     pode_passar_para_proxima_etapa: boolean;
+    pode_reabrir_fase: boolean;
 }
 
 export class WorkflowAndamentoFluxoDto extends DetailWorkflowFluxoDto {

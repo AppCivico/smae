@@ -107,12 +107,13 @@ export class WorkflowAndamentoService {
         });
 
         const pode_passar_para_proxima_etapa: boolean = fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
+        const pode_reabrir_fase: boolean = transferencia.andamentoWorkflow[0] ? true : false;
 
         return {
             ...workflow,
             possui_proxima_etapa: possui_proxima_etapa,
             pode_passar_para_proxima_etapa: pode_passar_para_proxima_etapa,
-
+            pode_reabrir_fase: pode_reabrir_fase,
             fluxo: await Promise.all(
                 workflow.fluxo
                     .filter((e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id)
