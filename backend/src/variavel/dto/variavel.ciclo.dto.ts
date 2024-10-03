@@ -10,6 +10,7 @@ import {
     IsOptional,
     IsString,
     MaxLength,
+    MinLength,
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
@@ -123,7 +124,8 @@ export class BatchAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(50000, { message: 'Pedido de complementação não pode ter mais de 50000 caracteres' })
+    @MinLength(1, { message: 'Análise qualitativa não pode ser vazia' })
     analise_qualitativa?: string;
 
     @IsDateYMD()
