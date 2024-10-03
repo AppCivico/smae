@@ -20,11 +20,29 @@ type FieldsProps = {
   placeholder?: string
   mask?: (el: any) => void
 };
-const equipesStore = useEquipesStore();
-const equipes = computed(() => equipesStore.lista);
-const schema = computed(() => cicloAtualizacaoFiltrosSchema(equipes.value));
+
 const $route = useRoute();
 const $router = useRouter();
+
+const equipesStore = useEquipesStore();
+
+const equipes = computed(() => equipesStore.lista.filter((item) => {
+  switch ($route.query.aba) {
+    case 'Preenchimento':
+      return item.perfil === 'Medicao';
+
+    case 'Validacao':
+      return item.perfil === 'Validacao';
+
+    case 'Liberacao':
+      return item.perfil === 'Liberacao';
+
+    default:
+      return true;
+  }
+}));
+const schema = computed(() => cicloAtualizacaoFiltrosSchema(equipes.value));
+
 const campos = computed<FieldsProps[]>(() => [
   { class: 'fg999', nome: 'codigo', tipo: 'text' },
   { class: 'fb25', nome: 'palavra_chave', tipo: 'text' },

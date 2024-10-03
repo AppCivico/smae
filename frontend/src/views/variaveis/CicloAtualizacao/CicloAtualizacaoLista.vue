@@ -127,6 +127,17 @@
           </th>
         </tr>
       </tbody>
+
+      <tbody
+        v-if="ciclosAtualizacao.length === 0"
+        class="listagem-item listagem-item--sem-resultado"
+      >
+        <tr>
+          <td colspan="5">
+            Sem items a exibir
+          </td>
+        </tr>
+      </tbody>
     </table>
   </section>
 
@@ -291,6 +302,10 @@ onMounted(() => {
   tr {
     background-color: #F9F9F9;
   }
+}
+
+.listagem-item--sem-resultado {
+  height: 45px;
 }
 
 .listagem-item__conteudo {
