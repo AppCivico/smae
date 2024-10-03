@@ -10,6 +10,10 @@ DECLARE
     v_proximo_periodo DATE;
     v_fase_corrente "VariavelFase";
     v_dias_desde_inicio INT;
+    v_atrasos DATE[] := ARRAY[]::DATE[];
+    v_prazo DATE;
+    v_ciclo RECORD;
+    v_quali RECORD;
 BEGIN
     -- Busca o registro da variável com o nome da coluna atualizado
     SELECT
@@ -21,6 +25,14 @@ BEGIN
         periodo_preenchimento,
         periodo_validacao,
         periodo_liberacao,
+        periodo_preenchimento[2] - periodo_preenchimento[1] + 1 as dur_preench,
+        periodo_validacao[2] - periodo_validacao[1] + 1 as dur_validacao,
+        periodo_liberacao[2] - periodo_liberacao[1] + 1 as dur_liberacao,
+
+        ((periodo_preenchimento[2] - periodo_preenchimento[1] + 1) || ' days')::interval  as dur_preench_interval,
+        ((periodo_validacao[2] - periodo_validacao[1] + 1) || ' days')::interval  as dur_validacao_interval,
+        ((periodo_liberacao[2] - periodo_liberacao[1] + 1) || ' days')::interval as dur_liberacao_interval,
+
         periodicidade_intervalo(periodicidade) * atraso_meses AS intervalo_atraso
     INTO v_registro
     FROM variavel
@@ -43,20 +55,97 @@ BEGIN
     SELECT fase INTO v_fase_corrente
     FROM variavel_ciclo_corrente
     WHERE variavel_id = p_variavel_id;
+    IF (v_fase_corrente IS NULL) THEN
+        v_fase_corrente := 'Preenchimento';
+    END IF;
 
     -- Calcula o último período válido usando a função atualizada
-    v_ultimo_periodo_valido := ultimo_periodo_valido(
-        v_registro.periodicidade,
-        v_registro.atraso_meses,
-        v_registro.inicio_medicao
-    );
+--    v_ultimo_periodo_valido := ultimo_periodo_valido(
+--        v_registro.periodicidade,
+--        v_registro.atraso_meses,
+--        v_registro.inicio_medicao
+--    );
+
+    -- Busca os ciclos e analisa os atrasos
+    FOR v_ciclo IN (
+        SELECT xp.xp AS ciclo_data, a.fase, a.referencia_data
+        FROM busca_periodos_variavel(p_variavel_id::int) AS g(p, inicio, fim)
+        CROSS JOIN generate_series(g.inicio::date, g.fim::date, g.p) AS xp(xp)
+        LEFT JOIN variavel_global_ciclo_analise a
+            ON a.variavel_id = p_variavel_id
+            AND a.referencia_data = xp.xp
+            AND ultima_revisao = true
+        WHERE xp.xp <  v_mes_atual - v_registro.intervalo_atraso
+        ORDER BY 1 DESC
+    ) LOOP
+        IF (v_ultimo_periodo_valido IS NULL) THEN
+            v_ultimo_periodo_valido := v_ciclo.ciclo_data;
+        END IF;
+
+        -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente
+        IF v_ciclo.fase IS NULL OR v_ciclo.fase != 'Liberacao'  THEN
+
+            IF (v_ciclo.ciclo_data != v_ultimo_periodo_valido) THEN
+                v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data);
+            -- ELSE: provavelmente é o ciclo corrente vamos ter que usar as regras das durações
+            -- aqui pra considerar o atraso
+            END IF;
+        END IF;
+    END LOOP;
+
+    -- Se houver atrasos, calcula o prazo
+    IF array_length(v_atrasos, 1) > 0 THEN
+        -- ordena os atrasos de forma ascendente
+        v_atrasos := ARRAY(SELECT unnest(v_atrasos) ORDER BY 1);
+
+        v_prazo := v_atrasos[1];
+
+        -- busca a variavel_global_ciclo_analise do mes em atraso
+        SELECT * INTO v_quali FROM variavel_global_ciclo_analise
+        WHERE variavel_id = p_variavel_id
+          AND referencia_data = v_atrasos[1]
+          AND ultima_revisao = true;
+
+        IF v_quali IS NOT NULL THEN
+
+            IF v_quali.fase = 'Preenchimento' THEN
+                v_prazo := v_atrasos[1] + v_registro.dur_preench_interval;
+            ELSIF v_quali.fase = 'Validacao' THEN
+                v_prazo := v_atrasos[1] + v_registro.dur_validacao_interval;
+            ELSE
+                v_prazo := v_atrasos[1] + v_registro.dur_liberacao_interval;
+            END IF;
+
+        ELSE
+            -- ? pensar aqui,
+            v_prazo := v_atrasos[1] + v_registro.dur_preench_interval;
+        END IF;
+
+        -- not really
+        v_proximo_periodo := v_prazo + v_registro.intervalo_atraso;
+
+        RAISE NOTICE 'v_prazo: %', v_prazo;
+    ELSE
+
+        IF (v_fase_corrente = 'Preenchimento') THEN
+            v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
+        ELSIF (v_fase_corrente = 'Validacao') THEN
+            v_prazo := v_ultimo_periodo_valido + v_registro.dur_validacao_interval;
+        ELSE
+            v_prazo := v_ultimo_periodo_valido + v_registro.dur_liberacao_interval;
+        END IF;
+
+        v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
+
+    END IF;
+
+    IF (v_proximo_periodo IS null) THEN
+        RAISE NOTICE 'v_proximo_periodo ficou nulo, isso deve ser variavel no futuro por exemplo, falta tratar';
+        return;
+    END IF;
 
     RAISE NOTICE 'v_registro: %', v_registro;
 
-    -- Calcula o próximo período após o último período válido
-    RAISE NOTICE 'v_ultimo_periodo_valido: %', v_ultimo_periodo_valido;
-    v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
-    RAISE NOTICE 'v_proximo_periodo: %', v_proximo_periodo;
 
     -- Se há fim de medição, a data limite é o fim de medição
     -- Senão, a data limite é o próximo período (não há fim de medição, basicamente)
@@ -75,11 +164,10 @@ BEGIN
         RAISE NOTICE 'v_corrente: %', v_corrente;
 
         IF v_corrente THEN
-            -- **Updated Calculation Here**
             v_dias_desde_inicio := (v_mes_atual - v_proximo_periodo) + 1;
             RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
 
-            IF v_fase_corrente IS NULL OR v_fase_corrente = 'Preenchimento' THEN
+            IF v_fase_corrente = 'Preenchimento' THEN
                 IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
                     -- Esconde a fase de preenchimento enquanto não chegar na data
                     v_corrente := false;
@@ -87,9 +175,6 @@ BEGIN
                 END IF;
             END IF;
 
-            --periodo_preenchimento  | {1,10}
-            --periodo_validacao      | {11,15}
-            --periodo_liberacao      | {16,22}
         END IF;
 
         INSERT INTO variavel_ciclo_corrente(
@@ -97,20 +182,26 @@ BEGIN
             ultimo_periodo_valido,
             fase,
             proximo_periodo_abertura,
-            eh_corrente
+            eh_corrente,
+            prazo,
+            atrasos
         )
         VALUES (
             v_registro.id,
             v_ultimo_periodo_valido,
-            COALESCE(v_fase_corrente, 'Preenchimento'::"VariavelFase"),
+            v_fase_corrente,
             v_proximo_periodo,
-            v_corrente
+            v_corrente,
+            v_prazo,
+            v_atrasos
         )
         ON CONFLICT (variavel_id)
             DO UPDATE SET
                 ultimo_periodo_valido = EXCLUDED.ultimo_periodo_valido,
                 proximo_periodo_abertura = EXCLUDED.proximo_periodo_abertura,
-                eh_corrente = EXCLUDED.eh_corrente;
+                eh_corrente = EXCLUDED.eh_corrente,
+                prazo = EXCLUDED.prazo,
+                atrasos = EXCLUDED.atrasos;
 
         IF NOT FOUND THEN
             RAISE EXCEPTION 'Falha ao atualizar variavel_ciclo_corrente para variável ID %', p_variavel_id;
@@ -199,86 +290,9 @@ EXCEPTION
       NULL;
 END;$$;
 
--- problemas pro futuro
-CREATE OR REPLACE FUNCTION f_variavel_periodos_redimensionados(
+DROP FUNCTION IF EXISTS f_variavel_periodos_redimensionados(
     p_preenchimento_phase INT[],
     p_validacao_phase INT[],
     p_liberacao_phase INT[],
     p_date DATE
-)
-RETURNS TABLE (
-    scaled_preenchimento_start INT,
-    scaled_preenchimento_end INT,
-    scaled_validacao_start INT,
-    scaled_validacao_end INT,
-    scaled_liberacao_start INT,
-    scaled_liberacao_end INT
-)
-AS $$
-DECLARE
-    v_days_in_month INT;
-    v_start_preenchimento INT;
-    v_duration_preenchimento INT;
-    v_duration_validacao INT;
-    v_duration_liberacao INT;
-    v_total_required_days INT;
-    v_actual_preenchimento_end INT;
-    v_actual_validacao_end INT;
-    v_actual_liberacao_end INT;
-BEGIN
-    -- Extract values from arrays
-    v_start_preenchimento := p_preenchimento_phase[1];
-    v_duration_preenchimento := p_preenchimento_phase[2] - p_preenchimento_phase[1] + 1;
-    v_duration_validacao := p_validacao_phase[2] - p_validacao_phase[1] + 1;
-    v_duration_liberacao := p_liberacao_phase[2] - p_liberacao_phase[1] + 1;
-
-    -- Calculate the total number of days in the given month
-    SELECT EXTRACT(DAY FROM (DATE_TRUNC('MONTH', p_date) + INTERVAL '1 MONTH' - INTERVAL '1 DAY')) INTO v_days_in_month;
-
-    -- Total required days to complete all phases
-    v_total_required_days := v_start_preenchimento + v_duration_preenchimento + v_duration_validacao + v_duration_liberacao - 1;
-
-    -- Determine if scaling is needed
-    IF v_days_in_month < v_total_required_days THEN
-        -- Scale down the phases proportionally
-        v_duration_preenchimento := LEAST(v_duration_preenchimento, v_days_in_month - v_start_preenchimento + 1);
-        v_actual_preenchimento_end := v_start_preenchimento + v_duration_preenchimento - 1;
-
-        -- Adjust validation phase
-        IF v_actual_preenchimento_end + v_duration_validacao <= v_days_in_month THEN
-            v_actual_validacao_end := v_actual_preenchimento_end + v_duration_validacao;
-        ELSE
-            v_duration_validacao := LEAST(v_duration_validacao, v_days_in_month - v_actual_preenchimento_end);
-            v_actual_validacao_end := v_actual_preenchimento_end + v_duration_validacao;
-        END IF;
-
-        -- Adjust liberação phase
-        IF v_actual_validacao_end + v_duration_liberacao <= v_days_in_month THEN
-            v_actual_liberacao_end := v_actual_validacao_end + v_duration_liberacao;
-        ELSE
-            v_duration_liberacao := LEAST(v_duration_liberacao, v_days_in_month - v_actual_validacao_end);
-            v_actual_liberacao_end := v_actual_validacao_end + v_duration_liberacao;
-        END IF;
-    ELSE
-        -- No need to scale, use original values
-        v_actual_preenchimento_end := v_start_preenchimento + v_duration_preenchimento - 1;
-        v_actual_validacao_end := v_actual_preenchimento_end + v_duration_validacao;
-        v_actual_liberacao_end := v_actual_validacao_end + v_duration_liberacao;
-    END IF;
-
-    -- Display notices for debugging
-    RAISE NOTICE 'Preenchimento: Start = %, End = %', v_start_preenchimento, v_actual_preenchimento_end;
-    RAISE NOTICE 'Validacao: Start = %, End = %', v_actual_preenchimento_end + 1, v_actual_validacao_end;
-    RAISE NOTICE 'Liberacao: Start = %, End = %', v_actual_validacao_end + 1, v_actual_liberacao_end;
-
-    -- Return the results
-    RETURN QUERY
-    SELECT
-        v_start_preenchimento AS scaled_preenchimento_start,
-        v_actual_preenchimento_end AS scaled_preenchimento_end,
-        v_actual_preenchimento_end + 1 AS scaled_validacao_start,
-        v_actual_validacao_end AS scaled_validacao_end,
-        v_actual_validacao_end + 1 AS scaled_liberacao_start,
-        v_actual_liberacao_end AS scaled_liberacao_end;
-END;
-$$ LANGUAGE plpgsql;
+);
