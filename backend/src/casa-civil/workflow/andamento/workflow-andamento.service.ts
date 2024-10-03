@@ -39,6 +39,7 @@ export class WorkflowAndamentoService {
                     select: {
                         id: true,
                         workflow_etapa_id: true,
+                        data_termino: true,
                     },
                 },
             },
@@ -106,8 +107,16 @@ export class WorkflowAndamentoService {
             },
         });
 
+        const fasesConcluidas = await this.prisma.transferenciaAndamento.count({
+            where: {
+                removido_em: null,
+                data_inicio: { not: null },
+                transferencia_id: transferencia.id,
+            },
+        });
+
         const pode_passar_para_proxima_etapa: boolean = fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
-        const pode_reabrir_fase: boolean = transferencia.andamentoWorkflow[0] ? true : false;
+        const pode_reabrir_fase: boolean = fasesConcluidas ? true : false;
 
         return {
             ...workflow,
