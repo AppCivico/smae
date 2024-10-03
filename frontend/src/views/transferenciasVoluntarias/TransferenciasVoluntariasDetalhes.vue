@@ -343,7 +343,7 @@ workflowAndamento.buscarHistorico();
           Classificação
         </dt>
         <dd>
-          {{ transferenciaEmFoco?.classificacao.nome || '-' }}
+          {{ transferenciaEmFoco?.classificacao?.nome || '-' }}
         </dd>
       </div>
       <div class="f1 fb33">
