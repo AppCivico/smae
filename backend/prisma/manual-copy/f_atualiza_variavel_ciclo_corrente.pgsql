@@ -79,6 +79,7 @@ BEGIN
             AND ultima_revisao = true
             AND aprovada = true
         WHERE xp.xp <  v_mes_atual - v_registro.intervalo_atraso
+        GROUP BY 1
         ORDER BY 1 DESC
     ) LOOP
         IF (v_ultimo_periodo_valido IS NULL) THEN
@@ -86,7 +87,7 @@ BEGIN
         END IF;
 
         -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente
-        IF v_ciclo.fases[1] IS NULL OR NOT ('Liberacao' = ANY(v_ciclo.fase)) THEN
+        IF v_ciclo.fases[1] IS NULL OR NOT ('Liberacao' = ANY(v_ciclo.fases)) THEN
 
             IF (v_ciclo.ciclo_data != v_ultimo_periodo_valido) THEN
                 v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data);
