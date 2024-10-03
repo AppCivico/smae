@@ -886,6 +886,7 @@ export class VariavelCicloService {
             data: {
                 fase: nextPhase,
                 liberacao_enviada: nextPhase === 'Liberacao',
+                pedido_complementacao: false,
             },
         });
 
