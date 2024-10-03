@@ -390,7 +390,7 @@ export default {
       meta: {
         título: 'Atividades pendentes',
         títuloParaMenu: 'Atividades pendentes',
-        // limitarÀsPermissões: 'Reports.executar.CasaCivil', // ver se é esse
+        limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
         {
