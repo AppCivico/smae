@@ -675,12 +675,13 @@ export class WorkflowAndamentoFaseService {
                     // Se a fase atual não foi concluída, vamos encontrar a fase anterior
                     const faseAnterior = await prismaTxn.transferenciaAndamento.findFirst({
                         where: {
+                            id: { lt: faseAtual.id },
                             transferencia_id: dto.transferencia_id,
                             removido_em: null,
                             data_inicio: { not: null },
                             AND: [{ data_termino: { not: null } }, { data_termino: { lte: faseAtual.data_inicio! } }],
                         },
-                        orderBy: [{ data_termino: 'desc' }],
+                        orderBy: [{ id: 'desc' }, { data_termino: 'desc' }],
                         select: {
                             id: true,
                             workflow_etapa_id: true,
@@ -804,6 +805,11 @@ export class WorkflowAndamentoFaseService {
                         workflow_fase_atual_id: faseParaReabrir.workflow_fase_id,
                     },
                 });
+
+                console.log('==================================');
+                console.log(faseParaReabrir);
+                console.log(faseParaFechar);
+                console.log('==================================');
 
                 // Salvando dados de log
                 await prismaTxn.transferenciaHistorico.create({
