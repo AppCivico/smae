@@ -22,7 +22,7 @@ const campos = computed<FieldsProps[]>(() => [
   { class: 'fg999', nome: 'codigo', tipo: 'text' },
   { class: 'fb25', nome: 'palavra_chave', tipo: 'text' },
   {
-    class: 'fb25', nome: 'equipe', tipo: 'select', opcoes: equipes.value,
+    class: 'fb25', nome: 'equipe_id', tipo: 'select', opcoes: equipes.value,
   },
   { class: 'fb25', nome: 'referencia', tipo: 'text' },
 ]);
