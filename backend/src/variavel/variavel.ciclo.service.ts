@@ -262,6 +262,12 @@ export class VariavelCicloService {
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
             );
 
+        // sempre verifica se o periodo é válido, just in case...
+        const valid = await this.util.gerarPeriodoVariavelEntreDatas(dto.variavel_id, null, {
+            data_valor: dto.data_referencia,
+        });
+        if (valid.length === 0) throw new BadRequestException('Data de referência não é válida para a variável');
+
         //const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
         const userPerfil = await this.getPerfisEmEquipes(user.id);
 
@@ -615,7 +621,7 @@ export class VariavelCicloService {
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
         if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
             throw new BadRequestException(
-                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem`
+                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem.`
             );
 
         const whereFilter = await this.getPermissionSet({}, user);
@@ -656,12 +662,6 @@ export class VariavelCicloService {
             },
         });
         if (!variavel) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
-
-        // sempre verifica se o periodo é válido, just in case...
-        const valid = await this.util.gerarPeriodoVariavelEntreDatas(variavel_id, null, {
-            data_valor: data_referencia,
-        });
-        if (valid.length === 0) throw new BadRequestException('Período não é válido');
 
         // carrega a ultima linha de cada uma das analises
         const fases: VariavelFase[] = ['Liberacao', 'Preenchimento', 'Validacao'];
