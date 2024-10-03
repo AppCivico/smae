@@ -745,6 +745,8 @@ export class WorkflowAndamentoFaseService {
                     where: { id: faseAnterior.id },
                     data: {
                         data_termino: null,
+                        removido_em: null,
+                        removido_por: null,
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
@@ -788,6 +790,8 @@ export class WorkflowAndamentoFaseService {
                     where: { id: faseAtual.id },
                     data: {
                         data_inicio: null,
+                        removido_em: null,
+                        removido_por: null,
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
