@@ -6,6 +6,11 @@
       <hr class="f1">
     </header>
 
+    <CicloAtualizacaoListaFiltro
+      v-if="temEquipes"
+      class="mb3"
+    />
+
     <div class="flex spacebetween">
       <EnvelopeDeAbas
         :meta-dados-por-id="tabs"
@@ -92,12 +97,16 @@
 <script lang="ts" setup>
 import { useRoute } from 'vue-router';
 
-import { watch, computed } from 'vue';
+import { watch, computed, onMounted } from 'vue';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
+
 import truncate from '@/helpers/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
+
+import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
 type IconOpcoes = 'complementacao' | 'coleta';
 
@@ -116,7 +125,10 @@ type VariavelCicloComIcone = VariavelCiclo & {
   temAtraso: boolean
 };
 
+const equipesStore = useEquipesStore();
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+
+const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
 const $route = useRoute();
 
@@ -180,6 +192,12 @@ watch(() => $route.query, (query) => {
     fase: aba,
   });
 }, { immediate: true });
+
+onMounted(() => {
+  if (!temEquipes.value) {
+    equipesStore.buscarTudo();
+  }
+});
 </script>
 
 <style lang="less" scoped>
