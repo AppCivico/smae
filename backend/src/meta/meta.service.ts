@@ -1365,6 +1365,8 @@ export class MetaService {
 
         // Process Metas
         for (const meta of metas) {
+            if (dto.meta_id && meta.id === dto.meta_id) continue;
+
             const metaPdm: MetaPdmDto = {
                 pdm_id: meta.pdm.id,
                 pdm_descricao: meta.pdm.descricao ?? '',
@@ -1382,6 +1384,8 @@ export class MetaService {
 
         // Process Iniciativas
         for (const iniciativa of iniciativas) {
+            if (dto.iniciativa_id && iniciativa.id === dto.iniciativa_id) continue;
+
             let metaPdm = metaPdmDtoList.find((m) => m.meta_id === iniciativa.meta.id);
             if (!metaPdm) {
                 metaPdm = {
@@ -1410,6 +1414,8 @@ export class MetaService {
 
         // Process Atividades
         for (const atividade of atividades) {
+            if (dto.atividade_id && atividade.id === dto.atividade_id) continue;
+
             let metaPdm = metaPdmDtoList.find((m) => m.iniciativa_id === atividade.iniciativa.id);
             if (!metaPdm) {
                 metaPdm = {
