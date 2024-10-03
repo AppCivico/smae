@@ -1,5 +1,5 @@
 <script setup>
-import dateToDate from '@/helpers/dateToDate';
+import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
@@ -12,7 +12,9 @@ const relatoriosStore = useRelatoriosStore();
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
+const localizeDate = (d) => (d.includes('T')
+  ? localizarDataHorario(d)
+  : localizarData(d, { timeStyle: 'short' }));
 
 const props = defineProps({
   etiquetasParaParâmetros: {
@@ -80,12 +82,17 @@ function excluirRelatório(id) {
             v-for="(_, chave) in colunas"
             :key="chave"
           >
-            {{ Array.isArray(item.parametros[chave])
-              ? item.parametros[chave]
-                .map((x) => props.etiquetasParaValoresDeParâmetros?.[chave]?.[x])
-                .join(', ')
-              : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
-                || item.parametros[chave] }}
+            <template v-if="chave.startsWith('data_')">
+              {{ localizeDate(item.parametros[chave]) }}
+            </template>
+            <template v-else>
+              {{ Array.isArray(item.parametros[chave])
+                ? item.parametros[chave]
+                  .map((x) => props.etiquetasParaValoresDeParâmetros?.[chave]?.[x])
+                  .join(', ')
+                : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
+                  || item.parametros[chave] }}
+            </template>
           </td>
           <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button

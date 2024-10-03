@@ -1,7 +1,7 @@
 <script setup>
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
-import dateToDate from '@/helpers/dateToDate';
+import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
@@ -15,8 +15,6 @@ const { temPermissãoPara } = storeToRefs(useAuthStore());
 const relatoriosStore = useRelatoriosStore();
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
 
 function excluirRelatório(id) {
   alertStore.confirmAction('Deseja remover o relatório?', () => {
@@ -76,7 +74,7 @@ relatoriosStore.getAll({ fonte });
           <td>
             {{ planosPorId[item.parametros?.plano_setorial_id]?.nome || '-' }}
           </td>
-          <td>{{ localizeDate(item.criado_em) }}</td>
+          <td>{{ localizarDataHorario(item.criado_em) }}</td>
           <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button
               class="like-a__text addlink"
