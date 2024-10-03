@@ -39,56 +39,95 @@
       </div>
     </div>
 
-    <ul class="ciclo-atualizacao-lista__listagem flex column g1">
-      <li
+    <table class="ciclo-atualizacao-lista__listagem">
+      <thead>
+        <tr>
+          <th scope="col">
+            CÓDIGO/NOME
+          </th>
+
+          <th scope="col">
+            Referência
+          </th>
+
+          <th scope="col">
+            equipes repsonsáveis
+          </th>
+          <th scope="col">
+            prazo
+          </th>
+
+          <th scope="col" />
+        </tr>
+      </thead>
+
+      <tbody
         v-for="cicloAtualizacao in ciclosAtualizacao"
         :key="`ciclo-atualizacao--${cicloAtualizacao.id}`"
-        class="listagem-item flex spacebetween center g05 pl1 pr1"
+        class="listagem-item"
       >
-        <div class="listagem-item__icone">
-          <svg
-            :width="cicloAtualizacao.icone.tamanho"
-            :height="cicloAtualizacao.icone.tamanho"
-          ><use :xlink:href="`#${cicloAtualizacao.icone.icone}`" /></svg>
-        </div>
-
-        <h5 class="listagem-item__conteudo f1">
-          <strong
-            :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}"
+        <tr>
+          <th
+            scope="row"
+            class="flex center g05"
           >
-            {{ cicloAtualizacao.codigo }}
-            <div v-if="cicloAtualizacao.temAtraso">
-              Atualização com atraso: {{ cicloAtualizacao.atrasos?.length }}
+            <!--  -->
+            <div class="listagem-item__icone">
+              <svg
+                :width="cicloAtualizacao.icone.tamanho"
+                :height="cicloAtualizacao.icone.tamanho"
+              ><use :xlink:href="`#${cicloAtualizacao.icone.icone}`" /></svg>
             </div>
-          </strong> -
-          {{ truncate(cicloAtualizacao.titulo, 60) }}
-        </h5>
 
-        <div
-          v-if="cicloAtualizacao.pode_editar"
-          class="listagem-item__acoes"
-        >
-          <SmaeLink
-            type="button"
-            class="tipinfo tprimary like-a__text"
-            exibir-desabilitado
-            :to="{
-              name: 'cicloAtualizacao.editar',
-              params: {
-                cicloAtualizacaoId: cicloAtualizacao.id,
-                dataReferencia: cicloAtualizacao.ultimo_periodo_valido
-              }
-            }"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-            <div>Editar</div>
-          </SmaeLink>
-        </div>
-      </li>
-    </ul>
+            <h5 class="listagem-item__conteudo f1">
+              <strong
+                :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}"
+              >
+                {{ cicloAtualizacao.codigo }}
+                <div v-if="cicloAtualizacao.temAtraso">
+                  Atualização com atraso: {{ cicloAtualizacao.atrasos?.length }}
+                </div>
+              </strong> -
+              {{ truncate(cicloAtualizacao.titulo, 60) }}
+            </h5>
+          </th>
+
+          <td>
+            {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
+          </td>
+
+          <td>
+            {{ cicloAtualizacao.equipes.map(i => i.titulo).join(", ") }}
+          </td>
+
+          <td>
+            {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'MM/yyyy') }}
+          </td>
+
+          <th>
+            <SmaeLink
+              v-if="cicloAtualizacao.pode_editar"
+              type="button"
+              class="tipinfo tprimary like-a__text"
+              exibir-desabilitado
+              :to="{
+                name: 'cicloAtualizacao.editar',
+                params: {
+                  cicloAtualizacaoId: cicloAtualizacao.id,
+                  dataReferencia: cicloAtualizacao.ultimo_periodo_valido
+                }
+              }"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+              <div>Editar</div>
+            </SmaeLink>
+          </th>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <router-view />
@@ -107,6 +146,7 @@ import truncate from '@/helpers/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
 
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 
 type IconOpcoes = 'complementacao' | 'coleta';
 
@@ -209,13 +249,48 @@ onMounted(() => {
 
 .ciclo-atualizacao-lista__listagem {
   margin-top: 19px;
+  width: 100%;
+  overflow-x: auto;
+  min-width: 1010px;
+
+  thead {
+    th {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 15px;
+      color: #B8C0CC;
+      text-transform: uppercase;
+    }
+  }
+
+  tr {
+    > * {
+      border: 5px solid transparent;
+      border-left: 0;
+      border-right: 0;
+      text-align: left;
+
+      padding-left: 2rem;
+
+      &:first-child {
+        padding-left: 12px;
+      }
+
+      &:last-child {
+        padding-right: 12px;
+      }
+    }
+  }
 }
 
 .listagem-item {
-  border-radius: 5px;
-  padding: 5px 0;
-  background-color: #F9F9F9;
-  border-bottom: 2px solid #B8C0CC;
+  border-left: 0;
+  border-right: 0;
+  border: 1rem solid #fff;
+
+  tr {
+    background-color: #F9F9F9;
+  }
 }
 
 .listagem-item__conteudo {
