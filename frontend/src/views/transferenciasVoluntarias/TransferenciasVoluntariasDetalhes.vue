@@ -72,7 +72,7 @@ function rolarParaStatusCorrente() {
 function deletarWorkflow() {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.deletarWorklow()) {
-      // workflowAndamento.buscar();
+      workflowAndamento.buscar();
       alertStore.success('Workflow deletado!');
       ConfigurarWorkflow.value = false;
     }
