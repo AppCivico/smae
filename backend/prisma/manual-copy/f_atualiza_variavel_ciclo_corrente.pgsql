@@ -219,7 +219,8 @@ BEGIN
                 eh_corrente = EXCLUDED.eh_corrente,
                 prazo = EXCLUDED.prazo,
                 fase = EXCLUDED.fase,
-                atrasos = EXCLUDED.atrasos;
+                atrasos = EXCLUDED.atrasos,
+                atualizado_em = now();
 
         IF NOT FOUND THEN
             RAISE EXCEPTION 'Falha ao atualizar variavel_ciclo_corrente para variável ID %', p_variavel_id;

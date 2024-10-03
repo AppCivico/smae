@@ -299,6 +299,7 @@ export class VariavelCicloService {
                 },
                 data: { ultima_revisao: false },
             });
+
             await prismaTxn.variavelGlobalCicloAnalise.create({
                 data: {
                     variavel_id: dto.variavel_id,
@@ -361,6 +362,8 @@ export class VariavelCicloService {
                     // Verifica se todas as filhas estão conferidas ou serão atualizadas neste batch
                     const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
                     await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
+
+                    await this.marcaLiberacaoEnviada(cicloCorrente.variavel.id, prismaTxn);
                 } else if (dto.pedido_complementacao) {
                     await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
                     // cria o pedido após mover a fase
@@ -863,7 +866,28 @@ export class VariavelCicloService {
 
         await prismaTxn.variavelCicloCorrente.update({
             where: { variavel_id: variavelId },
-            data: { fase: nextPhase },
+            data: {
+                fase: nextPhase,
+                liberacao_enviada: nextPhase === 'Liberacao',
+            },
+        });
+
+        await prismaTxn.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
+    }
+
+    private async marcaLiberacaoEnviada(variavelId: number, prismaTxn: Prisma.TransactionClient): Promise<void> {
+        const self = await prismaTxn.variavelCicloCorrente.findFirstOrThrow({
+            where: { variavel_id: variavelId },
+            select: { fase: true },
+        });
+        if (self.fase !== 'Liberacao')
+            throw new BadRequestException('A variável não está na fase de liberação, erro interno');
+
+        await prismaTxn.variavelCicloCorrente.update({
+            where: { variavel_id: variavelId },
+            data: {
+                liberacao_enviada: true,
+            },
         });
 
         await prismaTxn.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
