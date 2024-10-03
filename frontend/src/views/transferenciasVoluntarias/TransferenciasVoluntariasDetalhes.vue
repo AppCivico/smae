@@ -337,7 +337,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div class="flex justifycenter">
       <button
         type="button"
-        class="btn bgnone outline tcprimary mr1"
+        class="btn bgnone outline tvermelho mr1"
         @click="deletarWorkflow()"
       >
         fechar e deletar workflow
