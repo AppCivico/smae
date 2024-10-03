@@ -202,7 +202,6 @@ export class VariavelCicloService {
 
         const rows = variaveis.map((v) => {
             let pode_editar: boolean = false;
-            const atrasos: string[] = v.atrasos.map((a) => Date2YMD.toString(a));
             const prazo: Date | null = v.prazo;
             const equipesDb = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id);
 
@@ -223,7 +222,7 @@ export class VariavelCicloService {
                 ultimo_periodo_valido: Date2YMD.toString(v.ultimo_periodo_valido),
                 pedido_complementacao: v.pedido_complementacao,
                 codigo: v.variavel.codigo,
-                atrasos,
+                atrasos: v.atrasos.length ? v.atrasos.map((a) => Date2YMD.toString(a)) : null,
                 equipes,
                 pode_editar,
                 prazo,
