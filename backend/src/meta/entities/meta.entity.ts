@@ -1,4 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoStatus, TipoPdm } from '@prisma/client';
+import { IsEnum } from 'class-validator';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdCodNomeDto } from '../../common/dto/IdCodNome.dto';
@@ -53,6 +55,12 @@ export class MetaItemDto extends ResumoDetalheOrigensDto {
     ps_ponto_focal: CreatePSEquipePontoFocalDto;
 }
 
+export const MetaPdmRelacionamentoDirecao = {
+    'rev': 'rev',
+    'fwd': 'fwd',
+} as const;
+export type MetaPdmRelacionamentoDirecao = keyof typeof MetaPdmRelacionamentoDirecao;
+
 export class MetaPdmDto {
     pdm_id: number;
     pdm_descricao: string;
@@ -75,7 +83,10 @@ export class MetaPdmDto {
     atividade_orgaos?: IdSigla[];
 
     tipo: TipoPdm;
-    direcao: string;
+
+    @IsEnum(MetaPdmRelacionamentoDirecao)
+    @ApiProperty({ enum: MetaPdmRelacionamentoDirecao })
+    direcao: MetaPdmRelacionamentoDirecao;
 }
 
 export class IdObrasDto {

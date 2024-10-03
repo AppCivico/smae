@@ -31,6 +31,7 @@ import {
     MetaItemDto,
     MetaOrgao,
     MetaPdmDto,
+    MetaPdmRelacionamentoDirecao,
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
@@ -43,8 +44,6 @@ type DadosMetaIniciativaAtividadesDto = {
     codigo: string;
     titulo: string;
 };
-
-type DirecaoTipo = 'dir' | 'rev';
 
 @Injectable()
 export class MetaService {
@@ -1298,7 +1297,7 @@ export class MetaService {
             metaDiretaIds,
             iniDiretaIds,
             atvDiretaIds,
-            'dir'
+            'fwd'
         );
 
         // Buscando relações Reversas do CompromissoOrigem
@@ -1570,7 +1569,7 @@ export class MetaService {
         metaIds: number[],
         iniIds: number[],
         atvIds: number[],
-        diretacao: DirecaoTipo
+        direcao: MetaPdmRelacionamentoDirecao
     ) {
         const metas = await this.prisma.meta.findMany({
             where: {
@@ -1679,9 +1678,9 @@ export class MetaService {
         });
 
         return {
-            metas: metas.map((m) => ({ ...m, direcao: diretacao })),
-            iniciativas: iniciativas.map((i) => ({ ...i, direcao: diretacao })),
-            atividades: atividades.map((a) => ({ ...a, direcao: diretacao })),
+            metas: metas.map((m) => ({ ...m, direcao: direcao })),
+            iniciativas: iniciativas.map((i) => ({ ...i, direcao: direcao })),
+            atividades: atividades.map((a) => ({ ...a, direcao: direcao })),
         };
     }
 }
