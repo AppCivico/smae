@@ -262,6 +262,9 @@ export class VariavelCicloService {
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
             );
 
+        if ((!dto.pedido_complementacao && !dto.analise_qualitativa) || dto.analise_qualitativa?.length === 0)
+            throw new BadRequestException('É necessário fornecer uma análise qualitativa ou pedir complementação');
+
         // sempre verifica se o periodo é válido, just in case...
         const valid = await this.util.gerarPeriodoVariavelEntreDatas(dto.variavel_id, null, {
             data_valor: dto.data_referencia,
