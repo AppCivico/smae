@@ -334,10 +334,6 @@
 </template>
 
 <script lang="ts" setup>
-import { UTCDate } from '@date-fns/utc';
-import { format } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
-
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -346,6 +342,7 @@ import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
 import truncate from '@/helpers/truncate';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 
 import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
 
@@ -405,7 +402,7 @@ function obterVariavelInicial() {
 }
 
 const dataCicloAtualizacao = computed<string>(() => (
-  format(new UTCDate(`${dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
+  dateIgnorarTimezone(dataReferencia)
 ));
 
 const schema = computed(() => cicloAtualizacaoModalEditarSchema(fasePosicao.value));

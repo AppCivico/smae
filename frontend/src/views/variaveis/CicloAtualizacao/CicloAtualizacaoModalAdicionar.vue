@@ -253,6 +253,8 @@ import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+
 import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
@@ -307,7 +309,7 @@ const variaveisCategoricasValores = computed(() => {
 });
 
 const dataCicloAtualizacao = computed<string>(() => (
-  format(new UTCDate(`${dataReferencia}T00:00:00.000000Z` as string), 'MMMM yyyy', { locale: ptBR })
+  dateIgnorarTimezone(dataReferencia)
 ));
 
 const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(fasePosicao.value));

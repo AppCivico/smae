@@ -1,9 +1,12 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import { format } from 'date-fns';
 import { computed } from 'vue';
+
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
@@ -88,10 +91,10 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
         [
           { label: 'Valor base', valor: emFoco.value.valor_base },
           { label: 'Ano base', valor: emFoco.value.ano_base || '-' },
-          { label: 'Início da medição', valor: emFoco.value.inicio_medicao ? format(emFoco.value.inicio_medicao, 'MM/yyyy') : '-' },
+          { label: 'Início da medição', valor: emFoco.value.inicio_medicao ? dateIgnorarTimezone(emFoco.value.inicio_medicao, 'MM/yyyy') : '-' },
         ],
         [
-          { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? format(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
+          { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? dateIgnorarTimezone(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
           { label: 'Defasagem da medição', valor: emFoco.value.atraso_meses },
         ],
