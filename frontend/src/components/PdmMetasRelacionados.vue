@@ -39,8 +39,6 @@
           :key="idx"
         >
           <td>
-            {{ relacionamento.direcao }}
-
             <abbr
               v-if="tiposDePlanos[relacionamento.tipo as keyof typeof tiposDePlanos]"
               :title="tiposDePlanos[relacionamento.tipo as keyof typeof tiposDePlanos].nome"
