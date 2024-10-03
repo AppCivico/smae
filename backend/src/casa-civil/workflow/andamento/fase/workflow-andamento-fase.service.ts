@@ -625,6 +625,11 @@ export class WorkflowAndamentoFaseService {
                         data_inicio: true,
                         workflow_fase_id: true,
                         workflow_etapa_id: true,
+                        workflow_fase: {
+                            select: {
+                                fase: true,
+                            },
+                        },
                         tarefaEspelhada: {
                             select: { id: true },
                         },
@@ -675,6 +680,11 @@ export class WorkflowAndamentoFaseService {
                         workflow_fase_id: true,
                         data_inicio: true,
                         data_termino: true,
+                        workflow_fase: {
+                            select: {
+                                fase: true,
+                            },
+                        },
                         tarefaEspelhada: {
                             select: { id: true },
                         },
@@ -727,6 +737,7 @@ export class WorkflowAndamentoFaseService {
                                 data_inicio: faseAtual.data_inicio,
                                 situacao: faseAtual.workflow_situacao,
                                 pessoa_responsavel: faseAtual.pessoa_responsavel,
+                                fase: faseAtual.workflow_fase.fase,
                             },
                             faseReaberta: {
                                 id: faseAnterior.id,
@@ -735,6 +746,7 @@ export class WorkflowAndamentoFaseService {
                                 data_termino: faseAnterior.data_termino,
                                 situacao: faseAnterior.workflow_situacao,
                                 pessoa_responsavel: faseAnterior.pessoa_responsavel,
+                                fase: faseAtual.workflow_fase.fase,
                             },
                         }),
                     },
