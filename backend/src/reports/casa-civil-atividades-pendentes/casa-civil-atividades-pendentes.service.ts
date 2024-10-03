@@ -3,6 +3,7 @@ import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext } from 
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Date2YMD } from '../../common/date2ymd';
 
 const {
     Parser,
@@ -41,10 +42,10 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
             sql +=" and tt.id in ("+ params.tipo_id.toString() +")";
         }
         if (params.data_inicio){
-            sql +=" and tf.inicio_planejado >= '"+ params.data_inicio +"'";
+            sql +=" and tf.inicio_planejado >= '"+   Date2YMD.toString(params.data_inicio)  +"'";
         }
         if (params.data_termino){
-            sql +=" and tf.inicio_planejado <= '"+ params.data_termino +"'";
+            sql +=" and tf.inicio_planejado <= '"+ Date2YMD.toString(params.data_termino) +"'";
         }
         if (params.orgao_id && params.orgao_id.length > 0) {
             sql +=" and tf.orgao_id in("+ params.orgao_id.toString() +")";

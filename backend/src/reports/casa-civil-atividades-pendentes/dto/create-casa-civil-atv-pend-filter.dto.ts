@@ -13,13 +13,13 @@ export class CreateCasaCivilAtividadesPendentesFilterDto {
     @Transform(DateTransform)
     @IsOnlyDate()
     @ValidateIf((object, value) => value !== null)
-    data_inicio?: string;
+    data_inicio?: Date;
 
     @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    data_termino?: string;
+    data_termino?: Date;
 
     @IsOptional()
     @IsArray({ message: '$property| orgao_id: precisa ser uma array.' })
