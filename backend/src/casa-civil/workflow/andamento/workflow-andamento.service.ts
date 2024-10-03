@@ -484,6 +484,7 @@ export class WorkflowAndamentoService {
                             workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
                             workflow_fase_id: primeiraFase.fase.id,
                             data_inicio: null,
+                            removido_em: null,
                         },
                         select: {
                             id: true,
