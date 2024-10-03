@@ -79,6 +79,7 @@ export class VariavelGlobalCicloDto {
 
     @ApiProperty({ type: 'string', format: 'date' })
     proximo_periodo_abertura: string;
+
     @ApiProperty({ type: 'string', format: 'date' })
     ultimo_periodo_valido: string;
 

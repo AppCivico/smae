@@ -252,6 +252,13 @@ export class VariavelCicloService {
     }
 
     async patchVariavelCiclo(dto: BatchAnaliseQualitativaDto, user: PessoaFromJwt): Promise<void> {
+        const load = await this.getVariavelCiclo({ id: dto.variavel_id, referencia: dto.data_referencia }, user);
+        if (load.length === 0)
+            throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
+        const dadosCiclo = load[0];
+        if (dadosCiclo.pode_editar === false)
+            throw new BadRequestException('Usuário não tem permissão para editar esta variável');
+
         const whereFilter = await this.getPermissionSet({}, user);
 
         const cicloCorrente = await this.prisma.variavelCicloCorrente.findFirst({
@@ -277,9 +284,7 @@ export class VariavelCicloService {
         });
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
         if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
-            throw new BadRequestException(
-                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
-            );
+            throw new BadRequestException(`Data de ref não é a última válida (${cicloCorrente.ultimo_periodo_valido})`);
 
         if ((!dto.pedido_complementacao && !dto.analise_qualitativa) || dto.analise_qualitativa?.length === 0)
             throw new BadRequestException('É necessário fornecer uma análise qualitativa ou pedir complementação');
@@ -289,23 +294,6 @@ export class VariavelCicloService {
             data_valor: dto.data_referencia,
         });
         if (valid.length === 0) throw new BadRequestException('Data de referência não é válida para a variável');
-
-        //const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
-        const userPerfil = await this.getPerfisEmEquipes(user.id);
-
-        if (cicloCorrente.fase === 'Preenchimento' && !userPerfil.includes('Medicao'))
-            throw new BadRequestException('Apenas usuários com perfil de Medição podem atualizar nesta fase');
-
-        if (cicloCorrente.fase === 'Validacao' && !userPerfil.includes('Validacao'))
-            throw new BadRequestException('Apenas usuários com perfil de Validação podem atualizar nesta fase');
-
-        if (cicloCorrente.fase === 'Liberacao' && !userPerfil.includes('Liberacao'))
-            throw new BadRequestException('Apenas usuários com perfil de Liberação podem atualizar nesta fase');
-
-        if (dto.data_referencia.valueOf() != cicloCorrente.ultimo_periodo_valido.valueOf())
-            throw new BadRequestException(
-                `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)})`
-            );
 
         this.validaValoresVariaveis(dto, cicloCorrente);
 
