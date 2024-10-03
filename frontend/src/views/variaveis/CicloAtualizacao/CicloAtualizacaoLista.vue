@@ -231,6 +231,12 @@ const ciclosAtualizacao = computed(() => {
   return ciclosComIcone;
 });
 
+function formatarReferencia(referencia: any): string | undefined {
+  if (!referencia) return undefined;
+
+  return `${referencia.split('/').reverse().join('-')}-01`;
+}
+
 watch(() => $route.query, (query) => {
   const { aba, ...params } = query;
 
@@ -240,6 +246,7 @@ watch(() => $route.query, (query) => {
 
   cicloAtualizacaoStore.getCiclosAtualizacao({
     ...params,
+    referencia: formatarReferencia(params.referencia),
     fase: aba,
   });
 }, { immediate: true });

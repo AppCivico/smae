@@ -13,7 +13,8 @@ import { useFileStore } from './file.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type FiltroDadosGerais = FilterVariavelGlobalCicloDto & {
+type FiltroDadosGerais = Omit<FilterVariavelGlobalCicloDto, 'referencia'> & {
+  referencia?: string;
   token_paginacao?: string;
   pagina?: string;
   buscandoMais?: boolean;
