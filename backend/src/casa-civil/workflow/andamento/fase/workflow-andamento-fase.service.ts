@@ -526,6 +526,7 @@ export class WorkflowAndamentoFaseService {
                 console.log('========================');
                 const andamentoNovaFase = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
+                        removido_em: null,
                         transferencia_id: dto.transferencia_id,
                         workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
                         workflow_fase_id: configFluxoFaseSeguinte.fase_id,
