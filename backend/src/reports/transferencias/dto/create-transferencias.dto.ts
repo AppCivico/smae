@@ -53,7 +53,7 @@ export class CreateRelTransferenciasDto {
 
     @IsOptional()
     @IsInt()
-    gestor_municipal_id?: number
+    orgao_gestor_id?: number
 
     @IsOptional()
     @IsInt()
