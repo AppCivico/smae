@@ -138,6 +138,9 @@ export class OrcamentoService implements ReportableService {
 
         let filtroMetas: number[] | undefined = undefined;
 
+        if (!dto.projeto_id) dto.projeto_id = undefined;
+        if (!dto.portfolio_id) dto.portfolio_id = undefined;
+
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
             const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
@@ -160,7 +163,9 @@ export class OrcamentoService implements ReportableService {
                 OrcamentoRealizado: {
                     meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                     projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                    ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id, tipo: dto.tipo_projeto } } : {}),
+                    ...(dto.portfolio_id
+                        ? { projeto: { portfolio_id: dto.portfolio_id, tipo: dto.tipo_projeto } }
+                        : {}),
                     removido_em: null,
                     OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
                 },
