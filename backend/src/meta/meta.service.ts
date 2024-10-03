@@ -35,6 +35,7 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
+import { RemoveNumberIfPresent } from '../common/RemoveNumberIfPresent';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -1294,9 +1295,9 @@ export class MetaService {
         );
 
         const { metas, iniciativas, atividades } = await this.buscaDadosRelacionadoPorId(
-            metaDiretaIds,
-            iniDiretaIds,
-            atvDiretaIds,
+            RemoveNumberIfPresent(metaDiretaIds, dto.meta_id),
+            RemoveNumberIfPresent(iniDiretaIds, dto.iniciativa_id),
+            RemoveNumberIfPresent(atvDiretaIds, dto.atividade_id),
             'fwd'
         );
 
@@ -1349,7 +1350,12 @@ export class MetaService {
             metas: revMetas,
             iniciativas: revIni,
             atividades: revAtiv,
-        } = await this.buscaDadosRelacionadoPorId(metaRevIds, iniRevIds, atvRevIds, 'rev');
+        } = await this.buscaDadosRelacionadoPorId(
+            RemoveNumberIfPresent(metaRevIds, dto.meta_id),
+            RemoveNumberIfPresent(iniRevIds, dto.iniciativa_id),
+            RemoveNumberIfPresent(atvRevIds, dto.atividade_id),
+            'rev'
+        );
 
         metas.push(...revMetas);
         iniciativas.push(...revIni);
