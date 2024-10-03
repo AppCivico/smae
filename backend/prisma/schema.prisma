@@ -7056,6 +7056,8 @@ model VariavelCicloCorrente {
     eh_corrente              Boolean      @default(true)
     atrasos                  DateTime[]   @default([]) @db.Date
     prazo                    DateTime?    @db.Date
+    liberacao_enviada        Boolean      @default(false)
+    atualizado_em            DateTime     @default(now()) @db.Timestamptz(6)
 
     variavel           Variavel             @relation(fields: [variavel_id], references: [id])
     ViewVariavelGlobal ViewVariavelGlobal[]
@@ -7099,6 +7101,7 @@ model VariavelGlobalCicloAnalise {
     fase                       VariavelFase
     referencia_data            DateTime     @db.Date
     informacoes_complementares String?
+    eh_liberacao_auto          Boolean      @default(false)
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
