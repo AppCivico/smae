@@ -207,7 +207,7 @@ export default {
 
     {
       path: 'ps/mensal',
-      component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisItemPS.vue'),
+      component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisRaizPS.vue'),
       meta: {
         entidadeMãe: 'planoSetorial',
         título: 'Relatórios Mensais',
