@@ -81,12 +81,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     pode_excluir: boolean;
 }
 
-export class FilterSVNPeriodoDto {
-    @IsOptional()
-    @IsEnum(Serie, { message: 'Serie inválida' })
-    @ApiProperty({ enum: Serie, required: false })
-    serie?: Serie;
-
+export class FilterPeriodoDto {
     @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
@@ -101,6 +96,18 @@ export class FilterSVNPeriodoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     data_valor?: Date;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    ate_ciclo_corrente?: Boolean;
+}
+
+export class FilterSVNPeriodoDto extends FilterPeriodoDto {
+    @IsOptional()
+    @IsEnum(Serie, { message: 'Serie inválida' })
+    @ApiProperty({ enum: Serie, required: false })
+    serie?: Serie;
 }
 
 export class FilterVariavelDetalheDto {

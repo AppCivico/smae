@@ -16,14 +16,17 @@ import {
     TipoVariavelCategorica,
     VariavelCategoricaValor,
 } from '@prisma/client';
+import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
+import { PrismaHelpers } from '../common/PrismaHelpers';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
-import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { Object2Hash } from '../common/object2hash';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     ExistingSerieJwt,
@@ -49,6 +52,7 @@ import {
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
+    FilterPeriodoDto,
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
     SACicloFisicoDto,
@@ -58,11 +62,7 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
-import { PrismaHelpers } from '../common/PrismaHelpers';
-import { MetaService } from '../meta/meta.service';
-import { Regiao } from 'src/regiao/entities/regiao.entity';
-import { VariavelFiltroDataType, VariavelUtilService } from './variavel.util.service';
-import { DateTime } from 'luxon';
+import { VariavelUtilService } from './variavel.util.service';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -2307,8 +2307,12 @@ export class VariavelService {
     async getValorSerieExistente(
         variavelId: number,
         series: Serie[],
-        filters: VariavelFiltroDataType
+        filters: FilterPeriodoDto
     ): Promise<ValorSerieExistente[]> {
+        if (filters.ate_ciclo_corrente) {
+            filters.data_fim = await this.util.ultimoPeriodoValido(variavelId);
+        }
+
         return await this.prisma.serieVariavel.findMany({
             where: {
                 variavel_id: variavelId,
@@ -2380,11 +2384,7 @@ export class VariavelService {
                     series.push(serie);
                 }
             }
-            if (filters.serie == 'Realizado')
-                filters.data_fim = DateTime.local({ zone: SYSTEM_TIMEZONE })
-                    .startOf('month')
-                    .plus({ month: 1 })
-                    .toJSDate();
+            if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
         }
 
         // TODO adicionar limpeza da serie para quem for ponto focal
