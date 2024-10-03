@@ -169,16 +169,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
       <li class="f0">
         <button
-          v-if="transferenciaEmFoco?.workflow_id"
-          type="button"
-          class="btn"
-          @click="rabrirFase()"
-        >
-          reabrir fase
-        </button>
-      </li>
-      <li class="f0">
-        <button
           type="button"
           class="btn"
           :disabled="!inícioDeFasePermitido"
@@ -351,6 +341,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         @click="deletarWorkflow()"
       >
         fechar e deletar workflow
+      </button>
+      <button
+        v-if="workflow?.pode_reabrir_fase"
+        type="button"
+        class="btn mr1"
+        @click="rabrirFase()"
+      >
+        reabrir fase
       </button>
       <button
         type="button"
