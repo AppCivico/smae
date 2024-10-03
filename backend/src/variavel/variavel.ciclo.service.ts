@@ -116,6 +116,20 @@ export class VariavelCicloService {
             },
         ];
 
+        if (filters.equipe_id) {
+            whereConditions.push({
+                VariavelGrupoResponsavelEquipe: {
+                    some: { grupo_responsavel_equipe_id: filters.equipe_id },
+                },
+            });
+        }
+
+        if (filters.palavra_chave) {
+            whereConditions.push({
+                id: { in: await this.variavelService.buscaIdsPalavraChave(filters.palavra_chave) },
+            });
+        }
+
         whereConditions.push({
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
@@ -167,6 +181,7 @@ export class VariavelCicloService {
 
         const variaveis = await this.prisma.variavelCicloCorrente.findMany({
             where: {
+                ultimo_periodo_valido: filters.referencia,
                 variavel: {
                     AND: whereFilter,
                 },

@@ -44,6 +44,14 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     @Transform(({ value }) => value === 'true')
     simular_ponto_focal?: boolean;
 
+    @IsOptional()
+    @IsInt()
+    equipe_id?: number;
+
+    @IsOptional()
+    @IsDateYMD()
+    referencia?: Date;
+
     /**
      * Apenas usado se `simular_ponto_focal` for true
      */
