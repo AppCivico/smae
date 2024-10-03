@@ -10,6 +10,7 @@ import {
   prepararEtiquetas,
   prepararEsferaDeTransferência,
   prepararTipoTransferencia,
+  prepararÓrgãos,
 } from './helpers/preparadorDeColunaParametros';
 
 
@@ -29,8 +30,9 @@ const etiquetasParaParâmetros = prepararEtiquetas(schema);
 async function iniciar() {
   relatóriosStore.$reset();
   relatóriosStore.getAll({ fonte });
-  etiquetasParaValoresDeParâmetros.value.esfera = prepararEsferaDeTransferência();
+  etiquetasParaValoresDeParâmetros.value.esfera = await prepararEsferaDeTransferência();
   etiquetasParaValoresDeParâmetros.value.tipo_id = await prepararTipoTransferencia();
+  etiquetasParaValoresDeParâmetros.value.orgao_id = await prepararÓrgãos();
 }
 
 iniciar();

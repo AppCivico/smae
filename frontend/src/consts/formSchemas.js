@@ -3014,14 +3014,12 @@ export const relatórioAtividadesPendentes = object({
   parametros: object({
     esfera: mixed()
       .label('Esfera')
-      .required()
       .oneOf(Object.keys(esferasDeTransferencia)),
-    tipo_id: number()
-      .label('Tipo')
-      .required(),
-    orgao_id: number()
-      .label('Órgão')
-      .min(1, 'Selecione um órgão')
+    tipo_id: array()
+      .label('Tipos')
+      .nullable(),
+    orgao_id: array()
+      .label('Órgãos')
       .nullable(),
     data_inicio: date()
       .nullable()

@@ -6,7 +6,7 @@ import {
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LabelFromYup from '@/components/LabelFromYup.vue';
-import truncate from '@/helpers/truncate';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -27,10 +27,10 @@ const router = useRouter();
 const valoresIniciais = {
   fonte: 'CasaCivilAtvPendentes',
   parametros: {
-    tipo_id: null,
+    tipo_id: [],
     data_inicio: null,
     data_termino: null,
-    orgao_id: null,
+    orgao_id: [],
   },
   salvar_arquivo: false,
 };
@@ -90,71 +90,8 @@ const formularioSujo = useIsFormDirty();
       type="hidden"
       value="CasaCivilAtvPendentes"
     />
+
     <div class="flex flexwrap g2 mb2">
-      <div class="f1">
-        <LabelFromYup
-          name="parametros.esfera"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.esfera"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors['parametros.esfera'] }"
-          @change="setFieldValue('parametros.tipo_id', null);"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="item in Object.values(esferasDeTransferencia)"
-            :key="item.valor"
-            :value="item.valor"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <div class="error-msg">
-          {{ errors['esfera'] }}
-        </div>
-      </div>
-
-      <div class="f1">
-        <LabelFromYup
-          name="orgao_id"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.orgao_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors['parametros.orgao_id'] ,
-            loading: ÓrgãosStore.organs?.loading,
-          }"
-          :disabled="!órgãosComoLista?.length"
-          @change="!$event.target.value ?
-            setFieldValue('parametros._id',null) : null"
-        >
-          <option value="">
-            Selecionar
-          </option>
-
-          <option
-            v-for="item in órgãosComoLista"
-            :key="item"
-            :value="item.id"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
-          >
-            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="parametros.orgao_id"
-          class="error-msg"
-        />
-      </div>
-
       <div class="f1">
         <LabelFromYup
           name="parametros.data_inicio"
@@ -196,54 +133,98 @@ const formularioSujo = useIsFormDirty();
       </div>
     </div>
 
-    <div class="flex g2 mb1">
+
+    <div class="mb2">
+      <LabelFromYup
+        name="parametros.orgao_id"
+        :schema="schema.fields.parametros"
+      />
+
+      <AutocompleteField
+        name="parametros.orgao_id"
+        :controlador="{ busca: '', participantes: values.parametros.orgao_id || [] }"
+        label="sigla"
+        :grupo="órgãosComoLista"
+        :class="{
+          error: errors['parametros.orgao_id'],
+          loading: ÓrgãosStore.organs?.loading,
+        }"
+      />
+
+      <div
+        v-if="errors['parametros.orgao_id']"
+        class="error-msg"
+      >
+        {{ errors['parametros.orgao_id'] }}
+      </div>
+    </div>
+
+    <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <LabelFromYup
-          name="parametros.tipo_id"
-          :schema="schema"
+          name="parametros.esfera"
+          :schema="schema.fields.parametros"
         />
         <Field
-          name="parametros.tipo_id"
+          name="parametros.esfera"
           as="select"
           class="inputtext light mb1"
-          :class="{
-            error: errors.tipo_id,
-            loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!tiposDisponíveis.length"
+          :class="{ 'error': errors['parametros.esfera'] }"
+          @change="setFieldValue('parametros.tipo_id', []);"
         >
           <option value="">
             Selecionar
           </option>
-
           <option
-            v-for="item in tiposDisponíveis"
-            :key="item"
-            :value="item.id"
+            v-for="item in Object.values(esferasDeTransferencia)"
+            :key="item.valor"
+            :value="item.valor"
           >
             {{ item.nome }}
           </option>
         </Field>
-        <ErrorMessage
+        <div class="error-msg">
+          {{ errors['esfera'] }}
+        </div>
+      </div>
+
+      <div class="f1">
+        <LabelFromYup
           name="parametros.tipo_id"
-          class="error-msg"
+          :schema="schema.fields.parametros"
         />
+
+        <AutocompleteField
+          name="parametros.tipo_id"
+          :controlador="{ busca: '', participantes: values.parametros.tipo_id || [] }"
+          label="nome"
+          :grupo="tiposDisponíveis"
+          :class="{
+            error: errors['parametros.tipo_id'],
+            loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
+          }"
+        />
+
+        <div
+          v-if="errors['parametros.tipo_id']"
+          class="error-msg"
+        >
+          {{ errors['parametros.tipo_id'] }}
+        </div>
       </div>
     </div>
 
     <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
+      <label class="block">
+        <Field
+          name="salvar_arquivo"
+          type="checkbox"
+          :value="true"
+          :unchecked-value="false"
+          class="inputcheckbox"
+        />
+        <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
+      </label>
       <div
         v-if="errors['salvar_arquivo']"
         class="error-msg"
