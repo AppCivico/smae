@@ -388,7 +388,7 @@ export default {
     {
       path: 'atividades-pendentes',
       meta: {
-        título: 'Atividades pendentes',
+        título: 'Novo Relatório de Atividades Pendentes',
         títuloParaMenu: 'Atividades pendentes',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
