@@ -7102,6 +7102,7 @@ model VariavelGlobalCicloAnalise {
     referencia_data            DateTime     @db.Date
     informacoes_complementares String?
     eh_liberacao_auto          Boolean      @default(false)
+    aprovada                   Boolean      @default(false)
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int

@@ -70,13 +70,14 @@ BEGIN
 
     -- Busca os ciclos e analisa os atrasos
     FOR v_ciclo IN (
-        SELECT xp.xp AS ciclo_data, a.fase, a.referencia_data
+        SELECT xp.xp AS ciclo_data, array_agg( a.fase ) as fases
         FROM busca_periodos_variavel(p_variavel_id::int) AS g(p, inicio, fim)
         CROSS JOIN generate_series(g.inicio::date, g.fim::date, g.p) AS xp(xp)
         LEFT JOIN variavel_global_ciclo_analise a
             ON a.variavel_id = p_variavel_id
             AND a.referencia_data = xp.xp
             AND ultima_revisao = true
+            AND aprovada = true
         WHERE xp.xp <  v_mes_atual - v_registro.intervalo_atraso
         ORDER BY 1 DESC
     ) LOOP
@@ -85,7 +86,7 @@ BEGIN
         END IF;
 
         -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente
-        IF v_ciclo.fase IS NULL OR v_ciclo.fase != 'Liberacao'  THEN
+        IF v_ciclo.fases[1] IS NULL OR NOT ('Liberacao' = ANY(v_ciclo.fase)) THEN
 
             IF (v_ciclo.ciclo_data != v_ultimo_periodo_valido) THEN
                 v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data);

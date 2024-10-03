@@ -296,6 +296,7 @@ export class VariavelCicloService {
                     variavel_id: dto.variavel_id,
                     ultima_revisao: true,
                     referencia_data: dto.data_referencia,
+                    fase: cicloCorrente.fase,
                 },
                 data: { ultima_revisao: false },
             });
@@ -309,6 +310,7 @@ export class VariavelCicloService {
                     ultima_revisao: true,
                     valores: dto.valores as any,
                     fase: cicloCorrente.fase,
+                    aprovada: dto.aprovar,
                 },
             });
 
@@ -692,7 +694,13 @@ export class VariavelCicloService {
             });
         });
         const analisesDb = await Promise.all(pQueries);
-        const ultimaAnalise = analisesDb.find((a) => a?.ultima_revisao) || undefined;
+        const ultimaAnalise =
+            analisesDb
+                .filter((a) => a?.ultima_revisao && a.fase)
+                .sort((a, b) => {
+                    const faseOrder = { Liberacao: 1, Validacao: 2, Preenchimento: 3 };
+                    return faseOrder[a!.fase] - faseOrder[b!.fase];
+                })[0] || undefined;
         const analises = analisesDb
             .filter((result): result is NonNullable<typeof result> => result !== null)
             .map(
@@ -702,7 +710,6 @@ export class VariavelCicloService {
                         criado_em: r.criado_em,
                         criador_nome: r.pessoaCriador.nome_exibicao,
                         fase: r.fase,
-                        ultima_revisao: r.ultima_revisao,
                     }) satisfies AnaliseQualitativaDto
             );
 
