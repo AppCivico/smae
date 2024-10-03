@@ -20,12 +20,13 @@ import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { VariavelResumo } from './list-variavel.dto';
 import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
+import { FilterVariavelDto } from './filter-variavel.dto';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
 }
 
-export class FilterVariavelGlobalCicloDto {
+export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     /**
      * Fase da variável, eg: Preenchimento
      *

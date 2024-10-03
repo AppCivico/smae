@@ -1319,7 +1319,7 @@ export class VariavelService {
         return tmp;
     }
 
-    private getVariavelWhereSet(filters: FilterVariavelDto) {
+    getVariavelWhereSet(filters: FilterVariavelDto) {
         const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
         if (filters.remover_desativados || filters.remover_desativados === undefined) {
             // não acredito que sirva de nada, mas vou manter pois já estava assim

@@ -116,6 +116,10 @@ export class VariavelCicloService {
             },
         ];
 
+        whereConditions.push({
+            AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
+        });
+
         if (pdmIds) {
             whereConditions.push({
                 ViewVariavelGlobal: {
