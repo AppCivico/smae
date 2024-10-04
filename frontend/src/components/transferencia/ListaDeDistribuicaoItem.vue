@@ -49,6 +49,13 @@ const observer = new ResizeObserver((entradas) => {
   }
 });
 
+function buscaStatus(historico) {
+  const últimoStatus = historico[historico.length - 1];
+  return últimoStatus.status_customizado?.nome
+    ? últimoStatus.status_customizado?.nome
+    : últimoStatus.status_base?.nome;
+}
+
 onMounted(() => {
   alturaColapsado.value = visivelColapsado.value.clientHeight;
   observer.observe(visivelColapsado.value);
@@ -94,12 +101,12 @@ onUnmounted(() => {
                 Status Atual
               </dt>
               <dd>
-                MUDAR: Inicial
+                {{ buscaStatus(distribuicao.historico_status) }}
               </dd>
             </dl>
             <dl class="f1">
               <dt class="t16 w700 mb05 tamarelo">
-                Valor
+                Valor de repasse
               </dt>
               <dd>
                 {{ distribuicao.valor
