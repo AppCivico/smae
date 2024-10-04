@@ -79,10 +79,12 @@ BEGIN
             AND a.ultima_revisao = true
             AND a.removido_em IS NULL
             AND a.aprovada = true
-        WHERE xp.xp <  v_mes_atual - v_registro.intervalo_atraso
+        WHERE xp.xp <=  v_mes_atual - v_registro.intervalo_atraso
         GROUP BY 1
         ORDER BY 1 DESC
     ) LOOP
+
+    raise notice 'v_ciclo: %', v_ciclo;
         IF (v_ultimo_periodo_valido IS NULL) THEN
             v_ultimo_periodo_valido := v_ciclo.ciclo_data;
         END IF;
@@ -98,11 +100,24 @@ BEGIN
         END IF;
     END LOOP;
 
+    raise notice 'v_ultimo_periodo_valido x -> %', v_ultimo_periodo_valido;
+
+    IF (v_ultimo_periodo_valido IS NULL) THEN
+        RAISE NOTICE 'Nenhum periodo encontrado, removendo variavel_ciclo_corrente para variável ID %', p_variavel_id;
+        DELETE FROM variavel_ciclo_corrente
+        WHERE variavel_id = p_variavel_id;
+        RETURN;
+    END IF;
+
     -- ordena os atrasos de forma ascendente
     v_atrasos := ARRAY(SELECT unnest(v_atrasos) ORDER BY 1);
 
     -- Se houver atrasos, calcula o prazo
     -- e o atraso não é o mesmo do ciclo corrente (em progresso/preenchimento)
+
+    raise notice 'v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
+    raise notice 'v_atrasos -> %', v_atrasos;
+
     IF array_length(v_atrasos, 1) > 0 AND v_ultimo_p_valido_corrente != v_atrasos[1] THEN
     raise notice 'v_atrasos: %', v_atrasos;
     raise notice 'v_ultimo_p_valido_corrente: %', v_ultimo_p_valido_corrente;
@@ -142,7 +157,11 @@ BEGIN
         RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
 
-        v_ultimo_periodo_valido := coalesce(v_atrasos[1], v_ultimo_p_valido_corrente);
+        raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
+
+        v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
+
+        raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
 
         IF (v_fase_corrente = 'Preenchimento') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
