@@ -440,8 +440,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
     ],
     CadastroGrupoVariavel: [
-        ['CadastroGrupoVariavel.administrador', 'Gerenciar Grupos de Variáveis'],
-        ['CadastroGrupoVariavel.colaborador_responsavel', 'Gerenciar Grupos de Variáveis onde é responsável'],
+        ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
+        ['CadastroGrupoVariavel.colaborador_responsavel', 'Gerenciar Equipes onde é responsável'],
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
