@@ -26,6 +26,7 @@ function excluirRelatório(id) {
       <col>
       <col>
       <!--col /-->
+      <col>
       <col class="col--dataHora">
 
       <col
@@ -41,8 +42,8 @@ function excluirRelatório(id) {
         <th>semestre</th>
         <th>tipo</th>
         <!--th>tags</th-->
+        <th>criador</th>
         <th>gerado em</th>
-
         <th v-if="temPermissãoPara(['Reports.remover.'])" />
         <!--th v-if="temPermissãoPara('Reports.executar.')"></th-->
         <th />
@@ -58,6 +59,9 @@ function excluirRelatório(id) {
           <td>{{ item.parametros.semestre }}</td>
           <td>{{ item.parametros.tipo }}</td>
           <!--td>{{ item.parametros.tags }}</td-->
+          <td class="cell--minimum">
+            {{ item.criador?.nome_exibicao }}
+          </td>
           <td>{{ localizarDataHorario(item.criado_em) }}</td>
           <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button
