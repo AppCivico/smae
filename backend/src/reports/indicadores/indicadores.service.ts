@@ -216,7 +216,10 @@ export class IndicadoresService implements ReportableService {
         `;
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+            if (dto.tipo == 'Mensal' && dto.mes) {
+                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
+                await this.streamRowsInto(null, stream, prismaTxn);
+            } else if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
                 await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
 
                 for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
@@ -254,9 +257,6 @@ export class IndicadoresService implements ReportableService {
                     );
                 }
 
-                await this.streamRowsInto(null, stream, prismaTxn);
-            } else if (dto.tipo == 'Mensal' && dto.mes) {
-                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
                 await this.streamRowsInto(null, stream, prismaTxn);
             }
         });
@@ -381,6 +381,7 @@ export class IndicadoresService implements ReportableService {
             stream.push(null);
             return;
         }
+        this.logger.log('Querying data for regioes');
         this.invalidatePreparedStatement++;
 
         let queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
@@ -445,8 +446,10 @@ export class IndicadoresService implements ReportableService {
             where: { removido_em: null },
         });
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            console.log(dto);
-            if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+            if (dto.tipo == 'Mensal' && dto.mes) {
+                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
+                await this.streamRowsInto(regioes, stream, prismaTxn);
+            } else if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
                 await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
 
                 for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
@@ -485,22 +488,28 @@ export class IndicadoresService implements ReportableService {
                 }
 
                 await this.streamRowsInto(regioes, stream, prismaTxn);
-            } else if (dto.tipo == 'Mensal' && dto.mes) {
-                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
-                await this.streamRowsInto(regioes, stream, prismaTxn);
             }
         });
     }
 
     async toFileOutput(params: CreateRelIndicadorDto, ctx: ReportContext): Promise<FileOutput[]> {
+        if (params.tipo == 'Mensal' && !params.mes)
+            throw new HttpException('Necessário enviar mês para o periodo Mensal', 400);
+        if (params.periodo == 'Mensal' && params.tipo !== 'Geral')
+            throw new HttpException('Necessário enviar tipo Geral para o periodo Mensal', 400);
+
         // no atual momento, tudo aqui é uma reimplementação completa do método asJSON
         // porém, desta nova forma é possível gerar arquivos CSV a partir dos dados do streaming
         // sem a necessidade de armazenar todos os dados em memória duma vez
+        this.logger.verbose(`Gerando arquivos CSV para ${JSON.stringify(params)}`);
         const indicadores = await this.filtraIndicadores(params);
+        this.logger.verbose(`Indicadores encontrados: ${indicadores.length}`);
+
         await ctx.progress(1);
 
         let linhas: RelIndicadoresDto[] = [];
 
+        this.logger.debug(`Iniciando query de dados`);
         const linhasDataStream = new Readable({ objectMode: true, read() {} });
         await Promise.all([
             this.queryData(
@@ -510,10 +519,12 @@ export class IndicadoresService implements ReportableService {
             ),
             Stream2PromiseIntoArray(linhasDataStream, linhas),
         ]);
+        this.logger.debug(`Query de dados finalizada`);
 
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         const out: FileOutput[] = [];
 
+        this.logger.debug(`Iniciando geração de arquivos CSV`);
         const camposMetaIniAtv = [
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
@@ -548,6 +559,7 @@ export class IndicadoresService implements ReportableService {
 
         if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'meta.pdm_nome', label: 'Plano Setorial' });
 
+        this.logger.debug(`Gerando CSV de indicadores`);
         if (linhas.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
@@ -561,6 +573,7 @@ export class IndicadoresService implements ReportableService {
                 ],
             });
             const linhasBuff = json2csvParser.parse(linhas);
+            this.logger.debug(`CSV de indicadores gerado`);
             out.push({
                 name: 'indicadores.csv',
                 buffer: Buffer.from(linhasBuff, 'utf8'),
@@ -570,8 +583,10 @@ export class IndicadoresService implements ReportableService {
         }
         await ctx.progress(50);
 
+        this.logger.debug(`Iniciando geração de CSV de regiões`);
         let regioes: RelIndicadoresVariaveisDto[] = [];
         const regioesDataStream = new Readable({ objectMode: true, read() {} });
+        this.logger.debug(`Iniciando query de dados de regiões`);
 
         await Promise.all([
             this.queryDataRegiao(
@@ -581,7 +596,9 @@ export class IndicadoresService implements ReportableService {
             ),
             Stream2PromiseIntoArray(regioesDataStream, regioes),
         ]);
+        this.logger.debug(`Query de dados de regiões finalizada`);
 
+        this.logger.debug(`Gerando CSV de regiões`);
         if (regioes.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
@@ -616,12 +633,14 @@ export class IndicadoresService implements ReportableService {
                 ],
             });
             const linhasBuff = json2csvParser.parse(regioes);
+            this.logger.debug(`CSV de regiões gerado`);
             out.push({
                 name: 'regioes.csv',
                 buffer: Buffer.from(linhasBuff, 'utf8'),
             });
             regioes = [];
         }
+        this.logger.debug(`CSVs gerados`);
 
         await ctx.progress(99);
         return [

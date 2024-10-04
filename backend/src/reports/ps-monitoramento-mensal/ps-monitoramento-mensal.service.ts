@@ -207,8 +207,8 @@ export class PSMonitoramentoMensal implements ReportableService {
             {
                 ...params,
                 pdm_id: params.plano_setorial_id,
-                periodo: 'Mensal',
-                tipo: 'Analitico',
+                periodo: 'Geral',
+                tipo: 'Mensal',
             },
             ctx
         );
