@@ -34,7 +34,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
-import { MonitoramentoMensalPs } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
+import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
@@ -71,8 +71,8 @@ export class ReportsService {
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
         @Inject(forwardRef(() => TribunalDeContasService))
         private readonly tribunalDeContasService: TribunalDeContasService,
-        @Inject(forwardRef(() => MonitoramentoMensalPs))
-        private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalPs,
+        @Inject(forwardRef(() => PSMonitoramentoMensal))
+        private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
     ) {}
@@ -271,7 +271,7 @@ export class ReportsService {
                 service = this.tribunalDeContasService;
                 break;
             case 'PSMonitoramentoMensal':
-                service = this.monitoramentoMensalVariaveisPs;
+                service = this.psMonitoramentoMensal;
                 break;
             case 'CasaCivilAtvPendentes':
                 service = this.casaCivilAtividadesPendentesService;

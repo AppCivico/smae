@@ -1,9 +1,16 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePsMonitoramentoMensalFilterDto {
+    @IsOptional()
     @IsInt()
-    plano_setorial_id: number;
+    @ApiProperty({ deprecated: true, description: 'Use pdm_id' })
+    plano_setorial_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    pdm_id?: number;
 
     @IsInt()
     @Transform(({ value }: any) => +value)

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
@@ -12,14 +12,26 @@ const {
 const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
-export class MonitoramentoMensalPs implements ReportableService {
+export class PSMonitoramentoMensal implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
         private readonly indicadoresService: IndicadoresService
     ) {}
+
     async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitoramentoMensalVariaveis[]> {
-        const { metas } = await this.utils.applyFilter(params, { iniciativas: false, atividades: false });
+        if (!params.plano_setorial_id) params.plano_setorial_id = undefined;
+        if (!params.pdm_id) params.pdm_id = undefined;
+
+        if (!params.pdm_id && !params.plano_setorial_id) throw new BadRequestException('Informe o parâmetro pdm_id');
+
+        const { metas } = await this.utils.applyFilter(
+            {
+                ...params,
+                pdm_id: params.plano_setorial_id,
+            },
+            { iniciativas: false, atividades: false }
+        );
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 100)
             throw new Error(
