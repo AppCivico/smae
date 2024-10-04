@@ -175,7 +175,7 @@ export class IndicadoresService implements ReportableService {
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        left join pdm on pdm.id = meta.pdm_id or m2.pdm_id
+        left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
         `;
 
         const anoInicial = await this.capturaAnoSerieIndicadorInicial(dto, queryFromWhere);
@@ -392,7 +392,7 @@ export class IndicadoresService implements ReportableService {
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        left join pdm on pdm.id = meta.pdm_id or m2.pdm_id
+        left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
         where v.regiao_id is not null`;
 
         if (Array.isArray(dto.regioes)) {
