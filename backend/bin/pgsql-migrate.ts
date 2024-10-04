@@ -128,6 +128,16 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
     const connection = await pool.connect();
+    connection.on('error', function (msg) {
+        logger.error(msg);
+    });
+    connection.on('notification', function (msg) {
+        logger.verbose(JSON.stringify(msg));
+    });
+    connection.on('notice', function (msg) {
+        if (msg.severity !== 'NOTICE') logger.error(JSON.stringify(msg));
+        if (msg.severity === 'NOTICE') logger.verbose(msg.message);
+    });
 
     for (const file of filesToUpdate) {
         logger.debug(`Updating ${file.fileName}...`);
