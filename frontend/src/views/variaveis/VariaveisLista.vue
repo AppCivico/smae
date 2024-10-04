@@ -135,7 +135,11 @@ watchEffect(() => {
 
       <td>
         <button
-          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'Calculada'"
+          v-if="
+            variavel?.pode_editar_valor
+              && !variavel?.possui_variaveis_filhas
+              && variavel?.tipo !== 'Calculada'
+          "
           type="button"
           class="tipinfo tprimary like-a__text"
           @click="abrirEdicaoValores(variavel.id, 'Previsto')"
