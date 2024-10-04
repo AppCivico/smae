@@ -93,7 +93,9 @@
           </th>
 
           <td>
-            {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
+            <span :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}">
+              {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
+            </span>
           </td>
 
           <td>
@@ -101,7 +103,7 @@
           </td>
 
           <td>
-            {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'MM/yyyy') }}
+            {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'dd/MM/yyyy') }}
           </td>
 
           <th>
@@ -236,6 +238,19 @@ function formatarReferencia(referencia: any): string | undefined {
 
   return `${referencia.split('/').reverse().join('-')}-01`;
 }
+
+// function abreEdicaoOrcamento({ id, referencia }) {
+//   editModalStore.modal(CicloAtualizacaoModal, {
+//     id,
+//     referencia,
+//     checkClose: () => {
+//       alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
+//         editModalStore.clear();
+//         alertStore.clear();
+//       });
+//     },
+//   }, 'small');
+// }
 
 watch(() => $route.query, (query) => {
   const { aba, ...params } = query;

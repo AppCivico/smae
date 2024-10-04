@@ -1,7 +1,7 @@
 <template>
   <SmallModal
     :active="modalVisivel"
-    @close="fecharModal"
+    @close="checarFecharModal"
   >
     <section class="ciclo-atualizacao-editar">
       <header class="flex spacebetween center mb2 g2">
@@ -13,7 +13,7 @@
 
         <button
           class="btn round-full"
-          @click="fecharModal"
+          @click="checarFecharModal"
         >
           <svg
             width="24"
@@ -52,6 +52,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 import dateToDate from '@/helpers/dateToDate';
+
+import { useAlertStore } from '@/stores';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
@@ -73,6 +75,7 @@ type ConteudoOpcoes = {
   [key in Opcoes]: ConteudoOpcao
 };
 
+const alertStore = useAlertStore();
 const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { fase } = useCicloAtualizacao();
@@ -97,6 +100,14 @@ function fecharModal() {
     query: {
       aba: 'Preenchimento',
     },
+  });
+}
+
+function checarFecharModal() {
+  alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
+    fecharModal();
+
+    alertStore.clear();
   });
 }
 
