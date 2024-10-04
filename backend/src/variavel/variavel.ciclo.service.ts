@@ -938,6 +938,18 @@ export class VariavelCicloService {
                 atendido: false,
             },
         });
+
+        // ao retroceder de fase, o apaga as analises das fases anteriores
+        await prismaTxn.variavelGlobalCicloAnalise.updateMany({
+            where: {
+                variavel_id: variavelId,
+                ultima_revisao: true,
+            },
+            data: {
+                removido_em: now,
+                removido_por: user.id,
+            },
+        });
     }
 
     private async updateSerieVariavelConferida(
