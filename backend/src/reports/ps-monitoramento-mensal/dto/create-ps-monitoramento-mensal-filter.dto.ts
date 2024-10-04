@@ -2,9 +2,8 @@ import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional } fro
 import { Transform } from 'class-transformer';
 
 export class CreatePsMonitoramentoMensalFilterDto {
-
     @IsInt()
-    plano_setorial_id:number;
+    plano_setorial_id: number;
 
     @IsInt()
     @Transform(({ value }: any) => +value)

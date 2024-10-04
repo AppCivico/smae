@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { IndicadoresService } from '../indicadores/indicadores.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import { RelPsMonitoramentoMensalVariaveis } from './entities/ps-monitoramento-mensal.entity';
-import { PrismaService } from '../../prisma/prisma.service';
-import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
-import { IndicadoresService } from '../indicadores/indicadores.service';
-import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 
 const {
     Parser,
@@ -28,14 +26,8 @@ export class MonitoramentoMensalPs implements ReportableService {
             throw new Error('O Ano deve ser informado!');
         }
 
-        //Prepara o filtro
-        const filtroMetasTags = new FiltroMetasIniAtividadeDto();
-        filtroMetasTags.metas_ids = params.metas;
-        filtroMetasTags.tags = params.tags;
-        filtroMetasTags.pdm_id = params.plano_setorial_id;
-
         //Confirmar se filtrar as mestas pelas Tags é o suficiente
-        const { metas } = await this.utils.applyFilter(filtroMetasTags, { iniciativas: false, atividades: false });
+        const { metas } = await this.utils.applyFilter(params, { iniciativas: false, atividades: false });
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 100)
             throw new Error(
@@ -207,18 +199,15 @@ export class MonitoramentoMensalPs implements ReportableService {
             });
         }
 
-        //Transfere as informacoes dos filtros
-        const indicadoresInput: CreateRelIndicadorDto = new CreateRelIndicadorDto();
-        indicadoresInput.mes = params.mes;
-        indicadoresInput.ano = params.ano;
-        indicadoresInput.pdm_id = params.plano_setorial_id;
-        indicadoresInput.tags = params.tags;
-        indicadoresInput.metas_ids = params.metas;
-        indicadoresInput.tipo = 'Mensal';
-        indicadoresInput.tipo_pdm = 'PS';
-        indicadoresInput.listar_variaveis_regionalizadas = params.listar_variaveis_regionalizadas;
-
-        const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput, ctx);
+        const indicadores = await this.indicadoresService.toFileOutput(
+            {
+                ...params,
+                pdm_id: params.plano_setorial_id,
+                periodo: 'Mensal',
+                tipo: 'Analitico',
+            },
+            ctx
+        );
         for (const indicador of indicadores) {
             out.push(indicador);
         }
