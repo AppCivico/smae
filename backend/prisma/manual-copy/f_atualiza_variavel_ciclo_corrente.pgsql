@@ -168,6 +168,7 @@ BEGIN
         ELSIF (v_fase_corrente = 'Validacao') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_validacao_interval;
         ELSE
+
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_liberacao_interval;
 
             -- em teoria, e estourar o prazo, e é um atraso, eh a hora de avançar sozinho
@@ -176,78 +177,57 @@ BEGIN
 
         v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
 
+
     END IF;
 
-    IF (v_proximo_periodo IS null) THEN
-        RAISE NOTICE 'v_proximo_periodo ficou nulo, isso deve ser variavel no futuro por exemplo, falta tratar';
-        return;
-    END IF;
 
     RAISE NOTICE 'v_registro: %', v_registro;
 
+    -- Assume que sempre é corrente
+    v_corrente := true;
+    RAISE NOTICE 'v_mes_atual: %', v_mes_atual;
+    RAISE NOTICE 'v_corrente: %', v_corrente;
 
-    -- Se há fim de medição, a data limite é o fim de medição
-    -- Senão, a data limite é o próximo período (não há fim de medição, basicamente)
-    v_data_limite := coalesce(v_registro.fim_medicao, v_proximo_periodo - v_registro.intervalo_atraso) + v_registro.intervalo_atraso;
-    RAISE NOTICE 'v_data_limite: %', v_data_limite;
+    v_dias_desde_inicio := (v_mes_atual - v_proximo_periodo) + 1;
+    RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
 
-    -- Deleta se a data atual for igual ou posterior à data limite
-    IF v_mes_atual >= v_data_limite AND v_registro.fim_medicao IS NOT NULL THEN
-        RAISE NOTICE 'Deletando variavel_ciclo_corrente para variável ID %', p_variavel_id;
-        DELETE FROM variavel_ciclo_corrente
-        WHERE variavel_id = p_variavel_id;
-    ELSE
-        -- Determina se a data atual está dentro do intervalo válido
-        v_corrente := v_mes_atual <= v_data_limite;
-        RAISE NOTICE 'v_mes_atual: %', v_mes_atual;
-        RAISE NOTICE 'v_corrente: %', v_corrente;
-
-        IF v_corrente THEN
-            v_dias_desde_inicio := (v_mes_atual - v_proximo_periodo) + 1;
-            RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
-
-            IF v_fase_corrente = 'Preenchimento' THEN
-                IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
-                    -- Esconde a fase de preenchimento enquanto não chegar na data
-                    v_corrente := false;
-                    RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[1];
-                END IF;
-            END IF;
-
-        END IF;
-
-        INSERT INTO variavel_ciclo_corrente(
-            variavel_id,
-            ultimo_periodo_valido,
-            fase,
-            proximo_periodo_abertura,
-            eh_corrente,
-            prazo,
-            atrasos
-        )
-        VALUES (
-            v_registro.id,
-            v_ultimo_periodo_valido,
-            v_fase_corrente,
-            v_proximo_periodo,
-            v_corrente,
-            v_prazo,
-            v_atrasos
-        )
-        ON CONFLICT (variavel_id)
-            DO UPDATE SET
-                ultimo_periodo_valido = EXCLUDED.ultimo_periodo_valido,
-                proximo_periodo_abertura = EXCLUDED.proximo_periodo_abertura,
-                eh_corrente = EXCLUDED.eh_corrente,
-                prazo = EXCLUDED.prazo,
-                fase = EXCLUDED.fase,
-                atrasos = EXCLUDED.atrasos,
-                atualizado_em = now();
-
-        IF NOT FOUND THEN
-            RAISE EXCEPTION 'Falha ao atualizar variavel_ciclo_corrente para variável ID %', p_variavel_id;
+    IF v_fase_corrente = 'Preenchimento' THEN
+        IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
+            -- Esconde a fase de preenchimento enquanto não chegar na data
+            v_corrente := false;
+            RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[1];
         END IF;
     END IF;
+
+    INSERT INTO variavel_ciclo_corrente(
+        variavel_id,
+        ultimo_periodo_valido,
+        fase,
+        proximo_periodo_abertura,
+        eh_corrente,
+        prazo,
+        atrasos
+    )
+    VALUES (
+        v_registro.id,
+        v_ultimo_periodo_valido,
+        v_fase_corrente,
+        v_proximo_periodo,
+        v_corrente,
+        v_prazo,
+        v_atrasos
+    )
+    ON CONFLICT (variavel_id)
+        DO UPDATE SET
+            ultimo_periodo_valido = EXCLUDED.ultimo_periodo_valido,
+            proximo_periodo_abertura = EXCLUDED.proximo_periodo_abertura,
+            eh_corrente = EXCLUDED.eh_corrente,
+            prazo = EXCLUDED.prazo,
+            fase = EXCLUDED.fase,
+            atrasos = EXCLUDED.atrasos,
+            atualizado_em = now();
+
+
 END;
 $$
 LANGUAGE plpgsql;
