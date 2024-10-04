@@ -76,8 +76,9 @@ BEGIN
         LEFT JOIN variavel_global_ciclo_analise a
             ON a.variavel_id = p_variavel_id
             AND a.referencia_data = xp.xp
-            AND ultima_revisao = true
-            AND aprovada = true
+            AND a.ultima_revisao = true
+            AND a.removido_em IS NULL
+            AND a.aprovada = true
         WHERE xp.xp <  v_mes_atual - v_registro.intervalo_atraso
         GROUP BY 1
         ORDER BY 1 DESC

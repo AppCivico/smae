@@ -704,6 +704,7 @@ export class VariavelCicloService {
         const pQueries = fases.map(async (fase) => {
             return await this.prisma.variavelGlobalCicloAnalise.findFirst({
                 where: {
+                    removido_em: null,
                     variavel_id: variavel_id,
                     referencia_data: data_referencia,
                     fase: fase,
@@ -956,6 +957,10 @@ export class VariavelCicloService {
         await prismaTxn.variavelGlobalCicloAnalise.updateMany({
             where: {
                 variavel_id: variavelId,
+                referencia_data: dataReferencia,
+                NOT: {
+                    fase: 'Preenchimento',
+                },
                 ultima_revisao: true,
             },
             data: {
