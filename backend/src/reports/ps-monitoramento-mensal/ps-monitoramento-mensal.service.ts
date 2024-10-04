@@ -13,7 +13,6 @@ const {
 } = require('json2csv');
 const defaultTransform = [flatten({ paths: [] })];
 
-
 @Injectable()
 export class MonitoramentoMensalPs implements ReportableService {
     constructor(
@@ -22,10 +21,10 @@ export class MonitoramentoMensalPs implements ReportableService {
         private readonly indicadoresService: IndicadoresService
     ) {}
     async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitoramentoMensalVariaveis[]> {
-        if (!params.mes){
+        if (!params.mes) {
             throw new Error('O Mês deve ser informado!');
         }
-        if (!params.ano){
+        if (!params.ano) {
             throw new Error('O Ano deve ser informado!');
         }
 
@@ -40,10 +39,11 @@ export class MonitoramentoMensalPs implements ReportableService {
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 100)
             throw new Error(
-                'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV');
+                'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
+            );
 
-        const paramMesAno = params.ano + "-"+ params.mes + "-01";
-        let sql:string = `select
+        const paramMesAno = params.ano + '-' + params.mes + '-01';
+        let sql: string = `select
                             i.id as indicador_id,
                             i.codigo    as codigo_indicador,
                             i.titulo    as titulo_indicador,
@@ -149,16 +149,16 @@ export class MonitoramentoMensalPs implements ReportableService {
                    where i.removido_em is null
                         and v.removido_em is null
                         and vvp.meta_id IN (:metas)
-                        and vvp.pdm_id = ${params.plano_setorial_id}::int`
+                        and vvp.pdm_id = ${params.plano_setorial_id}::int`;
 
-        if (params.listar_variaveis_regionalizadas){
-            sql = sql.replace(":listar_variaveis_regionalizadas"," or v.variavel_mae_id = vvp.variavel_id ");
-        }else{
-            sql = sql.replace(":listar_variaveis_regionalizadas","");
+        if (params.listar_variaveis_regionalizadas) {
+            sql = sql.replace(':listar_variaveis_regionalizadas', ' or v.variavel_mae_id = vvp.variavel_id ');
+        } else {
+            sql = sql.replace(':listar_variaveis_regionalizadas', '');
         }
-        sql = sql.replace(":metas",metasArr.toString());
-        sql = sql.replace(":mesAno","'"+ paramMesAno + "'");
-        const linhasVariaveis  = await this.prisma.$queryRawUnsafe(sql);
+        sql = sql.replace(':metas', metasArr.toString());
+        sql = sql.replace(':mesAno', "'" + paramMesAno + "'");
+        const linhasVariaveis = await this.prisma.$queryRawUnsafe(sql);
 
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
     }
@@ -173,12 +173,12 @@ export class MonitoramentoMensalPs implements ReportableService {
             { value: 'titulo_indicador', label: 'Título do Indicador' },
             { value: 'indicador_id', label: 'ID do Indicador' },
             { value: 'variavel_codigo', label: 'Código da Variável' },
-            { value: 'variavel_titulo', label: 'Título da Variável'},
-            { value: 'variavel_id', label: 'ID da Variável'},
+            { value: 'variavel_titulo', label: 'Título da Variável' },
+            { value: 'variavel_id', label: 'ID da Variável' },
             { value: 'municipio', label: 'Município' },
             { value: 'municipio_id', label: 'Código do Município' },
-            { value: 'regiao', label: 'Região'},
-            { value: 'regiao_id', label: 'ID da Região'},
+            { value: 'regiao', label: 'Região' },
+            { value: 'regiao_id', label: 'ID da Região' },
             { value: 'subprefeitura', label: 'Subprefeitura' },
             { value: 'id_subprefeitura', label: 'ID da Subprefeitura' },
             { value: 'distrito', label: 'Distrito' },
@@ -208,24 +208,20 @@ export class MonitoramentoMensalPs implements ReportableService {
         }
 
         //Transfere as informacoes dos filtros
-        const indicadoresInput:CreateRelIndicadorDto = new CreateRelIndicadorDto();
+        const indicadoresInput: CreateRelIndicadorDto = new CreateRelIndicadorDto();
         indicadoresInput.mes = params.mes;
         indicadoresInput.ano = params.ano;
         indicadoresInput.pdm_id = params.plano_setorial_id;
-        indicadoresInput.tags  = params.tags;
+        indicadoresInput.tags = params.tags;
         indicadoresInput.metas_ids = params.metas;
         indicadoresInput.tipo = 'Mensal';
         indicadoresInput.tipo_pdm = 'PS';
         indicadoresInput.listar_variaveis_regionalizadas = params.listar_variaveis_regionalizadas;
 
-
-        const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput,ctx);
-        for(const indicador of indicadores){
+        const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput, ctx);
+        for (const indicador of indicadores) {
             out.push(indicador);
         }
         return out;
     }
-
-
-
 }
