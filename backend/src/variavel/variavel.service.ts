@@ -1237,10 +1237,7 @@ export class VariavelService {
             return plano;
         };
 
-        const perm = user.hasSomeRoles([
-            'CadastroVariavelGlobal.administrador_no_orgao',
-            'CadastroVariavelGlobal.administrador',
-        ]);
+        const perm = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
 
         const paginas = Math.ceil(total_registros / ipp);
         return {
@@ -1255,6 +1252,13 @@ export class VariavelService {
                 if (r.tipo == 'Calculada') {
                     localPerm = false;
                     localPermValor = false;
+                }
+
+                if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+                    if (r.orgao_proprietario_id != user.orgao_id) {
+                        localPerm = false;
+                        localPermValor = false;
+                    }
                 }
 
                 // fogo que isso vai criar um bug, na hora de editar os valores em si pode editar,
