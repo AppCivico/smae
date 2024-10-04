@@ -34,7 +34,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
-import { MonitoramentoMensalPs } from '../planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.service';
+import { MonitoramentoMensalPs } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {

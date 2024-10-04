@@ -16,7 +16,7 @@ import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
 import { TransferenciasModule } from '../transferencias/transferencias.module';
 import { PPObrasModule } from '../pp-obras/pp-obras.module';
 import { TribunalDeContasModule } from '../tribunal-de-contas/tribunal-de-contas.module';
-import { PsMonitoramentoMensalModule } from '../planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.module';
+import { PsMonitoramentoMensalModule } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.module';
 import {
     CasaCivilAtividadesPendentesModule
 } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';

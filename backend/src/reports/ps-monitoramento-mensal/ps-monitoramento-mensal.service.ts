@@ -215,7 +215,9 @@ export class MonitoramentoMensalPs implements ReportableService {
         indicadoresInput.tags  = params.tags;
         indicadoresInput.metas_ids = params.metas;
         indicadoresInput.tipo = 'Mensal';
+        indicadoresInput.tipo_pdm = 'PS';
         indicadoresInput.listar_variaveis_regionalizadas = params.listar_variaveis_regionalizadas;
+
 
         const indicadores = await this.indicadoresService.toFileOutput(indicadoresInput,ctx);
         for(const indicador of indicadores){

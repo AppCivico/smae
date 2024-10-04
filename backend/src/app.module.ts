@@ -53,7 +53,7 @@ import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/
 import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
 import {
     PsMonitoramentoMensalModule
-} from './reports/planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.module';
+} from './reports/ps-monitoramento-mensal/ps-monitoramento-mensal.module';
 
 // Hacks pro JS
 /*
