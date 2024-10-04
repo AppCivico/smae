@@ -1,4 +1,5 @@
 <script setup>
+import { useRoute } from 'vue-router';
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import TabelaDeSemestraisOuAnuais from '@/components/relatorios/TabelaDeSemestraisOuAnuais.vue';
 import { useAuthStore } from '@/stores/auth.store';
@@ -7,7 +8,7 @@ import { storeToRefs } from 'pinia';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const relatóriosStore = useRelatoriosStore();
-const fonte = 'Indicadores';
+const fonte = useRoute().meta.fonteParaRelatório;
 
 relatóriosStore.$reset();
 relatóriosStore.getAll({ fonte });

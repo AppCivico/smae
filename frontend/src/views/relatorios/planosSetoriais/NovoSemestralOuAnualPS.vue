@@ -24,7 +24,7 @@ const listaDeSemestres = ['Primeiro', 'Segundo'];
 const listaDePeríodos = ['Semestral', 'Anual'];
 
 const currentOptions = ref({
-  fonte: 'PSIndicadores',
+  fonte: route.meta.fonteParaRelatório,
   parametros: {
     tipo: 'Analitico',
     pdm_id: 0,
