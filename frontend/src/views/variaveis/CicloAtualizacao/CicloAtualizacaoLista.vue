@@ -143,7 +143,9 @@
     </table>
   </section>
 
-  <router-view />
+  <div>
+    <router-view />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -238,19 +240,6 @@ function formatarReferencia(referencia: any): string | undefined {
 
   return `${referencia.split('/').reverse().join('-')}-01`;
 }
-
-// function abreEdicaoOrcamento({ id, referencia }) {
-//   editModalStore.modal(CicloAtualizacaoModal, {
-//     id,
-//     referencia,
-//     checkClose: () => {
-//       alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
-//         editModalStore.clear();
-//         alertStore.clear();
-//       });
-//     },
-//   }, 'small');
-// }
 
 watch(() => $route.query, (query) => {
   const { aba, ...params } = query;

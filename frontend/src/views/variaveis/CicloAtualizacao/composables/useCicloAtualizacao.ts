@@ -67,8 +67,6 @@ export default function useCicloAtualizacao() {
 
     const analises: Analises = {};
 
-    console.log(emFoco.value?.analises);
-
     const analisePreenchimento = emFoco.value?.analises?.find(
       (item) => item.fase === 'Preenchimento',
     );
