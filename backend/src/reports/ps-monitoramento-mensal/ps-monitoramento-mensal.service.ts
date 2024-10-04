@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
