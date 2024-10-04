@@ -15,6 +15,7 @@ DECLARE
     v_prazo DATE;
     v_ciclo RECORD;
     v_quali RECORD;
+    v_liberacao_enviada BOOLEAN;
 BEGIN
     -- Busca o registro da variável com o nome da coluna atualizado
     SELECT
@@ -53,8 +54,8 @@ BEGIN
         RETURN;
     END IF;
 
-    SELECT fase, ultimo_periodo_valido
-         INTO v_fase_corrente, v_ultimo_p_valido_corrente
+    SELECT fase, ultimo_periodo_valido, liberacao_enviada
+         INTO v_fase_corrente, v_ultimo_p_valido_corrente, v_liberacao_enviada
     FROM variavel_ciclo_corrente
     WHERE variavel_id = p_variavel_id;
     IF (v_fase_corrente IS NULL) THEN
@@ -169,9 +170,12 @@ BEGIN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_validacao_interval;
         ELSE
 
-            v_prazo := v_ultimo_periodo_valido + v_registro.dur_liberacao_interval;
-
-            -- em teoria, e estourar o prazo, e é um atraso, eh a hora de avançar sozinho
+            -- acabou todos os ciclos, não tem mais prazo
+            IF v_liberacao_enviada AND v_atrasos[1] IS NULL THEN
+                v_prazo := NULL;
+            ELSE
+                v_prazo := v_ultimo_periodo_valido + v_registro.dur_liberacao_interval;
+            END IF;
 
         END IF;
 
