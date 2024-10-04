@@ -147,6 +147,7 @@ export default {
 
       /// PlanoSetorial
       'planoSetorial.RelatóriosMensais',
+      'planoSetorial.RelatóriosSemestraisOuAnuais',
 
       /// Projetos
       'RelatóriosDeProjeto',
@@ -235,6 +236,33 @@ export default {
     },
 
     {
+      path: 'ps/semestral-ou-anual',
+      meta: {
+        entidadeMãe: 'planoSetorial',
+        título: 'Relatórios Semestrais e Anuais',
+        títuloParaMenu: 'Relatório Semestral/Anual',
+        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+      },
+
+      children: [
+        {
+          path: '',
+          name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
+          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosSemestraisOuAnuaisPS.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/planosSetoriais/NovoSemestralOuAnualPS.vue'),
+          path: 'novo',
+          name: 'planoSetorial.novoRelatórioSemestralOuAnual',
+          meta: {
+            título: 'Novo relatório semestral ou anual',
+            rotaDeEscape: 'RelatóriosSemestraisOuAnuais',
+          },
+        },
+      ],
+    },
+
+    {
       path: 'semestral-ou-anual',
       meta: {
         entidadeMãe: 'pdm',
@@ -259,6 +287,7 @@ export default {
         },
       ],
     },
+
     {
       path: 'orcamentarios-pdm',
       meta: {
