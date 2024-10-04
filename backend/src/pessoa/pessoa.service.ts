@@ -1102,6 +1102,33 @@ export class PessoaService {
                 });
 
                 const promises = [];
+                if (user && !user.hasSomeRoles(['SMAE.superadmin'])) {
+                    const editingUserPrivileges = new Set(user.privilegios);
+
+                    for (const permId of createPessoaDto.perfil_acesso_ids) {
+                        const perfilAcesso = await prismaTx.perfilAcesso.findUnique({
+                            where: { id: permId },
+                            include: {
+                                perfil_privilegio: {
+                                    include: {
+                                        privilegio: true,
+                                    },
+                                },
+                            },
+                        });
+
+                        if (!perfilAcesso) throw new BadRequestException(`Perfil de acesso ${permId} não encontrado`);
+
+                        for (const priv of perfilAcesso.perfil_privilegio) {
+                            if (!editingUserPrivileges.has(priv.privilegio.codigo as ListaDePrivilegios)) {
+                                throw new ForbiddenException(
+                                    `Você não pode adicionar o privilégio ${priv.privilegio.codigo} que você não possui.`
+                                );
+                            }
+                        }
+                    }
+                }
+
                 for (const perm of createPessoaDto.perfil_acesso_ids) {
                     promises.push(
                         prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } })
