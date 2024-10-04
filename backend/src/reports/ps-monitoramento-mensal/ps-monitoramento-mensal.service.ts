@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
@@ -19,14 +19,6 @@ export class MonitoramentoMensalPs implements ReportableService {
         private readonly indicadoresService: IndicadoresService
     ) {}
     async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitoramentoMensalVariaveis[]> {
-        if (!params.mes) {
-            throw new Error('O Mês deve ser informado!');
-        }
-        if (!params.ano) {
-            throw new Error('O Ano deve ser informado!');
-        }
-
-        //Confirmar se filtrar as mestas pelas Tags é o suficiente
         const { metas } = await this.utils.applyFilter(params, { iniciativas: false, atividades: false });
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 100)

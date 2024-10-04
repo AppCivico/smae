@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreatePsMonitoramentoMensalFilterDto {
@@ -7,10 +7,14 @@ export class CreatePsMonitoramentoMensalFilterDto {
 
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Max(12)
+    @Min(1)
     mes: number;
 
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Min(1500)
+    @Max(9999)
     ano: number;
 
     @IsOptional()
