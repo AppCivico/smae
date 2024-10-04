@@ -141,7 +141,7 @@ export default {
     rotasParaMenuPrincipal: [
       /// PdM
       'RelatóriosMensais',
-      'RelatóriosSemestraisOuAnuais',
+      'pdm.RelatóriosSemestraisOuAnuais',
       'RelatóriosDePrevisãoDeCustoPdM',
       'RelatóriosOrçamentáriosPdM',
 
@@ -210,14 +210,14 @@ export default {
       path: 'semestral-ou-anual',
       meta: {
         entidadeMãe: 'pdm',
-        título: 'Relatórios Semestrais e Anuais',
+        fonteParaRelatório: 'Indicadores',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
         {
           path: '',
-          name: 'RelatóriosSemestraisOuAnuais',
+          name: 'pdm.RelatóriosSemestraisOuAnuais',
           component: RelatoriosSemestraisOuAnuais,
         },
         {
@@ -226,7 +226,7 @@ export default {
           name: 'novoRelatórioSemestralOuAnual',
           meta: {
             título: 'Novo relatório semestral ou anual',
-            rotaDeEscape: 'RelatóriosSemestraisOuAnuais',
+            rotaDeEscape: 'pdm.RelatóriosSemestraisOuAnuais',
           },
         },
       ],
@@ -667,7 +667,7 @@ export default {
       path: 'ps/semestral-ou-anual',
       meta: {
         entidadeMãe: 'planoSetorial',
-        título: 'Relatórios Semestrais e Anuais',
+        fonteParaRelatório: 'PSIndicadores',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
       },
