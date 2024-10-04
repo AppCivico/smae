@@ -426,6 +426,8 @@ export class PessoaService {
         const editingUserPrivileges = new Set(user.privilegios);
 
         if (!user.hasSomeRoles(['SMAE.superadmin'])) {
+            if (user.id == pessoaId) throw new ForbiddenException('Você não pode editar a si mesmo.');
+
             for (const priv of targetUserPrivileges) {
                 if (!editingUserPrivileges.has(priv)) {
                     throw new BadRequestException('Você não pode editar um usuário com mais privilégios que você.');
