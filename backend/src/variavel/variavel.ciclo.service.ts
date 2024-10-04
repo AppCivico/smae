@@ -848,7 +848,7 @@ export class VariavelCicloService {
             await this.prisma.$transaction(async (prismaTx) => {
                 const currentState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
 
-                await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId})`;
+                await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
 
                 const newState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
                 if (!newState) {
