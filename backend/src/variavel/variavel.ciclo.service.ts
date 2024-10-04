@@ -402,7 +402,16 @@ export class VariavelCicloService {
 
             const variaveisIds: number[] = [dto.variavel_id];
             for (const valor of dto.valores) {
+                // validação sempre pula a atualização dos valores
+                if (cicloCorrente.fase == 'Validacao') continue;
+
                 if (valor.variavel_id) variaveisIds.push(valor.variavel_id);
+
+                // em preenchimento, pode atualizar os valores, mas em liberação não, apenas o push dos id's
+                // para recalcular os indicadores (só necessário na fase de liberação quando aprova, pra falar vdd)
+
+                if (cicloCorrente.fase !== 'Preenchimento') continue;
+
                 const variavelInfo = await this.variavelService.loadVariavelComCategorica(
                     'Global',
                     prismaTxn,
@@ -420,8 +429,10 @@ export class VariavelCicloService {
                 );
             }
 
-            await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
-            await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
+            if (variaveisIds.length) {
+                await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
+                await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
+            }
         });
     }
 
