@@ -929,18 +929,18 @@ PerfilAcessoConfig.push(
         descricao:
             'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
         privilegios: [
-            'SMAE.GrupoVariavel.participante',
-            'PS.admin_cp',
-            'PS.ponto_focal',
-            'PS.tecnico_cp',
-            'CadastroMetaPS.listar',
-            'CadastroPainelPS.visualizar',
+            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
+            'PS.admin_cp', // backcompat. com frontend
+            'PS.tecnico_cp', // backcompat. com frontend
+            'PS.ponto_focal', // backcompat. com frontend
+            'CadastroMetaPS.listar', // grant da listagem do PDM e Metas/ini/etc
+            'CadastroPainelPS.visualizar', // nao ta sendo usado
         ],
     },
 
     {
         nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
-        descricao: 'Pode gerenciar o orçamento para as metas que participa.',
+        descricao: 'Pode utilizar o orçamento para as metas que participa, não pode reabrir o orçamento.',
         privilegios: ['CadastroMetaPS.orcamento'],
     },
 

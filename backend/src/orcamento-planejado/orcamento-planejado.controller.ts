@@ -69,7 +69,7 @@ export class OrcamentoPlanejadoPSController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
     async create(
         @Body() createMetaDto: CreateOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -79,7 +79,7 @@ export class OrcamentoPlanejadoPSController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
     async update(
         @Param() params: FindOneParams,
         @Body() createMetaDto: UpdateOrcamentoPlanejadoDto,
@@ -90,7 +90,7 @@ export class OrcamentoPlanejadoPSController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
     async findAll(
         @Query() filters: FilterOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -102,7 +102,7 @@ export class OrcamentoPlanejadoPSController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'PS.tecnico_cp', 'PS.admin_cp'])
+    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

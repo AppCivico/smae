@@ -117,13 +117,7 @@ export class MetaSetorialController {
         'CadastroPS.administrador', // edita qualquer item
         'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel?
     ];
-    public static ReadPerm: ListaDePrivilegios[] = [
-        ...MetaSetorialController.WritePerm,
-        'CadastroMetaPS.listar',
-        'PS.admin_cp',
-        'PS.tecnico_cp',
-        'PS.ponto_focal',
-    ];
+    public static ReadPerm: ListaDePrivilegios[] = [...MetaSetorialController.WritePerm, 'CadastroMetaPS.listar'];
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly metaService: MetaService) {}
 
