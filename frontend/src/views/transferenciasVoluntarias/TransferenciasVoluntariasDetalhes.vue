@@ -1,14 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import {
-  defineAsyncComponent,
-  nextTick, onMounted,
-  ref,
-} from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
-import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
+import { localizarDataHorario } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -36,10 +32,7 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const workflowAndamento = useWorkflowAndamentoStore();
 
 const { emFoco: transferenciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
-const {
-  lista: listaDeDistribuicao,
-  chamadasPendentes: distribuicoesPendentes,
-} = storeToRefs(distribuicaoRecursos);
+const { lista: listaDeDistribuicao } = storeToRefs(distribuicaoRecursos);
 const {
   workflow,
   inícioDeFasePermitido,
@@ -48,26 +41,7 @@ const {
 } = storeToRefs(workflowAndamento);
 const { temPermissãoPara } = storeToRefs(authStore);
 
-const listaDeStatus = ref(null);
 const ConfigurarWorkflow = ref(false);
-
-function rolarParaStatusCorrente() {
-  if (listaDeStatus.value && Array.isArray(distribuicao?.historico_status)) {
-    const índiceDoStatusCorrente = distribuicao.historico_status.findIndex(
-      (status) => status.concluida === false,
-    );
-
-    nextTick(() => {
-      if (listaDeStatus.value) {
-        const { children: filhas } = listaDeStatus.value;
-
-        if (filhas[índiceDoStatusCorrente]) {
-          listaDeStatus.value.scrollLeft = filhas[índiceDoStatusCorrente].offsetLeft;
-        }
-      }
-    });
-  }
-}
 
 function deletarWorkflow() {
   alertStore.confirmAction('Tem certeza?', async () => {
@@ -97,17 +71,6 @@ function avançarEtapa() {
   }, 'Avançar');
 }
 
-function atualizaSeiLido(item, transferenciaId, lido) {
-  // eslint-disable-next-line no-param-reassign
-  item.lido = lido;
-
-  distribuicaoRecursos.selectionarSeiLido({
-    id: transferenciaId,
-    processoSei: item.integracao_sei.processo_sei,
-    lido,
-  });
-}
-
 function rabrirFase() {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.reabrirFase()) {
@@ -127,19 +90,6 @@ function formatarTexto(texto) {
     return '';
   }
   return texto.replace(/([a-z])([A-Z])/g, '$1 $2');
-}
-
-function formatarData(data) {
-  const date = new Date(data);
-
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Mês é baseado em zero, por isso é preciso adicionar +1
-  const year = date.getFullYear();
-
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-
-  return `${day}/${month}/${year}, ${hours}:${minutes}`;
 }
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
@@ -212,7 +162,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <div v-if="linha.acao==='DelecaoWorkflow'">
           <strong class="tc600">
             <span class="tamarelo mr1">DELEÇÃO WORKFLOW </span>
-            {{ linha.criador?.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
+            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
           </strong>
         </div>
         <div v-if="linha.acao==='TrocaTipo'">
@@ -220,7 +170,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             <span class="tamarelo mr1">
               TROCA TIPO
             </span>
-            {{ linha.criador?.nome_exibicao }} - {{ formatarData(linha.criado_em) }}
+            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
           </strong>
           <div class="flex mt1">
             <dl class="mr2">
@@ -266,7 +216,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </span>
             {{ formatarTexto(linha.dados_extra?.faseReaberta?.fase) || ' - ' }}
           </strong> <br>
-          <strong class="tc600">{{ linha.criador?.nome_exibicao }} - {{ formatarData(linha.criado_em) }}</strong>
+          <strong class="tc600">{{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}</strong>
           <div class="flex mt1">
             <dl class="mr2">
               <p class="tc500 w700 mb0">
