@@ -525,18 +525,6 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
     'CadastroPainel.visualizar',
 ];
 
-const PrivRespNaCpPS: ListaDePrivilegios[] = [
-    'PS.tecnico_cp',
-    'CadastroMetaPS.listar',
-    'CadastroMetaPS.administrador_no_pdm',
-    'CadastroVariavelGlobal.administrador_no_orgao',
-
-    'CadastroPainelPS.inserir',
-    'CadastroPainelPS.editar',
-    'CadastroPainelPS.remover',
-    'CadastroPainelPS.visualizar',
-];
-
 const PSCadastroBasico: ListaDePrivilegios[] = [
     'CadastroMacroTemaPS.inserir',
     'CadastroMacroTemaPS.editar',
@@ -692,23 +680,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         nome: atualizarNomePerfil('Administrador de equipes', ['Administrador de Grupo de Variáveis']),
         descricao: 'Gerenciar todas as equipes',
         privilegios: ['CadastroGrupoVariavel.administrador'],
-    },
-    {
-        nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
-        descricao: 'Gerenciar as equipes onde é responsável',
-        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
-    },
-
-    {
-        nome: atualizarNomePerfil('Participante em equipes', ['Participante de Grupo de Variáveis']),
-        descricao:
-            'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
-        privilegios: [
-            'SMAE.GrupoVariavel.participante',
-            'PS.ponto_focal',
-            'CadastroMetaPS.listar',
-            'CadastroPainelPS.visualizar',
-        ],
     },
 
     {
@@ -896,6 +867,16 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroCronogramaTransferencia.listar',
         ],
     },
+    {
+        nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
+        descricao: 'Pode criar e editar usuários no mesmo órgão',
+        privilegios: [
+            'CadastroPessoa.inserir',
+            'CadastroPessoa.editar',
+            'CadastroPessoa.inativar',
+            'CadastroPessoa.ativar',
+        ],
+    },
 ];
 
 // Perfis de Plano Setoriais
@@ -938,18 +919,28 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
-        descricao: 'Pode criar e editar usuários no mesmo órgão',
+        nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
+        descricao: 'Gerenciar as equipes onde é responsável',
+        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
+    },
+
+    {
+        nome: atualizarNomePerfil('Participante em equipes', ['Participante de Grupo de Variáveis']),
+        descricao:
+            'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
         privilegios: [
-            'CadastroPessoa.inserir',
-            'CadastroPessoa.editar',
-            'CadastroPessoa.inativar',
-            'CadastroPessoa.ativar',
+            'SMAE.GrupoVariavel.participante',
+            'PS.admin_cp',
+            'PS.ponto_focal',
+            'PS.tecnico_cp',
+            'CadastroMetaPS.listar',
+            'CadastroPainelPS.visualizar',
         ],
     },
+
     {
         nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
-        descricao: 'Pode criar orçamento para as metas que tem acesso.',
+        descricao: 'Pode gerenciar o orçamento para as metas que participa.',
         privilegios: ['CadastroMetaPS.orcamento'],
     },
 
@@ -957,11 +948,9 @@ PerfilAcessoConfig.push(
         nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial', [
             'Responsável por meta na CP',
         ]),
-        descricao:
-            'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
-        privilegios: PrivRespNaCpPS,
+        descricao: '',
+        privilegios: false,
     },
-
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),
         descricao: '',
@@ -987,7 +976,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Administrador CP'),
     removerNomePerfil('Coordenadoria de Planejamento'),
     removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
-    removerNomePerfil('Responsável por meta na CP')
+    removerNomePerfil('Responsável por meta na CP'),
+    removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial')
 );
 
 async function main() {
