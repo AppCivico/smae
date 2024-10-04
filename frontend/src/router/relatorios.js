@@ -207,62 +207,6 @@ export default {
     },
 
     {
-      path: 'ps/mensal',
-      component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisRaizPS.vue'),
-      meta: {
-        entidadeMãe: 'planoSetorial',
-        título: 'Relatórios Mensais',
-        títuloParaMenu: 'Relatório Mensal',
-        limitarÀsPermissões: [
-          'Reports.executar.PlanoSetorial',
-        ],
-      },
-      children: [
-        {
-          path: '',
-          name: 'planoSetorial.RelatóriosMensais',
-          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisPS.vue'),
-        },
-        {
-          component: () => import('@/views/relatorios/planosSetoriais/NovoMensalPS.vue'),
-          path: 'novo',
-          name: 'planoSetorial.novoRelatórioMensal',
-          meta: {
-            título: 'Novo relatório mensal',
-            rotaDeEscape: 'planoSetorial.RelatóriosMensais',
-          },
-        },
-      ],
-    },
-
-    {
-      path: 'ps/semestral-ou-anual',
-      meta: {
-        entidadeMãe: 'planoSetorial',
-        título: 'Relatórios Semestrais e Anuais',
-        títuloParaMenu: 'Relatório Semestral/Anual',
-        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
-      },
-
-      children: [
-        {
-          path: '',
-          name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
-          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosSemestraisOuAnuaisPS.vue'),
-        },
-        {
-          component: () => import('@/views/relatorios/planosSetoriais/NovoSemestralOuAnualPS.vue'),
-          path: 'novo',
-          name: 'planoSetorial.novoRelatórioSemestralOuAnual',
-          meta: {
-            título: 'Novo relatório semestral ou anual',
-            rotaDeEscape: 'RelatóriosSemestraisOuAnuais',
-          },
-        },
-      ],
-    },
-
-    {
       path: 'semestral-ou-anual',
       meta: {
         entidadeMãe: 'pdm',
@@ -685,6 +629,62 @@ export default {
           component: NovoRelatórioDePrevisãoDeCustoPlanosSetoriais,
           meta: {
             título: 'Novo relatório de previsão de custo de Planos Setoriais',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'ps/mensal',
+      component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisRaizPS.vue'),
+      meta: {
+        entidadeMãe: 'planoSetorial',
+        título: 'Relatórios Mensais',
+        títuloParaMenu: 'Relatório Mensal',
+        limitarÀsPermissões: [
+          'Reports.executar.PlanoSetorial',
+        ],
+      },
+      children: [
+        {
+          path: '',
+          name: 'planoSetorial.RelatóriosMensais',
+          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisPS.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/planosSetoriais/NovoMensalPS.vue'),
+          path: 'novo',
+          name: 'planoSetorial.novoRelatórioMensal',
+          meta: {
+            título: 'Novo relatório mensal',
+            rotaDeEscape: 'planoSetorial.RelatóriosMensais',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'ps/semestral-ou-anual',
+      meta: {
+        entidadeMãe: 'planoSetorial',
+        título: 'Relatórios Semestrais e Anuais',
+        títuloParaMenu: 'Relatório Semestral/Anual',
+        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+      },
+
+      children: [
+        {
+          path: '',
+          name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
+          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosSemestraisOuAnuaisPS.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/planosSetoriais/NovoSemestralOuAnualPS.vue'),
+          path: 'novo',
+          name: 'planoSetorial.novoRelatórioSemestralOuAnual',
+          meta: {
+            título: 'Novo relatório semestral ou anual',
+            rotaDeEscape: 'planoSetorial.RelatóriosSemestraisOuAnuais',
           },
         },
       ],
