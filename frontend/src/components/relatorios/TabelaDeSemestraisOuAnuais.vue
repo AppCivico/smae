@@ -93,19 +93,19 @@ function excluirRelatório(id) {
       </template>
       <tr v-else-if="relatoriosStore.loading">
         <td
-          colspan="7"
+          :colspan="temPermissãoPara(['Reports.remover.']) ? 7 : 6"
           aria-busy="true"
         >
           Carregando
         </td>
       </tr>
       <tr v-else-if="relatoriosStore.error">
-        <td colspan="7">
+        <td :colspan="temPermissãoPara(['Reports.remover.']) ? 7 : 6">
           erro: {{ relatoriosStore.error }}
         </td>
       </tr>
       <tr v-else>
-        <td colspan="7">
+        <td :colspan="temPermissãoPara(['Reports.remover.']) ? 7 : 6">
           Nenhum resultado encontrado.
         </td>
       </tr>
