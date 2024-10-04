@@ -73,9 +73,16 @@ PlanosSetoriaisStore.buscarTudo();
   >
     <div class="flex g2 mb2">
       <div class="f1">
-        <label class="label">
+        <!--<label class="label">
           <abbr title="Plano Setorial">Plano Setorial</abbr>
-          <span class="tvermelho">*</span>
+          <span class="tvermelho">*</span>-->
+        <label
+          for="pdm_id"
+          class="label"
+          >Plano Setorial
+            <span class="tvermelho">
+              *
+            </span>
         </label>
         <Field
           name="parametros.pdm_id"
