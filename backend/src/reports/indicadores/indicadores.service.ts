@@ -557,7 +557,7 @@ export class IndicadoresService implements ReportableService {
             { value: 'indicador.id', label: 'ID do Indicador' },
         ];
 
-        if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'meta.pdm_nome', label: 'Plano Setorial' });
+        if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'pdm_nome', label: 'Plano Setorial' });
 
         this.logger.debug(`Gerando CSV de indicadores`);
         if (linhas.length) {
