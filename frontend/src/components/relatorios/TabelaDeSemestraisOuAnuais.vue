@@ -1,5 +1,5 @@
 <script setup>
-import dateToDate from '@/helpers/dateToDate';
+import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
@@ -11,8 +11,6 @@ const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
 
 function excluirRelatório(id) {
   alertStore.confirmAction('Deseja remover o relatório?', () => {
@@ -60,7 +58,7 @@ function excluirRelatório(id) {
           <td>{{ item.parametros.semestre }}</td>
           <td>{{ item.parametros.tipo }}</td>
           <!--td>{{ item.parametros.tags }}</td-->
-          <td>{{ localizeDate(item.criado_em) }}</td>
+          <td>{{ localizarDataHorario(item.criado_em) }}</td>
           <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button
               class="like-a__text addlink"
