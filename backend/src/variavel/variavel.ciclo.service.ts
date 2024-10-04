@@ -311,18 +311,20 @@ export class VariavelCicloService {
                 data: { ultima_revisao: false },
             });
 
-            await prismaTxn.variavelGlobalCicloAnalise.create({
-                data: {
-                    variavel_id: dto.variavel_id,
-                    referencia_data: dto.data_referencia,
-                    informacoes_complementares: dto.analise_qualitativa,
-                    criado_por: user.id,
-                    ultima_revisao: true,
-                    valores: dto.valores as any,
-                    fase: cicloCorrente.fase,
-                    aprovada: dto.aprovar,
-                },
-            });
+            // nem cria a analise de, já que vai marcar como removido_em logo em seguida todas as fases
+            if (!dto.pedido_complementacao)
+                await prismaTxn.variavelGlobalCicloAnalise.create({
+                    data: {
+                        variavel_id: dto.variavel_id,
+                        referencia_data: dto.data_referencia,
+                        informacoes_complementares: dto.analise_qualitativa,
+                        criado_por: user.id,
+                        ultima_revisao: true,
+                        valores: dto.valores as any,
+                        fase: cicloCorrente.fase,
+                        aprovada: dto.aprovar,
+                    },
+                });
 
             // uploads se existirem
             if (dto.uploads && Array.isArray(dto.uploads)) {
