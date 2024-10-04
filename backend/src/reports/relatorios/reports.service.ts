@@ -35,9 +35,7 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { MonitoramentoMensalPs } from '../planos-setoriais-monitoramento-mensal/ps-monitoramento-mensal.service';
-import {
-    CasaCivilAtividadesPendentesService
-} from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
+import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -71,9 +69,12 @@ export class ReportsService {
         @Inject(forwardRef(() => PPObrasService)) private readonly ppObrasService: PPObrasService,
         @Inject(forwardRef(() => ParlamentaresService)) private readonly parlamentaresService: ParlamentaresService,
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
-        @Inject(forwardRef(() => TribunalDeContasService)) private readonly tribunalDeContasService: TribunalDeContasService,
-        @Inject(forwardRef(() => MonitoramentoMensalPs)) private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalPs,
-        @Inject(forwardRef(() => CasaCivilAtividadesPendentesService)) private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
+        @Inject(forwardRef(() => TribunalDeContasService))
+        private readonly tribunalDeContasService: TribunalDeContasService,
+        @Inject(forwardRef(() => MonitoramentoMensalPs))
+        private readonly monitoramentoMensalVariaveisPs: MonitoramentoMensalPs,
+        @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
+        private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -102,6 +103,10 @@ export class ReportsService {
             parametros.tipo_pdm = 'PDM';
         } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
             parametros.tipo_pdm = 'PS';
+        } else if (dto.fonte === 'PSIndicadores') {
+            parametros.tipo_pdm = 'PS';
+        } else if (dto.fonte === 'Indicadores') {
+            parametros.tipo_pdm = 'PDM';
         }
 
         const mockContext: ReportContext = {
@@ -231,6 +236,7 @@ export class ReportsService {
                 service = this.orcamentoService;
                 break;
             case 'Indicadores':
+            case 'PSIndicadores':
                 service = this.indicadoresService;
                 break;
             case 'MonitoramentoMensal':

@@ -12,6 +12,7 @@ import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common
 const BATCH_SIZE = 500;
 const CREATE_TEMP_TABLE = 'CREATE TEMP TABLE _report_data ON COMMIT DROP AS';
 class RetornoDb {
+    pdm_nome: string;
     data: string;
     data_referencia: string;
     valor: string | null;
@@ -173,11 +174,14 @@ export class IndicadoresService implements ReportableService {
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
-        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id`;
+        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        left join pdm on pdm.id = meta.pdm_id or m2.pdm_id
+        `;
 
         const anoInicial = await this.capturaAnoSerieIndicadorInicial(dto, queryFromWhere);
 
         const sql = `${CREATE_TEMP_TABLE} SELECT
+        pdm.nome as pdm_nome,
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -251,8 +255,8 @@ export class IndicadoresService implements ReportableService {
                 }
 
                 await this.streamRowsInto(null, stream, prismaTxn);
-            } else if (dto.tipo == 'Mensal' && dto.mes){
-                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano,dto.mes);
+            } else if (dto.tipo == 'Mensal' && dto.mes) {
+                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
                 await this.streamRowsInto(null, stream, prismaTxn);
             }
         });
@@ -342,7 +346,7 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private async rodaQueryMensalAnalitico(prismaTxn: Prisma.TransactionClient, sql: string, ano: number, mes:number) {
+    private async rodaQueryMensalAnalitico(prismaTxn: Prisma.TransactionClient, sql: string, ano: number, mes: number) {
         await prismaTxn.$queryRawUnsafe(
             sql
                 .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
@@ -388,6 +392,7 @@ export class IndicadoresService implements ReportableService {
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        left join pdm on pdm.id = meta.pdm_id or m2.pdm_id
         where v.regiao_id is not null`;
 
         if (Array.isArray(dto.regioes)) {
@@ -398,6 +403,7 @@ export class IndicadoresService implements ReportableService {
         const anoInicial = await this.capturaAnoSerieVariavelInicial(dto, queryFromWhere);
 
         const sql = `${CREATE_TEMP_TABLE} SELECT
+        pdm.nome as pdm_nome,
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -479,8 +485,8 @@ export class IndicadoresService implements ReportableService {
                 }
 
                 await this.streamRowsInto(regioes, stream, prismaTxn);
-            }else if (dto.tipo == 'Mensal' && dto.mes){
-                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano,dto.mes);
+            } else if (dto.tipo == 'Mensal' && dto.mes) {
+                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
                 await this.streamRowsInto(regioes, stream, prismaTxn);
             }
         });
@@ -539,6 +545,8 @@ export class IndicadoresService implements ReportableService {
             { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
             { value: 'indicador.id', label: 'ID do Indicador' },
         ];
+
+        if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'meta.pdm_nome', label: 'Plano Setorial' });
 
         if (linhas.length) {
             const json2csvParser = new Parser({
@@ -647,6 +655,7 @@ export class IndicadoresService implements ReportableService {
 
             for (const row of data) {
                 stream.push({
+                    pdm_nome: row.pdm_nome,
                     indicador: {
                         codigo: row.indicador_codigo,
                         titulo: row.indicador_titulo,

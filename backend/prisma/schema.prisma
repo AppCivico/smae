@@ -3372,6 +3372,7 @@ enum FonteRelatorio {
     PSOrcamento
     CasaCivilAtvPendentes
     PSMonitoramentoMensal
+    PSIndicadores
 }
 
 model Relatorio {
