@@ -195,7 +195,12 @@ export class PdmService {
 
         if (
             tipo == 'PS' &&
-            user.hasSomeRoles(['PS.ponto_focal', 'PS.admin_cp', 'PS.tecnico_cp', 'CadastroPS.administrador'])
+            user.hasSomeRoles([
+                'CadastroMetaPS.listar',
+                'CadastroPS.administrador',
+                'CadastroPS.administrador_no_orgao',
+                'SMAE.GrupoVariavel.participante',
+            ])
         ) {
             andList.push({
                 tipo: 'PS',
@@ -213,7 +218,7 @@ export class PdmService {
                 // cache warmup
                 const collab = await user.getEquipesColaborador(this.prisma);
 
-                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'PS.admin_cp'])) {
+                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
                     this.logger.log('Usuário com permissão total em PS no órgão');
 
                     const orgaoId = user.orgao_id;
@@ -233,7 +238,7 @@ export class PdmService {
                     });
                 }
 
-                if (user.hasSomeRoles(['PS.tecnico_cp'])) {
+                if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
                     this.logger.log('Usuário com permissão total em PS no CP');
 
                     orList.push({
@@ -248,7 +253,7 @@ export class PdmService {
                     });
                 }
 
-                if (user.hasSomeRoles(['PS.admin_cp'])) {
+                if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
                     this.logger.log('Usuário com permissão total em PS no CP');
 
                     orList.push({

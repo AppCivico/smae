@@ -47,7 +47,9 @@ export class PessoaController {
         'ProjetoMDO.administrador_no_orgao',
         'CadastroPS.administrador_no_orgao',
         'CadastroPS.administrador',
-        'PS.admin_cp',
+        'SMAE.GrupoVariavel.participante', // entrando no lugar de 'PS.admin_cp'/PS.tecnico_cp'/PS.ponto_focal'
+        'CadastroMetaPS.listar',
+        'PS.admin_cp', // mantendo por enquanto para apresentação
         'PS.tecnico_cp',
         'PS.ponto_focal',
     ])
@@ -77,7 +79,9 @@ export class PessoaController {
         'CadastroTransferencia.listar',
         'CadastroPS.administrador_no_orgao',
         'CadastroPS.administrador',
-        'PS.admin_cp',
+        'SMAE.GrupoVariavel.participante', // entrando no lugar de 'PS.admin_cp'/PS.tecnico_cp'/PS.ponto_focal'
+        'CadastroMetaPS.listar',
+        'PS.admin_cp', // mantendo por enquanto para apresentação
         'PS.tecnico_cp',
         'PS.ponto_focal',
         ...PROJETO_READONLY_ROLES,
