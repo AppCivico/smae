@@ -587,11 +587,13 @@ const atualizarNomePerfil = (nomeCorrente: string, nomesAnterioes: string[]) => 
     return nomeCorrente;
 };
 
-const PerfilAcessoConfig: {
+type PerfilConfigArray = {
     nome: string;
     descricao: string;
     privilegios: ListaDePrivilegios[] | false;
-}[] = [
+}[];
+
+const PerfilAcessoConfig: PerfilConfigArray = [
     // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
     // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
     {
@@ -647,65 +649,6 @@ const PerfilAcessoConfig: {
     },
 
     {
-        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', [
-            'Administrador Geral do Plano Setorial',
-        ]),
-        descricao:
-            'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
-        privilegios: [
-            'CadastroPS.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
-            'CadastroVariavelGlobal.administrador',
-            ...PSCadastroBasico, // Tema, Tags, etc...
-            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
-        ],
-    },
-
-    {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
-        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
-        privilegios: [
-            'PS.admin_cp',
-            'CadastroVariavelGlobal.administrador',
-            ...PSCadastroBasico, // Tema, Tags, etc...
-            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
-        ],
-    },
-
-    {
-        nome: atualizarNomePerfil('Ponto Focal Setorial', []),
-        descricao: '',
-        privilegios: false,
-    },
-
-    {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Pode editar e criar plano setorial no órgão administrador em que faz parte.',
-        privilegios: [
-            'PS.admin_cp',
-            'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
-            'CadastroVariavelGlobal.administrador_no_orgao',
-            ...PSCadastroBasico, // Tema, Tags, etc...
-            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
-        ],
-    },
-
-    {
-        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),
-        descricao: '',
-        privilegios: false,
-    },
-
-    {
-        nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
-        descricao: 'Pode criar e editar usuários no mesmo órgão',
-        privilegios: [
-            'CadastroPessoa.inserir',
-            'CadastroPessoa.editar',
-            'CadastroPessoa.inativar',
-            'CadastroPessoa.ativar',
-        ],
-    },
-    {
         nome: 'Ponto Focal',
         descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
         privilegios: ['PDM.ponto_focal', 'CadastroMeta.listar', 'CadastroPainel.visualizar'],
@@ -720,23 +663,11 @@ const PerfilAcessoConfig: {
         privilegios: PrivRespNaCp,
     },
     {
-        nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial', [
-            'Responsável por meta na CP',
-        ]),
-        descricao:
-            'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
-        privilegios: PrivRespNaCpPS,
-    },
-    {
         nome: atualizarNomePerfil('Orçamento - Metas', ['Orçamento']),
         descricao: 'Pode criar orçamento para as metas que tem acesso.',
         privilegios: ['CadastroMeta.orcamento'],
     },
-    {
-        nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
-        descricao: 'Pode criar orçamento para as metas que tem acesso.',
-        privilegios: ['CadastroMetaPS.orcamento'],
-    },
+
     {
         nome: 'Orçamento - Projetos',
         descricao: 'Pode criar orçamento para os projetos que tem acesso.',
@@ -965,6 +896,86 @@ const PerfilAcessoConfig: {
             'CadastroCronogramaTransferencia.listar',
         ],
     },
+];
+
+// Perfis de Plano Setoriais
+PerfilAcessoConfig.push(
+    {
+        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', [
+            'Administrador Geral do Plano Setorial',
+        ]),
+        descricao:
+            'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
+        privilegios: [
+            'CadastroPS.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
+            'CadastroVariavelGlobal.administrador',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
+
+    {
+        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
+        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroVariavelGlobal.administrador',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
+
+    {
+        nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
+        descricao: 'Pode editar e criar plano setorial no órgão administrador em que faz parte.',
+        privilegios: [
+            'PS.admin_cp',
+            'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            ...PSCadastroBasico, // Tema, Tags, etc...
+            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
+
+    {
+        nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
+        descricao: 'Pode criar e editar usuários no mesmo órgão',
+        privilegios: [
+            'CadastroPessoa.inserir',
+            'CadastroPessoa.editar',
+            'CadastroPessoa.inativar',
+            'CadastroPessoa.ativar',
+        ],
+    },
+    {
+        nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
+        descricao: 'Pode criar orçamento para as metas que tem acesso.',
+        privilegios: ['CadastroMetaPS.orcamento'],
+    },
+
+    {
+        nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial', [
+            'Responsável por meta na CP',
+        ]),
+        descricao:
+            'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+        privilegios: PrivRespNaCpPS,
+    },
+
+    {
+        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),
+        descricao: '',
+        privilegios: false,
+    },
+    {
+        nome: atualizarNomePerfil('Ponto Focal Setorial', []),
+        descricao: '',
+        privilegios: false,
+    }
+);
+
+// Remover os perfis que não são mais utilizados
+PerfilAcessoConfig.push(
     removerNomePerfil('Administrador Coordenadoria de Planejamento Setorial'),
     removerNomePerfil('Ponto Focal Setorial'),
     removerNomePerfil('Técnico CP'),
@@ -976,8 +987,8 @@ const PerfilAcessoConfig: {
     removerNomePerfil('Administrador CP'),
     removerNomePerfil('Coordenadoria de Planejamento'),
     removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
-    removerNomePerfil('Responsável por meta na CP'),
-];
+    removerNomePerfil('Responsável por meta na CP')
+);
 
 async function main() {
     if (atualizacoesPerfil.length) await Promise.all(atualizacoesPerfil);
