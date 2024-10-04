@@ -952,7 +952,9 @@ PerfilAcessoConfig.push(
         privilegios: false,
     },
     {
-        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', []),
+        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', [
+            'Administrador Coordenadoria de Planejamento',
+        ]),
         descricao: '',
         privilegios: false,
     },
