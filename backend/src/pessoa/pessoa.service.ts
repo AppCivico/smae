@@ -628,7 +628,8 @@ export class PessoaService {
                         );
                     }
 
-                    logger.log(`Novos privilégios: ${JSON.stringify(Array.from(newPrivileges))}`);
+                    if (newPrivileges.size)
+                        logger.log(`Novos privilégios: ${JSON.stringify(Array.from(newPrivileges))}`);
 
                     await Promise.all(promises);
 
