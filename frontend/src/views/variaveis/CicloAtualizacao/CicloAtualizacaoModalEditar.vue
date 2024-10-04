@@ -402,7 +402,7 @@ function obterVariavelInicial() {
   };
 }
 
-const dataCicloAtualizacao = computed<string>(() => (
+const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
 ));
 
@@ -485,7 +485,8 @@ const submit = ({ aprovar = false }) => {
       data_referencia: dataReferencia,
       uploads: arquivosLocais.value,
       valores: valores.variaveis_dados || [],
-      pedido_complementacao: valores.pedido_complementacao,
+      pedido_complementacao: valores.solicitar_complementacao
+        ? valores.pedido_complementacao : undefined,
     });
 
     $emit('enviado');

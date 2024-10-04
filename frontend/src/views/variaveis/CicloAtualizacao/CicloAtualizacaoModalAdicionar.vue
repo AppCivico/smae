@@ -304,7 +304,7 @@ const variaveisCategoricasValores = computed(() => {
   return variaveisCategoricasStore.emFoco.valores;
 });
 
-const dataCicloAtualizacao = computed<string>(() => (
+const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
 ));
 
@@ -377,7 +377,8 @@ const submit = ({ aprovar = false }) => {
         valor_realizado: valores.valor_realizado,
         valor_realizado_acumulado: valores.valor_realizado_acumulado,
       }],
-      pedido_complementacao: valores.pedido_complementacao,
+      pedido_complementacao: valores.solicitar_complementacao
+        ? valores.pedido_complementacao : undefined,
     });
 
     $emit('enviado');
