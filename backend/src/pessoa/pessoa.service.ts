@@ -404,8 +404,34 @@ export class PessoaService {
             },
             include: {
                 pessoa_fisica: true,
+                PessoaPerfil: {
+                    include: {
+                        perfil_acesso: {
+                            include: {
+                                perfil_privilegio: {
+                                    include: {
+                                        privilegio: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
+
+        const targetUserPrivileges = new Set(
+            self.PessoaPerfil.flatMap((pp) => pp.perfil_acesso.perfil_privilegio.map((priv) => priv.privilegio.codigo))
+        ) as Set<ListaDePrivilegios>;
+        const editingUserPrivileges = new Set(user.privilegios);
+
+        if (!user.hasSomeRoles(['SMAE.superadmin'])) {
+            for (const priv of targetUserPrivileges) {
+                if (!editingUserPrivileges.has(priv)) {
+                    throw new BadRequestException('Você não pode editar um usuário com mais privilégios que você.');
+                }
+            }
+        }
 
         const now = new Date(Date.now());
 
