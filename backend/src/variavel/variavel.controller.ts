@@ -140,6 +140,7 @@ export class VariavelGlobalController {
     public static WritePerm: ListaDePrivilegios[] = [
         'CadastroVariavelGlobal.administrador_no_orgao',
         'CadastroVariavelGlobal.administrador',
+        'SMAE.GrupoVariavel.participante', // ʕ•ᴥ•ʔ
     ];
 
     constructor(private readonly variavelService: VariavelService) {}
