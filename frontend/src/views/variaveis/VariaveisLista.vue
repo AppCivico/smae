@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
@@ -8,9 +11,6 @@ import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGl
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
-import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -90,6 +90,7 @@ watchEffect(() => {
     <FiltroDeDeVariaveis
       :aria-busy="chamadasPendentes.lista"
       :valores-iniciais="{
+        ...$route.query,
         ipp: $route.query.ipp || 100,
         nivel_regionalizacao: $route.query.nivel_regionalizacao,
         ordem_coluna: $route.query.codigo || 'codigo',
@@ -148,7 +149,11 @@ watchEffect(() => {
       </td>
       <td>
         <button
-          v-if="!variavel?.possui_variaveis_filhas && variavel?.tipo !== 'Calculada'"
+          v-if="
+            variavel?.pode_editar_valor
+              && !variavel?.possui_variaveis_filhas
+              && variavel?.tipo !== 'Calculada'
+          "
           type="button"
           class="tipinfo tprimary like-a__text"
           @click="abrirEdicaoValores(variavel.id, 'Realizado')"
@@ -163,7 +168,7 @@ watchEffect(() => {
 
       <td>
         <router-link
-          v-if="variavel?.pode_editar"
+          v-if="variavel?.pode_editar_valor && variavel?.pode_editar"
           :to="{ name: 'variaveisEditar', params: { variavelId: variavel.id } }"
           class="tprimary"
         >
