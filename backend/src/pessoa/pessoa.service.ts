@@ -592,14 +592,44 @@ export class PessoaService {
                         },
                     });
 
+                    const newPrivileges = new Set<string>();
+
                     for (const perm of updatePessoaDto.perfil_acesso_ids) {
-                        // double check, just in case
                         if (perfisVisiveis.includes(perm) == false)
                             throw new BadRequestException(`Perm ${perm} não é permitida para o seu sistema`);
+
+                        const perfilAcesso = await prismaTx.perfilAcesso.findUnique({
+                            where: { id: perm },
+                            include: {
+                                perfil_privilegio: {
+                                    include: {
+                                        privilegio: true,
+                                    },
+                                },
+                            },
+                        });
+
+                        if (!perfilAcesso) throw new BadRequestException(`Perfil de acesso ${perm} não encontrado`);
+
+                        for (const priv of perfilAcesso.perfil_privilegio) {
+                            if (
+                                !user.hasSomeRoles(['SMAE.superadmin']) &&
+                                !editingUserPrivileges.has(priv.privilegio.codigo as ListaDePrivilegios)
+                            ) {
+                                throw new ForbiddenException(
+                                    `Você não pode adicionar o privilégio ${priv.privilegio.codigo} que você não possui.`
+                                );
+                            }
+                            newPrivileges.add(priv.privilegio.codigo);
+                        }
+
                         promises.push(
                             prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
                         );
                     }
+
+                    logger.log(`Novos privilégios: ${JSON.stringify(Array.from(newPrivileges))}`);
+
                     await Promise.all(promises);
 
                     const privDepoisUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
