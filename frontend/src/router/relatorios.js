@@ -223,7 +223,7 @@ export default {
         {
           component: NovoSemestralOuAnual,
           path: 'novo',
-          name: 'novoRelatórioSemestralOuAnual',
+          name: 'pdm.novoRelatórioSemestralOuAnual',
           meta: {
             título: 'Novo relatório semestral ou anual',
             rotaDeEscape: 'pdm.RelatóriosSemestraisOuAnuais',
@@ -676,10 +676,10 @@ export default {
         {
           path: '',
           name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
-          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosSemestraisOuAnuaisPS.vue'),
+          component: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'), //
         },
         {
-          component: () => import('@/views/relatorios/planosSetoriais/NovoSemestralOuAnualPS.vue'),
+          component: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
           path: 'novo',
           name: 'planoSetorial.novoRelatórioSemestralOuAnual',
           meta: {

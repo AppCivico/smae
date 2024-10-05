@@ -1,14 +1,15 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import TabelaDeSemestraisOuAnuais from '@/components/relatorios/TabelaDeSemestraisOuAnuais.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
+const route = useRoute();
 const relatóriosStore = useRelatoriosStore();
-const fonte = useRoute().meta.fonteParaRelatório;
+const fonte = route.meta.fonteParaRelatório;
 
 relatóriosStore.$reset();
 relatóriosStore.getAll({ fonte });
@@ -19,23 +20,26 @@ relatóriosStore.getAll({ fonte });
     <hr class="ml2 f1">
     <router-link
       v-if="temPermissãoPara('Reports.executar.') "
-      :to="{ name: 'novoRelatórioSemestralOuAnual' }"
+      :to="{ name: `${route.meta.entidadeMãe}.novoRelatórioSemestralOuAnual` }"
       class="btn big ml2"
     >
       Novo relatório
     </router-link>
   </div>
+
   <p class="texto--explicativo">
+    SMAE gera um conjunto de 2 planilhas contendo os indicadores da meta e de
+    seus desdobramentos e valores das variáveis regionalizadas. A versão
+    analítica retorna todos os valores das séries, desde o inicio da medição até
+    o periodo informado, e a consolidada somente os valores consolidados do
+    final de cada semestre/ano.
+  </p>
+  <!-- <p class="texto--explicativo">
     SMAE gera um conjunto de 2 planilhas contendo os indicadores da meta e de
     seus desdobramentos e valores das variáveis regionalizadas. A versão
     analítica retorna todos os valores das séries e a consolidada somente os
     valores consolidados do final de cada semestre/ano
-  </p>
-  <!--div class="flex center mb2">
-      <div class="f2 search">
-          <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
-      </div>
-  </div-->
+  </p> -->
 
   <TabelaDeSemestraisOuAnuais class="mb1" />
 
