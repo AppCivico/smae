@@ -379,7 +379,7 @@ export class VariavelCicloService {
 
                     await this.marcaLiberacaoEnviada(cicloCorrente.variavel.id, prismaTxn);
                 } else if (dto.pedido_complementacao) {
-                    await this.moveFase(cicloCorrente.variavel.id, 'Preenchimento', prismaTxn, user);
+                    await this.moveFase(cicloCorrente.variavel.id, 'Validacao', prismaTxn, user);
                     // cria o pedido após mover a fase
                     await this.criaPedidoComplementacao(
                         cicloCorrente.variavel.id,
@@ -402,15 +402,7 @@ export class VariavelCicloService {
 
             const variaveisIds: number[] = [dto.variavel_id];
             for (const valor of dto.valores) {
-                // validação sempre pula a atualização dos valores
-                if (cicloCorrente.fase == 'Validacao') continue;
-
                 if (valor.variavel_id) variaveisIds.push(valor.variavel_id);
-
-                // em preenchimento, pode atualizar os valores, mas em liberação não, apenas o push dos id's
-                // para recalcular os indicadores (só necessário na fase de liberação quando aprova, pra falar vdd)
-
-                if (cicloCorrente.fase !== 'Preenchimento') continue;
 
                 const variavelInfo = await this.variavelService.loadVariavelComCategorica(
                     'Global',
@@ -953,13 +945,22 @@ export class VariavelCicloService {
             },
         });
 
+        // a fase corrente já é a nova fase que retrocedeu
+        const faseCorrente = await prismaTxn.variavelCicloCorrente.findFirstOrThrow({
+            where: { variavel_id: variavelId },
+            select: { fase: true },
+        });
         // ao retroceder de fase, o apaga as analises das fases anteriores
         await prismaTxn.variavelGlobalCicloAnalise.updateMany({
             where: {
                 variavel_id: variavelId,
                 referencia_data: dataReferencia,
+                AND: {
+                    // nunca apaga o Preenchimento
+                    NOT: { fase: 'Preenchimento' },
+                },
                 NOT: {
-                    fase: 'Preenchimento',
+                    fase: faseCorrente.fase,
                 },
                 ultima_revisao: true,
             },
