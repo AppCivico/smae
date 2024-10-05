@@ -210,6 +210,7 @@ export default {
       path: 'semestral-ou-anual',
       meta: {
         entidadeMãe: 'pdm',
+        título: 'Relatórios Semestrais e Anuais',
         fonteParaRelatório: 'Indicadores',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PDM',
@@ -668,6 +669,7 @@ export default {
       meta: {
         entidadeMãe: 'planoSetorial',
         fonteParaRelatório: 'PSIndicadores',
+        título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
       },
