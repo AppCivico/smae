@@ -545,7 +545,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
         <dl class="f1">
           <dt class="t16 w700 mb05 tamarelo">
-            Nome do Programa
+            Nome do programa
           </dt>
           <dd>
             {{ transferenciaEmFoco?.nome_programa || '-' }}
@@ -712,7 +712,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <div class="flex g2 center mt3 mb2">
     <h3 class="w700 tc600 t20 mb0">
-      Dados bancários secretaria fim
+      Dados Bancários Secretaria Fim
     </h3>
     <hr class="f1">
   </div>

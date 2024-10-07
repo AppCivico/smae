@@ -99,7 +99,7 @@ onUnmounted(() => {
             </dl>
             <dl class="f1">
               <dt class="t16 w700 mb05 tamarelo">
-                Status Atual
+                Status atual
               </dt>
               <dd>
                 {{ buscaStatus(distribuicao.historico_status) }}
