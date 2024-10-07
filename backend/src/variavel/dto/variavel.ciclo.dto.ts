@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { VariavelFase } from '@prisma/client';
+import { Periodicidade, VariavelFase } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
@@ -75,6 +75,9 @@ export class VariavelGlobalCicloDto {
     id: number;
     codigo: string;
     titulo: string;
+
+    @ApiProperty({ type: String })
+    periodicidade: Periodicidade;
     fase: VariavelFase;
 
     @ApiProperty({ type: 'string', format: 'date' })

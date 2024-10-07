@@ -195,6 +195,7 @@ export class VariavelCicloService {
                         id: true,
                         titulo: true,
                         codigo: true,
+                        periodicidade: true,
                         VariavelGrupoResponsavelEquipe: {
                             where: {
                                 removido_em: null,
@@ -236,6 +237,7 @@ export class VariavelCicloService {
             return {
                 id: v.variavel.id,
                 titulo: v.variavel.titulo,
+                periodicidade: v.variavel.periodicidade,
                 fase: v.fase,
                 proximo_periodo_abertura: Date2YMD.toString(v.proximo_periodo_abertura),
                 ultimo_periodo_valido: Date2YMD.toString(v.ultimo_periodo_valido),
