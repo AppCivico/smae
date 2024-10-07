@@ -455,9 +455,8 @@ iniciar();
               </tbody>
             </table>
           </div>
-
-          <PlanosMetasRelacionados :relacionamentos="relacionadosMeta?.metas || []" />
         </template>
+        <PlanosMetasRelacionados :relacionamentos="relacionadosMeta?.metas || []" />
       </template>
       <template v-else-if="singleMeta.loading">
         <div class="p1">
