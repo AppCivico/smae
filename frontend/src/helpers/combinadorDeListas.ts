@@ -34,6 +34,17 @@ export default function combinadorDeListas(
     return '';
   }
 
+  // Se a propriedade tiver um "." quer dizer que ela está dentro de um objeto
+  // que deve ser um array, então descemos mais um nível para pegar o valor
+  // da propriedade
+  if (propriedade?.includes('.')) {
+    const [propriedadePrincipal, propriedadeSecundária] = propriedade.split('.');
+    return join(
+      array.map((obj) => obj[propriedadePrincipal as keyof object][propriedadeSecundária as keyof object]),
+      separador,
+    );
+  }
+
   // Se for um array de objetos, combina os valores das propriedades
   if (propriedade) {
     return join(array.map((obj) => obj[propriedade as keyof object]), separador);
