@@ -1,7 +1,7 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import PdmMetasRelacionados from '@/components/PdmMetasRelacionados.vue';
+import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -286,7 +286,7 @@ iniciar();
         </table>
       </div>
 
-      <PdmMetasRelacionados :relacionamentos="relacionadosAtividade?.metas" />
+      <PlanosMetasRelacionados :relacionamentos="relacionadosAtividade?.metas" />
     </template>
     <template v-else-if="singleAtividade.loading">
       <div class="p1">

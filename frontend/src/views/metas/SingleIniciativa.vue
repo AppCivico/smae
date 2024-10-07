@@ -1,7 +1,7 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import PdmMetasRelacionados from '@/components/PdmMetasRelacionados.vue';
+import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
@@ -393,7 +393,7 @@ iniciar();
           </table>
         </div>
 
-        <PdmMetasRelacionados :relacionamentos="relacionadosIniciativa?.metas" />
+        <PlanosMetasRelacionados :relacionamentos="relacionadosIniciativa?.metas" />
 
         <div
           v-if="Atividades[iniciativa_id].loading"
