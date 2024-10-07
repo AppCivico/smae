@@ -39,7 +39,7 @@ class EmpenhosLiquidacoes:
             'codModalidade', 
             'codElemento', 
             'codFonteRecurso',
-            'txtDescricaoFonteRecurso'
+            'txDescricaoFonteRecurso'
             )
 
         return keys
@@ -50,7 +50,7 @@ class EmpenhosLiquidacoes:
         keys = (
             'valLiquidado',
             'valEmpenhadoLiquido',
-            'txtDescricaoProjetoAtividade'
+            'txDescricaoProjetoAtividade'
         )
 
         return keys
@@ -81,7 +81,7 @@ class EmpenhosLiquidacoes:
             dotacao = self.dotacao_txt(d)
             parsed[dotacao]['empenho_liquido'] += float(d['valEmpenhadoLiquido'])
             parsed[dotacao]['val_liquidado'] += float(d['valLiquidado'])
-            parsed[dotacao]['projeto_atividade'] = str(d['txtDescricaoProjetoAtividade'])
+            parsed[dotacao]['projeto_atividade'] = str(d['txDescricaoProjetoAtividade'])
             parsed[dotacao]['dotacao'] = dotacao
             if 'codProcesso' in d:
                 parsed[dotacao]['processo'] = d['codProcesso']

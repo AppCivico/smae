@@ -17,6 +17,8 @@ class Dao:
         mdata = self.__get_mdata(resp)
 
         status = mdata.get('txtStatus', 'missing txtStatus mdata')
+        if status.lower()!='sem resposta':
+            raise EmptyData('Não há registros.')
         if status.lower()!='ok':
             raise HTTPError(f'Erro no status da resposta: {status}')
 
