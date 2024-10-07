@@ -1,4 +1,5 @@
 import modulos from '@/consts/modulosDoSistema';
+import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -12,6 +13,7 @@ export const useAuthStore = defineStore({
     reducedtoken: null,
     returnUrl: null,
     permissions: JSON.parse(localStorage.getItem('permissions')),
+    moduloDaRotaAnterior: '',
   }),
   actions: {
     async login(carga) {
@@ -145,27 +147,9 @@ export const useAuthStore = defineStore({
         return this.sistemaEscolhido;
       }
 
-      switch (this.route.meta.entidadeMãe) {
-        case 'projeto':
-        case 'portfolio':
-          return 'Projetos';
-
-        case 'mdo':
-        case 'obras':
-          return 'MDO';
-
-        case 'pdm':
-          return 'PDM';
-
-        case 'TransferenciasVoluntarias':
-          return 'CasaCivil';
-
-        case 'planoSetorial':
-          return 'PlanoSetorial';
-
-        default:
-          return this.sistemaEscolhido;
-      }
+      return retornarModuloDeEntidadeMae(this.route.meta.entidadeMãe)
+        || this.moduloDaRotaAnterior
+        || this.sistemaEscolhido;
     },
     dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => modulos[sistemaEscolhido] || {},
     estouAutenticada: ({ token }) => !!token,
