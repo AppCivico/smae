@@ -151,7 +151,7 @@ export const useAuthStore = defineStore({
         || this.moduloDaRotaAnterior
         || this.sistemaEscolhido;
     },
-    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => modulos[sistemaEscolhido] || {},
+    dadosDoSistemaEscolhido: ({ sistemaCorrente }) => modulos[sistemaCorrente] || {},
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissoes) => (Array.isArray(permissoes)
       ? permissoes

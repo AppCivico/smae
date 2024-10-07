@@ -8,10 +8,10 @@ const router = useRouter();
 
 const authStore = useAuthStore();
 const {
-  sistemaEscolhido,
+  sistemaCorrente,
 } = storeToRefs(authStore);
 
-switch (sistemaEscolhido.value) {
+switch (sistemaCorrente.value) {
   case 'PDM':
     router.replace({
       name: 'EnviosOrçamentosMetas',
@@ -31,7 +31,7 @@ switch (sistemaEscolhido.value) {
     break;
 
   default:
-    throw new Error(`Sistema não tratado: ${sistemaEscolhido.value}`);
+    throw new Error(`Sistema não tratado: ${sistemaCorrente.value}`);
 }
 </script>
 <template>
