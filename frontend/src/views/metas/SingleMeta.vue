@@ -69,7 +69,7 @@ iniciar();
   <div>
     <MigalhasDeMetas class="mb1" />
 
-    <div class="flex spacebetween center mb2">
+    <header class="flex spacebetween center mb2">
       <div>
         <div class="t12 uc w700 tamarelo mb1">
           Meta
@@ -95,7 +95,7 @@ iniciar();
       >
         Editar
       </SmaeLink>
-    </div>
+    </header>
 
     <div class="boards">
       <template v-if="singleMeta.id">
