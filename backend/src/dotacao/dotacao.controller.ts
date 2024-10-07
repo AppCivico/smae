@@ -3,11 +3,12 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
-import { AnoDotacaoDto, AnoDotacaoProcessoDto } from './dto/dotacao.dto';
+import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto } from './dto/dotacao.dto';
 import {
     ListValorRealizadoDotacaoDto,
+    ListValorRealizadoNotaEmpenhoDto,
     ListValorRealizadoProcessoDto,
-    ValorPlanejadoDto
+    ValorPlanejadoDto,
 } from './entities/dotacao.entity';
 
 const summary = 'Consulta SOF para receber empenho e liquidação para incluir Orçamento Realizado';
@@ -70,4 +71,21 @@ export class DotacaoController {
         };
     }
 
+    @ApiTags('Orçamento - Realizado')
+    @Patch('valor-realizado-nota-empenho')
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary,
+        description:
+            'Realiza a busca e cache dos dados de dotação a partir da Nota de Empenho, utilizando sempre o mês mais atualizado possível.\n\n' +
+            'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
+            '**Retorna sempre apenas uma linha, se voltar mais de uma no SOF, retorna erro 400**',
+    })
+    async valorRealizadoDotacaoNotaEmpenho(
+        @Body() dto: AnoDotacaoNotaEmpenhoDto
+    ): Promise<ListValorRealizadoNotaEmpenhoDto> {
+        return {
+            linhas: await this.notaEmpenhoService.valorRealizadoNotaEmpenho(dto),
+        };
+    }
 }
