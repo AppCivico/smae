@@ -18,13 +18,13 @@ relatóriosStore.getAll({ fonte });
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       v-if="temPermissãoPara('Reports.executar.') "
-      :to="{ name: `${route.meta.entidadeMãe}.novoRelatórioSemestralOuAnual` }"
+      :to="{name: '.novoRelatórioSemestralOuAnual'}"
       class="btn big ml2"
     >
       Novo relatório
-    </router-link>
+    </SmaeLink>
   </div>
 
   <p class="texto--explicativo">
