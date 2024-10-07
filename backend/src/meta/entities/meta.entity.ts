@@ -63,7 +63,7 @@ export type MetaPdmRelacionamentoDirecao = keyof typeof MetaPdmRelacionamentoDir
 
 export class MetaPdmDto {
     pdm_id: number;
-    pdm_descricao: string;
+    pdm_nome: string;
     pdm_rotulo_iniciativa: string;
     pdm_rotulo_atividade: string;
 

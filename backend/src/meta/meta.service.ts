@@ -1343,7 +1343,7 @@ export class MetaService {
         for (const meta of metas) {
             const metaPdm: MetaPdmDto = {
                 pdm_id: meta.pdm.id,
-                pdm_descricao: meta.pdm.descricao ?? '',
+                pdm_nome: meta.pdm.nome ?? '',
                 pdm_rotulo_iniciativa: meta.pdm.rotulo_iniciativa,
                 pdm_rotulo_atividade: meta.pdm.rotulo_atividade,
                 meta_id: meta.id,
@@ -1362,7 +1362,7 @@ export class MetaService {
             if (!metaPdm) {
                 metaPdm = {
                     pdm_id: iniciativa.meta.pdm.id,
-                    pdm_descricao: iniciativa.meta.pdm.descricao ?? '',
+                    pdm_nome: iniciativa.meta.pdm.nome ?? '',
                     pdm_rotulo_iniciativa: iniciativa.meta.pdm.rotulo_iniciativa,
                     pdm_rotulo_atividade: iniciativa.meta.pdm.rotulo_atividade,
                     meta_id: iniciativa.meta.id,
@@ -1390,7 +1390,7 @@ export class MetaService {
             if (!metaPdm) {
                 metaPdm = {
                     pdm_id: atividade.iniciativa.meta.pdm.id,
-                    pdm_descricao: atividade.iniciativa.meta.pdm.descricao ?? '',
+                    pdm_nome: atividade.iniciativa.meta.pdm.nome ?? '',
                     pdm_rotulo_iniciativa: atividade.iniciativa.meta.pdm.rotulo_iniciativa,
                     pdm_rotulo_atividade: atividade.iniciativa.meta.pdm.rotulo_atividade,
                     meta_id: atividade.iniciativa.meta.id,
@@ -1565,7 +1565,7 @@ export class MetaService {
                 pdm: {
                     select: {
                         id: true,
-                        descricao: true,
+                        nome: true,
                         tipo: true,
                         rotulo_atividade: true,
                         rotulo_iniciativa: true,
@@ -1602,7 +1602,7 @@ export class MetaService {
                         pdm: {
                             select: {
                                 id: true,
-                                descricao: true,
+                                nome: true,
                                 tipo: true,
                                 rotulo_atividade: true,
                                 rotulo_iniciativa: true,
@@ -1642,7 +1642,7 @@ export class MetaService {
                                 pdm: {
                                     select: {
                                         id: true,
-                                        descricao: true,
+                                        nome: true,
                                         tipo: true,
                                         rotulo_atividade: true,
                                         rotulo_iniciativa: true,
