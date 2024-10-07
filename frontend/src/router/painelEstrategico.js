@@ -1,4 +1,4 @@
-import PainelEstrategicoRaiz from '@/views/gp.PainelEstrategico/PainelEstrategicoRaiz.vue';
+import PainelEstrategicoRaiz from '@/views/gp.painelEstrategico/PainelEstrategicoRaiz.vue';
 
 export default {
   path: '/painel-estrategico',
