@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DistribuicaoStatusTipo, Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
+import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -803,28 +803,12 @@ export class TransferenciaService {
                                     OR: [
                                         {
                                             status_base: {
-                                                tipo: {
-                                                    notIn: [
-                                                        DistribuicaoStatusTipo.Declinada,
-                                                        DistribuicaoStatusTipo.Cancelada,
-                                                        DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                        DistribuicaoStatusTipo.Redirecionada,
-                                                        DistribuicaoStatusTipo.Terminal,
-                                                    ],
-                                                },
+                                                valor_distribuicao_contabilizado: true,
                                             },
                                         },
                                         {
                                             status: {
-                                                tipo: {
-                                                    notIn: [
-                                                        DistribuicaoStatusTipo.Declinada,
-                                                        DistribuicaoStatusTipo.Cancelada,
-                                                        DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                        DistribuicaoStatusTipo.Redirecionada,
-                                                        DistribuicaoStatusTipo.Terminal,
-                                                    ],
-                                                },
+                                                valor_distribuicao_contabilizado: true,
                                             },
                                         },
                                     ],
@@ -1310,12 +1294,14 @@ export class TransferenciaService {
                                     select: {
                                         tipo: true,
                                         permite_novos_registros: true,
+                                        valor_distribuicao_contabilizado: true,
                                     },
                                 },
                                 status_base: {
                                     select: {
                                         tipo: true,
                                         permite_novos_registros: true,
+                                        valor_distribuicao_contabilizado: true,
                                     },
                                 },
                             },
@@ -1379,20 +1365,11 @@ export class TransferenciaService {
             esfera: row.esfera,
             valor_distribuido: row.distribuicao_recursos
                 .filter((e) => {
-                    const statusTipo: DistribuicaoStatusTipo | undefined =
-                        e.status[0]?.status?.tipo || e.status[0]?.status_base?.tipo;
-                    console.log('=======================================');
-                    console.log(e);
-                    console.log(statusTipo);
-                    console.log('=======================================');
-
-                    return (
-                        statusTipo != DistribuicaoStatusTipo.Declinada &&
-                        statusTipo != DistribuicaoStatusTipo.Redirecionada &&
-                        statusTipo != DistribuicaoStatusTipo.Cancelada &&
-                        statusTipo != DistribuicaoStatusTipo.ImpedidaTecnicamente &&
-                        statusTipo != DistribuicaoStatusTipo.Terminal
-                    );
+                    const statusRow = e.status[0];
+                    const valor_contabilizado = statusRow.status
+                        ? statusRow.status?.valor_distribuicao_contabilizado
+                        : statusRow.status_base?.valor_distribuicao_contabilizado;
+                    return valor_contabilizado;
                 })
                 .reduce((acc, curr) => acc + curr.valor.toNumber(), 0),
             parlamentares: row.parlamentar,

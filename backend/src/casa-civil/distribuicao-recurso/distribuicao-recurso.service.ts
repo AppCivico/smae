@@ -236,28 +236,12 @@ export class DistribuicaoRecursoService {
                                             OR: [
                                                 {
                                                     status_base: {
-                                                        tipo: {
-                                                            notIn: [
-                                                                DistribuicaoStatusTipo.Declinada,
-                                                                DistribuicaoStatusTipo.Cancelada,
-                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                                DistribuicaoStatusTipo.Redirecionada,
-                                                                DistribuicaoStatusTipo.Terminal,
-                                                            ],
-                                                        },
+                                                        valor_distribuicao_contabilizado: true,
                                                     },
                                                 },
                                                 {
                                                     status: {
-                                                        tipo: {
-                                                            notIn: [
-                                                                DistribuicaoStatusTipo.Declinada,
-                                                                DistribuicaoStatusTipo.Cancelada,
-                                                                DistribuicaoStatusTipo.ImpedidaTecnicamente,
-                                                                DistribuicaoStatusTipo.Redirecionada,
-                                                                DistribuicaoStatusTipo.Terminal,
-                                                            ],
-                                                        },
+                                                        valor_distribuicao_contabilizado: true,
                                                     },
                                                 },
                                             ],
@@ -1225,11 +1209,13 @@ export class DistribuicaoRecursoService {
                                                 status_base: {
                                                     select: {
                                                         tipo: true,
+                                                        valor_distribuicao_contabilizado: true,
                                                     },
                                                 },
                                                 status: {
                                                     select: {
                                                         tipo: true,
+                                                        valor_distribuicao_contabilizado: true,
                                                     },
                                                 },
                                             },
@@ -1250,14 +1236,7 @@ export class DistribuicaoRecursoService {
                                 console.log(statusConfig);
                                 console.log('\n==========================');
 
-                                return (
-                                    statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
-                                    statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
-                                    statusConfig?.tipo != DistribuicaoStatusTipo.Cancelado &&
-                                    statusConfig?.tipo != DistribuicaoStatusTipo.Redirecionada &&
-                                    statusConfig?.tipo != DistribuicaoStatusTipo.Declinada &&
-                                    statusConfig?.tipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
-                                );
+                                return statusConfig!.valor_distribuicao_contabilizado == true;
                             })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
@@ -1272,15 +1251,7 @@ export class DistribuicaoRecursoService {
                                     if (!statusUltimaRow) return true;
 
                                     const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-                                    console.log(statusConfig);
-                                    return (
-                                        statusConfig?.tipo != DistribuicaoStatusTipo.Terminal &&
-                                        statusConfig?.tipo != DistribuicaoStatusTipo.Cancelada &&
-                                        statusConfig?.tipo != DistribuicaoStatusTipo.Cancelado &&
-                                        statusConfig?.tipo != DistribuicaoStatusTipo.Redirecionada &&
-                                        statusConfig?.tipo != DistribuicaoStatusTipo.Declinada &&
-                                        statusConfig?.tipo != DistribuicaoStatusTipo.ImpedidaTecnicamente
-                                    );
+                                    return statusConfig!.valor_distribuicao_contabilizado == true;
                                 })
                         );
                         console.log(relParlamentar);
