@@ -1,8 +1,6 @@
-import PainelEstrategicoRaiz from '@/views/gp.painelEstrategico/PainelEstrategicoRaiz.vue';
-
 export default {
   path: '/painel-estrategico',
-  component: PainelEstrategicoRaiz,
+  component: () => import('@/views/gp.painelEstrategico/PainelEstrategicoRaiz.vue'),
   name: 'painelEstratégico',
 
   meta: {
