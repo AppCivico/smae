@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SmallModal from '@/components/SmallModal.vue';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
@@ -11,9 +14,6 @@ import { useVariaveisStore } from '@/stores/variaveis.store';
 import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const props = defineProps(['group']);
 
@@ -247,47 +247,6 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                       Suspensa do monitoramento físico em {{ dateToField(v.suspendida_em) }}
                     </div>
                   </div>
-                </div>
-
-                <div
-                  v-if="!v.etapa && temPermissãoPara([
-                    'CadastroMeta.administrador_no_pdm',
-                    'CadastroMetaPS.administrador_no_pdm'
-                  ])"
-                  class="f0 dropbtn right"
-                >
-                  <span class="tamarelo"><svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_more" /></svg></span>
-                  <ul>
-                    <li>
-                      <SmaeLink
-                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}`"
-                        class="tprimary"
-                      >
-                        Editar variável
-                      </SmaeLink>
-                    </li>
-                    <li>
-                      <SmaeLink
-                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/valores`"
-                        class="tprimary"
-                      >
-                        Valores previstos
-                      </SmaeLink>
-                    </li>
-                    <li>
-                      <!-- a perm de admin ta errada, provavelmente precisa colocar algo novo na api ou buscar admin/tec cp, ou meta.pode-editar -->
-                      <SmaeLink
-                        v-if="temPermissãoPara(['CadastroPessoa.administrador'])"
-                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
-                        class="tprimary"
-                      >
-                        Valores realizados retroativos
-                      </SmaeLink>
-                    </li>
-                  </ul>
                 </div>
               </div>
               <EvolucaoGraph :dataserie="Valores[v.id]" />
