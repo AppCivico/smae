@@ -1757,8 +1757,6 @@ export class TransferenciaService {
                 },
             });
 
-            await this.startWorkflow(transferencia_id, transferencia.workflow_id!, prismaTxn, user);
-
             // Inserindo row no histórico de alterações.
             await prismaTxn.transferenciaHistorico.create({
                 data: {
