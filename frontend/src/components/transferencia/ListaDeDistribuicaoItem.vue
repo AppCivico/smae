@@ -2,6 +2,7 @@
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dinheiro from '@/helpers/dinheiro';
 import dateToField from '@/helpers/dateToField';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import { storeToRefs } from 'pinia';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
@@ -121,6 +122,21 @@ onUnmounted(() => {
             </dt>
             <dd>
               {{ distribuicao.objeto || '-' }}
+            </dd>
+          </dl>
+          <dl class="mb2">
+            <dt class="t16 w700 mb05 tamarelo">
+              Parlamentares envolvidos
+            </dt>
+            <dd>
+              <template v-if="distribuicao.parlamentares.length > 0">
+                {{
+                  combinadorDeListas(distribuicao.parlamentares, null, 'parlamentar.nome_popular')
+                }}
+              </template>
+              <template v-else>
+                Nenhum parlamentar envolvido
+              </template>
             </dd>
           </dl>
         </div>
