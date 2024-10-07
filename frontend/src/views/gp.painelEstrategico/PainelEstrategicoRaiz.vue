@@ -1,14 +1,14 @@
 <script setup>
-import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { Dashboard } from '@/components';
+import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 
 </script>
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>Painel estratégico</h1>
+    <header class="flex spacebetween center mb2">
+      <TítuloDePágina />
       <hr class="ml2 f1">
-    </div>
+    </header>
     <TotalDeProjetos />
   </Dashboard>
 </template>
