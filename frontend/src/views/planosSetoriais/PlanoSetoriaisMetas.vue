@@ -21,7 +21,11 @@ const { emFoco, erros } = storeToRefs(planosSetoriaisStore);
   </ErrorComponent>
 
   <!-- Usando slots porque as rotas dessa parte sobrescrevem as `props` -->
-  <router-view v-slot="{ Component }">
+  <!-- Esperando o id porque há cargas síncronas no template `SingleMeta.vue` -->
+  <router-view
+    v-if="planosSetoriaisStore.emFoco?.id"
+    v-slot="{ Component }"
+  >
     <component :is="Component">
       <template #icone>
         <img
