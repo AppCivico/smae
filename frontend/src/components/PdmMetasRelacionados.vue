@@ -14,8 +14,8 @@
 
     <table class="tablemain">
       <col>
-      <col>
-      <col>
+      <col class="relacionamento__coluna-plano">
+      <col class="relacionamento__coluna-orgaos">
       <col>
       <col>
       <col>
@@ -49,17 +49,17 @@
               {{ relacionamento.tipo }}
             </template>
           </td>
-          <td>{{ relacionamento.pdm_descricao }}</td>
+          <td>{{ relacionamento.pdm_nome }}</td>
           <td>{{ combinadorDeListas(relacionamento.orgaos as Array<object>, ', ', 'sigla') }}</td>
           <td
-            :title="relacionamento.meta_titulo?.length > 36
+            :title="relacionamento.meta_titulo?.length > 64
               ? truncate(relacionamento.meta_titulo)
               : null"
           >
             <em v-if="relacionamento.meta_codigo">
               {{ relacionamento.meta_codigo }} -
             </em>
-            {{ truncate(relacionamento.meta_titulo, 36) || '-' }}
+            {{ truncate(relacionamento.meta_titulo, 64) || '-' }}
           </td>
           <td
             :title="relacionamento.iniciativa_descricao
@@ -145,3 +145,12 @@ const listaComOrgaosCombinados = computed<MetaPdmDtoComOrgaosCombinados[]>(() =>
   orgaos: combinadorDeOrgaos(relacionamento),
 })));
 </script>
+<style scoped>
+.relacionamento__coluna-plano {
+  width: 16em;
+}
+
+.relacionamento__coluna-orgaos {
+  width: 10em;
+}
+</style>
