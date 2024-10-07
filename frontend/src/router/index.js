@@ -25,6 +25,7 @@ import parlamentares from './parlamentares';
 import planosSetoriais from './planosSetoriais';
 import projetos from './projetos';
 import relatorios from './relatorios';
+import painelEstratégico from './painelEstrategico';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
 import variaveis from './variaveis';
 import comunicadosGerais from './comunicadosGerais';
@@ -67,6 +68,7 @@ export const router = createRouter({
     obras,
     graficos,
     relatorios,
+    painelEstratégico,
     envios,
     transferenciasVoluntarias,
     comunicadosGerais,
