@@ -34,7 +34,7 @@ const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
 PaineisGruposStore.getAll();
 
 const authStore = useAuthStore();
-const { sistemaEscolhido } = storeToRefs(authStore);
+const { sistemaCorrente } = storeToRefs(authStore);
 
 let title = 'Cadastro de Usuário';
 const personalizarNomeParaExibição = ref(false);
@@ -424,7 +424,7 @@ watch(accessProfiles, () => {
       </div>
 
       <div
-        v-if="sistemaEscolhido.valueOf() === 'PDM'"
+        v-if="sistemaCorrente.valueOf() === 'PDM'"
         class="mb2"
       >
         <div class="label">
