@@ -1,7 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
+import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
@@ -670,7 +670,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
         </div>
       </fieldset>
 
-      <CampoDePdmMetasRelacionadas
+      <CampoDePlanosMetasRelacionados
         v-if="$route.meta.entidadeMãe === 'planoSetorial'"
         :apenas-pdms="false"
         titulo="Relacionamentos com outros compromissos"
@@ -686,7 +686,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
             name="origens_extra"
           />
         </template>
-      </CampoDePdmMetasRelacionadas>
+      </CampoDePlanosMetasRelacionados>
 
       <FormErrorsList :errors="errors" />
 

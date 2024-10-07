@@ -1,7 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
+import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
@@ -465,7 +465,7 @@ function filterResponsible(orgao_id) {
         </div>
       </fieldset>
 
-      <CampoDePdmMetasRelacionadas
+      <CampoDePlanosMetasRelacionados
         v-if="$route.meta.entidadeMãe === 'planoSetorial'"
         :apenas-pdms="false"
         titulo="Relacionamentos com outros compromissos"
@@ -481,7 +481,7 @@ function filterResponsible(orgao_id) {
             name="origens_extra"
           />
         </template>
-      </CampoDePdmMetasRelacionadas>
+      </CampoDePlanosMetasRelacionados>
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">

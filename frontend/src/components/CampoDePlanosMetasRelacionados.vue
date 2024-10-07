@@ -127,7 +127,7 @@ watchEffect(async () => {
       campoPronto.value = true;
     })
     .catch((erro) => {
-      console.error('Erro ao montar CampoDePdmMetasRelacionadas', erro);
+      console.error('Erro ao montar CampoDePlanosMetasRelacionados', erro);
       throw erro;
     });
 

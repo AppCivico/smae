@@ -1,7 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDePdmMetasRelacionadas from '@/components/CampoDePdmMetasRelacionadas.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
@@ -1120,7 +1120,7 @@ watch(emFoco, () => {
       </div>
     </fieldset>
 
-    <CampoDePdmMetasRelacionadas
+    <CampoDePlanosMetasRelacionados
       :apenas-pdms="false"
       :titulo="schema.fields.origens_extra.spec.label"
       etiqueta-botao-adicao="Adicionar origem"
@@ -1135,7 +1135,7 @@ watch(emFoco, () => {
           name="origens_extra"
         />
       </template>
-    </CampoDePdmMetasRelacionadas>
+    </CampoDePlanosMetasRelacionados>
 
     <fieldset>
       <div class="flex flexwrap g2">
