@@ -45,6 +45,9 @@ export class VariavelResumoInput {
     titulo: string;
     valor_base: Decimal;
     unidade_medida: IdSiglaDescricao;
+    recalculando: boolean;
+    recalculo_erro: string | null;
+    recalculo_tempo: Decimal | null;
 }
 
 export class VariavelResumo {
@@ -73,6 +76,10 @@ export class VariavelResumo {
     codigo: string;
     titulo: string;
     valor_base: string;
+
+    recalculando: boolean;
+    recalculo_erro: string | null;
+    recalculo_tempo: Decimal | null;
 }
 
 export class ListSeriesAgrupadas {

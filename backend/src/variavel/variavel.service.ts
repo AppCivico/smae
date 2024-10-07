@@ -994,6 +994,9 @@ export class VariavelService {
                 valor_base: true,
                 periodicidade: true,
                 supraregional: true,
+                recalculando: true,
+                recalculo_erro: true,
+                recalculo_tempo: true,
                 orgao: {
                     select: {
                         id: true,
@@ -1149,6 +1152,9 @@ export class VariavelService {
                 suspendida: row.suspendida_em ? true : false,
                 possui_variaveis_filhas: row.variaveis_filhas.length > 0,
                 supraregional: row.supraregional,
+                recalculando: row.recalculando,
+                recalculo_erro: row.recalculo_erro,
+                recalculo_tempo: row.recalculo_tempo,
             } satisfies VariavelItemDto;
         });
 
@@ -2407,6 +2413,9 @@ export class VariavelService {
                 valor_base: variavel.valor_base.toString(),
                 variavel_categorica_id: variavel.variavel_categorica_id,
                 unidade_medida: variavel.unidade_medida,
+                recalculando: variavel.recalculando,
+                recalculo_erro: variavel.recalculo_erro,
+                recalculo_tempo: variavel.recalculo_tempo,
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,

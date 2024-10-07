@@ -115,6 +115,9 @@ export class VariavelFormulaCompostaService {
                 suspendida_em: true,
                 valor_base: true,
                 variavel_categorica_id: true,
+                recalculando: true,
+                recalculo_erro: true,
+                recalculo_tempo: true,
                 unidade_medida: { select: { id: true, sigla: true, descricao: true } },
             },
         });

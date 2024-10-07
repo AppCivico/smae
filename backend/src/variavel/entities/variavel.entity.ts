@@ -57,6 +57,10 @@ export class VariavelItemDto {
     variavel_categorica_id: number | null;
     etapa: IdTituloDto | null;
     possui_variaveis_filhas: boolean;
+
+    recalculando: boolean;
+    recalculo_erro: string | null;
+    recalculo_tempo: Decimal | null;
     // TODO mover fonte pra cá, ou criar novo detail para tipo global
 }
 
