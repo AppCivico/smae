@@ -51,8 +51,13 @@
           </th>
 
           <th scope="col">
+            Periodicidade
+          </th>
+
+          <th scope="col">
             equipes repsonsáveis
           </th>
+
           <th scope="col">
             prazo
           </th>
@@ -85,7 +90,7 @@
               >
                 {{ cicloAtualizacao.codigo }}
                 <div v-if="cicloAtualizacao.temAtraso">
-                  Atualização com atraso: {{ cicloAtualizacao.atrasos?.length }}
+                  Atualização com atraso: {{ obterPrimeiroEUlticoAtraso(cicloAtualizacao.atrasos) }}
                 </div>
               </strong> -
               {{ truncate(cicloAtualizacao.titulo, 60) }}
@@ -96,6 +101,10 @@
             <span :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}">
               {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
             </span>
+          </td>
+
+          <td>
+            {{ cicloAtualizacao.periodicidade }}
           </td>
 
           <td>
@@ -239,6 +248,23 @@ function formatarReferencia(referencia: any): string | undefined {
   if (!referencia) return undefined;
 
   return `${referencia.split('/').reverse().join('-')}-01`;
+}
+
+function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
+  if (!atrasos) {
+    return '';
+  }
+
+  if (atrasos.length === 1) {
+    const [atraso] = atrasos;
+
+    return dateIgnorarTimezone(atraso, 'dd/MM/yyyy') || '-';
+  }
+
+  const primeiro = atrasos.at(0);
+  const ultimo = atrasos.at(-1);
+
+  return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
 }
 
 watch(() => $route.query, (query) => {

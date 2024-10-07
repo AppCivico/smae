@@ -2,7 +2,7 @@ import { UTCDate } from '@date-fns/utc';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
-function dateIgnorarTimezone(x: string | Date | null, formato = 'MMMM yyyy'): string | null {
+function dateIgnorarTimezone(x: string | Date | null | undefined, formato = 'MMMM yyyy'): string | null {
   if (!x) {
     return null;
   }
