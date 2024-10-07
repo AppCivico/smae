@@ -214,6 +214,18 @@ watch(valores, (novoValor) => {
             :for="`${$props.name}[${idx}].meta_id`"
           >Meta</label>
           <select
+            v-if="!planosPorId[valores[idx]?.pdm_escolhido]?.metas?.length"
+            :id="`${$props.name}[${idx}].meta_id`"
+            :name="`${$props.name}[${idx}].meta_id`"
+            class="inputtext light mb1"
+            disabled
+          >
+            <option value="">
+              indisponível
+            </option>
+          </select>
+          <select
+            v-else
             :id="`${$props.name}[${idx}].meta_id`"
             v-model="valores[idx].meta_id"
             :name="`${$props.name}[${idx}].meta_id`"
@@ -246,6 +258,20 @@ watch(valores, (novoValor) => {
             :for="`${$props.name}[${idx}].iniciativa_id`"
           >{{ planosPorId[valores[idx]?.pdm_escolhido]?.rotulo_iniciativa || 'Iniciativa' }}</label>
           <select
+            v-if="!Object.keys(
+              arvoreDeMetas?.[valores[idx].meta_id]?.iniciativas || {}
+            )?.length"
+            :id="`${$props.name}[${idx}].iniciativa_id`"
+            class="inputtext light mb1"
+            disabled
+            :name="`${$props.name}[${idx}].iniciativa_id`"
+          >
+            <option value="">
+              indisponível
+            </option>
+          </select>
+          <select
+            v-else
             :id="`${$props.name}[${idx}].iniciativa_id`"
             v-model="valores[idx].iniciativa_id"
             :name="`${$props.name}[${idx}].iniciativa_id`"
@@ -258,7 +284,6 @@ watch(valores, (novoValor) => {
           >
             <option
               value=""
-              :selected="!valores?.[idx]?.iniciativa_id"
             >
               Selecionar
             </option>
@@ -278,6 +303,20 @@ watch(valores, (novoValor) => {
             :for="`${$props.name}[${idx}].atividade_id`"
           >{{ planosPorId[valores[idx]?.pdm_escolhido]?.rotulo_atividade || 'Atividade' }}</label>
           <select
+            v-if="!Object.keys(arvoreDeMetas?.[valores[idx].meta_id]
+              ?.iniciativas?.[valores[idx].iniciativa_id]?.atividades
+              || {})?.length"
+            :id="`${$props.name}[${idx}].atividade_id`"
+            class="inputtext light mb1"
+            :name="`${$props.name}[${idx}].atividade_id`"
+            disabled
+          >
+            <option value="">
+              indisponível
+            </option>
+          </select>
+          <select
+            v-else
             :id="`${$props.name}[${idx}].atividade_id`"
             v-model="valores[idx].atividade_id"
             :name="`${$props.name}[${idx}].atividade_id`"
@@ -289,7 +328,6 @@ watch(valores, (novoValor) => {
           >
             <option
               value=""
-              :selected="!valores?.[idx]?.atividade_id"
             >
               Selecionar
             </option>
