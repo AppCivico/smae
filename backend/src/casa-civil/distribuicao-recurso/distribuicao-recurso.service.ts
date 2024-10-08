@@ -1195,7 +1195,7 @@ export class DistribuicaoRecursoService {
 
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
-                                //id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
+                                id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
                                 parlamentar_id: relParlamentar.parlamentar_id,
                                 removido_em: null,
                                 distribuicao_recurso: {
