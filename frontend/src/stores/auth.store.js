@@ -147,7 +147,7 @@ export const useAuthStore = defineStore({
       : [permissoes]
     ).some((x) => (x.slice(-1) === '.'
       // se o valor termina com `.`,
-      // ele tem que bater com o começo de algumas permissão
+      // ele tem que bater com o começo de algumas permissões
       ? user.privilegios.some((y) => y.indexOf(x) === 0)
       : user.privilegios.some((y) => x === y))),
   },
