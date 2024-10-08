@@ -113,8 +113,9 @@ router.beforeEach(async (r, from) => {
   }
 });
 
-router.afterEach((to) => {
-  const { título } = to.meta;
+router.afterEach((to, from) => {
+  const { título, classeRaiz } = to.meta;
+  const { classeRaiz: classeRaizAnterior } = from.meta;
 
   if (título) {
     if (typeof título === 'function') {
@@ -126,6 +127,16 @@ router.afterEach((to) => {
     }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
+  }
+
+  if (classeRaizAnterior !== classeRaiz) {
+    if (classeRaizAnterior) {
+      document.documentElement.classList.remove(classeRaizAnterior);
+    }
+
+    if (classeRaiz) {
+      document.documentElement.classList.add(classeRaiz);
+    }
   }
 });
 
