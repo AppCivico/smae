@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ListMfDashMetasDto, ListMfDashEtapaHierarquiaDto } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
+import { ListMfDashEtapaHierarquiaDto, ListMfDashMetasDto } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -69,9 +69,7 @@ export const usePanoramaStore = defineStore('panorama', {
     perfil: '',
 
     chamadasPendentes: {
-      // usando `true` por padrão para, em conjunto com o tamanho da lista,
-      // identificar se a primeira chamada já ocorreu
-      lista: true,
+      lista: false,
       filtro: true,
       ancestrais: true,
     },

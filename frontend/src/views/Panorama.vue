@@ -8,6 +8,7 @@ import LegendaDeAtrasadas from '@/components/panorama/LegendaDeAtrasadas.vue';
 import LegendaPadrão from '@/components/panorama/LegendaPadrao.vue';
 import MetaAtrasada from '@/components/panorama/MetaAtrasada.vue';
 import MetaNormal from '@/components/panorama/MetaNormal.vue';
+import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
@@ -29,6 +30,7 @@ const dadosExtrasDeAbas = {
     aberta: true,
   },
 };
+
 const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 const visãoPadrão = 'pessoal';
 
@@ -37,6 +39,7 @@ const router = useRouter();
 
 const PdmStore = usePdMStore();
 const { activePdm } = storeToRefs(PdmStore);
+const authStore = useAuthStore();
 
 const panoramaStore = usePanoramaStore();
 const {
@@ -83,15 +86,17 @@ async function iniciar() {
   panoramaStore.buscarTudo(activePdm.value.id, route.query.status, filtros);
 }
 
-watch([
-  () => route.query.coordenadores_cp,
-  () => route.query.metas,
-  () => route.query.orgaos,
-  () => route.query.status,
-  () => route.query.visao,
-], () => {
-  iniciar();
-}, { immediate: true });
+if (authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])) {
+  watch([
+    () => route.query.coordenadores_cp,
+    () => route.query.metas,
+    () => route.query.orgaos,
+    () => route.query.status,
+    () => route.query.visao,
+  ], () => {
+    iniciar();
+  }, { immediate: true });
+}
 </script>
 <template>
   <Dashboard>
@@ -135,7 +140,10 @@ watch([
     </header>
 
     <div class="flex flexwrap g2 start">
-      <div class="legenda-e-filtro mb1 f1">
+      <div
+        v-if="perfil || chamadasPendentes.lista"
+        class="legenda-e-filtro mb1 f1"
+      >
         <Transition name="fade">
           <FiltroDeMetas
             v-if="perfil && perfil !== 'ponto_focal'
@@ -228,8 +236,11 @@ watch([
         </template>
       </EnvelopeDeAbas>
 
-      <div class="mb1 card-shadow f1 p15">
-        <LoadingComponent v-if="activePdm?.loading || !perfil" />
+      <div
+        v-if="activePdm?.ciclo_fisico_ativo || chamadasPendentes.lista"
+        class="mb1 card-shadow f1 p15"
+      >
+        <LoadingComponent v-if="activePdm?.loading || chamadasPendentes.lista" />
         <CalendárioDoPdM
           v-else-if="activePdm?.ciclo_fisico_ativo"
           :pdm="activePdm"
