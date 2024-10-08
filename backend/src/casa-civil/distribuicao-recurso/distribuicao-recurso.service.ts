@@ -282,7 +282,7 @@ export class DistribuicaoRecursoService {
 
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
-                                'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
                                 400
                             );
 
@@ -1265,7 +1265,7 @@ export class DistribuicaoRecursoService {
                         console.log('\n==========================');
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
-                                'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
                                 400
                             );
 
