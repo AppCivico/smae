@@ -5,13 +5,6 @@ export default {
   component: PainelEstrategicoRaiz,
   name: 'painelEstratégico',
 
-  props: ({ params, query }) => ({
-    ...query,
-    opção: Number(query.opcao),
-    id: Number(query.id),
-    ...params,
-  }),
-
   meta: {
     presenteNoMenu: true,
     títuloParaMenu: 'Painel estratégico',
