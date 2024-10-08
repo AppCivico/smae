@@ -1,8 +1,8 @@
 <script setup>
 import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
-import { computed, ref } from 'vue';
-import { storeToRefs } from 'pinia';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 
 const panoramaStore = usePanoramaStore();
 const {
@@ -38,7 +38,7 @@ const gerarURL = (etapaId) => {
 //    para os outros:
 //      - total - conferidas + aguardando complementação
 const lista = computed(() => listaDePendentes.value
-  .reduce((acc, cur) => (cur.cronograma.detalhes.length
+  .reduce((acc, cur) => (cur?.cronograma?.detalhes?.length
     ? acc.concat([{
       id: cur.id,
       código: cur.codigo,
