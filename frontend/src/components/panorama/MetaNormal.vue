@@ -105,7 +105,10 @@ defineProps({
         >
           <router-link
             :to="{
-              name: 'monitoramentoPorTarefas',
+              name: 'monitoramentoDeCronogramaDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              },
             }"
             class="tipinfo"
           >
