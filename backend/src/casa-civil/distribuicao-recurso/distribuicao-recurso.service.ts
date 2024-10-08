@@ -981,6 +981,7 @@ export class DistribuicaoRecursoService {
                         const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                         if (statusAtual) {
+                            console.log('statusAtual', statusAtual);
                             const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
                             return statusConfig?.valor_distribuicao_contabilizado == true;
@@ -1004,7 +1005,10 @@ export class DistribuicaoRecursoService {
                     console.log(sumCusteio);
                     console.log(dto.custeio);
                     console.log(transferencia.custeio!.toNumber());
-                    console.dir(outrasDistribuicoesFiltradas, { depth: 3 });
+                    for (const distRow of outrasDistribuicoesFiltradas) {
+                        console.log(distRow);
+                        console.dir(distRow.status, { depth: 2 });
+                    }
                     console.log('=================');
 
                     if (dto.custeio != self.custeio.toNumber()) {
