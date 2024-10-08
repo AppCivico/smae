@@ -10,7 +10,7 @@ import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue'
       <hr class="ml2 f1">
     </header>
 
-    <div class="lista-de-cartoes g2">
+    <div class="lista-de-cartoes">
       <TotalDeProjetos />
     </div>
   </Dashboard>
@@ -26,5 +26,8 @@ import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue'
 }
 </style>
 <style lang="less" scoped>
-.lista-de-cartoes {}
+.lista-de-cartoes {
+  display: grid;
+  gap: 4rem 2rem;
+}
 </style>
