@@ -1,14 +1,14 @@
 <template>
   <div class="card-shadow">
     <NumeroComLegenda
-      :numero="40"
+      numero="9"
       cor="#F2C94C"
       legenda="PLANEJADOS PARA 2024"
       :tamanho-do-numero="70"
       :tamanho-da-legenda="10"
     />
     <NumeroComLegenda
-      :numero="36"
+      numero="36"
       cor="#F2C94C"
       legenda="CONCLUÍDOS EM 2024"
       :tamanho-do-numero="70"
