@@ -85,14 +85,17 @@ function userToken(url: RequestInfo | URL): HeadersInit {
 function request(method: Method, upload = false) {
   return (
     url: RequestInfo | URL,
-    params: { [key: string]: any } | undefined,
-    AlertarErros = true,
+    params: { [key: string]: unknown } | undefined,
+    opcoes: { AlertarErros?: boolean; headers?: HeadersInit } = { AlertarErros: true },
   ) => {
     let urlFinal = url;
 
     const requestOptions: RequestInit = {
       method,
-      headers: userToken(urlFinal),
+      headers: {
+        ...userToken(urlFinal),
+        ...opcoes.headers,
+      },
     };
 
     switch (method) {
@@ -120,7 +123,7 @@ function request(method: Method, upload = false) {
 
     // return fetch(urlFinal, requestOptions).then(handleResponse);
     return fetch(urlFinal, requestOptions)
-      .then((response) => handleResponse(response, AlertarErros))
+      .then((response) => handleResponse(response, opcoes.AlertarErros))
       .finally(() => {
         switch (method) {
           case 'GET':
