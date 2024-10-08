@@ -3,7 +3,7 @@ import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
 import { usuário as schema } from '@/consts/formSchemas';
-import módulosDoSistema from '@/consts/modulosDoSistema';
+import módulosDoSistema from '@/consts/modulosDoSistema.ts';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';

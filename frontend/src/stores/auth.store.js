@@ -1,5 +1,5 @@
-import modulos from '@/consts/modulosDoSistema';
-import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae';
+import modulos from '@/consts/modulosDoSistema.ts';
+import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -13,6 +13,7 @@ export const useAuthStore = defineStore({
     reducedtoken: null,
     returnUrl: null,
     permissions: JSON.parse(localStorage.getItem('permissions')),
+    sistemaEscolhido: localStorage.getItem('sistemaEscolhido') || 'SMAE',
     moduloDaRotaAnterior: '',
   }),
   actions: {
@@ -36,9 +37,9 @@ export const useAuthStore = defineStore({
         alertStore.error(error);
       }
     },
-    async getDados(params) {
+    async getDados(params, opcoes) {
       try {
-        const user = await this.requestS.get(`${baseUrl}/minha-conta`, params);
+        const user = await this.requestS.get(`${baseUrl}/minha-conta`, params, opcoes);
 
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
@@ -141,7 +142,6 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
-    sistemaEscolhido: () => localStorage.getItem('sistemaEscolhido') || 'SMAE',
     sistemaCorrente() {
       if (!import.meta.env.VITE_HABILITAR_BETA) {
         return this.sistemaEscolhido;

@@ -4,6 +4,22 @@ import planosSetoriais from '@/assets/modulos/planos-setoriais.svg';
 import programaDeMetas from '@/assets/modulos/programa-de-metas.svg';
 import transferenciasVoluntarias from '@/assets/modulos/transferencias-voluntarias.svg';
 
+export type Modulo = {
+  nome: string;
+  ícone: string;
+  rotaInicial: {
+    name: string;
+  };
+};
+
+export type ModulosDoSistema = {
+  PDM: Modulo;
+  Projetos: Modulo;
+  CasaCivil: Modulo;
+  MDO: Modulo;
+  PlanoSetorial: Modulo;
+};
+
 export default {
   PDM: {
     nome: 'Programa de metas',
