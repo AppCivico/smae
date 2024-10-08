@@ -1000,6 +1000,13 @@ export class DistribuicaoRecursoService {
                         sumTotal = +sumTotal + +distRow.valor_total.toNumber();
                     }
 
+                    console.log('=================');
+                    console.log(sumCusteio);
+                    console.log(dto.custeio);
+                    console.log(transferencia.custeio!.toNumber());
+                    console.log(outrasDistribuicoesFiltradas);
+                    console.log('=================');
+
                     if (dto.custeio != self.custeio.toNumber()) {
                         if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber()) {
                             throw new HttpException(
