@@ -1230,21 +1230,23 @@ export class DistribuicaoRecursoService {
                                 },
                             },
                         });
+                        console.log('\n==========================');
 
                         let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor != null)
                             .filter((e) => {
                                 const statusUltimaRow = e.distribuicao_recurso.status[0];
                                 if (!statusUltimaRow) return true;
+                                console.log(statusUltimaRow);
 
                                 const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                console.log(statusConfig);
 
                                 return statusConfig!.valor_distribuicao_contabilizado == true;
                             })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 
-                        console.log('\n==========================');
                         console.log(rowsParlamentarDist.filter((e) => e.valor != null));
                         console.log(
                             rowsParlamentarDist
