@@ -9,6 +9,7 @@ const logger = new Logger('PgsqlMigrate');
 
 let is_watch_mode = false;
 let ignore_added = true;
+let is_updating = false;
 
 let yargs: typeof import('yargs') | undefined;
 let chokidar: typeof import('chokidar') | undefined;
@@ -205,9 +206,23 @@ async function calculateSHA256(filePath: string): Promise<string> {
 }
 
 async function handleFileChange(filePath: string, changeType: 'added' | 'changed') {
-    if (path.extname(filePath) === '.pgsql' && ignore_added == false) {
-        logger.verbose(`File ${filePath} has been ${changeType}`);
-        await processPgsqlFiles(path.dirname(filePath));
+    if (is_updating) {
+        setTimeout(() => {
+            handleFileChange(filePath, changeType);
+        }, 1000);
+        return;
+    }
+    is_updating = true;
+
+    try {
+        if (path.extname(filePath) === '.pgsql' && ignore_added == false) {
+            logger.verbose(`File ${filePath} has been ${changeType}`);
+            await processPgsqlFiles(path.dirname(filePath));
+        }
+    } catch (e) {
+        throw new Error(`Error processing file ${filePath}: ${e.message}`);
+    } finally {
+        is_updating = false;
     }
 }
 
