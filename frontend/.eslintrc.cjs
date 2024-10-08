@@ -32,7 +32,7 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['@', './src'],
+          ['@', './frontend/src'],
         ],
         extensions: ['.js', '.ts', '.vue'],
       },
