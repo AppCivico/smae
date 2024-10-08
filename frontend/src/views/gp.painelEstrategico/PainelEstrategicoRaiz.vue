@@ -1,5 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
+import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 
 </script>
@@ -9,6 +9,12 @@ import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue'
       <TítuloDePágina />
       <hr class="ml2 f1">
     </header>
-    <TotalDeProjetos />
+
+    <div class="lista-de-cartoes g2">
+      <TotalDeProjetos />
+    </div>
   </Dashboard>
 </template>
+<style lang="less" scoped>
+.lista-de-cartoes {}
+</style>
