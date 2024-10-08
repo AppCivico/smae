@@ -1199,8 +1199,8 @@ export class DistribuicaoRecursoService {
                                 parlamentar_id: relParlamentar.parlamentar_id,
                                 removido_em: null,
                                 distribuicao_recurso: {
-                                    id: id,
                                     removido_em: null,
+                                    transferencia_id: self.transferencia_id,
                                 },
                             },
                             select: {
@@ -1238,9 +1238,6 @@ export class DistribuicaoRecursoService {
                                 if (!statusUltimaRow) return true;
 
                                 const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-                                console.log('\n==========================');
-                                console.log(statusConfig);
-                                console.log('\n==========================');
 
                                 return statusConfig!.valor_distribuicao_contabilizado == true;
                             })
