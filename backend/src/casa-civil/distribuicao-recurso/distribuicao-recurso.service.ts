@@ -1004,7 +1004,7 @@ export class DistribuicaoRecursoService {
                     console.log(sumCusteio);
                     console.log(dto.custeio);
                     console.log(transferencia.custeio!.toNumber());
-                    console.log(outrasDistribuicoesFiltradas);
+                    console.dir(outrasDistribuicoesFiltradas, { depth: 3 });
                     console.log('=================');
 
                     if (dto.custeio != self.custeio.toNumber()) {
