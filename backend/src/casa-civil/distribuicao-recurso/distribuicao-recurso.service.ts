@@ -111,6 +111,7 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     select: {
+                        id: true,
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
@@ -119,6 +120,7 @@ export class DistribuicaoRecursoService {
                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                             take: 1,
                             select: {
+                                id: true,
                                 status_base: {
                                     select: {
                                         tipo: true,
@@ -981,7 +983,6 @@ export class DistribuicaoRecursoService {
                         const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                         if (statusAtual) {
-                            console.log('statusAtual', statusAtual);
                             const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
                             return statusConfig?.valor_distribuicao_contabilizado == true;
@@ -1000,16 +1001,6 @@ export class DistribuicaoRecursoService {
                         sumInvestimento = +sumInvestimento + +distRow.investimento.toNumber();
                         sumTotal = +sumTotal + +distRow.valor_total.toNumber();
                     }
-
-                    console.log('=================');
-                    console.log(sumCusteio);
-                    console.log(dto.custeio);
-                    console.log(transferencia.custeio!.toNumber());
-                    for (const distRow of outrasDistribuicoesFiltradas) {
-                        console.log(distRow);
-                        console.dir(distRow.status, { depth: 2 });
-                    }
-                    console.log('=================');
 
                     if (dto.custeio != self.custeio.toNumber()) {
                         if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber()) {
@@ -1219,7 +1210,7 @@ export class DistribuicaoRecursoService {
                                     select: {
                                         status: {
                                             take: 1,
-                                            orderBy: { data_troca: 'desc' },
+                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                                             select: {
                                                 status_base: {
                                                     select: {
