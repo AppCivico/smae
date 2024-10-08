@@ -116,17 +116,19 @@ export class DistribuicaoRecursoService {
                         valor_contrapartida: true,
                         valor_total: true,
                         status: {
-                            orderBy: { data_troca: 'desc' },
+                            orderBy: [{ data_troca: 'desc' }, { criado_em: 'desc' }, { atualizado_em: 'desc' }],
                             take: 1,
                             select: {
                                 status_base: {
                                     select: {
                                         tipo: true,
+                                        valor_distribuicao_contabilizado: true,
                                     },
                                 },
                                 status: {
                                     select: {
                                         tipo: true,
+                                        valor_distribuicao_contabilizado: true,
                                     },
                                 },
                             },
@@ -140,7 +142,7 @@ export class DistribuicaoRecursoService {
                     if (statusAtual) {
                         const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
-                        return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
+                        return statusConfig?.valor_distribuicao_contabilizado == true;
                     }
                     return true;
                 });
@@ -955,17 +957,19 @@ export class DistribuicaoRecursoService {
                             valor_contrapartida: true,
                             valor_total: true,
                             status: {
-                                orderBy: { data_troca: 'desc' },
+                                orderBy: [{ data_troca: 'desc' }, { criado_em: 'desc' }, { atualizado_em: 'desc' }],
                                 take: 1,
                                 select: {
                                     status_base: {
                                         select: {
                                             tipo: true,
+                                            valor_distribuicao_contabilizado: true,
                                         },
                                     },
                                     status: {
                                         select: {
                                             tipo: true,
+                                            valor_distribuicao_contabilizado: true,
                                         },
                                     },
                                 },
@@ -979,7 +983,7 @@ export class DistribuicaoRecursoService {
                         if (statusAtual) {
                             const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
-                            return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
+                            return statusConfig?.valor_distribuicao_contabilizado == true;
                         }
                         return true;
                     });
