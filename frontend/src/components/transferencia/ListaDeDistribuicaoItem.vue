@@ -62,7 +62,7 @@ function removeParlamentaresSemValor(distribuicao) {
     return [];
   }
 
-  return distribuicao.parlamentares.filter((parlamentar) => parlamentar.valor);
+  return distribuicao.parlamentares.filter((parlamentar) => Number(parlamentar.valor));
 }
 
 onMounted(() => {
