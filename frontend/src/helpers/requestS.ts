@@ -46,6 +46,10 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
       : msgDefault
       ?? response.status;
 
+    if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+      console.trace('Erro:', error);
+    }
+
     if (alertarErros) {
       if (!alertStore.alertas.some((alerta:Alerta) => alerta.message === error)) {
         alertStore.error(error);
