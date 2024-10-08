@@ -116,7 +116,7 @@ export class DistribuicaoRecursoService {
                         valor_contrapartida: true,
                         valor_total: true,
                         status: {
-                            orderBy: [{ data_troca: 'desc' }, { criado_em: 'desc' }, { atualizado_em: 'desc' }],
+                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                             take: 1,
                             select: {
                                 status_base: {
@@ -957,7 +957,7 @@ export class DistribuicaoRecursoService {
                             valor_contrapartida: true,
                             valor_total: true,
                             status: {
-                                orderBy: [{ data_troca: 'desc' }, { criado_em: 'desc' }, { atualizado_em: 'desc' }],
+                                orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                                 take: 1,
                                 select: {
                                     status_base: {
