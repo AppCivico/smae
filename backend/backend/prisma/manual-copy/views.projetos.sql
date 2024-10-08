@@ -99,7 +99,7 @@ when p.status = 'EmPlanejamento' then 3
 when p.status = 'Planejado' then  4
 when p.status = 'Validado' then  5
 when p.status = 'EmAcompanhamento' then  6
-when p.status = 'Suspenso' then   6
+when p.status = 'Suspenso' then   8
 when p.status = 'Fechado' then  7
 end as "numero_status",
 array_agg(distinct po.titulo) as portfolios_compartilhados
