@@ -257,6 +257,29 @@ export class DistribuicaoRecursoService {
                                 id: true,
                                 distribuicao_recurso_id: true,
                                 valor: true,
+
+                                distribuicao_recurso: {
+                                    select: {
+                                        status: {
+                                            take: 1,
+                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                            select: {
+                                                status_base: {
+                                                    select: {
+                                                        tipo: true,
+                                                        valor_distribuicao_contabilizado: true,
+                                                    },
+                                                },
+                                                status: {
+                                                    select: {
+                                                        tipo: true,
+                                                        valor_distribuicao_contabilizado: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         });
 
@@ -273,7 +296,17 @@ export class DistribuicaoRecursoService {
                             );
 
                         let sumValor = rowsParlamentarDist
-                            .filter((e) => e.valor)
+                            .filter((e) => e.valor != null)
+                            .filter((e) => {
+                                const statusUltimaRow = e.distribuicao_recurso.status[0];
+                                if (!statusUltimaRow) return true;
+                                console.log(statusUltimaRow);
+
+                                const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                console.log(statusConfig);
+
+                                return statusConfig!.valor_distribuicao_contabilizado == true;
+                            })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += novaRow.valor ? +novaRow.valor : 0;
                         console.log('\n==========================');
