@@ -235,6 +235,7 @@ export class DistribuicaoRecursoService {
                                 removido_em: null,
                                 distribuicao_recurso: {
                                     transferencia_id: dto.transferencia_id,
+                                    removido_em: null,
                                     status: {
                                         some: {
                                             OR: [
