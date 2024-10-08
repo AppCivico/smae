@@ -111,6 +111,7 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     select: {
+                        id: true,
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
@@ -119,6 +120,7 @@ export class DistribuicaoRecursoService {
                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                             take: 1,
                             select: {
+                                id: true,
                                 status_base: {
                                     select: {
                                         tipo: true,
@@ -1208,7 +1210,7 @@ export class DistribuicaoRecursoService {
                                     select: {
                                         status: {
                                             take: 1,
-                                            orderBy: { data_troca: 'desc' },
+                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                                             select: {
                                                 status_base: {
                                                     select: {
