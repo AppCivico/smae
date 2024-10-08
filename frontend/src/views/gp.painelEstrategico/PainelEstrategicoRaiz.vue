@@ -15,6 +15,16 @@ import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue'
     </div>
   </Dashboard>
 </template>
+<style lang="less">
+.pagina-de-painel-estrategico {
+  background-image: url("@{u}painel-estrategico/mapa-cinza.png");
+  background-size: cover;
+}
+
+.pagina-de-painel-estrategico body {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+</style>
 <style lang="less" scoped>
 .lista-de-cartoes {}
 </style>
