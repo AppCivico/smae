@@ -57,6 +57,14 @@ function buscaStatus(historico) {
     : últimoStatus.status_base?.nome;
 }
 
+function removeParlamentaresSemValor(distribuicao) {
+  if (!distribuicao.parlamentares.length) {
+    return [];
+  }
+
+  return distribuicao.parlamentares.filter((parlamentar) => parlamentar.valor);
+}
+
 onMounted(() => {
   alturaColapsado.value = visivelColapsado.value.clientHeight;
   observer.observe(visivelColapsado.value);
@@ -129,13 +137,15 @@ onUnmounted(() => {
               Parlamentares envolvidos
             </dt>
             <dd>
-              <template v-if="distribuicao.parlamentares.length > 0">
-                {{
-                  combinadorDeListas(distribuicao.parlamentares, null, 'parlamentar.nome_popular')
-                }}
+              <template v-if="removeParlamentaresSemValor(distribuicao).length">
+                {{ combinadorDeListas(
+                  removeParlamentaresSemValor(distribuicao),
+                  null,
+                  'parlamentar.nome_popular'
+                ) }}
               </template>
               <template v-else>
-                Nenhum parlamentar envolvido
+                Sem parlamentares envolvidos
               </template>
             </dd>
           </dl>
