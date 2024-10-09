@@ -876,18 +876,6 @@ export class VariavelCicloService {
         });
     }
 
-    private async getPerfisEmEquipes(userId: number): Promise<PerfilResponsavelEquipe[]> {
-        const userEquipe = await this.prisma.grupoResponsavelEquipeParticipante.findMany({
-            where: { pessoa_id: userId, removido_em: null },
-            include: { grupo_responsavel_equipe: true },
-        });
-        const equipeSet = new Set<PerfilResponsavelEquipe>();
-        for (const equipe of userEquipe) {
-            equipeSet.add(equipe.grupo_responsavel_equipe.perfil);
-        }
-        return Array.from(equipeSet);
-    }
-
     private async moveFase(
         variavelId: number,
         nextPhase: VariavelFase,
