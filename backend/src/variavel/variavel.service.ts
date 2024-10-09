@@ -1265,7 +1265,7 @@ export class VariavelService {
             return plano;
         };
 
-        const perm = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
+        const ehAdminGeral = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
 
         const paginas = Math.ceil(total_registros / ipp);
         return {
@@ -1275,23 +1275,21 @@ export class VariavelService {
             paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): VariavelGlobalItemDto => {
-                let localPerm = perm;
-                let localPermValor = perm;
-                if (r.tipo == 'Calculada') {
-                    localPerm = false;
-                    localPermValor = false;
-                }
+                let pode_editar = ehAdminGeral;
+                let pode_editar_valor = ehAdminGeral;
 
-                if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
-                    if (r.orgao_proprietario_id != user.orgao_id) {
-                        localPerm = false;
-                        localPermValor = false;
+                if (!pode_editar && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+                    if (r.orgao_proprietario_id == user.orgao_id) {
+                        pode_editar = true;
+                        pode_editar_valor = true;
                     }
                 }
 
-                // fogo que isso vai criar um bug, na hora de editar os valores em si pode editar,
-                // entao o localPermValor = true
-                if (r.variavel_mae_id) localPerm = false;
+                if (r.tipo == 'Calculada') {
+                    pode_editar = false;
+                    pode_editar_valor = false;
+                }
+                if (r.variavel_mae_id) pode_editar = false;
 
                 return {
                     id: r.id,
@@ -1313,9 +1311,9 @@ export class VariavelService {
                     fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
                     inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
                     periodicidade: r.periodicidade,
-                    pode_editar: localPerm,
-                    pode_editar_valor: localPermValor,
-                    pode_excluir: localPerm && r.planos.length == 0,
+                    pode_editar: pode_editar,
+                    pode_editar_valor: pode_editar_valor,
+                    pode_excluir: pode_editar && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
                     regiao: r.regiao
@@ -2662,9 +2660,9 @@ export class VariavelService {
 
         const globais = variaveisInfo.filter((v) => v.tipo === 'Global');
 
-        if (globais.length && !user.hasSomeRoles(['CadastroPS.administrador'])) {
+        if (globais.length && !user.hasSomeRoles(['CadastroVariavelGlobal.administrador'])) {
             const collab = await user.getEquipesColaborador(this.prisma);
-            const ehAdminNoOrgao = user.hasSomeRoles(['CadastroPS.administrador_no_orgao']);
+            const ehAdminNoOrgao = user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao']);
             for (const variavel of variaveisInfo) {
                 // PDM só valida pela listagem de variáveis, no momento
                 if (variavel.tipo != 'Global') continue;
