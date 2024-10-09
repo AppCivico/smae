@@ -2707,7 +2707,7 @@ export class VariavelService {
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
                 await this.prisma.$queryRaw`
-                    select pg_advisory_xact_lock(varId::bigint)
+                    select pg_advisory_xact_lock(varId::bigint)::varchar
                     from unnest(${varIdsSorted}::bigint[]) as varId;
                 `;
 
