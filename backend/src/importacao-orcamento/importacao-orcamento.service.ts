@@ -79,6 +79,8 @@ function toFixed2ButString(n: number): string {
 @Injectable()
 export class ImportacaoOrcamentoService {
     private readonly logger = new Logger(ImportacaoOrcamentoService.name);
+    private enabled = true;
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
@@ -95,7 +97,11 @@ export class ImportacaoOrcamentoService {
         private readonly pdmOrcResService: PdmOrcamentoRealizadoService,
         @Inject(forwardRef(() => ProjetoOrcamentoRealizadoService))
         private readonly ppOrcResService: ProjetoOrcamentoRealizadoService
-    ) {}
+    ) {
+        if (process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB'] || process.env['DISABLED_CRONTABS'] == 'all') {
+            this.enabled = false;
+        }
+    }
 
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
@@ -466,7 +472,7 @@ export class ImportacaoOrcamentoService {
 
     @Cron('* * * * *')
     async handleCron() {
-        if (process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB'] || process.env['DISABLE_CRONTABS'] == 'all') return;
+        if (!this.enabled) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
