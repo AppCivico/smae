@@ -38,6 +38,9 @@ function alternaExpandido() {
 
 function buscaStatus(historico) {
   const últimoStatus = historico[historico.length - 1];
+  if (!últimoStatus) {
+    return '-';
+  }
   return últimoStatus.status_customizado?.nome
     ? últimoStatus.status_customizado?.nome
     : últimoStatus.status_base?.nome;
