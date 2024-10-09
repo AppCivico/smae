@@ -1,18 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref, defineProps } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import TransitionExpand from '@/components/TransitionExpand.vue';
 import dinheiro from '@/helpers/dinheiro';
 import dateToField from '@/helpers/dateToField';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
-import { storeToRefs } from 'pinia';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import {
-  ref,
-  defineProps,
-  onMounted,
-  onUnmounted,
-} from 'vue';
 
 defineProps({
   distribuicao: {
@@ -32,8 +28,6 @@ const {
 
 const resumoCompleto = ref(null);
 const estaExpandido = ref(false);
-const visivelColapsado = ref(null);
-const alturaColapsado = ref(150);
 
 function alternaExpandido() {
   estaExpandido.value = !estaExpandido.value;
@@ -41,14 +35,6 @@ function alternaExpandido() {
     resumoCompleto.value.scrollIntoView({ behavior: 'smooth' });
   }
 }
-
-const observer = new ResizeObserver((entradas) => {
-  for (const entrada of entradas) {
-    if (entrada.target.clientHeight !== alturaColapsado.value) {
-      alturaColapsado.value = entrada.target.clientHeight;
-    }
-  }
-});
 
 function buscaStatus(historico) {
   const últimoStatus = historico[historico.length - 1];
@@ -64,16 +50,6 @@ function removeParlamentaresSemValor(distribuicao) {
 
   return distribuicao.parlamentares.filter((parlamentar) => Number(parlamentar.valor));
 }
-
-onMounted(() => {
-  alturaColapsado.value = visivelColapsado.value.clientHeight;
-  observer.observe(visivelColapsado.value);
-});
-
-onUnmounted(() => {
-  observer.disconnect();
-});
-
 </script>
 
 <template>
@@ -81,474 +57,464 @@ onUnmounted(() => {
     ref="resumoCompleto"
     class="resumo-completo"
   >
-    <section
-      :style="`--height: ${alturaColapsado}px;`"
-      class="resumo-da-distribuicao-de-recursos"
-      :class="estaExpandido ? 'resumo-da-distribuicao-de-recursos--expandido' : ''"
-    >
+    <section class="resumo-da-distribuicao-de-recursos">
       <LoadingComponent v-if="distribuicoesPendentes.lista" />
 
-      <div
-        class="resumo-da-distribuicao-de-recursos__descricao f1 fb75 mb2"
-      >
-        <div
-          ref="visivelColapsado"
-        >
-          <div class="flex g2 flexwrap mb2">
-            <dl class="f1">
-              <dt class="t16 w700 mb05 tamarelo">
-                Gestor municipal
-              </dt>
-              <dd>
-                {{ distribuicao?.orgao_gestor
-                  ? `${distribuicao.orgao_gestor.sigla} - ${distribuicao.orgao_gestor.descricao}`
-                  : '-' }}
-              </dd>
-            </dl>
-            <dl class="f1">
-              <dt class="t16 w700 mb05 tamarelo">
-                Status atual
-              </dt>
-              <dd>
-                {{ buscaStatus(distribuicao.historico_status) }}
-              </dd>
-            </dl>
-            <dl class="f1">
-              <dt class="t16 w700 mb05 tamarelo">
-                Valor de repasse
-              </dt>
-              <dd>
-                {{ distribuicao.valor
+      <div class="resumo-da-distribuicao-de-recursos__descricao f1 fb75 mb2">
+        <div class="flex g2 flexwrap mb2">
+          <dl class="f1">
+            <dt class="t16 w700 mb05 tamarelo">
+              Gestor municipal
+            </dt>
+            <dd>
+              {{ distribuicao?.orgao_gestor
+                ? `${distribuicao.orgao_gestor.sigla} - ${distribuicao.orgao_gestor.descricao}`
+                : '-' }}
+            </dd>
+          </dl>
+          <dl class="f1">
+            <dt class="t16 w700 mb05 tamarelo">
+              Status atual
+            </dt>
+            <dd>
+              {{ buscaStatus(distribuicao.historico_status) }}
+            </dd>
+          </dl>
+          <dl class="f1">
+            <dt class="t16 w700 mb05 tamarelo">
+              Valor de repasse
+            </dt>
+            <dd>
+              {{ distribuicao.valor
                 ? `R$${dinheiro(distribuicao.valor)}`
                 : '' }}
-              </dd>
-            </dl>
-          </div>
-          <dl class="mb2">
-            <dt class="t16 w700 mb05 tamarelo">
-              Objeto/Empreendimento
-            </dt>
-            <dd>
-              {{ distribuicao.objeto || '-' }}
-            </dd>
-          </dl>
-          <dl class="mb2">
-            <dt class="t16 w700 mb05 tamarelo">
-              Parlamentares envolvidos
-            </dt>
-            <dd>
-              <template v-if="removeParlamentaresSemValor(distribuicao).length">
-                {{ combinadorDeListas(
-                  removeParlamentaresSemValor(distribuicao),
-                  null,
-                  'parlamentar.nome_popular'
-                ) }}
-              </template>
-              <template v-else>
-                Sem parlamentares envolvidos
-              </template>
             </dd>
           </dl>
         </div>
+        <dl class="mb2">
+          <dt class="t16 w700 mb05 tamarelo">
+            Objeto/Empreendimento
+          </dt>
+          <dd>
+            {{ distribuicao.objeto || '-' }}
+          </dd>
+        </dl>
+        <dl class="mb2">
+          <dt class="t16 w700 mb05 tamarelo">
+            Parlamentares envolvidos
+          </dt>
+          <dd>
+            <template v-if="removeParlamentaresSemValor(distribuicao).length">
+              {{ combinadorDeListas(
+                removeParlamentaresSemValor(distribuicao),
+                null,
+                'parlamentar.nome_popular'
+              ) }}
+            </template>
+            <template v-else>
+              Sem parlamentares envolvidos
+            </template>
+          </dd>
+        </dl>
 
-        <hgroup class="resumo-da-distribuicao-de-recursos__titulo flex g1">
-          <h3 class="ml0 t16 w700 tc500">
-            <abbr
-              v-if="distribuicao.orgao_gestor"
-              :title="distribuicao.orgao_gestor.descricao"
-            >
-              {{ distribuicao.orgao_gestor.sigla }}
-            </abbr>
-          </h3>
-          <h4 class="mlauto mr0 t16 w700 tc300">
-            {{ distribuicao.valor
-            ? `R$${dinheiro(distribuicao.valor)}`
-            : '' }}
-          </h4>
-          <h5
-            class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16 w700 tc500"
-          >
-            {{ distribuicao.pct_valor_transferencia }}%
-          </h5>
-        </hgroup>
-
-        <div class="resumo-da-distribuicao-de-recursos__objeto contentStyle f1">
-          {{ distribuicao.objeto || '-' }}
-        </div>
-      </div>
-      <div class="mb2">
-        <dl
-          class="resumo-da-distribuicao-de-recursos__lista-de-status f0 fg999 fb10em
-          flex flexwrap g2 align-end"
-        >
-          <div
-            v-if="distribuicao?.historico_status"
-            class="resumo-da-distribuicao-de-recursos__status-item f1 mb1"
-          >
-            <ul
-              ref="listaDeStatus"
-              class="flex mb2 andamento-fluxo__lista-de-fases"
-            >
-              <li
-                v-for="(status, index) in distribuicao.historico_status"
-                :key="status.id"
-                class="p1 tc andamento-fluxo__fase"
-                :class="index === distribuicao.historico_status.length - 1
-                  && index === 0
-                  ? 'andamento-fluxo__fase--iniciada'
-                  : 'andamento-fluxo__fase--concluída'"
+        <TransitionExpand>
+          <div v-if="estaExpandido">
+            <hgroup class="resumo-da-distribuicao-de-recursos__titulo flex g1">
+              <h3 class="ml0 t16 w700 tc500">
+                <abbr
+                  v-if="distribuicao.orgao_gestor"
+                  :title="distribuicao.orgao_gestor.descricao"
+                >
+                  {{ distribuicao.orgao_gestor.sigla }}
+                </abbr>
+              </h3>
+              <h4 class="mlauto mr0 t16 w700 tc300">
+                {{ distribuicao.valor
+                  ? `R$${dinheiro(distribuicao.valor)}`
+                  : '' }}
+              </h4>
+              <h5
+                class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16 w700 tc500"
               >
-                <div class="status-item__header">
-                  <dt class="w700 t16 andamento-fluxo__nome-da-fase">
-                    {{ status.status_customizado?.nome || status.status_base?.nome }}
-                  </dt>
-                  <dd
-                    v-if="status.dias_no_status"
-                    class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
-                  >
-                    <time :datetime="status.data_troca">
-                      <strong>+ {{ status.dias_no_status }} dias </strong>
-                      <span class="tipinfo">
-                        <svg
-                          width="16"
-                          height="16"
-                        >
-                          <use xlink:href="#i_i" />
-                        </svg>
-                        <div>desde {{ dateToShortDate(status.data_troca) }}</div>
-                      </span>
-                      <p class="mb0">
-                        {{ status.nome_responsavel }}
-                      </p>
-                    </time>
-                  </dd>
-                </div>
-              </li>
-            </ul>
-            <dd
-              v-if="distribuicao.parlamentares.length"
-              class="parlamentares"
+                {{ distribuicao.pct_valor_transferencia }}%
+              </h5>
+            </hgroup>
+
+            <div class="resumo-da-distribuicao-de-recursos__objeto contentStyle f1 mb2">
+              {{ distribuicao.objeto || '-' }}
+            </div>
+
+            <dl
+              class="resumo-da-distribuicao-de-recursos__lista-de-status f0 fg999 fb10em
+              flex flexwrap g2 align-end"
             >
               <div
-                v-for="parlamentar, index in distribuicao.parlamentares"
-                :key="parlamentar.id"
-                :class="['flex spacebetween center g2', { 'mt1': index > 0}]"
+                v-if="distribuicao?.historico_status"
+                class="resumo-da-distribuicao-de-recursos__status-item f1 mb2"
               >
-                <dl
-                  class="f1"
+                <ul
+                  ref="listaDeStatus"
+                  class="flex mb2 andamento-fluxo__lista-de-fases"
                 >
-                  <dt class="t16 w700 mb05 tc500">
-                    Parlamentar
+                  <li
+                    v-for="(status, index) in distribuicao.historico_status"
+                    :key="status.id"
+                    class="p1 tc andamento-fluxo__fase"
+                    :class="index === distribuicao.historico_status.length - 1
+                      && index === 0
+                      ? 'andamento-fluxo__fase--iniciada'
+                      : 'andamento-fluxo__fase--concluída'"
+                  >
+                    <div class="status-item__header">
+                      <dt class="w700 t16 andamento-fluxo__nome-da-fase">
+                        {{ status.status_customizado?.nome || status.status_base?.nome }}
+                      </dt>
+                      <dd
+                        v-if="status.dias_no_status"
+                        class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
+                      >
+                        <time :datetime="status.data_troca">
+                          <strong>+ {{ status.dias_no_status }} dias </strong>
+                          <span class="tipinfo">
+                            <svg
+                              width="16"
+                              height="16"
+                            >
+                              <use xlink:href="#i_i" />
+                            </svg>
+                            <div>desde {{ dateToShortDate(status.data_troca) }}</div>
+                          </span>
+                          <p class="mb0">
+                            {{ status.nome_responsavel }}
+                          </p>
+                        </time>
+                      </dd>
+                    </div>
+                  </li>
+                </ul>
+                <dd
+                  v-if="distribuicao.parlamentares.length"
+                  class="parlamentares mb1"
+                >
+                  <div
+                    v-for="parlamentar, index in distribuicao.parlamentares"
+                    :key="parlamentar.id"
+                    :class="['flex spacebetween center g2', { 'mt1': index > 0}]"
+                  >
+                    <dl
+                      class="f1"
+                    >
+                      <dt class="t16 w700 mb05 tc500">
+                        Parlamentar
+                      </dt>
+                      <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
+                    </dl>
+                    <hr class="f2">
+                    <dl class="f2">
+                      <dt class="t16 w700 mb05 tc500 f1">
+                        Valor do recurso
+                      </dt>
+                      <dd class="tc300">
+                        <strong v-if="parlamentar?.valor && transferenciaEmFoco?.valor">
+                          R$ {{ dinheiro(parlamentar.valor) || '0' }} ({{
+                            (parlamentar.valor / transferenciaEmFoco.valor * 100).toFixed()
+                          }}%)
+                        </strong>
+                      </dd>
+                    </dl>
+                  </div>
+                </dd>
+              </div>
+            </dl>
+
+            <div class="flex flexwrap g2 mb2">
+              <div class="grid valores f1">
+                <dl class="mb1 pb1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Valor do repasse
                   </dt>
-                  <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
+                  <dd>
+                    {{ distribuicao.valor ? `R$${dinheiro(distribuicao.valor)}` : '-' }}
+                  </dd>
                 </dl>
-                <hr class="f2">
-                <dl class="f2">
-                  <dt class="t16 w700 mb05 tc500 f1">
-                    Valor do recurso
+                <dl class="mb1 pb1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Valor contrapartida
                   </dt>
-                  <dd class="tc300">
-                    <strong v-if="parlamentar?.valor && transferenciaEmFoco?.valor">
-                      R$ {{ dinheiro(parlamentar.valor) || '0' }} ({{
-                        (parlamentar.valor / transferenciaEmFoco.valor * 100).toFixed()
-                      }}%)
-                    </strong>
+                  <dd>
+                    {{ distribuicao.valor_contrapartida
+                      ? `R$${dinheiro(distribuicao.valor_contrapartida)}`
+                      : '-' }}
+                  </dd>
+                </dl>
+                <dl class="mb1 pb1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Custeio
+                  </dt>
+                  <dd>
+                    {{ distribuicao.custeio ? `R$${dinheiro(distribuicao.custeio)}` : '-' }}
+                  </dd>
+                </dl>
+                <dl class="mb1 pb1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Investimento
+                  </dt>
+                  <dd>
+                    {{ distribuicao.investimento ? `R$${dinheiro(distribuicao.investimento)}` : '-' }}
+                  </dd>
+                </dl>
+                <dl class="mb1 pb1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Valor total
+                  </dt>
+                  <dd>
+                    {{ distribuicao.valor_total
+                      ? `R$${dinheiro(distribuicao.valor_total)}`
+                      : '-' }}
                   </dd>
                 </dl>
               </div>
-            </dd>
+              <div class="grid f1">
+                <dl class="mb2">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Empenho
+                  </dt>
+                  <dd>
+                    {{ distribuicao.empenho ? 'Sim' : 'Não' }}
+                  </dd>
+                </dl>
+                <dl class="mb2">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Programa orçamentário municipal
+                  </dt>
+                  <dd>
+                    {{ distribuicao.programa_orcamentario_municipal || '-' }}
+                  </dd>
+                </dl>
+                <dl class="mb2">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Programa orçamentário estadual
+                  </dt>
+                  <dd>
+                    {{ distribuicao.programa_orcamentario_estadual || '-' }}
+                  </dd>
+                </dl>
+              </div>
+              <div class="grid f1">
+                <dl class="mb2">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Dotação orçamentária
+                  </dt>
+                  <dd>
+                    {{ distribuicao.dotacao || '-' }}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+            <div class="flex g2 flexwrap mb2">
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Número proposta
+                </dt>
+                <dd>
+                  {{ distribuicao.proposta || '-' }}
+                </dd>
+              </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Número do convênio/pré convênio
+                </dt>
+                <dd>
+                  {{ distribuicao.convenio || '-' }}
+                </dd>
+              </dl>
+            </div>
+            <div class="flex g2 flexwrap mb2">
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Número do contrato
+                </dt>
+                <dd>
+                  {{ distribuicao.contrato || '-' }}
+                </dd>
+              </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Data de vigência
+                </dt>
+                <dd>
+                  {{ distribuicao.vigencia
+                    ? dateToField(distribuicao.vigencia)
+                    : '-' }}
+                </dd>
+              </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Motivo do aditamento
+                </dt>
+                <dd>
+                  {{ distribuicao.aditamentos[0]?.justificativa || ' - ' }}
+                </dd>
+              </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Data de conclusão da suspensiva
+                </dt>
+                <dd>
+                  {{ distribuicao.conclusao_suspensiva
+                    ? dateToField(distribuicao.conclusao_suspensiva)
+                    : '-' }}
+                </dd>
+              </dl>
+            </div>
+
+            <table
+              v-if="distribuicao.registros_sei?.length"
+              class="tablemain no-zebra horizontal-lines mb1"
+            >
+              <caption class="t16 w700 mb05 tamarelo tl">
+                Números SEI
+              </caption>
+              <col class="col--botão-de-ação">
+              <col>
+              <col class="col--dataHora">
+              <col class="col--dataHora">
+              <col class="col--data">
+              <col>
+              <col>
+              <col>
+              <col class="col--botão-de-ação">
+
+              <thead>
+                <th />
+                <th class="cell--nowrap">
+                  Código
+                </th>
+                <th>Tipo</th>
+                <th>Especificação</th>
+                <th>Alteração</th>
+                <th>Andamento</th>
+                <th>Unidade</th>
+                <th>Usuário SEI</th>
+                <th>Lido</th>
+                <th />
+              </thead>
+
+              <tbody class="transferencia-sei-body">
+                <tr
+                  v-for="registro, idx in distribuicao.registros_sei"
+                  :key="idx"
+                  class="transferencia-sei-body__item"
+                >
+                  <td>
+                    <span
+                      v-if="registro?.integracao_sei?.relatorio_sincronizado_em"
+                      class="tipinfo right"
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                        color="#F2890D"
+                      >
+                        <use xlink:href="#i_i" />
+                      </svg>
+
+                      <div>
+                        Sincronização:
+                        {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
+                      </div>
+                    </span>
+                  </td>
+                  <th class="cell--nowrap">
+                    {{ registro?.processo_sei }}
+                  </th>
+                  <th>{{ registro?.integracao_sei?.json_resposta?.tipo }}</th>
+                  <th>{{ registro?.integracao_sei?.json_resposta?.especificacao }}</th>
+                  <td>
+                    {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
+                  </td>
+                  <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
+                  <td>
+                    {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
+                    -
+                    {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.sigla }}
+                  </td>
+                  <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
+                  <td>
+                    <label
+                      v-if="registro.integracao_sei"
+                      class="transferencia-sei-body__item--lido flex column g05 start"
+                    >
+                      {{ registro.lido ? "Lido" : "Não lido" }}
+                      <input
+                        type="checkbox"
+                        class="interruptor"
+                        :checked="registro.lido"
+                        @input="atualizaSeiLido(
+                          registro,
+                          distribuicao.id,
+                          $event.target.checked
+                        )"
+                      >
+                    </label>
+                  </td>
+                  <td>
+                    <SmaeLink
+                      v-if="registro?.integracao_sei?.link"
+                      :to="registro?.integracao_sei?.link"
+                      title="Abrir no site do SEI"
+                      @click="atualizaSeiLido(registro, distribuicao.transferencia_id, true)"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                      ><use xlink:href="#i_link" /></svg>
+                    </SmaeLink>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="flex g2 center mt3 mb2">
+              <h3 class="w700 tc600 t20 mb0">
+                Assinaturas
+              </h3>
+              <hr class="f1">
+            </div>
+
+            <div class="flex g2 flexwrap mb2">
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Data da assinatura do termo de aceite
+                </dt>
+                <dd v-if="distribuicao?.assinatura_termo_aceite">
+                  {{ dateToField(distribuicao.assinatura_termo_aceite) }}
+                </dd>
+              </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Data da assinatura do representante do estado
+                </dt>
+                <dd v-if="distribuicao?.assinatura_estado">
+                  {{ dateToField(distribuicao.assinatura_estado) }}
+                </dd>
+              </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Data da assinatura do representante do município
+                </dt>
+                <dd v-if="distribuicao?.assinatura_municipio">
+                  {{ dateToField(distribuicao.assinatura_municipio) }}
+                </dd>
+              </dl>
+            </div>
           </div>
-        </dl>
-      </div>
-
-      <div class="flex flexwrap g2 mb2">
-        <div class="grid valores f1">
-          <dl class="mb1 pb1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Valor do repasse
-            </dt>
-            <dd>
-              {{ distribuicao.valor ? `R$${dinheiro(distribuicao.valor)}` : '-' }}
-            </dd>
-          </dl>
-          <dl class="mb1 pb1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Valor contrapartida
-            </dt>
-            <dd>
-              {{ distribuicao.valor_contrapartida
-                ? `R$${dinheiro(distribuicao.valor_contrapartida)}`
-                : '-' }}
-            </dd>
-          </dl>
-          <dl class="mb1 pb1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Custeio
-            </dt>
-            <dd>
-              {{ distribuicao.custeio ? `R$${dinheiro(distribuicao.custeio)}` : '-' }}
-            </dd>
-          </dl>
-          <dl class="mb1 pb1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Investimento
-            </dt>
-            <dd>
-              {{ distribuicao.investimento ? `R$${dinheiro(distribuicao.investimento)}` : '-' }}
-            </dd>
-          </dl>
-          <dl class="mb1 pb1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Valor total
-            </dt>
-            <dd>
-              {{ distribuicao.valor_total
-                ? `R$${dinheiro(distribuicao.valor_total)}`
-                : '-' }}
-            </dd>
-          </dl>
-        </div>
-        <div class="grid f1">
-          <dl class="mb2">
-            <dt class="t16 w700 mb05 tamarelo">
-              Empenho
-            </dt>
-            <dd>
-              {{ distribuicao.empenho ? 'Sim' : 'Não' }}
-            </dd>
-          </dl>
-          <dl class="mb2">
-            <dt class="t16 w700 mb05 tamarelo">
-              Programa orçamentário municipal
-            </dt>
-            <dd>
-              {{ distribuicao.programa_orcamentario_municipal || '-' }}
-            </dd>
-          </dl>
-          <dl class="mb2">
-            <dt class="t16 w700 mb05 tamarelo">
-              Programa orçamentário estadual
-            </dt>
-            <dd>
-              {{ distribuicao.programa_orcamentario_estadual || '-' }}
-            </dd>
-          </dl>
-        </div>
-        <div class="grid f1">
-          <dl class="mb2">
-            <dt class="t16 w700 mb05 tamarelo">
-              Dotação orçamentária
-            </dt>
-            <dd>
-              {{ distribuicao.dotacao || '-' }}
-            </dd>
-          </dl>
-        </div>
-      </div>
-
-      <div>
-        <div class="flex g2 flexwrap mb2">
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Número proposta
-            </dt>
-            <dd>
-              {{ distribuicao.proposta || '-' }}
-            </dd>
-          </dl>
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Número do convênio/pré convênio
-            </dt>
-            <dd>
-              {{ distribuicao.convenio || '-' }}
-            </dd>
-          </dl>
-        </div>
-        <div class="flex g2 flexwrap mb2">
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Número do contrato
-            </dt>
-            <dd>
-              {{ distribuicao.contrato || '-' }}
-            </dd>
-          </dl>
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Data de vigência
-            </dt>
-            <dd>
-              {{ distribuicao.vigencia
-                ? dateToField(distribuicao.vigencia)
-                : '-' }}
-            </dd>
-          </dl>
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Motivo do aditamento
-            </dt>
-            <dd>
-              {{ distribuicao.aditamentos[0]?.justificativa || ' - ' }}
-            </dd>
-          </dl>
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Data de conclusão da suspensiva
-            </dt>
-            <dd>
-              {{ distribuicao.conclusao_suspensiva
-                ? dateToField(distribuicao.conclusao_suspensiva)
-                : '-' }}
-            </dd>
-          </dl>
-        </div>
-      </div>
-
-      <table
-        v-if="distribuicao.registros_sei?.length"
-        class="tablemain no-zebra horizontal-lines mb1"
-      >
-        <caption class="t16 w700 mb05 tamarelo tl">
-          Números SEI
-        </caption>
-        <col class="col--botão-de-ação">
-        <col>
-        <col class="col--dataHora">
-        <col class="col--dataHora">
-        <col class="col--data">
-        <col>
-        <col>
-        <col>
-        <col class="col--botão-de-ação">
-
-        <thead>
-          <th />
-          <th class="cell--nowrap">
-            Código
-          </th>
-          <th>Tipo</th>
-          <th>Especificação</th>
-          <th>Alteração</th>
-          <th>Andamento</th>
-          <th>Unidade</th>
-          <th>Usuário SEI</th>
-          <th>Lido</th>
-          <th />
-        </thead>
-
-        <tbody class="transferencia-sei-body">
-          <tr
-            v-for="registro, idx in distribuicao.registros_sei"
-            :key="idx"
-            class="transferencia-sei-body__item"
-          >
-            <td>
-              <span
-                v-if="registro?.integracao_sei?.relatorio_sincronizado_em"
-                class="tipinfo right"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  color="#F2890D"
-                >
-                  <use xlink:href="#i_i" />
-                </svg>
-
-                <div>
-                  Sincronização:
-                  {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
-                </div>
-              </span>
-            </td>
-            <th class="cell--nowrap">
-              {{ registro?.processo_sei }}
-            </th>
-            <th>{{ registro?.integracao_sei?.json_resposta?.tipo }}</th>
-            <th>{{ registro?.integracao_sei?.json_resposta?.especificacao }}</th>
-            <td>
-              {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
-            </td>
-            <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
-            <td>
-              {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
-              -
-              {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.sigla }}
-            </td>
-            <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
-            <td>
-              <label
-                v-if="registro.integracao_sei"
-                class="transferencia-sei-body__item--lido flex column g05 start"
-              >
-                {{ registro.lido ? "Lido" : "Não lido" }}
-                <input
-                  type="checkbox"
-                  class="interruptor"
-                  :checked="registro.lido"
-                  @input="atualizaSeiLido(
-                    registro,
-                    distribuicao.id,
-                    $event.target.checked
-                  )"
-                >
-              </label>
-            </td>
-            <td>
-              <SmaeLink
-                v-if="registro?.integracao_sei?.link"
-                :to="registro?.integracao_sei?.link"
-                title="Abrir no site do SEI"
-                @click="atualizaSeiLido(registro, distribuicao.transferencia_id, true)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_link" /></svg>
-              </SmaeLink>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="flex g2 center mt3 mb2">
-        <h3 class="w700 tc600 t20 mb0">
-          Assinaturas
-        </h3>
-        <hr class="f1">
-      </div>
-
-      <div class="flex g2 flexwrap mb2">
-        <dl class="f1">
-          <dt class="t16 w700 mb05 tamarelo">
-            Data da assinatura do termo de aceite
-          </dt>
-          <dd v-if="distribuicao?.assinatura_termo_aceite">
-            {{ dateToField(distribuicao.assinatura_termo_aceite) }}
-          </dd>
-        </dl>
-        <dl class="f1">
-          <dt class="t16 w700 mb05 tamarelo">
-            Data da assinatura do representante do estado
-          </dt>
-          <dd v-if="distribuicao?.assinatura_estado">
-            {{ dateToField(distribuicao.assinatura_estado) }}
-          </dd>
-        </dl>
-        <dl class="f1">
-          <dt class="t16 w700 mb05 tamarelo">
-            Data da assinatura do representante do município
-          </dt>
-          <dd v-if="distribuicao?.assinatura_municipio">
-            {{ dateToField(distribuicao.assinatura_municipio) }}
-          </dd>
-        </dl>
+        </TransitionExpand>
       </div>
     </section>
     <div class="flex justifycenter">
       <button
-        class="btn with-icon bgnone tcprimary mt2"
+        class="btn with-icon bgnone tcprimary"
         aria-label="Fechar erro"
         title="Fechar erro"
         @click="alternaExpandido"
@@ -572,14 +538,6 @@ onUnmounted(() => {
 
 .resumo-completo {
   scroll-margin: 2rem;
-}
-
-.resumo-da-distribuicao-de-recursos {
-  --height: 150px;
-  interpolate-size: allow-keywords;
-  height: var(--height);
-  transition: height 0.35s ease;
-  overflow: hidden;
 }
 
 .resumo-da-distribuicao-de-recursos--expandido {
