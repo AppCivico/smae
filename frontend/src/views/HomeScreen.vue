@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS.ts';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
@@ -15,6 +12,11 @@ import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useUsersStore } from '@/stores/users.store';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import type { ModulosDoSistema } from '@/consts/modulosDoSistema';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -26,19 +28,19 @@ const erro = ref(null);
 const sessao = ref(null);
 
 const {
-  sistemaEscolhido, dadosDoSistemaEscolhido,
+  sistemaEscolhido,
 } = storeToRefs(authStore);
 
 const módulosDisponíveis = ref([]);
 
 // PRA-FAZER: mover para o gerenciador de estado `auth.store`
-async function escolher(opção) {
+async function escolher(opção: keyof ModulosDoSistema) {
   emEspera.value = true;
   erro.value = null;
   sistemaEscolhido.value = opção;
 
-  authStore.getDados()
-    .then(() => {
+  authStore.getDados(null, { headers: { 'smae-sistemas': `SMAE,${opção}` } })
+    .then((user) => {
       // PRA-FAZER: persistir o auth.store no navegador
       localStorage.setItem('sistemaEscolhido', opção);
 
@@ -54,8 +56,8 @@ async function escolher(opção) {
         ])
       ) {
         router.push({ name: 'análises' });
-      } else if (dadosDoSistemaEscolhido.value?.rotaInicial) {
-        router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
+      } else if (módulos[opção]?.rotaInicial) {
+        router.push(módulos[opção]?.rotaInicial);
       }
 
       useRegionsStore().$reset();

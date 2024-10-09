@@ -46,6 +46,10 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
       : msgDefault
       ?? response.status;
 
+    if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+      console.trace('Erro:', error);
+    }
+
     if (alertarErros) {
       if (!alertStore.alertas.some((alerta:Alerta) => alerta.message === error)) {
         alertStore.error(error);
@@ -65,12 +69,13 @@ function userToken(url: RequestInfo | URL): HeadersInit {
   const authStore = useAuthStore();
   const isLoggedIn = !!authStore.token;
   const isApiUrl = String(url).startsWith(import.meta.env.VITE_API_URL);
+
   if (isLoggedIn && isApiUrl) {
     const headers: HeadersInit = {
       Authorization: `Bearer ${authStore.token}`,
     };
-    if (authStore.sistemaEscolhido && authStore.sistemaEscolhido !== 'SMAE') {
-      headers['smae-sistemas'] = `SMAE,${authStore.sistemaEscolhido}`;
+    if (authStore.sistemaCorrente && authStore.sistemaCorrente !== 'SMAE') {
+      headers['smae-sistemas'] = `SMAE,${authStore.sistemaCorrente}`;
     }
     return headers;
   }
@@ -80,14 +85,17 @@ function userToken(url: RequestInfo | URL): HeadersInit {
 function request(method: Method, upload = false) {
   return (
     url: RequestInfo | URL,
-    params: { [key: string]: any } | undefined,
-    AlertarErros = true,
+    params: { [key: string]: unknown } | undefined,
+    opcoes: { AlertarErros?: boolean; headers?: HeadersInit } = { AlertarErros: true },
   ) => {
     let urlFinal = url;
 
     const requestOptions: RequestInit = {
       method,
-      headers: userToken(urlFinal),
+      headers: {
+        ...userToken(urlFinal),
+        ...opcoes.headers,
+      },
     };
 
     switch (method) {
@@ -115,7 +123,7 @@ function request(method: Method, upload = false) {
 
     // return fetch(urlFinal, requestOptions).then(handleResponse);
     return fetch(urlFinal, requestOptions)
-      .then((response) => handleResponse(response, AlertarErros))
+      .then((response) => handleResponse(response, opcoes.AlertarErros))
       .finally(() => {
         switch (method) {
           case 'GET':

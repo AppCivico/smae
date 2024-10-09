@@ -102,10 +102,15 @@ BEGIN
         join variavel v on v.id = iv.variavel_id
         left join status_variavel_ciclo_fisico svcf ON svcf.variavel_id = v.id
             AND svcf.ciclo_fisico_id = pCicloFisicoIdAtual
-        join serie_variavel sv on sv.variavel_id = v.id and sv.serie = 'PrevistoAcumulado'
-            and sv.data_valor = v_data_ciclo + (v.atraso_meses * '-1 month'::interval)
         where iv.meta_id = pMetaId and iv.pdm_id = v_pdm_id
         AND v.mostrar_monitoramento = true
+        AND v.suspendida_em IS NULL
+        -- antes era feito pelo join, mas isso não é OK em situações como a variaveis categorizadas não tem series
+        -- de previsto acumulado, então não tem como fazer o join, mas ela participa do ciclo
+        -- PS: Ainda fica o bug de precisar limpar da serie_variavel quando troca a data da variavel no PDM (PS não tem como)
+        --join serie_variavel sv on sv.variavel_id = v.id and sv.serie = 'PrevistoAcumulado'
+        --    and sv.data_valor = v_data_ciclo + (v.atraso_meses * '-1 month'::interval)
+        AND variavel_participa_do_ciclo(v.id, (v_data_ciclo - (v.atraso_meses || ' months')::interval)::date) = TRUE
     ),
     cte_variaveis_preenchidas as (
         select

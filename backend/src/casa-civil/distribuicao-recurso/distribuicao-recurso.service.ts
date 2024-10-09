@@ -111,22 +111,26 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     select: {
+                        id: true,
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
                         valor_total: true,
                         status: {
-                            orderBy: { data_troca: 'desc' },
+                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                             take: 1,
                             select: {
+                                id: true,
                                 status_base: {
                                     select: {
                                         tipo: true,
+                                        valor_distribuicao_contabilizado: true,
                                     },
                                 },
                                 status: {
                                     select: {
                                         tipo: true,
+                                        valor_distribuicao_contabilizado: true,
                                     },
                                 },
                             },
@@ -140,7 +144,7 @@ export class DistribuicaoRecursoService {
                     if (statusAtual) {
                         const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
-                        return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
+                        return statusConfig?.valor_distribuicao_contabilizado == true;
                     }
                     return true;
                 });
@@ -231,6 +235,7 @@ export class DistribuicaoRecursoService {
                                 removido_em: null,
                                 distribuicao_recurso: {
                                     transferencia_id: dto.transferencia_id,
+                                    removido_em: null,
                                     status: {
                                         some: {
                                             OR: [
@@ -253,6 +258,29 @@ export class DistribuicaoRecursoService {
                                 id: true,
                                 distribuicao_recurso_id: true,
                                 valor: true,
+
+                                distribuicao_recurso: {
+                                    select: {
+                                        status: {
+                                            take: 1,
+                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                            select: {
+                                                status_base: {
+                                                    select: {
+                                                        tipo: true,
+                                                        valor_distribuicao_contabilizado: true,
+                                                    },
+                                                },
+                                                status: {
+                                                    select: {
+                                                        tipo: true,
+                                                        valor_distribuicao_contabilizado: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         });
 
@@ -269,7 +297,17 @@ export class DistribuicaoRecursoService {
                             );
 
                         let sumValor = rowsParlamentarDist
-                            .filter((e) => e.valor)
+                            .filter((e) => e.valor != null)
+                            .filter((e) => {
+                                const statusUltimaRow = e.distribuicao_recurso.status[0];
+                                if (!statusUltimaRow) return true;
+                                console.log(statusUltimaRow);
+
+                                const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+                                console.log(statusConfig);
+
+                                return statusConfig!.valor_distribuicao_contabilizado == true;
+                            })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += novaRow.valor ? +novaRow.valor : 0;
                         console.log('\n==========================');
@@ -280,7 +318,7 @@ export class DistribuicaoRecursoService {
 
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
-                                'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
                                 400
                             );
 
@@ -955,17 +993,19 @@ export class DistribuicaoRecursoService {
                             valor_contrapartida: true,
                             valor_total: true,
                             status: {
-                                orderBy: { data_troca: 'desc' },
+                                orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                                 take: 1,
                                 select: {
                                     status_base: {
                                         select: {
                                             tipo: true,
+                                            valor_distribuicao_contabilizado: true,
                                         },
                                     },
                                     status: {
                                         select: {
                                             tipo: true,
+                                            valor_distribuicao_contabilizado: true,
                                         },
                                     },
                                 },
@@ -979,7 +1019,7 @@ export class DistribuicaoRecursoService {
                         if (statusAtual) {
                             const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
-                            return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
+                            return statusConfig?.valor_distribuicao_contabilizado == true;
                         }
                         return true;
                     });
@@ -1189,12 +1229,12 @@ export class DistribuicaoRecursoService {
 
                         const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                             where: {
-                                //id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
+                                id: relParlamentar.id ? { not: relParlamentar.id } : undefined,
                                 parlamentar_id: relParlamentar.parlamentar_id,
                                 removido_em: null,
                                 distribuicao_recurso: {
-                                    id: id,
                                     removido_em: null,
+                                    transferencia_id: self.transferencia_id,
                                 },
                             },
                             select: {
@@ -1204,7 +1244,7 @@ export class DistribuicaoRecursoService {
                                     select: {
                                         status: {
                                             take: 1,
-                                            orderBy: { data_troca: 'desc' },
+                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                                             select: {
                                                 status_base: {
                                                     select: {
@@ -1224,24 +1264,23 @@ export class DistribuicaoRecursoService {
                                 },
                             },
                         });
+                        console.log('\n==========================');
 
                         let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor != null)
                             .filter((e) => {
                                 const statusUltimaRow = e.distribuicao_recurso.status[0];
                                 if (!statusUltimaRow) return true;
+                                console.log(statusUltimaRow);
 
                                 const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-                                console.log('\n==========================');
                                 console.log(statusConfig);
-                                console.log('\n==========================');
 
                                 return statusConfig!.valor_distribuicao_contabilizado == true;
                             })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 
-                        console.log('\n==========================');
                         console.log(rowsParlamentarDist.filter((e) => e.valor != null));
                         console.log(
                             rowsParlamentarDist
@@ -1261,7 +1300,7 @@ export class DistribuicaoRecursoService {
                         console.log('\n==========================');
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
-                                'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse na transferência.',
+                                'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
                                 400
                             );
 

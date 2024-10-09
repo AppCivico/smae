@@ -1,4 +1,5 @@
-import modulos from '@/consts/modulosDoSistema';
+import modulos from '@/consts/modulosDoSistema.ts';
+import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -11,8 +12,9 @@ export const useAuthStore = defineStore({
     token: JSON.parse(localStorage.getItem('token')),
     reducedtoken: null,
     returnUrl: null,
-    sistemaEscolhido: localStorage.getItem('sistemaEscolhido') || 'SMAE',
     permissions: JSON.parse(localStorage.getItem('permissions')),
+    sistemaEscolhido: localStorage.getItem('sistemaEscolhido') || 'SMAE',
+    moduloDaRotaAnterior: '',
   }),
   actions: {
     async login(carga) {
@@ -35,9 +37,9 @@ export const useAuthStore = defineStore({
         alertStore.error(error);
       }
     },
-    async getDados(params) {
+    async getDados(params, opcoes) {
       try {
-        const user = await this.requestS.get(`${baseUrl}/minha-conta`, params);
+        const user = await this.requestS.get(`${baseUrl}/minha-conta`, params, opcoes);
 
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
@@ -140,14 +142,23 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
-    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => modulos[sistemaEscolhido] || {},
+    sistemaCorrente() {
+      if (!import.meta.env.VITE_HABILITAR_BETA) {
+        return this.sistemaEscolhido;
+      }
+
+      return retornarModuloDeEntidadeMae(this.route.meta.entidadeMãe)
+        || this.moduloDaRotaAnterior
+        || this.sistemaEscolhido;
+    },
+    dadosDoSistemaEscolhido: ({ sistemaCorrente }) => modulos[sistemaCorrente] || {},
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissoes) => (Array.isArray(permissoes)
       ? permissoes
       : [permissoes]
     ).some((x) => (x.slice(-1) === '.'
       // se o valor termina com `.`,
-      // ele tem que bater com o começo de algumas permissão
+      // ele tem que bater com o começo de algumas permissões
       ? user.privilegios.some((y) => y.indexOf(x) === 0)
       : user.privilegios.some((y) => x === y))),
   },

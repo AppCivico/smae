@@ -120,6 +120,7 @@ BEGIN
         AND variavel_participa_do_ciclo(vv.id, (vCiclo - (vv.atraso_meses || ' months')::interval)::date) = TRUE
         AND vv.removido_em IS NULL
         AND vv.mostrar_monitoramento = true
+        AND vv.suspendida_em is null
 
     ),
     variaveis_visiveis as (
@@ -355,6 +356,10 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+DELETE FROM pessoa_acesso_pdm_valido;
+DELETE FROM pessoa_acesso_pdm;
+select pessoa_acesso_pdm(1);
 
 -- as funcoes estao muito abertas, calculando todo mundo
 -- mais pra frente vamos colocar isso apenas durante as alterações respectivas, onde for possivel.

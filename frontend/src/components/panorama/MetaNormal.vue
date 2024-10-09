@@ -42,11 +42,13 @@ defineProps({
       <component
         :is="meta.cronograma?.total || meta.variaveis?.total ? 'router-link' : 'span'"
         :to="{
-          name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+          name: meta.variaveis?.total
+            ? 'monitoramentoDeEvoluçãoDeMetaEspecífica'
+            : 'monitoramentoDeCronogramaDeMetaEspecífica',
           params: {
             meta_id: meta.id
           },
-          query: $route.query,
+          query: meta.variaveis?.total ? $route.query : null,
         }"
       >
         {{ meta.codigo }} - {{ meta.titulo }}
@@ -103,7 +105,10 @@ defineProps({
         >
           <router-link
             :to="{
-              name: 'monitoramentoPorTarefas',
+              name: 'monitoramentoDeCronogramaDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              },
             }"
             class="tipinfo"
           >

@@ -30,6 +30,7 @@ import transferenciasVoluntarias from './transferenciasVoluntarias';
 import variaveis from './variaveis';
 import comunicadosGerais from './comunicadosGerais';
 import oportunidades from './ps.oportunidades';
+import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -94,10 +95,14 @@ export const router = createRouter({
   },
 });
 
-router.beforeEach(async (r) => {
+router.beforeEach(async (r, from) => {
   const publicPages = ['/login', '/esqueci-minha-senha', '/nova-senha'];
   const authRequired = !publicPages.includes(r.path);
   const authStore = useAuthStore();
+
+  if (from.meta?.entidadeMãe) {
+    authStore.moduloDaRotaAnterior = retornarModuloDeEntidadeMae(from.meta.entidadeMãe);
+  }
 
   if (authRequired && !authStore.user) {
     authStore.returnUrl = r.fullPath;
@@ -108,8 +113,9 @@ router.beforeEach(async (r) => {
   }
 });
 
-router.afterEach((to) => {
-  const { título } = to.meta;
+router.afterEach((to, from) => {
+  const { título, classeRaiz } = to.meta;
+  const { classeRaiz: classeRaizAnterior } = from.meta;
 
   if (título) {
     if (typeof título === 'function') {
@@ -121,6 +127,16 @@ router.afterEach((to) => {
     }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
+  }
+
+  if (classeRaizAnterior !== classeRaiz) {
+    if (classeRaizAnterior) {
+      document.documentElement.classList.remove(classeRaizAnterior);
+    }
+
+    if (classeRaiz) {
+      document.documentElement.classList.add(classeRaiz);
+    }
   }
 });
 

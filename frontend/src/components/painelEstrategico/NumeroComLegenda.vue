@@ -1,30 +1,9 @@
-<template>
-  <div
-    :style="{ backgroundColor: corDeFundo || 'transparent' }"
-    class="card"
-  >
-    <h1
-      :style="{ color: cor, fontSize: tamanhoDoNumero + 'px' }"
-      class="number"
-    >
-      {{ numero }}
-    </h1>
-    <hr class="line">
-    <p
-      :style="{ fontSize: tamanhoDaLegenda + 'px' }"
-      class="label"
-    >
-      {{ legenda }}
-    </p>
-  </div>
-</template>
-
 <script setup>
 import { defineProps } from 'vue';
 
-const props = defineProps({
+defineProps({
   numero: {
-    type: [Number, String],
+    type: String,
     required: true,
   },
   cor: {
@@ -49,12 +28,31 @@ const props = defineProps({
   },
 });
 </script>
-
+<template>
+  <div
+    :style="{ backgroundColor: corDeFundo || 'transparent' }"
+    class="card"
+  >
+    <h1
+      :style="{ color: cor, fontSize: tamanhoDoNumero + 'px' }"
+      class="number"
+    >
+      {{ numero.padStart(2,'0') }}
+    </h1>
+    <hr class="line">
+    <p
+      :style="{ fontSize: tamanhoDaLegenda + 'px' }"
+      class="label"
+    >
+      {{ legenda }}
+    </p>
+  </div>
+</template>
 <style scoped>
 .card {
   text-align: center;
-  padding: 10px;
-  border-radius: 20px;
+  padding: 20px;
+  border-radius: 21px;
 }
 
 .number {
@@ -63,7 +61,7 @@ const props = defineProps({
 }
 
 .line {
-  width: 20%;
+  width: 40%;
   border: none;
   border-top: 1px solid #7E858D;
   margin: 10px auto;

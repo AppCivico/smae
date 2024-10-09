@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
+    PerfilResponsavelEquipe,
     Periodicidade,
     Prisma,
     Serie,
@@ -90,6 +91,14 @@ export type VariavelComCategorica = {
         tipo: TipoVariavelCategorica;
         valores: VariavelCategoricaValor[];
     } | null;
+    tipo: TipoVariavel;
+    orgao_proprietario_id: number | null;
+    VariavelGrupoResponsavelEquipe: {
+        grupo_responsavel_equipe: {
+            perfil: PerfilResponsavelEquipe;
+            id: number;
+        };
+    }[];
 };
 
 function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
@@ -127,7 +136,7 @@ export class VariavelService {
         private readonly prisma: PrismaService
     ) {}
 
-    async loadVariaveisComCategorica(
+    private async loadVariaveisComCategorica(
         tipo: TipoVariavel,
         prismaTxn: Prisma.TransactionClient,
         variavelId: number[]
@@ -140,6 +149,19 @@ export class VariavelService {
             select: {
                 id: true,
                 acumulativa: true,
+                tipo: true,
+                VariavelGrupoResponsavelEquipe: {
+                    where: { removido_em: null },
+                    select: {
+                        grupo_responsavel_equipe: {
+                            select: {
+                                perfil: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                orgao_proprietario_id: true,
                 variavel_categorica: {
                     select: {
                         id: true,
@@ -1243,7 +1265,7 @@ export class VariavelService {
             return plano;
         };
 
-        const perm = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
+        const ehAdminGeral = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
 
         const paginas = Math.ceil(total_registros / ipp);
         return {
@@ -1253,23 +1275,21 @@ export class VariavelService {
             paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): VariavelGlobalItemDto => {
-                let localPerm = perm;
-                let localPermValor = perm;
-                if (r.tipo == 'Calculada') {
-                    localPerm = false;
-                    localPermValor = false;
-                }
+                let pode_editar = ehAdminGeral;
+                let pode_editar_valor = ehAdminGeral;
 
-                if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
-                    if (r.orgao_proprietario_id != user.orgao_id) {
-                        localPerm = false;
-                        localPermValor = false;
+                if (!pode_editar && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+                    if (r.orgao_proprietario_id == user.orgao_id) {
+                        pode_editar = true;
+                        pode_editar_valor = true;
                     }
                 }
 
-                // fogo que isso vai criar um bug, na hora de editar os valores em si pode editar,
-                // entao o localPermValor = true
-                if (r.variavel_mae_id) localPerm = false;
+                if (r.tipo == 'Calculada') {
+                    pode_editar = false;
+                    pode_editar_valor = false;
+                }
+                if (r.variavel_mae_id) pode_editar = false;
 
                 return {
                     id: r.id,
@@ -1291,9 +1311,9 @@ export class VariavelService {
                     fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
                     inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
                     periodicidade: r.periodicidade,
-                    pode_editar: localPerm,
-                    pode_editar_valor: localPermValor,
-                    pode_excluir: localPerm && r.planos.length == 0,
+                    pode_editar: pode_editar,
+                    pode_editar_valor: pode_editar_valor,
+                    pode_excluir: pode_editar && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
                     regiao: r.regiao
@@ -2634,6 +2654,42 @@ export class VariavelService {
             this.prisma,
             valoresValidos.map((e) => e.referencia.v)
         );
+
+        const orgao_id = user.orgao_id;
+        if (!orgao_id) throw new BadRequestException('Usuário sem órgão');
+
+        const globais = variaveisInfo.filter((v) => v.tipo === 'Global');
+
+        if (globais.length && !user.hasSomeRoles(['CadastroVariavelGlobal.administrador'])) {
+            const collab = await user.getEquipesColaborador(this.prisma);
+            const ehAdminNoOrgao = user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao']);
+            for (const variavel of variaveisInfo) {
+                // PDM só valida pela listagem de variáveis, no momento
+                if (variavel.tipo != 'Global') continue;
+
+                if (!variavel.orgao_proprietario_id) throw new BadRequestException('Variável sem órgão proprietário');
+
+                if (ehAdminNoOrgao && variavel.orgao_proprietario_id !== orgao_id) {
+                    throw new HttpException('Você não pode editar variáveis de outro órgão proprietário', 400);
+                }
+
+                const variavelEquipes = variavel.VariavelGrupoResponsavelEquipe.filter(
+                    (g) =>
+                        g.grupo_responsavel_equipe.perfil === 'Liberacao' ||
+                        g.grupo_responsavel_equipe.perfil === 'Validacao' ||
+                        g.grupo_responsavel_equipe.perfil === 'Medicao'
+                );
+                if (!variavelEquipes.length) throw new BadRequestException('Variável sem grupo de escrita definido');
+
+                const variavelEquipesIds = variavelEquipes.map((e) => e.grupo_responsavel_equipe.id);
+                if (!collab.some((e) => variavelEquipesIds.includes(e))) {
+                    throw new HttpException(
+                        'Você não tem permissão para editar esta variável por meio das equipes.',
+                        400
+                    );
+                }
+            }
+        }
 
         const variaveisModificadas: Record<number, boolean> = {};
         const now = new Date(Date.now());
