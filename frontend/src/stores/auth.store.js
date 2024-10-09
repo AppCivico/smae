@@ -27,7 +27,12 @@ export const useAuthStore = defineStore({
           return;
         }
         this.token = token.access_token;
-        localStorage.setItem('token', JSON.stringify(token.access_token));
+
+        if (typeof token.access_token === 'string') {
+          localStorage.setItem('token', JSON.stringify(token.access_token));
+        } else {
+          throw new Error('Token não recebido.');
+        }
 
         await this.getDados();
 
@@ -42,7 +47,12 @@ export const useAuthStore = defineStore({
         const user = await this.requestS.get(`${baseUrl}/minha-conta`, params, opcoes);
 
         this.user = user.sessao;
-        localStorage.setItem('user', JSON.stringify(user.sessao));
+
+        if (typeof user.sessao === 'object') {
+          localStorage.setItem('user', JSON.stringify(user.sessao));
+        } else {
+          throw new Error('Usuário não recebido.');
+        }
 
         this.setPermissions();
 
