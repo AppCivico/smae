@@ -1,9 +1,37 @@
 <script lang="ts" setup>
+import * as CardEnvelope from '@/components/card-envelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 
-import * as CardEnvelope from '@/components/card-envelope';
+const route = useRoute();
 
+const painelEstrategicoStore = usePainelEstrategicoStore(route.meta.entidadeMãe as string);
+
+const {
+  chamadasPendentes,
+  erros,
+} = storeToRefs(painelEstrategicoStore);
+
+painelEstrategicoStore.buscarDados({
+  portifolio_id: [
+    1,
+    2,
+    3,
+  ],
+  orgao_responsavel_id: [
+    1,
+    2,
+    3,
+  ],
+  projeto_id: [
+    1,
+    2,
+    3,
+  ],
+});
 </script>
 <template>
   <Dashboard>
@@ -12,7 +40,37 @@ import * as CardEnvelope from '@/components/card-envelope';
       <hr class="ml2 f1">
     </header>
 
-    <div class="lista-de-cartoes">
+    <div class="flex flexwrap g2">
+      <pre class="f1 fb15em debug">anosMapaCalorConcluidos:
+{{ painelEstrategicoStore.anosMapaCalorConcluidos }}</pre>
+      <pre class="f1 fb15em debug">anosMapaCalorPlanejados:
+{{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
+      <pre class="f1 fb15em debug">grandesNumeros:
+{{ painelEstrategicoStore.grandesNumeros }}</pre>
+      <pre class="f1 fb15em debug">projetoEtapas:
+{{ painelEstrategicoStore.projetoEtapas }}</pre>
+      <pre class="f1 fb15em debug">projetoOrgaoResponsavel:
+{{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
+      <pre class="f1 fb15em debug">projetoStatus:
+{{ painelEstrategicoStore.projetoStatus }}</pre>
+      <pre class="f1 fb15em debug">projetosConcluidosAno:
+{{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
+      <pre class="f1 fb15em debug">projetosConcluidosMes:
+{{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
+      <pre class="f1 fb15em debug">projetosPlanejadosAno:
+{{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
+      <pre class="f1 fb15em debug">projetosPlanejadosMes:
+{{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
+    </div>
+
+    <ErrorComponent v-if="erros.dados" />
+
+    <LoadingComponent v-if="chamadasPendentes.dados" />
+
+    <div
+      v-else
+      class="lista-de-cartoes"
+    >
       <TotalDeProjetos />
     </div>
 

@@ -1,0 +1,105 @@
+{
+  "anos_mapa_calor_concluidos": [
+    2010,
+    2011,
+    2022
+  ],
+  "anos_mapa_calor_planejados": [
+    2010,
+    2011,
+    2022
+  ],
+  "grandes_numeros": {
+    "total_metas": 12,
+    "total_orgaos": 7,
+    "total_projetos": 84
+  },
+  "projeto_etapas": [
+    {
+      "etapa": "Etapa 1",
+      "quantidade": 10
+    },
+    {
+      "etapa": "Etapa 2",
+      "quantidade": 20
+    }
+  ],
+  "projeto_orgao_responsavel": [
+    {
+      "orgao_descricao": "descricao",
+      "orgao_sigla": "sigla",
+      "quantidade": 15
+    },
+    {
+      "orgao_descricao": "descricao",
+      "orgao_sigla": "sigla",
+      "quantidade": 15
+    }
+  ],
+  "projeto_status": [
+    {
+      "quantidade": 10,
+      "status": "descricao status"
+    },
+    {
+      "quantidade": 15,
+      "status": "descricao status2"
+    }
+  ],
+  "projetos_concluidos_ano": [
+    {
+      "ano": 2024,
+      "quantidade": 200
+    },
+    {
+      "ano": 2022,
+      "quantidade": 200
+    },
+    {
+      "ano": 2023,
+      "quantidade": 250
+    }
+  ],
+  "projetos_concluidos_mes": [
+    {
+      "ano": 2018,
+      "coluna": 0,
+      "linha": 0,
+      "mes": 1,
+      "quantidade": 10
+    },
+    {
+      "ano": 2018,
+      "coluna": 0,
+      "linha": 0,
+      "mes": 2,
+      "quantidade": 15
+    }
+  ],
+  "projetos_planejados_ano": [
+    {
+      "ano": 2022,
+      "quantidade": 300
+    },
+    {
+      "ano": 2023,
+      "quantidade": 250
+    }
+  ],
+  "projetos_planejados_mes": [
+    {
+      "ano": 2018,
+      "coluna": 0,
+      "linha": 0,
+      "mes": 1,
+      "quantidade": 10
+    },
+    {
+      "ano": 2018,
+      "coluna": 0,
+      "linha": 0,
+      "mes": 2,
+      "quantidade": 15
+    }
+  ]
+}
