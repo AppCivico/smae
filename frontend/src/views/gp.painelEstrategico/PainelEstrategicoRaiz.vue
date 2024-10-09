@@ -111,6 +111,7 @@ painelEstrategicoStore.buscarDados({
 .pagina-de-painel-estrategico {
   background-image: url("@{u}painel-estrategico/mapa-cinza.png");
   background-size: cover;
+  background-attachment: fixed;
 }
 
 .pagina-de-painel-estrategico body {
