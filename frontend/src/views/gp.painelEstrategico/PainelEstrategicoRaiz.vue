@@ -28,6 +28,6 @@ import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue'
 <style lang="less" scoped>
 .lista-de-cartoes {
   display: grid;
-  gap: 4rem 2rem;
+  gap: 2rem 4rem;
 }
 </style>
