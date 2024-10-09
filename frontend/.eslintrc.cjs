@@ -5,9 +5,9 @@ module.exports = {
     'eslint:recommended',
     'airbnb-base',
     'airbnb-typescript/base',
-    '@vue/eslint-config-typescript/recommended',
     'plugin:vue/vue3-recommended',
     '@vue/eslint-config-typescript',
+    '@vue/eslint-config-typescript/recommended',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
