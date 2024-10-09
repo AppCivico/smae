@@ -4,6 +4,7 @@ import { RetryPromise } from '../../common/retryPromise';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRefreshVariavelDto } from './dto/create-refresh-variavel.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class RefreshVariavelService implements TaskableService {
@@ -24,19 +25,31 @@ export class RefreshVariavelService implements TaskableService {
         AND (params::text, criado_em) = (select params::text, criado_em from task_queue where id = ${task.id})
         `;
 
+        const op = async () => {
+            this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                await prismaTx.$executeRaw`SELECT pg_advisory_xact_lock(${inputParams.variavel_id.toString()}::bigint)`;
+
+                await prismaTx.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`;
+            });
+        };
+
         await RetryOperation(
             5,
             async () => {
-                await RetryPromise(
-                    () =>
-                        this.prisma.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`,
-                    10,
-                    100,
-                    20
-                );
+                await RetryPromise(() => op.apply(this), 10, 100, 20);
             },
             async (error) => {
                 this.logger.error(`Erro ao recalcular variavel: ${error}`);
+
+                await this.prisma.variavel.update({
+                    where: {
+                        id: inputParams.variavel_id,
+                    },
+                    data: {
+                        recalculando: true,
+                        recalculo_erro: error.toString(),
+                    },
+                });
 
                 throw error;
             }
