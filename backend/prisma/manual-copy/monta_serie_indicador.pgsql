@@ -17,6 +17,7 @@ DECLARE
     -- resultado em double precision pq já passou por toda a conta
     resultado double precision;
 BEGIN
+    EXECUTE pg_advisory_xact_lock(pIndicador_id::bigint);
     --
     SELECT
         periodicidade_intervalo (i.periodicidade),

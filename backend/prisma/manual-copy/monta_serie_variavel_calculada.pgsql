@@ -22,6 +22,8 @@ DECLARE
 BEGIN
     vStartTime := clock_timestamp();
 
+    EXECUTE pg_advisory_xact_lock(pVariavelId::bigint);
+
     -- Get FormulaComposta ID
     SELECT fc.id
     INTO vFormulaCompostaId

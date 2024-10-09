@@ -10,6 +10,7 @@ DECLARE
     vInicio date;
     vFim date;
 BEGIN
+    EXECUTE pg_advisory_xact_lock(pVariavelId::bigint);
     --
     WITH indicador_info AS (
         SELECT iv.variavel_id, iv.indicador_id
