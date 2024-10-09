@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
+    PerfilResponsavelEquipe,
     Periodicidade,
     Prisma,
     Serie,
@@ -90,6 +91,14 @@ export type VariavelComCategorica = {
         tipo: TipoVariavelCategorica;
         valores: VariavelCategoricaValor[];
     } | null;
+    tipo: TipoVariavel;
+    orgao_proprietario_id: number | null;
+    VariavelGrupoResponsavelEquipe: {
+        grupo_responsavel_equipe: {
+            perfil: PerfilResponsavelEquipe;
+            id: number;
+        };
+    }[];
 };
 
 function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
@@ -127,7 +136,7 @@ export class VariavelService {
         private readonly prisma: PrismaService
     ) {}
 
-    async loadVariaveisComCategorica(
+    private async loadVariaveisComCategorica(
         tipo: TipoVariavel,
         prismaTxn: Prisma.TransactionClient,
         variavelId: number[]
@@ -140,6 +149,19 @@ export class VariavelService {
             select: {
                 id: true,
                 acumulativa: true,
+                tipo: true,
+                VariavelGrupoResponsavelEquipe: {
+                    where: { removido_em: null },
+                    select: {
+                        grupo_responsavel_equipe: {
+                            select: {
+                                perfil: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                orgao_proprietario_id: true,
                 variavel_categorica: {
                     select: {
                         id: true,
@@ -2634,6 +2656,42 @@ export class VariavelService {
             this.prisma,
             valoresValidos.map((e) => e.referencia.v)
         );
+
+        const orgao_id = user.orgao_id;
+        if (!orgao_id) throw new BadRequestException('Usuário sem órgão');
+
+        const globais = variaveisInfo.filter((v) => v.tipo === 'Global');
+
+        if (globais.length && !user.hasSomeRoles(['CadastroPS.administrador'])) {
+            const collab = await user.getEquipesColaborador(this.prisma);
+            const ehAdminNoOrgao = user.hasSomeRoles(['CadastroPS.administrador_no_orgao']);
+            for (const variavel of variaveisInfo) {
+                // PDM só valida pela listagem de variáveis, no momento
+                if (variavel.tipo != 'Global') continue;
+
+                if (!variavel.orgao_proprietario_id) throw new BadRequestException('Variável sem órgão proprietário');
+
+                if (ehAdminNoOrgao && variavel.orgao_proprietario_id !== orgao_id) {
+                    throw new HttpException('Você não pode editar variáveis de outro órgão proprietário', 400);
+                }
+
+                const variavelEquipes = variavel.VariavelGrupoResponsavelEquipe.filter(
+                    (g) =>
+                        g.grupo_responsavel_equipe.perfil === 'Liberacao' ||
+                        g.grupo_responsavel_equipe.perfil === 'Validacao' ||
+                        g.grupo_responsavel_equipe.perfil === 'Medicao'
+                );
+                if (!variavelEquipes.length) throw new BadRequestException('Variável sem grupo de escrita definido');
+
+                const variavelEquipesIds = variavelEquipes.map((e) => e.grupo_responsavel_equipe.id);
+                if (!collab.some((e) => variavelEquipesIds.includes(e))) {
+                    throw new HttpException(
+                        'Você não tem permissão para editar esta variável por meio das equipes.',
+                        400
+                    );
+                }
+            }
+        }
 
         const variaveisModificadas: Record<number, boolean> = {};
         const now = new Date(Date.now());
