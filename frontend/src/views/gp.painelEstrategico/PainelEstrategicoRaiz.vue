@@ -1,6 +1,8 @@
-<script setup>
+<script lang="ts" setup>
 import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+
+import * as CardEnvelope from '@/components/card-envelope';
 
 </script>
 <template>
@@ -13,6 +15,38 @@ import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue'
     <div class="lista-de-cartoes">
       <TotalDeProjetos />
     </div>
+
+    <h1>Carossel</h1>
+
+    <CardEnvelope.default>
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo
+          titulo="Icone Prop"
+          icone="graf"
+        />
+      </CardEnvelope.Conteudo>
+
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo>
+          <strong>Icone Slot</strong>
+
+          <template #icone>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </template>
+        </CardEnvelope.Titulo>
+      </CardEnvelope.Conteudo>
+    </CardEnvelope.default>
+
+    <h1>Card</h1>
+
+    <CardEnvelope.default>
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo titulo="Sem icone" />
+      </CardEnvelope.Conteudo>
+    </CardEnvelope.default>
   </Dashboard>
 </template>
 <style lang="less">
