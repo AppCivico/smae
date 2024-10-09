@@ -1366,6 +1366,8 @@ export class TransferenciaService {
             valor_distribuido: row.distribuicao_recursos
                 .filter((e) => {
                     const statusRow = e.status[0];
+                    if (!statusRow) return true;
+
                     const valor_contabilizado = statusRow.status
                         ? statusRow.status?.valor_distribuicao_contabilizado
                         : statusRow.status_base?.valor_distribuicao_contabilizado;
