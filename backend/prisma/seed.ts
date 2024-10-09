@@ -981,30 +981,36 @@ PerfilAcessoConfig.push(
 async function main() {
     if (atualizacoesPerfil.length) await Promise.all(atualizacoesPerfil);
 
-    await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-        const locked: { locked: boolean }[] =
-            await prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked`;
+    await prisma.$transaction(
+        async (prismaTx: Prisma.TransactionClient) => {
+            const locked: { locked: boolean }[] =
+                await prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked`;
 
-        if (!locked[0].locked) return;
+            if (!locked[0].locked) return;
 
-        await criar_emaildb_config();
-        await criar_texto_config();
-        await atualizar_modulos_e_privilegios();
-        await atualizar_perfil_acesso();
+            await criar_emaildb_config();
+            await criar_texto_config();
+            await atualizar_modulos_e_privilegios();
+            await atualizar_perfil_acesso();
 
-        await atualizar_superadmin();
-        await ensure_bot_user();
+            await atualizar_superadmin();
+            await ensure_bot_user();
 
-        await Promise.allSettled([
-            ensure_categorica_cronograma(),
-            ensure_tiponota_dist_recurso(),
-            ensure_tiponota_transf_gov(),
-            populateEleicao(),
-            populateDistribuicaoStatusBase(),
-        ]);
+            await Promise.allSettled([
+                ensure_categorica_cronograma(),
+                ensure_tiponota_dist_recurso(),
+                ensure_tiponota_transf_gov(),
+                populateEleicao(),
+                populateDistribuicaoStatusBase(),
+            ]);
 
-        await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
-    });
+            await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
+        },
+        {
+            maxWait: 1000,
+            timeout: 60 * 1000,
+        }
+    );
 }
 
 async function ensure_tiponota_transf_gov() {
