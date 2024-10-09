@@ -122,5 +122,13 @@ painelEstrategicoStore.buscarDados({
 .lista-de-cartoes {
   display: grid;
   gap: 2rem 4rem;
+
+  @media screen and (min-width: 55em) {
+    grid-template-columns: 3fr 1fr;
+  }
+
+  @media screen and (min-width: 75em) {
+    grid-template-columns: 3fr 1fr 2fr;
+  }
 }
 </style>
