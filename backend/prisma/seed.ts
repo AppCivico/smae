@@ -882,11 +882,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
 // Perfis de Plano Setoriais
 PerfilAcessoConfig.push(
     {
-        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', [
+        nome: atualizarNomePerfil('Administrador Geral de Plano Setorial', [
             'Administrador Geral do Plano Setorial',
+            'Administrador **Geral** do Plano Setorial',
         ]),
-        descricao:
-            'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
+        descricao: 'Acesso irrestrito aos Planos Setoriais e Banco de Variáveis.',
         privilegios: [
             'CadastroPS.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
             'CadastroVariavelGlobal.administrador',
@@ -896,19 +896,8 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
-        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
-        privilegios: [
-            'PS.admin_cp',
-            'CadastroVariavelGlobal.administrador',
-            ...PSCadastroBasico, // Tema, Tags, etc...
-            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
-        ],
-    },
-
-    {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Pode editar e criar plano setorial no órgão administrador em que faz parte.',
+        descricao: 'Acesso restrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'PS.admin_cp',
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
@@ -962,6 +951,12 @@ PerfilAcessoConfig.push(
         nome: atualizarNomePerfil('Ponto Focal Setorial', []),
         descricao: '',
         privilegios: false,
+    },
+
+    {
+        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
+        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
+        privilegios: false,
     }
 );
 
@@ -979,7 +974,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Coordenadoria de Planejamento'),
     removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
     removerNomePerfil('Responsável por meta na CP'),
-    removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial')
+    removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial'),
+    removerNomePerfil('Administrador de Plano Setorial')
 );
 
 async function main() {
