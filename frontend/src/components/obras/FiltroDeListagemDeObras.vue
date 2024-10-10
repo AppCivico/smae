@@ -305,8 +305,6 @@
   </form>
 </template>
 <script setup>
-import { storeToRefs } from 'pinia';
-import { onUnmounted, ref } from 'vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
@@ -316,6 +314,8 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { storeToRefs } from 'pinia';
+import { onUnmounted, ref } from 'vue';
 
 defineProps({
   ariaBusy: {
