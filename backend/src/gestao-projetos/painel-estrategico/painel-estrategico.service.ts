@@ -4,26 +4,27 @@ import { PainelEstrategicoFilterDto } from './dto/painel-estrategico-filter.dto'
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
     PainelEstrategicoGrandesNumeros,
+    PainelEstrategicoOrgaoResponsavel,
     PainelEstrategicoProjetoEtapa,
     PainelEstrategicoProjetosAno,
     PainelEstrategicoProjetosMesAno,
     PainelEstrategicoProjetoStatus,
     PainelEstrategicoResponseDto,
-    PainelEstrategicoOrgaoResponsavel,
 } from './entities/painel-estrategico-responses.dto';
 import { Prisma } from '@prisma/client';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { ProjetoService } from '../../pp/projeto/projeto.service';
 
 @Injectable()
 export class PainelEstrategicoService {
     constructor(
         private readonly prisma: PrismaService,
+        private readonly projetoService: ProjetoService,
     ) {}
     /*Está recebendo o usuário pois futuramente será necessário realizar filtros de acordo
       com alguns atributos do usuário
      */
     async buildPainel(filtro:PainelEstrategicoFilterDto, user: PessoaFromJwt):Promise<PainelEstrategicoResponseDto>{
-        const strFilter = this.applyFilter(filtro,user);
+        const strFilter = await this.applyFilter(filtro, user);
         const response= new PainelEstrategicoResponseDto();
         response.grandes_numeros = await this.buildGrandeNumeros(strFilter,user);
         response.projeto_status = await this.buildProjetosPorStatus(strFilter,user);
@@ -38,9 +39,15 @@ export class PainelEstrategicoService {
         return response;
     }
 
-    applyFilter(filtro:PainelEstrategicoFilterDto, user:PessoaFromJwt):string{
+    async applyFilter(filtro:PainelEstrategicoFilterDto, user:PessoaFromJwt):Promise<string>{
         let strFilter = "";
-        if (filtro.projeto_id){
+        if (!filtro.projeto_id) {
+            filtro.projeto_id = [];
+        }
+        await this.projetoService.findAllIds('PP', user).then(ids=>{
+            ids.forEach(n=> filtro.projeto_id.push(n.id))
+        })
+        if (filtro.projeto_id.length > 0){
             strFilter = " and p.id in ("+ filtro.projeto_id.toString()+")";
         }
         if (filtro.orgao_responsavel_id){
