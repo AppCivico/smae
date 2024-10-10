@@ -2706,7 +2706,7 @@ export class VariavelService {
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
-                await this.prisma.$queryRaw`
+                await prismaTxn.$queryRaw`
                     select pg_advisory_xact_lock(varId::bigint)::varchar
                     from unnest(${varIdsSorted}::bigint[]) as varId;
                 `;
@@ -2915,9 +2915,9 @@ export class VariavelService {
 
                     if (globais.length) {
                         this.logger.log(`Variáveis globais: atualizando ciclo corrente...`);
-                        await this.prisma.$queryRaw`
-                        select f_atualiza_variavel_ciclo_corrente(varId::bigint)::varchar
-                        from unnest(${globais.map((n) => n.id)}::bigint[]) as varId;`;
+                        await prismaTxn.$queryRaw`
+                        select f_atualiza_variavel_ciclo_corrente(varId::int)::varchar
+                        from unnest(${globais.map((n) => n.id)}::int[]) as varId;`;
                     }
                 }
                 await logger.saveLogs(prismaTxn, user.getLogData());
@@ -2956,10 +2956,9 @@ export class VariavelService {
                 aprovada: true,
             },
         });
-
         const toInsert = mesesParaAprovar.filter((e) => {
             return !alreadyApproved.some(
-                (a) => a.variavel_id === e.variavel_id && a.referencia_data === e.referencia_data
+                (a) => a.variavel_id === e.variavel_id && a.referencia_data.valueOf() == e.referencia_data.valueOf()
             );
         });
         const toUpdate = alreadyApproved.filter((a) => !a.eh_liberacao_auto && !a.aprovada);
@@ -2967,7 +2966,9 @@ export class VariavelService {
         // Perform inserts
         if (toInsert.length > 0) {
             logger.log(
-                `Criando novas liberações automáticas para ${toInsert.map((e) => e.variavel_id)} em ${toInsert.map((e) => e.referencia_data)}`
+                `Criando novas liberações automáticas para ${toInsert.map((e) => e.variavel_id)} em ${toInsert.map(
+                    (e) => Date2YMD.dbDateToDMY(e.referencia_data)
+                )}`
             );
 
             await prismaTxn.variavelGlobalCicloAnalise.createMany({
@@ -2987,7 +2988,9 @@ export class VariavelService {
         // Perform updates
         if (toUpdate.length > 0) {
             logger.log(
-                `Atualizando liberações automáticas para ${toUpdate.map((e) => e.variavel_id)} em ${toUpdate.map((e) => e.referencia_data)}`
+                `Atualizando liberações automáticas para ${toUpdate.map((e) => e.variavel_id)} em ${toUpdate.map((e) =>
+                    Date2YMD.dbDateToDMY(e.referencia_data)
+                )}`
             );
             await prismaTxn.variavelGlobalCicloAnalise.updateMany({
                 where: {
@@ -3022,6 +3025,7 @@ export class VariavelService {
             data: {
                 removido_em: now,
                 removido_por: user.id,
+                ultima_revisao: false,
             },
         });
     }
