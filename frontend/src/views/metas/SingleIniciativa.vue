@@ -287,113 +287,6 @@ iniciar();
             </header>
           </div>
         </template>
-        <div
-          v-if="relacionadosIniciativa?.projetos?.length"
-          class="mt2 mb2"
-        >
-          <h2 class="m2">
-            Projetos associados
-          </h2>
-
-          <table class="tablemain">
-            <col>
-            <col>
-            <col>
-            <col>
-            <thead>
-              <th>Portfólio </th>
-              <th>Código</th>
-              <th> Nome </th>
-              <th>Etapa</th>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(projeto, index) in relacionadosIniciativa.projetos"
-                :key="index"
-              >
-                <td>
-                  {{ projeto.portfolio?.titulo || '-' }}
-                </td>
-                <td>
-                  {{ projeto.codigo || '-' }}
-                </td>
-                <td>
-                  {{ projeto.nome || '-' }}
-                </td>
-                <td>
-                  {{ projeto.projeto_etapa?.descricao || '-' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div
-          v-if="relacionadosIniciativa?.obras?.length"
-          class="mt2 mb2"
-        >
-          <h2 class="">
-            Obras associadas
-          </h2>
-
-          <table class="tablemain">
-            <col>
-            <col>
-            <col>
-            <col>
-            <col>
-            <col>
-            <col>
-            <thead>
-              <th>
-                Código da obra
-              </th>
-              <th>Nome</th>
-              <th>
-                Tipo obra/intervenção
-              </th>
-              <th>
-                Subprefeitura
-              </th>
-              <th>
-                Equipamento
-              </th>
-              <th>
-                Status
-              </th>
-              <th>
-                Percentual concluído
-              </th>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(obra, index) in relacionadosIniciativa.obras"
-                :key="index"
-              >
-                <td>{{ obra.codigo }}</td>
-                <td>
-                  {{ obra.nome }}
-                </td>
-                <td>
-                  {{ obra.tipo_intervencao?.nome || '-' }}
-                </td>
-                <td>
-                  {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
-                </td>
-                <td>
-                  {{ obra.equipamento?.nome || '-' }}
-                </td>
-                <td>
-                  {{ obra.status || '-' }}
-                </td>
-                <td>
-                  {{ obra.percentual_concluido || '-' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <PlanosMetasRelacionados :relacionamentos="relacionadosIniciativa?.metas" />
 
         <div
           v-if="Atividades[iniciativa_id].loading"
@@ -410,6 +303,114 @@ iniciar();
           </div>
         </div>
       </template>
+
+      <div
+        v-if="relacionadosIniciativa?.projetos?.length"
+        class="mt2 mb2"
+      >
+        <h2 class="m2">
+          Projetos associados
+        </h2>
+
+        <table class="tablemain">
+          <col>
+          <col>
+          <col>
+          <col>
+          <thead>
+            <th>Portfólio </th>
+            <th>Código</th>
+            <th> Nome </th>
+            <th>Etapa</th>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(projeto, index) in relacionadosIniciativa.projetos"
+              :key="index"
+            >
+              <td>
+                {{ projeto.portfolio?.titulo || '-' }}
+              </td>
+              <td>
+                {{ projeto.codigo || '-' }}
+              </td>
+              <td>
+                {{ projeto.nome || '-' }}
+              </td>
+              <td>
+                {{ projeto.projeto_etapa?.descricao || '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div
+        v-if="relacionadosIniciativa?.obras?.length"
+        class="mt2 mb2"
+      >
+        <h2 class="">
+          Obras associadas
+        </h2>
+
+        <table class="tablemain">
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <thead>
+            <th>
+              Código da obra
+            </th>
+            <th>Nome</th>
+            <th>
+              Tipo obra/intervenção
+            </th>
+            <th>
+              Subprefeitura
+            </th>
+            <th>
+              Equipamento
+            </th>
+            <th>
+              Status
+            </th>
+            <th>
+              Percentual concluído
+            </th>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(obra, index) in relacionadosIniciativa.obras"
+              :key="index"
+            >
+              <td>{{ obra.codigo }}</td>
+              <td>
+                {{ obra.nome }}
+              </td>
+              <td>
+                {{ obra.tipo_intervencao?.nome || '-' }}
+              </td>
+              <td>
+                {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
+              </td>
+              <td>
+                {{ obra.equipamento?.nome || '-' }}
+              </td>
+              <td>
+                {{ obra.status || '-' }}
+              </td>
+              <td>
+                {{ obra.percentual_concluido || '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <PlanosMetasRelacionados :relacionamentos="relacionadosIniciativa?.metas" />
     </template>
     <template v-else-if="singleIniciativa.loading">
       <div class="p1">
