@@ -62,8 +62,8 @@ export const useProjetosStore = defineStore('projetos', {
     diretórios: [],
 
     chamadasPendentes: {
-      lista: true,
-      emFoco: true,
+      lista: false,
+      emFoco: false,
       pdmsSimplificados: false,
       metaSimplificada: false,
       arvoreDeMetas: false,
