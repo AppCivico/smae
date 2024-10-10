@@ -189,7 +189,7 @@ export class PainelEstrategicoService {
                        and tc.removido_em is null
                        and p.tipo = 'PP'
                          ${filtro}
-                       and date_part('year', tc.previsao_termino) >= date_part('YEAR', current_date)
+                       and date_part('year', tc.previsao_termino) >= date_part('YEAR', current_date) -3
                        and date_part('year', tc.previsao_termino) <= date_part('YEAR', current_date) + 3
                      group by date_part('year', tc.previsao_termino),
                               date_part('month', tc.previsao_termino)`
