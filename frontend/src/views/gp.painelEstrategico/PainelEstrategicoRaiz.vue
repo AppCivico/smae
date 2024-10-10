@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
+import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import GrandesNumerosEProjetoPorEtapaEStatus from '@/components/painelEstrategico/GrandesNumerosEProjetoPorEtapaEStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
@@ -34,6 +35,50 @@ painelEstrategicoStore.buscarDados({
     3,
   ],
 });
+
+const mockProjetos = [
+  {
+    nome: 'OUCAE - Grupo 1 - Lote 3: CONSÓRCIO RM...',
+    secretaria: 'SEPEP',
+    meta: 12,
+    status: 'Em acompanhamento',
+    etapaAtual: 'Em contratação de Projeto',
+    terminoProjetado: 'Out/2024',
+    riscosEmAberto: 4,
+    percentualAtraso: '05',
+  },
+  {
+    nome: 'OUCAE - Grupo 1 - Lote 4: CONSÓRCIO LA ...',
+    secretaria: 'SME',
+    meta: null,
+    status: '',
+    etapaAtual: '',
+    terminoProjetado: '',
+    riscosEmAberto: 4,
+    percentualAtraso: '',
+  },
+  {
+    nome: 'Ribeirão dos Perus - Reservatórios, Canaliz...',
+    secretaria: 'SEPEP - UE',
+    meta: null,
+    status: '',
+    etapaAtual: '',
+    terminoProjetado: '',
+    riscosEmAberto: 4,
+    percentualAtraso: '',
+  },
+  {
+    nome: 'HIS Real Parque (Fase 3)',
+    secretaria: 'SETRAM',
+    meta: null,
+    status: '',
+    etapaAtual: '',
+    terminoProjetado: '',
+    riscosEmAberto: 4,
+    percentualAtraso: '',
+  },
+];
+
 </script>
 <template>
   <Dashboard>
@@ -158,7 +203,7 @@ painelEstrategicoStore.buscarDados({
       </div>
     </div>
 
-    <h1>Carossel</h1>
+    <TabelaProjetos :projetos="mockProjetos" />
   </Dashboard>
 </template>
 
