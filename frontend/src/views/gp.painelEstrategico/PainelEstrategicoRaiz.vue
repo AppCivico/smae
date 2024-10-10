@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
-import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
-import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import GrandesNumerosEProjetoPorEtapaEStatus from '@/components/painelEstrategico/GrandesNumerosEProjetoPorEtapaEStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
+import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
+import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -22,7 +22,6 @@ const {
 } = storeToRefs(painelEstrategicoStore);
 
 watchEffect(() => {
-
   const parametrosValidos = [
     'portifolio_id',
     'orgao_responsavel_id',
@@ -86,7 +85,7 @@ const mockProjetos = [
 </script>
 <template>
   <Dashboard>
-    <header class="mb2">
+    <header class="mb2 cabecalho">
       <TítuloDePágina />
       <FormularioQueryString v-slot="{ aplicarQueryStrings }">
         <FiltroDeProjetos @enviado="aplicarQueryStrings" />
@@ -225,6 +224,22 @@ const mockProjetos = [
 }
 </style>
 <style lang="less" scoped>
+.cabecalho {
+  position: relative;
+  border-bottom: 1px solid @azul;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    right: 0;
+    height: 5px;
+    width: 5px;
+    background-color: @azul;
+    border-radius: 100%;
+  }
+}
+
 .lista-de-cartoes {
   display: grid;
   gap: 2rem 4rem;
