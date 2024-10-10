@@ -5,6 +5,7 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import GrandesNumerosEProjetoPorEtapaEStatus from '@/components/painelEstrategico/GrandesNumerosEProjetoPorEtapaEStatus.vue';
+import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 
 const route = useRoute();
@@ -72,6 +73,11 @@ painelEstrategicoStore.buscarDados({
       v-else
       class="lista-de-cartoes"
     >
+      <ResumoOrcamentario
+        :planejado-total="1144000000"
+        :empenho-total="1240000"
+        :liquidado-total="714000"
+      />
 
       <CardEnvelope.default>
         <CardEnvelope.Conteudo>
