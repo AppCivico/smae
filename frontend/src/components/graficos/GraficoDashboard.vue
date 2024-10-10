@@ -15,12 +15,13 @@ import { BarChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
+  MarkLineComponent,
   TitleComponent,
   TooltipComponent,
-  MarkLineComponent,
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
+import { defineProps, provide, ref } from 'vue';
 import VChart, { THEME_KEY } from 'vue-echarts';
 
 use([
