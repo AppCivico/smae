@@ -55,11 +55,19 @@ const onSlideChange = () => {
 
 <style lang="less" scoped>
 .card-envelope-raiz {
+  @espacoDeSeguranca: 24px;
+  overflow: hidden;
+  margin: -@espacoDeSeguranca;
+  padding: @espacoDeSeguranca;
+  height: calc(100% + (@espacoDeSeguranca * 2));
+
   :deep {
     .swiper-button-prev,
     .swiper-button-next {
       position: absolute;
       top: 55px;
+
+      z-index: -1;
 
       display: flex;
       justify-content: center;
@@ -77,6 +85,7 @@ const onSlideChange = () => {
 
     .swiper-button-prev {
       left: 0;
+      transform: translateX(-100%);
 
       &::after {
         content: url("@{u}icons/left.svg");
@@ -85,6 +94,7 @@ const onSlideChange = () => {
 
     .swiper-button-next {
       right: 0;
+      transform: translateX(100%);
 
       &::after {
         content: url("@{u}icons/right.svg");
@@ -121,11 +131,12 @@ const onSlideChange = () => {
   }
 
   :deep(.card-envelope-conteudo) {
-    margin: 0 24px;
+    // margin: 0 24px;
   }
 }
 
 .card-envelope-raiz__carrossel {
-  padding: 10px 0 25px;
+  height: 100%;
+  overflow: visible;
 }
 </style>

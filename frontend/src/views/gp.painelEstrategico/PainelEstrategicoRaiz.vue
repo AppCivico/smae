@@ -72,60 +72,62 @@ painelEstrategicoStore.buscarDados({
       class="lista-de-cartoes"
     >
       <TotalDeProjetos />
-    </div>
 
-    <h1>Carossel</h1>
-
-    <CardEnvelope.default>
-      <CardEnvelope.Conteudo>
-        <CardEnvelope.Titulo
-          titulo="Icone Prop"
-          icone="graf"
-          subtitulo="
+      <div style="width: 300px">
+        <CardEnvelope.default>
+          <CardEnvelope.Conteudo>
+            <CardEnvelope.Titulo
+              titulo="Icone Prop"
+              icone="graf"
+              subtitulo="
             Órgãos com os números mais expressivos de projetos.
             Demais órgãos apresentados em Outros.
           "
-        />
+            />
 
-        <h1>Conteudo 1</h1>
-        <h1>Conteudo 1</h1>
-        <h1>Conteudo 1</h1>
-      </CardEnvelope.Conteudo>
+            <h1>Conteudo 1</h1>
+            <h1>Conteudo 1</h1>
+            <h1>Conteudo 1</h1>
+          </CardEnvelope.Conteudo>
 
-      <CardEnvelope.Conteudo>
-        <CardEnvelope.Titulo>
-          <strong>Icone Slot</strong>
+          <CardEnvelope.Conteudo>
+            <CardEnvelope.Titulo>
+              <strong>Icone Slot</strong>
 
-          <template #icone>
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </template>
-        </CardEnvelope.Titulo>
+              <template #icone>
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </template>
+            </CardEnvelope.Titulo>
 
-        <h1>Conteudo 2</h1>
-        <h1>Conteudo 2</h1>
-        <h1>Conteudo 2</h1>
-      </CardEnvelope.Conteudo>
+            <h1>Conteudo 2</h1>
+            <h1>Conteudo 2</h1>
+            <h1>Conteudo 2</h1>
+          </CardEnvelope.Conteudo>
 
-      <CardEnvelope.Conteudo>
-        <CardEnvelope.Titulo>
-          <strong>Icone Slot</strong>
+          <CardEnvelope.Conteudo>
+            <CardEnvelope.Titulo>
+              <strong>Icone Slot</strong>
 
-          <template #icone>
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </template>
-        </CardEnvelope.Titulo>
+              <template #icone>
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </template>
+            </CardEnvelope.Titulo>
 
-        <h1>Conteudo 3</h1>
-        <h1>Conteudo 3</h1>
-        <h1>Conteudo 3</h1>
-      </CardEnvelope.Conteudo>
-    </CardEnvelope.default>
+            <h1>Conteudo 3</h1>
+            <h1>Conteudo 3</h1>
+            <h1>Conteudo 3</h1>
+          </CardEnvelope.Conteudo>
+        </CardEnvelope.default>
+      </div>
+    </div>
+
+    <h1>Carossel</h1>
   </Dashboard>
 </template>
 
