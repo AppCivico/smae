@@ -1,11 +1,14 @@
 <template>
   <article class="card-shadow card-envelope-conteudo">
-    <slot />
+    <slot :visivel="visivel" />
   </article>
 </template>
 
 <script lang="ts" setup>
 
+defineProps<{
+  visivel?: boolean
+}>();
 </script>
 
 <style lang="less" scoped>

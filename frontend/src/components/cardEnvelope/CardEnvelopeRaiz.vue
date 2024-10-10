@@ -17,7 +17,10 @@
         v-for="(elemento, elementoIndex) in elementos"
         :key="elementoIndex"
       >
-        <component :is="elemento" />
+        <component
+          :is="elemento"
+          :visivel="elementoIndex === cardAtual"
+        />
       </swiper-slide>
     </Swiper>
 
@@ -28,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineSlots } from 'vue';
+import { ref, computed, defineSlots } from 'vue';
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Pagination, Navigation } from 'swiper/modules';
@@ -44,11 +47,18 @@ const slots = defineSlots<{
 const elementos = computed(() => slots.default());
 const ehCarrosel = computed<boolean>(() => elementos.value.length > 1);
 
+const cardAtual = ref<number>(0);
+
+function selecionarCardAtual(atual: number) {
+  cardAtual.value = atual;
+}
+
 const onSwiper = (swiper) => {
-  // console.log(swiper);
+  selecionarCardAtual(swiper.realIndex);
 };
-const onSlideChange = () => {
-  // console.log('slide change');
+
+const onSlideChange = (swiper) => {
+  selecionarCardAtual(swiper.realIndex);
 };
 
 </script>

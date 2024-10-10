@@ -76,19 +76,24 @@ painelEstrategicoStore.buscarDados({
       <div style="width: 300px">
         <CardEnvelope.default>
           <CardEnvelope.Conteudo>
-            <CardEnvelope.Titulo
-              titulo="Icone Prop"
-              icone="graf"
-              subtitulo="
-            Órgãos com os números mais expressivos de projetos.
-            Demais órgãos apresentados em Outros.
-          "
-            />
+            <template
+              #default="{ visivel }"
+            >
+              -Visivel: {{ visivel }}-
+              <CardEnvelope.Titulo
+                titulo=" Icone Prop"
+                icone="graf"
+                subtitulo="
+                  Órgãos com os números mais expressivos de projetos.
+                  Demais órgãos apresentados em Outros.
+                "
+              />
 
-            <h1>Conteudo 1</h1>
-            <h1>Conteudo 1</h1>
-            <h1>Conteudo 1</h1>
-          </CardEnvelope.Conteudo>
+              <h1>Conteudo 1</h1>
+              <h1>Conteudo 1</h1>
+              <h1>Conteudo 1</h1>
+            </template>
+          </Cardenvelope.conteudo>
 
           <CardEnvelope.Conteudo>
             <CardEnvelope.Titulo>
