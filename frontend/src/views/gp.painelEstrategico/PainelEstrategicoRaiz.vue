@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import GrandesNumerosEProjetoPorEtapaEStatus from '@/components/painelEstrategico/GrandesNumerosEProjetoPorEtapaEStatus.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 
 const route = useRoute();
@@ -71,8 +72,27 @@ painelEstrategicoStore.buscarDados({
       v-else
       class="lista-de-cartoes"
     >
-      <TotalDeProjetos />
 
+      <CardEnvelope.default>
+        <CardEnvelope.Conteudo>
+          <template
+            #default="{ visivel }"
+          >
+            <CardEnvelope.Titulo
+              titulo="Grandes números"
+              icone="gear"
+              subtitulo="Total de projetos relacionados as metas e órgãos."
+            />
+            <GrandesNumerosEProjetoPorEtapaEStatus
+              v-if="!chamadasPendentes.dados"
+              :grandes-numeros="painelEstrategicoStore.grandesNumeros"
+              :projeto-etapas="painelEstrategicoStore.projetoEtapas"
+              :projeto-status="painelEstrategicoStore.projetoStatus"
+            />
+          </template>
+        </Cardenvelope.conteudo>
+      </CardEnvelope.default>
+      <TotalDeProjetos />
       <div style="width: 300px">
         <CardEnvelope.default>
           <CardEnvelope.Conteudo>
