@@ -12,7 +12,7 @@
     </header>
 
     <FormularioQueryString
-      v-slot="{ capturarEnvio }"
+      v-slot="{ aplicarQueryStrings }"
       :valores-iniciais="{
         ordem_direcao: 'asc',
         ipp: gblIpp,
@@ -29,7 +29,7 @@
           regiao_id: $route.query.regiao_id,
           ...$route.query
         }"
-        @submit="capturarEnvio"
+        @submit="aplicarQueryStrings"
       />
     </FormularioQueryString>
 

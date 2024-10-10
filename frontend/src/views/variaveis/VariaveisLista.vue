@@ -79,7 +79,7 @@ watchEffect(() => {
   </header>
 
   <FormularioQueryString
-    v-slot="{ capturarEnvio }"
+    v-slot="{ aplicarQueryStrings }"
     :valores-iniciais="{
       ordem_direcao: 'asc',
       ipp: gblIpp,
@@ -97,7 +97,7 @@ watchEffect(() => {
         ordem_direcao: $route.query.ordem_direcao || 'asc',
         regiao_id: $route.query.regiao_id,
       }"
-      @submit="capturarEnvio"
+      @submit="aplicarQueryStrings"
     />
   </FormularioQueryString>
 

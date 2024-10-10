@@ -1,7 +1,7 @@
 <template>
   <slot
     class="formulario-query-string"
-    :capturar-envio="aplicarFiltros"
+    :aplicar-query-strings="aplicarFiltros"
   />
 </template>
 <script setup lang="ts">

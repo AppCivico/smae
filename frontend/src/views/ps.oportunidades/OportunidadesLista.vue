@@ -4,12 +4,12 @@
     <hr class="ml2 f1">
   </div>
   <FormularioQueryString
-    v-slot="{ capturarEnvio}"
+    v-slot="{ aplicarQueryStrings }"
     :valores-iniciais="valoresIniciais"
   >
     <form
       class="flex flexwrap bottom mb2 g1"
-      @submit.prevent="capturarEnvio"
+      @submit.prevent="aplicarQueryStrings"
     >
       <div class="f0">
         <label
