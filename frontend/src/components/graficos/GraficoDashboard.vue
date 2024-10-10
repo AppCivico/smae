@@ -4,19 +4,20 @@
       v-if="option"
       ref="el"
       :key="chaveDeRender"
+      :autoresize="{ throttle: 400 }"
       class="chart"
       :option="option"
     />
   </div>
 </template>
 <script setup>
-import { useResizeObserver } from '@vueuse/core';
 import { BarChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
   TitleComponent,
   TooltipComponent,
+  MarkLineComponent,
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -31,6 +32,7 @@ use([
   LegendComponent,
   GridComponent,
   BarChart,
+  MarkLineComponent,
 ]);
 
 provide(THEME_KEY, 'light');
@@ -44,14 +46,6 @@ defineProps({
 
 const el = ref(null);
 const chaveDeRender = ref('');
-
-useResizeObserver(el, debounce(async (entries) => {
-  const entry = entries[0];
-  const { width, height } = entry.contentRect;
-  await nextTick();
-
-  chaveDeRender.value = `${width}x${height}`;
-}, 400));
 </script>
 <style scoped>
 .chart {
