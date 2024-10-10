@@ -21,8 +21,6 @@ import {
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { debounce } from 'lodash';
-import { nextTick, provide, ref } from 'vue';
 import VChart, { THEME_KEY } from 'vue-echarts';
 
 use([
