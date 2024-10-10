@@ -1,13 +1,16 @@
 <script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import GrandesNumerosEProjetoPorEtapaEStatus from '@/components/painelEstrategico/GrandesNumerosEProjetoPorEtapaEStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
+import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -18,22 +21,23 @@ const {
   erros,
 } = storeToRefs(painelEstrategicoStore);
 
-painelEstrategicoStore.buscarDados({
-  portifolio_id: [
-    1,
-    2,
-    3,
-  ],
-  orgao_responsavel_id: [
-    1,
-    2,
-    3,
-  ],
-  projeto_id: [
-    1,
-    2,
-    3,
-  ],
+watchEffect(() => {
+
+  const parametrosValidos = [
+    'portifolio_id',
+    'orgao_responsavel_id',
+    'projeto_id',
+  ];
+
+  const parametros = parametrosValidos.reduce((acc, parametro) => {
+    if (route.query[parametro]) {
+      acc[parametro] = route.query[parametro];
+    }
+
+    return acc;
+  }, {} as Record<string, unknown>);
+
+  painelEstrategicoStore.buscarDados(parametros);
 });
 
 const mockProjetos = [
@@ -82,9 +86,11 @@ const mockProjetos = [
 </script>
 <template>
   <Dashboard>
-    <header class="flex spacebetween center mb2">
+    <header class="mb2">
       <TítuloDePágina />
-      <hr class="ml2 f1">
+      <FormularioQueryString v-slot="{ aplicarQueryStrings }">
+        <FiltroDeProjetos @enviado="aplicarQueryStrings" />
+      </FormularioQueryString>
     </header>
 
     <div class="flex flexwrap g2">
