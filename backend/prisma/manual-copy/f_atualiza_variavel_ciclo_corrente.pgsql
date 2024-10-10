@@ -17,6 +17,7 @@ DECLARE
     v_quali RECORD;
     v_liberacao_enviada BOOLEAN;
     v_eh_liberacao_auto BOOLEAN;
+    v_primeiro_registro RECORD;
 BEGIN
     -- Busca o registro da variável com o nome da coluna atualizado
     SELECT
@@ -93,6 +94,7 @@ BEGIN
     raise notice 'v_ciclo: %', v_ciclo;
         IF (v_ultimo_periodo_valido IS NULL) THEN
             v_ultimo_periodo_valido := v_ciclo.ciclo_data;
+            v_primeiro_registro := v_ciclo;
         END IF;
 
         IF (v_eh_liberacao_auto IS NULL AND v_ciclo.eh_liberacao_auto[1] IS NOT NULL) THEN
@@ -180,6 +182,12 @@ BEGIN
             v_fase_corrente := 'Liberacao';
         END IF;
 
+        -- se ta na liberação, mas não tem nenhuma fase, então apagaram o valor depois já ter sido liberado alguma vez
+        -- previamente, então resetamos para preenchimento
+        IF (v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL AND v_primeiro_registro.fases[1] IS NULL) THEN
+            v_fase_corrente := 'Preenchimento';
+        END IF;
+
         -- sem atraso, ta na fase de liberacao, considera que a liberacao enviada, mesmo se não existir o envio
         IF (v_eh_liberacao_auto AND v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL) THEN
             v_liberacao_enviada := true;
@@ -201,7 +209,6 @@ BEGIN
         END IF;
 
         v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
-
 
     END IF;
 
