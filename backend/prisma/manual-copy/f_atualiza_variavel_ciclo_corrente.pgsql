@@ -16,6 +16,7 @@ DECLARE
     v_ciclo RECORD;
     v_quali RECORD;
     v_liberacao_enviada BOOLEAN;
+    v_eh_liberacao_auto BOOLEAN;
 BEGIN
     -- Busca o registro da variável com o nome da coluna atualizado
     SELECT
@@ -71,7 +72,10 @@ BEGIN
 
     -- Busca os ciclos e analisa os atrasos
     FOR v_ciclo IN (
-        SELECT xp.xp AS ciclo_data, array_agg( a.fase ) as fases
+        SELECT
+            xp.xp AS ciclo_data,
+            array_agg( a.fase ) as fases,
+            array_agg( DISTINCT a.eh_liberacao_auto ) as eh_liberacao_auto
         FROM busca_periodos_variavel(p_variavel_id::int) AS g(p, inicio, fim)
         CROSS JOIN generate_series(g.inicio::date, g.fim::date, g.p) AS xp(xp)
         LEFT JOIN variavel_global_ciclo_analise a
@@ -79,7 +83,8 @@ BEGIN
             AND a.referencia_data = xp.xp
             AND a.ultima_revisao = true
             AND a.removido_em IS NULL
-            AND a.aprovada = true
+            AND (a.aprovada = true or a.eh_liberacao_auto)
+
         WHERE xp.xp <=  v_mes_atual - v_registro.intervalo_atraso
         GROUP BY 1
         ORDER BY 1 DESC
@@ -90,15 +95,20 @@ BEGIN
             v_ultimo_periodo_valido := v_ciclo.ciclo_data;
         END IF;
 
+        IF (v_eh_liberacao_auto IS NULL AND v_ciclo.eh_liberacao_auto[1] IS NOT NULL) THEN
+            v_eh_liberacao_auto := v_ciclo.eh_liberacao_auto[1];
+        END IF;
+
         -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente
         IF v_ciclo.fases[1] IS NULL OR NOT ('Liberacao' = ANY(v_ciclo.fases)) THEN
 
             IF (v_ciclo.ciclo_data != v_ultimo_periodo_valido) THEN
-                v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data);
+                v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data::date);
             -- ELSE: provavelmente é o ciclo corrente vamos ter que usar as regras das durações
             -- aqui pra considerar o atraso
             END IF;
         END IF;
+
     END LOOP;
 
     raise notice 'v_ultimo_periodo_valido x -> %', v_ultimo_periodo_valido;
@@ -163,6 +173,17 @@ BEGIN
         v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
 
         raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
+
+        -- caso o atraso tenha sido resolvido pelo banco de variáveis, não há alteração previa na
+        -- variavel_ciclo_corrente então façamos a correção aqui
+        IF (v_atrasos[1] IS NULL AND v_fase_corrente != 'Liberacao') THEN
+            v_fase_corrente := 'Liberacao';
+        END IF;
+
+        -- sem atraso, ta na fase de liberacao, considera que a liberacao enviada, mesmo se não existir o envio
+        IF (v_eh_liberacao_auto AND v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL) THEN
+            v_liberacao_enviada := true;
+        END IF;
 
         IF (v_fase_corrente = 'Preenchimento') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
