@@ -2889,7 +2889,7 @@ export class VariavelService {
                 }
 
                 if (createList.length) {
-                    this.logger.log(`Criando ${createList.length} novos valores de série...`);
+                    logger.log(`Criando ${createList.length} novos valores de série...`);
                     await prismaTxn.serieVariavel.createMany({
                         data: createList,
                     });
@@ -2907,11 +2907,18 @@ export class VariavelService {
                 await this.batchUpsertLiberaMeses(prismaTxn, mesesParaAprovar, logger, user);
 
                 const variaveisMod = Object.keys(variaveisModificadas).map((e) => +e);
-                this.logger.log(`Variáveis recebidas: ${JSON.stringify(variaveisMod)}`);
+                logger.log(`Variáveis recebidas: ${JSON.stringify(variaveisMod)}`);
 
                 if (Array.isArray(variaveisMod)) {
                     await this.recalc_series_dependentes(variaveisMod, prismaTxn);
                     await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTxn);
+
+                    if (globais.length) {
+                        this.logger.log(`Variáveis globais: atualizando ciclo corrente...`);
+                        await this.prisma.$queryRaw`
+                        select f_atualiza_variavel_ciclo_corrente(varId::bigint)::varchar
+                        from unnest(${globais.map((n) => n.id)}::bigint[]) as varId;`;
+                    }
                 }
                 await logger.saveLogs(prismaTxn, user.getLogData());
             },
