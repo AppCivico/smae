@@ -10,6 +10,7 @@
 
 <style lang="less" scoped>
 .card-envelope-conteudo {
+  padding: 19px 25px;
   position: relative;
 }
 </style>

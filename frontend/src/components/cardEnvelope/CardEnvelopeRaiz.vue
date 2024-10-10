@@ -121,7 +121,6 @@ const onSlideChange = () => {
   }
 
   :deep(.card-envelope-conteudo) {
-    padding: 19px 25px;
     margin: 0 24px;
   }
 }
