@@ -1,40 +1,36 @@
 <template>
-  <header class="card-envelope-titulo flex center">
-    <div
-      class="card-envelope-titulo__texto"
-      :class="{ 'com-icone': temIcone }"
-    >
-      <slot>
-        <h1 class="t20 mb0">
-          {{ titulo }}
-        </h1>
-        <p
-          v-if="subtitulo"
-          class="card-envelope-titulo__texto__subtitulo t10"
-        >
-          {{ subtitulo }}
-        </p>
-      </slot>
+  <header class="card-envelope-titulo">
+    <div class="flex center">
+      <div class="card-envelope-titulo__texto">
+        <slot>
+          <h1 class="t20 mb0">
+            {{ titulo }}
+          </h1>
+        </slot>
+      </div>
+      <div
+        class="card-envelope-titulo__linha"
+      />
+      <div
+        v-if="temIcone"
+        class="card-envelope-titulo__icone br999 flex justifycenter center"
+      >
+        <slot name="icone">
+          <svg
+            width="20"
+            height="20"
+          >
+            <use :xlink:href="`#i_${icone}`" />
+          </svg>
+        </slot>
+      </div>
     </div>
-    <div
-      v-if="temIcone"
-      class="card-envelope-titulo__linha"
-    />
-    <div
-      :class="[
-        'card-envelope-titulo__icone br999 flex justifycenter center',
-        {'card-envelope-titulo__icone--sem-icone': !temIcone}
-      ]"
+    <p
+      v-if="subtitulo"
+      class="card-envelope-titulo__texto__subtitulo t10"
     >
-      <slot name="icone">
-        <svg
-          width="20"
-          height="20"
-        >
-          <use :xlink:href="`#i_${icone}`" />
-        </svg>
-      </slot>
-    </div>
+      {{ subtitulo }}
+    </p>
   </header>
 </template>
 
@@ -78,8 +74,8 @@ const temIcone = computed<boolean>(() => !!props.icone || !!$slots.icone);
 
 .card-envelope-titulo__icone {
   background-color: v-bind(cor);
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
 
   svg {
     fill: @branco;
@@ -88,6 +84,7 @@ const temIcone = computed<boolean>(() => !!props.icone || !!$slots.icone);
 
 .card-envelope-titulo__texto__subtitulo {
   color: #A2A6AB;
-  max-width: 140px;
+  max-width: 170px;
+  margin-top: -7px;
 }
 </style>
