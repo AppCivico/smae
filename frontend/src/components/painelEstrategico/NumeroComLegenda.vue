@@ -3,7 +3,7 @@ import { defineProps } from 'vue';
 
 defineProps({
   numero: {
-    type: String,
+    type: [String || Number],
     required: true,
   },
   cor: {
@@ -37,7 +37,7 @@ defineProps({
       :style="{ color: cor, fontSize: tamanhoDoNumero + 'px' }"
       class="number"
     >
-      {{ numero.padStart(2,'0') }}
+      {{ String(numero).padStart(2, '0') }}
     </h1>
     <hr class="line">
     <p
