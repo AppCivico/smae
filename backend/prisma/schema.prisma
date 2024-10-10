@@ -905,8 +905,11 @@ model PdmOrcamentoRealizadoControleConcluido {
 
     criado_em DateTime
 
+    referencia_mes Int? @db.SmallInt
+
     // sobre qual dia foi feito a abertura (setar concluido=false)
-    referencia_dia_abertura   Int? @db.SmallInt
+    referencia_dia_abertura Int? @db.SmallInt
+
     // sobre qual dia foi feito a abertura (setar concluido=true)
     referencia_dia_fechamento Int? @db.SmallInt
 
