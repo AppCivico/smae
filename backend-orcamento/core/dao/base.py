@@ -5,8 +5,11 @@ from ..exceptions import EmptyData, UnexpectedResponse
 
 class Dao:
 
+    STATUS_SEM_REGISTRO = {'sem resposta', 'sem registros'}
+
     def __get_mdata(self, resp:dict)->None:
 
+        print(resp)
         mdata = resp.get('metadados') or resp.get('metaDados')
         if mdata is None:
             raise HTTPError(f'Erro na resposta: metadados not found')
@@ -15,9 +18,8 @@ class Dao:
     def __check_resp_status(self, resp:dict)->None:
 
         mdata = self.__get_mdata(resp)
-
         status = mdata.get('txtStatus', 'missing txtStatus mdata')
-        if status.lower()!='sem resposta':
+        if status.lower() in self.STATUS_SEM_REGISTRO:
             raise EmptyData('Não há registros.')
         if status.lower()!='ok':
             raise HTTPError(f'Erro no status da resposta: {status}')
