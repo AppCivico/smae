@@ -23,36 +23,41 @@ const props = defineProps({
   },
 });
 
-function aplicarFiltros(evento: SubmitEvent): void {
-  const campos = EnvioParaObjeto(evento);
-  const nomesDosCampos = Object.keys(campos);
-
+function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): void {
+  console.debug('eventoOuObjeto', eventoOuObjeto);
   let parametros: UrlParams = {};
 
-  let i = 0;
+  if (eventoOuObjeto instanceof SubmitEvent) {
+    const campos = EnvioParaObjeto(eventoOuObjeto);
 
-  while (nomesDosCampos[i]) {
-    const nomeDoCampo = nomesDosCampos[i];
-    const valor = campos[nomeDoCampo];
+    const nomesDosCampos = Object.keys(campos);
+    let i = 0;
 
-    if (valor) {
-      if (parametros[nomeDoCampo]) {
-        if (!Array.isArray(parametros[nomeDoCampo])) {
-          parametros[nomeDoCampo] = [String(parametros[nomeDoCampo])];
+    while (nomesDosCampos[i]) {
+      const nomeDoCampo = nomesDosCampos[i];
+      const valor = campos[nomeDoCampo];
+
+      if (valor) {
+        if (parametros[nomeDoCampo]) {
+          if (!Array.isArray(parametros[nomeDoCampo])) {
+            parametros[nomeDoCampo] = [String(parametros[nomeDoCampo])];
+          }
+
+          (parametros[nomeDoCampo] as Array<string>).push(String(valor));
+        } else {
+          parametros[nomeDoCampo] = valor
+            || props.valoresIniciais[nomeDoCampo];
         }
-
-        (parametros[nomeDoCampo] as Array<string>).push(String(valor));
+      } else if (valor === '') {
+        parametros[nomeDoCampo] = '';
       } else {
-        parametros[nomeDoCampo] = valor
-          || props.valoresIniciais[nomeDoCampo];
+        parametros[nomeDoCampo] = props.valoresIniciais[nomeDoCampo];
       }
-    } else if (valor === '') {
-      parametros[nomeDoCampo] = '';
-    } else {
-      parametros[nomeDoCampo] = props.valoresIniciais[nomeDoCampo];
-    }
 
-    i += 1;
+      i += 1;
+    }
+  } else {
+    parametros = eventoOuObjeto as UrlParams;
   }
 
   parametros = {
