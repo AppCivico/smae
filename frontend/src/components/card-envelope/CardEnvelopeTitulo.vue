@@ -1,14 +1,25 @@
 <template>
-  <header class="card-envelope-titulo flex">
-    <div class="card-envelope-titulo__texto">
+  <header class="card-envelope-titulo flex center">
+    <div
+      class="card-envelope-titulo__texto"
+      :class="{ 'com-icone': temIcone }"
+    >
       <slot>
-        <h1>{{ titulo }}</h1>
+        <h1 class="t20 mb0">
+          {{ titulo }}
+        </h1>
+        <p class="card-envelope-titulo__texto__subtitulo t10">
+          {{ subtitulo }}
+        </p>
       </slot>
     </div>
-
+    <div
+      v-if="temIcone"
+      class="card-envelope-titulo__linha"
+    />
     <div
       :class="[
-        'card-envelope-titulo__icone',
+        'card-envelope-titulo__icone br999 flex justifycenter center',
         {'card-envelope-titulo__icone--sem-icone': !temIcone}
       ]"
     >
@@ -16,7 +27,9 @@
         <svg
           width="20"
           height="20"
-        ><use :xlink:href="`#i_${icone}`" /></svg>
+        >
+          <use :xlink:href="`#i_${icone}`" />
+        </svg>
       </slot>
     </div>
   </header>
@@ -32,6 +45,7 @@ type Slots = {
 
 type Props = {
   titulo?: string,
+  subtitulo?: string,
   icone?: string,
   cor?: string,
 };
@@ -42,6 +56,7 @@ const props = withDefaults(
   defineProps<Props>(),
   {
     titulo: undefined,
+    subtitulo: undefined,
     icone: undefined,
     cor: 'blue',
   },
@@ -51,7 +66,23 @@ const temIcone = computed<boolean>(() => !!props.icone || !!$slots.icone);
 </script>
 
 <style lang="less" scoped>
-.card-envelope-titulo__texto {
-  color: v-bind(cor);
+.card-envelope-titulo {
+  &__linha {
+    flex-grow: 1;
+    height: 2px;
+    background-color: v-bind(cor);
+    margin-left: 10px;
+  }
+
+  &__icone {
+    background-color: v-bind(cor);
+    width: 50px;
+    height: 50px;
+  }
+
+  &__texto__subtitulo {
+    color: #A2A6AB;
+    max-width: 140px;
+  }
 }
 </style>
