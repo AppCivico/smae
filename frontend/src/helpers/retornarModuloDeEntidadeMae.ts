@@ -18,6 +18,6 @@ export default ((entidadeMae: string) => {
       return 'PlanoSetorial';
 
     default:
-      return null;
+      return '';
   }
 });

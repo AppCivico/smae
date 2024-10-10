@@ -42,6 +42,9 @@ export const router = createRouter({
       name: 'home',
       component: Home,
       props: { submenu: false },
+      meta: {
+        entidadeMãe: '',
+      },
     },
     {
       path: '/panorama',
@@ -100,7 +103,7 @@ router.beforeEach(async (r, from) => {
   const authRequired = !publicPages.includes(r.path);
   const authStore = useAuthStore();
 
-  if (from.meta?.entidadeMãe) {
+  if (from.meta?.entidadeMãe !== undefined) {
     authStore.moduloDaRotaAnterior = retornarModuloDeEntidadeMae(from.meta.entidadeMãe);
   }
 
