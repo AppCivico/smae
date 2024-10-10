@@ -3,7 +3,7 @@ import { defineProps } from 'vue';
 
 defineProps({
   numero: {
-    type: [String || Number],
+    type: [String, Number],
     required: true,
   },
   cor: {
