@@ -1,12 +1,15 @@
 <template>
-  <section>
-    <h1>Conteudo</h1>
-
+  <article class="card-shadow card-envelope-conteudo">
     <slot />
-  </section>
+  </article>
 </template>
 
 <script lang="ts" setup>
-import { SwiperSlide } from 'swiper/vue';
 
 </script>
+
+<style lang="less" scoped>
+.card-envelope-conteudo {
+  position: relative;
+}
+</style>

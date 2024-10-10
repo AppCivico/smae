@@ -44,23 +44,23 @@ painelEstrategicoStore.buscarDados({
       <pre class="f1 fb15em debug">anosMapaCalorConcluidos:
 {{ painelEstrategicoStore.anosMapaCalorConcluidos }}</pre>
       <pre class="f1 fb15em debug">anosMapaCalorPlanejados:
-{{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
+      {{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
       <pre class="f1 fb15em debug">grandesNumeros:
-{{ painelEstrategicoStore.grandesNumeros }}</pre>
+      {{ painelEstrategicoStore.grandesNumeros }}</pre>
       <pre class="f1 fb15em debug">projetoEtapas:
-{{ painelEstrategicoStore.projetoEtapas }}</pre>
+      {{ painelEstrategicoStore.projetoEtapas }}</pre>
       <pre class="f1 fb15em debug">projetoOrgaoResponsavel:
-{{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
+      {{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
       <pre class="f1 fb15em debug">projetoStatus:
-{{ painelEstrategicoStore.projetoStatus }}</pre>
+      {{ painelEstrategicoStore.projetoStatus }}</pre>
       <pre class="f1 fb15em debug">projetosConcluidosAno:
-{{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
+      {{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
       <pre class="f1 fb15em debug">projetosConcluidosMes:
-{{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
+      {{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
       <pre class="f1 fb15em debug">projetosPlanejadosAno:
-{{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
+      {{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
       <pre class="f1 fb15em debug">projetosPlanejadosMes:
-{{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
+      {{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
     </div>
 
     <ErrorComponent v-if="erros.dados" />
@@ -81,7 +81,15 @@ painelEstrategicoStore.buscarDados({
         <CardEnvelope.Titulo
           titulo="Icone Prop"
           icone="graf"
+          subtitulo="
+            Órgãos com os números mais expressivos de projetos.
+            Demais órgãos apresentados em Outros.
+          "
         />
+
+        <h1>Conteudo 1</h1>
+        <h1>Conteudo 1</h1>
+        <h1>Conteudo 1</h1>
       </CardEnvelope.Conteudo>
 
       <CardEnvelope.Conteudo>
@@ -95,18 +103,32 @@ painelEstrategicoStore.buscarDados({
             ><use xlink:href="#i_edit" /></svg>
           </template>
         </CardEnvelope.Titulo>
+
+        <h1>Conteudo 2</h1>
+        <h1>Conteudo 2</h1>
+        <h1>Conteudo 2</h1>
       </CardEnvelope.Conteudo>
-    </CardEnvelope.default>
 
-    <h1>Card</h1>
-
-    <CardEnvelope.default>
       <CardEnvelope.Conteudo>
-        <CardEnvelope.Titulo titulo="Sem icone" />
+        <CardEnvelope.Titulo>
+          <strong>Icone Slot</strong>
+
+          <template #icone>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </template>
+        </CardEnvelope.Titulo>
+
+        <h1>Conteudo 3</h1>
+        <h1>Conteudo 3</h1>
+        <h1>Conteudo 3</h1>
       </CardEnvelope.Conteudo>
     </CardEnvelope.default>
   </Dashboard>
 </template>
+
 <style lang="less">
 .pagina-de-painel-estrategico {
   background-image: url("@{u}painel-estrategico/mapa-cinza.png");

@@ -8,7 +8,10 @@
         <h1 class="t20 mb0">
           {{ titulo }}
         </h1>
-        <p class="card-envelope-titulo__texto__subtitulo t10">
+        <p
+          v-if="subtitulo"
+          class="card-envelope-titulo__texto__subtitulo t10"
+        >
           {{ subtitulo }}
         </p>
       </slot>
@@ -58,7 +61,7 @@ const props = withDefaults(
     titulo: undefined,
     subtitulo: undefined,
     icone: undefined,
-    cor: 'blue',
+    cor: '#221F43',
   },
 );
 
@@ -66,23 +69,25 @@ const temIcone = computed<boolean>(() => !!props.icone || !!$slots.icone);
 </script>
 
 <style lang="less" scoped>
-.card-envelope-titulo {
-  &__linha {
-    flex-grow: 1;
-    height: 2px;
-    background-color: v-bind(cor);
-    margin-left: 10px;
-  }
+.card-envelope-titulo__linha {
+  flex-grow: 1;
+  height: 2px;
+  background-color: v-bind(cor);
+  margin-left: 10px;
+}
 
-  &__icone {
-    background-color: v-bind(cor);
-    width: 50px;
-    height: 50px;
-  }
+.card-envelope-titulo__icone {
+  background-color: v-bind(cor);
+  width: 50px;
+  height: 50px;
 
-  &__texto__subtitulo {
-    color: #A2A6AB;
-    max-width: 140px;
+  svg {
+    fill: @branco;
   }
+}
+
+.card-envelope-titulo__texto__subtitulo {
+  color: #A2A6AB;
+  max-width: 140px;
 }
 </style>
