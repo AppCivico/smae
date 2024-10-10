@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import * as CardEnvelope from '@/components/card-envelope';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

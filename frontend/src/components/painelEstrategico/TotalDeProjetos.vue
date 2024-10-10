@@ -26,5 +26,5 @@
 
 <script setup>
 import NumeroComLegenda from './NumeroComLegenda.vue';
-import * as CardEnvelope from '../card-envelope/index.ts';
+import * as CardEnvelope from '../cardEnvelope/index.ts';
 </script>
