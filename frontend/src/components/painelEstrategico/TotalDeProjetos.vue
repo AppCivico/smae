@@ -1,5 +1,15 @@
+<script setup>
+import NumeroComLegenda from './NumeroComLegenda.vue';
+import CardEnvelopeTitulo from '../card-envelope/CardEnvelopeTitulo.vue';
+</script>
 <template>
-  <div class="card-shadow">
+  <div class="card-shadow p2">
+    <CardEnvelopeTitulo
+      titulo="Projetos"
+      subtitulo="Total de projetos planejados e concluídos no ano vigente."
+      icone="box"
+      cor="#F2C94C"
+    />
     <NumeroComLegenda
       numero="9"
       cor="#F2C94C"
@@ -16,14 +26,3 @@
     />
   </div>
 </template>
-
-<script setup>
-import NumeroComLegenda from './NumeroComLegenda.vue';
-
-</script>
-
-<style scoped>
-div{
-  max-width: 241px;
-}
-</style>
