@@ -65,7 +65,6 @@ defineProps({
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 240px;
     }
 
     .liquidado {
