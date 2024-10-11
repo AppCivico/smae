@@ -24,7 +24,7 @@
             v-for="assuntos in listaDeAssuntos"
             :key="assuntos.id"
             :value="assuntos.id"
-            :selected="Number($props.valoresIniciais.assuntos) === assuntos.id"
+            :selected="Number($props.valoresIniciais?.assuntos) === assuntos.id"
           >
             {{ assuntos.nome }}
           </option>
@@ -127,7 +127,7 @@
             v-for="plano in listaDePlanosSetoriais"
             :key="plano.id"
             :value="plano.id"
-            :selected="Number($props.valoresIniciais.plano_setorial_id) === plano.id"
+            :selected="Number($props.valoresIniciais?.plano_setorial_id) === plano.id"
           >
             {{ plano.nome }}
           </option>
@@ -154,7 +154,7 @@
             v-for="meta in metasDisponiveis"
             :key="meta.id"
             :value="meta.id"
-            :selected="Number($props.valoresIniciais.meta_id) === meta.id"
+            :selected="Number($props.valoresIniciais?.meta_id) === meta.id"
             :title="meta.titulo?.length > 36 ? meta.titulo : undefined"
           >
             {{ truncate(meta.titulo, 36) }}
@@ -231,7 +231,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="!Object.keys(periodicidades.variaveis).length"
-            :selected="$props.valoresIniciais.periodicidade === item.valor"
+            :selected="$props.valoresIniciais?.periodicidade === item.valor"
           >
             {{ item.nome }}
           </option>
@@ -259,7 +259,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($props.valoresIniciais.orgao_id) === orgao.id"
+            :selected="Number($props.valoresIniciais?.orgao_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -284,7 +284,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($props.valoresIniciais.orgao_proprietario_id) === orgao.id"
+            :selected="Number($props.valoresIniciais?.orgao_proprietario_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -319,7 +319,7 @@
           v-for="coluna in colunasParaOrdenacao"
           :key="coluna.valor"
           :value="coluna.valor"
-          :selected="$props.valoresIniciais.ordem_coluna === coluna.valor"
+          :selected="$props.valoresIniciais?.ordem_coluna === coluna.valor"
         >
           {{ coluna.nome }}
         </option>
@@ -340,7 +340,7 @@
             Object.values(direcoesDeOrdenacao)"
           :key="direcao.valor"
           :value="direcao.valor"
-          :selected="$props.valoresIniciais.ordem_direcao === direcao.valor"
+          :selected="$props.valoresIniciais?.ordem_direcao === direcao.valor"
         >
           {{ direcao.nome || direcao.valor }}
         </option>
@@ -360,7 +360,7 @@
           v-for="quantidade in itensPorPagina"
           :key="quantidade"
           :value="quantidade"
-          :selected="Number($props.valoresIniciais.ipp) === quantidade"
+          :selected="Number($props.valoresIniciais?.ipp) === quantidade"
         >
           {{ quantidade }}
         </option>
