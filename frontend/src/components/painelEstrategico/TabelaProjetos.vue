@@ -1,6 +1,6 @@
 <script setup>
-import * as CardEnvelope from '@/components/cardEnvelope';
 import { defineProps } from 'vue';
+import * as CardEnvelope from '@/components/cardEnvelope';
 
 defineProps({
   projetos: {
@@ -27,9 +27,9 @@ defineProps({
           <col>
           <col>
           <col>
+          <col class="col--data">
           <col>
-          <col>
-          <col>
+          <col class="col--percentagem ">
         </colgroup>
         <thead>
           <tr>
