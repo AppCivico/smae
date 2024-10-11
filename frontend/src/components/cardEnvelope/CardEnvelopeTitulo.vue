@@ -86,13 +86,13 @@ const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
 }
 
 .card-envelope-titulo__icone__svg{
-  scale: 0.8;
+  scale: 0.7;
   transform-origin: center;
 }
 
 .card-envelope-titulo__texto__subtitulo {
   color: #A2A6AB;
   max-width: 170px;
-  margin-top: -7px;
+  margin-top: 5px;
 }
 </style>
