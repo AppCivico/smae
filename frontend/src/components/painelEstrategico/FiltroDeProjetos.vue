@@ -82,7 +82,9 @@ import { useOrgansStore } from '@/stores';
 import { usePortfolioStore } from '@/stores/portfolios.store';
 import { useProjetosStore } from '@/stores/projetos.store';
 import { storeToRefs } from 'pinia';
+import type { Ref } from 'vue';
 import { computed, ref } from 'vue';
+import type { LocationQueryValue } from 'vue-router';
 import { useRoute } from 'vue-router';
 
 const rota = useRoute();
@@ -104,9 +106,9 @@ const {
 
 const { organs } = storeToRefs(orgaosStore);
 
-const orgaoResponsavelId = ref([]);
-const portfolioId = ref([]);
-const projetoId = ref([]);
+const orgaoResponsavelId: Ref<(number | string)[]> = ref([]);
+const portfolioId: Ref<(number | string)[]> = ref([]);
+const projetoId: Ref<(number | string)[]> = ref([]);
 
 const dados = computed(() => ({
   orgao_responsavel_id: orgaoResponsavelId.value,
@@ -129,6 +131,19 @@ defineProps({
 
 const emit = defineEmits(['enviado']);
 
+function prepararValoresComoNumeros(valor: LocationQueryValue | LocationQueryValue[]): number[] {
+  const lista = Array.isArray(valor) ? valor : [valor];
+
+  return lista.reduce((acc, cur) => {
+    const numeroConvertido = parseInt(cur as string, 10);
+    if (Number.isNaN(numeroConvertido)) {
+      return acc;
+    }
+    acc.push(numeroConvertido);
+    return acc;
+  }, [] as number[]);
+}
+
 function iniciar() {
   if (!listaDePortfolios.value.length && !chamadasPendentesDePortfolios.value.lista) {
     portfoliosStore.buscarTudo();
@@ -143,6 +158,27 @@ function iniciar() {
     && !organs.value?.loading
   ) {
     orgaosStore.getAll();
+  }
+
+  if (rota.query) {
+    Object.keys(rota.query).forEach((chave) => {
+      switch (chave) {
+        case 'orgao_responsavel_id':
+          orgaoResponsavelId.value = prepararValoresComoNumeros(rota.query.orgao_responsavel_id);
+          break;
+
+        case 'portfolio_id':
+          portfolioId.value = prepararValoresComoNumeros(rota.query.portfolio_id);
+          break;
+
+        case 'projeto_id':
+          projetoId.value = prepararValoresComoNumeros(rota.query.projeto_id);
+          break;
+
+        default:
+          break;
+      }
+    });
   }
 }
 
