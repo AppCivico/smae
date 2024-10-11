@@ -65,6 +65,7 @@ import {
 } from './entities/variavel.entity';
 import { VariavelUtilService } from './variavel.util.service';
 
+const SUPRA_SUFIXO = ' - Supra';
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
  */
@@ -485,7 +486,7 @@ export class VariavelService {
                         prismaTxn,
                         {
                             ...dto, // aqui eu deixo tudo tbm, só pra não duplicar 100%
-                            titulo: dto.titulo + (tipo == TipoVariavel.Global ? ' - Supra' : ''),
+                            titulo: dto.titulo + (tipo == TipoVariavel.Global ? SUPRA_SUFIXO : ''),
                         },
                         indicador,
                         responsaveis,
@@ -1712,6 +1713,7 @@ export class VariavelService {
                         select: {
                             id: true,
                             titulo: true,
+                            supraregional: true,
                             regiao: {
                                 select: {
                                     id: true,
@@ -1726,6 +1728,10 @@ export class VariavelService {
             // Caso tenha filhas, deve atualizar as configs delas.
             const varsFilhasUpdates = [];
             for (const variavelFilha of updated.variaveis_filhas) {
+                let titulo = dto.titulo;
+                if (variavelFilha.regiao) titulo += ' - ' + variavelFilha.regiao.descricao;
+                else if (variavelFilha.supraregional) titulo += SUPRA_SUFIXO;
+
                 varsFilhasUpdates.push(
                     prismaTxn.variavel.updateMany({
                         where: {
@@ -1733,7 +1739,7 @@ export class VariavelService {
                             removido_em: null,
                         },
                         data: {
-                            titulo: dto.titulo + ' - ' + variavelFilha.regiao?.descricao,
+                            titulo: titulo,
                             acumulativa: dto.acumulativa,
                             mostrar_monitoramento: dto.mostrar_monitoramento,
                             unidade_medida_id: dto.unidade_medida_id,
