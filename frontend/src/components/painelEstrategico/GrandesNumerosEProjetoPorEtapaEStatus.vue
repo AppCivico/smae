@@ -28,21 +28,49 @@
       />
     </div>
 
-    <CardEnvelope.Titulo
-      titulo="Projetos por Status"
-    />
+    <Swiper
+      :slides-per-wiew="1"
+      :space-between="50"
+      :pagination="{ clickable: true }"
+      :modules="[
+        Pagination,
+      ]"
+    >
+      <SwiperSlide>
+        <CardEnvelope.Titulo
+          titulo="Projetos por Status"
+        />
 
-    <GraficoDashboard
-      :option="chartOptions"
-    />
+        <GraficoDashboard
+          :option="chartOptions"
+        />
+      </SwiperSlide>
+
+      <SwiperSlide>
+        <CardEnvelope.Titulo
+          titulo="Projetos por Etapas"
+        />
+
+        <GraficoDashboard
+          :option="chartOptions"
+        />
+      </SwiperSlide>
+    </Swiper>
   </div>
 </template>
 
 <script setup>
+import { defineProps, computed } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+
+import { Pagination } from 'swiper/modules';
+
+import 'swiper/css';
+import 'swiper/css/pagination';
+
 import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
 import * as CardEnvelope from '@/components/cardEnvelope';
-import { defineProps, computed } from 'vue';
 
 const props = defineProps({
   grandesNumeros: {
@@ -124,7 +152,7 @@ const chartOptions = computed(() => ({
           number: {
             fontSize: 30,
             fontWeight: 'bold',
-            color: params => params.color,
+            color: (params) => params.color,
             align: 'left',
             padding: [0, 0, 0, 40],
           },

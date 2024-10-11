@@ -16,6 +16,7 @@
       <swiper-slide
         v-for="(elemento, elementoIndex) in elementos"
         :key="elementoIndex"
+        class="card-envelope-raiz__slide"
       >
         <component
           :is="elemento"
@@ -123,7 +124,7 @@ const onSlideChange = (swiper) => {
       background-color: #061223;
     }
 
-    .swiper-slide {
+    .card-envelope-raiz__slide {
       height: auto;
 
       > * {
