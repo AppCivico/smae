@@ -146,10 +146,11 @@ router.afterEach((to, from) => {
 router.beforeEach((to, from, next) => {
   const { meta } = to;
 
-  // if (Object.keys(to.meta.defaultQuery).length && to.name !== from.name) {
+  // if (typeof to.meta.queryPadrao === 'object' && Object.keys(to.meta.queryPadrao).length && to.name !== from.name) {
   //   next({
+  //     ...to,
   //     query: {
-  //       ...to.meta.defaultQuery,
+  //       ...to.meta.queryPadrao,
   //       ...to.query,
   //     },
   //   });
@@ -161,6 +162,7 @@ router.beforeEach((to, from, next) => {
     $eventHub.emit('recebimentoIniciado', to); // Start progress bar
   }
 
+  // TODO: Extinguir a propriedade `prefixoDosCaminhos` e usar rotas prefixadas
   Object.keys(meta).forEach((key) => {
     // Limitar à propriedade `prefixoDosCaminhos` para manter a
     // retrocompatibilidade com a propriedade `título`,
