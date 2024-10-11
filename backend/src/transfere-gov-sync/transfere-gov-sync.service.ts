@@ -46,7 +46,7 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class TransfereGovSyncService {
     private readonly logger = new Logger(TransfereGovSyncService.name);
-
+    baseUrl: string;
     constructor(
         private readonly prisma: PrismaService,
         private readonly transfereGovApi: TransfereGovApiService,
@@ -55,7 +55,10 @@ export class TransfereGovSyncService {
         private readonly notaService: NotaService,
         private readonly jwtService: JwtService,
         private readonly smaeConfigService: SmaeConfigService
-    ) {}
+    ) {
+        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+    }
 
     private transformComunicado(
         comunicado: TransfGovComunicado,
@@ -349,6 +352,11 @@ export class TransfereGovSyncService {
     ): Promise<TransfereGovOportunidade[]> {
         const newItems: TransfereGovOportunidade[] = [];
 
+        const transferenciasExistentes = await this.prisma.transfereGovOportunidade.findMany({
+            select: { hash: true },
+        });
+        let novasTransferencias = [];
+
         const now = new Date();
         for (const oportunidade of oportunidades) {
             const transformedOportunidade = this.transformOportunidade(oportunidade, tipo);
@@ -367,9 +375,51 @@ export class TransfereGovSyncService {
                 });
 
                 newItems.push(result);
+
+                if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
+                    novasTransferencias.push(result);
+                }
             } catch (error) {
                 this.logger.error(`Erro ao atualizar oportunidades: ${error.message}`);
             }
+        }
+
+        if (novasTransferencias.length > 0) {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                // Quando forem adicionadas oportunidades novas de transferência
+                // Deve ser enviado um email.
+                // "Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”"
+                const gestores = await prismaTx.pessoa.findMany({
+                    where: {
+                        PessoaPerfil: {
+                            some: {
+                                perfil_acesso: {
+                                    nome: 'Gestor Casa Civil',
+                                },
+                            },
+                        },
+                    },
+                    select: { email: true },
+                });
+
+                for (const oportunidade of novasTransferencias) {
+                    for (const gestor of gestores) {
+                        await prismaTx.emaildbQueue.create({
+                            data: {
+                                id: uuidv7(),
+                                config_id: 1,
+                                subject: `Nova emenda disponível`,
+                                template: 'transferegov-nova-oportunidade.html',
+                                to: gestor.email,
+                                variables: {
+                                    programa: oportunidade.nome_programa,
+                                    link: new URL([this.baseUrl, 'oportunidades'].join('/')),
+                                },
+                            },
+                        });
+                    }
+                }
+            });
         }
 
         return newItems;
