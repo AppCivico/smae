@@ -1544,8 +1544,7 @@ export class VariavelService {
 
             indicador_id = indicadorViaVar.indicador.id;
         } else {
-            // será que não há nenhuma regra mesmo? como a variavel não tem rel com o PDM sem o indicador,
-            // provavelmente não tem mesmo o que verificam além do orgao proprietario
+            if (dto.suspendida) throw new HttpException('Variáveis do plano setorial não podem ser suspensas.', 400); // uso necessita do ciclo do PDM, e tbm o caso de copiar o valor dos ids das categóricas
         }
 
         if (dto.codigo !== undefined) {
