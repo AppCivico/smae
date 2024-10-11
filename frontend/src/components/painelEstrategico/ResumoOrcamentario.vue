@@ -29,28 +29,28 @@ defineProps({
     />
     <div class="tr mt3 w700">
       <div class="pb1">
-        <p class="mb0 t12 w700">
+        <d class="mb0 t12 w700">
           CUSTO PLANEJADO TOTAL:
-        </p>
-        <h3 class="mb0 t48 w700">
+        </d>
+        <dt class="mb0 t48 w700">
           R$ {{ dinheiro(Number(planejadoTotal)) }}
-        </h3>
+        </dt>
       </div>
       <div class="pb1">
-        <p class="mb0 t12 w700">
+        <d class="mb0 t12 w700">
           VALOR EMPENHADO TOTAL:
-        </p>
-        <h3 class="mb0 t48 w700">
+        </d>
+        <dt class="mb0 t48 w700">
           R$ {{ dinheiro(Number(empenhoTotal)) }}
-        </h3>
+        </dt>
       </div>
       <div class="pb1">
-        <p class="mb0 t12 w700">
+        <d class="mb0 t12 w700">
           VALOR LIQUIDADO TOTAL:
-        </p>
-        <h3 class="mb0 t48 w700 liquidado">
+        </d>
+        <dt class="mb0 t48 w700 liquidado">
           R$ {{ dinheiro(Number(liquidadoTotal)) }}
-        </h3>
+        </dt>
       </div>
     </div>
   </CardEnvelope.Conteudo>
