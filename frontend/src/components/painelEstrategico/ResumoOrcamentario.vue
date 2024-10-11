@@ -28,25 +28,25 @@ defineProps({
       cor="#D86B2C"
     />
     <dl class="tr mt3 w700">
-      <div class="pb1">
-        <dt class="mb0 t12 w700">
-          CUSTO PLANEJADO TOTAL:
+      <div class="pb1 flex column end">
+        <dt class="mb0 t12 w700 uc">
+          Custo planejado total:
         </dt>
         <dd class="mb0 t48 w700">
           R$ {{ dinheiro(Number(planejadoTotal)) }}
         </dd>
       </div>
-      <div class="pb1">
-        <dt class="mb0 t12 w700">
-          VALOR EMPENHADO TOTAL:
+      <div class="pb1 flex column end">
+        <dt class="mb0 t12 w700 uc">
+          Valor empenhado total:
         </dt>
         <dd class="mb0 t48 w700">
           R$ {{ dinheiro(Number(empenhoTotal)) }}
         </dd>
       </div>
-      <div class="pb1">
-        <dt class="mb0 t12 w700">
-          VALOR LIQUIDADO TOTAL:
+      <div class="pb1 flex column end">
+        <dt class="mb0 t12 w700 uc">
+          Valor liquidado total:
         </dt>
         <dd class="mb0 t48 w700 liquidado">
           R$ {{ dinheiro(Number(liquidadoTotal)) }}
