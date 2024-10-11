@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { DateYMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterPeriodoDto } from './entities/variavel.entity';
 
