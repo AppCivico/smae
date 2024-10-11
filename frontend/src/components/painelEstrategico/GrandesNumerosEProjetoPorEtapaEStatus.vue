@@ -2,7 +2,7 @@
   <div>
     <div class="flex flexwrap g2 justifycenter center pb2">
       <NumeroComLegenda
-        :numero="grandesNumeros.total_projetos"
+        :numero="grandesNumeros[0].total_projetos"
         cor="#221F43"
         legenda="Total de projetos"
         :tamanho-do-numero="tamanhoDoNúmeroPrimário"
@@ -10,7 +10,7 @@
       />
 
       <NumeroComLegenda
-        :numero="grandesNumeros.total_orgaos"
+        :numero="grandesNumeros[0].total_orgaos"
         cor="#221F43"
         legenda="Total de órgãos"
         cor-de-fundo="#e8e8e866"
@@ -19,7 +19,7 @@
       />
 
       <NumeroComLegenda
-        :numero="grandesNumeros.total_metas"
+        :numero="grandesNumeros[0].total_metas"
         cor="#221F43"
         legenda="Total de metas"
         cor-de-fundo="#e8e8e866"
