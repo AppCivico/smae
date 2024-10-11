@@ -28,6 +28,7 @@ import {
 import { VariavelComCategorica, VariavelService } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
 import { IdTituloDto } from '../common/dto/IdTitulo.dto';
+import { DateTime } from 'luxon';
 
 interface ICicloCorrente {
     variavel: {
@@ -248,6 +249,10 @@ export class VariavelCicloService {
                 equipes,
                 pode_editar,
                 prazo,
+                em_atraso:
+                    v.atrasos.length > 0 ||
+                    (v.prazo !== null &&
+                        v.prazo.valueOf() < DateTime.local({ zone: SYSTEM_TIMEZONE }).toJSDate().valueOf()),
             } satisfies VariavelGlobalCicloDto;
         });
 
