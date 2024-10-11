@@ -1,23 +1,25 @@
 <script setup>
-import { defineProps, computed } from 'vue';
 import * as CardEnvelope from '@/components/cardEnvelope';
+import { defineProps } from 'vue';
 
-const props = defineProps({
+defineProps({
   projetos: {
     type: Array,
-    required: true,
+    default: () => [],
   },
 });
-
-const projetosOrganizados = computed(() => props.projetos);
 </script>
-
 <template>
   <CardEnvelope.Conteudo>
     <CardEnvelope.Titulo>
       Projetos
     </CardEnvelope.Titulo>
-    <div class="tabela-wrapper">
+
+    <div
+      role="region"
+      aria-label="Tabela de projetos"
+      tabindex="0"
+    >
       <table class="tabela-projetos mt1">
         <colgroup>
           <col>
@@ -43,7 +45,7 @@ const projetosOrganizados = computed(() => props.projetos);
         </thead>
         <tbody>
           <tr
-            v-for="(projeto, index) in projetosOrganizados"
+            v-for="(projeto, index) in projetos"
             :key="index"
           >
             <td>{{ projeto.nome }}</td>
@@ -60,26 +62,21 @@ const projetosOrganizados = computed(() => props.projetos);
     </div>
   </CardEnvelope.Conteudo>
 </template>
+<style scoped>
+.tabela-projetos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
 
-  <style scoped>
-  .tabela-wrapper {
-    width: 100%;
-    overflow-x: auto;
-  }
+.tabela-projetos th,
+.tabela-projetos td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
 
-  .tabela-projetos {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1000px;
-  }
-
-  .tabela-projetos th, .tabela-projetos td {
-    border-bottom: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-  }
-
-  .tabela-projetos th {
-    font-weight: bold;
-  }
-  </style>
+.tabela-projetos th {
+  font-weight: bold;
+}
+</style>
