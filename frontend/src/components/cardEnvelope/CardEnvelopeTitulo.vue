@@ -1,25 +1,23 @@
 <template>
   <header class="card-envelope-titulo">
-    <div class="flex center spacebetween">
-      <h2 class="card-envelope-titulo__texto t20 mb0">
-        <slot>
-          {{ titulo }}
-        </slot>
-      </h2>
-      <div
-        v-if="temIcone"
-        class="card-envelope-titulo__icone br999 flex justifycenter center"
-      >
-        <slot name="icone">
-          <svg
-            width="20"
-            height="20"
-          >
-            <use :xlink:href="`#i_${icone}`" />
-          </svg>
-        </slot>
-      </div>
-    </div>
+    <h2 class="card-envelope-titulo__texto t20 mb0 flex center g1">
+      <slot>
+        {{ titulo }}
+      </slot>
+      <slot name="icone">
+        <svg
+          v-if="temIcone"
+          width="45"
+          height="45"
+          class="card-envelope-titulo__icone br999"
+        >
+          <use
+            :xlink:href="`#i_${icone}`"
+            class="card-envelope-titulo__icone__svg"
+          />
+        </svg>
+      </slot>
+    </h2>
     <p
       v-if="$slots?.subtitulo || subtitulo"
       class="card-envelope-titulo__texto__subtitulo t10"
@@ -63,21 +61,33 @@ const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
 </script>
 
 <style lang="less" scoped>
-.card-envelope-titulo__linha {
-  flex-grow: 1;
+
+.card-envelope-titulo__texto {
+  position: relative;
+}
+
+.card-envelope-titulo__texto::after {
+  content: '';
+  display: inline-block;
   height: 2px;
   background-color: v-bind(cor);
-  margin-left: 10px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
 }
 
 .card-envelope-titulo__icone {
   background-color: v-bind(cor);
-  width: 45px;
-  height: 45px;
-
+  position: absolute;
+  right: 0;
   svg {
     fill: @branco;
   }
+}
+
+.card-envelope-titulo__icone__svg{
+  scale: 0.8;
+  transform-origin: center;
 }
 
 .card-envelope-titulo__texto__subtitulo {
