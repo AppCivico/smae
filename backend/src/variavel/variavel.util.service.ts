@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DateYMD } from '../common/date2ymd';
+import { DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterPeriodoDto } from './entities/variavel.entity';
 
@@ -16,8 +16,8 @@ export class VariavelUtilService {
 
         let unsafeCicloCorrente = '';
         if (filtros?.ate_ciclo_corrente) {
-            const data = await this.ultimoPeriodoValido(variavelId);
-            unsafeCicloCorrente = `and p.p <= ( '${data.toISOString()}'::date )`;
+            const data = await this.ultimoMes(variavelId);
+            unsafeCicloCorrente = `and p.p < ( '${data.toISOString()}'::date )`;
         }
 
         const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
@@ -32,6 +32,17 @@ export class VariavelUtilService {
         `);
 
         return dados.map((e) => e.dt);
+    }
+
+    async ultimoMes(variavel_id: number) {
+        const r: { data: Date }[] = await this.prisma.$queryRaw`
+            select
+                date_trunc('month', now() at time zone  'America/Sao_Paulo')::date
+                    +
+                (periodicidade_intervalo(v.periodicidade) * (v.atraso_meses * -1)) as data
+            from variavel v
+            where v.id = ${variavel_id}`;
+        return r[0].data;
     }
 
     async ultimoPeriodoValido(variavel_id: number) {
