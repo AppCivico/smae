@@ -3,6 +3,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUnidadeMedidaDto } from './dto/create-unidade-medida.dto';
 import { UpdateUnidadeMedidaDto } from './dto/update-unidade-medida.dto';
+import { CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
 
 @Injectable()
 export class UnidadeMedidaService {
@@ -43,6 +44,7 @@ export class UnidadeMedidaService {
         const listActive = await this.prisma.unidadeMedida.findMany({
             where: {
                 removido_em: null,
+                AND: { id: { not: CONST_VAR_SEM_UN_MEDIDA } },
             },
             select: { id: true, descricao: true, sigla: true },
             orderBy: { descricao: 'asc' },
@@ -52,7 +54,10 @@ export class UnidadeMedidaService {
     }
 
     async update(id: number, updateUnidadeMedidaDto: UpdateUnidadeMedidaDto, user: PessoaFromJwt) {
-        const self = await this.prisma.unidadeMedida.findFirst({ where: { id: id }, select: { id: true } });
+        const self = await this.prisma.unidadeMedida.findFirst({
+            where: { id: id, AND: { id: { not: CONST_VAR_SEM_UN_MEDIDA } } },
+            select: { id: true },
+        });
         if (!self) throw new HttpException('Unidade de órgão não encontrado', 404);
 
         if (updateUnidadeMedidaDto.descricao !== undefined) {
@@ -100,13 +105,14 @@ export class UnidadeMedidaService {
         const existsDown = await this.prisma.variavel.count({
             where: {
                 unidade_medida_id: id,
+                removido_em: null,
             },
         });
         if (existsDown > 0)
             throw new HttpException(`Não é possível remover: Há ${existsDown} variáveis dependentes.`, 400);
 
         const created = await this.prisma.unidadeMedida.updateMany({
-            where: { id: id },
+            where: { id: id, removido_em: null, AND: { id: { not: CONST_VAR_SEM_UN_MEDIDA } } },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
