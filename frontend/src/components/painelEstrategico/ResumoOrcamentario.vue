@@ -27,38 +27,42 @@ defineProps({
       icone="moneyChart"
       cor="#D86B2C"
     />
-    <div class="tr mt3 w700">
+    <dl class="tr mt3 w700">
       <div class="pb1">
-        <d class="mb0 t12 w700">
+        <dt class="mb0 t12 w700">
           CUSTO PLANEJADO TOTAL:
-        </d>
-        <dt class="mb0 t48 w700">
+        </dt>
+        <dd class="mb0 t48 w700">
           R$ {{ dinheiro(Number(planejadoTotal)) }}
-        </dt>
+        </dd>
       </div>
       <div class="pb1">
-        <d class="mb0 t12 w700">
+        <dt class="mb0 t12 w700">
           VALOR EMPENHADO TOTAL:
-        </d>
-        <dt class="mb0 t48 w700">
-          R$ {{ dinheiro(Number(empenhoTotal)) }}
         </dt>
+        <dd class="mb0 t48 w700">
+          R$ {{ dinheiro(Number(empenhoTotal)) }}
+        </dd>
       </div>
       <div class="pb1">
-        <d class="mb0 t12 w700">
+        <dt class="mb0 t12 w700">
           VALOR LIQUIDADO TOTAL:
-        </d>
-        <dt class="mb0 t48 w700 liquidado">
-          R$ {{ dinheiro(Number(liquidadoTotal)) }}
         </dt>
+        <dd class="mb0 t48 w700 liquidado">
+          R$ {{ dinheiro(Number(liquidadoTotal)) }}
+        </dd>
       </div>
-    </div>
+    </dl>
   </CardEnvelope.Conteudo>
 </template>
 
 <style scoped lang="less">
     p{
         color: #7E858D;
+    }
+
+    dd{
+        white-space: nowrap;
     }
 
     .liquidado {
