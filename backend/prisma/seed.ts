@@ -910,7 +910,7 @@ PerfilAcessoConfig.push(
 
     {
         nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
-        descricao: 'Gerenciar as equipes onde é responsável',
+        descricao: 'Acesso restrito a administração de equipes do órgão ao qual participa',
         privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
     },
 
