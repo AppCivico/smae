@@ -123,12 +123,6 @@ const mockProjetos = [
       v-else
       class="lista-de-cartoes"
     >
-      <ResumoOrcamentario
-        :planejado-total="1144000000"
-        :empenho-total="1240000"
-        :liquidado-total="714000"
-      />
-
       <CardEnvelope.default>
         <CardEnvelope.Conteudo>
           <template
@@ -149,9 +143,78 @@ const mockProjetos = [
           </template>
         </Cardenvelope.conteudo>
       </CardEnvelope.default>
-    </div>
 
-    <TabelaProjetos :projetos="mockProjetos" />
+      <TotalDeProjetos />
+
+      <!--
+      <CardEnvelope.default>
+        <CardEnvelope.Conteudo>
+          <template
+            #default="{ visivel }"
+          >
+            -Visivel: {{ visivel }}-
+            <CardEnvelope.Titulo
+              titulo=" Icone Prop"
+              icone="graf"
+              subtitulo="
+                Órgãos com os números mais expressivos de projetos.
+                Demais órgãos apresentados em Outros.
+              "
+            />
+
+            <h1>Conteudo 1</h1>
+            <h1>Conteudo 1</h1>
+            <h1>Conteudo 1</h1>
+          </template>
+        </Cardenvelope.conteudo>
+
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo>
+            <strong>Icone Slot</strong>
+
+            <template #icone>
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </template>
+          </CardEnvelope.Titulo>
+
+          <h1>Conteudo 2</h1>
+          <h1>Conteudo 2</h1>
+          <h1>Conteudo 2</h1>
+        </CardEnvelope.Conteudo>
+
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo>
+            <strong>Icone Slot</strong>
+
+            <template #icone>
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </template>
+          </CardEnvelope.Titulo>
+
+          <h1>Conteudo 3</h1>
+          <h1>Conteudo 3</h1>
+          <h1>Conteudo 3</h1>
+        </CardEnvelope.Conteudo>
+      </CardEnvelope.default>
+      -->
+
+      <ResumoOrcamentario
+        :planejado-total="1144000000"
+        :empenho-total="1240000"
+        :liquidado-total="714000"
+      />
+
+      <TabelaProjetos
+        class="grid-full-column"
+        :projetos="mockProjetos"
+      />
+    </div>
   </Dashboard>
 </template>
 
@@ -188,11 +251,12 @@ const mockProjetos = [
   gap: 2rem 4rem;
 
   @media screen and (min-width: 55em) {
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 2.5fr 1.5fr;
   }
 
   @media screen and (min-width: 75em) {
     grid-template-columns: 3fr 2fr;
+    grid-template-columns: 2.5fr 1.5fr 2fr;
   }
 }
 </style>
