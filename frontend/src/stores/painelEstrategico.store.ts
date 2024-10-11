@@ -43,11 +43,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     async buscarDados(params = {}): Promise<void> {
       this.chamadasPendentes.dados = true;
       try {
-        // TODO: Remover espera
-        await new Promise((resolve) => { setTimeout(resolve, 2000); });
-
-        // TODO: Implementar a chamada para a API
-        const resposta = await this.requestS.get('/data/painel-estrategico.json', params);
+        const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico`, params);
 
         Object.keys(resposta).forEach((chave) => {
           const chaveConvertida = camelCase(chave);
