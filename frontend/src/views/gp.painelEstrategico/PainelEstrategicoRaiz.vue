@@ -232,15 +232,15 @@ const mockProjetos = [
 <style lang="less" scoped>
 .cabecalho {
   position: relative;
-  border-bottom: 1px solid @azul;
+  border-bottom: 2px solid @azul;
 
   &:after {
     content: '';
     position: absolute;
-    bottom: -3px;
+    bottom: -4px;
     right: 0;
-    height: 5px;
-    width: 5px;
+    height: 6px;
+    width: 6px;
     background-color: @azul;
     border-radius: 100%;
   }
