@@ -141,7 +141,7 @@ const mockProjetos = [
               :projeto-status="painelEstrategicoStore.projetoStatus"
             />
           </template>
-        </Cardenvelope.conteudo>
+        </CardEnvelope.conteudo>
       </CardEnvelope.default>
 
       <TotalDeProjetos />

@@ -28,26 +28,27 @@ defineProps({
   },
 });
 </script>
+
 <template>
-  <div
+  <dl
     :style="{ backgroundColor: corDeFundo || 'transparent' }"
     class="card"
   >
-    <h1
+    <dt
       :style="{ color: cor, fontSize: tamanhoDoNumero + 'px' }"
       class="number"
     >
       {{ String(numero).padStart(2, '0') }}
-    </h1>
-    <hr class="line">
-    <p
+    </dt>
+    <dd
       :style="{ fontSize: tamanhoDaLegenda + 'px' }"
       class="label"
     >
       {{ legenda }}
-    </p>
-  </div>
+    </dd>
+  </dl>
 </template>
+
 <style scoped>
 .card {
   text-align: center;
@@ -60,16 +61,19 @@ defineProps({
   font-weight: bold;
 }
 
-.line {
-  width: 40%;
-  border: none;
-  border-top: 1px solid #7E858D;
-  margin: 10px auto;
-}
-
 .label {
   margin: 0;
   color: #7E858D;
   text-transform: uppercase;
+  position: relative;
+  padding-top: 20px;
+}
+
+.label::after {
+  content: '';
+  display: block;
+  width: 30%;
+  border-top: 1px solid #7E858D;
+  margin: -25px auto 0;
 }
 </style>
