@@ -57,12 +57,15 @@ defineProps({
 </template>
 
 <style scoped lang="less">
-    p{
+    dt{
         color: #7E858D;
     }
 
-    dd{
+    dd {
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 240px;
     }
 
     .liquidado {
