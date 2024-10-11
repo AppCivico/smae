@@ -9,6 +9,11 @@ export class PainelEstrategicoResponseDto {
     projetos_planejados_ano:PainelEstrategicoProjetosAno[];
     anos_mapa_calor_planejados:number[];
     anos_mapa_calor_concluidos:number[];
+    quantidades_projeto:PainelEstrategicoQuantidadesAnoCorrente;
+    resumo_orcamentario:PainelEstrategicoResumoOrcamentario;
+}
+export class PainelEstrategicoListaProjetoResponseDto{
+    lista:PainelEstrategicoProjeto[];
 }
 
 export class PainelEstrategicoGrandesNumeros {
@@ -42,4 +47,22 @@ export class PainelEstrategicoProjetosAno {
     ano:number;
     quantidade:number;
 }
-
+export class PainelEstrategicoQuantidadesAnoCorrente{
+    quantidade_planejada:number;
+    quantidade_concluida:number;
+}
+export class PainelEstrategicoResumoOrcamentario{
+    custo_planejado_total:number;
+    valor_empenhado_total:number;
+    valor_liquidado_total:number;
+}
+export class PainelEstrategicoProjeto{
+    nome:string;
+    secretaria:string;
+    meta:string;
+    status:string;
+    etapa_atual:string;
+    termino_projetado:string;
+    riscos_abertos:number;
+    percentual_atraso:number;
+}

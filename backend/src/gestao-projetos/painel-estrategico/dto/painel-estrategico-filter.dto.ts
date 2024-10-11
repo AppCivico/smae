@@ -1,10 +1,10 @@
-import { IsArray, IsOptional, ValidateIf } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, ValidateIf } from 'class-validator';
 
 export class PainelEstrategicoFilterDto {
     @IsArray({ message: '$property| portifolio_id' })
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    portifolio_id: number[];
+    portfolio_id: number[];
 
     @IsArray({ message: '$property| orgao_responsavel_id' })
     @IsArray()
@@ -17,4 +17,12 @@ export class PainelEstrategicoFilterDto {
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     projeto_id: number[];
+}
+
+export class PainelEstrategicoListaProjetosFilterDto extends PainelEstrategicoFilterDto {
+    @IsNumber()
+    posicao:number;
+
+    @IsNumber()
+    tamanho_pagina:number;
 }

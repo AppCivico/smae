@@ -9,6 +9,7 @@ import {
     PainelEstrategicoProjetosAno,
     PainelEstrategicoProjetosMesAno,
     PainelEstrategicoProjetoStatus,
+    PainelEstrategicoQuantidadesAnoCorrente,
     PainelEstrategicoResponseDto,
 } from './entities/painel-estrategico-responses.dto';
 import { Prisma } from '@prisma/client';
@@ -26,16 +27,17 @@ export class PainelEstrategicoService {
     async buildPainel(filtro:PainelEstrategicoFilterDto, user: PessoaFromJwt):Promise<PainelEstrategicoResponseDto>{
         const strFilter = await this.applyFilter(filtro, user);
         const response= new PainelEstrategicoResponseDto();
-        response.grandes_numeros = await this.buildGrandeNumeros(strFilter,user);
-        response.projeto_status = await this.buildProjetosPorStatus(strFilter,user);
-        response.projeto_etapas = await this.buildProjetosPorEtapas(strFilter,user);
-        response.projetos_concluidos_ano = await this.buildProjetosConcluidosPorAno(strFilter,user);
-        response.projetos_concluidos_mes = await this.buildProjetosConcluidosPorMesAno(strFilter,user);
-        response.projetos_planejados_ano = await this.buildProjetosPlanejadosPorAno(strFilter,user);
-        response.projetos_planejados_mes = await this.buildProjetosPlanejadosPorMesAno(strFilter,user);
-        response.projeto_orgao_responsavel = await this.buildProjetosOrgaoResponsavel(strFilter,user);
+        response.grandes_numeros = await this.buildGrandeNumeros(strFilter);
+        response.projeto_status = await this.buildProjetosPorStatus(strFilter);
+        response.projeto_etapas = await this.buildProjetosPorEtapas(strFilter);
+        response.projetos_concluidos_ano = await this.buildProjetosConcluidosPorAno(strFilter);
+        response.projetos_concluidos_mes = await this.buildProjetosConcluidosPorMesAno(strFilter);
+        response.projetos_planejados_ano = await this.buildProjetosPlanejadosPorAno(strFilter);
+        response.projetos_planejados_mes = await this.buildProjetosPlanejadosPorMesAno(strFilter,);
+        response.projeto_orgao_responsavel = await this.buildProjetosOrgaoResponsavel(strFilter);
         response.anos_mapa_calor_concluidos = this.buildAnosMapaCalor(new Date().getFullYear(),-3);
         response.anos_mapa_calor_planejados = this.buildAnosMapaCalor(new Date().getFullYear(),+3);
+        response.quantidades_projeto = await this.buildQuantidadesProjeto(strFilter);
         return response;
     }
 
@@ -53,13 +55,13 @@ export class PainelEstrategicoService {
         if (filtro.orgao_responsavel_id){
             strFilter += " and p.orgao_responsavel_id in (+"+ filtro.orgao_responsavel_id.toString()+")";
         }
-        if (filtro.portifolio_id){
-            strFilter += " and p.portifolio_id in (+"+ filtro.portifolio_id.toString()+")";
+        if (filtro.portfolio_id){
+            strFilter += " and p.portifolio_id in (+"+ filtro.portfolio_id.toString()+")";
         }
         return strFilter;
     }
 
-    async buildGrandeNumeros(filtro:string, user: PessoaFromJwt):Promise<PainelEstrategicoGrandesNumeros>{
+    async buildGrandeNumeros(filtro:string):Promise<PainelEstrategicoGrandesNumeros>{
         const sql = `select
                    (select count(*)::int from view_projetos vp inner join projeto p on p.id = vp.id
                     where p.tipo = 'PP' ${filtro}) as total_projetos,
@@ -79,7 +81,7 @@ export class PainelEstrategicoService {
         return  await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoGrandesNumeros;
     }
 
-    async buildProjetosPorStatus(filtro:string, user:PessoaFromJwt){
+    async buildProjetosPorStatus(filtro:string){
         const sql = `select t.status, count(t.id)::int as quantidade
                      from (SELECT case
                                       when p.arquivado = true then 'Arquivado'
@@ -99,7 +101,7 @@ export class PainelEstrategicoService {
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetoStatus[];
     }
 
-    async buildProjetosPorEtapas(filtro:string, user:PessoaFromJwt){
+    async buildProjetosPorEtapas(filtro:string){
         const sql = `select t.etapa, count(t.id)::int quantidade
                      from (SELECT case
                                       when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then pe.descricao
@@ -117,7 +119,7 @@ export class PainelEstrategicoService {
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetoEtapa[];
     }
 
-    async buildProjetosConcluidosPorAno(filtro:string, user:PessoaFromJwt){
+    async buildProjetosConcluidosPorAno(filtro:string){
         const sql = `select sum(quantidade)::int quantidade, ano
                      from (select count(*)                                as quantidade,
                                   date_part('year', tc.realizado_termino) as ano
@@ -139,7 +141,7 @@ export class PainelEstrategicoService {
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
     }
 
-    async buildProjetosConcluidosPorMesAno(filtro:string, user:PessoaFromJwt){
+    async buildProjetosConcluidosPorMesAno(filtro:string){
         const sql = `select count(*)::int                                                                 as quantidade,
                             date_part('year', tc.realizado_termino)                                   as ano,
                             date_part('month', tc.realizado_termino)                                  as mes,
@@ -158,7 +160,7 @@ export class PainelEstrategicoService {
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
 
-    async buildProjetosPlanejadosPorAno(filtro:string, user:PessoaFromJwt){
+    async buildProjetosPlanejadosPorAno(filtro:string){
         const sql = `select sum(quantidade)::int as quantidade, ano
                      from (select count(*)                               as quantidade,
                                   date_part('year', tc.previsao_termino) as ano
@@ -182,7 +184,7 @@ export class PainelEstrategicoService {
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
     }
 
-    async buildProjetosPlanejadosPorMesAno(filtro:string, user:PessoaFromJwt){
+    async buildProjetosPlanejadosPorMesAno(filtro:string){
         const sql = `select date_part('year', tc.previsao_termino)                                   as ano,
                             date_part('month', tc.previsao_termino)                                  as mes,
                             count(*)::int                                                                 as quantidade,
@@ -203,7 +205,7 @@ export class PainelEstrategicoService {
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
 
-    async buildProjetosOrgaoResponsavel(filtro:string, user:PessoaFromJwt){
+    async buildProjetosOrgaoResponsavel(filtro:string){
         return this.prisma.$transaction(
             async (prismaTx : Prisma.TransactionClient): Promise<PainelEstrategicoOrgaoResponsavel[]> => {
             await prismaTx.$executeRawUnsafe(`drop table if exists tmp_dash_org_resp`);
@@ -266,5 +268,29 @@ export class PainelEstrategicoService {
     }
 
 
+    async buildQuantidadesProjeto(filtro:string){
+        const sql = `select (select count(*) as quantidade
+                             from view_projetos vp
+                                      inner join projeto p on vp.id = p.id
+                                      inner join tarefa_cronograma tc on tc.projeto_id = p.id
+                             where tc.realizado_termino is null
+                               and tc.previsao_termino is not null
+                               and tc.removido_em is null
+                               and p.tipo = 'PP'
+                               ${filtro}
+                               and date_part('year', tc.previsao_termino) =
+                                   date_part('YEAR', current_date)) as quantidade_planejada,
+                            (select count(*) as quantidade
+                             from view_projetos vp
+                                      inner join projeto p on vp.id = p.id
+                                      inner join tarefa_cronograma tc on tc.projeto_id = p.id
+                             where p.tipo = 'PP'
+                               and tc.realizado_termino is not null
+                               and tc.removido_em is null
+                                 ${filtro}
+                               and date_part('year', tc.realizado_termino) =
+                                   date_part('year', CURRENT_DATE))   as quantidade_concluida`
+        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoQuantidadesAnoCorrente;
+    }
 
 }
