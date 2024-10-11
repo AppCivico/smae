@@ -57,6 +57,7 @@ interface UploadArquivoInterface {
         diretorio_caminho: string | null;
     };
     descricao: string | null;
+    fase: VariavelFase;
 }
 
 interface IUltimaAnaliseValor {
@@ -771,7 +772,7 @@ export class VariavelCicloService {
                 referencia_data: data_referencia,
                 removido_em: null,
             },
-            select: { arquivo: true, descricao: true },
+            select: { arquivo: true, descricao: true, fase: true },
         });
 
         // Processar e formatar os resultados
@@ -872,6 +873,10 @@ export class VariavelCicloService {
                 descricao: upload.descricao,
                 id: arquivo.id,
                 nome_original: arquivo.nome_original,
+                fase: upload.fase,
+                // no momento, sempre pode editar pois quem subiu pode editar, e os supervisores podem editar tudo, então
+                // não há necessidade de verificar permissões
+                pode_editar: true,
             } satisfies VariavelAnaliseDocumento;
         });
     }

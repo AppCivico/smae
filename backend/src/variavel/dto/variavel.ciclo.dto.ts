@@ -198,6 +198,8 @@ export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
     'descricao',
 ]) {
     descricao: string | null;
+    fase: VariavelFase;
+    pode_editar: boolean;
 }
 
 export class PSPedidoComplementacaoDto {
