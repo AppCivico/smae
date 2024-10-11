@@ -13,9 +13,9 @@ const projetosOrganizados = computed(() => props.projetos);
 </script>
 <template>
   <CardEnvelope.Conteudo>
-    <CardEnvelope.Titulo
-      titulo="Lista de Projetos"
-    />
+    <CardEnvelope.Titulo>
+      Projetos
+    </CardEnvelope.Titulo>
     <table class="tabela-projetos mt1">
       <thead>
         <tr>

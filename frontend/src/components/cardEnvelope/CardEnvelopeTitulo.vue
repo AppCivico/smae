@@ -1,16 +1,11 @@
 <template>
   <header class="card-envelope-titulo">
-    <div class="flex center">
-      <div class="card-envelope-titulo__texto">
+    <div class="flex center spacebetween">
+      <h2 class="card-envelope-titulo__texto t20 mb0">
         <slot>
-          <h1 class="t20 mb0">
-            {{ titulo }}
-          </h1>
+          {{ titulo }}
         </slot>
-      </div>
-      <div
-        class="card-envelope-titulo__linha"
-      />
+      </h2>
       <div
         v-if="temIcone"
         class="card-envelope-titulo__icone br999 flex justifycenter center"
@@ -26,10 +21,12 @@
       </div>
     </div>
     <p
-      v-if="subtitulo"
+      v-if="$slots?.subtitulo || subtitulo"
       class="card-envelope-titulo__texto__subtitulo t10"
     >
-      {{ subtitulo }}
+      <slot name="subtitulo">
+        {{ subtitulo }}
+      </slot>
     </p>
   </header>
 </template>
@@ -40,6 +37,7 @@ import { computed, withDefaults } from 'vue';
 type Slots = {
   default(): any
   icone(): any
+  subtitulo(): any
 };
 
 type Props = {
@@ -49,7 +47,7 @@ type Props = {
   cor?: string,
 };
 
-const $slots = defineSlots<Slots>();
+const slots = defineSlots<Slots>();
 
 const props = withDefaults(
   defineProps<Props>(),
@@ -61,7 +59,7 @@ const props = withDefaults(
   },
 );
 
-const temIcone = computed<boolean>(() => !!props.icone || !!$slots.icone);
+const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
 </script>
 
 <style lang="less" scoped>
