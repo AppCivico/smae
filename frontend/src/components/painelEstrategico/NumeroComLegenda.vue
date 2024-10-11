@@ -44,7 +44,9 @@ defineProps({
       :style="{ fontSize: tamanhoDaLegenda + 'px' }"
       class="label"
     >
-      {{ legenda }}
+      <slot name="legenda">
+        {{ legenda }}
+      </slot>
     </dd>
   </dl>
 </template>
