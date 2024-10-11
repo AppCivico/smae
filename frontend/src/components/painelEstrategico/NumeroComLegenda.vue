@@ -72,7 +72,7 @@ defineProps({
 .label::after {
   content: '';
   display: block;
-  width: 30%;
+  width: 50%;
   border-top: 1px solid #7E858D;
   margin: -25px auto 0;
 }
