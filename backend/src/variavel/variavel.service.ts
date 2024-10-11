@@ -662,9 +662,9 @@ export class VariavelService {
                 codigo: codigo,
                 acumulativa: dto.acumulativa,
                 mostrar_monitoramento: dto.mostrar_monitoramento,
-                unidade_medida_id: dto.unidade_medida_id,
+                unidade_medida_id: dto.unidade_medida_id ?? CONST_VAR_SEM_UN_MEDIDA,
                 ano_base: dto.ano_base,
-                valor_base: dto.valor_base,
+                valor_base: dto.valor_base ?? 0,
                 periodicidade: dto.periodicidade,
                 polaridade: dto.polaridade,
                 orgao_id: dto.orgao_id,
@@ -2025,6 +2025,10 @@ export class VariavelService {
             dto.unidade_medida_id = CONST_VAR_SEM_UN_MEDIDA;
             dto.polaridade = 'Neutra';
         }
+
+        if (!dto.unidade_medida_id) throw new HttpException('unidade_medida_id| Unidade de medida é obrigatória', 400);
+        if (dto.ano_base === undefined) throw new HttpException('ano_base| Ano base é obrigatório', 400);
+        if (dto.valor_base === undefined) throw new HttpException('valor_base| Valor base é obrigatório', 400);
     }
 
     private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_id: number | undefined) {

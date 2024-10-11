@@ -86,8 +86,10 @@ export class CreateVariavelBaseDto {
         }
     )
     @Type(() => String)
-    valor_base: number;
+    @IsOptional()
+    valor_base?: number;
 
+    @IsOptional()
     @IsInt({ message: '$property| $property inválido' })
     @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
     @Max(MAX_CASAS_DECIMAIS, { message: `$property| casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
@@ -115,9 +117,10 @@ export class CreateVariavelBaseDto {
     })
     polaridade?: Polaridade;
 
+    @IsOptional()
     @IsInt({ message: '$property| unidade de medida precisa ser numérico' })
     @Type(() => Number)
-    unidade_medida_id: number;
+    unidade_medida_id?: number;
 
     @IsBoolean({ message: '$property| Precisa ser um boolean' })
     acumulativa: boolean;
