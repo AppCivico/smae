@@ -5,6 +5,7 @@ DECLARE
     v_registro RECORD;
     v_ultimo_periodo_valido DATE;
     v_mes_atual DATE := (date_trunc('month', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date;
+    v_dia_atual DATE := (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date;
     v_data_limite DATE;
     v_corrente BOOLEAN;
     v_proximo_periodo DATE;
@@ -170,12 +171,6 @@ BEGIN
         RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
 
-        raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
-
-        v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
-
-        raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
-
         -- caso o atraso tenha sido resolvido pelo banco de variáveis, não há alteração previa na
         -- variavel_ciclo_corrente então façamos a correção aqui
         IF (v_atrasos[1] IS NULL AND v_fase_corrente != 'Liberacao') THEN
@@ -186,12 +181,20 @@ BEGIN
         -- previamente, então resetamos para preenchimento
         IF (v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL AND v_primeiro_registro.fases[1] IS NULL) THEN
             v_fase_corrente := 'Preenchimento';
+            v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
 
         -- sem atraso, ta na fase de liberacao, considera que a liberacao enviada, mesmo se não existir o envio
         IF (v_eh_liberacao_auto AND v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL) THEN
             v_liberacao_enviada := true;
+            v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
+
+        raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
+
+        v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
+
+        raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
 
         IF (v_fase_corrente = 'Preenchimento') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
@@ -217,17 +220,19 @@ BEGIN
 
     -- Assume que sempre é corrente
     v_corrente := true;
-    RAISE NOTICE 'v_mes_atual: %', v_mes_atual;
+    RAISE NOTICE 'v_dia_atual: %', v_dia_atual;
     RAISE NOTICE 'v_corrente: %', v_corrente;
 
-    v_dias_desde_inicio := (v_mes_atual - v_proximo_periodo) + 1;
+    v_dias_desde_inicio := (v_dia_atual - v_proximo_periodo) + 1;
     RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
+    raise notice 'v_proximo_periodo -> %', v_proximo_periodo;
 
     IF v_fase_corrente = 'Preenchimento' THEN
+        v_corrente := true;
         IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
             -- Esconde a fase de preenchimento enquanto não chegar na data
             v_corrente := false;
-            RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[1];
+            RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: < %', v_registro.periodo_preenchimento[1];
         END IF;
     END IF;
 
@@ -263,6 +268,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+select f_atualiza_variavel_ciclo_corrente (6779 ) ;
 
 --select f_atualiza_variavel_ciclo_corrente(4648);
 
