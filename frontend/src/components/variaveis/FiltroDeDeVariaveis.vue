@@ -70,6 +70,7 @@
           id="variavel_categorica_id"
           name="variavel_categorica_id"
           class="inputtext light"
+          :aria-busy="chamadasPendentesDeVariaveisCategoricas.lista"
         >
           <option value="" />
           <option :value="-2147483648">
@@ -80,7 +81,7 @@
               v-for="variavel, index in listaDeVariaveisCategoricas"
               :key="index"
               :value="variavel.id"
-              :title="variavel.descricao"
+              :title="variavel.descricao ? variavel.descricao : undefined"
             >
               {{ variavel.titulo }}
             </option>
@@ -373,11 +374,7 @@
     </button>
   </form>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  computed, onUnmounted, ref, watch,
-} from 'vue';
+<script setup lang="ts">
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
@@ -389,6 +386,11 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
+import { storeToRefs } from 'pinia';
+import type { Ref } from 'vue';
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
 
 const props = defineProps({
   ariaBusy: {
@@ -486,16 +488,17 @@ const {
 
 const {
   variaveisPositivas: listaDeVariaveisCategoricas,
+  chamadasPendentes: chamadasPendentesDeVariaveisCategoricas,
 } = storeToRefs(variaveisCategoricasStore);
 
 const pronto = ref(false);
 
 const codigo = ref('');
 const descricao = ref('');
-const nivelRegionalizacao = ref(null);
+const nivelRegionalizacao: Ref<null | number> = ref(null);
 const palavraChave = ref('');
-const planoSetorialId = ref(null);
-const regiaoId = ref(null);
+const planoSetorialId: Ref<null | number> = ref(null);
+const regiaoId: Ref<null | number> = ref(null);
 const titulo = ref('');
 
 const metasDisponiveis = computed(() => (!planoSetorialId.value
@@ -506,14 +509,34 @@ const metasDisponiveis = computed(() => (!planoSetorialId.value
 async function iniciar() {
   pronto.value = false;
 
-  const promessas = [
-    assuntosStore.buscarTudo(),
-    MetasStore.buscarTudo(),
-    ÓrgãosStore.getAll(),
-    planosSetoriaisStore.buscarTudo(),
-    regionsStore.getAll(),
-    variaveisCategoricasStore.buscarTudo(),
-  ];
+  const promessas = [];
+
+  if (!Array.isArray(organs) && !organs.loading) {
+    promessas.push(ÓrgãosStore.getAll());
+  }
+
+  if (!Array.isArray(regions) && !regions.loading) {
+    promessas.push(regionsStore.getAll());
+  }
+
+  if (!listaDeAssuntos.value.length && !chamadasPendentesDeAssuntos.value.lista) {
+    promessas.push(assuntosStore.buscarTudo());
+  }
+
+  if (!listaDeMetas.value.length && !chamadasPendentesDeMetas.value.lista) {
+    promessas.push(MetasStore.buscarTudo());
+  }
+
+  if (!listaDePlanosSetoriais.value.length && !chamadasPendentesDePlanosSetoriais.value.lista) {
+    promessas.push(planosSetoriaisStore.buscarTudo());
+  }
+
+  if (
+    !listaDeVariaveisCategoricas.value.length
+    && !chamadasPendentesDeVariaveisCategoricas.value.lista
+  ) {
+    promessas.push(variaveisCategoricasStore.buscarTudo());
+  }
 
   codigo.value = props.valoresIniciais.codigo || '';
   descricao.value = props.valoresIniciais.descricao || '';
