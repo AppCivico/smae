@@ -1263,6 +1263,7 @@ async function upsert_privilegios(
     return priv;
 }
 
+const removidosNaSession = new Set<number>();
 async function atualizar_perfil_acesso() {
     const deletePerfilAcesso = async (perfilAcessoId: number) => {
         await prisma.pessoaPerfil.deleteMany({
@@ -1273,6 +1274,8 @@ async function atualizar_perfil_acesso() {
             where: { perfil_acesso_id: perfilAcessoId },
         });
 
+        if (removidosNaSession.has(perfilAcessoId)) return;
+        removidosNaSession.add(perfilAcessoId);
         await prisma.perfilAcesso.delete({
             where: { id: perfilAcessoId },
         });
