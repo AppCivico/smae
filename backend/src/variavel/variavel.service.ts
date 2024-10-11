@@ -21,7 +21,7 @@ import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaHelpers } from '../common/PrismaHelpers';
-import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
+import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
@@ -248,6 +248,7 @@ export class VariavelService {
         }
 
         await this.validaGruposResponsavel(dto, MIN_DTO_SAFE_NUM);
+        await this.validaCamposCategorica(dto);
 
         this.checkOrgaoProprietario(tipo, dto, user);
         const responsaveis = 'responsaveis' in dto ? dto.responsaveis : [];
@@ -1533,6 +1534,7 @@ export class VariavelService {
             throw new HttpException('Variável filha não pode ser atualizada diretamente', 400);
 
         await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_id ?? MIN_DTO_SAFE_NUM);
+        await this.validaCamposCategorica(dto);
 
         let indicador_id: number | undefined = undefined;
         if (tipo == 'PDM') {
@@ -2006,6 +2008,17 @@ export class VariavelService {
             await prismaTxn.variavelAssuntoVariavel.deleteMany({
                 where: { variavel_id: variavelId },
             });
+        }
+    }
+
+    private async validaCamposCategorica(dto: UpdateVariavelDto) {
+        if (dto.variavel_categorica_id) {
+            dto.ano_base = null;
+            dto.valor_base = 0;
+            dto.acumulativa = false;
+            dto.casas_decimais = 0;
+            dto.unidade_medida_id = CONST_VAR_SEM_UN_MEDIDA;
+            dto.polaridade = 'Neutra';
         }
     }
 

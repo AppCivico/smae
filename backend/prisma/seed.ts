@@ -14,6 +14,7 @@ import {
     CONST_CRONO_VAR_CATEGORICA_ID,
     CONST_TIPO_NOTA_DIST_RECURSO,
     CONST_TIPO_NOTA_TRANSF_GOV,
+    CONST_VAR_SEM_UN_MEDIDA,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -1002,6 +1003,7 @@ async function main() {
                 ensure_tiponota_transf_gov(),
                 populateEleicao(),
                 populateDistribuicaoStatusBase(),
+                ensure_var_sem_unidade_medida(),
             ]);
 
             await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
@@ -1034,6 +1036,19 @@ async function ensure_tiponota_transf_gov() {
         },
     });
 }
+
+async function ensure_var_sem_unidade_medida() {
+    await prisma.unidadeMedida.upsert({
+        where: { id: CONST_VAR_SEM_UN_MEDIDA },
+        create: {
+            id: CONST_VAR_SEM_UN_MEDIDA,
+            descricao: 'Sem unidade de medida',
+            sigla: '',
+        },
+        update: {},
+    });
+}
+
 async function ensure_tiponota_dist_recurso() {
     await prisma.tipoNota.upsert({
         where: { id: CONST_TIPO_NOTA_DIST_RECURSO },
