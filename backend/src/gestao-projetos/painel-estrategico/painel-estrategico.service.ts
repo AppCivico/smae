@@ -78,7 +78,7 @@ export class PainelEstrategicoService {
                                           where p.tipo = 'PP'
                                               ${filtro}) as t) as total_metas`
 
-        return  await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoGrandesNumeros;
+        return  (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoGrandesNumeros[])[0];
     }
 
     async buildProjetosPorStatus(filtro:string){
