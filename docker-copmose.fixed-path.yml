@@ -1,0 +1,358 @@
+version: "3.5"
+services:
+  db:
+    container_name: "${PG_CONTAINER_NAME}"
+    # will change to postgres:12.16-bullseye
+    image: timescale/timescaledb:latest-pg14
+    environment:
+      POSTGRES_PASSWORD: "smae"
+      POSTGRES_USER: "smae"
+      POSTGRES_DB: smae_dev_persistent
+    networks:
+      #- postgres
+      - smae_network
+    volumes:
+      - ${DATA_PATH}/smae_pg_data:/var/lib/postgresql/data
+    ports:
+      - "${BIND_INTERFACE}${PG_DB_LISTEN}:5432"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+    restart: unless-stopped
+
+  # RAM ~ 1.5gb max
+  metabase:
+    image: metabase/metabase:latest
+    container_name: "${API_CONTAINER_NAME}_metabase"
+    restart: unless-stopped
+    hostname: metabase
+    volumes:
+      - /dev/urandom:/dev/random:ro
+    ports:
+      - "${BIND_INTERFACE}${METADB_LISTEN}:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: password
+      MB_DB_HOST: metadb_postgres
+      MB_SITE_URL: "${MB_SITE_URL}"
+    networks:
+      #- postgres
+      #- metadb_web
+      #- metadb_postgres
+      - smae_network
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  metadb_postgres:
+    image: postgres:15
+    restart: unless-stopped
+    container_name: "${API_CONTAINER_NAME}_metadb_postgres"
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: metabase
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ${DATA_PATH}/smae_pg_metabase_data:/var/lib/postgresql/data
+    networks:
+      #- metadb_postgres
+      - smae_network
+
+  # RAM ~ 4.0gb max
+  smae_api:
+    container_name: "${API_CONTAINER_NAME}"
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${BIND_INTERFACE}${SMAE_API_LISTEN}:3001"
+    environment:
+      DATABASE_URL: "${DATABASE_URL}"
+      SESSION_JWT_SECRET: "${SESSION_JWT_SECRET}"
+      MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK: "3"
+      URL_LOGIN_SMAE: "${URL_LOGIN_SMAE}"
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY}"
+      S3_BUCKET: "${S3_BUCKET}"
+      S3_HOST: "${S3_HOST}"
+      CPF_OBRIGATORIO_SEM_RF: "${CPF_OBRIGATORIO_SEM_RF}"
+      MATCH_EMAIL_RF_OBRIGATORIO: "${MATCH_EMAIL_RF_OBRIGATORIO}"
+      SOF_API_PREFIX: "${SOF_API_PREFIX}"
+      HEALTH_CHECK_TOKEN: "${HEALTH_CHECK_TOKEN}"
+      PRISMA_FIELD_ENCRYPTION_KEY: "${PRISMA_FIELD_ENCRYPTION_KEY}"
+      PRISMA_FIELD_DECRYPTION_KEYS: "${PRISMA_FIELD_DECRYPTION_KEYS}"
+      LOG_REQ_ON_DB: "${LOG_REQ_ON_DB}"
+      LOG_DB_SKIP_URL_LIST: "${LOG_DB_SKIP_URL_LIST}"
+      GEO_API_PREFIX: "${GEO_API_PREFIX}" # http://smae_geoloc:80
+      SEI_API_PREFIX: "${SEI_API_PREFIX}" # http://smae_sei:80
+      TRANSFEREGOV_API_PREFIX: "${TRANSFEREGOV_API_PREFIX}" # http://smae_transferegov:80
+    networks:
+      #- postgres
+      #- minio
+      #- api
+      #- api_orcamento
+      #- api_sei
+      #- api_geoloc
+      - smae_network
+    depends_on:
+      - db
+      - minio
+      #- smae_orcamento
+      #- smae_geoloc
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  # RAM ~ 300mb max
+  smae_orcamento:
+    container_name: "${API_CONTAINER_NAME}_orcamento"
+    build:
+      context: ./backend-orcamento/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SOF_API_TOKEN: "${SOF_API_TOKEN}"
+      SOF_API_HOST: "gateway.apilib.prefeitura.sp.gov.br/sf/sof/"
+      SOF_API_VERSION: "v4"
+      PORT: 80
+    networks:
+      #- api_orcamento
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  # RAM ~ 300mb max
+  smae_geoloc:
+    container_name: "${API_CONTAINER_NAME}_geoloc"
+    build:
+      context: ./backend-geoloc/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      CITY: "Sao Paulo"
+      STATE: "Sao Paulo"
+      COUNTRY_ISO: "BR"
+      NOMINATIM_EMAIL: "${NOMINATIM_EMAIL}"
+      GEOSAMPA_WFS_DOMAIN: "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/ows"
+      GEOSAMPA_API_VERSION: "1.0.0"
+      DISTANCIA_PADRAO_MTS_GEOSAMPA: "5"
+      NAMES_CAMADAS_TTL_SECONDS: "21600"
+    networks:
+      #- api_geoloc
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  # RAM ~ 300mb max
+  smae_transferegov:
+    container_name: "${API_CONTAINER_NAME}_transferegov"
+    build:
+      context: ./backend-transfere-gov/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  smae_transferegov_transferencias:
+    container_name: "${API_CONTAINER_NAME}_transferegov_transferencias"
+    build:
+      context: ./backend-transfere-gov-transferencias/
+      dockerfile: Dockerfile
+    environment:
+      DOWNLOAD_TTL_SECS: ${TRANSFEREGOV_TRANSFERENCIAS_DOWNLOAD_TTL_SECS}
+      MAX_RETRIES: ${TRANSFEREGOV_TRANSFERENCIAS_MAX_RETRIES}
+      COD_PROPONENTE_CIDADE: ${TRANSFEREGOV_TRANSFERENCIAS_COD_PROPONENTE_CIDADE}
+    restart: unless-stopped
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  smae_sei:
+    container_name: "${API_CONTAINER_NAME}_sei"
+    build:
+      context: ./backend-sei/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      host_sei: "${SEI_HOST}" # eg: https://treinamentosei4.prefeitura.sp.gov.br/sei
+      endpoint_wsdl: "${SEI_ENDPOINT_WSDL}" # eg: controlador_ws.php?servico=sei
+      sigla_sistema: "${SEI_SIGLA_SISTEMA}" # eg: SEI
+      identificacao_servico: "${SEI_API_TOKEN}" # eg: awsf...
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  # RAM 250mb RAM max
+  email_service:
+    container_name: "${EMAILDB_CONTAINER_NAME}"
+    build:
+      context: ./email-service/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      VARIABLES_JSON_IS_UTF8: "1"
+      EMAILDB_DB_HOST: "db"
+      EMAILDB_DB_PASS: "smae"
+      EMAILDB_DB_NAME: "smae_dev_persistent"
+      EMAILDB_DB_USER: "smae"
+      EMAILDB_DB_PORT: "5432"
+      EMAILDB_MAX_WORKERS: "1"
+      EMAILDB_FETCH_ROWS: "100"
+    volumes:
+      - ${DATA_PATH}/smae_email_data:/data/
+    depends_on:
+      - db
+    networks:
+      #- smtp
+      #- postgres
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+#  # 150 MB RAM max
+#  smtp_web:
+#    container_name: "${EMAILDB_CONTAINER_NAME}_smtp_web"
+#    restart: unless-stopped
+#    image: rnwood/smtp4dev:latest
+#    ports:
+#      - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
+#    networks:
+#      #- api
+#      #- smtp
+#      - smae_network
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-file: "2"
+#        max-size: 100MB
+
+  # 1500 MB RAM max
+  minio:
+    container_name: "${MINIO_CONTAINER_NAME}"
+    image: minio/minio:RELEASE.2023-08-29T23-07-35Z
+    hostname: minio
+    command: server --console-address ":9001" /data
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
+    networks:
+      #- minio
+      - smae_network
+    ports:
+      - "${BIND_INTERFACE}${MINIO_S3_LISTEN}:9000"
+      - "${BIND_INTERFACE}${MINIO_CONSOLE_LISTEN}:9001"
+    volumes:
+      - ${DATA_PATH}/smae_minio_data:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-file: '100'
+        max-size: 1m
+
+  # 50 mb RAM max
+#  web:
+#    container_name: "${WEB_CONTAINER_NAME}"
+#    build:
+#      context: ./
+#      dockerfile: frontend/Dockerfile
+#    networks:
+#      #- api
+#      #- metadb_web
+#      - smae_network
+#    depends_on:
+#      - smae_api
+#      - metabase
+#    restart: unless-stopped
+#    environment:
+#      VITE_API_URL: "${VITE_API_URL}"
+#    ports:
+#      - "${BIND_INTERFACE}${SMAE_WEB_LISTEN}:80"
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-file: "2"
+#        max-size: 1MB
+
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    container_name: "${API_CONTAINER_NAME}_pgb"
+    restart: unless-stopped
+    volumes:
+      - ${DATA_PATH}/smae_backup_smae_pg:/backups
+    networks:
+      #- postgres
+      - smae_network
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=smae_dev_persistent
+      - POSTGRES_USER=smae
+      - POSTGRES_PASSWORD=smae
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
+      - SCHEDULE=@hourly
+      - BACKUP_KEEP_MINS=1440
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
+
+  metabase_pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    container_name: "${API_CONTAINER_NAME}_metadb_pgb"
+    restart: unless-stopped
+    volumes:
+      - ${DATA_PATH}/smae_backup_metabase_pg:/backups
+    networks:
+      #- postgres
+      - smae_network
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=metadb_postgres
+      - POSTGRES_DB=metabase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=12
+      - HEALTHCHECK_PORT=8080
+
+networks:
+  smae_network:
+
