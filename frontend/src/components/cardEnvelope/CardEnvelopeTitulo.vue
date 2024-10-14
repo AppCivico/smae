@@ -59,27 +59,40 @@ const props = withDefaults(
 
 const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
 </script>
-
 <style lang="less" scoped>
-
 .card-envelope-titulo__texto {
   position: relative;
-}
 
-.card-envelope-titulo__texto::after {
-  content: '';
-  display: inline-block;
-  height: 2px;
-  background-color: v-bind(cor);
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
+  &::after {
+    content: '';
+    display: inline-block;
+    height: 2px;
+    background-color: v-bind(cor);
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+  }
+
+  &::before {
+    content: '';
+    display: inline-block;
+    height: 6px;
+    width: 6px;
+    border-radius: 100%;
+    color: v-bind(cor);
+    background-color: currentColor;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    margin-top: -3px;
+  }
 }
 
 .card-envelope-titulo__icone {
   background-color: v-bind(cor);
   position: absolute;
   right: 0;
+
   svg {
     fill: @branco;
   }
