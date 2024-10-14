@@ -42,50 +42,8 @@ watchEffect(() => {
 
   painelEstrategicoStore.buscarDados(parametros);
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
+  painelEstrategicoStore.buscarProjetos(parametros);
 });
-
-const mockProjetos = [
-  {
-    nome: 'OUCAE - Grupo 1 - Lote 3: CONSÓRCIO RM...',
-    secretaria: 'SEPEP',
-    meta: 12,
-    status: 'Em acompanhamento',
-    etapaAtual: 'Em contratação de Projeto',
-    terminoProjetado: 'Out/2024',
-    riscosEmAberto: 4,
-    percentualAtraso: '05',
-  },
-  {
-    nome: 'OUCAE - Grupo 1 - Lote 4: CONSÓRCIO LA ...',
-    secretaria: 'SME',
-    meta: null,
-    status: '',
-    etapaAtual: '',
-    terminoProjetado: '',
-    riscosEmAberto: 4,
-    percentualAtraso: '',
-  },
-  {
-    nome: 'Ribeirão dos Perus - Reservatórios, Canaliz...',
-    secretaria: 'SEPEP - UE',
-    meta: null,
-    status: '',
-    etapaAtual: '',
-    terminoProjetado: '',
-    riscosEmAberto: 4,
-    percentualAtraso: '',
-  },
-  {
-    nome: 'HIS Real Parque (Fase 3)',
-    secretaria: 'SETRAM',
-    meta: null,
-    status: '',
-    etapaAtual: '',
-    terminoProjetado: '',
-    riscosEmAberto: 4,
-    percentualAtraso: '',
-  },
-];
 
 </script>
 <template>
@@ -104,23 +62,23 @@ const mockProjetos = [
       <pre class="f1 fb15em debug">anosMapaCalorConcluidos:
 {{ painelEstrategicoStore.anosMapaCalorConcluidos }}</pre>
       <pre class="f1 fb15em debug">anosMapaCalorPlanejados:
-{{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
+      {{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
       <pre class="f1 fb15em debug">grandesNumeros:
-{{ painelEstrategicoStore.grandesNumeros }}</pre>
+      {{ painelEstrategicoStore.grandesNumeros }}</pre>
       <pre class="f1 fb15em debug">projetoEtapas:
-{{ painelEstrategicoStore.projetoEtapas }}</pre>
+      {{ painelEstrategicoStore.projetoEtapas }}</pre>
       <pre class="f1 fb15em debug">projetoOrgaoResponsavel:
-{{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
+      {{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
       <pre class="f1 fb15em debug">projetoStatus:
-{{ painelEstrategicoStore.projetoStatus }}</pre>
+      {{ painelEstrategicoStore.projetoStatus }}</pre>
       <pre class="f1 fb15em debug">projetosConcluidosAno:
-{{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
+      {{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
       <pre class="f1 fb15em debug">projetosConcluidosMes:
-{{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
+      {{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
       <pre class="f1 fb15em debug">projetosPlanejadosAno:
-{{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
+      {{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
       <pre class="f1 fb15em debug">projetosPlanejadosMes:
-{{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
+      {{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
       <pre class="f1 fb15em debug">locaisAgrupados: {{ locaisAgrupados }}</pre>
     </div>
 
@@ -213,69 +171,22 @@ const mockProjetos = [
           />
         </CardEnvelope.conteudo>
       </CardEnvelope.default>
+    </div>
 
-      <!--
-      <CardEnvelope.default>
-        <CardEnvelope.Conteudo>
-          <template
-            #default="{ visivel }"
-          >
-            -Visivel: {{ visivel }}-
-            <CardEnvelope.Titulo
-              titulo=" Icone Prop"
-              icone="graf"
-              subtitulo="
-                Órgãos com os números mais expressivos de projetos.
-                Demais órgãos apresentados em Outros.
-              "
-            />
+    <ErrorComponent v-if="erros.projetosPaginados" />
 
-            <h1>Conteudo 1</h1>
-            <h1>Conteudo 1</h1>
-            <h1>Conteudo 1</h1>
-          </template>
-        </Cardenvelope.conteudo>
+    <LoadingComponent v-if="chamadasPendentes.projetosPaginados" />
 
-        <CardEnvelope.Conteudo>
-          <CardEnvelope.Titulo>
-            <strong>Icone Slot</strong>
-
-            <template #icone>
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
-            </template>
-          </CardEnvelope.Titulo>
-
-          <h1>Conteudo 2</h1>
-          <h1>Conteudo 2</h1>
-          <h1>Conteudo 2</h1>
-        </CardEnvelope.Conteudo>
-
-        <CardEnvelope.Conteudo>
-          <CardEnvelope.Titulo>
-            <strong>Icone Slot</strong>
-
-            <template #icone>
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
-            </template>
-          </CardEnvelope.Titulo>
-
-          <h1>Conteudo 3</h1>
-          <h1>Conteudo 3</h1>
-          <h1>Conteudo 3</h1>
-        </CardEnvelope.Conteudo>
-      </CardEnvelope.default>
-      -->
-
-      <TabelaProjetos
-        class="grid-full-column"
-        :projetos="mockProjetos"
-      />
+    <div v-else>
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo>
+          Projetos
+        </CardEnvelope.Titulo>
+        <TabelaProjetos
+          class="grid-full-column"
+          :projetos="painelEstrategicoStore?.projetosPaginados "
+        />
+      </CardEnvelope.Conteudo>
     </div>
   </Dashboard>
 </template>

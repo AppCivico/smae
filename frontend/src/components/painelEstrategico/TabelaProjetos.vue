@@ -1,6 +1,6 @@
 <script setup>
 import { defineProps } from 'vue';
-import * as CardEnvelope from '@/components/cardEnvelope';
+import statuses from '@/consts/projectStatuses';
 
 defineProps({
   projetos: {
@@ -10,57 +10,57 @@ defineProps({
 });
 </script>
 <template>
-  <CardEnvelope.Conteudo>
-    <CardEnvelope.Titulo>
-      Projetos
-    </CardEnvelope.Titulo>
-
-    <div
-      role="region"
-      aria-label="Tabela de projetos"
-      tabindex="0"
-    >
-      <table class="tabela-projetos mt1">
-        <colgroup>
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <col class="col--data">
-          <col>
-          <col class="col--percentagem ">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Nome do Projeto</th>
-            <th>Secretaria</th>
-            <th>Meta</th>
-            <th>Status</th>
-            <th>Etapa Atual</th>
-            <th>Término Projetado</th>
-            <th>Riscos em Aberto</th>
-            <th>% de Atraso</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(projeto, index) in projetos"
-            :key="index"
-          >
-            <td>{{ projeto.nome }}</td>
-            <td>{{ projeto.secretaria }}</td>
-            <td>{{ projeto.meta }}</td>
-            <td>{{ projeto.status }}</td>
-            <td>{{ projeto.etapaAtual }}</td>
-            <td>{{ projeto.terminoProjetado }}</td>
-            <td>{{ projeto.riscosEmAberto }}</td>
-            <td>{{ projeto.percentualAtraso }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </CardEnvelope.Conteudo>
+  <div
+    role="region"
+    aria-label="Tabela de projetos"
+    tabindex="0"
+  >
+    <table class="tabela-projetos mt1">
+      <colgroup>
+        <col>
+        <col>
+        <col class="col--number">
+        <col>
+        <col>
+        <col class="col--data">
+        <col class="col--number">
+        <col class="col--percentagem">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Nome do Projeto</th>
+          <th>Secretaria</th>
+          <th>Meta</th>
+          <th>Status</th>
+          <th>Etapa Atual</th>
+          <th>Término Projetado</th>
+          <th>Riscos em Aberto</th>
+          <th>% de Atraso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="(projeto, index) in projetos.linhas"
+          :key="index"
+        >
+          <td>{{ projeto.nome_projeto || ' - ' }}</td>
+          <td>{{ projeto.secretaria?.nome || ' - ' }}</td>
+          <td>
+            {{ projeto.meta?.nome || ' - ' }}
+          </td>
+          <td>{{ statuses[projeto.status] || projeto.status }}</td>
+          <td>{{ projeto.etapa_atual || ' - ' }}</td>
+          <td>{{ projeto.termino_projetado || ' - ' }}</td>
+          <td class="tr">
+            {{ projeto.riscos_abertos || ' - ' }}
+          </td>
+          <td class="tr">
+            {{ projeto.percentual_atraso ? `${projeto.percentual_atraso}%` : ' - ' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 <style scoped>
 .tabela-projetos {

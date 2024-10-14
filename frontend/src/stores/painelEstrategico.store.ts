@@ -7,11 +7,13 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type ChamadasPendentes = {
   dados: boolean;
   projetosParaMapa: boolean;
+  projetosPaginados: boolean;
 };
 
 type Erros = {
   dados: unknown;
   projetosParaMapa: unknown;
+  projetosPaginados: unknown;
 };
 
 type Estado = Record<string, unknown> & {
@@ -33,16 +35,18 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     projetosPlanejadosMes: [],
     quantidadesProjeto: [],
     resumoOrcamentario: [],
-
     projetosParaMapa: [],
+    projetosPaginados: [],
 
     chamadasPendentes: {
       dados: false,
       projetosParaMapa: false,
+      projetosPaginados: false,
     },
     erros: {
       dados: null,
       projetosParaMapa: null,
+      projetosPaginados: null,
     },
   }),
   getters: {
@@ -88,12 +92,23 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       this.chamadasPendentes.projetosParaMapa = true;
 
       try {
-        const { linhas } = await this.requestS.post(`${baseUrl}/painel-estrategico/geo-localizacao`, params);
+        // TO-DO: atualizar endpoint
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
 
         this.projetosParaMapa = linhas;
       } catch (error: unknown) {
         this.erros.projetosParaMapa = error;
       }
+    },
+    async buscarProjetos(params = {}): Promise<void> {
+      this.chamadasPendentes.projetosPaginados = true;
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico/lista-projeto-paginado`, params);
+        this.projetosPaginados = resposta;
+      } catch (erro: unknown) {
+        this.erros.projetosPaginados = erro;
+      }
+      this.chamadasPendentes.projetosPaginados = false;
     },
   },
 })();
