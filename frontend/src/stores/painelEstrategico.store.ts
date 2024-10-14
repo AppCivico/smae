@@ -6,12 +6,12 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type ChamadasPendentes = {
   dados: boolean;
-  locaisDeProjetos: boolean;
+  projetosParaMapa: boolean;
 };
 
 type Erros = {
   dados: unknown;
-  locaisDeProjetos: unknown;
+  projetosParaMapa: unknown;
 };
 
 type Estado = Record<string, unknown> & {
@@ -34,18 +34,36 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     quantidadesProjeto: [],
     resumoOrcamentario: [],
 
-    locaisDeProjetos: [],
+    projetosParaMapa: [],
 
     chamadasPendentes: {
       dados: false,
-      locaisDeProjetos: false,
+      projetosParaMapa: false,
     },
     erros: {
       dados: null,
-      locaisDeProjetos: null,
+      projetosParaMapa: null,
     },
   }),
   getters: {
+    locaisAgrupados: ({ projetosParaMapa }) => projetosParaMapa
+      .reduce((acc, cur) => {
+        if (Array.isArray(cur.geolocalizacao)) {
+          cur.geolocalizacao.forEach((geolocalizacao) => {
+            if (geolocalizacao.endereco) {
+              acc.enderecos.push(geolocalizacao.endereco);
+            }
+            if (geolocalizacao.camadas) {
+              acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
+            }
+          });
+        }
+
+        return acc;
+      }, {
+        camadas: [],
+        enderecos: [],
+      }),
   },
   actions: {
     async buscarDados(params = {}): Promise<void> {
@@ -65,16 +83,17 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       }
       this.chamadasPendentes.dados = false;
     },
+
     async buscarProjetosParaMapa(params = {}): Promise<void> {
-      this.chamadasPendentes.locaisDeProjetos = true;
+      this.chamadasPendentes.projetosParaMapa = true;
 
       try {
         // TO-DO: atualizar endpoint
         const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
 
-        this.locaisDeProjetos = linhas;
+        this.projetosParaMapa = linhas;
       } catch (error: unknown) {
-        this.erros.locaisDeProjetos = error;
+        this.erros.projetosParaMapa = error;
       }
     },
   },

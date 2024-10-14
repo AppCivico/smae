@@ -2,6 +2,7 @@
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
 import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vue';
@@ -20,6 +21,7 @@ const painelEstrategicoStore = usePainelEstrategicoStore(route.meta.entidadeMãe
 
 const {
   chamadasPendentes,
+  locaisAgrupados,
   erros,
 } = storeToRefs(painelEstrategicoStore);
 
@@ -39,6 +41,7 @@ watchEffect(() => {
   }, {} as Record<string, unknown>);
 
   painelEstrategicoStore.buscarDados(parametros);
+  painelEstrategicoStore.buscarProjetosParaMapa();
 });
 
 const mockProjetos = [
@@ -186,6 +189,27 @@ const mockProjetos = [
         </CardEnvelope.conteudo>
       </CardEnvelope.default>
 
+      <CardEnvelope.default class="cartao--mapa">
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo
+            titulo="Mapa"
+            subtitulo="Localização dos projetos conforme filtro aplicado."
+            icone="map"
+          />
+
+          <MapaExibir
+            :geo-json="locaisAgrupados.enderecos"
+            :camadas="locaisAgrupados.camadas"
+            class="mb1"
+            :opções-do-polígono="{
+              fill: true,
+              opacity: 0.5,
+            }"
+            zoom="16"
+          />
+        </CardEnvelope.conteudo>
+      </CardEnvelope.default>
+
       <!--
       <CardEnvelope.default>
         <CardEnvelope.Conteudo>
@@ -264,6 +288,9 @@ const mockProjetos = [
 }
 </style>
 <style lang="less" scoped>
+@duas-colunas: 55em;
+@tres-colunas: 75em;
+
 .cabecalho {
   position: relative;
   border-bottom: 2px solid @azul;
@@ -284,13 +311,19 @@ const mockProjetos = [
   display: grid;
   gap: 2rem 4rem;
 
-  @media screen and (min-width: 55em) {
+  @media screen and (min-width: @duas-colunas) {
     grid-template-columns: 2.5fr 1.5fr;
   }
 
-  @media screen and (min-width: 75em) {
+  @media screen and (min-width: @tres-colunas) {
     grid-template-columns: 3fr 2fr;
     grid-template-columns: 2.5fr 1.5fr 2fr;
+  }
+}
+
+.cartao--mapa {
+  @media screen and (min-width: @duas-colunas) {
+    grid-column: span 2;
   }
 }
 </style>
