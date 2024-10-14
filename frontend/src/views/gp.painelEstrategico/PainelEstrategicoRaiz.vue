@@ -4,12 +4,12 @@ import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
-import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
+import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vue';
+import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
-import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -97,27 +97,31 @@ const mockProjetos = [
       </FormularioQueryString>
     </header>
 
-    <div class="flex flexwrap g2">
+    <div
+      v-scrollLockDebug
+      class="flex flexwrap g2"
+    >
       <pre class="f1 fb15em debug">anosMapaCalorConcluidos:
 {{ painelEstrategicoStore.anosMapaCalorConcluidos }}</pre>
       <pre class="f1 fb15em debug">anosMapaCalorPlanejados:
-      {{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
+{{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
       <pre class="f1 fb15em debug">grandesNumeros:
-      {{ painelEstrategicoStore.grandesNumeros }}</pre>
+{{ painelEstrategicoStore.grandesNumeros }}</pre>
       <pre class="f1 fb15em debug">projetoEtapas:
-      {{ painelEstrategicoStore.projetoEtapas }}</pre>
+{{ painelEstrategicoStore.projetoEtapas }}</pre>
       <pre class="f1 fb15em debug">projetoOrgaoResponsavel:
-      {{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
+{{ painelEstrategicoStore.projetoOrgaoResponsavel }}</pre>
       <pre class="f1 fb15em debug">projetoStatus:
-      {{ painelEstrategicoStore.projetoStatus }}</pre>
+{{ painelEstrategicoStore.projetoStatus }}</pre>
       <pre class="f1 fb15em debug">projetosConcluidosAno:
-      {{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
+{{ painelEstrategicoStore.projetosConcluidosAno }}</pre>
       <pre class="f1 fb15em debug">projetosConcluidosMes:
-      {{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
+{{ painelEstrategicoStore.projetosConcluidosMes }}</pre>
       <pre class="f1 fb15em debug">projetosPlanejadosAno:
-      {{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
+{{ painelEstrategicoStore.projetosPlanejadosAno }}</pre>
       <pre class="f1 fb15em debug">projetosPlanejadosMes:
-      {{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
+{{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
+      <pre class="f1 fb15em debug">locaisAgrupados: {{ locaisAgrupados }}</pre>
     </div>
 
     <ErrorComponent v-if="erros.dados">
