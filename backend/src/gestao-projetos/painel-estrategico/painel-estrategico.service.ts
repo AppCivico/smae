@@ -6,7 +6,9 @@ import {
 } from './dto/painel-estrategico-filter.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
-    PainelEstrategicoExecucaoOrcamentariaAno, PainelEstrategicoExecucaoOrcamentariaLista,
+    PainelEstrategicoExecucaoOrcamentariaAno,
+    PainelEstrategicoExecucaoOrcamentariaLista,
+    PainelEstrategicoGeoLocalizacaoDto,
     PainelEstrategicoGrandesNumeros,
     PainelEstrategicoOrgaoResponsavel,
     PainelEstrategicoProjeto,
@@ -15,13 +17,16 @@ import {
     PainelEstrategicoProjetosMesAno,
     PainelEstrategicoProjetoStatus,
     PainelEstrategicoQuantidadesAnoCorrente,
-    PainelEstrategicoResponseDto, PainelEstrategicoResumoOrcamentario,
+    PainelEstrategicoResponseDto,
+    PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
 import { Prisma } from '@prisma/client';
 import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';
 import { JwtService } from '@nestjs/jwt';
+import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../../geo-loc/geo-loc.service';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -29,12 +34,10 @@ export class PainelEstrategicoService {
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
         private readonly jwtService: JwtService,
+        private readonly geolocService: GeoLocService,
     ) {
     }
 
-    /*Está recebendo o usuário pois futuramente será necessário realizar filtros de acordo
-      com alguns atributos do usuário
-     */
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
         const strFilter = await this.applyFilter(filtro, user);
         const response = new PainelEstrategicoResponseDto();
@@ -62,6 +65,7 @@ export class PainelEstrategicoService {
         await this.projetoService.findAllIds('PP', user).then(ids => {
             ids.forEach(n => filtro.projeto_id.push(n.id));
         });
+        strFilter = ' and p.arquivado = false ';
         if (filtro.projeto_id.length > 0) {
             strFilter = ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
@@ -99,7 +103,6 @@ export class PainelEstrategicoService {
     private async buildProjetosPorStatus(filtro: string) {
         const sql = `select t.status, count(t.id) ::int as quantidade
                      from (SELECT case
-                                      when p.arquivado = true then 'Arquivado'
                                       when p.status = 'Fechado' then 'Concluído'
                                       when p.status = 'EmAcompanhamento' then 'Em Acompanhamento'
                                       when p.status = 'EmPlanejamento' then 'Em Planejamento'
@@ -156,7 +159,7 @@ export class PainelEstrategicoService {
     }
 
     async buildProjetosConcluidosPorMesAno(filtro: string) {
-        const sql = `select count(*)::int                                                                 as quantidade, date_part('year', tc.realizado_termino) as ano,
+        const sql = `select count(*)::int as quantidade, date_part('year', tc.realizado_termino) as ano,
                             date_part('month', tc.realizado_termino)                                  as mes,
                             date_part('YEAR', current_date) - date_part('year', tc.realizado_termino) as linha,
                             date_part('month', tc.realizado_termino) - 1                              as coluna
@@ -272,7 +275,7 @@ export class PainelEstrategicoService {
 
 
     private async buildQuantidadesProjeto(filtro: string) {
-        const sql = `select (select count(*) as quantidade
+        const sql = `select (select count(*)::int as quantidade
                              from view_projetos vp
                                       inner join projeto p on vp.id = p.id
                                       inner join tarefa_cronograma tc on tc.projeto_id = p.id
@@ -283,7 +286,7 @@ export class PainelEstrategicoService {
                                  ${filtro}
                                and date_part('year', tc.previsao_termino) =
                                    date_part('YEAR', current_date))                                                                    as quantidade_planejada,
-                            (select count(*) as quantidade
+                            (select count(*)::int as quantidade
                              from view_projetos vp
                                       inner join projeto p on vp.id = p.id
                                       inner join tarefa_cronograma tc on tc.projeto_id = p.id
@@ -291,7 +294,8 @@ export class PainelEstrategicoService {
                                and tc.realizado_termino is not null
                                and tc.removido_em is null ${filtro}
                                and date_part('year', tc.realizado_termino) =
-                                   date_part('year', CURRENT_DATE)) as quantidade_concluida`;
+                                   date_part('year', CURRENT_DATE)) as quantidade_concluida,
+                            date_part('year',current_date)::int as ano`;
         return (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoQuantidadesAnoCorrente[])[0];
     }
 
@@ -434,16 +438,23 @@ export class PainelEstrategicoService {
             );
         return tmp;
     }
-
-    /*
-        Mock!! Aguardando definição das regras de negócio!
-     */
     private async buildResumoOrcamentario(filter: string) {
-        return {
-            custo_planejado_total: 1000000,
-            valor_empenhado_total: 2000000,
-            valor_liquidado_total: 3000000,
-        } satisfies PainelEstrategicoResumoOrcamentario;
+        const sql = `select
+                        (select
+                             sum(tc.previsao_custo)
+                         from tarefa_cronograma tc
+                                  inner join projeto p on tc.projeto_id = p.id
+                         where p.tipo = 'PP' and p.removido_em is null
+                         ${filter})::float as custo_planejado_total,
+                        sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
+                        sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total
+                    from orcamento_realizado orcr
+                    inner join view_projetos vp on orcr.projeto_id = vp.id
+                    inner join projeto p on p.id = vp.id
+                    where p.tipo = 'PP'
+                      ${filter}
+                    and p.removido_em is null`
+        return (await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoResumoOrcamentario[])[0];
     }
 
     /*
@@ -505,8 +516,12 @@ export class PainelEstrategicoService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const quantidade_rows = await this.prisma.$queryRawUnsafe(`select 3 ::int as count`) as any;
-
+        const quantidade_rows = await this.prisma.$queryRawUnsafe(`select
+                                                                        count(*)::int as count
+                                                                   from
+                                                                       projeto p
+                                                                   where p.tipo = 'PP'
+                                                                   ${whereFilter}`) as any;
         const body = {
             search_hash: Object2Hash(filter),
             ipp: ipp!,
@@ -519,9 +534,6 @@ export class PainelEstrategicoService {
         };
     }
 
-    /*
-        Mock!! Aguardando definição das regras de negócio!
-    */
     async listaExecucaoOrcamentaria(filtro: PainelEstrategicoListaFilterDto, user: PessoaFromJwt) {
         let retToken = filtro.token_paginacao;
         const filterToken = filtro.token_paginacao;
@@ -542,10 +554,38 @@ export class PainelEstrategicoService {
             ipp = decoded.ipp;
             now = new Date(decoded.issued_at);
         }
-        //const offset = (page - 1) * ipp;
+        const offset = (page - 1) * ipp;
         const whereFilter = await this.applyFilter(filtro, user);
-
-
+        const sql = `select
+                        (select sum(t.custo_estimado)
+                         from tarefa_cronograma tc
+                                  inner join tarefa t on t.tarefa_cronograma_id = tc.id
+                         where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id)
+                           and tc.projeto_id = p.id)::float                as valor_custo_planejado_total,
+                        (select sum(t.custo_estimado)
+                         from tarefa_cronograma tc
+                                  inner join tarefa t on t.tarefa_cronograma_id = tc.id
+                         where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id)
+                           and tc.projeto_id = p.id
+                           and t.termino_planejado <= current_date)::float as valor_custo_planejado_hoje,
+                        orc.soma_valor_empenho ::float as valor_empenhado_total,
+                        orc.soma_valor_liquidado::float as valor_liquidado_total,
+                        p.nome as nome_projeto
+                         from projeto p
+                                  inner join (select vp.nome,
+                                                     vp.id                          as projeto_id,
+                                                     sum(orcr.soma_valor_empenho)   as soma_valor_empenho,  -- verificar se esse valor é o valor atualizado
+                                                     sum(orcr.soma_valor_liquidado) as soma_valor_liquidado -- verificar se esse valor é o valor atualizado
+                                              from orcamento_realizado orcr
+                                                       left join view_projetos vp on orcr.projeto_id = vp.id
+                                                       inner join projeto p on p.id = vp.id
+                                              where p.tipo = 'PP'
+                                                and p.removido_em is null
+                                                ${whereFilter}
+                                              group by vp.nome, vp.id) orc on orc.projeto_id = p.id
+                         where p.tipo = 'PP'
+                         limit ${ipp} offset ${offset}`
+        const linhas = await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaLista[];
         // executar depois da query
         if (filterToken) {
             retToken = filterToken;
@@ -554,38 +594,42 @@ export class PainelEstrategicoService {
             retToken = info.jwt;
             total_registros = info.body.total_rows;
         }
-        //tem_mais = offset + linhas.length < total_registros;
-        //const paginas = total_registros > ipp ? Math.ceil(total_registros / ipp) : 1;
+        tem_mais = offset + linhas.length < total_registros;
+        const paginas = total_registros > ipp ? Math.ceil(total_registros / ipp) : 1;
         return {
             tem_mais: tem_mais,
             pagina_corrente: 1,
             total_registros: total_registros,
             token_paginacao: retToken,
-            paginas:1,
-            linhas: [{
-                nome_projeto: 'Projeto 1  - Teste',
-                valor_empenhado_total: 1000000,
-                valor_liquidado_total: 500000,
-                valor_custo_planejado_hoje: 2000000,
-                valor_custo_planejado_total: 3000000,
-            } as PainelEstrategicoExecucaoOrcamentariaLista,
-                {
-                    nome_projeto: 'Projeto 2  - Teste',
-                    valor_empenhado_total: 2000000,
-                    valor_liquidado_total: 600000,
-                    valor_custo_planejado_hoje: 3000000,
-                    valor_custo_planejado_total: 4000000,
-                } as PainelEstrategicoExecucaoOrcamentariaLista,
-                {
-                    nome_projeto: 'Projeto 3  - Teste',
-                    valor_empenhado_total: 3000000,
-                    valor_liquidado_total: 700000,
-                    valor_custo_planejado_hoje: 4000000,
-                    valor_custo_planejado_total: 5000000,
-                } as PainelEstrategicoExecucaoOrcamentariaLista,
-            ],
-
+            paginas:paginas,
+            linhas: linhas,
         } satisfies PaginatedWithPagesDto<PainelEstrategicoExecucaoOrcamentariaLista>;
 
+    }
+    async buildGeoLocalizacao(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt):Promise<PainelEstrategicoGeoLocalizacaoDto>{
+        const whereFilter = await this.applyFilter(filtro, user);
+        const sql = `select
+                        vp.nome as nome_projeto,
+                        vp.id as projeto_id
+                    from view_projetos vp inner join projeto p on vp.id = p.id
+                    where p.removido_em is null
+                    and p.tipo = 'PP'
+                    ${whereFilter}`
+        const linhas = await this.prisma.$queryRawUnsafe(sql) as any[];
+
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.projeto_id = linhas.map((r) => r.projeto_id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
+        const retorno: PainelEstrategicoGeoLocalizacaoDto = new PainelEstrategicoGeoLocalizacaoDto();
+        retorno.linhas = [];
+        linhas.forEach((linha) => {
+            retorno.linhas.push({
+                        projeto_nome:linha.nome_projeto,
+                        projeto_id:linha.projeto_id,
+                        geolocalizacao:geolocalizacao.get(linha.projeto_id)||[]
+                    });
+        });
+        return retorno;
     }
 }

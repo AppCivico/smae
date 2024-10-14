@@ -1,4 +1,5 @@
 import { IdCodNomeDto } from '../../../common/dto/IdCodNome.dto';
+import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 
 export class PainelEstrategicoResponseDto {
     grandes_numeros:PainelEstrategicoGrandesNumeros;
@@ -50,6 +51,7 @@ export class PainelEstrategicoProjetosAno {
 export class PainelEstrategicoQuantidadesAnoCorrente{
     quantidade_planejada:number;
     quantidade_concluida:number;
+    ano:number;
 }
 export class PainelEstrategicoResumoOrcamentario{
     custo_planejado_total:number;
@@ -78,4 +80,12 @@ export class PainelEstrategicoExecucaoOrcamentariaLista{
     valor_custo_planejado_hoje:number;
     valor_empenhado_total:number;
     valor_liquidado_total:number;
+}
+export class PainelEstrategicoGeoLocalizacao{
+    projeto_nome:string;
+    projeto_id:number;
+    geolocalizacao:GeolocalizacaoDto[];
+}
+export class PainelEstrategicoGeoLocalizacaoDto{
+    linhas: PainelEstrategicoGeoLocalizacao[];
 }

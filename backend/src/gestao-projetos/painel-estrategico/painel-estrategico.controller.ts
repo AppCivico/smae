@@ -4,7 +4,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
-    PainelEstrategicoExecucaoOrcamentariaLista,
+    PainelEstrategicoExecucaoOrcamentariaLista, PainelEstrategicoGeoLocalizacaoDto,
     PainelEstrategicoProjeto,
     PainelEstrategicoResponseDto,
 } from './entities/painel-estrategico-responses.dto';
@@ -47,6 +47,16 @@ export class PainelEstrategicoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PaginatedWithPagesDto<PainelEstrategicoExecucaoOrcamentariaLista>> {
         return await this.painelEstrategicoService.listaExecucaoOrcamentaria(filtro,user);
+    }
+
+    @Post('geo-localizacao')
+    @ApiBearerAuth('access-token')
+    @Roles(['Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo'])
+    async createGeoLocalizacao(
+        @Body() filtro: PainelEstrategicoListaFilterDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PainelEstrategicoGeoLocalizacaoDto> {
+        return await this.painelEstrategicoService.buildGeoLocalizacao(filtro,user);
     }
 
 }
