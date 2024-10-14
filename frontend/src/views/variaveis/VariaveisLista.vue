@@ -81,6 +81,7 @@ watchEffect(() => {
   <FormularioQueryString
     v-slot="{ aplicarQueryStrings }"
     :valores-iniciais="{
+      ordem_coluna: 'codigo',
       ordem_direcao: 'asc',
       ipp: gblIpp,
       pagina: 1,
@@ -89,14 +90,6 @@ watchEffect(() => {
   >
     <FiltroDeDeVariaveis
       :aria-busy="chamadasPendentes.lista"
-      :valores-iniciais="{
-        ...$route.query,
-        ipp: $route.query.ipp || 100,
-        nivel_regionalizacao: $route.query.nivel_regionalizacao,
-        ordem_coluna: $route.query.codigo || 'codigo',
-        ordem_direcao: $route.query.ordem_direcao || 'asc',
-        regiao_id: $route.query.regiao_id,
-      }"
       @submit="aplicarQueryStrings"
     />
   </FormularioQueryString>
