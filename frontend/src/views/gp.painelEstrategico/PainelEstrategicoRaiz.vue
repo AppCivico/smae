@@ -136,8 +136,18 @@ const mockProjetos = [
           <GrandesNumeros :grandes-numeros="painelEstrategicoStore.grandesNumeros" />
         </CardEnvelope.conteudo>
       </CardEnvelope.default>
-
-      <TotalDeProjetos />
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo
+          titulo="Projetos"
+          subtitulo="Total de projetos planejados e concluídos no ano vigente."
+          icone="box"
+          cor="#F2C94C"
+        />
+        <TotalDeProjetos
+          :planejados="painelEstrategicoStore.quantidadesProjeto?.quantidade_planejada"
+          :concluidos="painelEstrategicoStore.quantidadesProjeto?.quantidade_concluida"
+        />
+      </CardEnvelope.Conteudo>
 
       <ResumoOrcamentario
         :planejado-total="1144000000"
