@@ -27,7 +27,7 @@ const {
 
 watchEffect(() => {
   const parametrosValidos = [
-    'portifolio_id',
+    'portfolio_id',
     'orgao_responsavel_id',
     'projeto_id',
   ];
