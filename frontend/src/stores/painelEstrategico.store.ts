@@ -88,8 +88,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       this.chamadasPendentes.projetosParaMapa = true;
 
       try {
-        // TO-DO: atualizar endpoint
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
+        const { linhas } = await this.requestS.post(`${baseUrl}/painel-estrategico/geo-localizacao`, params);
 
         this.projetosParaMapa = linhas;
       } catch (error: unknown) {

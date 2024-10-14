@@ -41,7 +41,7 @@ watchEffect(() => {
   }, {} as Record<string, unknown>);
 
   painelEstrategicoStore.buscarDados(parametros);
-  painelEstrategicoStore.buscarProjetosParaMapa();
+  painelEstrategicoStore.buscarProjetosParaMapa(parametros);
 });
 
 const mockProjetos = [
