@@ -94,6 +94,7 @@ const projetosPorStatusChartOptions = computed(() => ({
         borderRadius: [999, 0, 0, 999],
       },
       markLine: {
+        silent: true,
         label: {
           show: false,
         },

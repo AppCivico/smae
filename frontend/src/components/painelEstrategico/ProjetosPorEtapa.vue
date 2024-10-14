@@ -82,12 +82,14 @@ const projetosPorEtapaChartOptions = computed(() => ({
             color: (params) => params.color,
             align: 'left',
             padding: [0, 0, 0, 40],
+            fontFamily: "Roboto Slab",
           },
           text: {
             fontSize: 14,
             color: '#333',
             align: 'left',
             padding: [0, 0, 0, 40],
+            fontFamily: "Roboto",
           },
         },
       },
@@ -95,6 +97,7 @@ const projetosPorEtapaChartOptions = computed(() => ({
         borderRadius: [999, 0, 0, 999],
       },
       markLine: {
+        silent: true,
         label: {
           show: false,
         },

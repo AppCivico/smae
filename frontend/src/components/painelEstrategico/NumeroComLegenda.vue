@@ -60,7 +60,9 @@ defineProps({
 
 .number {
   margin: 0;
-  font-weight: bold;
+  font-family: "Roboto Slab", serif;
+  font-weight: 600;
+  font-style: normal;
 }
 
 .label {
