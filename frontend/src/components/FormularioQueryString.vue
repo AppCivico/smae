@@ -5,8 +5,8 @@
   />
 </template>
 <script setup lang="ts">
-import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
-import { UrlParams } from '@vueuse/core';
+import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
+import type { UrlParams } from '@vueuse/core';
 import { pick } from 'lodash';
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -24,7 +24,6 @@ const props = defineProps({
 });
 
 function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): void {
-  console.debug('eventoOuObjeto', eventoOuObjeto);
   let parametros: UrlParams = {};
 
   if (eventoOuObjeto instanceof SubmitEvent) {
@@ -62,10 +61,17 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
 
   parametros = {
     ...route.query,
-    ...props.valoresIniciais,
     ...parametros,
   };
 
+  // Remover propriedades com valores de string vazia
+  Object.keys(parametros).forEach((key) => {
+    if (parametros[key] === '') {
+      delete parametros[key];
+    }
+  });
+
+  // Ordenar os parâmetros
   parametros = pick(parametros, Object.keys(parametros).sort());
 
   emit('aplicado', parametros);
