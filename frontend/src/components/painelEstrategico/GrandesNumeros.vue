@@ -1,6 +1,7 @@
 <template>
-  <div class="flex flexwrap g2 justifycenter center pb2">
+  <dl class="flex flexwrap g1 justifycenter center pb2">
     <NumeroComLegenda
+      como-item
       :numero="grandesNumeros.total_projetos"
       cor="#221F43"
       legenda="Total de projetos"
@@ -9,6 +10,7 @@
     />
 
     <NumeroComLegenda
+      como-item
       :numero="grandesNumeros.total_orgaos"
       cor="#221F43"
       legenda="Total de órgãos"
@@ -18,6 +20,7 @@
     />
 
     <NumeroComLegenda
+      como-item
       :numero="grandesNumeros.total_metas"
       cor="#221F43"
       legenda="Total de metas"
@@ -25,12 +28,12 @@
       :tamanho-do-numero="tamanhoDoNúmeroSecundário"
       :tamanho-da-legenda="12"
     />
-  </div>
+  </dl>
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
 import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
+import { defineProps } from 'vue';
 
 defineProps({
   grandesNumeros: {
