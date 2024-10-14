@@ -149,11 +149,19 @@ const mockProjetos = [
         />
       </CardEnvelope.Conteudo>
 
-      <ResumoOrcamentario
-        :planejado-total="1144000000"
-        :empenho-total="1240000"
-        :liquidado-total="714000"
-      />
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo
+          titulo="Resumo Orçamentário"
+          subtitulo="Acompanhamento dos valores orçamentários totais."
+          icone="moneyChart"
+          cor="#D86B2C"
+        />
+        <ResumoOrcamentario
+          :planejado-total="painelEstrategicoStore.resumoOrcamentario?.custo_planejado_total"
+          :empenho-total="painelEstrategicoStore.resumoOrcamentario?.valor_empenhado_total"
+          :liquidado-total="painelEstrategicoStore.resumoOrcamentario?.valor_liquidado_total"
+        />
+      </CardEnvelope.Conteudo>
 
       <CardEnvelope.default>
         <CardEnvelope.Conteudo>

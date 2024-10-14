@@ -30,6 +30,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     projetosPlanejadosAno: [],
     projetosPlanejadosMes: [],
     quantidadesProjeto: [],
+    resumoOrcamentario: [],
 
     chamadasPendentes: {
       dados: false,
