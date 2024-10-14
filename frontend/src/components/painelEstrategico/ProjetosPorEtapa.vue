@@ -1,8 +1,6 @@
 <template>
-  <CardEnvelope.Titulo
-    titulo="Projetos por Etapa"
-  />
   <GraficoDashboard
+    class="pb3"
     :option="projetosPorEtapaChartOptions"
   />
 </template>
@@ -11,7 +9,6 @@
 import { defineProps, computed } from 'vue';
 
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
-import * as CardEnvelope from '@/components/cardEnvelope';
 
 const props = defineProps({
   projetosPorEtapas: {

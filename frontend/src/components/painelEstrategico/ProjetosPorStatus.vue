@@ -1,18 +1,13 @@
 <template>
-  <div>
-    <CardEnvelope.Titulo
-      titulo="Projetos por Status"
-    />
-    <GraficoDashboard
-      :option="projetosPorStatusChartOptions"
-    />
-  </div>
+  <GraficoDashboard
+    class="pb3"
+    :option="projetosPorStatusChartOptions"
+  />
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
-import * as CardEnvelope from '@/components/cardEnvelope';
 
 const props = defineProps({
   projetosPorStatus: {

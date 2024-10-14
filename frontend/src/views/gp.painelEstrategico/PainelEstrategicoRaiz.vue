@@ -3,10 +3,12 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
-import GrandesNumerosEProjetoPorEtapaEStatus from '@/components/painelEstrategico/GrandesNumerosEProjetoPorEtapaEStatus.vue';
+import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
+import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -125,26 +127,45 @@ const mockProjetos = [
     >
       <CardEnvelope.default>
         <CardEnvelope.Conteudo>
-          <template
-            #default="{ visivel }"
-          >
-            <CardEnvelope.Titulo
-              titulo="Grandes números"
-              icone="gear"
-              subtitulo="Total de projetos relacionados as metas e órgãos."
-            />
+          <CardEnvelope.Titulo
+            titulo="Grandes números"
+            icone="gear"
+            subtitulo="Total de projetos relacionados as metas e órgãos."
+          />
 
-            <GrandesNumerosEProjetoPorEtapaEStatus
-              v-if="!chamadasPendentes.dados"
-              :grandes-numeros="painelEstrategicoStore.grandesNumeros"
-              :projeto-etapas="painelEstrategicoStore.projetoEtapas"
-              :projeto-status="painelEstrategicoStore.projetoStatus"
-            />
-          </template>
+          <GrandesNumeros :grandes-numeros="painelEstrategicoStore.grandesNumeros" />
         </CardEnvelope.conteudo>
       </CardEnvelope.default>
 
       <TotalDeProjetos />
+
+      <ResumoOrcamentario
+        :planejado-total="1144000000"
+        :empenho-total="1240000"
+        :liquidado-total="714000"
+      />
+
+      <CardEnvelope.default>
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo
+            titulo="Projetos por etapas"
+            subtitulo="Total de projetos relacionados as metas e órgãos."
+          />
+          <ProjetosPorEtapa
+            :projetos-por-etapas="painelEstrategicoStore.projetoEtapas"
+          />
+        </CardEnvelope.conteudo>
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo
+            titulo="Projetos por status"
+            subtitulo="Total de projetos relacionados as metas e órgãos."
+          />
+          <ProjetosPorStatus
+            :projetos-por-status="painelEstrategicoStore.projetoStatus"
+          />
+        </CardEnvelope.conteudo>
+      </CardEnvelope.default>
+
 
       <!--
       <CardEnvelope.default>
@@ -203,12 +224,6 @@ const mockProjetos = [
         </CardEnvelope.Conteudo>
       </CardEnvelope.default>
       -->
-
-      <ResumoOrcamentario
-        :planejado-total="1144000000"
-        :empenho-total="1240000"
-        :liquidado-total="714000"
-      />
 
       <TabelaProjetos
         class="grid-full-column"
