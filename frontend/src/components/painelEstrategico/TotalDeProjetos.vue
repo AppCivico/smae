@@ -17,7 +17,7 @@
     <NumeroComLegenda
       numero="36"
       cor="#F2C94C"
-      legenda="CONCLUÍDOS EM 2024"
+      legenda="Concluídos em 2024"
       :tamanho-do-numero="70"
       :tamanho-da-legenda="10"
     />

@@ -7,3 +7,6 @@ export default (valor, semDecimais = false) => {
 
   return new Intl.NumberFormat('pt-BR', options).format(Number(toFloat(valor)));
 };
+
+export const dinheiroSemCentavos = (valor) => new Intl.NumberFormat('pt-BR', { min: 0, max: 0 })
+  .format(Math.floor(Number(toFloat(valor))));
