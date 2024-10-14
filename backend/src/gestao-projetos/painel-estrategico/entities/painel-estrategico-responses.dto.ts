@@ -1,3 +1,5 @@
+import { IdCodNomeDto } from '../../../common/dto/IdCodNome.dto';
+
 export class PainelEstrategicoResponseDto {
     grandes_numeros:PainelEstrategicoGrandesNumeros;
     projeto_status:PainelEstrategicoProjetoStatus[];
@@ -11,9 +13,7 @@ export class PainelEstrategicoResponseDto {
     anos_mapa_calor_concluidos:number[];
     quantidades_projeto:PainelEstrategicoQuantidadesAnoCorrente;
     resumo_orcamentario:PainelEstrategicoResumoOrcamentario;
-}
-export class PainelEstrategicoListaProjetoResponseDto{
-    lista:PainelEstrategicoProjeto[];
+    execucao_orcamentaria_ano: PainelEstrategicoExecucaoOrcamentariaAno[];
 }
 
 export class PainelEstrategicoGrandesNumeros {
@@ -57,12 +57,25 @@ export class PainelEstrategicoResumoOrcamentario{
     valor_liquidado_total:number;
 }
 export class PainelEstrategicoProjeto{
-    nome:string;
-    secretaria:string;
-    meta:string;
+    nome_projeto:string;
+    secretaria:IdCodNomeDto
+    meta:IdCodNomeDto;
     status:string;
     etapa_atual:string;
     termino_projetado:string;
     riscos_abertos:number;
     percentual_atraso:number;
+}
+export class PainelEstrategicoExecucaoOrcamentariaAno{
+    ano:number;
+    valor_planejado_total:number;
+    valor_liquidado_total:number;
+    valor_empenhado_total:number;
+}
+export class PainelEstrategicoExecucaoOrcamentariaLista{
+    nome_projeto:string;
+    valor_custo_planejado_total:number;
+    valor_custo_planejado_hoje:number;
+    valor_empenhado_total:number;
+    valor_liquidado_total:number;
 }
