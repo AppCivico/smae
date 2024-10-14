@@ -117,9 +117,11 @@ const mockProjetos = [
       {{ painelEstrategicoStore.projetosPlanejadosMes }}</pre>
     </div>
 
-    <ErrorComponent v-if="erros.dados" />
+    <ErrorComponent v-if="erros.dados">
+      {{ erros.dados }}
+    </ErrorComponent>
 
-    <LoadingComponent v-if="chamadasPendentes.dados" />
+    <LoadingComponent v-else-if="chamadasPendentes.dados" />
 
     <div
       v-else
