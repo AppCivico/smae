@@ -18,17 +18,12 @@
         ipp: gblIpp,
         pagina: 1,
         token_paginacao: undefined,
+        ordem_coluna: 'codigo',
+        ordem_direcao: 'asc',
       }"
     >
       <FiltroDeListagemDeObras
         :aria-busy="chamadasPendentes.lista"
-        :valores-iniciais="{
-          ipp: $route.query.ipp,
-          ordem_coluna: $route.query.codigo || 'codigo',
-          ordem_direcao: $route.query.ordem_direcao || 'asc',
-          regiao_id: $route.query.regiao_id,
-          ...$route.query
-        }"
         @submit="aplicarQueryStrings"
       />
     </FormularioQueryString>
