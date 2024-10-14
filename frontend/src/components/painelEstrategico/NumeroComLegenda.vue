@@ -6,6 +6,10 @@ defineProps({
     type: [String, Number],
     required: true,
   },
+  comoItem: {
+    type: Boolean,
+    default: false,
+  },
   cor: {
     type: String,
     required: true,
@@ -30,7 +34,8 @@ defineProps({
 </script>
 
 <template>
-  <dl
+  <component
+    :is="$props.comoItem ? 'div' : 'dl'"
     :style="{ backgroundColor: corDeFundo || 'transparent' }"
     class="card"
   >
@@ -48,7 +53,7 @@ defineProps({
         {{ legenda }}
       </slot>
     </dd>
-  </dl>
+  </component>
 </template>
 
 <style scoped>
