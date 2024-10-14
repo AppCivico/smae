@@ -5,6 +5,7 @@
       v-bind="$attrs"
       ref="elementoMapa"
       class="mapa br8"
+      :style="{ height: $props.height }"
       @ready="mapReady"
     />
   </KeepAlive>
@@ -46,6 +47,11 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({}),
+  },
+  height: {
+    type: String,
+    default: '32rem',
+    validator: (value) => value.match(/^\d+(px|rem|em|vh|vw)$/),
   },
   // aceitar tanto um par de coordenadas em forma de array,
   // quanto um objeto já com:
@@ -392,8 +398,6 @@ watch(() => props.polígonos, (valorNovo) => {
 </script>
 <style lang="less">
 .mapa {
-  height: 32rem;
-
   &:focus {
     outline: 1px solid @c400;
     outline-style: solid !important;
