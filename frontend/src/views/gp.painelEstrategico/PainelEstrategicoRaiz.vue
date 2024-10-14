@@ -328,6 +328,7 @@ const mockProjetos = [
 .cartao--mapa {
   @media screen and (min-width: @duas-colunas) {
     grid-column: span 2;
+    grid-row: span 2;
   }
 }
 </style>
