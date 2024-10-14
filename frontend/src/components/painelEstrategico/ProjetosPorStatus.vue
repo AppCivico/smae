@@ -17,8 +17,8 @@ const props = defineProps({
   },
 });
 
-const status = computed(() => props.projetosPorEtapas.map((item) => item.etapa));
-const quantidades = computed(() => props.projetosPorEtapas.map((item) => item.quantidade));
+const status = computed(() => props.projetosPorStatus.map((item) => item.status));
+const quantidades = computed(() => props.projetosPorStatus.map((item) => item.quantidade));
 
 const projetosPorStatusChartOptions = computed(
   () => criaOpcoesDoGraficoDeProjetos(status.value, quantidades.value),
