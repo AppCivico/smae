@@ -17,7 +17,6 @@
           class="label tc300"
         >Avaliação</label>
         <select
-          v-model.trim="avaliacaoFiltro"
           class="inputtext mb1"
           name="avaliacao"
           as="select"
@@ -26,6 +25,7 @@
           <option
             v-for="(item, id) in avaliacoes"
             :key="id"
+            :selected="$route.query.avaliacao === item.value"
             :value="item.value"
           >
             {{ item.name }}
@@ -39,7 +39,7 @@
         >Ano</label>
         <input
           id="ano"
-          v-model.number="ano"
+          :value="Number(route.query.ano)"
           inputmode="numeric"
           class="inputtext mb1"
           name="ano"
@@ -55,7 +55,6 @@
         >Modalidade</label>
         <select
           id="tipo"
-          v-model.trim="tipo"
           class="inputtext mb1"
           name="tipo"
           as="select"
@@ -65,6 +64,7 @@
             v-for="(item, id) in tipos"
             :key="id"
             :value="item.value"
+            :selected="$route.query.tipo === item.value"
           >
             {{ item.name }}
           </option>
@@ -78,7 +78,7 @@
         >Palavra-chave</label>
         <input
           id="palavras_chave"
-          v-model.trim="palavraChave"
+          :value="$route.query.palavra_chave"
           class="inputtext"
           name="palavras_chave"
           type="text"
@@ -305,10 +305,6 @@ const valoresIniciais = {
 const oportunidadeID = ref(null);
 const oportunidadeAvaliacao = ref(null);
 const showModal = ref(false);
-const ano = ref(route.query.ano);
-const avaliacaoFiltro = ref(route.query.avaliacao || valoresIniciais.avaliacao);
-const tipo = ref(route.query.tipo);
-const palavraChave = ref(route.query.palavra_chave);
 
 const {
   setFieldValue, handleSubmit,
