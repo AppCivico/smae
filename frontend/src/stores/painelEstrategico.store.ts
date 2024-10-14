@@ -6,10 +6,12 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type ChamadasPendentes = {
   dados: boolean;
+  locaisDeProjetos: boolean;
 };
 
 type Erros = {
   dados: unknown;
+  locaisDeProjetos: unknown;
 };
 
 type Estado = Record<string, unknown> & {
@@ -32,11 +34,15 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     quantidadesProjeto: [],
     resumoOrcamentario: [],
 
+    locaisDeProjetos: [],
+
     chamadasPendentes: {
       dados: false,
+      locaisDeProjetos: false,
     },
     erros: {
       dados: null,
+      locaisDeProjetos: null,
     },
   }),
   getters: {
@@ -58,6 +64,18 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.erros.dados = erro;
       }
       this.chamadasPendentes.dados = false;
+    },
+    async buscarProjetosParaMapa(params = {}): Promise<void> {
+      this.chamadasPendentes.locaisDeProjetos = true;
+
+      try {
+        // TO-DO: atualizar endpoint
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
+
+        this.locaisDeProjetos = linhas;
+      } catch (error: unknown) {
+        this.erros.locaisDeProjetos = error;
+      }
     },
   },
 })();
