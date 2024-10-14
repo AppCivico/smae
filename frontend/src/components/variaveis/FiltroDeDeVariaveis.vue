@@ -19,14 +19,17 @@
           :aria-busy="chamadasPendentesDeAssuntos.lista"
           :class="{ error: erroDeAssuntos }"
         >
-          <option value="" />
           <option
-            v-for="assuntos in listaDeAssuntos"
-            :key="assuntos.id"
-            :value="assuntos.id"
-            :selected="Number($props.valoresIniciais?.assuntos) === assuntos.id"
+            value=""
+            :selected="!$route.query.assuntos"
+          />
+          <option
+            v-for="assunto in listaDeAssuntos"
+            :key="assunto.id"
+            :value="assunto.id"
+            :selected="Number($route.query?.assuntos) === assunto.id"
           >
-            {{ assuntos.nome }}
+            {{ assunto.nome }}
           </option>
         </select>
       </div>
@@ -38,7 +41,7 @@
         >{{ schema.fields.descricao?.spec.label || 'Campo faltando no schema' }}</label>
         <input
           id="descricao"
-          v-model="descricao"
+          :value="$route.query.descricao"
           class="inputtext light"
           name="descricao"
           type="text"
@@ -52,7 +55,7 @@
         >{{ schema.fields.titulo.spec.label }}</label>
         <input
           id="titulo"
-          v-model="titulo"
+          :value="$route.query.titulo"
           class="inputtext light"
           name="titulo"
           type="text"
@@ -72,8 +75,14 @@
           class="inputtext light"
           :aria-busy="chamadasPendentesDeVariaveisCategoricas.lista"
         >
-          <option value="" />
-          <option :value="-2147483648">
+          <option
+            value=""
+            :selected="!$route.query.variavel_categorica_id"
+          />
+          <option
+            :value="-2147483648"
+            :selected="Number($route.query.variavel_categorica_id) === -2147483648"
+          >
             Numérica
           </option>
           <optgroup label="Categórica">
@@ -82,6 +91,7 @@
               :key="index"
               :value="variavel.id"
               :title="variavel.descricao ? variavel.descricao : undefined"
+              :selected="Number($route.query.variavel_categorica_id) === variavel.id"
             >
               {{ variavel.titulo }}
             </option>
@@ -96,7 +106,7 @@
         >Código</label>
         <input
           id="codigo"
-          v-model="codigo"
+          :value="$route.query.codigo"
           class="inputtext light"
           name="codigo"
           type="text"
@@ -127,7 +137,6 @@
             v-for="plano in listaDePlanosSetoriais"
             :key="plano.id"
             :value="plano.id"
-            :selected="Number($props.valoresIniciais?.plano_setorial_id) === plano.id"
           >
             {{ plano.nome }}
           </option>
@@ -154,7 +163,7 @@
             v-for="meta in metasDisponiveis"
             :key="meta.id"
             :value="meta.id"
-            :selected="Number($props.valoresIniciais?.meta_id) === meta.id"
+            :selected="Number($route.query.metas) === meta.id"
             :title="meta.titulo?.length > 36 ? meta.titulo : undefined"
           >
             {{ truncate(meta.titulo, 36) }}
@@ -231,7 +240,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="!Object.keys(periodicidades.variaveis).length"
-            :selected="$props.valoresIniciais?.periodicidade === item.valor"
+            :selected="$route.query?.periodicidade === item.valor"
           >
             {{ item.nome }}
           </option>
@@ -259,7 +268,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($props.valoresIniciais?.orgao_id) === orgao.id"
+            :selected="Number($route.query?.orgao_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -284,7 +293,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($props.valoresIniciais?.orgao_proprietario_id) === orgao.id"
+            :selected="Number($route.query.orgao_proprietario_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -299,7 +308,7 @@
       >Palavra-chave</label>
       <input
         id="palavra-chave"
-        v-model="palavraChave"
+        :value="$route.query.palavra_chave"
         class="inputtext light"
         name="palavra_chave"
         type="search"
@@ -319,7 +328,7 @@
           v-for="coluna in colunasParaOrdenacao"
           :key="coluna.valor"
           :value="coluna.valor"
-          :selected="$props.valoresIniciais?.ordem_coluna === coluna.valor"
+          :selected="$route.query.ordem_coluna === coluna.valor"
         >
           {{ coluna.nome }}
         </option>
@@ -340,7 +349,7 @@
             Object.values(direcoesDeOrdenacao)"
           :key="direcao.valor"
           :value="direcao.valor"
-          :selected="$props.valoresIniciais?.ordem_direcao === direcao.valor"
+          :selected="$route.query.ordem_direcao === direcao.valor"
         >
           {{ direcao.nome || direcao.valor }}
         </option>
@@ -360,7 +369,7 @@
           v-for="quantidade in itensPorPagina"
           :key="quantidade"
           :value="quantidade"
-          :selected="Number($props.valoresIniciais?.ipp) === quantidade"
+          :selected="Number($route.query?.ipp) === quantidade"
         >
           {{ quantidade }}
         </option>
@@ -389,17 +398,16 @@ import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.stor
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
 import {
-  computed, onUnmounted, ref, watch,
+  computed, ref
 } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const props = defineProps({
   ariaBusy: {
     type: Boolean,
     default: false,
-  },
-  valoresIniciais: {
-    type: Object,
-    default: () => ({}),
   },
 });
 
@@ -493,13 +501,9 @@ const {
 
 const pronto = ref(false);
 
-const codigo = ref('');
-const descricao = ref('');
 const nivelRegionalizacao: Ref<null | number> = ref(null);
-const palavraChave = ref('');
 const planoSetorialId: Ref<null | number> = ref(null);
 const regiaoId: Ref<null | number> = ref(null);
-const titulo = ref('');
 
 const metasDisponiveis = computed(() => (!planoSetorialId.value
   ? listaDeMetas.value
@@ -538,13 +542,9 @@ async function iniciar() {
     promessas.push(variaveisCategoricasStore.buscarTudo());
   }
 
-  codigo.value = props.valoresIniciais.codigo || '';
-  descricao.value = props.valoresIniciais.descricao || '';
-  nivelRegionalizacao.value = Number(props.valoresIniciais.nivel_regionalizacao || 0);
-  palavraChave.value = props.valoresIniciais.palavra_chave || '';
-  planoSetorialId.value = Number(props.valoresIniciais.plano_setorial_id || 0);
-  regiaoId.value = Number(props.valoresIniciais.regiao_id || 0);
-  titulo.value = props.valoresIniciais.titulo || '';
+  nivelRegionalizacao.value = Number(route.query.nivel_regionalizacao) || 0;
+  planoSetorialId.value = Number(route.query.plano_setorial_id) || 0;
+  regiaoId.value = Number(route.query.regiao_id) || 0;
 
   Promise.allSettled(promessas)
     .then(() => {
@@ -552,17 +552,7 @@ async function iniciar() {
     });
 }
 
-onUnmounted(() => {
-  assuntosStore.$reset();
-  MetasStore.$reset();
-  ÓrgãosStore.$reset();
-  planosSetoriaisStore.$reset();
-  regionsStore.$reset();
-});
-
-watch(() => props.valoresIniciais, () => {
-  iniciar();
-}, { immediate: true });
+iniciar();
 </script>
 <style lang="less" scoped>
 .label {
