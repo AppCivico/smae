@@ -438,11 +438,11 @@ function iniciar() {
     promessas.push(equipamentosStore.buscarTudo());
   }
 
-  if (listaDeGruposTemáticos.value.length && !chamadasPendentesDeGruposTemáticos.value.lista) {
+  if (!listaDeGruposTemáticos.value.length && !chamadasPendentesDeGruposTemáticos.value.lista) {
     promessas.push(gruposTematicosStore.buscarTudo());
   }
 
-  if (listaDeTiposDeIntervenção.value.length && !chamadasPendentesDeTiposDeIntervenção.value.lista) {
+  if (!listaDeTiposDeIntervenção.value.length && !chamadasPendentesDeTiposDeIntervenção.value.lista) {
     promessas.push(tiposDeIntervencaoStore.buscarTudo());
   }
 
