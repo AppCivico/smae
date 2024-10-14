@@ -292,7 +292,7 @@ export class PainelEstrategicoService {
                                and tc.removido_em is null ${filtro}
                                and date_part('year', tc.realizado_termino) =
                                    date_part('year', CURRENT_DATE)) as quantidade_concluida`;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoQuantidadesAnoCorrente;
+        return (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoQuantidadesAnoCorrente[])[0];
     }
 
     async listaProjetosPaginado(filtro: PainelEstrategicoListaFilterDto, user: PessoaFromJwt):
