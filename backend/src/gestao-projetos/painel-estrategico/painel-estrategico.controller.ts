@@ -52,7 +52,7 @@ export class PainelEstrategicoController {
     @ApiBearerAuth('access-token')
     @Roles(PROJETO_READONLY_ROLES)
     async createGeoLocalizacao(
-        @Body() filtro: PainelEstrategicoListaFilterDto,
+        @Body() filtro: PainelEstrategicoFilterDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PainelEstrategicoGeoLocalizacaoDto> {
         return await this.painelEstrategicoService.buildGeoLocalizacao(filtro, user);
