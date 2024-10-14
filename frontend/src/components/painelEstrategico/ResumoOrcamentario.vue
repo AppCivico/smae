@@ -1,6 +1,6 @@
 <script setup>
 import { defineProps } from 'vue';
-import { dinheiroSemCentavos } from '@/helpers/dinheiro';
+import dinheiro from '@/helpers/dinheiro';
 import * as CardEnvelope from '../cardEnvelope/index.ts';
 
 defineProps({
@@ -33,7 +33,7 @@ defineProps({
           Custo planejado total:
         </dt>
         <dd class="mb0 t36 w700">
-          R$ {{ dinheiroSemCentavos(Number(planejadoTotal)) }}
+          R$ {{ dinheiro(Number(planejadoTotal),true) }}
         </dd>
       </div>
       <div class="pb1 flex column end">
@@ -41,7 +41,7 @@ defineProps({
           Valor empenhado total:
         </dt>
         <dd class="mb0 t36 w700">
-          R$ {{ dinheiroSemCentavos(Number(empenhoTotal)) }}
+          R$ {{ dinheiro(Number(empenhoTotal), true) }}
         </dd>
       </div>
       <div class="pb1 flex column end">
@@ -49,7 +49,7 @@ defineProps({
           Valor liquidado total:
         </dt>
         <dd class="mb0 t36 w700 liquidado">
-          R$ {{ dinheiroSemCentavos(Number(liquidadoTotal)) }}
+          R$ {{ dinheiro(Number(liquidadoTotal), true) }}
         </dd>
       </div>
     </dl>
