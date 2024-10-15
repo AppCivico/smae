@@ -6,11 +6,15 @@
       :key="chaveDeRender"
       :autoresize="{ throttle: 400 }"
       class="chart"
-      :option="option"
+      :option="preparedOptions"
     />
   </div>
 </template>
-<script setup>
+<script lang="ts" setup>
+import {
+  defineProps, provide, ref, computed,
+} from 'vue';
+
 import { BarChart } from 'echarts/charts';
 import {
   GridComponent,
@@ -21,8 +25,13 @@ import {
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { defineProps, provide, ref } from 'vue';
 import VChart, { THEME_KEY } from 'vue-echarts';
+
+export type TooltipOptions = {
+  data: number,
+  dataIndex: number,
+  name: string;
+};
 
 use([
   CanvasRenderer,
@@ -36,18 +45,69 @@ use([
 
 provide(THEME_KEY, 'light');
 
-defineProps({
-  option: {
-    type: Object,
-    default: null,
-  },
+const props = withDefaults(defineProps<{
+  option: object,
+  tooltipTemplate?:(params: TooltipOptions) => string
+}>(), {
+  option: () => ({}),
+  tooltipTemplate: undefined,
 });
 
 const el = ref(null);
 const chaveDeRender = ref('');
+
+const preparedOptions = computed(() => {
+  const { tooltipTemplate } = props;
+  if (!tooltipTemplate) {
+    return props.option;
+  }
+
+  return {
+    ...props.option,
+    tooltip: {
+      trigger: 'item',
+      // show: true,
+      // alwaysShowContent: true,
+      renderMode: 'html',
+      className: 'grafico-dashboard__tooltip-conteudo',
+      formatter: (params: any) => {
+        const tooltipText = tooltipTemplate({
+          data: params.data,
+          dataIndex: params.dataIndex,
+          name: params.name,
+        });
+
+        return tooltipText;
+      },
+    },
+  };
+});
 </script>
+
 <style scoped>
 .chart {
   height: 400px;
+}
+</style>
+
+<style lang="less">
+.grafico-dashboard__tooltip-conteudo {
+  background-color: #E8E8E8 !important;
+  border-radius: 10px !important;
+  padding: 5px !important;
+  border: none !important;
+  min-width: 150px;
+
+  display: flex !important;
+  flex-direction: column;
+
+  &:before, &:after {
+    content: '';
+    margin: 0 auto;
+    width: 60%;
+    height: 1px;
+    color: #232046;
+    background: #232046;
+  }
 }
 </style>
