@@ -428,6 +428,7 @@ usersStore.buscarPessoasSimplificadas();
 
     <MapaExibir
       :geo-json="mapasAgrupados.endereços"
+      persistir-etiqueta-camada
       :camadas="mapasAgrupados.camadas"
       class="mb1"
       :opções-do-polígono="{

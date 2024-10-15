@@ -107,6 +107,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  persistirEtiquetaCamada: {
+    type: Boolean,
+    default: false,
+  },
   geoJson: {
     type: [Array, Object],
     default: () => [],
@@ -242,7 +246,7 @@ function criarPolígono(dadosDoPolígono) {
 
   if (dadosDoPolígono.titulo) {
     polígono.bindTooltip(dadosDoPolígono.titulo, {
-      permanent: true,
+      permanent: props.persistirEtiquetaCamada,
       direction: 'center',
     });
   }
