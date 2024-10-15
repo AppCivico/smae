@@ -1,6 +1,7 @@
 <script setup>
 import { defineProps } from 'vue';
 import statuses from '@/consts/projectStatuses';
+import dateToDate from '@/helpers/dateToDate';
 
 defineProps({
   projetos: {
@@ -19,7 +20,7 @@ defineProps({
       <colgroup>
         <col>
         <col>
-        <col class="col--number">
+        <col>
         <col>
         <col>
         <col class="col--data">
@@ -50,7 +51,7 @@ defineProps({
           </td>
           <td>{{ statuses[projeto.status] || projeto.status }}</td>
           <td>{{ projeto.etapa_atual || ' - ' }}</td>
-          <td>{{ projeto.termino_projetado || ' - ' }}</td>
+          <td>{{ dateToDate(projeto.termino_projetado) || ' - ' }}</td>
           <td class="tr">
             {{ projeto.riscos_abertos || ' - ' }}
           </td>
