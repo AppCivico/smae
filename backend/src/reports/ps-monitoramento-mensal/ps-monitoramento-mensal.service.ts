@@ -129,17 +129,17 @@ export class PSMonitoramentoMensal implements ReportableService {
                             inner join variavel v on v.id = vvp.variavel_id :listar_variaveis_regionalizadas
                             left join regiao r on v.regiao_id = r.id
                             left join serie_variavel sv on sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
-                            left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = v.id
+                     left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaP.referencia_data = sv.data_valor
                         and vgcaP.fase = 'Preenchimento'
                         and vgcaP.ultima_revisao = true
                         and vgcaP.removido_em is null
-                     left join variavel_global_ciclo_analise vgcaV on vgcaV.variavel_id = v.id
+                     left join variavel_global_ciclo_analise vgcaV on vgcaV.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaV.referencia_data = sv.data_valor
                         and vgcaV.fase = 'Validacao'
                         and vgcaV.ultima_revisao = true
                         and vgcaV.removido_em is null
-                     left join variavel_global_ciclo_analise vgcaL on vgcaL.variavel_id = v.id
+                     left join variavel_global_ciclo_analise vgcaL on vgcaL.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaL.referencia_data = sv.data_valor
                         and vgcaL.fase = 'Liberacao'
                         and vgcaL.ultima_revisao = true
