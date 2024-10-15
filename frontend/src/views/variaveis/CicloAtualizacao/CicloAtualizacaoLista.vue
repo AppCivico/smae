@@ -169,8 +169,8 @@ import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizac
 import truncate from '@/helpers/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
 
-import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
 type IconOpcoes = 'complementacao' | 'coleta';
 
@@ -236,7 +236,7 @@ const ciclosAtualizacao = computed(() => {
   const ciclosComIcone = cicloAtualizacaoStore.ciclosAtualizacao.map<VariavelCicloComIcone>(
     (item) => ({
       ...item,
-      temAtraso: !!(item.atrasos && item.atrasos.length !== 0),
+      temAtraso: item.em_atraso,
       icone: getIcons(item.pedido_complementacao ? 'complementacao' : 'coleta'),
     }),
   );
