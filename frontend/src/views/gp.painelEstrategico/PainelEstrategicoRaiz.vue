@@ -6,8 +6,8 @@ import MapaExibir from '@/components/geo/MapaExibir.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
 import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vue';
-import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ProjetosPorOrgaoResponsavel from '@/components/painelEstrategico/ProjetosPorOrgaoResponsavel.vue';
+import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
@@ -34,7 +34,10 @@ watchEffect(() => {
   ];
 
   const parametros = parametrosValidos.reduce((acc, parametro) => {
-    if (route.query[parametro]) {
+    if (
+      route.query[parametro]
+      && (!Array.isArray(route.query[parametro]) || route.query[parametro].length)
+    ) {
       acc[parametro] = route.query[parametro];
     }
 
