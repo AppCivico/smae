@@ -109,7 +109,7 @@ export default function useCicloAtualizacao() {
     }
 
     const analiseLiberador = emFoco.value?.analises?.find(
-      (item) => item.fase === 'Liberador',
+      (item) => item.fase === 'Liberacao',
     );
     if (analiseLiberador) {
       analises.analiseLiberador = analiseLiberador.analise_qualitativa;
