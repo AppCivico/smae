@@ -15,7 +15,6 @@ import { useRoute, useRouter } from 'vue-router';
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
 
-
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
 
@@ -24,20 +23,18 @@ const router = useRouter();
 
 const valoresIniciais = {
   fonte: 'TribunalDeContas',
-  parametros:{
+  parametros: {
     esfera: null,
     ano_inicio: null,
     ano_fim: null,
     tipo_id: null,
-    tipo: "Geral"
+    tipo: 'Geral',
   },
   salvar_arquivo: false,
 
 };
 
 TipoDeTransferenciaStore.buscarTudo();
-
-
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, values,
@@ -124,12 +121,7 @@ const formularioSujo = useIsFormDirty();
         </div>
       </div>
 
-
-
-
-
-
-        <!--
+      <!--
         <LabelFromYup
           name="esfera"
           :schema="parametros"
@@ -157,10 +149,7 @@ const formularioSujo = useIsFormDirty();
           {{ errors['parametros.esfera'] }}
         </div>
 
-
     -->
-
-
 
       <div class="f1">
         <LabelFromYup
@@ -201,7 +190,6 @@ const formularioSujo = useIsFormDirty();
           name="parametros.ano_fim"
         />
       </div>
-
     </div>
 
     <div class="flex g2 mb1">
@@ -239,33 +227,13 @@ const formularioSujo = useIsFormDirty();
       </div>
     </div>
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Geral"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Geral</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Resumido"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Resumido</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors['parametros.tipo'] }}
-      </div>
-    </div>
+    <Field
+      name="parametros.tipo"
+      type="hidden"
+      value="Geral"
+      class="inputcheckbox"
+      :class="{ 'error': errors['parametros.tipo'] }"
+    />
 
     <div class="mb2">
       <div class="pl2">

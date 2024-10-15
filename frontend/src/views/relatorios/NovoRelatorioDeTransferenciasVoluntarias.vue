@@ -53,7 +53,6 @@ const {
   validationSchema: schema,
 });
 
-
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = 'Dados salvos com sucesso!';
@@ -74,7 +73,6 @@ const formularioSujo = useIsFormDirty();
 ÓrgãosStore.getAll();
 partidosStore.buscarTudo();
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
-
 
 </script>
 <template>
@@ -97,8 +95,7 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
       type="hidden"
       value="Transferencias"
     />
-    <div class="flex flexwrap g2 mb2"> <!-- Primeira linha da tela - Início -->
-
+    <div class="flex flexwrap g2 mb2">
       <!-- ESFERA -->
       <div class="f1">
         <LabelFromYup
@@ -178,11 +175,11 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           name="parametros.ano"
         />
       </div>
-     
     </div> <!-- Primeira linha da tela - Fim -->
 
-    <div class="flex flexwrap g2 mb2"> <!-- Segunda linha da tela - Início -->
-     
+    <div class="flex flexwrap g2 mb2">
+      <!-- Segunda linha da tela - Início -->
+
       <!-- GESTOR MUNICIPAL -->
       <div class="f1 mb2">
         <LabelFromYup
@@ -265,7 +262,7 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           as="select"
           class="inputtext light mb1"
           :class="{
-            error:  errors['parametros.parlamentar_id'] ,
+            error: errors['parametros.parlamentar_id'] ,
             loading: ParlamentaresStore.chamadasPendentes?.lista,
           }"
           :disabled="!parlamentarComoLista?.length"
@@ -281,8 +278,6 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
             :value="item.id"
           >
             {{ item.nome_popular }}
-
- 
           </option>
         </Field>
         <ErrorMessage
@@ -290,10 +285,10 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           class="error-msg"
         />
       </div>
-
     </div> <!-- Segunda linha da tela - Fim -->
 
-    <div class="flex flexwrap g2 mb2"> <!-- Terceira linha da tela - Início -->
+    <div class="flex flexwrap g2 mb2">
+      <!-- Terceira linha da tela - Início -->
 
       <!-- ÓRGÃO CONCEDENTE -->
       <div class="f1 mb2">
@@ -375,10 +370,10 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           name="parametros.gestor_contrato"
         />
       </div>
-
     </div> <!-- Terceira linha da tela - Fim -->
 
-    <div class="flex flexwrap g2 mb2"> <!-- Quarta linha da tela - Início -->
+    <div class="flex flexwrap g2 mb2">
+      <!-- Quarta linha da tela - Início -->
 
       <!-- OBJETO -->
       <div class="f1">
@@ -401,36 +396,15 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           name="parametros.objeto"
         />
       </div>
-
     </div> <!-- Quarta linha da tela - Fim -->
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Geral"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Geral</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Resumido"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Resumido</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors['parametros.tipo'] }}
-      </div>
-    </div>
+    <Field
+      name="parametros.tipo"
+      type="hidden"
+      value="Geral"
+      class="inputcheckbox"
+      :class="{ 'error': errors['parametros.tipo'] }"
+    />
 
     <div class="mb2">
       <div class="pl2">
