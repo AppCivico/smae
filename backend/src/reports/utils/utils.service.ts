@@ -27,6 +27,8 @@ export class UtilsService {
     async applyFilter(filters: FiltroMetasIniAtividadeDto, getResult: { atividades: boolean; iniciativas: boolean }) {
         const tags = Array.isArray(filters.tags) && filters.tags.length > 0 ? filters.tags : [];
 
+        if (Array.isArray(filters.metas)) filters.metas_ids = filters.metas;
+
         const metas = await this.prisma.meta.findMany({
             where: {
                 pdm: filters.tipo_pdm ? { tipo: filters.tipo_pdm } : undefined,
