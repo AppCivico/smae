@@ -72,15 +72,15 @@ export default function useCicloAtualizacao() {
     return {
       cadastro: {
         exibir: true,
-        liberado: posicaoAtual === 1,
+        liberado: true,
       },
       aprovacao: {
         exibir: posicaoAtual >= 2,
-        liberado: posicaoAtual === 2,
+        liberado: true,
       },
       liberacao: {
         exibir: posicaoAtual >= 3,
-        liberado: posicaoAtual === 3,
+        liberado: true,
       },
     };
   });
