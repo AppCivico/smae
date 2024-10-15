@@ -30,7 +30,7 @@ const currentOptions = ref({
     pdm_id: 0,
     meta_id: 0,
     metas_ids: [],
-    ano: 2003,
+    ano: new Date().getFullYear(),
     periodo: '',
     semestre: '',
   },
@@ -89,6 +89,7 @@ onMounted(async () => {
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
