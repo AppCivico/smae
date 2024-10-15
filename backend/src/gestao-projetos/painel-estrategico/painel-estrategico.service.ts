@@ -315,7 +315,7 @@ export class PainelEstrategicoService {
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
         if (filterToken) {
-            const decoded = this.decodeNextPageToken(filtro.token_paginacao, filtro);
+            const decoded = this.decodeNextPageToken(filterToken, filtro);
             total_registros = decoded.total_rows;
             ipp = decoded.ipp;
             now = new Date(decoded.issued_at);
@@ -438,21 +438,22 @@ export class PainelEstrategicoService {
         return tmp;
     }
     private async buildResumoOrcamentario(filter: string) {
-        const sql = `select
-                        (select
-                             sum(tc.previsao_custo)
-                         from tarefa_cronograma tc
-                                  inner join projeto p on tc.projeto_id = p.id
-                         where p.tipo = 'PP' and tc.removido_em is null
-                         ${filter})::float as custo_planejado_total,
-                        sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
-                        sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total
-                    from orcamento_realizado orcr
-                    inner join view_projetos vp on orcr.projeto_id = vp.id
-                    inner join projeto p on p.id = vp.id
-                    where p.tipo = 'PP'
-                        and orcr.removido_em is null
-                      ${filter} `
+        const sql = `select  sum((select tc.previsao_custo
+                                  from tarefa_cronograma tc
+                                  where tc.removido_em is null
+                                    and tc.projeto_id = p.id))::float as custo_planejado_total,
+                             sum((select sum(orcr.soma_valor_empenho)
+                                  from orcamento_realizado orcr
+                                  where orcr.removido_em is null
+                                    and orcr.projeto_id = p.id))::float as valor_empenhado_total,
+                             sum((select sum(orcr.soma_valor_liquidado)
+                                  from orcamento_realizado orcr
+                                  where orcr.removido_em is null
+                                    and orcr.projeto_id = p.id))::float as valor_liquidado_total,
+                             date_part('year',current_date)::int as ano
+                     from projeto p
+                     where p.tipo = 'PP'
+                         ${filter} `
         return (await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoResumoOrcamentario[])[0];
     }
 
@@ -460,50 +461,40 @@ export class PainelEstrategicoService {
         Mock!! Aguardando definição das regras de negócio!
      */
     private async buildExecucaoOrcamentariaAno(filter: string) {
-        return [
-            {
-                ano: 2021,
-                valor_empenhado_total: 80000000,
-                valor_liquidado_total: 65000000,
-                valor_planejado_total: 75000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-            {
-                ano: 2022,
-                valor_empenhado_total: 70000000,
-                valor_liquidado_total: 55000000,
-                valor_planejado_total: 65000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-            {
-                ano: 2023,
-                valor_empenhado_total: 90000000,
-                valor_liquidado_total: 75000000,
-                valor_planejado_total: 85000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-            {
-                ano: 2024,
-                valor_empenhado_total: 50000000,
-                valor_liquidado_total: 35000000,
-                valor_planejado_total: 45000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-            {
-                ano: 2025,
-                valor_empenhado_total: 40000000,
-                valor_liquidado_total: 25000000,
-                valor_planejado_total: 35000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-            {
-                ano: 2026,
-                valor_empenhado_total: 30000000,
-                valor_liquidado_total: 15000000,
-                valor_planejado_total: 25000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-            {
-                ano: 2027,
-                valor_empenhado_total: 20000000,
-                valor_liquidado_total: 500000,
-                valor_planejado_total: 15000000,
-            } as PainelEstrategicoExecucaoOrcamentariaAno,
-        ];
+        const sql = `select sum(custo_planejado_total) as custo_planejado_total,
+                            sum(valor_empenhado_total) as valor_empenhado_total,
+                            sum(valor_liquidado_total) as valor_liquidado_total,
+                            ano_referencia
+                            from (select
+                                    sum(coalesce(tc.previsao_custo, 0))::float as custo_planejado_total,
+                                    sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
+                                    sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total,
+                                    orcr.ano_referencia
+                                from orcamento_realizado orcr
+                                inner join view_projetos vp on orcr.projeto_id = vp.id
+                                inner join projeto p on p.id = vp.id
+                                full outer join (select
+                                                    tc.previsao_custo,
+                                                    date_part('year',tc.previsao_termino) as ano_referencia ,
+                                                    tc.projeto_id
+                                                from tarefa_cronograma tc) as tc on tc.projeto_id = p.id
+                                                    and tc.ano_referencia = orcr.ano_referencia
+                           where p.tipo = 'PP'
+                             and p.removido_em is null
+                             and orcr.ano_referencia between date_part('year', current_date)-3
+                             and date_part('year', current_date)+3
+                            ${filter}
+                           group by orcr.ano_referencia
+                           union
+                           select
+                               0 as custo_planejado_total,
+                               0 as valor_empenhado_total,
+                               0 as valor_liquidado_total,
+                               t.yr as ano_referencia
+                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT +3) t(yr)) as t
+                     group by ano_referencia`
+        return await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaAno[];
+
     }
 
     private async encodeNextPageTokenListaExecucaoOrcamentaria(
@@ -548,7 +539,7 @@ export class PainelEstrategicoService {
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
         if (filterToken) {
-            const decoded = this.decodeNextPageToken(filtro.token_paginacao, filtro);
+            const decoded = this.decodeNextPageToken(filterToken, filtro);
             total_registros = decoded.total_rows;
             ipp = decoded.ipp;
             now = new Date(decoded.issued_at);
