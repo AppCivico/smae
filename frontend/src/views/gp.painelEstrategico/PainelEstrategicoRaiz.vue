@@ -260,6 +260,13 @@ watchEffect(() => {
 }
 
 .cartao--mapa {
+  display: flex;
+  flex-direction: column;
+
+  .mapa {
+    flex-grow: 1;
+  }
+
   @media screen and (min-width: @duas-colunas) {
     grid-column: span 2;
     grid-row: span 2;
