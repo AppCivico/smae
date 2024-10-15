@@ -69,6 +69,7 @@ const preparedOptions = computed(() => {
       // show: true,
       // alwaysShowContent: true,
       renderMode: 'html',
+      confine: true,
       className: 'grafico-dashboard__tooltip',
       formatter: (params: any) => {
         const tooltipText = tooltipTemplate({
