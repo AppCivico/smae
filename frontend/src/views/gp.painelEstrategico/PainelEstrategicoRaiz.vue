@@ -7,6 +7,7 @@ import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vu
 import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vue';
 import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
+import ProjetosPorOrgaoResponsavel from '@/components/painelEstrategico/ProjetosPorOrgaoResponsavel.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
@@ -172,6 +173,21 @@ watchEffect(() => {
           zoom="16"
         />
       </CardEnvelope.conteudo>
+
+      <CardEnvelope.default>
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo
+            titulo="Projetos por órgão responsável"
+            subtitulo="Órgãos com os números mais expressivos de projetos. Demais órgãos apresentados em Outros."
+          />
+          <ProjetosPorOrgaoResponsavel
+            :projetos-orgao-responsavel="painelEstrategicoStore.projetoOrgaoResponsavel"
+          />
+        </CardEnvelope.conteudo>
+        <CardEnvelope.Conteudo>
+          outro gráfico
+        </CardEnvelope.conteudo>
+      </CardEnvelope.default>
     </div>
 
     <ErrorComponent v-if="erros.projetosPaginados" />
@@ -243,6 +259,7 @@ watchEffect(() => {
 .cartao--mapa {
   @media screen and (min-width: @duas-colunas) {
     grid-column: span 2;
+    grid-row: span 2;
   }
 }
 </style>
