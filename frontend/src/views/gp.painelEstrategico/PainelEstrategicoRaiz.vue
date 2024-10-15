@@ -92,17 +92,16 @@ watchEffect(() => {
       v-else
       class="lista-de-cartoes"
     >
-      <CardEnvelope.default>
-        <CardEnvelope.Conteudo>
-          <CardEnvelope.Titulo
-            titulo="Grandes números"
-            icone="gear"
-            subtitulo="Total de projetos relacionados as metas e órgãos."
-          />
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo
+          titulo="Grandes números"
+          icone="gear"
+          subtitulo="Total de projetos relacionados as metas e órgãos."
+        />
 
-          <GrandesNumeros :grandes-numeros="painelEstrategicoStore.grandesNumeros" />
-        </CardEnvelope.conteudo>
-      </CardEnvelope.default>
+        <GrandesNumeros :grandes-numeros="painelEstrategicoStore.grandesNumeros" />
+      </CardEnvelope.conteudo>
+
       <CardEnvelope.Conteudo>
         <CardEnvelope.Titulo
           titulo="Projetos"
@@ -154,26 +153,24 @@ watchEffect(() => {
         </CardEnvelope.conteudo>
       </CardEnvelope.default>
 
-      <CardEnvelope.default class="cartao--mapa">
-        <CardEnvelope.Conteudo>
-          <CardEnvelope.Titulo
-            titulo="Mapa"
-            subtitulo="Localização dos projetos conforme filtro aplicado."
-            icone="map"
-          />
+      <CardEnvelope.Conteudo class="cartao--mapa">
+        <CardEnvelope.Titulo
+          titulo="Mapa"
+          subtitulo="Localização dos projetos conforme filtro aplicado."
+          icone="map"
+        />
 
-          <MapaExibir
-            :geo-json="locaisAgrupados.enderecos"
-            :camadas="locaisAgrupados.camadas"
-            class="mb1"
-            :opções-do-polígono="{
-              fill: true,
-              opacity: 0.5,
-            }"
-            zoom="16"
-          />
-        </CardEnvelope.conteudo>
-      </CardEnvelope.default>
+        <MapaExibir
+          :geo-json="locaisAgrupados.enderecos"
+          :camadas="locaisAgrupados.camadas"
+          class="mb1"
+          :opções-do-polígono="{
+            fill: true,
+            opacity: 0.5,
+          }"
+          zoom="16"
+        />
+      </CardEnvelope.conteudo>
     </div>
 
     <ErrorComponent v-if="erros.projetosPaginados" />
@@ -245,7 +242,6 @@ watchEffect(() => {
 .cartao--mapa {
   @media screen and (min-width: @duas-colunas) {
     grid-column: span 2;
-    grid-row: span 2;
   }
 }
 </style>
