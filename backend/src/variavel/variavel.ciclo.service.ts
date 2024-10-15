@@ -120,7 +120,13 @@ export class VariavelCicloService {
         if (filters.equipe_id) {
             whereConditions.push({
                 VariavelGrupoResponsavelEquipe: {
-                    some: { grupo_responsavel_equipe_id: filters.equipe_id },
+                    some: {
+                        removido_em: null,
+                        grupo_responsavel_equipe: {
+                            id: filters.equipe_id,
+                            removido_em: null,
+                        },
+                    },
                 },
             });
         }
@@ -142,6 +148,7 @@ export class VariavelCicloService {
                     perfil: { in: ['Medicao', 'Validacao', 'Liberacao'] },
                     GrupoResponsavelEquipePessoa: {
                         some: {
+                            removido_em: null,
                             pessoa_id: pessoaId,
                         },
                     },
@@ -151,7 +158,14 @@ export class VariavelCicloService {
 
             whereConditions.push({
                 VariavelGrupoResponsavelEquipe: {
-                    some: { grupo_responsavel_equipe_id: { in: equipeIds } },
+                    some: {
+                        grupo_responsavel_equipe: {
+                            removido_em: null,
+                            id: {
+                                in: equipeIds,
+                            },
+                        },
+                    },
                 },
             });
         }
