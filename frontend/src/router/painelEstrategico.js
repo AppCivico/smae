@@ -11,10 +11,9 @@ export default {
     pesoNoMenu: 2, // TODO: ver peso
     entidadeMãe: 'projeto',
     limitarÀsPermissões: [
-      // TODO: ver permissões
-      // 'Reports.dashboard_pdm',
-      // 'Reports.dashboard_portfolios',
-      // 'SMAE.espectador_de_painel_externo',
+      'SMAE.gestor_de_projeto',
+      'SMAE.colaborador_de_projeto',
+      'SMAE.espectador_de_projeto',
     ],
   },
 };
