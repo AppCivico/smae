@@ -135,6 +135,7 @@ watchEffect(() => {
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por etapas"
+            icone="box"
             subtitulo="Total de projetos relacionados as metas e órgãos."
           />
           <ProjetosPorEtapa
@@ -144,6 +145,7 @@ watchEffect(() => {
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por status"
+            icone="box"
             subtitulo="Total de projetos relacionados as metas e órgãos."
           />
           <ProjetosPorStatus
