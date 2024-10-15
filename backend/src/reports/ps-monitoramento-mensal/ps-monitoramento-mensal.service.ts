@@ -156,6 +156,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         } else {
             sql = sql.replace(':listar_variaveis_regionalizadas', '');
         }
+        if (metasArr.length === 0) metasArr.push(-1); // hack para evitar erro de sintaxe no SQL
         sql = sql.replace(':metas', metasArr.toString());
         sql = sql.replace(':mesAno', "'" + paramMesAno + "'");
         const linhasVariaveis = await this.prisma.$queryRawUnsafe(sql);
