@@ -145,6 +145,8 @@ export class VariavelCicloService {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
                 where: {
                     removido_em: null,
+                    // se quiser q suma as variaveis sem edição, precisa tirar daqui pra sincronizar
+                    // com o where do filter de "Preenchimento"/etc
                     perfil: { in: ['Medicao', 'Validacao', 'Liberacao'] },
                     GrupoResponsavelEquipePessoa: {
                         some: {
