@@ -69,7 +69,7 @@ const preparedOptions = computed(() => {
       // show: true,
       // alwaysShowContent: true,
       renderMode: 'html',
-      className: 'grafico-dashboard__tooltip-conteudo',
+      className: 'grafico-dashboard__tooltip',
       formatter: (params: any) => {
         const tooltipText = tooltipTemplate({
           data: params.data,
@@ -77,7 +77,11 @@ const preparedOptions = computed(() => {
           name: params.name,
         });
 
-        return tooltipText;
+        return `
+          <div style="color: ${params.color}" class="grafico-dashboard__tooltip-conteudo">
+            ${tooltipText}
+          </div>
+        `;
       },
     },
   };
@@ -91,12 +95,11 @@ const preparedOptions = computed(() => {
 </style>
 
 <style lang="less">
-.grafico-dashboard__tooltip-conteudo {
+.grafico-dashboard__tooltip {
   background-color: #E8E8E8 !important;
   border-radius: 10px !important;
   padding: 5px !important;
   border: none !important;
-  min-width: 150px;
 
   display: flex !important;
   flex-direction: column;
@@ -109,5 +112,9 @@ const preparedOptions = computed(() => {
     color: #232046;
     background: #232046;
   }
+}
+
+.grafico-dashboard__tooltip-conteudo {
+  padding: 5px 0 8px;
 }
 </style>
