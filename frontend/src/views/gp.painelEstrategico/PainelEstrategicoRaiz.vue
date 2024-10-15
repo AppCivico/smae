@@ -113,6 +113,7 @@ watchEffect(() => {
         <TotalDeProjetos
           :planejados="painelEstrategicoStore.quantidadesProjeto?.quantidade_planejada"
           :concluidos="painelEstrategicoStore.quantidadesProjeto?.quantidade_concluida"
+          :ano="painelEstrategicoStore.quantidadesProjeto?.ano"
         />
       </CardEnvelope.Conteudo>
 

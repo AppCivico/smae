@@ -2,14 +2,14 @@
   <NumeroComLegenda
     :numero="planejados"
     cor="#F2C94C"
-    :legenda="`Planejados para ${anoAtual}`"
+    :legenda="`Planejados para ${ano}`"
     :tamanho-do-numero="70"
     :tamanho-da-legenda="10"
   />
   <NumeroComLegenda
     :numero="concluidos"
     cor="#F2C94C"
-    :legenda="`Concluídos em ${anoAtual}`"
+    :legenda="`Concluídos em ${ano}`"
     :tamanho-do-numero="70"
     :tamanho-da-legenda="10"
   />
@@ -19,14 +19,16 @@
 import { defineProps } from 'vue';
 import NumeroComLegenda from './NumeroComLegenda.vue';
 
-const anoAtual = new Date().getFullYear();
-
 defineProps({
   planejados: {
     type: Number,
     required: true,
   },
   concluidos: {
+    type: Number,
+    required: true,
+  },
+  ano: {
     type: Number,
     required: true,
   },
