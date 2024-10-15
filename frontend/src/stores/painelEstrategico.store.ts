@@ -72,6 +72,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
   actions: {
     async buscarDados(params = {}): Promise<void> {
       this.chamadasPendentes.dados = true;
+      this.erros.dados = null;
       try {
         const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico`, params);
 
@@ -90,6 +91,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
 
     async buscarProjetosParaMapa(params = {}): Promise<void> {
       this.chamadasPendentes.projetosParaMapa = true;
+      this.erros.projetosParaMapa = null;
 
       try {
         // TO-DO: atualizar endpoint
@@ -100,8 +102,11 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.erros.projetosParaMapa = error;
       }
     },
+
     async buscarProjetos(params = {}): Promise<void> {
       this.chamadasPendentes.projetosPaginados = true;
+      this.erros.projetosPaginados = null;
+
       try {
         const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico/lista-projeto-paginado`, params);
         this.projetosPaginados = resposta;
