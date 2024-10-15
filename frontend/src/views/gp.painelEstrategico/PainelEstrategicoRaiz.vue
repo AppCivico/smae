@@ -177,7 +177,10 @@ watchEffect(() => {
 
     <LoadingComponent v-if="chamadasPendentes.projetosPaginados" />
 
-    <div v-else>
+    <div
+      v-else
+      class="mt2"
+    >
       <CardEnvelope.Conteudo>
         <CardEnvelope.Titulo>
           Projetos
