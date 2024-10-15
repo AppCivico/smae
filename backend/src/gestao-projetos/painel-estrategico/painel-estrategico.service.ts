@@ -69,11 +69,11 @@ export class PainelEstrategicoService {
         if (filtro.projeto_id.length > 0) {
             strFilter += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
-        if (filtro.orgao_responsavel_id) {
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
             strFilter += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
-        if (filtro.portfolio_id) {
-            strFilter += ' and p.portifolio_id in (+' + filtro.portfolio_id.toString() + ')';
+        if (filtro.portfolio_id && filtro.portfolio_id.length>0) {
+            strFilter += ' and p.portfolio_id in (+' + filtro.portfolio_id.toString() + ')';
         }
         return strFilter;
     }
@@ -314,6 +314,7 @@ export class PainelEstrategicoService {
         delete filtro.pagina;
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
+        const whereFilter = await this.applyFilter(filtro, user);
         if (filterToken) {
             const decoded = this.decodeNextPageToken(filterToken, filtro);
             total_registros = decoded.total_rows;
@@ -321,7 +322,6 @@ export class PainelEstrategicoService {
             now = new Date(decoded.issued_at);
         }
         const offset = (page - 1) * ipp;
-        const whereFilter = await this.applyFilter(filtro, user);
         const sql = `select vp.nome,
                             org.sigla                                  as secretaria_sigla,
                             org.descricao                              as secretaria_descricao,
@@ -429,7 +429,8 @@ export class PainelEstrategicoService {
             throw new HttpException('token_paginacao invalido', 400);
         }
         if (!tmp) throw new HttpException('token_paginacao invalido ou faltando', 400);
-
+        console.log(Object2Hash(filters));
+        console.log(tmp);
         if (tmp.search_hash != Object2Hash(filters))
             throw new HttpException(
                 'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
@@ -538,6 +539,7 @@ export class PainelEstrategicoService {
         delete filtro.pagina;
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
+        const whereFilter = await this.applyFilter(filtro, user);
         if (filterToken) {
             const decoded = this.decodeNextPageToken(filterToken, filtro);
             total_registros = decoded.total_rows;
@@ -545,7 +547,6 @@ export class PainelEstrategicoService {
             now = new Date(decoded.issued_at);
         }
         const offset = (page - 1) * ipp;
-        const whereFilter = await this.applyFilter(filtro, user);
         const sql = `select
                         (select sum(t.custo_estimado)
                          from tarefa_cronograma tc
