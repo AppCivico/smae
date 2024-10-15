@@ -23,6 +23,7 @@
         label="titulo"
         :aria-busy="chamadasPendentesDePortfolios.lista"
       />
+      <ErrorComponent :erro="errosDePortfolios" />
     </div>
 
     <div class="f1 fb15em">
@@ -45,6 +46,7 @@
         :aria-busy="chamadasPendentesDeProjetos.lista"
         :class="{ error: errosDeProjetos }"
       />
+      <ErrorComponent :erro="errosDeProjetos" />
     </div>
 
     <div class="f1 fb15em">
@@ -65,8 +67,9 @@
         :grupo="listaDeOrgaos"
         label="sigla"
         :aria-busy="listaDeOrgaos.loading"
-        :class="{ error: listaDeOrgaos.error }"
+        :class="{ error: organs.error }"
       />
+      <ErrorComponent :erro="organs.error" />
     </div>
     <button
       class="btn outline bgnone tcprimary align-start mt2"
