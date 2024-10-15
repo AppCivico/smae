@@ -18,6 +18,9 @@ import marcadorPadrão from '@/assets/icons/mapas/map-pin.svg';
 import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
 import { useRegionsStore } from '@/stores/regions.store';
 import L from 'leaflet';
+import 'leaflet.markercluster/dist/leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
 import { storeToRefs } from 'pinia';
 import {
@@ -39,7 +42,10 @@ let marcadorNoMapa = null;
 const polígonosNoMapa = [];
 const geoJsonsNoMapa = [];
 const elementoMapa = ref(null);
+
+let grupoDeMarcadores = null;
 let mapa;
+
 // marcadores atualizam separado do v-model para:
 // - deixar útil para diferentes situações;
 // - evitar atualizações recursivas
@@ -52,6 +58,13 @@ const props = defineProps({
     type: String,
     default: '32rem',
     validator: (value) => value.match(/^\d+(px|rem|em|vh|vw)$/),
+  },
+  persistirEtiquetaCamada: {
+    type: Boolean,
+    default: false,
+  },
+  agruparMarcadores: {
+    type: Boolean,
   },
   // aceitar tanto um par de coordenadas em forma de array,
   // quanto um objeto já com:
@@ -68,6 +81,12 @@ const props = defineProps({
   opçõesDoMarcador: {
     type: Object,
     default: null,
+  },
+  // opções para o plug-in `leaflet.markercluster`
+  opcoesDeAgrupamento: {
+    type: Object,
+    default: () => ({
+    }),
   },
   // disparam busca na API
   camadas: {
@@ -106,10 +125,6 @@ const props = defineProps({
   opçõesDoMapa: {
     type: Object,
     default: null,
-  },
-  persistirEtiquetaCamada: {
-    type: Boolean,
-    default: false,
   },
   geoJson: {
     type: [Array, Object],
@@ -161,9 +176,18 @@ function criarMarcadores(marcadores = []) {
       // aqui a gente dá "nome" para poder identificar o marcador.
       // Poderia ser um nome melhor, né?
       marcadorNoMapa.índice = i;
-      marcadorNoMapa.addTo(mapa);
+
+      if (props.agruparMarcadores) {
+        grupoDeMarcadores.addLayer(marcadorNoMapa);
+      } else {
+        marcadorNoMapa.addTo(mapa);
+      }
     }
   });
+
+  if (props.agruparMarcadores) {
+    mapa.addLayer(grupoDeMarcadores);
+  }
 }
 
 function criarGeoJson(item) {
@@ -198,11 +222,17 @@ function criarGeoJson(item) {
     geoJson = L.geoJSON(item, {
       pointToLayer: (_geoJsonPoint, latlng) => L.marker(latlng, { icon: ícone }),
     });
+
+    if (props.agruparMarcadores) {
+      grupoDeMarcadores.addLayer(geoJson);
+    } else {
+      geoJson.addTo(mapa);
+    }
   } else {
     geoJson = L.geoJSON(item);
-  }
 
-  geoJson.addTo(mapa);
+    geoJson.addTo(mapa);
+  }
 
   if (item.properties?.rotulo && item.properties?.string_endereco) {
     geoJson.bindTooltip(`<strong>${item.properties.rotulo}</strong><br/>${item.properties.string_endereco}`);
@@ -218,12 +248,20 @@ function prepararGeoJsonS(items) {
     item.remove();
   });
 
+  grupoDeMarcadores.clearLayers();
+
   const listaDeItens = Array.isArray(items)
     ? items
     : [items];
 
   if (listaDeItens.length) {
     listaDeItens.forEach((item) => { criarGeoJson(item); });
+
+    // ativar o agrupamento aqui, porque ele deve ser do array completo, mas a
+    // inserção de geoJSONs tem que ser um por um, porque podem ser de vários tipos
+    if (props.agruparMarcadores) {
+      mapa.addLayer(grupoDeMarcadores);
+    }
 
     const grupo = L.featureGroup(geoJsonsNoMapa);
     mapa.fitBounds(grupo.getBounds());
@@ -297,6 +335,10 @@ async function iniciarMapa(element) {
     return;
   }
 
+  if (props.agruparMarcadores) {
+    grupoDeMarcadores = L.markerClusterGroup(props.opcoesDeAgrupamento);
+  }
+
   mapa = L
     .map(element, {
       scrollWheelZoom: false,
@@ -320,6 +362,10 @@ async function iniciarMapa(element) {
   if (!props.opçõesDoMapa?.scrollWheelZoom) {
     mapa.on('focus', () => { mapa.scrollWheelZoom.enable(); });
     mapa.on('blur', () => { mapa.scrollWheelZoom.disable(); });
+  }
+
+  if (grupoDeMarcadores) {
+    grupoDeMarcadores.clearLayers();
   }
 
   if (props.marcador) {
@@ -388,6 +434,11 @@ watch(() => props.marcador, (valorNovo) => {
   if (marcadorNoMapa) {
     marcadorNoMapa.remove();
   }
+
+  if (grupoDeMarcadores) {
+    grupoDeMarcadores.clearLayers();
+  }
+
   if (mapa) {
     criarMarcadores([valorNovo]);
     mapa.panTo(valorNovo);

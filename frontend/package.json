@@ -14,6 +14,7 @@
     "echarts": "^5.5.0",
     "iframe-resizer": "^4.3.6",
     "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
     "lodash": "^4.17.21",
     "maska": "^2.1.11",
     "mitt": "^3.0.1",
