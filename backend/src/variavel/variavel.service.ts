@@ -1614,6 +1614,7 @@ export class VariavelService {
                     suspendida_em: true,
                     valor_base: true,
                     periodicidade: true,
+                    acumulativa: true,
                     VariavelAssuntoVariavel: {
                         select: {
                             assunto_variavel_id: true,
@@ -1708,6 +1709,7 @@ export class VariavelService {
                 select: {
                     valor_base: true,
                     fim_medicao: true,
+                    acumulativa: true,
                     variaveis_filhas: {
                         select: {
                             id: true,
@@ -1814,7 +1816,10 @@ export class VariavelService {
                 logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
             }
 
-            if (Number(self.valor_base).toString() !== Number(updated.valor_base).toString()) {
+            let recalc = Number(self.valor_base).toString() !== Number(updated.valor_base).toString();
+            if (self.acumulativa != updated.acumulativa) recalc = true;
+
+            if (recalc) {
                 logger.log(`Valor base alterado de ${self.valor_base} para ${updated.valor_base}`);
                 await this.recalc_series_dependentes([variavelId], prismaTxn);
             }
