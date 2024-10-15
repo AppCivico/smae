@@ -7,6 +7,11 @@ import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import type { FaseOpcoes, FormulariosTiposPosicao, FormulariosTiposSituacao } from '../interfaces/CicloAtualizacaoTypes';
 
 export default function useCicloAtualizacao() {
+  type BotoesLabel = {
+    salvar: string;
+    salvarESubmeter: string;
+  };
+
   const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 
   const { emFoco } = storeToRefs(cicloAtualizacaoStore);
@@ -37,6 +42,28 @@ export default function useCicloAtualizacao() {
     };
 
     return fasePosicaoOpcoes[fase.value] || 0;
+  });
+
+  const botoesLabel = computed<BotoesLabel>(() => {
+    const salvarLabel = 'Salvar';
+    if (fase.value === 'cadastro') {
+      return {
+        salvar: salvarLabel,
+        salvarESubmeter: 'Salvar e enviar para Avaliação',
+      };
+    }
+
+    if (fase.value === 'aprovacao') {
+      return {
+        salvar: salvarLabel,
+        salvarESubmeter: 'Salvar e Aprovar',
+      };
+    }
+
+    return {
+      salvar: salvarLabel,
+      salvarESubmeter: 'Salvar e Liberar',
+    };
   });
 
   const forumlariosAExibir = computed<FormulariosTiposSituacao>(() => {
@@ -97,6 +124,7 @@ export default function useCicloAtualizacao() {
 
   return {
     obterValorAnalise,
+    botoesLabel,
     fase,
     fasePosicao,
     forumlariosAExibir,
