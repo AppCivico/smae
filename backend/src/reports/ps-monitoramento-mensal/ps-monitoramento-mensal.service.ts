@@ -38,6 +38,8 @@ export class PSMonitoramentoMensal implements ReportableService {
                 'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
             );
 
+        const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
+
         const paramMesAno = params.ano + '-' + params.mes + '-01';
         let sql: string = `select
                             i.id as indicador_id,
@@ -119,9 +121,9 @@ export class PSMonitoramentoMensal implements ReportableService {
                             sv.valor_nominal,
                             sv.atualizado_em,
                             sv.data_valor + periodicidade_intervalo(v.periodicidade) as data_proximo_ciclo,
-                            vgcaP.informacoes_complementares                         as analise_qualitativa_coleta,
-                            vgcaV.informacoes_complementares                         as analise_qualitativa_aprovador,
-                            vgcaL.informacoes_complementares                         as analise_qualitativa_liberador
+                            coalesce(nullif(vgcaP.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_coleta,
+                            coalesce(nullif(vgcaV.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_aprovador,
+                            coalesce(nullif(vgcaL.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_liberador
                    from view_variaveis_pdm vvp
                             inner join indicador i on vvp.indicador_id = i.id
                             inner join variavel v on v.id = vvp.variavel_id :listar_variaveis_regionalizadas
@@ -142,6 +144,8 @@ export class PSMonitoramentoMensal implements ReportableService {
                         and vgcaL.fase = 'Liberacao'
                         and vgcaL.ultima_revisao = true
                         and vgcaL.removido_em is null
+                     left join pessoa vgcal_cp on vgcaL.criado_por = vgcal_cp.id
+
                    where i.removido_em is null
                         and v.removido_em is null
                         and vvp.meta_id IN (:metas)
