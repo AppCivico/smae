@@ -13,11 +13,11 @@ export class RelMonitoramentoMensalPsIndicadores {
 
 export class RelPsMonitoramentoMensalVariaveis {
     indicador_id: number;
-    indicador_codigo: string;
-    indicador_titulo:string;
+    codigo_indicador: string;
+    titulo_indicador:string;
     variavel_id:number;
-    variavel_codigo:string;
-    variavel_titulo:string;
+    codigo_variavel:string;
+    titulo_variavel:string;
     municipio_id:number;
     municipio:string;
     regiao_id:number;
