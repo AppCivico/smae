@@ -5,7 +5,10 @@
       v-bind="$attrs"
       ref="elementoMapa"
       class="mapa br8"
-      :style="{ height: $props.height }"
+      :style="{
+height: alturaCorrente || $props.height,
+        minHeight: $props.height
+}"
       @ready="mapReady"
     />
   </KeepAlive>
@@ -17,11 +20,13 @@ import marcadorVermelho from '@/assets/icons/mapas/map-pin--vermelho.svg';
 import marcadorPadrão from '@/assets/icons/mapas/map-pin.svg';
 import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
 import { useRegionsStore } from '@/stores/regions.store';
+import { useResizeObserver } from '@vueuse/core';
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
+import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
   defineEmits,
@@ -42,6 +47,7 @@ let marcadorNoMapa = null;
 const polígonosNoMapa = [];
 const geoJsonsNoMapa = [];
 const elementoMapa = ref(null);
+const alturaCorrente = ref();
 
 let grupoDeMarcadores = null;
 let mapa;
@@ -404,11 +410,17 @@ function removerMapa() {
 const observer = new IntersectionObserver((entries) => {
   if (!mapa) {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
-      removerMapa();
       iniciarMapa(elementoMapa.value);
     }
   }
 }, { threshold: [0.25] });
+
+useResizeObserver(elementoMapa, debounce(async (entries) => {
+  const entry = entries[0];
+  const { height } = entry.contentRect;
+
+  alturaCorrente.value = `${height}px`;
+}, 400));
 
 onMounted(() => {
   if (elementoMapa.value) {
