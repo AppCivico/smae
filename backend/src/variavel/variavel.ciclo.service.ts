@@ -103,7 +103,6 @@ export class VariavelCicloService {
         user: PessoaFromJwt
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
         const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
-        const pdmIds = isRoot ? undefined : await this.pdmService.findAllIds('PS', user);
 
         let pessoaId = user.id;
 
@@ -135,14 +134,6 @@ export class VariavelCicloService {
         whereConditions.push({
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
-
-        if (pdmIds) {
-            whereConditions.push({
-                ViewVariavelGlobal: {
-                    some: { planos: { hasSome: pdmIds } },
-                },
-            });
-        }
 
         if (!isRoot) {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
