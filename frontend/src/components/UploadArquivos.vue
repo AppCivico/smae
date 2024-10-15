@@ -15,7 +15,13 @@
           :key="`arquivo--${arquivoIndex}-${arquivoIndex}`"
         >
           <td class="arquivos-tabela__item arquivos-tabela__item--nome_original">
-            {{ arquivo.nome_original }}
+            <component
+              :is="arquivo.download_token ? SmaeLink : 'span'"
+              :to="`${DOWNLOAD_URL}/${arquivo.download_token}`"
+              download
+            >
+              {{ arquivo.nome_original }}
+            </component>
           </td>
 
           <td>
@@ -167,6 +173,8 @@ import { useFileStore } from '@/stores/file.store';
 
 import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 
+import SmaeLink from '@/components/SmaeLink.vue';
+
 import LabelFromYup from './LabelFromYup.vue';
 
 export type ArquivoAdicionado = {
@@ -189,6 +197,8 @@ type Emits = {
   (event: 'novo-arquivo', novoArquivo: ArquivoAdicionado): void
   (event: 'remover-arquivo', itemIndex: number): void
 };
+
+const DOWNLOAD_URL = `${import.meta.env.VITE_API_URL}/download/`;
 
 const $emit = defineEmits<Emits>();
 const props = defineProps<Props>();
