@@ -6,16 +6,18 @@ import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import CheckClose from '../../components/CheckClose.vue';
-import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
+
+const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
   fonte: 'PSOrcamento',
@@ -25,8 +27,8 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     meta_id: 0,
     tags: [],
-    inicio: '',
-    fim: '',
+    inicio: dateIgnorarTimezone(`${currentYear}-01-01`, 'MM/yyyy'),
+    fim: dateIgnorarTimezone(`${currentYear}-12-01`, 'MM/yyyy'),
     orgaos: [],
   },
   salvar_arquivo: false,
@@ -65,6 +67,7 @@ PlanosSetoriaisStore.buscarTudo();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
@@ -79,10 +82,10 @@ PlanosSetoriaisStore.buscarTudo();
         <label
           for="pdm_id"
           class="label"
-          >Plano Setorial
-            <span class="tvermelho">
-              *
-            </span>
+        >Plano Setorial
+          <span class="tvermelho">
+            *
+          </span>
         </label>
         <Field
           name="parametros.pdm_id"
