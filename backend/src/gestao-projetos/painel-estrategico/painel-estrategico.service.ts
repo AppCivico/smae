@@ -65,9 +65,9 @@ export class PainelEstrategicoService {
         await this.projetoService.findAllIds('PP', user).then(ids => {
             ids.forEach(n => filtro.projeto_id.push(n.id));
         });
-        strFilter = ' and p.arquivado = false ';
+        strFilter = ' and p.arquivado = false and p.removido_em is null ';
         if (filtro.projeto_id.length > 0) {
-            strFilter = ' and p.id in (' + filtro.projeto_id.toString() + ')';
+            strFilter += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
         if (filtro.orgao_responsavel_id) {
             strFilter += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
@@ -124,16 +124,16 @@ export class PainelEstrategicoService {
                      from (SELECT case
                                       when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then pe.descricao
                                       else 'Outros' end as etapa,
+                                  case
+                                      when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then p.projeto_etapa_id
+                                      else 0 end as ordem,
                                   p.id
                            FROM projeto p
                                     inner join projeto_etapa pe on pe.id = p.projeto_etapa_id
                            where p.tipo = 'PP'
-                               ${filtro}) as t
-                     group by t.etapa
-                     order by CASE
-                                  WHEN t.etapa = 'Outros' THEN 1
-                                  ELSE 0
-                                  END, quantidade desc`;
+                           ${filtro} ) as t
+                     group by t.etapa, ordem
+                     order by ordem desc`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetoEtapa[];
     }
 
@@ -344,7 +344,6 @@ export class PainelEstrategicoService {
                               inner join meta m on m.id = vp.meta_id
                      where p.tipo = 'PP'
                          ${whereFilter}
-                       and p.removido_em is null
                      order by etapa
                      limit ${ipp} offset ${offset}`;
         const linhas = await this.prisma.$queryRawUnsafe(sql) as any[];
@@ -444,7 +443,7 @@ export class PainelEstrategicoService {
                              sum(tc.previsao_custo)
                          from tarefa_cronograma tc
                                   inner join projeto p on tc.projeto_id = p.id
-                         where p.tipo = 'PP' and p.removido_em is null
+                         where p.tipo = 'PP' and tc.removido_em is null
                          ${filter})::float as custo_planejado_total,
                         sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
                         sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total
@@ -452,8 +451,8 @@ export class PainelEstrategicoService {
                     inner join view_projetos vp on orcr.projeto_id = vp.id
                     inner join projeto p on p.id = vp.id
                     where p.tipo = 'PP'
-                      ${filter}
-                    and p.removido_em is null`
+                        and orcr.removido_em is null
+                      ${filter} `
         return (await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoResumoOrcamentario[])[0];
     }
 
@@ -612,8 +611,7 @@ export class PainelEstrategicoService {
                         vp.nome as nome_projeto,
                         vp.id as projeto_id
                     from view_projetos vp inner join projeto p on vp.id = p.id
-                    where p.removido_em is null
-                    and p.tipo = 'PP'
+                    where p.tipo = 'PP'
                     ${whereFilter}`
         const linhas = await this.prisma.$queryRawUnsafe(sql) as any[];
 
