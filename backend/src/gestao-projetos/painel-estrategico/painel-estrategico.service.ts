@@ -429,8 +429,6 @@ export class PainelEstrategicoService {
             throw new HttpException('token_paginacao invalido', 400);
         }
         if (!tmp) throw new HttpException('token_paginacao invalido ou faltando', 400);
-        console.log(Object2Hash(filters));
-        console.log(tmp);
         if (tmp.search_hash != Object2Hash(filters))
             throw new HttpException(
                 'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
