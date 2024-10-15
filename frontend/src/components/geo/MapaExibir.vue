@@ -408,7 +408,7 @@ const observer = new IntersectionObserver((entries) => {
       iniciarMapa(elementoMapa.value);
     }
   }
-}, { threshold: [1] });
+}, { threshold: [0.25] });
 
 onMounted(() => {
   if (elementoMapa.value) {
