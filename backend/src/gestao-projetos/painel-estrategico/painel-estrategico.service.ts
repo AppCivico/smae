@@ -285,7 +285,7 @@ export class PainelEstrategicoService {
                                and p.tipo = 'PP'
                                  ${filtro}
                                and date_part('year', tc.previsao_termino) =
-                                   date_part('YEAR', current_date))                                                                    as quantidade_planejada,
+                                   date_part('YEAR', current_date)) as quantidade_planejada,
                             (select count(*)::int as quantidade
                              from view_projetos vp
                                       inner join projeto p on vp.id = p.id
@@ -339,9 +339,9 @@ export class PainelEstrategicoService {
                                and pr.status_risco <> 'Fechado') ::int as riscos_abertos
                      from view_projetos vp
                               inner join projeto p on vp.id = p.id
-                              inner join projeto_etapa pe on pe.id = p.projeto_etapa_id
-                              inner join orgao org on org.id = vp.orgao_responsavel_id
-                              inner join meta m on m.id = vp.meta_id
+                              left join projeto_etapa pe on pe.id = p.projeto_etapa_id
+                              left join orgao org on org.id = vp.orgao_responsavel_id
+                              left join meta m on m.id = vp.meta_id
                      where p.tipo = 'PP'
                          ${whereFilter}
                      order by etapa
@@ -401,9 +401,9 @@ export class PainelEstrategicoService {
         const quantidade_rows = await this.prisma.$queryRawUnsafe(`select count(*) ::int
                                                                    from view_projetos vp
                                                                             inner join projeto p on vp.id = p.id
-                                                                            inner join projeto_etapa pe on pe.id = p.projeto_etapa_id
-                                                                            inner join orgao org on org.id = vp.orgao_responsavel_id
-                                                                            inner join meta m on m.id = vp.meta_id
+                                                                            left join projeto_etapa pe on pe.id = p.projeto_etapa_id
+                                                                            left join orgao org on org.id = vp.orgao_responsavel_id
+                                                                            left join meta m on m.id = vp.meta_id
                                                                    where p.tipo = 'PP'
                                                                        ${whereFilter}
                                                                      and p.removido_em is null`) as any;
