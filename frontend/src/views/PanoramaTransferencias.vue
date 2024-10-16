@@ -194,10 +194,10 @@ onUnmounted(() => {
 </script>
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
+    <header class="flex spacebetween center mb2">
       <h1>Quadro de atividades</h1>
       <hr class="ml2 f1">
-    </div>
+    </header>
 
     <form
       class="flex flexwrap bottom mb2 g1"
