@@ -72,10 +72,15 @@ defineProps({
         </tr>
       </tbody>
     </table>
-    <MenuPaginacao
-      class="mt2 bgb"
-      v-bind="paginacao"
-    />
+    <div>
+      <MenuPaginacao
+        class="mt2 bgb"
+        v-bind="paginacao"
+      />
+      <p class="w700 t12 tc tprimary">
+        Total de projetos: {{ paginacao.totalRegistros }}
+      </p>
+    </div>
   </div>
 </template>
 <style scoped>
