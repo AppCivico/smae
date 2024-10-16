@@ -61,7 +61,7 @@ const projetosPorOrgaoResponsavelChartOptions = computed(() => ({
       })),
       itemStyle: {
         color: '#1c2e46',
-        borderRadius: [0, 10, 10, 0],
+        borderRadius: [0, 999, 999, 0],
       },
       barWidth: 30,
       label: {
