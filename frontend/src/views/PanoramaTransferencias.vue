@@ -6,6 +6,7 @@ import truncate from '@/helpers/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import { cloneDeep } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
   computed,
@@ -35,12 +36,14 @@ const orgao = ref(route.query.orgaos_ids);
 const palavraChave = ref(route.query.palavra_chave);
 const atividade = ref(route.query.atividade);
 
+const listaSemFiltro = ref([]);
+
 const itensEmUso = computed(() => {
   const atividades = [];
   let orgaos = [];
   let partidos = [];
 
-  lista.value.forEach((item) => {
+  listaSemFiltro.value.forEach((item) => {
     if (item.atividade) {
       atividades.push(item.atividade);
     }
@@ -82,13 +85,13 @@ const orgaosDisponiveis = computed(() => [...new Set(itensEmUso.value.orgaos)]
   .sort((a, b) => a.sigla?.localeCompare(b.sigla)));
 
 const iniciar = async () => {
-  const requisicoes = [
-    OrgaosStore.getAll(),
-    partidoStore.buscarTudo(),
-    panoramaTransferenciasStore.buscarTudo(),
-  ];
+  OrgaosStore.getAll();
+  partidoStore.buscarTudo();
 
-  await Promise.allSettled(requisicoes);
+  panoramaTransferenciasStore.buscarTudo()
+    .then(() => {
+      listaSemFiltro.value = cloneDeep(lista.value);
+    });
 };
 
 function atualizarUrl() {
