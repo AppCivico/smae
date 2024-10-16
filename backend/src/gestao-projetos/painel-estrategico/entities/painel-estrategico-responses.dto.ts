@@ -67,6 +67,7 @@ export class PainelEstrategicoProjeto{
     termino_projetado:string;
     riscos_abertos:number;
     percentual_atraso:number;
+    projeto_codigo:string;
 }
 export class PainelEstrategicoExecucaoOrcamentariaAno{
     ano:number;

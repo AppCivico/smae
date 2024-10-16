@@ -323,20 +323,21 @@ export class PainelEstrategicoService {
         }
         const offset = (page - 1) * ipp;
         const sql = `select vp.nome,
-                            org.sigla                                  as secretaria_sigla,
-                            org.descricao                              as secretaria_descricao,
-                            org.id                                     as secretaria_id,
-                            m.codigo                                   as meta_codigo,
-                            m.titulo                                   as meta_titulo,
-                            m.id                                       as meta_id,
+                            coalesce(org.sigla,'') as secretaria_sigla,
+                            coalesce(org.descricao,'') as secretaria_descricao,
+                            org.id as secretaria_id,
+                            coalesce(m.codigo,'') as meta_codigo,
+                            coalesce(m.titulo,'') as meta_titulo,
+                            m.id as meta_id,
                             vp.status,
-                            pe.descricao                               as etapa,
+                            pe.descricao as etapa,
                             TO_CHAR(vp.projecao_termino, 'yyyy/mm/dd') as termino_projetado,
                             vp.percentual_atraso,
                             (select count(*)
                              from projeto_risco pr
                              where pr.projeto_id = p.id
-                               and pr.status_risco <> 'Fechado') ::int as riscos_abertos
+                               and pr.status_risco <> 'Fechado') ::int as riscos_abertos,
+                            coalesce(vp.codigo,'') as codigo
                      from view_projetos vp
                               inner join projeto p on vp.id = p.id
                               left join projeto_etapa pe on pe.id = p.projeto_etapa_id
@@ -367,6 +368,7 @@ export class PainelEstrategicoService {
                 },
                 status: linha.status,
                 termino_projetado: linha.termino_projetado,
+                projeto_codigo: linha.codigo,
             });
         });
         if (filterToken) {
