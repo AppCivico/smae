@@ -145,7 +145,7 @@
       >
         <tr>
           <td colspan="5">
-            Sem items a exibir
+            Sem itens a exibir
           </td>
         </tr>
       </tbody>
