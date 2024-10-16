@@ -355,7 +355,7 @@ export class TransfereGovSyncService {
         const transferenciasExistentes = await this.prisma.transfereGovOportunidade.findMany({
             select: { hash: true },
         });
-        let novasTransferencias = [];
+        const novasTransferencias: string[] = [];
 
         const now = new Date();
         for (const oportunidade of oportunidades) {
@@ -377,7 +377,7 @@ export class TransfereGovSyncService {
                 newItems.push(result);
 
                 if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
-                    novasTransferencias.push(result);
+                    novasTransferencias.push(result.nome_programa);
                 }
             } catch (error) {
                 this.logger.error(`Erro ao atualizar oportunidades: ${error.message}`);
@@ -402,7 +402,7 @@ export class TransfereGovSyncService {
                     select: { email: true },
                 });
 
-                for (const oportunidade of novasTransferencias) {
+                for (const oportunidadePrograma of novasTransferencias) {
                     for (const gestor of gestores) {
                         await prismaTx.emaildbQueue.create({
                             data: {
@@ -412,7 +412,7 @@ export class TransfereGovSyncService {
                                 template: 'transferegov-nova-oportunidade.html',
                                 to: gestor.email,
                                 variables: {
-                                    programa: oportunidade.nome_programa,
+                                    programa: oportunidadePrograma,
                                     link: new URL([this.baseUrl, 'oportunidades'].join('/')),
                                 },
                             },
