@@ -22,6 +22,7 @@
         :grupo="listaDePortfolios"
         label="titulo"
         :aria-busy="chamadasPendentesDePortfolios.lista"
+        @change="projetoId.splice(0)"
       />
       <ErrorComponent :erro="errosDePortfolios" />
     </div>
@@ -41,7 +42,7 @@
           busca: '',
           participantes: projetoId
         }"
-        :grupo="listaDeProjetos"
+        :grupo="projetosDisponiveis"
         label="nome"
         :aria-busy="chamadasPendentesDeProjetos.lista"
         :class="{ error: errosDeProjetos }"
@@ -90,6 +91,17 @@ import { computed, ref } from 'vue';
 import type { LocationQueryValue } from 'vue-router';
 import { useRoute } from 'vue-router';
 
+defineProps({
+  ariaBusy: {
+    type: Boolean,
+    default: false,
+  },
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
 const rota = useRoute();
 const orgaosStore = useOrgansStore();
 const portfoliosStore = usePortfolioStore();
@@ -103,6 +115,7 @@ const {
 
 const {
   lista: listaDeProjetos,
+  projetosPorPortfolio,
   chamadasPendentes: chamadasPendentesDeProjetos,
   erro: errosDeProjetos,
 } = storeToRefs(projetosStore);
@@ -113,6 +126,15 @@ const orgaoResponsavelId: Ref<(number | string)[]> = ref([]);
 const portfolioId: Ref<(number | string)[]> = ref([]);
 const projetoId: Ref<(number | string)[]> = ref([]);
 
+const projetosDisponiveis = computed(() => {
+  if (!portfolioId.value.length) {
+    return listaDeProjetos.value;
+  }
+
+  return portfolioId.value.reduce((acc, cur) => acc
+    .concat(projetosPorPortfolio.value[cur] || []), [] as typeof listaDeProjetos.value);
+});
+
 const dados = computed(() => ({
   orgao_responsavel_id: orgaoResponsavelId.value,
   portfolio_id: portfolioId.value,
@@ -120,18 +142,6 @@ const dados = computed(() => ({
 }));
 
 const listaDeOrgaos = computed(() => (Array.isArray(organs.value) ? organs.value : []));
-
-defineProps({
-  ariaBusy: {
-    type: Boolean,
-    default: false,
-  },
-  valoresIniciais: {
-    type: Object,
-    default: () => ({}),
-  },
-});
-
 const emit = defineEmits(['enviado']);
 
 function prepararValoresComoNumeros(valor: LocationQueryValue | LocationQueryValue[]): number[] {
