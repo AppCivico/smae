@@ -5,6 +5,7 @@ export default {
   component: PanoramaTransferencias,
   name: 'PanoramaTransferenciasListar',
   meta: {
+    entidadeMãe: 'TransferenciasVoluntarias',
     título: 'Quadro de atividades',
   },
 };
