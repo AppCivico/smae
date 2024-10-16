@@ -2,6 +2,7 @@
 import { defineProps } from 'vue';
 import statuses from '@/consts/projectStatuses';
 import dateToDate from '@/helpers/dateToDate';
+import truncate from '@/helpers/truncate';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
 defineProps({
@@ -17,7 +18,7 @@ defineProps({
 
 const projetoFormatado = (codigo, nome) => {
   if (codigo && nome) {
-    return `${codigo} - ${nome}`;
+    return `${codigo} - ${truncate(nome)}`;
   }
   return codigo || nome || ' - ';
 };
@@ -91,3 +92,19 @@ const projetoFormatado = (codigo, nome) => {
     </div>
   </div>
 </template>
+<style scoped>
+.tabela-projetos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+.tabela-projetos th,
+.tabela-projetos td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+.tabela-projetos th {
+  font-weight: bold;
+}
+</style>
