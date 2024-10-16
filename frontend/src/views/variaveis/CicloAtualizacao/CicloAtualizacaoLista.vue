@@ -283,7 +283,7 @@ watch(() => $route.query, (query) => {
 
 onMounted(() => {
   if (!temEquipes.value) {
-    equipesStore.buscarTudo();
+    equipesStore.buscarTudo({ remover_participantes: true });
   }
 });
 </script>
