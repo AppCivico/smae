@@ -1055,6 +1055,7 @@ export class TransferenciaService {
                         fase: true,
                         transferenciaAndamento: {
                             take: 1,
+                            orderBy: { criado_em: 'desc' },
                             where: { removido_em: null },
                             select: {
                                 workflow_situacao: {
