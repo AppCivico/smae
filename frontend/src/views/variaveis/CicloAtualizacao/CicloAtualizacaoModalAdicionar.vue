@@ -226,7 +226,10 @@
           :disabled="bloqueado"
           @click.prevent="submit({ aprovar: false })"
         >
-          {{ botoesLabel.salvar }}
+          {{
+            values.solicitar_complementacao ?
+              'salvar e solicitar complementação' : botoesLabel.salvar
+          }}
         </button>
 
         <button
