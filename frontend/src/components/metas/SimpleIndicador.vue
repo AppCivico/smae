@@ -1,11 +1,15 @@
 <script setup>
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
-import { usePdMStore } from '@/stores/pdm.store';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
+import { usePdMStore } from '@/stores/pdm.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
+import { computed, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -15,7 +19,18 @@ const props = defineProps(['group', 'parentlink', 'parent_id', 'parent_field']);
 const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 
-const { activePdm } = storeToRefs(usePdMStore());
+const activePdm = computed(() => {
+  switch (route.meta.entidadeMãe) {
+    case 'planoSetorial':
+      return usePlanosSetoriaisStore().emFoco;
+
+    case 'pdm':
+      return usePdMStore().activePdm;
+
+    default:
+      throw new Error('Módulo não pôde ser determinado');
+  }
+});
 
 (async () => {
   if (!tempIndicadores.value.length
@@ -23,6 +38,7 @@ const { activePdm } = storeToRefs(usePdMStore());
   ) {
     await IndicadoresStore.filterIndicadores(props.parent_id, props.parent_field);
   }
+
   if (tempIndicadores.value[0]?.id) {
     await IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
   }
