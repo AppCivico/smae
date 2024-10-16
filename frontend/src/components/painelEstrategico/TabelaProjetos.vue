@@ -53,10 +53,12 @@ defineProps({
           v-for="(projeto, index) in projetos"
           :key="index"
         >
-          <td>{{ projeto.nome_projeto || ' - ' }}</td>
-          <td>{{ projeto.secretaria?.nome || ' - ' }}</td>
+          <td class="tl">
+            {{ projeto.nome_projeto || ' - ' }}
+          </td>
+          <td>{{ projeto.secretaria?.codigo || ' - ' }}</td>
           <td>
-            {{ projeto.meta?.nome || ' - ' }}
+            {{ projeto.meta?.codigo || ' - ' }}
           </td>
           <td>{{ statuses[projeto.status] || projeto.status }}</td>
           <td>{{ projeto.etapa_atual || ' - ' }}</td>
