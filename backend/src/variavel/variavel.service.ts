@@ -2031,8 +2031,8 @@ export class VariavelService {
             dto.polaridade = 'Neutra';
         }
 
-        if (!dto.unidade_medida_id) throw new HttpException('unidade_medida_id| Unidade de medida é obrigatória', 400);
-        if (dto.ano_base === undefined) throw new HttpException('ano_base| Ano base é obrigatório', 400);
+        if ('unidade_medida_id' in dto && !dto.unidade_medida_id)
+            throw new HttpException('unidade_medida_id| Unidade de medida é obrigatória', 400);
         if (dto.valor_base === undefined) throw new HttpException('valor_base| Valor base é obrigatório', 400);
     }
 
