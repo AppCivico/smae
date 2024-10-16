@@ -1,7 +1,6 @@
 <script setup>
 import Dashboard from '@/components/DashboardLayout.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
-import { Dashboard } from '@/components';
 import HeatMapGraph from '@/components/HeatMapGraph.vue';
 
 </script>
