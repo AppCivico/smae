@@ -14,7 +14,15 @@ defineProps({
     default: () => ({}),
   },
 });
+
+const projetoFormatado = (codigo, nome) => {
+  if (codigo && nome) {
+    return `${codigo} - ${nome}`;
+  }
+  return codigo || nome || ' - ';
+};
 </script>
+
 <template>
   <div
     role="region"
@@ -54,7 +62,7 @@ defineProps({
           :key="index"
         >
           <td class="tl">
-            {{ projeto.nome_projeto || ' - ' }}
+            {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
           </td>
           <td>{{ projeto.secretaria?.codigo || ' - ' }}</td>
           <td>
@@ -83,21 +91,3 @@ defineProps({
     </div>
   </div>
 </template>
-<style scoped>
-.tabela-projetos {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 1000px;
-}
-
-.tabela-projetos th,
-.tabela-projetos td {
-  border-bottom: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-}
-
-.tabela-projetos th {
-  font-weight: bold;
-}
-</style>
