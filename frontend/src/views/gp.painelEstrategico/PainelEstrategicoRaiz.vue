@@ -24,6 +24,7 @@ const {
   chamadasPendentes,
   locaisAgrupados,
   erros,
+  paginacaoProjetos,
 } = storeToRefs(painelEstrategicoStore);
 
 watchEffect(() => {
@@ -46,7 +47,17 @@ watchEffect(() => {
 
   painelEstrategicoStore.buscarDados(parametros);
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
-  painelEstrategicoStore.buscarProjetos(parametros);
+});
+
+watchEffect(() => {
+  painelEstrategicoStore.buscarProjetos({
+    token_paginacao: route.query.token_paginacao,
+    pagina: route.query.pagina,
+    portfolio_id: route.query.portfolio_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    projeto_id: route.query.projeto_id,
+    ipp: 2,
+  });
 });
 
 </script>
@@ -207,7 +218,8 @@ watchEffect(() => {
         </CardEnvelope.Titulo>
         <TabelaProjetos
           class="grid-full-column"
-          :projetos="painelEstrategicoStore?.projetosPaginados "
+          :projetos="painelEstrategicoStore?.projetosPaginados"
+          :paginacao="paginacaoProjetos"
         />
       </CardEnvelope.Conteudo>
     </div>

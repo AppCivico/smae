@@ -2,11 +2,16 @@
 import { defineProps } from 'vue';
 import statuses from '@/consts/projectStatuses';
 import dateToDate from '@/helpers/dateToDate';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
 defineProps({
   projetos: {
     type: Array,
     default: () => [],
+  },
+  paginacao: {
+    type: Object,
+    default: () => ({}),
   },
 });
 </script>
@@ -35,13 +40,17 @@ defineProps({
           <th>Status</th>
           <th>Etapa Atual</th>
           <th>Término Projetado</th>
-          <th>Riscos em Aberto</th>
-          <th>% de Atraso</th>
+          <th class="tr">
+            Riscos em Aberto
+          </th>
+          <th class="tr">
+            % de Atraso
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="(projeto, index) in projetos.linhas"
+          v-for="(projeto, index) in projetos"
           :key="index"
         >
           <td>{{ projeto.nome_projeto || ' - ' }}</td>
@@ -61,6 +70,10 @@ defineProps({
         </tr>
       </tbody>
     </table>
+    <MenuPaginacao
+      class="mt2 bgb"
+      v-bind="paginacao"
+    />
   </div>
 </template>
 <style scoped>
