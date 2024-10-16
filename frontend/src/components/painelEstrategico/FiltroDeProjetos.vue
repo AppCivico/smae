@@ -81,6 +81,7 @@
   </form>
 </template>
 <script setup lang="ts">
+import type { ProjetoDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useOrgansStore } from '@/stores';
 import { usePortfolioStore } from '@/stores/portfolios.store';
@@ -126,13 +127,12 @@ const orgaoResponsavelId: Ref<(number | string)[]> = ref([]);
 const portfolioId: Ref<(number | string)[]> = ref([]);
 const projetoId: Ref<(number | string)[]> = ref([]);
 
-const projetosDisponiveis = computed(() => {
+const projetosDisponiveis = computed((): ProjetoDto[] => {
   if (!portfolioId.value.length) {
     return listaDeProjetos.value;
   }
 
-  return portfolioId.value.reduce((acc, cur) => acc
-    .concat(projetosPorPortfolio.value[cur] || []), [] as typeof listaDeProjetos.value);
+  return portfolioId.value.flatMap((id) => projetosPorPortfolio.value[id] || []);
 });
 
 const dados = computed(() => ({
