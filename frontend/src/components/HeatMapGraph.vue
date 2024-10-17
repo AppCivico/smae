@@ -26,6 +26,10 @@
         }
     });
 
+
+    console.log("**************************");
+    console.log(props.projetosPlanejadosMes);
+    console.log(props.projetosConcluidosMes);
     /*
     Parâmetros para plotagem do gráfico de calor:
 
@@ -133,7 +137,7 @@ const var1 = 300;
                 // Ano da posição atual do tooltip
                 var searchYear = years[params.data[1]];
                 // Pega a quantidade
-                var finishedCurrentYear = data.filter(d => d.ano === searchYear && d.mes === searchMonth);
+                var finishedCurrentYear = props.projetosConcluidosMes.filter(d => d.ano === searchYear && d.mes === searchMonth);
                 if(finishedCurrentYear[0]){
                     footerQuantity = finishedCurrentYear[0].quantidade;
                 } else{
@@ -142,29 +146,29 @@ const var1 = 300;
                 var monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
                 // Monta o HTML do tooltip
                 var response = 
-                    '<div style="background-color: lightBlue; min-width: 100px; justify-content: center; align-items: center;">' +
-                    '<ul class="containerYearMonth" style="height: 15px; border: 1px solid black;">' +
-                        '<li class="yearMonthTooltip" style="margin-top: 0px; margin-bottom: 0px;height: 15px;"><b>' +
+                    '<div style="min-width: 120px; justify-content: center; align-items: center;">' +
+                    '<ul class="containerYearMonth" style="height: 15px;">' +
+                        '<li class="yearMonthTooltip" style="margin-top: 0px; margin-bottom: 0px; height: 15px;"><b>' +
                             // Linha inicial
                             '<hr>' +
                             // Ano e mês
                             '<div style="display: flex; height: 13px; line-height: 13px;">' + monthYear + '</div>' + 
                         '</li>' +
                     '</ul>' +
-                    '<ul class="bodyQuantityDescription" style=" border: 1px solid black; display: flex; justify-content: center; align-items: center;">' +
+                    '<ul class="bodyQuantityDescription" style="display: flex; justify-content: center; align-items: center;">' +
                         '<li>' +
                             // Quantidade dos dados do gráfico
-                            '<div style=" border: 1px solid black; padding-right: 2px; margin-bottom: 2px; font-size: 28px; text-align: end;  float: left; width: 50%;">' + '<b>' + params.data[2] + '</b>' + '</div>' + 
+                            '<div style="padding-right: 2px; margin-bottom: 2px; font-size: 28px; text-align: end;  float: left; width: 50%;">' + '<b>' + params.data[2] + '</b>' + '</div>' + 
                             // Descrição dos dados
-                            '<div style=" border: 1px solid black; font-size: 8px; text-align: start; align-self: flex-end; float: right; width: 50%;">' + tooltipTitle.toUpperCase() + '</div>' +
+                            '<div style="font-size: 8px; text-align: start; align-self: flex-end; float: right; width: 50%;">' + tooltipTitle.toUpperCase() + '</div>' +
                         '</li>' +
                     '</ul>' +
-                    '<ul class="footerQuantityDescription" style=" border: 1px solid black; display: flex; justify-content: center; align-items: center;">' +        
+                    '<ul class="footerQuantityDescription" style="display: flex; justify-content: center; align-items: center;">' +        
                         '<li>' +
                             // Quantidade anterior
-                            '<div style=" border: 1px solid black; padding-right: 2px; font-size: 16px; text-align: end;  float: left; width: 50%;">' + '<b>' + footerQuantity + '</b>' + '</div>' + 
+                            '<div style="padding-right: 2px; font-size: 16px; text-align: end;  float: left; width: 50%;">' + '<b>' + footerQuantity + '</b>' + '</div>' + 
                             // Descrição da quantidade anterior
-                            '<div style=" border: 1px solid black; font-size: 6px; text-align: start; align-self: flex-end; float: left; width: 50%;">' + tooltipFooter.toUpperCase() + '</div>' +
+                            '<div style="font-size: 6px; text-align: start; align-self: flex-end; float: left; width: 50%;">' + tooltipFooter.toUpperCase() + '</div>' +
                             // Linha final
                             '<hr style="margin-top: -35px;">' +
                         '</li>' +
