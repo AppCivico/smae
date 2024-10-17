@@ -18,7 +18,7 @@ defineProps({
 
 const projetoFormatado = (codigo, nome) => {
   if (codigo && nome) {
-    return `${codigo} - ${truncate(nome)}`;
+    return `${codigo} - ${truncate(nome, 40)}`;
   }
   return codigo || nome || ' - ';
 };
