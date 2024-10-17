@@ -40,14 +40,8 @@ export class PainelEstrategicoService {
 
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
         //Já realiza o filtro dos ids dos projetos e adiciona no filtro recebido
-        if (!filtro.projeto_id) {
-            filtro.projeto_id = [];
-        }
-        await this.projetoService.findAllIds('PP', user).then(ids => {
-            ids.forEach(n => filtro.projeto_id.push(n.id));
-        });
-
-        const strFilter = await this.applyFilter(filtro, user);
+        filtro = await this.addPermissaoProjetos(filtro,user);
+        const strFilter = await this.applyFilter(filtro);
         const response = new PainelEstrategicoResponseDto();
         response.grandes_numeros = await this.buildGrandeNumeros(strFilter);
         response.projeto_status = await this.buildProjetosPorStatus(strFilter);
@@ -60,12 +54,21 @@ export class PainelEstrategicoService {
         response.anos_mapa_calor_concluidos = this.buildAnosMapaCalor(new Date().getFullYear(), -3);
         response.anos_mapa_calor_planejados = this.buildAnosMapaCalor(new Date().getFullYear(), +3);
         response.quantidades_projeto = await this.buildQuantidadesProjeto(strFilter);
-        response.resumo_orcamentario = await this.buildResumoOrcamentario(filtro, user);
-        response.execucao_orcamentaria_ano = await this.buildExecucaoOrcamentariaAno(strFilter);
+        response.resumo_orcamentario = await this.buildResumoOrcamentario(filtro);
+        response.execucao_orcamentaria_ano = await this.buildExecucaoOrcamentariaAno(filtro);
         return response;
     }
+    private async addPermissaoProjetos(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt){
+        if (!filtro.projeto_id) {
+            filtro.projeto_id = [];
+        }
+        await this.projetoService.findAllIds('PP', user).then(ids => {
+            ids.forEach(n => filtro.projeto_id.push(n.id));
+        });
+        return filtro;
+    }
 
-    private async applyFilter(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<string> {
+    private applyFilter(filtro: PainelEstrategicoFilterDto): string {
         let strFilter = '';
         strFilter = " WHERE p.removido_em is null and p.tipo ='PP' and arquivado = false ";
         if (filtro.projeto_id.length > 0) {
@@ -91,7 +94,6 @@ export class PainelEstrategicoService {
                                                 FROM portfolio_projeto_compartilhado ppc
                                                 JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                                                 WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
                             ${filtro} ) as total_projetos,
                            (SELECT
                                 count(distinct p.orgao_responsavel_id)::int
@@ -102,7 +104,6 @@ export class PainelEstrategicoService {
                                                 FROM portfolio_projeto_compartilhado ppc
                                                 JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                                                 WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
                                 ${filtro})  as total_orgaos,
                            (SELECT
                                 count(distinct por.meta_id)  ::int
@@ -114,7 +115,6 @@ export class PainelEstrategicoService {
                                                 FROM portfolio_projeto_compartilhado ppc
                                                 JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                                                       WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS null
                                 ${filtro}) as total_metas`;
 
         return (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoGrandesNumeros[])[0];
@@ -165,7 +165,6 @@ export class PainelEstrategicoService {
 							FROM portfolio_projeto_compartilhado ppc
 						 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
 						          WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
                            ${filtro}) as t
                       group by t.etapa, ordem
                       order by ordem desc`;
@@ -376,15 +375,8 @@ export class PainelEstrategicoService {
         delete filtro.pagina;
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
-
-        if (!filtro.projeto_id) {
-            filtro.projeto_id = [];
-        }
-        await this.projetoService.findAllIds('PP', user).then(ids => {
-            ids.forEach(n => filtro.projeto_id.push(n.id));
-        });
-
-        const whereFilter = await this.applyFilter(filtro, user);
+        filtro = await this.addPermissaoProjetos(filtro,user);
+        const whereFilter = await this.applyFilter(filtro);
         if (filterToken) {
             const decoded = this.decodeNextPageToken(filterToken, filtro);
             total_registros = decoded.total_rows;
@@ -518,14 +510,8 @@ export class PainelEstrategicoService {
             );
         return tmp;
     }
-    private async buildResumoOrcamentario(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt) {
+    private async buildResumoOrcamentario(filtro: PainelEstrategicoFilterDto) {
         //Constroi o filter
-        if (!filtro.projeto_id) {
-            filtro.projeto_id = [];
-        }
-        await this.projetoService.findAllIds('PP', user).then(ids => {
-            ids.forEach(n => filtro.projeto_id.push(n.id));
-        });
         let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
         //Cria apenas os projetos e orgãos responsáveis
         strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
@@ -567,7 +553,23 @@ export class PainelEstrategicoService {
         return (await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoResumoOrcamentario[])[0];
     }
 
-    private async buildExecucaoOrcamentariaAno(filter: string) {
+    private async buildExecucaoOrcamentariaAno(filtro: PainelEstrategicoFilterDto) {
+        //Constroi o filter
+        let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
+        //Cria apenas os projetos e orgãos responsáveis
+        strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
+        if (filtro.projeto_id.length > 0) {
+            strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
+        }
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
+            strFilterGeral += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
+        }
+        //Cria o filtro de portfolio
+        let strPortfolio = '';
+        if (filtro.portfolio_id && filtro.portfolio_id.length>0){
+            strPortfolio += ' and po_1.id in (+' + filtro.portfolio_id.toString() + ')';
+        }
+
         const sql = `select sum(custo_planejado_total) as custo_planejado_total,
                             sum(valor_empenhado_total) as valor_empenhado_total,
                             sum(valor_liquidado_total) as valor_liquidado_total,
@@ -579,18 +581,19 @@ export class PainelEstrategicoService {
                                     orcr.ano_referencia
                                 from orcamento_realizado orcr inner join  projeto p on orcr.projeto_id = p.id
                                  full outer JOIN (SELECT
-                                                    ppc.projeto_id,
-                                                    po_1.id as portfolio_id
+                                                    distinct
+                                                    ppc.projeto_id
                                                 FROM portfolio_projeto_compartilhado ppc
                                                 JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
+                                                WHERE ppc.removido_em IS NULL
+                                                ${strPortfolio}) po ON po.projeto_id = p.id
                                 full outer join (select
                                                     tc.previsao_custo,
                                                     date_part('year',tc.previsao_termino) as ano_referencia ,
                                                     tc.projeto_id
                                                 from tarefa_cronograma tc) as tc on tc.projeto_id = p.id
                                                     and tc.ano_referencia = orcr.ano_referencia
-                            ${filter}
+                            ${strFilterGeral}
                              and orcr.ano_referencia between date_part('year', current_date)-3
                              and date_part('year', current_date)+3
                            group by orcr.ano_referencia
@@ -652,17 +655,9 @@ export class PainelEstrategicoService {
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
 
-        //Constroi o filter
-        let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
-        if (!filtro.projeto_id) {
-            filtro.projeto_id = [];
-        }
-
         //Cria apenas os projetos e orgãos responsáveis
-        await this.projetoService.findAllIds('PP', user).then(ids => {
-            ids.forEach(n => filtro.projeto_id.push(n.id));
-        });
-        strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
+        filtro = await this.addPermissaoProjetos(filtro,user);
+        let strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
         if (filtro.projeto_id.length > 0) {
             strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
@@ -740,7 +735,9 @@ export class PainelEstrategicoService {
 
     }
     async buildGeoLocalizacao(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt):Promise<PainelEstrategicoGeoLocalizacaoDto>{
-        const whereFilter = await this.applyFilter(filtro, user);
+        //Cria apenas os projetos e orgãos responsáveis
+        filtro = await this.addPermissaoProjetos(filtro,user);
+        const whereFilter = await this.applyFilter(filtro);
         const sql = `select distinct p.nome       as nome_projeto,
                                      p.id         as projeto_id,
                                      p.codigo     as projeto_codigo,
@@ -778,7 +775,7 @@ export class PainelEstrategicoService {
                         projeto_id:linha.projeto_id,
                         projeto_codigo:linha.projeto_codigo,
                         projeto_etapa:linha.projeto_etapa,
-                        projeto_status:linha.projeto_status,
+                        projeto_status:linha.status,
                         geolocalizacao:geolocalizacao.get(linha.projeto_id)||[]
                     });
         });
