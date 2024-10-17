@@ -611,6 +611,7 @@ export class PainelEstrategicoService {
 
     private async encodeNextPageTokenListaExecucaoOrcamentaria(
         whereFilter: string,
+        portifolio_filter:string,
         issued_at: Date,
         filter: PainelEstrategicoListaFilterDto,
         ipp?: number,
@@ -626,7 +627,8 @@ export class PainelEstrategicoService {
                                                                                             po_1.id as portfolio_id
                                                                                         FROM portfolio_projeto_compartilhado ppc
                                                                                         JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                                                        WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
+                                                                                        WHERE ppc.removido_em IS NULL
+                                                                                        ${portifolio_filter}) po ON po.projeto_id = p.id
                                                                     ${whereFilter}`) as any;
         const body = {
             search_hash: Object2Hash(filter),
@@ -718,7 +720,7 @@ export class PainelEstrategicoService {
         if (filterToken) {
             retToken = filterToken;
         } else {
-            const info = await this.encodeNextPageTokenListaExecucaoOrcamentaria(strFilterGeral + strPortfolio, now, filtro, filtro.ipp);
+            const info = await this.encodeNextPageTokenListaExecucaoOrcamentaria(strFilterGeral ,strPortfolio, now, filtro, filtro.ipp);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
         }
