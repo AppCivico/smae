@@ -28,14 +28,14 @@ export class PSMonitoramentoMensal implements ReportableService {
         const { metas } = await this.utils.applyFilter(
             {
                 ...params,
-                pdm_id: params.plano_setorial_id,
+                pdm_id: params.pdm_id ?? params.plano_setorial_id,
             },
             { iniciativas: false, atividades: false }
         );
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 100)
-            throw new Error(
-                'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
+            throw new BadRequestException(
+                'Mais de 100 indicadores encontrados, por favor refine a busca.'
             );
 
         const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
@@ -117,39 +117,40 @@ export class PSMonitoramentoMensal implements ReportableService {
                                 when r.nivel = 4 then r.id
                                 end as distrito_id,
                             sv.serie,
-                            sv.data_valor,
-                            sv.valor_nominal,
-                            sv.atualizado_em,
+                            sv.data_valor as data_referencia,
+                            coalesce(vcv.titulo, round(sv.valor_nominal, v.casas_decimais)::text) as valor,
+                            round(sv.valor_nominal, v.casas_decimais) as valor_nominal,
+                            sv.atualizado_em AS data_preenchimento,
                             sv.data_valor + periodicidade_intervalo(v.periodicidade) as data_proximo_ciclo,
                             coalesce(nullif(vgcaP.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_coleta,
                             coalesce(nullif(vgcaV.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_aprovador,
                             coalesce(nullif(vgcaL.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_liberador
-                   from view_variaveis_pdm vvp
-                            inner join indicador i on vvp.indicador_id = i.id
-                            inner join variavel v on v.id = vvp.variavel_id :listar_variaveis_regionalizadas
-                            left join regiao r on v.regiao_id = r.id
-                            left join serie_variavel sv on sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
-                     left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
+                    FROM view_variaveis_pdm vvp
+                    INNER JOIN indicador i ON vvp.indicador_id = i.id
+                    INNER JOIN variavel v ON v.id = vvp.variavel_id :listar_variaveis_regionalizadas
+                    LEFT JOIN regiao r ON v.regiao_id = r.id
+                    INNER JOIN serie_variavel sv ON sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
+                    LEFT JOIN variavel_global_ciclo_analise vgcaP ON vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaP.referencia_data = sv.data_valor
                         and vgcaP.fase = 'Preenchimento'
                         and vgcaP.ultima_revisao = true
                         and vgcaP.removido_em is null
-                     left join variavel_global_ciclo_analise vgcaV on vgcaV.variavel_id = coalesce(v.variavel_mae_id, v.id)
+                    LEFT JOIN variavel_global_ciclo_analise vgcaV ON vgcaV.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaV.referencia_data = sv.data_valor
                         and vgcaV.fase = 'Validacao'
                         and vgcaV.ultima_revisao = true
                         and vgcaV.removido_em is null
-                     left join variavel_global_ciclo_analise vgcaL on vgcaL.variavel_id = coalesce(v.variavel_mae_id, v.id)
+                    LEFT JOIN variavel_global_ciclo_analise vgcaL ON vgcaL.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaL.referencia_data = sv.data_valor
                         and vgcaL.fase = 'Liberacao'
                         and vgcaL.ultima_revisao = true
                         and vgcaL.removido_em is null
-                     left join pessoa vgcal_cp on vgcaL.criado_por = vgcal_cp.id
+                    LEFT JOIN pessoa vgcal_cp ON vgcaL.criado_por = vgcal_cp.id
+                    LEFT JOIN variavel_categorica_valor vcv ON vcv.id = sv.variavel_categorica_valor_id
 
                    where i.removido_em is null
                         and v.removido_em is null
-                        and vvp.meta_id IN (:metas)
-                        and vvp.pdm_id = ${params.plano_setorial_id}::int`;
+                        and vvp.meta_id IN (:metas)`;
 
         if (params.listar_variaveis_regionalizadas) {
             sql = sql.replace(':listar_variaveis_regionalizadas', ' or v.variavel_mae_id = vvp.variavel_id ');
@@ -159,7 +160,8 @@ export class PSMonitoramentoMensal implements ReportableService {
         if (metasArr.length === 0) metasArr.push(-1); // hack para evitar erro de sintaxe no SQL
         sql = sql.replace(':metas', metasArr.toString());
         sql = sql.replace(':mesAno', "'" + paramMesAno + "'");
-        const linhasVariaveis = await this.prisma.$queryRawUnsafe(sql);
+        const linhasVariaveis = (await this.prisma.$queryRawUnsafe(sql)) as any;
+        console.log(linhasVariaveis[0]);
 
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
     }
@@ -181,12 +183,13 @@ export class PSMonitoramentoMensal implements ReportableService {
             { value: 'regiao', label: 'Região' },
             { value: 'regiao_id', label: 'ID da Região' },
             { value: 'subprefeitura', label: 'Subprefeitura' },
-            { value: 'id_subprefeitura', label: 'ID da Subprefeitura' },
+            { value: 'subprefeitura_id', label: 'ID da Subprefeitura' },
             { value: 'distrito', label: 'Distrito' },
             { value: 'distrito_id', label: 'ID do Distrito' },
             { value: 'serie', label: 'Serie' },
             { value: 'data_referencia', label: 'Data de Referencia' },
             { value: 'valor', label: 'Valor' },
+            { value: 'valor_nominal', label: 'Valor Nominal' },
             { value: 'data_preenchimento', label: 'Data de Preenchimento' },
             { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
             { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Aprovador' },
