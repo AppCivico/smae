@@ -6,9 +6,9 @@
       ref="elementoMapa"
       class="mapa br8"
       :style="{
-height: alturaCorrente || $props.height,
+        height: alturaCorrente || $props.height,
         minHeight: $props.height
-}"
+      }"
       @ready="mapReady"
     />
   </KeepAlive>
