@@ -433,7 +433,13 @@ export class VariavelCategoricaService {
         const ordens = valores.map((v) => v.ordem);
         const ordensUnicas = new Set(ordens);
         if (ordens.length !== ordensUnicas.size) {
-            throw new BadRequestException('Valores de ordem devem ser únicos.');
+            throw new BadRequestException('Valores da ordem devem ser únicos.');
+        }
+
+        const valoresVariavel = valores.map((v) => v.valor_variavel);
+        const valoresUnicas = new Set(valoresVariavel);
+        if (valoresVariavel.length !== valoresUnicas.size) {
+            throw new BadRequestException('Valores devem ser únicos.');
         }
     }
 }

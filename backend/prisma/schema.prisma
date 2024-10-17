@@ -1989,7 +1989,7 @@ model VariavelCategoricaValor {
     removedor     Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
     SerieVariavel SerieVariavel[]
 
-    @@unique([variavel_categorica_id, valor_variavel])
+    // @@unique([variavel_categorica_id, valor_variavel]) só quando removido_em is null
     @@unique([variavel_categorica_id, id])
     @@map("variavel_categorica_valor")
 }
