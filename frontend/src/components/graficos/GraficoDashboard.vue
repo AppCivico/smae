@@ -102,7 +102,7 @@ const preparedOptions = computed(() => {
   padding: 5px !important;
   border: none !important;
 
-  display: flex !important;
+  display: none;
   flex-direction: column;
 
   &:before, &:after {
@@ -113,6 +113,9 @@ const preparedOptions = computed(() => {
     color: #232046;
     background: #232046;
   }
+}
+.grafico-dashboard__tooltip:has(.grafico-dashboard__tooltip-conteudo) {
+  display: flex !important;
 }
 
 .grafico-dashboard__tooltip-conteudo {
