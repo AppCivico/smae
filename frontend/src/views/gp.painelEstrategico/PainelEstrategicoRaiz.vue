@@ -50,16 +50,20 @@ watchEffect(() => {
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
 });
 
-watchEffect(() => {
-  painelEstrategicoStore.buscarProjetos({
-    token_paginacao: route.query.token_paginacao,
-    pagina: route.query.pagina,
-    portfolio_id: route.query.portfolio_id,
-    orgao_responsavel_id: route.query.orgao_responsavel_id,
-    projeto_id: route.query.projeto_id,
-    ipp: 10,
-  });
-});
+watch(
+  () => [route.query.projetos_token_paginacao, route.query.projetos_pagina],
+  ([projetos_token_paginacao, projetos_pagina]) => {
+    painelEstrategicoStore.buscarProjetos({
+      token_paginacao: projetos_token_paginacao,
+      pagina: projetos_pagina,
+      portfolio_id: route.query.portfolio_id,
+      orgao_responsavel_id: route.query.orgao_responsavel_id,
+      projeto_id: route.query.projeto_id,
+      ipp: 10,
+    });
+  },
+  { immediate: true },
+);
 
 </script>
 <template>
