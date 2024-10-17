@@ -17,7 +17,7 @@ import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
 import configuracoes from './configuracoes';
-import decodificadorDePrimitivas from './decodificadorDePrimitivas';
+import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import envios from './envios';
 import graficos from './graficos';
 import metas from './metas';
