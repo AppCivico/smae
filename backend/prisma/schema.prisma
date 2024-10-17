@@ -1654,6 +1654,7 @@ model Variavel {
     periodo_validacao     Int[]   @default([]) @db.SmallInt
     periodo_liberacao     Int[]   @default([]) @db.SmallInt
     dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
+    equipes_configuradas  Boolean @default(false) // calculado automaticamente
 
     // para variaveis calculadas, há um atraso no preenchimento assim como no indicador
     recalculando    Boolean  @default(false)
