@@ -27,6 +27,7 @@ const {
   locaisAgrupados,
   erros,
   paginacaoProjetos,
+  paginacaoOrcamentos,
 } = storeToRefs(painelEstrategicoStore);
 
 watchEffect(() => {
@@ -57,6 +58,21 @@ watch(
     painelEstrategicoStore.buscarProjetos({
       token_paginacao: projetos_token_paginacao,
       pagina: projetos_pagina,
+      portfolio_id: route.query.portfolio_id,
+      orgao_responsavel_id: route.query.orgao_responsavel_id,
+      projeto_id: route.query.projeto_id,
+      ipp: 10,
+    });
+  },
+  { immediate: true },
+);
+
+watch(
+  () => [route.query.orcamentos_token_paginacao, route.query.orcamentos_pagina],
+  ([orcamentos_token_paginacao, orcamentos_pagina]) => {
+    painelEstrategicoStore.buscarOrcamentos({
+      token_paginacao: orcamentos_token_paginacao,
+      pagina: orcamentos_pagina,
       portfolio_id: route.query.portfolio_id,
       orgao_responsavel_id: route.query.orgao_responsavel_id,
       projeto_id: route.query.projeto_id,
@@ -225,12 +241,12 @@ watch(
           icone="moneyChart"
           cor="#D86B2C"
         />
-        <ExecucaoOrcamentariaGrafico
+        <ExecucaoOrcamentaria
           :execucao-orcamentaria="painelEstrategicoStore?.execucaoOrcamentariaAno"
+          :orcamentos="painelEstrategicoStore?.orcamentosPaginados"
+          :paginacao="paginacaoOrcamentos"
         />
-        <ExecucaoOrcamentaria />
       </CardEnvelope.Conteudo>
-
       <CardEnvelope.Conteudo class="mt2">
         <CardEnvelope.Titulo>
           Projetos
