@@ -13,8 +13,9 @@
           :to="{
             query: {
               ...$route.query,
-              token_paginacao: tokenPaginacao || $route.query.token_paginacao,
-              pagina: paginaCorrente - 1,
+              [`${prefixo}token_paginacao`]: tokenPaginacao
+                || $route.query[`${prefixo}token_paginacao`],
+              [`${prefixo}pagina`]: paginaCorrente -1,
             },
           }"
         >
@@ -120,7 +121,7 @@ const props = defineProps({
   },
 });
 
-const paginaCorrente = computed(() => Number(route.query.pagina) || 1);
+const paginaCorrente = computed(() => Number(route.query[`${props.prefixo}pagina`]) || 1);
 
 async function irParaPagina(numero) {
   navegando.value = true;

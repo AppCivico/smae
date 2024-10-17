@@ -105,6 +105,7 @@ const projetoFormatado = (codigo, nome) => {
       <MenuPaginacao
         class="mt2 bgb"
         v-bind="paginacao"
+        prefixo="projetos_"
       />
       <p class="w700 t12 tc tprimary">
         Total de projetos: {{ paginacao.totalRegistros }}
