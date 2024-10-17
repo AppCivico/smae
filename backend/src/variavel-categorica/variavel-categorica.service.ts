@@ -10,11 +10,15 @@ import {
     UpdateVariavelCategoricaDto,
     VariavelCategoricaItem,
 } from './dto/variavel-categorica.dto';
+import { VariavelService } from '../variavel/variavel.service';
 
 @Injectable()
 export class VariavelCategoricaService {
     private readonly logger = new Logger(VariavelCategoricaService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService
+    ) {}
 
     async create(dto: CreateVariavelCategoricaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         if (dto.tipo == 'Cronograma')
@@ -235,6 +239,7 @@ export class VariavelCategoricaService {
         user: PessoaFromJwt,
         now: Date
     ): Promise<void> {
+        const variaveisMod: number[] = [];
         const currentCatValor = await prismaTx.variavelCategoricaValor.findMany({
             where: {
                 removido_em: null,
@@ -333,11 +338,15 @@ export class VariavelCategoricaService {
             }
 
             operations.push(
-                prismaTx.variavelCategoricaValor.deleteMany({
+                prismaTx.variavelCategoricaValor.updateMany({
                     where: {
                         id: { in: deleted },
                         variavel_categorica_id: variavel_categorica_id,
                         removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                        removido_por: user.id,
                     },
                 })
             );
@@ -368,6 +377,15 @@ export class VariavelCategoricaService {
 
             // se mudou o valor, atualiza os valores da série-variavel tbm
             if (rPrev.valor_variavel !== r.valor_variavel) {
+                const variaveis = await prismaTx.serieVariavel.groupBy({
+                    where: {
+                        variavel_categorica_id: variavel_categorica_id,
+                        variavel_categorica_valor_id: rPrev.id,
+                    },
+                    by: ['variavel_id'],
+                });
+                variaveisMod.push(...variaveis.map((v) => v.variavel_id));
+
                 operations.push(
                     prismaTx.serieVariavel.updateMany({
                         where: {
@@ -381,7 +399,6 @@ export class VariavelCategoricaService {
                         },
                     })
                 );
-                // todo atualizar o indicador.
             }
         }
 
@@ -402,6 +419,12 @@ export class VariavelCategoricaService {
         }
 
         await Promise.all(operations);
+
+        if (variaveisMod.length) {
+            await this.variavelService.recalc_series_dependentes(variaveisMod, prismaTx);
+            await this.variavelService.recalc_indicador_usando_variaveis(variaveisMod, prismaTx);
+        }
+
         return;
     }
 
