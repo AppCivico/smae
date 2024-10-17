@@ -145,7 +145,7 @@
       >
         <tr>
           <td colspan="5">
-            Sem items a exibir
+            Sem itens a exibir
           </td>
         </tr>
       </tbody>
@@ -283,7 +283,7 @@ watch(() => $route.query, (query) => {
 
 onMounted(() => {
   if (!temEquipes.value) {
-    equipesStore.buscarTudo();
+    equipesStore.buscarTudo({ remover_participantes: true });
   }
 });
 </script>

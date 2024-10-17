@@ -44,9 +44,17 @@ class RetornoDb {
 
     orgao_id: number;
     orgao_sigla: string;
+    valor_categorica: string | null;
 }
 
+type JsonRetornoDb = {
+    valor_nominal: string;
+    atualizado_em: Date;
+    valor_categorica: string | null;
+};
+
 class RetornoDbRegiao extends RetornoDb {
+    valor_json: JsonRetornoDb;
     regiao_id: number;
 }
 
@@ -427,15 +435,12 @@ export class IndicadoresService implements ReportableService {
         v.regiao_id as regiao_id,
         orgao.id as orgao_id,
         orgao.sigla as orgao_sigla,
-        round(
-            valor_variavel_em(
-                v.id,
-                series.serie,
-                dt.dt::date,
-                :JANELA:
-            ),
-            v.casas_decimais
-        )::text as valor
+        valor_variavel_em_json(
+            v.id,
+            series.serie,
+            dt.dt::date,
+            :JANELA:
+        ) AS valor_json
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
@@ -630,6 +635,7 @@ export class IndicadoresService implements ReportableService {
                     'serie',
                     'data',
                     'valor',
+                    { value: 'valor_categorica', label: 'Valor Categórica' },
                 ],
             });
             const linhasBuff = json2csvParser.parse(regioes);
@@ -673,6 +679,11 @@ export class IndicadoresService implements ReportableService {
             offset += data.length;
 
             for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
                 stream.push({
                     pdm_nome: row.pdm_nome,
                     indicador: {

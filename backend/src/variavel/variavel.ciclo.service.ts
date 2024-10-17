@@ -113,6 +113,7 @@ export class VariavelCicloService {
         const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
             {
                 id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
+                equipes_configuradas: true,
                 removido_em: null,
             },
         ];

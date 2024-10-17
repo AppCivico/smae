@@ -2,14 +2,28 @@
 import { defineProps } from 'vue';
 import statuses from '@/consts/projectStatuses';
 import dateToDate from '@/helpers/dateToDate';
+import truncate from '@/helpers/truncate';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
 defineProps({
   projetos: {
     type: Array,
     default: () => [],
   },
+  paginacao: {
+    type: Object,
+    default: () => ({}),
+  },
 });
+
+const projetoFormatado = (codigo, nome) => {
+  if (codigo && nome) {
+    return `${codigo} - ${truncate(nome)}`;
+  }
+  return codigo || nome || ' - ';
+};
 </script>
+
 <template>
   <div
     role="region"
@@ -35,19 +49,25 @@ defineProps({
           <th>Status</th>
           <th>Etapa Atual</th>
           <th>Término Projetado</th>
-          <th>Riscos em Aberto</th>
-          <th>% de Atraso</th>
+          <th class="tr">
+            Riscos em Aberto
+          </th>
+          <th class="tr">
+            % de Atraso
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="(projeto, index) in projetos.linhas"
+          v-for="(projeto, index) in projetos"
           :key="index"
         >
-          <td>{{ projeto.nome_projeto || ' - ' }}</td>
-          <td>{{ projeto.secretaria?.nome || ' - ' }}</td>
+          <td class="tl">
+            {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
+          </td>
+          <td>{{ projeto.secretaria?.codigo || ' - ' }}</td>
           <td>
-            {{ projeto.meta?.nome || ' - ' }}
+            {{ projeto.meta?.codigo || ' - ' }}
           </td>
           <td>{{ statuses[projeto.status] || projeto.status }}</td>
           <td>{{ projeto.etapa_atual || ' - ' }}</td>
@@ -61,6 +81,15 @@ defineProps({
         </tr>
       </tbody>
     </table>
+    <div>
+      <MenuPaginacao
+        class="mt2 bgb"
+        v-bind="paginacao"
+      />
+      <p class="w700 t12 tc tprimary">
+        Total de projetos: {{ paginacao.totalRegistros }}
+      </p>
+    </div>
   </div>
 </template>
 <style scoped>
@@ -69,14 +98,12 @@ defineProps({
   border-collapse: collapse;
   min-width: 1000px;
 }
-
 .tabela-projetos th,
 .tabela-projetos td {
   border-bottom: 1px solid #ddd;
   padding: 8px;
   text-align: center;
 }
-
 .tabela-projetos th {
   font-weight: bold;
 }

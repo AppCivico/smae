@@ -9,6 +9,7 @@ import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vu
 import ProjetosPorOrgaoResponsavel from '@/components/painelEstrategico/ProjetosPorOrgaoResponsavel.vue';
 import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
+import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import HeatMapGraph from '@/components/HeatMapGraph.vue';
@@ -25,6 +26,7 @@ const {
   chamadasPendentes,
   locaisAgrupados,
   erros,
+  paginacaoProjetos,
 } = storeToRefs(painelEstrategicoStore);
 
 watchEffect(() => {
@@ -47,7 +49,17 @@ watchEffect(() => {
 
   painelEstrategicoStore.buscarDados(parametros);
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
-  painelEstrategicoStore.buscarProjetos(parametros);
+});
+
+watchEffect(() => {
+  painelEstrategicoStore.buscarProjetos({
+    token_paginacao: route.query.token_paginacao,
+    pagina: route.query.pagina,
+    portfolio_id: route.query.portfolio_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    projeto_id: route.query.projeto_id,
+    ipp: 10,
+  });
 });
 
 
@@ -247,12 +259,23 @@ watchEffect(() => {
       class="mt2"
     >
       <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo
+          titulo="Execução Orçamentária"
+          subtitulo="Gráfico de análise orçamentária anual e planilha orçamentária detalhada por projeto."
+          icone="moneyChart"
+          cor="#D86B2C"
+        />
+        <ExecucaoOrcamentaria />
+      </CardEnvelope.Conteudo>
+
+      <CardEnvelope.Conteudo class="mt2">
         <CardEnvelope.Titulo>
           Projetos
         </CardEnvelope.Titulo>
         <TabelaProjetos
           class="grid-full-column"
-          :projetos="painelEstrategicoStore?.projetosPaginados "
+          :projetos="painelEstrategicoStore?.projetosPaginados"
+          :paginacao="paginacaoProjetos"
         />
       </CardEnvelope.Conteudo>
     </div>

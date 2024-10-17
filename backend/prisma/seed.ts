@@ -677,11 +677,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao: 'Gerenciar os Portfólios',
         privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
     },
-    {
-        nome: atualizarNomePerfil('Administrador de equipes', ['Administrador de Grupo de Variáveis']),
-        descricao: 'Gerenciar todas as equipes',
-        privilegios: ['CadastroGrupoVariavel.administrador'],
-    },
 
     {
         nome: 'Gestor de Projetos no Órgão',
@@ -934,31 +929,6 @@ PerfilAcessoConfig.push(
         privilegios: ['CadastroMetaPS.orcamento'],
     },
 
-    {
-        nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial', [
-            'Responsável por meta na CP',
-        ]),
-        descricao: '',
-        privilegios: false,
-    },
-    {
-        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento Setorial', [
-            'Administrador Coordenadoria de Planejamento',
-        ]),
-        descricao: '',
-        privilegios: false,
-    },
-    {
-        nome: atualizarNomePerfil('Ponto Focal Setorial', []),
-        descricao: '',
-        privilegios: false,
-    },
-
-    {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
-        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
-        privilegios: false,
-    }
 );
 
 // Remover os perfis que não são mais utilizados
@@ -976,7 +946,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
     removerNomePerfil('Responsável por meta na CP'),
     removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial'),
-    removerNomePerfil('Administrador de Plano Setorial')
+    removerNomePerfil('Administrador de Plano Setorial'),
+    removerNomePerfil('Administrador de equipes'),
 );
 
 async function main() {

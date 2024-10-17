@@ -19,6 +19,13 @@ type Erros = {
 type Estado = Record<string, unknown> & {
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
+  paginacaoProjetos: {
+    tokenPaginacao: string;
+    paginas: number;
+    paginaCorrente: number;
+    temMais: boolean;
+    totalRegistros: number;
+  };
 };
 
 export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defineStore(prefixo ? `${prefixo}.painelEstrategico` : 'painelEstrategico', {
@@ -36,8 +43,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     quantidadesProjeto: [],
     resumoOrcamentario: [],
     projetosParaMapa: [],
-    projetosPaginados: [],
-
+    totalRegistrosRevisadosProjetos: 0,
     chamadasPendentes: {
       dados: false,
       projetosParaMapa: false,
@@ -47,6 +53,15 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       dados: null,
       projetosParaMapa: null,
       projetosPaginados: null,
+    },
+    // lista de projetos paginados
+    projetosPaginados: [],
+    paginacaoProjetos: {
+      tokenPaginacao: '',
+      paginas: 0,
+      paginaCorrente: 0,
+      temMais: true,
+      totalRegistros: 0,
     },
   }),
   getters: {
@@ -95,7 +110,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
 
       try {
         // TO-DO: atualizar endpoint
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
+        const { linhas } = await this.requestS.post(`${baseUrl}/painel-estrategico/geo-localizacao`, params);
 
         this.projetosParaMapa = linhas;
       } catch (error: unknown) {
@@ -108,8 +123,23 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       this.erros.projetosPaginados = null;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico/lista-projeto-paginado`, params);
-        this.projetosPaginados = resposta;
+        const {
+          linhas,
+          total_registros_revisados: totalRegistrosRevisados,
+          token_paginacao: tokenPaginacao,
+          paginas,
+          pagina_corrente: paginaCorrente,
+          tem_mais: temMais,
+          total_registros: totalRegistros,
+        } = await this.requestS.post(`${baseUrl}/painel-estrategico/lista-projeto-paginado`, params);
+        this.projetosPaginados = linhas;
+        this.totalRegistrosRevisadosProjetos = totalRegistrosRevisados;
+
+        this.paginacaoProjetos.tokenPaginacao = tokenPaginacao;
+        this.paginacaoProjetos.paginas = paginas;
+        this.paginacaoProjetos.paginaCorrente = paginaCorrente;
+        this.paginacaoProjetos.temMais = temMais;
+        this.paginacaoProjetos.totalRegistros = totalRegistros;
       } catch (erro: unknown) {
         this.erros.projetosPaginados = erro;
       }

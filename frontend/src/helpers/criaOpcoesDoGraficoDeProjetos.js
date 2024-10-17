@@ -28,6 +28,7 @@ export default function criaOpcoesDoGraficoDeProjetos(categorias, valores) {
     },
     yAxis: {
       type: 'category',
+      inverse: true,
       data: categorias,
       axisTick: { show: false },
       axisLine: { show: false },

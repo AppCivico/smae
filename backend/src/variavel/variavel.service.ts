@@ -654,8 +654,11 @@ export class VariavelService {
 
         const periodos = dto.periodos ? this.getPeriodTuples(dto.periodos, dto.periodicidade) : {};
 
+        const equipes_configuradas = this.isEquipesConfiguradas(dto);
+
         const variavel = await prismaTxn.variavel.create({
             data: {
+                equipes_configuradas: equipes_configuradas,
                 tipo,
                 variavel_mae_id: variavelMaeId,
                 titulo: dto.titulo,
@@ -1657,6 +1660,7 @@ export class VariavelService {
                 .sort()
                 .join(',');
 
+            let equipes_configuradas: boolean | undefined = undefined;
             if (
                 gruposRecebidosSorted !== gruposAtuais &&
                 (Array.isArray(dto.medicao_grupo_ids) ||
@@ -1664,6 +1668,7 @@ export class VariavelService {
                     Array.isArray(dto.liberacao_grupo_ids))
             ) {
                 logger.log('Grupos de responsáveis alterados...');
+                equipes_configuradas = this.isEquipesConfiguradas(dto);
 
                 await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
                     where: { variavel_id: variavelId, removido_em: null },
@@ -1679,6 +1684,7 @@ export class VariavelService {
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
+                    equipes_configuradas: equipes_configuradas,
                     titulo: dto.titulo,
                     acumulativa: dto.acumulativa,
                     mostrar_monitoramento: dto.mostrar_monitoramento,
@@ -1828,6 +1834,17 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private isEquipesConfiguradas(dto: UpdateVariavelDto) {
+        return (
+            Array.isArray(dto.medicao_grupo_ids) &&
+            Array.isArray(dto.validacao_grupo_ids) &&
+            Array.isArray(dto.liberacao_grupo_ids) &&
+            dto.medicao_grupo_ids.length > 0 &&
+            dto.validacao_grupo_ids.length > 0 &&
+            dto.liberacao_grupo_ids.length > 0
+        );
     }
 
     private async updateAvisoFimIndicador(
@@ -2031,8 +2048,8 @@ export class VariavelService {
             dto.polaridade = 'Neutra';
         }
 
-        if (!dto.unidade_medida_id) throw new HttpException('unidade_medida_id| Unidade de medida é obrigatória', 400);
-        if (dto.ano_base === undefined) throw new HttpException('ano_base| Ano base é obrigatório', 400);
+        if ('unidade_medida_id' in dto && !dto.unidade_medida_id)
+            throw new HttpException('unidade_medida_id| Unidade de medida é obrigatória', 400);
         if (dto.valor_base === undefined) throw new HttpException('valor_base| Valor base é obrigatório', 400);
     }
 

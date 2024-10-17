@@ -3,7 +3,6 @@
     <v-chart
       v-if="option"
       ref="el"
-      :key="chaveDeRender"
       :autoresize="{ throttle: 400 }"
       class="chart"
       :option="preparedOptions"
@@ -54,7 +53,6 @@ const props = withDefaults(defineProps<{
 });
 
 const el = ref(null);
-const chaveDeRender = ref('');
 
 const preparedOptions = computed(() => {
   const { tooltipTemplate } = props;

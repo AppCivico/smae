@@ -38,7 +38,8 @@ const projetosPorOrgaoResponsavelChartOptions = computed(() => ({
   },
   yAxis: {
     type: 'category',
-    data: props.projetosOrgaoResponsavel.map(item => item.orgao_sigla),
+    data: props.projetosOrgaoResponsavel.map((item) => item.orgao_sigla),
+    inverse: true,
     axisLine: {
       show: false,
     },
@@ -55,13 +56,13 @@ const projetosPorOrgaoResponsavelChartOptions = computed(() => ({
   series: [
     {
       type: 'bar',
-      data: props.projetosOrgaoResponsavel.map(item => ({
+      data: props.projetosOrgaoResponsavel.map((item) => ({
         value: item.quantidade,
         descricao: item.orgao_descricao,
       })),
       itemStyle: {
         color: '#1c2e46',
-        borderRadius: [0, 10, 10, 0],
+        borderRadius: [0, 999, 999, 0],
       },
       barWidth: 30,
       label: {

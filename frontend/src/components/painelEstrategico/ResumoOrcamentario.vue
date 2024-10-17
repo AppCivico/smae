@@ -1,7 +1,6 @@
 <script setup>
 import { defineProps } from 'vue';
 import dinheiro from '@/helpers/dinheiro';
-import * as CardEnvelope from '../cardEnvelope/index.ts';
 
 defineProps({
   planejadoTotal: {
@@ -50,16 +49,17 @@ defineProps({
 
 <style scoped lang="less">
     dt{
-        color: #7E858D;
+      color: #7E858D;
     }
 
     dd {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: "Roboto Slab", serif;
     }
 
     .liquidado {
-        color: #D86B2C;
+      color: #D86B2C;
     }
 </style>

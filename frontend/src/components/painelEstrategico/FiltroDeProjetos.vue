@@ -22,6 +22,7 @@
         :grupo="listaDePortfolios"
         label="titulo"
         :aria-busy="chamadasPendentesDePortfolios.lista"
+        @change="projetoId.splice(0)"
       />
       <ErrorComponent :erro="errosDePortfolios" />
     </div>
@@ -41,7 +42,7 @@
           busca: '',
           participantes: projetoId
         }"
-        :grupo="listaDeProjetos"
+        :grupo="projetosDisponiveis"
         label="nome"
         :aria-busy="chamadasPendentesDeProjetos.lista"
         :class="{ error: errosDeProjetos }"
@@ -80,6 +81,7 @@
   </form>
 </template>
 <script setup lang="ts">
+import type { ProjetoDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useOrgansStore } from '@/stores';
 import { usePortfolioStore } from '@/stores/portfolios.store';
@@ -89,6 +91,17 @@ import type { Ref } from 'vue';
 import { computed, ref } from 'vue';
 import type { LocationQueryValue } from 'vue-router';
 import { useRoute } from 'vue-router';
+
+defineProps({
+  ariaBusy: {
+    type: Boolean,
+    default: false,
+  },
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const rota = useRoute();
 const orgaosStore = useOrgansStore();
@@ -103,6 +116,7 @@ const {
 
 const {
   lista: listaDeProjetos,
+  projetosPorPortfolio,
   chamadasPendentes: chamadasPendentesDeProjetos,
   erro: errosDeProjetos,
 } = storeToRefs(projetosStore);
@@ -113,6 +127,14 @@ const orgaoResponsavelId: Ref<(number | string)[]> = ref([]);
 const portfolioId: Ref<(number | string)[]> = ref([]);
 const projetoId: Ref<(number | string)[]> = ref([]);
 
+const projetosDisponiveis = computed((): ProjetoDto[] => {
+  if (!portfolioId.value.length) {
+    return listaDeProjetos.value;
+  }
+
+  return portfolioId.value.flatMap((id) => projetosPorPortfolio.value[id] || []);
+});
+
 const dados = computed(() => ({
   orgao_responsavel_id: orgaoResponsavelId.value,
   portfolio_id: portfolioId.value,
@@ -120,18 +142,6 @@ const dados = computed(() => ({
 }));
 
 const listaDeOrgaos = computed(() => (Array.isArray(organs.value) ? organs.value : []));
-
-defineProps({
-  ariaBusy: {
-    type: Boolean,
-    default: false,
-  },
-  valoresIniciais: {
-    type: Object,
-    default: () => ({}),
-  },
-});
-
 const emit = defineEmits(['enviado']);
 
 function prepararValoresComoNumeros(valor: LocationQueryValue | LocationQueryValue[]): number[] {

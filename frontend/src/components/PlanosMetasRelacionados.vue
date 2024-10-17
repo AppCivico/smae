@@ -49,17 +49,38 @@
               {{ relacionamento.tipo }}
             </template>
           </td>
-          <td>{{ relacionamento.pdm_nome }}</td>
+          <td>
+            <component
+              :is="relacionamento.ehPlanoSetorial ? SmaeLink : 'span'"
+              :to="{
+                name: 'planosSetoriaisResumo',
+                params: { planoSetorialId: relacionamento.pdm_id }
+              }"
+            >
+              {{ relacionamento.pdm_nome }}
+            </component>
+          </td>
           <td>{{ combinadorDeListas(relacionamento.orgaos as Array<object>, ', ', 'sigla') }}</td>
           <td
             :title="relacionamento.meta_titulo?.length > 64
               ? truncate(relacionamento.meta_titulo)
               : null"
           >
-            <em v-if="relacionamento.meta_codigo">
-              {{ relacionamento.meta_codigo }} -
-            </em>
-            {{ truncate(relacionamento.meta_titulo, 64) || '-' }}
+            <component
+              :is="relacionamento.ehPlanoSetorial ? SmaeLink : 'span'"
+              :to="{
+                name: 'planoSetorial:meta',
+                params: {
+                  meta_id: relacionamento.meta_id,
+                  planoSetorialId: relacionamento.pdm_id
+                }
+              }"
+            >
+              <em v-if="relacionamento.meta_codigo">
+                {{ relacionamento.meta_codigo }} -
+              </em>
+              {{ truncate(relacionamento.meta_titulo, 64) || '-' }}
+            </component>
           </td>
           <td
             :title="relacionamento.iniciativa_descricao
@@ -67,13 +88,27 @@
               ? truncate(relacionamento.iniciativa_descricao)
               : null"
           >
-            <strong v-if="relacionamento.iniciativa_descricao">
-              {{ relacionamento.pdm_rotulo_iniciativa || 'Iniciativa' }}:
-            </strong>
-            <em v-if="relacionamento.iniciativa_codigo">
-              {{ relacionamento.iniciativa_codigo }} -
-            </em>
-            {{ truncate(relacionamento.iniciativa_descricao, 36) || '-' }}
+            <component
+              :is="
+                relacionamento.ehPlanoSetorial && relacionamento.iniciativa_id
+                  ? SmaeLink : 'span'"
+              :to="{
+                name: 'planoSetorial:resumoDeIniciativa',
+                params: {
+                  planoSetorialId: relacionamento.pdm_id,
+                  meta_id: relacionamento.meta_id,
+                  iniciativa_id: relacionamento.iniciativa_id
+                }
+              }"
+            >
+              <strong v-if="relacionamento.iniciativa_descricao">
+                {{ relacionamento.pdm_rotulo_iniciativa || 'Iniciativa' }}:
+              </strong>
+              <em v-if="relacionamento.iniciativa_codigo">
+                {{ relacionamento.iniciativa_codigo }} -
+              </em>
+              {{ truncate(relacionamento.iniciativa_descricao, 36) || '-' }}
+            </component>
           </td>
           <td
             :title="relacionamento.atividade_descricao
@@ -81,13 +116,28 @@
               ? truncate(relacionamento.atividade_descricao)
               : null"
           >
-            <strong v-if="relacionamento.atividade_descricao">
-              {{ relacionamento.pdm_rotulo_atividade || 'Atividade' }}:
-            </strong>
-            <em v-if="relacionamento.atividade_codigo">
-              {{ relacionamento.atividade_codigo }} -
-            </em>
-            {{ truncate(relacionamento.atividade_descricao, 36) || '-' }}
+            <component
+              :is="
+                relacionamento.ehPlanoSetorial && relacionamento.atividade_id
+                  ? SmaeLink : 'span'"
+              :to="{
+                name: 'planoSetorial:resumoDeAtividade',
+                params: {
+                  planoSetorialId: relacionamento.pdm_id,
+                  meta_id: relacionamento.meta_id,
+                  iniciativa_id: relacionamento.iniciativa_id,
+                  atividade_id: relacionamento.atividade_id
+                }
+              }"
+            >
+              <strong v-if="relacionamento.atividade_descricao">
+                {{ relacionamento.pdm_rotulo_atividade || 'Atividade' }}:
+              </strong>
+              <em v-if="relacionamento.atividade_codigo">
+                {{ relacionamento.atividade_codigo }} -
+              </em>
+              {{ truncate(relacionamento.atividade_descricao, 36) || '-' }}
+            </component>
           </td>
         </tr>
       </tbody>
@@ -99,6 +149,7 @@ import type { IdSigla } from '@/../../backend/src/common/dto/IdSigla.dto.ts';
 import type { MetaPdmDto } from '@/../../backend/src/meta/entities/meta.entity.ts';
 
 import tiposDePlanos from '@/consts/tiposDePlanos';
+import SmaeLink from '@/components/SmaeLink.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import truncate from '@/helpers/truncate';
 import { uniqBy } from 'lodash';
@@ -106,6 +157,7 @@ import { computed, defineProps } from 'vue';
 
 type MetaPdmDtoComOrgaosCombinados = MetaPdmDto & {
   orgaos: IdSigla[];
+  ehPlanoSetorial: boolean;
 };
 
 const props = defineProps({
@@ -143,6 +195,7 @@ function combinadorDeOrgaos(relacionamento: MetaPdmDto): IdSigla[] {
 const listaComOrgaosCombinados = computed<MetaPdmDtoComOrgaosCombinados[]>(() => props.relacionamentos.map((relacionamento) => ({
   ...relacionamento,
   orgaos: combinadorDeOrgaos(relacionamento),
+  ehPlanoSetorial: relacionamento.tipo === 'PS',
 })));
 </script>
 <style scoped>
