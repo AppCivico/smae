@@ -42,7 +42,7 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroSubtemaPS.remover') && psEmFoco?.pode_editar"
+            v-if="temPermissãoPara('CadastroSubTemaPS.remover') && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"

@@ -287,7 +287,7 @@ export default {
                 rotaDeEscape: 'planosSetoriaisSubtemas',
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Novo Subtema',
                 limitarÀsPermissões: [
-                  'CadastroSubTema.inserir',
+                  'CadastroSubTemaPS.inserir',
                 ],
               },
             },
@@ -303,7 +303,7 @@ export default {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Editar Subtema',
                 rotaDeEscape: 'planosSetoriaisSubtemas',
                 limitarÀsPermissões: [
-                  'CadastroSubTema.editar',
+                  'CadastroSubTemaPS.editar',
                 ],
               },
             },
