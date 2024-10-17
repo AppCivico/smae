@@ -14,7 +14,7 @@ import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
+import { watchEffect, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
