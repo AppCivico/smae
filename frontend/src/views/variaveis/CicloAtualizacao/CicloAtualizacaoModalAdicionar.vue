@@ -226,7 +226,7 @@
           :disabled="bloqueado"
           @click.prevent="submit({ aprovar: false })"
         >
-          Salvar
+          {{ botoesLabel.salvar }}
         </button>
 
         <button
@@ -234,7 +234,7 @@
           :disabled="bloqueado"
           @click.prevent="submit({ aprovar: true })"
         >
-          Salvar e submeter
+          {{ botoesLabel.salvarESubmeter }}
         </button>
       </div>
     </form>
@@ -275,7 +275,7 @@ const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
 const {
-  fase, fasePosicao, forumlariosAExibir, dataReferencia, obterValorAnalise,
+  fase, fasePosicao, botoesLabel, forumlariosAExibir, dataReferencia, obterValorAnalise,
 } = useCicloAtualizacao();
 
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);

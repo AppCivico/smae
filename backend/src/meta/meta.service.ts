@@ -64,8 +64,6 @@ export class MetaService {
         const pdm = await this.loadPdmById(dto.pdm_id, tipo);
         await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
 
-        if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
-
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
@@ -739,9 +737,8 @@ export class MetaService {
         //        }
 
         const loadMeta = await this.loadMetaOrThrow(id, tipo, user);
-        const pdm = await this.pdmService.getDetail(tipo, loadMeta.pdm_id, user, 'ReadWrite');
-        if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
-        const detailPdm = await this.loadPdmById(pdm.id, tipo);
+
+        const detailPdm = await this.loadPdmById(loadMeta.pdm_id, tipo);
 
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
@@ -847,7 +844,7 @@ export class MetaService {
                     });
 
                     if (psTecnicoCP) {
-                        validatePSEquipes(psTecnicoCP.equipes, detailPdm.PdmPerfil, 'CP', pdm.id);
+                        validatePSEquipes(psTecnicoCP.equipes, detailPdm.PdmPerfil, 'CP', loadMeta.pdm_id);
 
                         await upsertPSPerfis(
                             meta.id,
@@ -862,7 +859,7 @@ export class MetaService {
                     }
 
                     if (psPontoFocal) {
-                        validatePSEquipes(psPontoFocal.equipes, detailPdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
+                        validatePSEquipes(psPontoFocal.equipes, detailPdm.PdmPerfil, 'PONTO_FOCAL', loadMeta.pdm_id);
 
                         await upsertPSPerfis(
                             meta.id,
@@ -1084,8 +1081,6 @@ export class MetaService {
         // }
 
         const meta = await this.loadMetaOrThrow(id, tipo, user);
-        const pdm = await this.pdmService.getDetail(tipo, meta.pdm_id, user, 'ReadWrite');
-        if (!pdm.ativo) throw new HttpException('PDM inativo', 400);
 
         const now = new Date(Date.now());
         return await this.prisma.$transaction(

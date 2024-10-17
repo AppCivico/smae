@@ -8,12 +8,14 @@ import {
     IsBoolean,
     IsEnum,
     IsInt,
-    IsNumber,
     IsOptional,
     IsString,
-    MaxLength,
+    MaxLength
 } from 'class-validator';
-import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
+import {
+    NumberArrayTransformOrEmpty,
+    NumberArrayTransformOrUndef,
+} from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 
@@ -48,7 +50,7 @@ export class FilterProjetoDto {
      * órgão responsável
      **/
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     orgao_responsavel_id?: number;
 
@@ -56,7 +58,7 @@ export class FilterProjetoDto {
      * portfolio_id
      **/
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     portfolio_id?: number;
 
@@ -64,6 +66,11 @@ export class FilterProjetoDto {
     @IsEnum(TipoProjeto)
     @ApiHideProperty()
     tipo_projeto?: TipoProjeto;
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrUndef)
+    projeto_id?: number[];
 }
 
 export const AscDescEnum = {

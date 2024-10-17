@@ -4,25 +4,34 @@
       v-if="option"
       ref="el"
       :key="chaveDeRender"
+      :autoresize="{ throttle: 400 }"
       class="chart"
-      :option="option"
+      :option="preparedOptions"
     />
   </div>
 </template>
-<script setup>
-import { useResizeObserver } from '@vueuse/core';
+<script lang="ts" setup>
+import {
+  defineProps, provide, ref, computed,
+} from 'vue';
+
 import { BarChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
+  MarkLineComponent,
   TitleComponent,
   TooltipComponent,
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { debounce } from 'lodash';
-import { nextTick, provide, ref } from 'vue';
 import VChart, { THEME_KEY } from 'vue-echarts';
+
+export type TooltipOptions = {
+  data: number,
+  dataIndex: number,
+  name: string;
+};
 
 use([
   CanvasRenderer,
@@ -31,30 +40,82 @@ use([
   LegendComponent,
   GridComponent,
   BarChart,
+  MarkLineComponent,
 ]);
 
 provide(THEME_KEY, 'light');
 
-defineProps({
-  option: {
-    type: Object,
-    default: null,
-  },
+const props = withDefaults(defineProps<{
+  option: object,
+  tooltipTemplate?:(params: TooltipOptions) => string
+}>(), {
+  option: () => ({}),
+  tooltipTemplate: undefined,
 });
 
 const el = ref(null);
 const chaveDeRender = ref('');
 
-useResizeObserver(el, debounce(async (entries) => {
-  const entry = entries[0];
-  const { width, height } = entry.contentRect;
-  await nextTick();
+const preparedOptions = computed(() => {
+  const { tooltipTemplate } = props;
+  if (!tooltipTemplate) {
+    return props.option;
+  }
 
-  chaveDeRender.value = `${width}x${height}`;
-}, 400));
+  return {
+    ...props.option,
+    tooltip: {
+      trigger: 'item',
+      // show: true,
+      // alwaysShowContent: true,
+      renderMode: 'html',
+      confine: true,
+      className: 'grafico-dashboard__tooltip',
+      formatter: (params: any) => {
+        const tooltipText = tooltipTemplate({
+          data: params.data,
+          dataIndex: params.dataIndex,
+          name: params.name,
+        });
+
+        return `
+          <div style="color: ${params.color}" class="grafico-dashboard__tooltip-conteudo">
+            ${tooltipText}
+          </div>
+        `;
+      },
+    },
+  };
+});
 </script>
+
 <style scoped>
 .chart {
   height: 400px;
+}
+</style>
+
+<style lang="less">
+.grafico-dashboard__tooltip {
+  background-color: #E8E8E8 !important;
+  border-radius: 10px !important;
+  padding: 5px !important;
+  border: none !important;
+
+  display: flex !important;
+  flex-direction: column;
+
+  &:before, &:after {
+    content: '';
+    margin: 0 auto;
+    width: 60%;
+    height: 1px;
+    color: #232046;
+    background: #232046;
+  }
+}
+
+.grafico-dashboard__tooltip-conteudo {
+  padding: 5px 0 8px;
 }
 </style>

@@ -29,7 +29,7 @@ import {
     ProjetoEquipeItemDto,
     ProjetoMdoDto,
     ProjetoMetaDetailDto,
-    ProjetoPermissoesDto
+    ProjetoPermissoesDto,
 } from './entities/projeto.entity';
 
 import { JwtService } from '@nestjs/jwt';
@@ -732,6 +732,7 @@ export class ProjetoService {
 
         const rows = await this.prisma.projeto.findMany({
             where: {
+                id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
                 tipo: tipo,
                 eh_prioritario: filters.eh_prioritario,
                 orgao_responsavel_id: filters.orgao_responsavel_id,

@@ -24,7 +24,7 @@
             v-for="portfolio in listaDePortfolios"
             :key="portfolio.id"
             :value="portfolio.id"
-            :selected="Number($props.valoresIniciais.portfolio_id) === portfolio.id"
+            :selected="Number($route.query.portfolio_id) === portfolio.id"
           >
             {{ portfolio.titulo }}
           </option>
@@ -49,7 +49,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($props.valoresIniciais.orgao_origem_id) === orgao.id"
+            :selected="Number($route.query.orgao_origem_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -73,7 +73,7 @@
             v-for="regiao in regiõesPorNível[3]"
             :key="regiao.id"
             :value="regiao.id"
-            :selected="Number($props.valoresIniciais.regioes) === regiao.id"
+            :selected="Number($route.query.regioes) === regiao.id"
           >
             {{ regiao.descricao }}
           </option>
@@ -98,7 +98,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="!Object.keys(statusObras).length"
-            :selected="$props.valoresIniciais.status === item.valor"
+            :selected="$route.query.status === item.valor"
           >
             {{ item.nome }}
           </option>
@@ -144,7 +144,7 @@
             v-for="grupoTematico in listaDeGruposTemáticos"
             :key="grupoTematico.id"
             :value="grupoTematico.id"
-            :selected="Number($props.valoresIniciais.grupo_tematico_id) === grupoTematico.id"
+            :selected="Number($route.query.grupo_tematico_id) === grupoTematico.id"
           >
             {{ grupoTematico.nome }}
           </option>
@@ -170,7 +170,7 @@
             v-for="tipo in listaDeTiposDeIntervenção"
             :key="tipo.id"
             :value="tipo.id"
-            :selected="Number($props.valoresIniciais.tipo_intervencao_id) === tipo.id"
+            :selected="Number($route.query.tipo_intervencao_id) === tipo.id"
           >
             {{ tipo.nome }}
           </option>
@@ -196,7 +196,7 @@
             v-for="equipamento in listaDeEquipamentos"
             :key="equipamento.id"
             :value="equipamento.id"
-            :selected="Number($props.valoresIniciais.equipamento_id) === equipamento.id"
+            :selected="Number($route.query.equipamento_id) === equipamento.id"
           >
             {{ equipamento.nome }}
           </option>
@@ -246,7 +246,7 @@
               v-for="coluna in colunasParaOrdenacao"
               :key="coluna.valor"
               :value="coluna.valor"
-              :selected="$props.valoresIniciais.ordem_coluna === coluna.valor"
+              :selected="$route.query.ordem_coluna === coluna.valor"
             >
               {{ coluna.nome }}
             </option>
@@ -268,7 +268,7 @@
                 Object.values(direcoesDeOrdenacao)"
               :key="direcao.valor"
               :value="direcao.valor"
-              :selected="$props.valoresIniciais.ordem_direcao === direcao.valor"
+              :selected="$route.query.ordem_direcao === direcao.valor"
             >
               {{ direcao.nome || direcao.valor }}
             </option>
@@ -288,7 +288,7 @@
               v-for="quantidade in itensPorPagina"
               :key="quantidade"
               :value="quantidade"
-              :selected="Number($props.valoresIniciais.ipp) === quantidade"
+              :selected="Number($route.query.ipp) === quantidade"
             >
               {{ quantidade }}
             </option>
@@ -305,8 +305,6 @@
   </form>
 </template>
 <script setup>
-import { storeToRefs } from 'pinia';
-import { onUnmounted, ref } from 'vue';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
@@ -316,15 +314,13 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 
 defineProps({
   ariaBusy: {
     type: Boolean,
     default: false,
-  },
-  valoresIniciais: {
-    type: Object,
-    default: () => ({}),
   },
 });
 
@@ -432,14 +428,31 @@ const {
 const pronto = ref(false);
 
 function iniciar() {
-  const promessas = [
-    portfolioMdoStore.buscarTudo(),
-    equipamentosStore.buscarTudo(),
-    gruposTematicosStore.buscarTudo(),
-    ÓrgãosStore.getAll(),
-    regionsStore.getAll(),
-    tiposDeIntervencaoStore.buscarTudo(),
-  ];
+  const promessas = [];
+
+  if (!listaDePortfolios.value.length && !chamadasPendentesDePortfolios.value.lista) {
+    promessas.push(portfolioMdoStore.buscarTudo());
+  }
+
+  if (!listaDeEquipamentos.value.length && !chamadasPendentesDeEquipamentos.value.lista) {
+    promessas.push(equipamentosStore.buscarTudo());
+  }
+
+  if (!listaDeGruposTemáticos.value.length && !chamadasPendentesDeGruposTemáticos.value.lista) {
+    promessas.push(gruposTematicosStore.buscarTudo());
+  }
+
+  if (!listaDeTiposDeIntervenção.value.length && !chamadasPendentesDeTiposDeIntervenção.value.lista) {
+    promessas.push(tiposDeIntervencaoStore.buscarTudo());
+  }
+
+  if (!Array.isArray(organs.value) && !organs.value.loading) {
+    promessas.push(ÓrgãosStore.getAll());
+  }
+
+  if (!Array.isArray(regions.value) && !regions.value.loading) {
+    promessas.push(regionsStore.getAll());
+  }
 
   Promise.allSettled(promessas)
     .then(() => {
@@ -448,12 +461,4 @@ function iniciar() {
 }
 
 iniciar();
-
-onUnmounted(() => {
-  ÓrgãosStore.$reset();
-  equipamentosStore.$reset();
-  gruposTematicosStore.$reset();
-  portfolioMdoStore.$reset();
-  regionsStore.$reset();
-});
 </script>

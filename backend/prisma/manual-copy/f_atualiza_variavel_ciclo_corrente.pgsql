@@ -5,6 +5,7 @@ DECLARE
     v_registro RECORD;
     v_ultimo_periodo_valido DATE;
     v_mes_atual DATE := (date_trunc('month', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date;
+    v_dia_atual DATE := (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date;
     v_data_limite DATE;
     v_corrente BOOLEAN;
     v_proximo_periodo DATE;
@@ -16,6 +17,8 @@ DECLARE
     v_ciclo RECORD;
     v_quali RECORD;
     v_liberacao_enviada BOOLEAN;
+    v_eh_liberacao_auto BOOLEAN;
+    v_primeiro_registro RECORD;
 BEGIN
     -- Busca o registro da variável com o nome da coluna atualizado
     SELECT
@@ -71,7 +74,10 @@ BEGIN
 
     -- Busca os ciclos e analisa os atrasos
     FOR v_ciclo IN (
-        SELECT xp.xp AS ciclo_data, array_agg( a.fase ) as fases
+        SELECT
+            xp.xp AS ciclo_data,
+            array_agg( a.fase ) as fases,
+            array_agg( DISTINCT a.eh_liberacao_auto ) as eh_liberacao_auto
         FROM busca_periodos_variavel(p_variavel_id::int) AS g(p, inicio, fim)
         CROSS JOIN generate_series(g.inicio::date, g.fim::date, g.p) AS xp(xp)
         LEFT JOIN variavel_global_ciclo_analise a
@@ -79,7 +85,8 @@ BEGIN
             AND a.referencia_data = xp.xp
             AND a.ultima_revisao = true
             AND a.removido_em IS NULL
-            AND a.aprovada = true
+            AND (a.aprovada = true or a.eh_liberacao_auto)
+
         WHERE xp.xp <=  v_mes_atual - v_registro.intervalo_atraso
         GROUP BY 1
         ORDER BY 1 DESC
@@ -88,17 +95,23 @@ BEGIN
     raise notice 'v_ciclo: %', v_ciclo;
         IF (v_ultimo_periodo_valido IS NULL) THEN
             v_ultimo_periodo_valido := v_ciclo.ciclo_data;
+            v_primeiro_registro := v_ciclo;
+        END IF;
+
+        IF (v_eh_liberacao_auto IS NULL AND v_ciclo.eh_liberacao_auto[1] IS NOT NULL) THEN
+            v_eh_liberacao_auto := v_ciclo.eh_liberacao_auto[1];
         END IF;
 
         -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente
         IF v_ciclo.fases[1] IS NULL OR NOT ('Liberacao' = ANY(v_ciclo.fases)) THEN
 
             IF (v_ciclo.ciclo_data != v_ultimo_periodo_valido) THEN
-                v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data);
+                v_atrasos := array_append(v_atrasos, v_ciclo.ciclo_data::date);
             -- ELSE: provavelmente é o ciclo corrente vamos ter que usar as regras das durações
             -- aqui pra considerar o atraso
             END IF;
         END IF;
+
     END LOOP;
 
     raise notice 'v_ultimo_periodo_valido x -> %', v_ultimo_periodo_valido;
@@ -158,6 +171,25 @@ BEGIN
         RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
 
+        -- caso o atraso tenha sido resolvido pelo banco de variáveis, não há alteração previa na
+        -- variavel_ciclo_corrente então façamos a correção aqui
+        IF (v_atrasos[1] IS NULL AND v_fase_corrente != 'Liberacao') THEN
+            v_fase_corrente := 'Liberacao';
+        END IF;
+
+        -- se ta na liberação, mas não tem nenhuma fase, então apagaram o valor depois já ter sido liberado alguma vez
+        -- previamente, então resetamos para preenchimento
+        IF (v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL AND v_primeiro_registro.fases[1] IS NULL) THEN
+            v_fase_corrente := 'Preenchimento';
+            v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
+        END IF;
+
+        -- sem atraso, ta na fase de liberacao, considera que a liberacao enviada, mesmo se não existir o envio
+        IF (v_eh_liberacao_auto AND v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL) THEN
+            v_liberacao_enviada := true;
+            v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
+        END IF;
+
         raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
 
         v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
@@ -181,7 +213,6 @@ BEGIN
 
         v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
 
-
     END IF;
 
 
@@ -189,17 +220,19 @@ BEGIN
 
     -- Assume que sempre é corrente
     v_corrente := true;
-    RAISE NOTICE 'v_mes_atual: %', v_mes_atual;
+    RAISE NOTICE 'v_dia_atual: %', v_dia_atual;
     RAISE NOTICE 'v_corrente: %', v_corrente;
 
-    v_dias_desde_inicio := (v_mes_atual - v_proximo_periodo) + 1;
+    v_dias_desde_inicio := (v_dia_atual - v_proximo_periodo) + 1;
     RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
+    raise notice 'v_proximo_periodo -> %', v_proximo_periodo;
 
     IF v_fase_corrente = 'Preenchimento' THEN
+        v_corrente := true;
         IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
             -- Esconde a fase de preenchimento enquanto não chegar na data
             v_corrente := false;
-            RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: <= %', v_registro.periodo_preenchimento[1];
+            RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: < %', v_registro.periodo_preenchimento[1];
         END IF;
     END IF;
 
@@ -235,6 +268,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+select f_atualiza_variavel_ciclo_corrente (6779 ) ;
 
 --select f_atualiza_variavel_ciclo_corrente(4648);
 

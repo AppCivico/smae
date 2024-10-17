@@ -29,8 +29,8 @@ export const usePortfolioObraStore = defineStore('portfoliosMdo', {
     emFoco: null,
 
     chamadasPendentes: {
-      lista: true,
-      emFoco: true,
+      lista: false,
+      emFoco: false,
     },
     erro: {
       lista: null,

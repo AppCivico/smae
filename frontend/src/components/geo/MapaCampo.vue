@@ -610,6 +610,7 @@ const formularioSujo = useIsFormDirty();
             v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
+            persistir-etiqueta-camada
             class="mb1"
             :latitude="marcador[0]"
             :longitude="marcador[1]"

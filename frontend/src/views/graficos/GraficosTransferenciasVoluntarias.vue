@@ -104,6 +104,7 @@
       </div>
       <button
         class="btn small mt1"
+        type="submit"
       >
         Filtrar
       </button>

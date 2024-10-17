@@ -1,7 +1,7 @@
+import $eventHub from '@/components/eventHub';
 import qs from 'qs';
 import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
-import $eventHub from '@/components/eventHub';
 
 // Stores
 import { useAuthStore } from '@/stores/auth.store';
@@ -11,26 +11,27 @@ import { Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 
+import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae';
 import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
 import análise from './analise';
+import comunicadosGerais from './comunicadosGerais';
 import configuracoes from './configuracoes';
+import decodificadorDePrimitivas from './decodificadorDePrimitivas';
 import envios from './envios';
 import graficos from './graficos';
 import metas from './metas';
 import monitoramento from './monitoramento';
 import obras from './obras';
+import painelEstratégico from './painelEstrategico';
 import panoramaTransferencias from './panoramaTransferencias';
 import parlamentares from './parlamentares';
 import planosSetoriais from './planosSetoriais';
 import projetos from './projetos';
+import oportunidades from './ps.oportunidades';
 import relatorios from './relatorios';
-import painelEstratégico from './painelEstrategico';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
 import variaveis from './variaveis';
-import comunicadosGerais from './comunicadosGerais';
-import oportunidades from './ps.oportunidades';
-import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -42,6 +43,9 @@ export const router = createRouter({
       name: 'home',
       component: Home,
       props: { submenu: false },
+      meta: {
+        entidadeMãe: '',
+      },
     },
     {
       path: '/panorama',
@@ -88,7 +92,14 @@ export const router = createRouter({
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   parseQuery(query) {
-    return qs.parse(query);
+    // https://github.com/ljharb/qs/issues/91#issuecomment-1833694874
+    return qs.parse(query, {
+      decoder(str, defaultDecoder, charset, type) {
+        return type !== 'value'
+          ? defaultDecoder(str, defaultDecoder, charset)
+          : decodificadorDePrimitivas(str) || defaultDecoder(str, defaultDecoder, charset);
+      },
+    });
   },
   stringifyQuery(query) {
     return qs.stringify(query) || '';
@@ -100,7 +111,7 @@ router.beforeEach(async (r, from) => {
   const authRequired = !publicPages.includes(r.path);
   const authStore = useAuthStore();
 
-  if (from.meta?.entidadeMãe) {
+  if (from.meta?.entidadeMãe !== undefined) {
     authStore.moduloDaRotaAnterior = retornarModuloDeEntidadeMae(from.meta.entidadeMãe);
   }
 
@@ -143,10 +154,11 @@ router.afterEach((to, from) => {
 router.beforeEach((to, from, next) => {
   const { meta } = to;
 
-  // if (Object.keys(to.meta.defaultQuery).length && to.name !== from.name) {
+  // if (typeof to.meta.queryPadrao === 'object' && Object.keys(to.meta.queryPadrao).length && to.name !== from.name) {
   //   next({
+  //     ...to,
   //     query: {
-  //       ...to.meta.defaultQuery,
+  //       ...to.meta.queryPadrao,
   //       ...to.query,
   //     },
   //   });
@@ -158,6 +170,7 @@ router.beforeEach((to, from, next) => {
     $eventHub.emit('recebimentoIniciado', to); // Start progress bar
   }
 
+  // TODO: Extinguir a propriedade `prefixoDosCaminhos` e usar rotas prefixadas
   Object.keys(meta).forEach((key) => {
     // Limitar à propriedade `prefixoDosCaminhos` para manter a
     // retrocompatibilidade com a propriedade `título`,

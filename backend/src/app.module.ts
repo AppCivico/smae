@@ -54,6 +54,7 @@ import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.modu
 import {
     PsMonitoramentoMensalModule
 } from './reports/ps-monitoramento-mensal/ps-monitoramento-mensal.module';
+import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
 
 // Hacks pro JS
 /*
@@ -108,6 +109,7 @@ import {
         CommonBaseModule,
         TaskModule,
         ClassificacaoModule,
+        PainelEstrategicoModule,
     ],
     controllers: [AppController],
     providers: [

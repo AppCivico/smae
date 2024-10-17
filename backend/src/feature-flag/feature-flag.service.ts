@@ -22,6 +22,7 @@ export class FeatureFlagService {
 
     @Interval(60 * 1000)
     private async handleCron() {
+        if (this.data && process.env['DISABLED_CRONTABS'] == 'all') return;
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
 
         this.dbAsked = true;

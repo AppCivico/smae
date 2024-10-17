@@ -119,46 +119,50 @@ export class EquipeRespService {
             },
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
-                GrupoResponsavelEquipePessoa: {
-                    where: {
-                        removido_em: null,
-                    },
-                    orderBy: [
-                        {
-                            pessoa: {
-                                nome_exibicao: 'asc',
-                            },
-                        },
-                    ],
-                    select: {
-                        pessoa: {
-                            select: {
-                                nome_exibicao: true,
-                                id: true,
-                            },
-                        },
-                    },
-                },
-                GrupoResponsavelEquipeColaborador: {
-                    where: {
-                        removido_em: null,
-                    },
-                    orderBy: [
-                        {
-                            pessoa: {
-                                nome_exibicao: 'asc',
-                            },
-                        },
-                    ],
-                    select: {
-                        pessoa: {
-                            select: {
-                                nome_exibicao: true,
-                                id: true,
-                            },
-                        },
-                    },
-                },
+                GrupoResponsavelEquipePessoa: filter.remover_participantes
+                    ? undefined
+                    : {
+                          where: {
+                              removido_em: null,
+                          },
+                          orderBy: [
+                              {
+                                  pessoa: {
+                                      nome_exibicao: 'asc',
+                                  },
+                              },
+                          ],
+                          select: {
+                              pessoa: {
+                                  select: {
+                                      nome_exibicao: true,
+                                      id: true,
+                                  },
+                              },
+                          },
+                      },
+                GrupoResponsavelEquipeColaborador: filter.remover_participantes
+                    ? undefined
+                    : {
+                          where: {
+                              removido_em: null,
+                          },
+                          orderBy: [
+                              {
+                                  pessoa: {
+                                      nome_exibicao: 'asc',
+                                  },
+                              },
+                          ],
+                          select: {
+                              pessoa: {
+                                  select: {
+                                      nome_exibicao: true,
+                                      id: true,
+                                  },
+                              },
+                          },
+                      },
                 VariavelGrupoResponsavelEquipe: filter.retornar_uso
                     ? {
                           where: {
@@ -189,8 +193,12 @@ export class EquipeRespService {
                 orgao: r.orgao,
                 orgao_id: r.orgao_id,
                 variaveis: filter.retornar_uso ? r.VariavelGrupoResponsavelEquipe.map((p: any) => p.variavel) : [],
-                participantes: r.GrupoResponsavelEquipePessoa.map((p) => p.pessoa),
-                colaboradores: r.GrupoResponsavelEquipeColaborador.map((p) => p.pessoa),
+                participantes: filter.remover_participantes
+                    ? []
+                    : r.GrupoResponsavelEquipePessoa.map((p: any) => p.pessoa),
+                colaboradores: filter.remover_participantes
+                    ? []
+                    : r.GrupoResponsavelEquipeColaborador.map((p: any) => p.pessoa),
             };
         });
     }

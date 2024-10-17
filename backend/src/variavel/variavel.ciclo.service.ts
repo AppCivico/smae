@@ -28,6 +28,7 @@ import {
 import { VariavelComCategorica, VariavelService } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
 import { IdTituloDto } from '../common/dto/IdTitulo.dto';
+import { DateTime } from 'luxon';
 
 interface ICicloCorrente {
     variavel: {
@@ -57,6 +58,7 @@ interface UploadArquivoInterface {
         diretorio_caminho: string | null;
     };
     descricao: string | null;
+    fase: VariavelFase;
 }
 
 interface IUltimaAnaliseValor {
@@ -101,7 +103,6 @@ export class VariavelCicloService {
         user: PessoaFromJwt
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
         const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
-        const pdmIds = isRoot ? undefined : await this.pdmService.findAllIds('PS', user);
 
         let pessoaId = user.id;
 
@@ -119,7 +120,13 @@ export class VariavelCicloService {
         if (filters.equipe_id) {
             whereConditions.push({
                 VariavelGrupoResponsavelEquipe: {
-                    some: { grupo_responsavel_equipe_id: filters.equipe_id },
+                    some: {
+                        removido_em: null,
+                        grupo_responsavel_equipe: {
+                            id: filters.equipe_id,
+                            removido_em: null,
+                        },
+                    },
                 },
             });
         }
@@ -134,21 +141,16 @@ export class VariavelCicloService {
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
 
-        if (pdmIds) {
-            whereConditions.push({
-                ViewVariavelGlobal: {
-                    some: { planos: { hasSome: pdmIds } },
-                },
-            });
-        }
-
         if (!isRoot) {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
                 where: {
                     removido_em: null,
+                    // se quiser q suma as variaveis sem edição, precisa tirar daqui pra sincronizar
+                    // com o where do filter de "Preenchimento"/etc
                     perfil: { in: ['Medicao', 'Validacao', 'Liberacao'] },
                     GrupoResponsavelEquipePessoa: {
                         some: {
+                            removido_em: null,
                             pessoa_id: pessoaId,
                         },
                     },
@@ -158,7 +160,14 @@ export class VariavelCicloService {
 
             whereConditions.push({
                 VariavelGrupoResponsavelEquipe: {
-                    some: { grupo_responsavel_equipe_id: { in: equipeIds } },
+                    some: {
+                        grupo_responsavel_equipe: {
+                            removido_em: null,
+                            id: {
+                                in: equipeIds,
+                            },
+                        },
+                    },
                 },
             });
         }
@@ -247,6 +256,10 @@ export class VariavelCicloService {
                 equipes,
                 pode_editar,
                 prazo,
+                em_atraso:
+                    v.atrasos.length > 0 ||
+                    (v.prazo !== null &&
+                        v.prazo.valueOf() < DateTime.local({ zone: SYSTEM_TIMEZONE }).toJSDate().valueOf()),
             } satisfies VariavelGlobalCicloDto;
         });
 
@@ -771,7 +784,7 @@ export class VariavelCicloService {
                 referencia_data: data_referencia,
                 removido_em: null,
             },
-            select: { arquivo: true, descricao: true },
+            select: { arquivo: true, descricao: true, fase: true },
         });
 
         // Processar e formatar os resultados
@@ -872,20 +885,12 @@ export class VariavelCicloService {
                 descricao: upload.descricao,
                 id: arquivo.id,
                 nome_original: arquivo.nome_original,
+                fase: upload.fase,
+                // no momento, sempre pode editar pois quem subiu pode editar, e os supervisores podem editar tudo, então
+                // não há necessidade de verificar permissões
+                pode_editar: true,
             } satisfies VariavelAnaliseDocumento;
         });
-    }
-
-    private async getPerfisEmEquipes(userId: number): Promise<PerfilResponsavelEquipe[]> {
-        const userEquipe = await this.prisma.grupoResponsavelEquipeParticipante.findMany({
-            where: { pessoa_id: userId, removido_em: null },
-            include: { grupo_responsavel_equipe: true },
-        });
-        const equipeSet = new Set<PerfilResponsavelEquipe>();
-        for (const equipe of userEquipe) {
-            equipeSet.add(equipe.grupo_responsavel_equipe.perfil);
-        }
-        return Array.from(equipeSet);
     }
 
     private async moveFase(

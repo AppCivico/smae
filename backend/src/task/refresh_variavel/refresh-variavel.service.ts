@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RetryOperation } from '../../common/RetryOperation';
-import { RetryPromise } from '../../common/retryPromise';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRefreshVariavelDto } from './dto/create-refresh-variavel.dto';
@@ -26,17 +25,19 @@ export class RefreshVariavelService implements TaskableService {
 
         await RetryOperation(
             5,
-            async () => {
-                await RetryPromise(
-                    () =>
-                        this.prisma.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`,
-                    10,
-                    100,
-                    20
-                );
-            },
+            () => this.prisma.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`,
             async (error) => {
                 this.logger.error(`Erro ao recalcular variavel: ${error}`);
+
+                await this.prisma.variavel.update({
+                    where: {
+                        id: inputParams.variavel_id,
+                    },
+                    data: {
+                        recalculando: true,
+                        recalculo_erro: error.toString(),
+                    },
+                });
 
                 throw error;
             }

@@ -1,3 +1,6 @@
+import type {
+  DadosCodTituloMetaDto,
+} from '@/../../backend/src/meta/dto/create-meta.dto';
 import type { DetalhePSDto } from '@/../../backend/src/pdm/dto/detalhe-pdm.dto';
 import type { ListPdmDto, OrcamentoConfig } from '@/../../backend/src/pdm/dto/list-pdm.dto';
 import type { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
@@ -6,10 +9,6 @@ import type { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
-import type {
-  DadosCodTituloMetaDto,
-  ListDadosMetaIniciativaAtividadesDto,
-} from '@/../../backend/src/meta/dto/create-meta.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -205,7 +204,6 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
       this.chamadasPendentes.arvoreDeMetas = false;
     },
-
 
   },
 

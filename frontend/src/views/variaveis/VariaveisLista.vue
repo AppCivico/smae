@@ -1,7 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
@@ -11,6 +8,9 @@ import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGl
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
+import { storeToRefs } from 'pinia';
+import { ref, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -79,8 +79,9 @@ watchEffect(() => {
   </header>
 
   <FormularioQueryString
-    v-slot="{ capturarEnvio }"
+    v-slot="{ aplicarQueryStrings }"
     :valores-iniciais="{
+      ordem_coluna: 'codigo',
       ordem_direcao: 'asc',
       ipp: gblIpp,
       pagina: 1,
@@ -89,15 +90,7 @@ watchEffect(() => {
   >
     <FiltroDeDeVariaveis
       :aria-busy="chamadasPendentes.lista"
-      :valores-iniciais="{
-        ...$route.query,
-        ipp: $route.query.ipp || 100,
-        nivel_regionalizacao: $route.query.nivel_regionalizacao,
-        ordem_coluna: $route.query.codigo || 'codigo',
-        ordem_direcao: $route.query.ordem_direcao || 'asc',
-        regiao_id: $route.query.regiao_id,
-      }"
-      @submit="capturarEnvio"
+      @submit="aplicarQueryStrings"
     />
   </FormularioQueryString>
 

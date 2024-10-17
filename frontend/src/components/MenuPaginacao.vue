@@ -49,8 +49,9 @@
           :to="{
             query: {
               ...$route.query,
-              token_paginacao: tokenPaginacao || $route.query.token_paginacao,
-              pagina: paginas,
+              [`${prefixo}token_paginacao`]: tokenPaginacao
+                || $route.query[`${prefixo}token_paginacao`],
+              [`${prefixo}pagina`]: paginas,
             },
           }"
           arial-label="Última página"
@@ -68,8 +69,9 @@
           :to="{
             query: {
               ...$route.query,
-              token_paginacao: tokenPaginacao || $route.query.token_paginacao,
-              pagina: paginaCorrente + 1,
+              [`${prefixo}token_paginacao`]: tokenPaginacao
+                || $route.query[`${prefixo}token_paginacao`],
+              [`${prefixo}pagina`]: paginaCorrente + 1,
             },
           }"
         >
@@ -111,6 +113,10 @@ const props = defineProps({
   totalRegistros: {
     type: Number,
     default: 0,
+  },
+  prefixo: {
+    type: String,
+    default: '',
   },
 });
 

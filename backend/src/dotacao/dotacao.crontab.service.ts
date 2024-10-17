@@ -37,7 +37,7 @@ export class DotacaoCrontabService {
     // buscar o lock e tbm a lista de dotações que faltam atualizar
     @Cron('* 3-8 * * *')
     async handleDotacaoCron() {
-        if (process.env['DISABLE_DOTACAO_CRONTAB'] || process.env['DISABLE_CRONTABS'] == 'all') return;
+        if (process.env['DISABLE_DOTACAO_CRONTAB'] || process.env['DISABLED_CRONTABS'] == 'all') return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

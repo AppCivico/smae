@@ -14,6 +14,7 @@ import {
     CONST_CRONO_VAR_CATEGORICA_ID,
     CONST_TIPO_NOTA_DIST_RECURSO,
     CONST_TIPO_NOTA_TRANSF_GOV,
+    CONST_VAR_SEM_UN_MEDIDA,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -882,11 +883,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
 // Perfis de Plano Setoriais
 PerfilAcessoConfig.push(
     {
-        nome: atualizarNomePerfil('Administrador **Geral** do Plano Setorial', [
+        nome: atualizarNomePerfil('Administrador Geral de Plano Setorial', [
             'Administrador Geral do Plano Setorial',
+            'Administrador **Geral** do Plano Setorial',
         ]),
-        descricao:
-            'Pode visualizar e cadastrar metas, iniciativas, atividades, indicadores, cronogramas/etapas e painéis de qualquer plano setorial.',
+        descricao: 'Acesso irrestrito aos Planos Setoriais e Banco de Variáveis.',
         privilegios: [
             'CadastroPS.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
             'CadastroVariavelGlobal.administrador',
@@ -896,19 +897,8 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
-        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
-        privilegios: [
-            'PS.admin_cp',
-            'CadastroVariavelGlobal.administrador',
-            ...PSCadastroBasico, // Tema, Tags, etc...
-            ...PSMetasReportsEAdmin, // Metas, Reports, Painel
-        ],
-    },
-
-    {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Pode editar e criar plano setorial no órgão administrador em que faz parte.',
+        descricao: 'Acesso restrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'PS.admin_cp',
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
@@ -962,6 +952,12 @@ PerfilAcessoConfig.push(
         nome: atualizarNomePerfil('Ponto Focal Setorial', []),
         descricao: '',
         privilegios: false,
+    },
+
+    {
+        nome: atualizarNomePerfil('Administrador de Plano Setorial', []),
+        descricao: 'Pode editar qualquer plano setorial na equipe em que faz parte como administrador.',
+        privilegios: false,
     }
 );
 
@@ -979,36 +975,44 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Coordenadoria de Planejamento'),
     removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
     removerNomePerfil('Responsável por meta na CP'),
-    removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial')
+    removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial'),
+    removerNomePerfil('Administrador de Plano Setorial')
 );
 
 async function main() {
     if (atualizacoesPerfil.length) await Promise.all(atualizacoesPerfil);
 
-    await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-        const locked: { locked: boolean }[] =
-            await prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked`;
+    await prisma.$transaction(
+        async (prismaTx: Prisma.TransactionClient) => {
+            const locked: { locked: boolean }[] =
+                await prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked`;
 
-        if (!locked[0].locked) return;
+            if (!locked[0].locked) return;
 
-        await criar_emaildb_config();
-        await criar_texto_config();
-        await atualizar_modulos_e_privilegios();
-        await atualizar_perfil_acesso();
+            await criar_emaildb_config();
+            await criar_texto_config();
+            await atualizar_modulos_e_privilegios();
+            await atualizar_perfil_acesso();
 
-        await atualizar_superadmin();
-        await ensure_bot_user();
+            await atualizar_superadmin();
+            await ensure_bot_user();
 
-        await Promise.allSettled([
-            ensure_categorica_cronograma(),
-            ensure_tiponota_dist_recurso(),
-            ensure_tiponota_transf_gov(),
-            populateEleicao(),
-            populateDistribuicaoStatusBase(),
-        ]);
+            await Promise.allSettled([
+                ensure_categorica_cronograma(),
+                ensure_tiponota_dist_recurso(),
+                ensure_tiponota_transf_gov(),
+                populateEleicao(),
+                populateDistribuicaoStatusBase(),
+                ensure_var_sem_unidade_medida(),
+            ]);
 
-        await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
-    });
+            await prismaTx.$queryRaw`select f_update_modulos_sistemas();`;
+        },
+        {
+            maxWait: 1000,
+            timeout: 60 * 1000,
+        }
+    );
 }
 
 async function ensure_tiponota_transf_gov() {
@@ -1032,6 +1036,19 @@ async function ensure_tiponota_transf_gov() {
         },
     });
 }
+
+async function ensure_var_sem_unidade_medida() {
+    await prisma.unidadeMedida.upsert({
+        where: { id: CONST_VAR_SEM_UN_MEDIDA },
+        create: {
+            id: CONST_VAR_SEM_UN_MEDIDA,
+            descricao: 'Sem unidade de medida',
+            sigla: '',
+        },
+        update: {},
+    });
+}
+
 async function ensure_tiponota_dist_recurso() {
     await prisma.tipoNota.upsert({
         where: { id: CONST_TIPO_NOTA_DIST_RECURSO },
@@ -1246,6 +1263,7 @@ async function upsert_privilegios(
     return priv;
 }
 
+const removidosNaSession = new Set<number>();
 async function atualizar_perfil_acesso() {
     const deletePerfilAcesso = async (perfilAcessoId: number) => {
         await prisma.pessoaPerfil.deleteMany({
@@ -1256,6 +1274,8 @@ async function atualizar_perfil_acesso() {
             where: { perfil_acesso_id: perfilAcessoId },
         });
 
+        if (removidosNaSession.has(perfilAcessoId)) return;
+        removidosNaSession.add(perfilAcessoId);
         await prisma.perfilAcesso.delete({
             where: { id: perfilAcessoId },
         });

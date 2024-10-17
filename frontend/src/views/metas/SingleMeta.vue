@@ -470,7 +470,7 @@ iniciar();
       <template v-else-if="singleMeta.error">
         <div class="error p1">
           <p class="error-msg">
-            Error: {{ singleMeta.error }}
+            Erro: {{ singleMeta.error }}
           </p>
         </div>
       </template>

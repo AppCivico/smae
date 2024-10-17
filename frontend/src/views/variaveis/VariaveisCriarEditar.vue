@@ -599,6 +599,44 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           />
         </div>
 
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="periodicidade"
+            :schema="schema"
+          />
+          <Field
+            v-if="!variavelId"
+            id="periodicidade"
+            name="periodicidade"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.periodicidade }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="p, k in periodicidades.variaveis"
+              :key="k"
+              :value="p.valor"
+            >
+              {{ p.nome }}
+            </option>
+          </Field>
+          <input
+            v-else
+            id="periodicidade"
+            readonly
+            aria-disabled="true"
+            :value="values?.periodicidade"
+            class="inputtext light mb1"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="periodicidade"
+          />
+        </div>
+
         <div class="f1 fb15em">
           <LabelFromYup
             name="inicio_medicao"
@@ -689,44 +727,6 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           <ErrorMessage
             class="error-msg"
             name="fim_medicao"
-          />
-        </div>
-
-        <div class="f1 fb10em">
-          <LabelFromYup
-            name="periodicidade"
-            :schema="schema"
-          />
-          <Field
-            v-if="!variavelId"
-            id="periodicidade"
-            name="periodicidade"
-            as="select"
-            class="inputtext light mb1"
-            :class="{ error: errors.periodicidade }"
-          >
-            <option value="">
-              Selecionar
-            </option>
-            <option
-              v-for="p, k in periodicidades.variaveis"
-              :key="k"
-              :value="p.valor"
-            >
-              {{ p.nome }}
-            </option>
-          </Field>
-          <input
-            v-else
-            id="periodicidade"
-            readonly
-            aria-disabled="true"
-            :value="values?.periodicidade"
-            class="inputtext light mb1"
-          >
-          <ErrorMessage
-            class="error-msg"
-            name="periodicidade"
           />
         </div>
 

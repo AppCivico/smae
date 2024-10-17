@@ -1,17 +1,5 @@
 <template>   
-
-
-<!--
-<span
-      @mouseover="hover = true"
-      @mouseleave="hover = false"
-      :class="{ active: hover }"
-    >
-      Hover me to change the background!
-    </span>
--->
-
-    <body class="barChartBody" onload="init();">
+    <div class="barChartBody" onload="init();">
 
         <div id="barsContainer">
             <ul id="column1" style="margin-right: 3px; min-width: fit-content;">
@@ -38,7 +26,7 @@
                     <div id="value3" class="rcorners1"></div> 
                 </li>
             </ul>
-            <ul  id="column4" style="min-width: fit-content; border: 1px solid black">
+            <ul  id="column4" style="min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
                     <p id="label4" style="min-width: fit-content;"></p>
                 </li>
@@ -47,12 +35,10 @@
                 </li>
             </ul>
         </div>
-    </body>
+    </div>
 </template>
 
 <script setup>
-
-//const hover = ref(false);
 
     // Tipo de gráfico
     const chartType = "PLA";
@@ -136,12 +122,6 @@
     barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
     barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
 
-    function showTooltip(e){
-        //$(".rcorners1").css({"height": 100px, "width": 100px });
-        alert(e.id);
-        //document.getElementById('1').style.width='500px'
-    }
-
     function init(){
 
         // Valores default para quando a quantidade for igual a 0
@@ -178,13 +158,6 @@
         document.getElementById('label3').innerText=labels[2];
         document.getElementById('label4').innerText=labels[3];
         
-        const containerWidth = document.getElementById('label3').offsetWidth;
-
-        console.log("************************");
-        console.log(containerWidth);
-        console.log(barDefaultWidth1 + ' ' + barDefaultWidth2 + ' ' + barDefaultWidth3 + ' ' + barDefaultWidth4);
-        console.log(barsBackgroundColor1 + ' ' + barsBackgroundColor2 + ' ' + barsBackgroundColor3 + ' ' + barsBackgroundColor4);
-
         // Define o tamanho e a cor de cada barra.
         document.getElementById('column1').style.width=barDefaultWidth1;
         document.getElementById('value1').style.backgroundColor=barsBackgroundColor1;
@@ -207,10 +180,11 @@
     .barChartBody{
         height: 50px;
         margin-top: 10px;
+        font-family: Roboto;
     }
 
     .rcorners1 {
-    border-radius: 25px;
+    border-radius: 15px;
 
     height: 30px;  
     }
@@ -230,35 +204,5 @@
     width: 5px;
     }
 
-    p:hover:after {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #f9cd23;
-    border-radius: 8px;
-    color: black;
-    content: attr(title);
-    text-align: center;
-    font-size: 16px;
-    padding: 8px;
-    width: 200px;
-    }
-
-    /*for the tooltip triangle*/
-    p:hover:before {
-    left: 50%;
-    transform: translateX(-50%);
-    top: -20px;
-    position: absolute;
-    border: solid;
-    border-color: #f9cd23 transparent;
-    border-width: 15px 15px 0 15px;
-    content: '';
-    }
-
-    .active {
-    background: green;
-    }
 
 </style>

@@ -36,4 +36,9 @@ export class FilterEquipeRespDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     retornar_uso?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    remover_participantes?: boolean;
 }

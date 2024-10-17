@@ -79,6 +79,7 @@ export class VariavelGlobalCicloDto {
     @ApiProperty({ type: String })
     periodicidade: Periodicidade;
     fase: VariavelFase;
+    em_atraso: boolean;
 
     @ApiProperty({ type: 'string', format: 'date' })
     proximo_periodo_abertura: string;
@@ -198,6 +199,8 @@ export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
     'descricao',
 ]) {
     descricao: string | null;
+    fase: VariavelFase;
+    pode_editar: boolean;
 }
 
 export class PSPedidoComplementacaoDto {

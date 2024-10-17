@@ -38,6 +38,8 @@ export class PSMonitoramentoMensal implements ReportableService {
                 'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
             );
 
+        const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
+
         const paramMesAno = params.ano + '-' + params.mes + '-01';
         let sql: string = `select
                             i.id as indicador_id,
@@ -119,29 +121,31 @@ export class PSMonitoramentoMensal implements ReportableService {
                             sv.valor_nominal,
                             sv.atualizado_em,
                             sv.data_valor + periodicidade_intervalo(v.periodicidade) as data_proximo_ciclo,
-                            vgcaP.informacoes_complementares                         as analise_qualitativa_coleta,
-                            vgcaV.informacoes_complementares                         as analise_qualitativa_aprovador,
-                            vgcaL.informacoes_complementares                         as analise_qualitativa_liberador
+                            coalesce(nullif(vgcaP.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_coleta,
+                            coalesce(nullif(vgcaV.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_aprovador,
+                            coalesce(nullif(vgcaL.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_liberador
                    from view_variaveis_pdm vvp
                             inner join indicador i on vvp.indicador_id = i.id
                             inner join variavel v on v.id = vvp.variavel_id :listar_variaveis_regionalizadas
                             left join regiao r on v.regiao_id = r.id
                             left join serie_variavel sv on sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
-                            left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = v.id
+                     left join variavel_global_ciclo_analise vgcaP on vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaP.referencia_data = sv.data_valor
                         and vgcaP.fase = 'Preenchimento'
                         and vgcaP.ultima_revisao = true
                         and vgcaP.removido_em is null
-                     left join variavel_global_ciclo_analise vgcaV on vgcaV.variavel_id = v.id
+                     left join variavel_global_ciclo_analise vgcaV on vgcaV.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaV.referencia_data = sv.data_valor
                         and vgcaV.fase = 'Validacao'
                         and vgcaV.ultima_revisao = true
                         and vgcaV.removido_em is null
-                     left join variavel_global_ciclo_analise vgcaL on vgcaL.variavel_id = v.id
+                     left join variavel_global_ciclo_analise vgcaL on vgcaL.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaL.referencia_data = sv.data_valor
                         and vgcaL.fase = 'Liberacao'
                         and vgcaL.ultima_revisao = true
                         and vgcaL.removido_em is null
+                     left join pessoa vgcal_cp on vgcaL.criado_por = vgcal_cp.id
+
                    where i.removido_em is null
                         and v.removido_em is null
                         and vvp.meta_id IN (:metas)
@@ -152,6 +156,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         } else {
             sql = sql.replace(':listar_variaveis_regionalizadas', '');
         }
+        if (metasArr.length === 0) metasArr.push(-1); // hack para evitar erro de sintaxe no SQL
         sql = sql.replace(':metas', metasArr.toString());
         sql = sql.replace(':mesAno', "'" + paramMesAno + "'");
         const linhasVariaveis = await this.prisma.$queryRawUnsafe(sql);
@@ -168,8 +173,8 @@ export class PSMonitoramentoMensal implements ReportableService {
             { value: 'codigo_indicador', label: 'Código do Indicador' },
             { value: 'titulo_indicador', label: 'Título do Indicador' },
             { value: 'indicador_id', label: 'ID do Indicador' },
-            { value: 'variavel_codigo', label: 'Código da Variável' },
-            { value: 'variavel_titulo', label: 'Título da Variável' },
+            { value: 'codigo_variavel', label: 'Código da Variável' },
+            { value: 'titulo_variavel', label: 'Título da Variável' },
             { value: 'variavel_id', label: 'ID da Variável' },
             { value: 'municipio', label: 'Município' },
             { value: 'municipio_id', label: 'Código do Município' },

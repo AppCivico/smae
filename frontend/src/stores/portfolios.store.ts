@@ -30,8 +30,8 @@ export const usePortfolioStore = defineStore('portfolios', {
     emFoco: null,
 
     chamadasPendentes: {
-      lista: true,
-      emFoco: true,
+      lista: false,
+      emFoco: false,
     },
     erro: null,
   }),

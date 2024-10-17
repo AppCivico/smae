@@ -1588,6 +1588,7 @@ export class OrcamentoRealizadoService {
 
             if (configOrcamentoAbertura) {
                 const mesReabertura = mesAtual === 1 ? 12 : mesAtual - 1;
+                const anoReabertura = mesAtual === 1 ? anoAtual - 1 : anoAtual;
 
                 const mesInclude = configOrcamentoAbertura.execucao_disponivel_meses.includes(mesReabertura);
                 this.logger.debug(
@@ -1596,7 +1597,9 @@ export class OrcamentoRealizadoService {
                 if (
                     mesInclude &&
                     (!ultimoControleAbertura ||
-                        ultimoControleAbertura.referencia_dia_abertura !== pdm.orcamento_dia_abertura)
+                        ultimoControleAbertura.referencia_dia_abertura !== pdm.orcamento_dia_abertura ||
+                        ultimoControleAbertura.ano_referencia !== anoReabertura ||
+                        ultimoControleAbertura.referencia_mes !== mesAtual)
                 ) {
                     const now = new Date(Date.now());
                     await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
@@ -1618,6 +1621,7 @@ export class OrcamentoRealizadoService {
                                 meta_id: meta.id,
                                 ano_referencia: ano_referencia,
                                 criado_em: now,
+                                referencia_mes: mesAtual,
                                 referencia_dia_abertura: pdm.orcamento_dia_abertura,
                                 execucao_concluida,
                             },
@@ -1640,7 +1644,9 @@ export class OrcamentoRealizadoService {
             if (
                 diaAtual >= pdm.orcamento_dia_fechamento &&
                 (!ultimoControleFechamento ||
-                    ultimoControleFechamento.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento)
+                    ultimoControleFechamento.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento ||
+                    ultimoControleFechamento.ano_referencia !== anoAtual ||
+                    ultimoControleFechamento.referencia_mes !== mesAtual)
             ) {
                 const now = new Date(Date.now());
                 await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
@@ -1663,6 +1669,7 @@ export class OrcamentoRealizadoService {
                             meta_id: meta.id,
                             ano_referencia: ano_referencia,
                             criado_em: now,
+                            referencia_mes: mesAtual,
                             referencia_dia_fechamento: pdm.orcamento_dia_fechamento,
                             execucao_concluida,
                         },

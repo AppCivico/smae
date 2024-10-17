@@ -38,11 +38,8 @@
         <td
           v-if="item.participantes.length"
         >
-          <span
-            v-for="(participante, index) in item.participantes"
-            :key="index"
-          >
-            {{ participante?.nome_exibicao }}
+          <span>
+            {{ item.participantes.map(item => item.nome_exibicao).join(', ') }}
           </span>
         </td>
         <td

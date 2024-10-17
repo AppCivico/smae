@@ -3,8 +3,12 @@ import { defineProps } from 'vue';
 
 defineProps({
   numero: {
-    type: String,
+    type: [String, Number],
     required: true,
+  },
+  comoItem: {
+    type: Boolean,
+    default: false,
   },
   cor: {
     type: String,
@@ -28,26 +32,30 @@ defineProps({
   },
 });
 </script>
+
 <template>
-  <div
+  <component
+    :is="$props.comoItem ? 'div' : 'dl'"
     :style="{ backgroundColor: corDeFundo || 'transparent' }"
     class="card"
   >
-    <h1
+    <dt
       :style="{ color: cor, fontSize: tamanhoDoNumero + 'px' }"
       class="number"
     >
-      {{ numero.padStart(2,'0') }}
-    </h1>
-    <hr class="line">
-    <p
+      {{ String(numero).padStart(2, '0') }}
+    </dt>
+    <dd
       :style="{ fontSize: tamanhoDaLegenda + 'px' }"
       class="label"
     >
-      {{ legenda }}
-    </p>
-  </div>
+      <slot name="legenda">
+        {{ legenda }}
+      </slot>
+    </dd>
+  </component>
 </template>
+
 <style scoped>
 .card {
   text-align: center;
@@ -57,19 +65,24 @@ defineProps({
 
 .number {
   margin: 0;
-  font-weight: bold;
-}
-
-.line {
-  width: 40%;
-  border: none;
-  border-top: 1px solid #7E858D;
-  margin: 10px auto;
+  font-family: "Roboto Slab", serif;
+  font-weight: 600;
+  font-style: normal;
 }
 
 .label {
   margin: 0;
   color: #7E858D;
   text-transform: uppercase;
+  position: relative;
+  padding-top: 20px;
+}
+
+.label::after {
+  content: '';
+  display: block;
+  width: 50%;
+  border-top: 1px solid #7E858D;
+  margin: -25px auto 0;
 }
 </style>
