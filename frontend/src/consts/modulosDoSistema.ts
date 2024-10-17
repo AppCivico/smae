@@ -32,7 +32,7 @@ export default {
     nome: 'Gestão de projetos',
     ícone: gestaoDeProjetos,
     rotaInicial: {
-      name: 'projetosListar',
+      name: 'painelEstrategico',
     },
   },
   CasaCivil: {
