@@ -129,8 +129,8 @@ async function irParaPagina(numero) {
   await router.push({
     query: {
       ...route.query,
-      token_paginacao: props.tokenPaginacao || route.query.token_paginacao,
-      pagina: numero,
+      [`${props.prefixo}token_paginacao`]: props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+      [`${props.prefixo}pagina`]: numero,
     },
   });
 
