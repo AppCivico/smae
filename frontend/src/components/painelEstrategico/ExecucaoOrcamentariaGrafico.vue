@@ -37,7 +37,6 @@ const chartOption = computed(() => ({
     },
   },
   yAxis: {
-    type: 'value',
     axisLabel: {
       fontSize: 14,
       fontFamily: 'Roboto',
@@ -62,6 +61,7 @@ const chartOption = computed(() => ({
       },
       label: {
         show: true,
+        position: 'top',
         formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, true, true)}` : ''),
         fontSize: 14,
         fontWeight: 600,
