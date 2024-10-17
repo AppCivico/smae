@@ -43,12 +43,24 @@ const projetoFormatado = (codigo, nome) => {
       </colgroup>
       <thead>
         <tr>
-          <th>Nome do Projeto</th>
-          <th>Secretaria</th>
-          <th>Meta</th>
-          <th>Status</th>
-          <th>Etapa Atual</th>
-          <th>Término Projetado</th>
+          <th class="tl">
+            Nome do Projeto
+          </th>
+          <th class="tl">
+            Secretaria
+          </th>
+          <th class="tl">
+            Meta
+          </th>
+          <th class="tl">
+            Status
+          </th>
+          <th class="tl">
+            Etapa Atual
+          </th>
+          <th class="tl">
+            Término Projetado
+          </th>
           <th class="tr">
             Riscos em Aberto
           </th>
@@ -65,13 +77,21 @@ const projetoFormatado = (codigo, nome) => {
           <td class="tl">
             {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
           </td>
-          <td>{{ projeto.secretaria?.codigo || ' - ' }}</td>
-          <td>
+          <td class="tl">
+            {{ projeto.secretaria?.codigo || ' - ' }}
+          </td>
+          <td class="tl">
             {{ projeto.meta?.codigo || ' - ' }}
           </td>
-          <td>{{ statuses[projeto.status] || projeto.status }}</td>
-          <td>{{ projeto.etapa_atual || ' - ' }}</td>
-          <td>{{ dateToDate(projeto.termino_projetado) || ' - ' }}</td>
+          <td class="tl">
+            {{ statuses[projeto.status] || projeto.status }}
+          </td>
+          <td class="tl">
+            {{ projeto.etapa_atual || ' - ' }}
+          </td>
+          <td class="tl">
+            {{ dateToDate(projeto.termino_projetado) || ' - ' }}
+          </td>
           <td class="tr">
             {{ projeto.riscos_abertos || ' - ' }}
           </td>
