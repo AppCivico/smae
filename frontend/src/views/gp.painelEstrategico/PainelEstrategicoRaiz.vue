@@ -10,6 +10,7 @@ import ProjetosPorOrgaoResponsavel from '@/components/painelEstrategico/Projetos
 import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
+import ExecucaoOrcamentariaGrafico from '@/components/painelEstrategico/ExecucaoOrcamentariaGrafico.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
@@ -160,7 +161,7 @@ watch(
           <ProjetosPorEtapa
             :projetos-por-etapas="painelEstrategicoStore.projetoEtapas"
           />
-        </CardEnvelope.conteudo>
+        </CardEnvelope.Conteudo>
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por status"
@@ -170,7 +171,7 @@ watch(
           <ProjetosPorStatus
             :projetos-por-status="painelEstrategicoStore.projetoStatus"
           />
-        </CardEnvelope.conteudo>
+        </CardEnvelope.Conteudo>
       </CardEnvelope.default>
 
       <CardEnvelope.Conteudo class="cartao--mapa">
@@ -223,6 +224,9 @@ watch(
           subtitulo="Gráfico de análise orçamentária anual e planilha orçamentária detalhada por projeto."
           icone="moneyChart"
           cor="#D86B2C"
+        />
+        <ExecucaoOrcamentariaGrafico
+          :execucao-orcamentaria="painelEstrategicoStore?.execucaoOrcamentariaAno"
         />
         <ExecucaoOrcamentaria />
       </CardEnvelope.Conteudo>

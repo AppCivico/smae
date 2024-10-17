@@ -32,6 +32,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
   state: (): Estado => ({
     anosMapaCalorConcluidos: [],
     anosMapaCalorPlanejados: [],
+    execucaoOrcamentariaAno: [],
     grandesNumeros: { },
     projetoEtapas: [],
     projetoOrgaoResponsavel: [],
