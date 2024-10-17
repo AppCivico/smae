@@ -1234,16 +1234,11 @@ export class PessoaService {
                 email: email ? email.toLowerCase() : undefined,
                 AND: [{ id: { gt: 0 } }],
             },
-            include: {
-                pessoa_fisica: { include: { orgao: { select: { id: true, sigla: true, descricao: true } } } },
-            },
+            include: { pessoa_fisica: true },
         });
         if (!pessoa) return null;
 
-        return {
-            ...pessoa,
-            orgao: pessoa.pessoa_fisica?.orgao,
-        } satisfies PessoaDto;
+        return pessoa satisfies PessoaDto;
     }
 
     async newSessionForPessoa(id: number, ip: string): Promise<number> {
