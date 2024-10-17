@@ -1221,7 +1221,7 @@ export class PessoaService {
         const { id, session_id: sessionId, email } = opts;
         if (!id && !sessionId && !email) return null;
 
-        const pessoa = await this.prisma.pessoa.findUnique({
+        const pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 PessoaSessoesAtivas: sessionId
                     ? {
