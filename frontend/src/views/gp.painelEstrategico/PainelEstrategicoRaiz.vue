@@ -151,7 +151,7 @@ watch(
         />
       </CardEnvelope.Conteudo>
 
-      <CardEnvelope.default>
+      <CardEnvelope.Slide>
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por etapas"
@@ -172,7 +172,7 @@ watch(
             :projetos-por-status="painelEstrategicoStore.projetoStatus"
           />
         </CardEnvelope.Conteudo>
-      </CardEnvelope.default>
+      </CardEnvelope.Slide>
 
       <CardEnvelope.Conteudo class="cartao--mapa">
         <CardEnvelope.Titulo
@@ -194,7 +194,7 @@ watch(
         />
       </CardEnvelope.conteudo>
 
-      <CardEnvelope.default>
+      <CardEnvelope.Slide>
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por órgão responsável"
@@ -207,7 +207,7 @@ watch(
         <CardEnvelope.Conteudo>
           outro gráfico
         </CardEnvelope.conteudo>
-      </CardEnvelope.default>
+      </CardEnvelope.Slide>
     </div>
 
     <ErrorComponent v-if="erros.projetosPaginados" />
