@@ -41,7 +41,7 @@ export class PainelEstrategicoService {
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
         //Já realiza o filtro dos ids dos projetos e adiciona no filtro recebido
         filtro = await this.addPermissaoProjetos(filtro,user);
-        const strFilter = await this.applyFilter(filtro);
+        const strFilter = this.applyFilter(filtro);
         const response = new PainelEstrategicoResponseDto();
         response.grandes_numeros = await this.buildGrandeNumeros(strFilter);
         response.projeto_status = await this.buildProjetosPorStatus(strFilter);
@@ -376,7 +376,7 @@ export class PainelEstrategicoService {
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
         filtro = await this.addPermissaoProjetos(filtro,user);
-        const whereFilter = await this.applyFilter(filtro);
+        const whereFilter = this.applyFilter(filtro);
         if (filterToken) {
             const decoded = this.decodeNextPageToken(filterToken, filtro);
             total_registros = decoded.total_rows;
@@ -737,7 +737,7 @@ export class PainelEstrategicoService {
     async buildGeoLocalizacao(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt):Promise<PainelEstrategicoGeoLocalizacaoDto>{
         //Cria apenas os projetos e orgãos responsáveis
         filtro = await this.addPermissaoProjetos(filtro,user);
-        const whereFilter = await this.applyFilter(filtro);
+        const whereFilter = this.applyFilter(filtro);
         const sql = `select distinct p.nome       as nome_projeto,
                                      p.id         as projeto_id,
                                      p.codigo     as projeto_codigo,
