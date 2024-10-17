@@ -82,38 +82,39 @@
     ];
 
     // Array que receberá o tamanho das barras
-    var barsWidth = [];
+    let barsWidth = [];
 
     // Variável que receberá o total dos valores de projetos
-    var totalProjects = 0;
+    let totalProjects = 0;
 
     // Array que receberá o título das barras
-    var labels = [];
+    let labels = [];
+
+    // Define a cor da barra
+    let barsBackgroundColor = '';
 
     // Dependendo do tipo de gráfico, configura as variáveis
     if(chartType == "PLA"){
         // Lê o objeto e carrega os valores
-        for(var i=0; i < projetos_planejados_ano.length; i++){
+        for(let i=0; i < projetos_planejados_ano.length; i++){
             labels[i] = "" + projetos_planejados_ano[i].ano;
             barsWidth[i] = projetos_planejados_ano[i].quantidade;
             // Acumula o total de projetos
             totalProjects = totalProjects + projetos_planejados_ano[i].quantidade;
         }
 
-        // Define a cor da barra
-        var barsBackgroundColor = "#A77E11";
+        barsBackgroundColor = "#A77E11";
 
     } else {
         // Lê o objeto e carrega os valores
-        for(var i=0; i < projetos_concluidos_ano.length; i++){
+        for(let i=0; i < projetos_concluidos_ano.length; i++){
             labels[i] = "" + projetos_concluidos_ano[i].ano;
             barsWidth[i] = projetos_concluidos_ano[i].quantidade;
             // Acumula o total de projetos
             totalProjects = totalProjects + projetos_concluidos_ano[i].quantidade;
         }
 
-        // Define a cor da barra
-        var barsBackgroundColor = "#d3a730";
+        barsBackgroundColor = "#d3a730";
     }
 
     // Calcula o percentual do tamanho das barras
@@ -125,14 +126,14 @@
     function init(){
 
         // Valores default para quando a quantidade for igual a 0
-        var barDefaultWidth1 = "0px";
-        var barDefaultWidth2 = "0px";
-        var barDefaultWidth3 = "0px";
-        var barDefaultWidth4 = "0px";
-        var barsBackgroundColor1 = "#ffffff";
-        var barsBackgroundColor2 = "#ffffff";
-        var barsBackgroundColor3 = "#ffffff";
-        var barsBackgroundColor4 = "#ffffff";
+        let barDefaultWidth1 = "0px";
+        let barDefaultWidth2 = "0px";
+        let barDefaultWidth3 = "0px";
+        let barDefaultWidth4 = "0px";
+        let barsBackgroundColor1 = "#ffffff";
+        let barsBackgroundColor2 = "#ffffff";
+        let barsBackgroundColor3 = "#ffffff";
+        let barsBackgroundColor4 = "#ffffff";
 
         // Se o valor da barra for maior do que 0, define largura e cor da barra
         if(barsWidth[0] > 0){

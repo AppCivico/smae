@@ -23,54 +23,65 @@
         anosMapaCalorPlanejados: {
             type: Array,
             required: true,
-        }
+        },
+        anosMapaCalorConcluidos: {
+            type: Array,
+            required: true,
+        }        
     });
-
 
     console.log("**************************");
     console.log(props.projetosPlanejadosMes);
     console.log(props.projetosConcluidosMes);
+    console.log(props.anosMapaCalorPlanejados);
+    console.log(props.anosMapaCalorConcluidos);
+    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+    console.log(props.anosMapaCalorConcluidos.length);
     /*
     Parâmetros para plotagem do gráfico de calor:
-
         - Objeto para o gráfico:
             data: [
                 {"ano": 2021, "mes": 1,  "coluna": 0,  "linha": 0, "quantidade": 2101},
                 {"ano": 2021, "mes": 2,  "coluna": 1,  "linha": 0, "quantidade": 2102},
                 ......
             ]
-
         - Array dos anos a serem plotados, do menor para o maior
             years = [2024, 2025, 2026, 2027]
-
         - Título do tooltip (enviar com formatação HTML, conforme exemplo):
             tooltipTitle = "<p>PROJETOS</p><p style="margin-block-start: -15px;">PLANEJADOS</p>"
-
         - Rodapé do tooltip:
             tooltipFooter = "Projetos Executados"
-        
         - As 5 cores para o gráfico, da que representa o menor valor para o maior
-            colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113']
-            
+            colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113']   
         - Título do gráfico    
             chartTitle = "Projetos Planejados"
     */
 
-const var1 = 300;
+    const var1 = 300;
 
+    let data = [];
+    let years = [];
+    let tooltipTitle = '';
+    let tooltipFooter = '';
+    let colorArray = [];     
+    let chartTitle = '';
 
-
-    const data = props.projetosPlanejadosMes;
-
-    const years = props.anosMapaCalorPlanejados;
-
-    const tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
-
-    const tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">EXECUTADOS</div>';
-        
-    const colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];
-            
-    const chartTitle = "Projetos Planejados";
+    // Se o array de anos estiver vazio, quer dizer que o gráfico não é daquele tipo
+    if(props.anosMapaCalorConcluidos.length == 0){ 
+        data = props.projetosPlanejadosMes;
+        years = props.anosMapaCalorPlanejados;
+        tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
+        tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
+        colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];     
+        chartTitle = "Projetos Planejados";
+    } else{
+        data = props.projetosConcluidosMes;
+        years = props.anosMapaCalorConcluidos;
+        tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
+        tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
+        colorArray = ['#e8e8e8', '#FDF3D6', '#FBE099', '#F7C233', '#D3A730'];     
+        chartTitle = "Projetos Planejados";
+    }
 
     // Meses do eixo X
     const months = [
@@ -86,10 +97,10 @@ const var1 = 300;
     const currentYear = new Date().getFullYear();
 
     // Maior valor dos dados
-    var maxValue = 0;
+    let maxValue = 0;
 
     // Menor valor dos dados
-    var minValue = 9999999999;
+    let minValue = 9999999999;
 
     // Redução dos dados para uso no gráfico
     const chartData = data.reduce((acc, item) => {
@@ -116,8 +127,8 @@ const var1 = 300;
         return [...acc ]
     }, [])
 
-    var myChart;
-    var option;
+    let myChart;
+    let option;
 
     option = {
         tooltip: {
@@ -130,23 +141,52 @@ const var1 = 300;
                 color: '#221F43'
             },
             formatter: function (params) {
-                var footerQuantity = 0;
+                let footerQuantity = 0;
                 // Mês da posição atual do tooltip, independente do tipo de gráfico
-                var searchMonth = params.data[0] + 1;
+                let searchMonth = params.data[0] + 1;
                 // Recupera os valores de referência fora da plotagem do gráfico
                 // Ano da posição atual do tooltip
-                var searchYear = years[params.data[1]];
+                let searchYear = years[params.data[1]];
                 // Pega a quantidade
-                var finishedCurrentYear = props.projetosConcluidosMes.filter(d => d.ano === searchYear && d.mes === searchMonth);
+                let finishedCurrentYear = props.projetosConcluidosMes.filter(d => d.ano === searchYear && d.mes === searchMonth);
                 if(finishedCurrentYear[0]){
                     footerQuantity = finishedCurrentYear[0].quantidade;
                 } else{
                     footerQuantity = 0;
                 }
-                var monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
+                let monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
                 // Monta o HTML do tooltip
-                var response = 
-                    '<div style="min-width: 120px; justify-content: center; align-items: center;">' +
+                let response = 
+                    '<div class="grid-container" style="min-width: 120px;">' +
+                        '<div class="item1" style="margin-top: 0px; margin-bottom: 0px; height: 25px; justify-content: center; align-items: center; text-align: center;">' +
+  	                        '<hr style="width: 50%; margin-left: auto; margin-right: auto;">' +
+                            '<div style="font-size: 6px; height: 13px; line-height: 13px; margin-top: 0px;">' +
+                                monthYear +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="item3" style="display: flex;margin-top: -15px;justify-content: center; align-items: center;">' +
+                            '<div style="position: static; margin-bottom: 7px; font-size: 28px; text-align: end;  float: left; width: 50%;">' +
+                                '<b>' + params.data[2] + '</b>' +
+                            '</div>' +
+                            '<div style="position: static; margin-left: 2px; font-size: 8px; text-align: start; align-self: flex-end; float: right; width: 50%;">' +
+                                tooltipTitle.toUpperCase() +
+                            '</div>' +
+                        '</div>' +  
+                        '<div class="item5" style="display: flex;margin-top: -10px;justify-content: center; align-items: center;">' +
+                            '<div style="padding-right: 2px; margin-bottom: 5px; font-size: 16px; text-align: end;  float: left; width: 50%;">' +
+                                '<b>' + footerQuantity + '</b>' +
+                            '</div>' +
+                            '<div style="font-size: 6px; text-align: start; align-self: flex-end; float: left; width: 50%;"> ' +
+                                tooltipFooter.toUpperCase() +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="item6">' +
+                            '<hr style="width: 50%; margin-top: -5px; margin-left: auto; margin-right: auto;">' +
+                        '</div>' +
+                    '</div>';
+
+                /*
+                    '<div style="display: grid; min-width: 120px; justify-content: center; align-items: center;">' +
                     '<ul class="containerYearMonth" style="height: 15px;">' +
                         '<li class="yearMonthTooltip" style="margin-top: 0px; margin-bottom: 0px; height: 15px;"><b>' +
                             // Linha inicial
@@ -174,6 +214,7 @@ const var1 = 300;
                         '</li>' +
                     '</ul>' +
                     '</div>';
+                */
                 return response;
             }
         },
@@ -203,6 +244,8 @@ const var1 = 300;
                 color: '#7E858D',
                 fontSize: 12,
             },
+            axisLine: { show: false },
+            axisTick: { show: false },           
         },
         yAxis: {
             type: 'category',
@@ -216,6 +259,8 @@ const var1 = 300;
                 color: '#7E858D',
                 fontSize: 12,
             },
+            axisLine: { show: false },
+            axisTick: { show: false },            
         },
         visualMap: {
             min: 0,
@@ -267,7 +312,7 @@ const var1 = 300;
 
     // Talvez possa ser substituido pelo READY.
     setTimeout(() => {
-        var chartDom = document.getElementById('heatMapContainer');
+        let chartDom = document.getElementById('heatMapContainer');
         myChart = echarts.init(chartDom, null, {
             renderer: 'canvas',
             useDirtyRect: false
@@ -327,4 +372,31 @@ console.log(chartDom);
         border-top: 1px solid #e4e1e1;
     }
         
+    .item1 { grid-area: monthYear; }
+.item3 { grid-area: mainQtd; }
+.item5 { grid-area: footerQtd; }
+.item6 { grid-area: footerLine; }
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    'monthYear'
+    'mainQtd'
+    'footerQtd'
+    'footerLine';
+  gap: 2px;
+  padding: 2px;
+}
+
+.grid-container > div {
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  padding: 0 0;
+}
+
+
+
+
+
+
 </style>

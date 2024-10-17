@@ -213,39 +213,26 @@ watchEffect(() => {
           :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
           :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
           :anos-mapa-calor-planejados="painelEstrategicoStore.anosMapaCalorPlanejados"
+          :anos-mapa-calor-concluidos="[]"
           />
         </CardEnvelope.conteudo>
-
-
-
 <!--
-          anosMapaCalorConcluidos: [],
-    : [],
-    grandesNumeros: { },
-    projetoEtapas: [],
-    projetoOrgaoResponsavel: [],
-    projetoStatus: [],
-    projetosConcluidosAno: [],
-    projetosConcluidosMes: [],
-    projetosPlanejadosAno: [],
-    projetosPlanejadosMes: [],
- 
-
-
-
-
         <CardEnvelope.Conteudo>
             <CardEnvelope.Titulo
-              titulo="Projetos Executados"
+              titulo="Projetos Concluídos"
               icone="box"
               cor="#F7C233"
               subtitulo="Volume de projetos concluídos no ano vigente e nos anos anteriores."
           />
           <HeatMapGraph
+          :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
+          :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
+          :anos-mapa-calor-planejados="[]"
+          :anos-mapa-calor-concluidos="painelEstrategicoStore.anosMapaCalorConcluidos"
           />
         </CardEnvelope.conteudo>
-
- -->
+-->
+ 
 
       </CardEnvelope.default>
     </div>
