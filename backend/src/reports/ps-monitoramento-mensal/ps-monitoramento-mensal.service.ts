@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
-import { RelPsMonitoramentoMensalVariaveis } from './entities/ps-monitoramento-mensal.entity';
+import { RelPsMonitoramentoMensalVariaveis, RelPsMonitRetorno } from './entities/ps-monitoramento-mensal.entity';
 
 const {
     Parser,
@@ -19,7 +19,23 @@ export class PSMonitoramentoMensal implements ReportableService {
         private readonly indicadoresService: IndicadoresService
     ) {}
 
-    async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitoramentoMensalVariaveis[]> {
+    async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitRetorno> {
+        const monitoramento = await this.fetchPsMonitoramentoMensalData(params);
+
+        const indicadores = await this.indicadoresService.asJSON({
+            ...params,
+            pdm_id: params.plano_setorial_id,
+            tipo_pdm: 'PS',
+            periodo: 'Geral',
+            tipo: 'Mensal',
+        });
+        return {
+            monitoramento: monitoramento,
+            ...indicadores,
+        };
+    }
+
+    private async fetchPsMonitoramentoMensalData(params: CreatePsMonitoramentoMensalFilterDto) {
         if (!params.plano_setorial_id) params.plano_setorial_id = undefined;
         if (!params.pdm_id) params.pdm_id = undefined;
 
@@ -34,9 +50,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         );
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 100)
-            throw new BadRequestException(
-                'Mais de 100 indicadores encontrados, por favor refine a busca.'
-            );
+            throw new BadRequestException('Mais de 100 indicadores encontrados, por favor refine a busca.');
 
         const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
 
@@ -118,7 +132,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                                 end as distrito_id,
                             sv.serie,
                             sv.data_valor as data_referencia,
-                            coalesce(vcv.titulo, round(sv.valor_nominal, v.casas_decimais)::text) as valor,
+                            vcv.titulo as valor_categorica,
                             round(sv.valor_nominal, v.casas_decimais) as valor_nominal,
                             sv.atualizado_em AS data_preenchimento,
                             sv.data_valor + periodicidade_intervalo(v.periodicidade) as data_proximo_ciclo,
@@ -161,14 +175,13 @@ export class PSMonitoramentoMensal implements ReportableService {
         sql = sql.replace(':metas', metasArr.toString());
         sql = sql.replace(':mesAno', "'" + paramMesAno + "'");
         const linhasVariaveis = (await this.prisma.$queryRawUnsafe(sql)) as any;
-        console.log(linhasVariaveis[0]);
 
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
     }
 
     //TODO implementar paginação para evitar memory overflow
     async toFileOutput(params: CreatePsMonitoramentoMensalFilterDto, ctx: ReportContext): Promise<FileOutput[]> {
-        const rows = await this.asJSON(params);
+        const rows = await this.fetchPsMonitoramentoMensalData(params);
         await ctx.progress(40);
         //Cabeçalho Arquivo
         const fieldsCSV = [
@@ -188,8 +201,8 @@ export class PSMonitoramentoMensal implements ReportableService {
             { value: 'distrito_id', label: 'ID do Distrito' },
             { value: 'serie', label: 'Serie' },
             { value: 'data_referencia', label: 'Data de Referencia' },
-            { value: 'valor', label: 'Valor' },
             { value: 'valor_nominal', label: 'Valor Nominal' },
+            { value: 'valor_categorica', label: 'Valor Categórica' },
             { value: 'data_preenchimento', label: 'Data de Preenchimento' },
             { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
             { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Aprovador' },
