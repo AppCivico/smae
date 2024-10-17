@@ -254,7 +254,9 @@ function prepararGeoJsonS(items) {
     item.remove();
   });
 
-  grupoDeMarcadores.clearLayers();
+  if (grupoDeMarcadores) {
+    grupoDeMarcadores.clearLayers();
+  }
 
   const listaDeItens = Array.isArray(items)
     ? items
