@@ -85,6 +85,9 @@ export class PainelEstrategicoExecucaoOrcamentariaLista{
 export class PainelEstrategicoGeoLocalizacao{
     projeto_nome:string;
     projeto_id:number;
+    projeto_codigo:string;
+    projeto_status:string;
+    projeto_etapa:string;
     geolocalizacao:GeolocalizacaoDto[];
 }
 export class PainelEstrategicoGeoLocalizacaoDto{

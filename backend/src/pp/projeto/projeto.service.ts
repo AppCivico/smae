@@ -706,21 +706,37 @@ export class ProjetoService {
     async findAllIds(
         tipo: TipoProjeto,
         user: PessoaFromJwt | undefined,
-        portfolio_id: number | undefined = undefined
+        portfolio_id: number | undefined = undefined,
+        aceita_compartilhado: boolean = false
     ): Promise<{ id: number }[]> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, true);
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: tipo,
-                portfolio_id,
-                AND:
-                    permissionsSet.length > 0
-                        ? [
-                              {
-                                  AND: permissionsSet,
-                              },
-                          ]
-                        : undefined,
+                AND: [
+                    { portfolio_id: portfolio_id && !aceita_compartilhado ? portfolio_id : undefined },
+
+                    {
+                        OR:
+                            aceita_compartilhado && portfolio_id
+                                ? [
+                                      { portfolio_id: portfolio_id },
+                                      {
+                                          portfolios_compartilhados: {
+                                              some: {
+                                                  portfolio_id: portfolio_id,
+                                                  removido_em: null,
+                                              },
+                                          },
+                                      },
+                                  ]
+                                : [],
+                    },
+
+                    {
+                        AND: permissionsSet.length ? permissionsSet : undefined,
+                    },
+                ],
             },
             select: { id: true },
         });
