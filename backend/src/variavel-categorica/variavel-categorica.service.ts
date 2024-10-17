@@ -270,6 +270,68 @@ export class VariavelCategoricaService {
 
         const operations = [];
         if (deleted.length > 0) {
+            const emUso = await prismaTx.serieVariavel.count({
+                where: {
+                    variavel_categorica_valor_id: { in: deleted },
+                    serie: { in: ['Realizado', 'Previsto'] },
+                },
+            });
+            if (emUso) {
+                const usadoEm = await prismaTx.serieVariavel.groupBy({
+                    where: {
+                        variavel_categorica_valor_id: { in: deleted },
+                    },
+                    by: ['variavel_categorica_valor_id', 'variavel_id'],
+                    _count: true,
+                });
+
+                const valoresInfo = await prismaTx.variavelCategoricaValor.findMany({
+                    where: {
+                        id: { in: deleted },
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                    },
+                });
+
+                const variaveisInfo = await prismaTx.variavel.findMany({
+                    where: {
+                        id: { in: usadoEm.map((r) => r.variavel_id) },
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                    },
+                });
+
+                const usageByValor = new Map();
+                usadoEm.forEach((usage) => {
+                    if (!usageByValor.has(usage.variavel_categorica_valor_id)) {
+                        usageByValor.set(usage.variavel_categorica_valor_id, new Set());
+                    }
+                    usageByValor.get(usage.variavel_categorica_valor_id).add(usage.variavel_id);
+                });
+
+                const totalUsage = usadoEm.reduce((sum, item) => sum + item._count, 0);
+
+                const usoDetalhado = valoresInfo
+                    .map((valor) => {
+                        const variaveis = usageByValor.get(valor.id) || new Set();
+                        const variaveisUsadas = Array.from(variaveis).map((varId) => {
+                            const varInfo = variaveisInfo.find((v) => v.id === varId);
+                            return varInfo ? varInfo.titulo : 'Variável desconhecida';
+                        });
+                        return `"${valor.titulo}" (usado em ${variaveis.size} variáveis: ${variaveisUsadas.join(', ')})`;
+                    })
+                    .join('\n');
+
+                throw new BadRequestException(
+                    `Não é possível remover valores de variável categórica: em uso em ${totalUsage} séries de ${variaveisInfo.length} variáveis.\n` +
+                        `Detalhes dos valores:\n${usoDetalhado}`
+                );
+            }
+
             operations.push(
                 prismaTx.variavelCategoricaValor.deleteMany({
                     where: {
