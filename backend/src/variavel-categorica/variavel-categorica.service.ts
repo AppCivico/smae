@@ -285,6 +285,7 @@ export class VariavelCategoricaService {
                 const usadoEm = await prismaTx.serieVariavel.groupBy({
                     where: {
                         variavel_categorica_valor_id: { in: deleted },
+                        serie: { in: ['Realizado', 'Previsto'] },
                     },
                     by: ['variavel_categorica_valor_id', 'variavel_id'],
                     _count: true,
