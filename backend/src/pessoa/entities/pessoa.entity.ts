@@ -1,5 +1,4 @@
 import { PessoaFisica } from '@prisma/client';
-import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 
 export class Pessoa {
     id?: number;
@@ -10,7 +9,6 @@ export class Pessoa {
 
     atualizado_em?: Date;
 
-    orgao?: OrgaoResumo;
 
     token_acesso_api?: string;
     session_id?: number;
