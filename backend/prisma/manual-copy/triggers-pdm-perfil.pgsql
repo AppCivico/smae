@@ -77,10 +77,10 @@ BEGIN
                   AND equipe_id = NEW.equipe_id
                   AND tipo = NEW.tipo
                   AND removido_em IS NULL
-                  AND relacionamento IN ('META', 'ETAPA', 'INICIATIVA', 'ATIVIDADE')
+                  AND relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE')
             ) THEN
                 RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
-                    'message', 'Não é possível remover a linha PDM enquanto existirem linhas META/ETAPA/INICIATIVA/ATIVIDADE correspondentes.',
+                    'message', 'Não é possível remover a linha PDM enquanto existirem linhas META/INICIATIVA/ATIVIDADE correspondentes.',
                     'code', 400
                 );
             END IF;
