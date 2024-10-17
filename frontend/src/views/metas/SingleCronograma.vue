@@ -306,7 +306,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     <MapaExibir
       v-if="marcadoresDasEtapas.length"
       :geo-json="marcadoresDasEtapas"
-      persistir-etiqueta-camada
+      :opcoes-do-painel-flutuante="{ permanent: true }"
       class="mb2"
       zoom="16"
     />

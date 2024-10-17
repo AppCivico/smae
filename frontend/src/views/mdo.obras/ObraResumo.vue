@@ -424,7 +424,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
         class="mb1"
-        persistir-etiqueta-camada
+        :opcoes-do-painel-flutuante="{ permanent: true }"
         :opções-do-polígono="{
           fill: true,
           opacity: 0.5,
