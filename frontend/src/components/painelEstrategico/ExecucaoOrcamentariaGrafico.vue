@@ -1,5 +1,16 @@
 <template>
-  <GraficoDashboard :option="chartOption" />
+  <div
+    role="region"
+    aria-label="Gráfico de execução orçamentária"
+    tabindex="0"
+  >
+    <div
+      class="min-width"
+      style="--min-width: 55rem;"
+    >
+      <GraficoDashboard :option="chartOption" />
+    </div>
+  </div>
 </template>
 
 <script setup>

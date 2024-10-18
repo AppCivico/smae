@@ -1,9 +1,20 @@
 <template>
-  <GraficoDashboard
-    class="pb3"
-    :option="projetosPorStatusChartOptions"
-    :tooltip-template="formatTooltip"
-  />
+  <div
+    role="region"
+    aria-label="Gráfico de execução orçamentária"
+    tabindex="0"
+  >
+    <div
+      class="min-width"
+      style="--min-width: 30rem;"
+    >
+      <GraficoDashboard
+        class="pb3"
+        :option="projetosPorStatusChartOptions"
+        :tooltip-template="formatTooltip"
+      />
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
