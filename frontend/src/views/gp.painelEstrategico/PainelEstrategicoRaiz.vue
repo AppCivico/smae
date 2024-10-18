@@ -126,7 +126,6 @@ watch(
     </header>
 
     <FormularioQueryString v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }">
-      <pre>formularioSujo:{{ formularioSujo }}</pre>
       <FiltroDeProjetos
         :class="{
           'formulario-sujo': formularioSujo
