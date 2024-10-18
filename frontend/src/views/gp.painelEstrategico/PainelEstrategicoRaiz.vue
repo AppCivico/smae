@@ -13,7 +13,8 @@ import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamen
 import ExecucaoOrcamentariaGrafico from '@/components/painelEstrategico/ExecucaoOrcamentariaGrafico.vue';
 import ProjetosPlanejadosMes from '@/components/painelEstrategico/ProjetosPlanejadosMes.vue';
 import ProjetosConcluidosMes from '@/components/painelEstrategico/ProjetosConcluidosMes.vue';
-import HorizontalSideBySideBarsChart from '@/components/HorizontalSideBySideBarsChart.vue';
+import ProjetosPlanejadosAnoBarra from '@/components/painelEstrategico/ProjetosPlanejadosAnoBarra.vue';
+import ProjetosConcluidosAnoBarra from '@/components/painelEstrategico/ProjetosConcluidosAnoBarra.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
@@ -251,9 +252,8 @@ watch(
       cor="#A77E11"
       subtitulo="Volume de projetos planejados no ano vigente e nos anos futuros."
   />
-  <HorizontalSideBySideBarsChart
+  <ProjetosPlanejadosAnoBarra
     :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
-    :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
   />
   <div style="margin-top: 25px;">
     <hr>
@@ -276,8 +276,7 @@ watch(
       cor="#D3A730"
       subtitulo="Volume de projetos concluídos no ano vigente e nos anos anteriores."
   />
-  <!--<HorizontalSideBySideBarsChart
-    :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
+  <ProjetosConcluidosAnoBarra
     :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
   />
   <div style="margin-top: 25px;">
@@ -285,7 +284,7 @@ watch(
     <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
       Volume de projetos planejados por Ano/Mês.
     </p>
-  </div>-->
+  </div>
 
   <ProjetosConcluidosMes
   :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
@@ -305,9 +304,7 @@ watch(
             :projetos-orgao-responsavel="painelEstrategicoStore.projetoOrgaoResponsavel"
           />
         </CardEnvelope.conteudo>
-        <CardEnvelope.Conteudo>
-          outro gráfico
-        </CardEnvelope.conteudo>
+
       
       
       

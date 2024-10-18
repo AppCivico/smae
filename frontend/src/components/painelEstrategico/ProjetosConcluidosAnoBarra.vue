@@ -1,110 +1,110 @@
 <template>   
-    <div class="barChartBody" onload="init();">
-        <div id="barsContainer">
-            <ul id="column1" style="margin-right: 3px; min-width: fit-content;">
+    <div class="ProjetosConcluidosAnoMain" onload="init();">
+        <div id="ProjetosConcluidosAnoContainer">
+            <ul id="ProjetosConcluidosAnoCol1" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label1" style="min-width: fit-content;"></p>
+                    <p id="ProjetosConcluidosAnoLabel1" style="min-width: fit-content;"></p>
                 </li>
-                <li id="firstBar" class="horizontalBar">
+                <li id="ProjetosConcluidosAnoBarra1" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da primeira barra -->
-                    <div id="firstBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="firstBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosConcluidosAnoBarra1Tooltip" class="ProjetosConcluidosTooltipText">
+                        <div class="ProjetosConcluidosAnoFirstLine">
+                            <hr class="ProjetosConcluidosAnoFirstLineHR">
+                            <div id="ProjetosConcluidosAnoBarra1Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="firstBarQtd" class="secondLineQtd">
+                        <div class="ProjetosConcluidosAnoSecondLine">
+                            <div id="ProjetosConcluidosAnoBarra1Qtd" class="ProjetosConcluidosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="firstBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosConcluidosAnoBarra1Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosConcluidosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
             </ul>
-            <ul id="column2" style="margin-right: 3px; min-width: fit-content;">
+            <ul id="ProjetosConcluidosAnoCol2" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label2" style="min-width: fit-content;"></p>
+                    <p id="ProjetosConcluidosAnoLabel2" style="min-width: fit-content;"></p>
                 </li>
-                <li id="secondBar" class="horizontalBar">
+                <li id="ProjetosConcluidosAnoBarra2" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da segunda barra -->
-                    <div id="secondBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="secondBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosConcluidosAnoBarra2Tooltip" class="ProjetosConcluidosTooltipText">
+                        <div class="ProjetosConcluidosAnoFirstLine">
+                            <hr class="ProjetosConcluidosAnoFirstLineHR">
+                            <div id="ProjetosConcluidosAnoBarra2Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="secondBarQtd" class="secondLineQtd">
+                        <div class="ProjetosConcluidosAnoSecondLine">
+                            <div id="ProjetosConcluidosAnoBarra2Qtd" class="ProjetosConcluidosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="secondBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosConcluidosAnoBarra2Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosConcluidosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
             </ul>
-            <ul  id="column3" style="margin-right: 3px; min-width: fit-content;">
+            <ul  id="ProjetosConcluidosAnoCol3" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label3" style="min-width: fit-content;"></p>
+                    <p id="ProjetosConcluidosAnoLabel3" style="min-width: fit-content;"></p>
                 </li>
-                <li id="thirdBar" class="horizontalBar">
+                <li id="ProjetosConcluidosAnoBarra3" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="thirdBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="thirdBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosConcluidosAnoBarra3Tooltip" class="ProjetosConcluidosTooltipText">
+                        <div class="ProjetosConcluidosAnoFirstLine">
+                            <hr class="ProjetosConcluidosAnoFirstLineHR">
+                            <div id="ProjetosConcluidosAnoBarra3Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="thirdBarQtd" class="secondLineQtd">
+                        <div class="ProjetosConcluidosAnoSecondLine">
+                            <div id="ProjetosConcluidosAnoBarra3Qtd" class="ProjetosConcluidosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="thirdBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosConcluidosAnoBarra3Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosConcluidosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
             </ul>
-            <ul  id="column4" style="min-width: fit-content;">
+            <ul  id="ProjetosConcluidosAnoCol4" style="min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label4" style="min-width: fit-content;"></p>
+                    <p id="ProjetosConcluidosAnoLabel4" style="min-width: fit-content;"></p>
                 </li>
-                <li id="fourthBar" class="horizontalBar">
+                <li id="ProjetosConcluidosAnoBarra4" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="fourthBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="fourthBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosConcluidosAnoBarra4Tooltip" class="ProjetosConcluidosTooltipText">
+                        <div class="ProjetosConcluidosAnoFirstLine">
+                            <hr class="ProjetosConcluidosAnoFirstLineHR">
+                            <div id="ProjetosConcluidosAnoBarra4Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="fourthBarQtd" class="secondLineQtd">
+                        <div class="ProjetosConcluidosAnoSecondLine">
+                            <div id="ProjetosConcluidosAnoBarra4Qtd" class="ProjetosConcluidosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="fourthBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosConcluidosAnoBarra4Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosConcluidosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
@@ -119,10 +119,6 @@
 
     // Parâtros recebidos do container principal
     const props = defineProps({
-        projetosPlanejadosAno: {
-            type: Array,
-            required: true,
-        },
         projetosConcluidosAno: {
             type: Array,
             required: true,
@@ -141,17 +137,15 @@
     // Define a cor da barra
     let barsBackgroundColor = '';
 
-    for(let i=0; i < props.projetosPlanejadosAno.length; i++){
-        labels[i] = "" + props.projetosPlanejadosAno[i].ano;
-        barsWidth[i] = props.projetosPlanejadosAno[i].quantidade;
+    for(let i=0; i < props.projetosConcluidosAno.length; i++){
+        labels[i] = "" + props.projetosConcluidosAno[i].ano;
+        barsWidth[i] = props.projetosConcluidosAno[i].quantidade;
         // Acumula o total de projetos
-        totalProjects = totalProjects + props.projetosPlanejadosAno[i].quantidade;
+        totalProjects = totalProjects + props.projetosConcluidosAno[i].quantidade;
     }
 
-    barsBackgroundColor = "#A77E11";
-    // barsBackgroundColor = "#d3a730";
+    barsBackgroundColor = "#d3a730";
  
-
     // Calcula o percentual do tamanho das barras
     barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
     barsWidth[1] = Math.ceil(barsWidth[1] / totalProjects * 100);
@@ -189,24 +183,24 @@
         }
 
         // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
-        document.getElementById('label1').innerText=labels[0];
-        document.getElementById('label2').innerText=labels[1];
-        document.getElementById('label3').innerText=labels[2];
-        document.getElementById('label4').innerText=labels[3];
+        document.getElementById('ProjetosConcluidosAnoLabel1').innerText=labels[0];
+        document.getElementById('ProjetosConcluidosAnoLabel2').innerText=labels[1];
+        document.getElementById('ProjetosConcluidosAnoLabel3').innerText=labels[2];
+        document.getElementById('ProjetosConcluidosAnoLabel4').innerText=labels[3];
         
         // Define o tamanho, a cor e o texto do tooltip de cada barra.
-        document.getElementById('column1').style.width=barDefaultWidth1;
-        document.getElementById('firstBar').style.backgroundColor=barsBackgroundColor1;
-        document.getElementById('firstBarQtd').innerText=props.projetosPlanejadosAno[0].quantidade
-        document.getElementById('column2').style.width=barDefaultWidth2;
-        document.getElementById('secondBar').style.backgroundColor=barsBackgroundColor2;
-        document.getElementById('secondBarQtd').innerText=props.projetosPlanejadosAno[1].quantidade
-        document.getElementById('column3').style.width=barDefaultWidth3;
-        document.getElementById('thirdBar').style.backgroundColor=barsBackgroundColor3;
-        document.getElementById('thirdBarQtd').innerText=props.projetosPlanejadosAno[2].quantidade
-        document.getElementById('column4').style.width=barDefaultWidth4;
-        document.getElementById('fourthBar').style.backgroundColor=barsBackgroundColor4;
-        document.getElementById('fourthBarQtd').innerText=props.projetosPlanejadosAno[3].quantidade
+        document.getElementById('ProjetosConcluidosAnoCol1').style.width=barDefaultWidth1;
+        document.getElementById('ProjetosConcluidosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
+        document.getElementById('ProjetosConcluidosAnoBarra1Qtd').innerText=props.projetosConcluidosAno[0].quantidade
+        document.getElementById('ProjetosConcluidosAnoCol2').style.width=barDefaultWidth2;
+        document.getElementById('ProjetosConcluidosAnoBarra2').style.backgroundColor=barsBackgroundColor2;
+        document.getElementById('ProjetosConcluidosAnoBarra2Qtd').innerText=props.projetosConcluidosAno[1].quantidade
+        document.getElementById('ProjetosConcluidosAnoCol3').style.width=barDefaultWidth3;
+        document.getElementById('ProjetosConcluidosAnoBarra3').style.backgroundColor=barsBackgroundColor3;
+        document.getElementById('ProjetosConcluidosAnoBarra3Qtd').innerText=props.projetosConcluidosAno[2].quantidade
+        document.getElementById('ProjetosConcluidosAnoCol4').style.width=barDefaultWidth4;
+        document.getElementById('ProjetosConcluidosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
+        document.getElementById('ProjetosConcluidosAnoBarra4Qtd').innerText=props.projetosConcluidosAno[3].quantidade
     }
 
     setTimeout(() => {
@@ -217,42 +211,54 @@
 
 <style lang="less">
 
-    .barChartBody{
+    .ProjetosConcluidosAnoMain{
         height: 50px;
         margin-top: 10px;
         font-family: Roboto;
     }
 
-    .horizontalBar {
+    .ProjetosConcluidosHorizontalBar {
     border-radius: 15px;
     height: 30px;  
     }
 
-    #firstBar:hover{
+    #ProjetosConcluidosAnoBarra1:hover{
         border: 1px solid black;
     }
 
-    #firstBar:hover #firstBarTooltip{
+    #ProjetosConcluidosAnoBarra1:hover #ProjetosConcluidosAnoBarra1Tooltip{
         visibility: visible;
         opacity: 1;
     }
 
-    #secondBar:hover #secondBarTooltip{
+    #ProjetosConcluidosAnoBarra2:hover{
+        border: 1px solid black;
+    }
+
+    #ProjetosConcluidosAnoBarra2:hover #ProjetosConcluidosAnoBarra2Tooltip{
         visibility: visible;
         opacity: 1;
     }
 
-    #thirdBar:hover #thirdBarTooltip{
+    #ProjetosConcluidosAnoBarra3:hover{
+        border: 1px solid black;
+    }
+
+    #ProjetosConcluidosAnoBarra3:hover #ProjetosConcluidosAnoBarra3Tooltip{
         visibility: visible;
         opacity: 1;
     }
 
-    #fourthBar:hover #fourthBarTooltip{
+    #ProjetosConcluidosAnoBarra4:hover{
+        border: 1px solid black;
+    }
+
+    #ProjetosConcluidosAnoBarra4:hover #ProjetosConcluidosAnoBarra4Tooltip{
         visibility: visible;
         opacity: 1;
     } 
 
-    #barsContainer {
+    #ProjetosConcluidosAnoContainer {
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-around;
@@ -263,7 +269,7 @@
     width: 5px;
     }
 
-    .tooltipText {
+    .ProjetosConcluidosTooltipText {
         visibility: hidden;
         background-color: #fff;
         color: #555;
@@ -288,7 +294,7 @@
         box-shadow: 0 0 .4em rgb(230, 230, 228);
     }
 
-    .tooltipText::after {
+    .ProjetosConcluidosTooltipText::after {
         content: "";
         width: 3px;
         position: relative;
@@ -298,33 +304,7 @@
         border-width: 5px;
         border-style: solid;
         border-color:  transparent transparent #fff transparent;
-        //box-shadow: 0 0 .4em rgb(230, 230, 228);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     hr {
         height: 1px;
@@ -332,7 +312,7 @@
     }
         
     // Tooltip traço inicial, mês e ano - 1ª linha
-    .firstLine { 
+    .ProjetosConcluidosAnoFirstLine { 
         grid-area: monthYear; 
         margin-top: 0px; 
         margin-bottom: 0px; 
@@ -343,14 +323,14 @@
     }
 
     // Traço inicial
-    .firstLineHR{
+    .ProjetosConcluidosAnoFirstLineHR{
         width: 50%; 
         margin-left: auto; 
         margin-right: auto;
     }
 
     // Mês e ano
-    .firstLineMonthYear{
+    .ProjetosConcluidosAnoFirstLineMonthYear{
         font-size: 8px; 
         height: 18px; 
         line-height: 13px; 
@@ -358,7 +338,7 @@
     }
 
     // Tooltip quantidade principal e descrição - 2ª linha
-    .secondLine { 
+    .ProjetosConcluidosAnoSecondLine { 
         grid-area: mainQtd; 
         display: flex;
         margin-top: -15px;
@@ -367,7 +347,7 @@
     }
 
     // Quantidade principal
-    .secondLineQtd{
+    .ProjetosConcluidosAnoSecondLineQtd{
         margin-bottom: -5px; 
         font-size: 28px; 
         text-align: end;  
@@ -376,7 +356,7 @@
     }
 
     // Descrição da quantidade principal
-    .secondLineDes{ 
+    .ProjetosConcluidosAnoSecondLineDes{ 
         margin-left: 2px; 
         font-size: 8px; 
         text-align: start; 
@@ -415,12 +395,12 @@
     }
 
     // Tooltip traço final - 4ª linha
-    .fourthLine { 
+    .ProjetosConcluidosAnoThirdLine { 
         grid-area: footerLine; 
     }
 
     // Traço final
-    .fourthLineHR{
+    .ProjetosConcluidosAnoThirdLineHR{
         width: 50%; 
         margin-top: -5px; 
         margin-left: auto; 

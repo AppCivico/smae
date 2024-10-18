@@ -1,110 +1,110 @@
 <template>   
-    <div class="barChartBody" onload="init();">
-        <div id="barsContainer">
-            <ul id="column1" style="margin-right: 3px; min-width: fit-content;">
+    <div class="ProjetosPlanejadosAnoMain" onload="init();">
+        <div id="ProjetosPlanejadosAnoContainer">
+            <ul id="ProjetosPlanejadosAnoCol1" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label1" style="min-width: fit-content;"></p>
+                    <p id="ProjetosPlanejadosAnoLabel1" style="min-width: fit-content;"></p>
                 </li>
-                <li id="firstBar" class="horizontalBar">
+                <li id="ProjetosPlanejadosAnoBarra1" class="ProjetosPlanejadosHorizontalBar">
                     <!-- TOOLTIP da primeira barra -->
-                    <div id="firstBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="firstBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosPlanejadosAnoBarra1Tooltip" class="ProjetosPlanejadosTooltipText">
+                        <div class="ProjetosPlanejadosAnoFirstLine">
+                            <hr class="ProjetosPlanejadosAnoFirstLineHR">
+                            <div id="ProjetosPlanejadosAnoBarra1Total" class="ProjetosPlanejadosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="firstBarQtd" class="secondLineQtd">
+                        <div class="ProjetosPlanejadosAnoSecondLine">
+                            <div id="ProjetosPlanejadosAnoBarra1Qtd" class="ProjetosPlanejadosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="firstBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosPlanejadosAnoBarra1Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosPlanejadosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
             </ul>
-            <ul id="column2" style="margin-right: 3px; min-width: fit-content;">
+            <ul id="ProjetosPlanejadosAnoCol2" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label2" style="min-width: fit-content;"></p>
+                    <p id="ProjetosPlanejadosAnoLabel2" style="min-width: fit-content;"></p>
                 </li>
-                <li id="secondBar" class="horizontalBar">
+                <li id="ProjetosPlanejadosAnoBarra2" class="ProjetosPlanejadosHorizontalBar">
                     <!-- TOOLTIP da segunda barra -->
-                    <div id="secondBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="secondBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosPlanejadosAnoBarra2Tooltip" class="ProjetosPlanejadosTooltipText">
+                        <div class="ProjetosPlanejadosAnoFirstLine">
+                            <hr class="ProjetosPlanejadosAnoFirstLineHR">
+                            <div id="ProjetosPlanejadosAnoBarra2Total" class="ProjetosPlanejadosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="secondBarQtd" class="secondLineQtd">
+                        <div class="ProjetosPlanejadosAnoSecondLine">
+                            <div id="ProjetosPlanejadosAnoBarra2Qtd" class="ProjetosPlanejadosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="secondBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosPlanejadosAnoBarra2Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosPlanejadosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
             </ul>
-            <ul  id="column3" style="margin-right: 3px; min-width: fit-content;">
+            <ul  id="ProjetosPlanejadosAnoCol3" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label3" style="min-width: fit-content;"></p>
+                    <p id="ProjetosPlanejadosAnoLabel3" style="min-width: fit-content;"></p>
                 </li>
-                <li id="thirdBar" class="horizontalBar">
+                <li id="ProjetosPlanejadosAnoBarra3" class="ProjetosPlanejadosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="thirdBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="thirdBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosPlanejadosAnoBarra3Tooltip" class="ProjetosPlanejadosTooltipText">
+                        <div class="ProjetosPlanejadosAnoFirstLine">
+                            <hr class="ProjetosPlanejadosAnoFirstLineHR">
+                            <div id="ProjetosPlanejadosAnoBarra3Total" class="ProjetosPlanejadosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="thirdBarQtd" class="secondLineQtd">
+                        <div class="ProjetosPlanejadosAnoSecondLine">
+                            <div id="ProjetosPlanejadosAnoBarra3Qtd" class="ProjetosPlanejadosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="thirdBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosPlanejadosAnoBarra3Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosPlanejadosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
             </ul>
-            <ul  id="column4" style="min-width: fit-content;">
+            <ul  id="ProjetosPlanejadosAnoCol4" style="min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
-                    <p id="label4" style="min-width: fit-content;"></p>
+                    <p id="ProjetosPlanejadosAnoLabel4" style="min-width: fit-content;"></p>
                 </li>
-                <li id="fourthBar" class="horizontalBar">
+                <li id="ProjetosPlanejadosAnoBarra4" class="ProjetosPlanejadosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="fourthBarTooltip" class="tooltipText">
-                        <div class="firstLine">
-                            <hr class="firstLineHR">
-                            <div id="fourthBarTotal" class="firstLineMonthYear">
+                    <div id="ProjetosPlanejadosAnoBarra4Tooltip" class="ProjetosPlanejadosTooltipText">
+                        <div class="ProjetosPlanejadosAnoFirstLine">
+                            <hr class="ProjetosPlanejadosAnoFirstLineHR">
+                            <div id="ProjetosPlanejadosAnoBarra4Total" class="ProjetosPlanejadosAnoFirstLineMonthYear">
                                 TOTAL DE
                             </div>
                         </div>
-                        <div class="secondLine">
-                            <div id="fourthBarQtd" class="secondLineQtd">
+                        <div class="ProjetosPlanejadosAnoSecondLine">
+                            <div id="ProjetosPlanejadosAnoBarra4Qtd" class="ProjetosPlanejadosAnoSecondLineQtd">
                                 
                             </div>
-                            <div id="fourthBarDesc" class="secondLineDes" style="margin-top: -15px;">
+                            <div id="ProjetosPlanejadosAnoBarra4Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
                                 PROJETOS PLANEJADOS
                             </div>
                         </div>  
-                        <div class="fourthLine" style="margin-top: 5px;">
-                            <hr class="fourthLineHR">
+                        <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
+                            <hr class="ProjetosPlanejadosAnoThirdLineHR">
                         </div>
                     </div>
                 </li>
@@ -122,11 +122,7 @@
         projetosPlanejadosAno: {
             type: Array,
             required: true,
-        },
-        projetosConcluidosAno: {
-            type: Array,
-            required: true,
-        },
+        }
     });
 
     // Array que receberá o tamanho das barras
@@ -189,24 +185,24 @@
         }
 
         // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
-        document.getElementById('label1').innerText=labels[0];
-        document.getElementById('label2').innerText=labels[1];
-        document.getElementById('label3').innerText=labels[2];
-        document.getElementById('label4').innerText=labels[3];
+        document.getElementById('ProjetosPlanejadosAnoLabel1').innerText=labels[0];
+        document.getElementById('ProjetosPlanejadosAnoLabel2').innerText=labels[1];
+        document.getElementById('ProjetosPlanejadosAnoLabel3').innerText=labels[2];
+        document.getElementById('ProjetosPlanejadosAnoLabel4').innerText=labels[3];
         
         // Define o tamanho, a cor e o texto do tooltip de cada barra.
-        document.getElementById('column1').style.width=barDefaultWidth1;
-        document.getElementById('firstBar').style.backgroundColor=barsBackgroundColor1;
-        document.getElementById('firstBarQtd').innerText=props.projetosPlanejadosAno[0].quantidade
-        document.getElementById('column2').style.width=barDefaultWidth2;
-        document.getElementById('secondBar').style.backgroundColor=barsBackgroundColor2;
-        document.getElementById('secondBarQtd').innerText=props.projetosPlanejadosAno[1].quantidade
-        document.getElementById('column3').style.width=barDefaultWidth3;
-        document.getElementById('thirdBar').style.backgroundColor=barsBackgroundColor3;
-        document.getElementById('thirdBarQtd').innerText=props.projetosPlanejadosAno[2].quantidade
-        document.getElementById('column4').style.width=barDefaultWidth4;
-        document.getElementById('fourthBar').style.backgroundColor=barsBackgroundColor4;
-        document.getElementById('fourthBarQtd').innerText=props.projetosPlanejadosAno[3].quantidade
+        document.getElementById('ProjetosPlanejadosAnoCol1').style.width=barDefaultWidth1;
+        document.getElementById('ProjetosPlanejadosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
+        document.getElementById('ProjetosPlanejadosAnoBarra1Qtd').innerText=props.projetosPlanejadosAno[0].quantidade
+        document.getElementById('ProjetosPlanejadosAnoCol2').style.width=barDefaultWidth2;
+        document.getElementById('ProjetosPlanejadosAnoBarra2').style.backgroundColor=barsBackgroundColor2;
+        document.getElementById('ProjetosPlanejadosAnoBarra2Qtd').innerText=props.projetosPlanejadosAno[1].quantidade
+        document.getElementById('ProjetosPlanejadosAnoCol3').style.width=barDefaultWidth3;
+        document.getElementById('ProjetosPlanejadosAnoBarra3').style.backgroundColor=barsBackgroundColor3;
+        document.getElementById('ProjetosPlanejadosAnoBarra3Qtd').innerText=props.projetosPlanejadosAno[2].quantidade
+        document.getElementById('ProjetosPlanejadosAnoCol4').style.width=barDefaultWidth4;
+        document.getElementById('ProjetosPlanejadosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
+        document.getElementById('ProjetosPlanejadosAnoBarra4Qtd').innerText=props.projetosPlanejadosAno[3].quantidade
     }
 
     setTimeout(() => {
@@ -217,42 +213,54 @@
 
 <style lang="less">
 
-    .barChartBody{
+    .ProjetosPlanejadosAnoMain{
         height: 50px;
         margin-top: 10px;
         font-family: Roboto;
     }
 
-    .horizontalBar {
+    .ProjetosPlanejadosHorizontalBar {
     border-radius: 15px;
     height: 30px;  
     }
 
-    #firstBar:hover{
+    #ProjetosPlanejadosAnoBarra1:hover{
         border: 1px solid black;
     }
 
-    #firstBar:hover #firstBarTooltip{
+    #ProjetosPlanejadosAnoBarra1:hover #ProjetosPlanejadosAnoBarra1Tooltip{
         visibility: visible;
         opacity: 1;
     }
 
-    #secondBar:hover #secondBarTooltip{
+    #ProjetosPlanejadosAnoBarra2:hover{
+        border: 1px solid black;
+    }
+
+    #ProjetosPlanejadosAnoBarra2:hover #ProjetosPlanejadosAnoBarra2Tooltip{
         visibility: visible;
         opacity: 1;
     }
 
-    #thirdBar:hover #thirdBarTooltip{
+    #ProjetosPlanejadosAnoBarra3:hover{
+        border: 1px solid black;
+    }
+
+    #ProjetosPlanejadosAnoBarra3:hover #ProjetosPlanejadosAnoBarra3Tooltip{
         visibility: visible;
         opacity: 1;
     }
 
-    #fourthBar:hover #fourthBarTooltip{
+    #ProjetosPlanejadosAnoBarra4:hover{
+        border: 1px solid black;
+    }
+
+    #ProjetosPlanejadosAnoBarra4:hover #ProjetosPlanejadosAnoBarra4Tooltip{
         visibility: visible;
         opacity: 1;
     } 
 
-    #barsContainer {
+    #ProjetosPlanejadosAnoContainer {
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-around;
@@ -263,7 +271,7 @@
     width: 5px;
     }
 
-    .tooltipText {
+    .ProjetosPlanejadosTooltipText {
         visibility: hidden;
         background-color: #fff;
         color: #555;
@@ -288,7 +296,7 @@
         box-shadow: 0 0 .4em rgb(230, 230, 228);
     }
 
-    .tooltipText::after {
+    .ProjetosPlanejadosTooltipText::after {
         content: "";
         width: 3px;
         position: relative;
@@ -298,33 +306,7 @@
         border-width: 5px;
         border-style: solid;
         border-color:  transparent transparent #fff transparent;
-        //box-shadow: 0 0 .4em rgb(230, 230, 228);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     hr {
         height: 1px;
@@ -332,7 +314,7 @@
     }
         
     // Tooltip traço inicial, mês e ano - 1ª linha
-    .firstLine { 
+    .ProjetosPlanejadosAnoFirstLine { 
         grid-area: monthYear; 
         margin-top: 0px; 
         margin-bottom: 0px; 
@@ -343,14 +325,14 @@
     }
 
     // Traço inicial
-    .firstLineHR{
+    .ProjetosPlanejadosAnoFirstLineHR{
         width: 50%; 
         margin-left: auto; 
         margin-right: auto;
     }
 
     // Mês e ano
-    .firstLineMonthYear{
+    .ProjetosPlanejadosAnoFirstLineMonthYear{
         font-size: 8px; 
         height: 18px; 
         line-height: 13px; 
@@ -358,7 +340,7 @@
     }
 
     // Tooltip quantidade principal e descrição - 2ª linha
-    .secondLine { 
+    .ProjetosPlanejadosAnoSecondLine { 
         grid-area: mainQtd; 
         display: flex;
         margin-top: -15px;
@@ -367,7 +349,7 @@
     }
 
     // Quantidade principal
-    .secondLineQtd{
+    .ProjetosPlanejadosAnoSecondLineQtd{
         margin-bottom: -5px; 
         font-size: 28px; 
         text-align: end;  
@@ -376,7 +358,7 @@
     }
 
     // Descrição da quantidade principal
-    .secondLineDes{ 
+    .ProjetosPlanejadosAnoSecondLineDes{ 
         margin-left: 2px; 
         font-size: 8px; 
         text-align: start; 
@@ -415,12 +397,12 @@
     }
 
     // Tooltip traço final - 4ª linha
-    .fourthLine { 
+    .ProjetosPlanejadosAnoThirdLine { 
         grid-area: footerLine; 
     }
 
     // Traço final
-    .fourthLineHR{
+    .ProjetosPlanejadosAnoThirdLineHR{
         width: 50%; 
         margin-top: -5px; 
         margin-left: auto; 
