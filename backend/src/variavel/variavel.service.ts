@@ -249,7 +249,7 @@ export class VariavelService {
         }
 
         await this.validaGruposResponsavel(dto, MIN_DTO_SAFE_NUM);
-        await this.validaCamposCategorica(dto);
+        await this.validaCamposCategorica(dto, 'create');
 
         this.checkOrgaoProprietario(tipo, dto, user);
         const responsaveis = 'responsaveis' in dto ? dto.responsaveis : [];
@@ -1538,7 +1538,7 @@ export class VariavelService {
             throw new HttpException('Variável filha não pode ser atualizada diretamente', 400);
 
         await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_id ?? MIN_DTO_SAFE_NUM);
-        await this.validaCamposCategorica(dto);
+        await this.validaCamposCategorica(dto, 'update');
 
         let indicador_id: number | undefined = undefined;
         if (tipo == 'PDM') {
@@ -2038,7 +2038,7 @@ export class VariavelService {
         }
     }
 
-    private async validaCamposCategorica(dto: UpdateVariavelDto) {
+    private async validaCamposCategorica(dto: UpdateVariavelDto, op: 'create' | 'update') {
         if (dto.variavel_categorica_id) {
             dto.ano_base = null;
             dto.valor_base = 0;
@@ -2048,9 +2048,10 @@ export class VariavelService {
             dto.polaridade = 'Neutra';
         }
 
-        if ('unidade_medida_id' in dto && !dto.unidade_medida_id)
-            throw new HttpException('unidade_medida_id| Unidade de medida é obrigatória', 400);
-        if (dto.valor_base === undefined) throw new HttpException('valor_base| Valor base é obrigatório', 400);
+        if (op == 'create' && !dto.variavel_categorica_id) {
+            if (!dto.unidade_medida_id) throw new HttpException('Unidade de medida é obrigatória', 400);
+            if (dto.valor_base === undefined) throw new HttpException('Valor base é obrigatório', 400);
+        }
     }
 
     private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_id: number | undefined) {
