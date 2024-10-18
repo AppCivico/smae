@@ -59,6 +59,7 @@ import {
     SACicloFisicoDto,
     SerieValorNomimal,
     SerieValorPorPeriodo,
+    TipoUso,
     ValorSerieExistente,
     VariavelGlobalItemDto,
     VariavelItemDto,
@@ -2417,7 +2418,8 @@ export class VariavelService {
 
     getValorSerieExistentePorPeriodo(
         valoresExistentes: ValorSerieExistente[],
-        variavel_id: number
+        variavel_id: number,
+        uso: TipoUso = 'escrita'
     ): SerieValorPorPeriodo {
         const porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
         for (const serieValor of valoresExistentes) {
@@ -2433,12 +2435,15 @@ export class VariavelService {
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toString(),
-                referencia: this.getEditExistingSerieJwt(
-                    Date2YMD.toString(serieValor.data_valor),
-                    serieValor.id,
-                    variavel_id,
-                    serieValor.serie
-                ),
+                referencia:
+                    uso == 'escrita'
+                        ? this.getEditExistingSerieJwt(
+                              Date2YMD.toString(serieValor.data_valor),
+                              serieValor.id,
+                              variavel_id,
+                              serieValor.serie
+                          )
+                        : '',
                 conferida: serieValor.conferida,
             };
         }
@@ -2469,7 +2474,7 @@ export class VariavelService {
 
         // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
-        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId, filters.uso);
 
         const result: ListSeriesAgrupadas = {
             variavel: {
