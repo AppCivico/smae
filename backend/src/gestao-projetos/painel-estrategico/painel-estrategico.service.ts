@@ -654,7 +654,7 @@ export class PainelEstrategicoService {
         body: AnyPageTokenJwtBody;
     }> {
         const quantidade_rows = await this.prisma.$queryRawUnsafe(`select
-                                                                       count(*)
+                                                                       count(*)::int
                                                                    from
                                                                        (select
                                                                             pr.id
