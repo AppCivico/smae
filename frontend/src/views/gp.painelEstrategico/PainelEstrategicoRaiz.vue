@@ -411,7 +411,6 @@ watch(
   }
 
   @media screen and (min-width: @tres-colunas) {
-    grid-template-columns: 3fr 2fr;
     grid-template-columns: 2.5fr 1.5fr 2fr;
   }
 }
