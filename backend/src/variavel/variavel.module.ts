@@ -13,6 +13,7 @@ import { VariavelCicloService } from './variavel.ciclo.service';
 import { PdmModule } from '../pdm/pdm.module';
 import { UploadModule } from '../upload/upload.module';
 import { VariavelUtilService } from './variavel.util.service';
+import { VariavelCategoricaModule } from '../variavel-categorica/variavel-categorica.module';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { VariavelUtilService } from './variavel.util.service';
         forwardRef(() => MetaModule),
         forwardRef(() => IndicadorModule),
         forwardRef(() => PdmModule),
+        VariavelCategoricaModule,
         UploadModule,
     ],
     controllers: [

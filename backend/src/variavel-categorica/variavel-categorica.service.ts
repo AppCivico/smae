@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -17,7 +17,8 @@ export class VariavelCategoricaService {
     private readonly logger = new Logger(VariavelCategoricaService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly variavelService: VariavelService
+
+        @Inject(forwardRef(() => VariavelService)) private readonly variavelService: VariavelService
     ) {}
 
     async create(dto: CreateVariavelCategoricaDto, user: PessoaFromJwt): Promise<RecordWithId> {

@@ -7,6 +7,7 @@ import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
+import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -99,4 +100,10 @@ export class ListSeriesAgrupadas {
      * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
      */
     ordem_series: Serie[];
+
+    dados_auxiliares?: VariavelAuxiliarDto;
+}
+
+export class VariavelAuxiliarDto {
+    categorica: VariavelCategoricaItem | null;
 }

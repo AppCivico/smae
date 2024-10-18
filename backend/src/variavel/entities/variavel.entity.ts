@@ -107,11 +107,24 @@ export class FilterPeriodoDto {
     ate_ciclo_corrente?: Boolean;
 }
 
+export const TipoUso = { 'leitura-ps': 'leitura-ps', 'escrita': 'escrita' } as const;
+export type TipoUso = keyof typeof TipoUso;
+
 export class FilterSVNPeriodoDto extends FilterPeriodoDto {
     @IsOptional()
     @IsEnum(Serie, { message: 'Serie inválida' })
     @ApiProperty({ enum: Serie, required: false })
     serie?: Serie;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    incluir_auxiliares?: boolean;
+
+    @IsOptional()
+    @IsEnum(TipoUso, { message: 'Tipo de uso inválido' })
+    @ApiProperty({ enum: TipoUso, required: false })
+    uso?: TipoUso;
 }
 
 export class FilterVariavelDetalheDto {

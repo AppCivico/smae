@@ -64,6 +64,7 @@ import {
     VariavelItemDto,
 } from './entities/variavel.entity';
 import { VariavelUtilService } from './variavel.util.service';
+import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -137,6 +138,7 @@ export class VariavelService {
         @Inject(forwardRef(() => MetaService))
         private readonly metaService: MetaService,
         private readonly util: VariavelUtilService,
+        private readonly vCatService: VariavelCategoricaService,
         private readonly prisma: PrismaService
     ) {}
 
@@ -2559,6 +2561,16 @@ export class VariavelService {
                 series: seriesExistentes,
                 ciclo_fisico: ciclo_fisico,
             });
+        }
+
+        if (filters.incluir_auxiliares) {
+            const categorica = result.variavel?.variavel_categorica_id
+                ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
+                : null;
+
+            result.dados_auxiliares = {
+                categorica: categorica ? categorica[0] : null,
+            };
         }
 
         return result;
