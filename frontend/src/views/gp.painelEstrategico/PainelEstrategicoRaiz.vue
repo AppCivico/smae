@@ -18,10 +18,11 @@ import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
-import { watchEffect, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
+const router = useRouter();
 
 const painelEstrategicoStore = usePainelEstrategicoStore(route.meta.entidadeMãe as string);
 
@@ -33,27 +34,57 @@ const {
   paginacaoOrcamentos,
 } = storeToRefs(painelEstrategicoStore);
 
-watchEffect(() => {
-  const parametrosValidos = [
-    'portfolio_id',
-    'orgao_responsavel_id',
-    'projeto_id',
-  ];
-
-  const parametros = parametrosValidos.reduce((acc, parametro) => {
-    if (
-      route.query[parametro]
-      && (!Array.isArray(route.query[parametro]) || route.query[parametro].length)
-    ) {
-      acc[parametro] = route.query[parametro];
-    }
-
-    return acc;
-  }, {} as Record<string, unknown>);
-
+function iniciar() {
+  const parametros = {
+    portfolio_id: route.query.portfolio_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    projeto_id: route.query.projeto_id,
+  };
   painelEstrategicoStore.buscarDados(parametros);
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
+}
+
+const limparPaginacao = () => router.replace({
+  query: {
+    ...route.query,
+    projetos_token_paginacao: undefined,
+    projetos_pagina: undefined,
+    orcamentos_token_paginacao: undefined,
+    orcamentos_pagina: undefined,
+  },
 });
+
+iniciar();
+
+watch(
+  [
+    () => route.query.portfolio_id,
+    () => route.query.orgao_responsavel_id,
+    () => route.query.projeto_id,
+  ],
+  async ([
+    portfolioIdNovo,
+    orgaoResponsavelIdNovo,
+    projetoIdNovo,
+  ], [
+    portfolioIdAnterior,
+    orgaoResponsavelIdAnterior,
+    projetoIdAnterior,
+  ]) => {
+    switch (true) {
+      // comparando evitar chamadas desnecessárias quando os valores são apenas
+      // reavaliados
+      case portfolioIdNovo !== portfolioIdAnterior:
+      case orgaoResponsavelIdNovo !== orgaoResponsavelIdAnterior:
+      case projetoIdNovo !== projetoIdAnterior:
+        await limparPaginacao();
+        iniciar();
+        break;
+      default:
+        break;
+    }
+  },
+);
 
 watch(
   () => [route.query.projetos_token_paginacao, route.query.projetos_pagina],
