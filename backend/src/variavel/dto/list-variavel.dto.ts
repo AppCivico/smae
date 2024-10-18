@@ -105,5 +105,5 @@ export class ListSeriesAgrupadas {
 }
 
 export class VariavelAuxiliarDto {
-    categorica: VariavelCategoricaItem | null;
+    categoricas: Record<string, string> | null;
 }

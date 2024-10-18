@@ -2530,8 +2530,9 @@ export class VariavelService {
             mapDocumentoCiclo[Date2YMD.toString(doc.referencia_data)] = doc;
         }
 
-        // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir (e agora com o plano setorial)
-        // isso mudou mais uma vez
+        // TODO bloquear acesso ao token pra quem não for admin ou tecnico dessa meta (no PDM),
+        // no Plano Setorial não tem problema vazar o token, pois lá tem controle na hora da escrita
+        // que tbm poderia ser implementado
 
         let indicadorId: number | null = null;
         if (tipo === 'PDM') {
@@ -2573,8 +2574,15 @@ export class VariavelService {
                 ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
                 : null;
 
+            let categoricas: Record<string, string> | null = null;
+            if (categorica && categorica[0]) {
+                categoricas = categorica[0].valores
+                    .map((v) => ({ [v.valor_variavel]: v.titulo }))
+                    .reduce((acc, cur) => ({ ...acc, ...cur }), {});
+            }
+
             result.dados_auxiliares = {
-                categorica: categorica ? categorica[0] : null,
+                categoricas: categoricas,
             };
         }
 
