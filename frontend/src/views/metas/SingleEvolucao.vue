@@ -66,7 +66,7 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 
   if (Variaveis.value[tempIndicadores.value[0]?.id]) {
     Variaveis.value[tempIndicadores.value[0]?.id].forEach((x) => {
-      VariaveisStore.getValores(x.id);
+      VariaveisStore.getValores(x.id, { leitura: true });
     });
   }
 })();
@@ -249,7 +249,10 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                   </div>
                 </div>
               </div>
-              <EvolucaoGraph :dataserie="Valores[v.id]" />
+              <EvolucaoGraph
+                :dataserie="Valores[v.id]"
+                :tem-categorica="!!variavel_categorica_id"
+              />
             </header>
             <div>
               <div class="tablepreinfo">
@@ -295,7 +298,7 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                 <GruposDeSerie
                   :g="Valores[v.id]"
                   variavel="true"
-                  :tem-variavel-acumulada="v.acumulativa"
+                  :tem-variavel-acumulada="!!v.acumulativa"
                 />
               </table>
             </div>

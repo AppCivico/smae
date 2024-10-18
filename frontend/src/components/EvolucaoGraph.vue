@@ -16,6 +16,10 @@ const props = defineProps({
     default: 0,
     validator: (value) => typeof value === 'number',
   },
+  temCategorica: {
+    type: Boolean,
+    default: false,
+  },
 });
 const evolucao = ref(null);
 const tooltipEl = ref(null);
@@ -309,10 +313,13 @@ class smaeChart {
     for (let i = 0; i < dataKeys.length; i += 1) {
       for (let j = 0; j < data[dataKeys[i]].length; j += 1) {
         for (let k = 0; k < tipArray.length; k += 1) {
+          if (!data[dataKeys[i]][j].value) {
+            break;
+          }
+
           if (tipArray[k].date.getTime() == (new Date(data[dataKeys[i]][j].date)).getTime()) {
             aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
-            tipArray[k][`${dataKeys[i]}Acum`] = Big(data[dataKeys[i]][j].value)
-              .toFixed(casasDecimais.value) || 0;
+            tipArray[k][`${dataKeys[i]}Acum`] = Big(data[dataKeys[i]][j].value).toFixed(casasDecimais.value) || 0;
             tipArray[k][dataKeys[i]] = Big(data[dataKeys[i]][j].value)
               .minus(aux[dataKeys[i]])
               .toFixed(casasDecimais.value);
@@ -501,11 +508,13 @@ function start() {
     const data = {};
 
     const iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
+    const iRealizado = props.dataserie.ordem_series.indexOf('Realizado');
     const iRealizadoAcumulado = props.dataserie.ordem_series.indexOf('RealizadoAcumulado');
+
     data.projetado = props.dataserie.linhas
       .map((x) => ({
         date: x.series[iPrevistoAcumulado].data_valor,
-        value: x.series[iPrevistoAcumulado].valor_nominal,
+        value: x.series[!props.temCategorica ? iPrevistoAcumulado : iRealizado].valor_nominal,
       }));
     data.realizado = props.dataserie.linhas
       .map((x) => ({
