@@ -1,13 +1,12 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { IdNomeDto } from '../../common/dto/IdNome.dto';
+import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
+import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
-import { IdNomeDto } from '../../common/dto/IdNome.dto';
-import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
-import { Decimal } from '@prisma/client/runtime/library';
-import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
-import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];

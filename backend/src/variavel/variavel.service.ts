@@ -2546,7 +2546,8 @@ export class VariavelService {
                 porPeriodo,
                 periodoYMD,
                 variavelId,
-                variavel
+                variavel,
+                filters.uso
             );
 
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
@@ -2593,7 +2594,8 @@ export class VariavelService {
         porPeriodo: SerieValorPorPeriodo,
         periodoYMD: string,
         variavelId: number,
-        variavel: { acumulativa: boolean }
+        variavel: { acumulativa: boolean },
+        uso: TipoUso = 'escrita'
     ) {
         const seriesExistentes: SerieValorNomimal[] = [];
 
@@ -2608,7 +2610,7 @@ export class VariavelService {
             if (existeValor.Previsto) {
                 seriesExistentes.push(existeValor.Previsto);
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso));
             }
 
             if (existeValor.PrevistoAcumulado) {
@@ -2617,7 +2619,7 @@ export class VariavelService {
                 seriesExistentes.push(
                     this.referencia_boba(
                         variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado')
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso)
                     )
                 );
             }
@@ -2625,7 +2627,7 @@ export class VariavelService {
             if (existeValor.Realizado) {
                 seriesExistentes.push(existeValor.Realizado);
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
             }
 
             if (existeValor.RealizadoAcumulado) {
@@ -2634,15 +2636,15 @@ export class VariavelService {
                 seriesExistentes.push(
                     this.referencia_boba(
                         variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado')
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso)
                     )
                 );
             }
         } else {
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso));
         }
         return seriesExistentes;
     }
@@ -2654,10 +2656,15 @@ export class VariavelService {
         return sv;
     }
 
-    private buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
+    private buildNonExistingSerieValor(
+        periodo: DateYMD,
+        variavelId: number,
+        serie: Serie,
+        uso: TipoUso
+    ): SerieValorNomimal {
         return {
             data_valor: periodo,
-            referencia: this.getEditNonExistingSerieJwt(variavelId, periodo, serie),
+            referencia: uso == 'escrita' ? this.getEditNonExistingSerieJwt(variavelId, periodo, serie) : '',
             valor_nominal: '',
         };
     }
