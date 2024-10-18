@@ -107,7 +107,7 @@ export class FilterPeriodoDto {
     ate_ciclo_corrente?: Boolean;
 }
 
-export const TipoUso = { 'leitura-ps': 'leitura-ps', 'escrita': 'escrita' } as const;
+export const TipoUso = { 'leitura': 'leitura', 'escrita': 'escrita' } as const;
 export type TipoUso = keyof typeof TipoUso;
 
 export class FilterSVNPeriodoDto extends FilterPeriodoDto {
