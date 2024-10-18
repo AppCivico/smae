@@ -355,6 +355,7 @@
 
     // Descrição da quantidade secundária
     .thirdLineDes{
+        margin-bottom: -5px; 
         font-size: 6px; 
         text-align: start; 
         align-self: flex-end; 

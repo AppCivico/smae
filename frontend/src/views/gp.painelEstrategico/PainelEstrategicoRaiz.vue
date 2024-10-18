@@ -282,7 +282,7 @@ watch(
   <div style="margin-top: 25px;">
     <hr>
     <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
-      Volume de projetos planejados por Ano/Mês.
+      Volume de projetos concluídos por Ano/Mês.
     </p>
   </div>
 

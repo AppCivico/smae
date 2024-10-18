@@ -152,6 +152,10 @@
     barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
     barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
 
+
+    console.log("***************************************");
+    console.log(barsWidth);
+
     function init(){
 
         // Valores default para quando a quantidade for igual a 0
