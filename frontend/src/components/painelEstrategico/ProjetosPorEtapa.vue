@@ -1,7 +1,7 @@
 <template>
   <div
     role="region"
-    aria-label="Gráfico de execução orçamentária"
+    aria-label="Gráfico de projetos por etapa"
     tabindex="0"
   >
     <div

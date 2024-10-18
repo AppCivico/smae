@@ -1,9 +1,20 @@
 <template>
-  <GraficoDashboard
-    class="pb3"
-    :option="projetosPorOrgaoResponsavelChartOptions"
-    :tooltip-template="formatTooltip"
-  />
+  <div
+    role="region"
+    aria-label="Gráfico de projetos por orgão responsável"
+    tabindex="0"
+  >
+    <div
+      class="min-width"
+      style="--min-width: 30rem;"
+    >
+      <GraficoDashboard
+        class="pb3"
+        :option="projetosPorOrgaoResponsavelChartOptions"
+        :tooltip-template="formatTooltip"
+      />
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>

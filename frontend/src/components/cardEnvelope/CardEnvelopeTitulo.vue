@@ -1,9 +1,11 @@
 <template>
   <header class="card-envelope-titulo">
-    <h2 class="card-envelope-titulo__texto t20 mb0 flex center g1">
-      <slot>
-        {{ titulo }}
-      </slot>
+    <h2 class="card-envelope-titulo__texto t20 mb0 center g1">
+      <span class="card-envelope-titulo__slot">
+        <slot>
+          {{ titulo }}
+        </slot>
+      </span>
       <slot name="icone">
         <svg
           v-if="temIcone"
