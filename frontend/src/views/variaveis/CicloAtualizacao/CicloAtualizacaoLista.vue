@@ -98,9 +98,7 @@
           </th>
 
           <td>
-            <span :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}">
-              {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
-            </span>
+            {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
           </td>
 
           <td>
@@ -112,7 +110,9 @@
           </td>
 
           <td>
-            {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'dd/MM/yyyy') }}
+            <span :class="{'tvermelho': cicloAtualizacao.temAtraso}">
+              {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'dd/MM/yyyy') }}
+            </span>
           </td>
 
           <th>
