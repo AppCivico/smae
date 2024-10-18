@@ -309,6 +309,9 @@ watch(
           icone="moneyChart"
           cor="#D86B2C"
         />
+        <ExecucaoOrcamentariaGrafico
+          :execucao-orcamentaria="painelEstrategicoStore?.execucaoOrcamentariaAno"
+        />
         <ExecucaoOrcamentaria
           :execucao-orcamentaria="painelEstrategicoStore?.execucaoOrcamentariaAno"
           :orcamentos="painelEstrategicoStore?.orcamentosPaginados"

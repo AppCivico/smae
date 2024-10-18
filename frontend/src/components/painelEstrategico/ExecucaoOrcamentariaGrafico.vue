@@ -16,7 +16,7 @@ const props = defineProps({
 
 const chartOption = computed(() => ({
   grid: {
-    top: '25%',
+    top: '35%',
     left: '3%',
     right: '3%',
     containLabel: true,
@@ -61,6 +61,8 @@ const chartOption = computed(() => ({
       },
       label: {
         show: true,
+        rotate: 90,
+        align: 'verticalCenter',
         position: 'top',
         formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, true, true)}` : ''),
         fontSize: 14,
@@ -82,6 +84,8 @@ const chartOption = computed(() => ({
       label: {
         position: 'top',
         show: true,
+        align: 'verticalCenter',
+        rotate: 90,
         formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, true, true)}` : ''),
         fontSize: 14,
         fontWeight: 600,
@@ -101,6 +105,8 @@ const chartOption = computed(() => ({
       },
       label: {
         show: true,
+        rotate: 90,
+        align: 'verticalCenter',
         position: 'top',
         formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, true, true)}` : ''),
         fontSize: 14,
