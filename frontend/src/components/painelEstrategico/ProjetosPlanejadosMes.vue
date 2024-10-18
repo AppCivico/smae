@@ -47,14 +47,12 @@
     const var1 = 300;
 
     let data = props.projetosPlanejadosMes;
-    let secundaryData = props.projetosConcluidosMes;
-    let years = props.anosMapaCalorPlanejados;
+    let secondaryData = props.projetosConcluidosMes;
+    let years = props.anosMapaCalorPlanejados.sort();
     let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
     let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
     let colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];     
     let chartTitle = "Projetos Planejados";
- console.log(data);
- console.log(secundaryData);
 
     // Meses do eixo X
     const months = [
@@ -122,7 +120,7 @@
                 // Ano da posição atual do tooltip
                 let searchYear = years[params.data[1]];
                 // Pega a quantidade
-                let finishedCurrentYear = secundaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
+                let finishedCurrentYear = secondaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
                 if(finishedCurrentYear[0]){
                     footerQuantity = finishedCurrentYear[0].quantidade;
                 } else{

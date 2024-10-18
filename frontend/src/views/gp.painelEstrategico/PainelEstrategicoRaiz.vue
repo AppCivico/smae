@@ -11,6 +11,9 @@ import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
 import ExecucaoOrcamentariaGrafico from '@/components/painelEstrategico/ExecucaoOrcamentariaGrafico.vue';
+import ProjetosPlanejadosMes from '@/components/painelEstrategico/ProjetosPlanejadosMes.vue';
+import ProjetosConcluidosMes from '@/components/painelEstrategico/ProjetosConcluidosMes.vue';
+import HorizontalSideBySideBarsChart from '@/components/HorizontalSideBySideBarsChart.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
@@ -210,6 +213,60 @@ watch(
       </CardEnvelope.conteudo>
 
       <CardEnvelope.Slide>
+
+
+<CardEnvelope.Conteudo>
+  <CardEnvelope.Titulo
+      titulo="Projetos Planejados"
+      icone="box"
+      cor="#A77E11"
+      subtitulo="Volume de projetos planejados no ano vigente e nos anos futuros."
+  />
+  <HorizontalSideBySideBarsChart
+    :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
+    :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
+  />
+  <div style="margin-top: 25px;">
+    <hr>
+    <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
+      Volume de projetos planejados por Ano/Mês.
+    </p>
+  </div>
+  
+  <ProjetosPlanejadosMes
+    :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
+    :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
+    :anos-mapa-calor-planejados="painelEstrategicoStore.anosMapaCalorPlanejados"
+  />
+</CardEnvelope.conteudo>
+
+<CardEnvelope.Conteudo>
+    <CardEnvelope.Titulo
+      titulo="Projetos Concluídos"
+      icone="box"
+      cor="#D3A730"
+      subtitulo="Volume de projetos concluídos no ano vigente e nos anos anteriores."
+  />
+  <!--<HorizontalSideBySideBarsChart
+    :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
+    :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
+  />
+  <div style="margin-top: 25px;">
+    <hr>
+    <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
+      Volume de projetos planejados por Ano/Mês.
+    </p>
+  </div>-->
+
+  <ProjetosConcluidosMes
+  :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
+  :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
+  :anos-mapa-calor-concluidos="painelEstrategicoStore.anosMapaCalorConcluidos"
+  />
+</CardEnvelope.conteudo>
+
+
+
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por órgão responsável"
@@ -222,7 +279,19 @@ watch(
         <CardEnvelope.Conteudo>
           outro gráfico
         </CardEnvelope.conteudo>
+      
+      
+      
+      
+      
+      
+      
       </CardEnvelope.Slide>
+
+
+
+
+
     </div>
 
     <ErrorComponent v-if="erros.projetosPaginados" />

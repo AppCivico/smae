@@ -47,13 +47,15 @@
     const var1 = 300;
 
     let data = props.projetosConcluidosMes;
-    let secundaryData = props.projetosPlanejadosMes;
-    let years = props.anosMapaCalorConcluidos;
-    let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
-    let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
+    let secondaryData = props.projetosPlanejadosMes;
+    let years = props.anosMapaCalorConcluidos.sort();
+    let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -12px;">CONCLUÍDOS</div>';
+    let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">PLANEJADOS</div>';
     let colorArray = ['#e8e8e8', '#FDF3D6', '#FBE099', '#F7C233', '#D3A730'];     
     let chartTitle = "Projetos Concluidos";
 
+    console.log(data);
+    console.log(secondaryData);
 
     // Meses do eixo X
     const months = [
@@ -83,19 +85,16 @@
         tempArray.push(item.coluna);
         tempArray.push(item.linha);
         tempArray.push(item.quantidade);
-        // Como o objeto pode conter valores de anos anteriores, só fazer o reduce do ano atual em diante.
-        if(item.ano >= currentYear){
-            const value = item.quantidade;
-            // Verifica a maior quantidade para usar no gráfico
-            if(maxValue < value){
-                maxValue = value;
-            }
-            // Verifica a menor quantidade para usar no gráfico
-            if(minValue >= value){
-                minValue = value;
-            }
-                acc.push(tempArray);
+        const value = item.quantidade;
+        // Verifica a maior quantidade para usar no gráfico
+        if(maxValue < value){
+            maxValue = value;
         }
+        // Verifica a menor quantidade para usar no gráfico
+        if(minValue >= value){
+            minValue = value;
+        }
+            acc.push(tempArray);
         return [...acc ]
     }, [])
 
@@ -121,7 +120,7 @@
                 // Ano da posição atual do tooltip
                 let searchYear = years[params.data[1]];
                 // Pega a quantidade
-                let finishedCurrentYear = secundaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
+                let finishedCurrentYear = secondaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
                 if(finishedCurrentYear[0]){
                     footerQuantity = finishedCurrentYear[0].quantidade;
                 } else{
