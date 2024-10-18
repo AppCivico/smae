@@ -1,6 +1,5 @@
 <template>
   <slot
-    class="formulario-query-string"
     :aplicar-query-strings="aplicarFiltros"
   />
 </template>
