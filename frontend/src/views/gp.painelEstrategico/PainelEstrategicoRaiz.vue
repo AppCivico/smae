@@ -136,7 +136,7 @@ watch(
         <CardEnvelope.Titulo
           titulo="Grandes números"
           icone="gear"
-          subtitulo="Total de projetos relacionados as metas e órgãos."
+          subtitulo="Total de projetos relacionados às metas e órgãos."
         />
 
         <GrandesNumeros :grandes-numeros="painelEstrategicoStore.grandesNumeros" />
@@ -175,7 +175,6 @@ watch(
           <CardEnvelope.Titulo
             titulo="Projetos por etapas"
             icone="box"
-            subtitulo="Total de projetos relacionados as metas e órgãos."
           />
           <ProjetosPorEtapa
             :projetos-por-etapas="painelEstrategicoStore.projetoEtapas"
@@ -185,7 +184,6 @@ watch(
           <CardEnvelope.Titulo
             titulo="Projetos por status"
             icone="box"
-            subtitulo="Total de projetos relacionados as metas e órgãos."
           />
           <ProjetosPorStatus
             :projetos-por-status="painelEstrategicoStore.projetoStatus"
