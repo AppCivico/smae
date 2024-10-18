@@ -1,5 +1,5 @@
 <template>   
-    <div id="heatMapContainer" class="chartContainer" autoresize></div>
+    <div id="projetosProjetadosMesContainer" class="chartContainer" autoresize></div>
 </template>
 
 <script setup>
@@ -22,10 +22,6 @@
             type: Array,
             required: true,
         },
-        anosMapaCalorConcluidos: {
-            type: Array,
-            required: true,
-        }
     });
 
     /************************************************************************************************
@@ -50,29 +46,15 @@
 
     const var1 = 300;
 
-    let data = [];
-    let years = [];
-    let tooltipTitle = '';
-    let tooltipFooter = '';
-    let colorArray = [];     
-    let chartTitle = '';
-
-    // Se o array de anos estiver vazio, quer dizer que o gráfico não é daquele tipo
-    if(props.anosMapaCalorConcluidos.length == 0){ 
-        data = props.projetosPlanejadosMes;
-        years = props.anosMapaCalorPlanejados;
-        tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
-        tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
-        colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];     
-        chartTitle = "Projetos Planejados";
-    } else{
-        data = props.projetosConcluidosMes;
-        years = props.anosMapaCalorConcluidos;
-        tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
-        tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
-        colorArray = ['#e8e8e8', '#FDF3D6', '#FBE099', '#F7C233', '#D3A730'];     
-        chartTitle = "Projetos Planejados";
-    }
+    let data = props.projetosPlanejadosMes;
+    let secundaryData = props.projetosConcluidosMes;
+    let years = props.anosMapaCalorPlanejados;
+    let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
+    let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
+    let colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];     
+    let chartTitle = "Projetos Planejados";
+ console.log(data);
+ console.log(secundaryData);
 
     // Meses do eixo X
     const months = [
@@ -140,7 +122,7 @@
                 // Ano da posição atual do tooltip
                 let searchYear = years[params.data[1]];
                 // Pega a quantidade
-                let finishedCurrentYear = props.projetosConcluidosMes.filter(d => d.ano === searchYear && d.mes === searchMonth);
+                let finishedCurrentYear = secundaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
                 if(finishedCurrentYear[0]){
                     footerQuantity = finishedCurrentYear[0].quantidade;
                 } else{
@@ -277,12 +259,12 @@
 
     // Espera para o DOM estar pronto (talvez possa ser substituido pelo READY).
     setTimeout(() => {
-        let chartDom = document.getElementById('heatMapContainer');
+        let chartDom = document.getElementById('projetosProjetadosMesContainer');
         heatmapChart = echarts.init(chartDom, null, {
             renderer: 'canvas'
         });
         option && heatmapChart.setOption(option);
-    }, 100 );
+    }, 1000 );
 
 </script>
 

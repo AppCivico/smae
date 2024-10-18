@@ -1,37 +1,36 @@
 <template>   
     <div class="barChartBody" onload="init();">
-
         <div id="barsContainer">
             <ul id="column1" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
                     <p id="label1" style="min-width: fit-content;"></p>
                 </li>
-                <li id="value1" class="rcorners1">
-                    
+                <li id="firstBar" class="horizontalBar" style="background-color: red;">
+                    <span id="firstBarTooltip" class="tooltipText">Olha eu aqui 1!</span>
                 </li>
             </ul>
             <ul id="column2" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
                     <p id="label2" style="min-width: fit-content;"></p>
                 </li>
-                <li id="value2" class="rcorners1">
-                    
+                <li id="secondBar" class="horizontalBar">
+                    <span id="secondBarTooltip" class="tooltipText">Olha eu aqui 2!</span>
                 </li>
             </ul>
             <ul  id="column3" style="margin-right: 3px; min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
                     <p id="label3" style="min-width: fit-content;"></p>
                 </li>
-                <li>
-                    <div id="value3" class="rcorners1"></div> 
+                <li id="thirdBar" class="horizontalBar">
+                    <span id="thirdBarTooltip" class="tooltipText">Olha eu aqui 3!</span>
                 </li>
             </ul>
             <ul  id="column4" style="min-width: fit-content;">
                 <li style="text-align: center; margin-bottom: -10px; min-width: fit-content;">
                     <p id="label4" style="min-width: fit-content;"></p>
                 </li>
-                <li id="value4" class="rcorners1">
-                    
+                <li id="fourthBar" class="horizontalBar">
+                    <span id="fourthdBarTooltip" class="tooltipText">Olha eu aqui 4!</span>
                 </li>
             </ul>
         </div>
@@ -40,46 +39,19 @@
 
 <script setup>
 
-    // Tipo de gráfico
-    const chartType = "PLA";
+    import { defineProps } from 'vue';
 
-    // Dados dos projetos concluídos
-    const projetos_concluidos_ano = [
-        {
-            "ano": 2021,
-            "quantidade": 220
+    // Parâtros recebidos do container principal
+    const props = defineProps({
+        projetosPlanejadosAno: {
+            type: Array,
+            required: true,
         },
-        {
-            "ano": 2022,
-            "quantidade": 0
+        projetosConcluidosAno: {
+            type: Array,
+            required: true,
         },
-        {
-            "ano": 2023,
-            "quantidade": 1
-        },{
-            "ano": 2024,
-            "quantidade": 400
-        }
-    ];
-
-    // Dados dos projetos planejados
-    const projetos_planejados_ano = [
-        {
-            "ano": 2024,
-            "quantidade": 200
-        },
-        {
-            "ano": 2025,
-            "quantidade": 300
-        },
-        {
-            "ano": 2026,
-            "quantidade": 400
-        },{
-            "ano": 2027,
-            "quantidade": 500
-        }
-    ];
+    });
 
     // Array que receberá o tamanho das barras
     let barsWidth = [];
@@ -93,29 +65,37 @@
     // Define a cor da barra
     let barsBackgroundColor = '';
 
-    // Dependendo do tipo de gráfico, configura as variáveis
-    if(chartType == "PLA"){
-        // Lê o objeto e carrega os valores
-        for(let i=0; i < projetos_planejados_ano.length; i++){
-            labels[i] = "" + projetos_planejados_ano[i].ano;
-            barsWidth[i] = projetos_planejados_ano[i].quantidade;
-            // Acumula o total de projetos
-            totalProjects = totalProjects + projetos_planejados_ano[i].quantidade;
-        }
+    let projetosPlanejadosAnoTemp =
+      [
+  {
+    "quantidade": 10,
+    "ano": 2027
+  },
+  {
+    "quantidade": 20,
+    "ano": 2026
+  },
+  {
+    "quantidade": 7,
+    "ano": 2025
+  },
+  {
+    "quantidade": 2,
+    "ano": 2024
+  }
+]
 
-        barsBackgroundColor = "#A77E11";
 
-    } else {
-        // Lê o objeto e carrega os valores
-        for(let i=0; i < projetos_concluidos_ano.length; i++){
-            labels[i] = "" + projetos_concluidos_ano[i].ano;
-            barsWidth[i] = projetos_concluidos_ano[i].quantidade;
-            // Acumula o total de projetos
-            totalProjects = totalProjects + projetos_concluidos_ano[i].quantidade;
-        }
-
-        barsBackgroundColor = "#d3a730";
+    for(let i=0; i < projetosPlanejadosAnoTemp.length; i++){
+        labels[i] = "" + projetosPlanejadosAnoTemp[i].ano;
+        barsWidth[i] = projetosPlanejadosAnoTemp[i].quantidade;
+        // Acumula o total de projetos
+        totalProjects = totalProjects + projetosPlanejadosAnoTemp[i].quantidade;
     }
+
+    barsBackgroundColor = "#A77E11";
+    // barsBackgroundColor = "#d3a730";
+ 
 
     // Calcula o percentual do tamanho das barras
     barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
@@ -161,18 +141,18 @@
         
         // Define o tamanho e a cor de cada barra.
         document.getElementById('column1').style.width=barDefaultWidth1;
-        document.getElementById('value1').style.backgroundColor=barsBackgroundColor1;
+        document.getElementById('firstBar').style.backgroundColor=barsBackgroundColor1;
         document.getElementById('column2').style.width=barDefaultWidth2;
-        document.getElementById('value2').style.backgroundColor=barsBackgroundColor2;
+        document.getElementById('secondBar').style.backgroundColor=barsBackgroundColor2;
         document.getElementById('column3').style.width=barDefaultWidth3;
-        document.getElementById('value3').style.backgroundColor=barsBackgroundColor3;
+        document.getElementById('thirdBar').style.backgroundColor=barsBackgroundColor3;
         document.getElementById('column4').style.width=barDefaultWidth4;
-        document.getElementById('value4').style.backgroundColor=barsBackgroundColor4;
+        document.getElementById('fourthBar').style.backgroundColor=barsBackgroundColor4;
     }
 
     setTimeout(() => {
         init();
-    }, 1000);
+    }, 100);
 
 </script>
 
@@ -184,15 +164,34 @@
         font-family: Roboto;
     }
 
-    .rcorners1 {
+    .horizontalBar {
     border-radius: 15px;
-
     height: 30px;  
     }
 
-    .rcorners1:hover {
-    border: 1px solid black;
+    #firstBar:hover{
+        border: 1px solid black;
     }
+
+    #firstBar:hover #firstBarTooltip{
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #secondBar:hover #secondBarTooltip{
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #thirdBar:hover #thirdBarTooltip{
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #fourthBar:hover #fourthBarTooltip{
+        visibility: visible;
+        opacity: 1;
+    } 
 
     #barsContainer {
         display: flex;
@@ -204,6 +203,35 @@
     #space{
     width: 5px;
     }
+
+    .tooltipText {
+        visibility: hidden;
+        width: 180px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: relative;
+        z-index: 1;
+        bottom: -145%;
+        left: 70%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .tooltipText::after {
+        content: "";
+        position: relative;
+        top: -145%;
+        left: 20%;
+        margin-left: -30px;
+        border-width: 5px;
+        border-style: solid;
+        border-color:  transparent transparent #555 transparent;
+    }
+
 
 
 </style>

@@ -12,7 +12,9 @@ import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentari
 import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
-import HeatMapGraph from '@/components/HeatMapGraph.vue';
+import ProjetosPlanejadosMes from '@/components/painelEstrategico/ProjetosPlanejadosMes.vue';
+import ProjetosConcluidosMes from '@/components/painelEstrategico/ProjetosConcluidosMes.vue';
+import HorizontalSideBySideBarsChart from '@/components/HorizontalSideBySideBarsChart.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -192,7 +194,60 @@ watchEffect(() => {
       </CardEnvelope.conteudo>
 
       <CardEnvelope.default>
+
+
         <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo
+              titulo="Projetos Planejados"
+              icone="box"
+              cor="#A77E11"
+              subtitulo="Volume de projetos planejados no ano vigente e nos anos futuros."
+          />
+          <HorizontalSideBySideBarsChart
+            :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
+            :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
+          />
+          <div style="margin-top: 25px;">
+            <hr>
+            <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
+              Volume de projetos planejados por Ano/Mês.
+            </p>
+          </div>
+          
+          <ProjetosPlanejadosMes
+            :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
+            :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
+            :anos-mapa-calor-planejados="painelEstrategicoStore.anosMapaCalorPlanejados"
+          />
+        </CardEnvelope.conteudo>
+
+        <CardEnvelope.Conteudo>
+            <CardEnvelope.Titulo
+              titulo="Projetos Concluídos"
+              icone="box"
+              cor="#D3A730"
+              subtitulo="Volume de projetos concluídos no ano vigente e nos anos anteriores."
+          />
+          <!--<HorizontalSideBySideBarsChart
+            :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
+            :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
+          />
+          <div style="margin-top: 25px;">
+            <hr>
+            <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
+              Volume de projetos planejados por Ano/Mês.
+            </p>
+          </div>-->
+
+          <ProjetosConcluidosMes
+          :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
+          :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
+          :anos-mapa-calor-concluidos="painelEstrategicoStore.anosMapaCalorConcluidos"
+          />
+        </CardEnvelope.conteudo>
+
+
+      <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por órgão responsável"
             subtitulo="Órgãos com os números mais expressivos de projetos. Demais órgãos apresentados em Outros."
@@ -201,37 +256,6 @@ watchEffect(() => {
             :projetos-orgao-responsavel="painelEstrategicoStore.projetoOrgaoResponsavel"
           />
         </CardEnvelope.conteudo>
-
-        <CardEnvelope.Conteudo>
-            <CardEnvelope.Titulo
-              titulo="Projetos Planejados"
-              icone="box"
-              cor="#A77E11"
-              subtitulo="Volume de projetos planejados no ano vigente e nos anos futuros."
-          />
-          <HeatMapGraph
-          :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
-          :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
-          :anos-mapa-calor-planejados="painelEstrategicoStore.anosMapaCalorPlanejados"
-          :anos-mapa-calor-concluidos="[]"
-          />
-        </CardEnvelope.conteudo>
-<!--
-        <CardEnvelope.Conteudo>
-            <CardEnvelope.Titulo
-              titulo="Projetos Concluídos"
-              icone="box"
-              cor="#F7C233"
-              subtitulo="Volume de projetos concluídos no ano vigente e nos anos anteriores."
-          />
-          <HeatMapGraph
-          :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
-          :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
-          :anos-mapa-calor-planejados="[]"
-          :anos-mapa-calor-concluidos="painelEstrategicoStore.anosMapaCalorConcluidos"
-          />
-        </CardEnvelope.conteudo>
--->
  
 
       </CardEnvelope.default>
