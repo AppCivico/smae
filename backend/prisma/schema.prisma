@@ -1701,6 +1701,7 @@ model Variavel {
     VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
     VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
 
+    @@index([tipo, removido_em, variavel_mae_id])
     @@index([regiao_id])
     @@map("variavel")
 }
