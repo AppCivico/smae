@@ -78,7 +78,7 @@
     </table>
     <div>
       <MenuPaginacao
-        class="mt2 bgb"
+        class="mt2 bgt"
         v-bind="paginacao"
         prefixo="orcamentos_"
       />
