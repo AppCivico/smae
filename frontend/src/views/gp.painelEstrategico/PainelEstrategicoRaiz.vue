@@ -201,7 +201,6 @@ watch(
           :geo-json="locaisAgrupados.enderecos"
           :camadas="locaisAgrupados.camadas"
           class="mb1"
-          agrupar-marcadores
           :opções-do-polígono="{
             fill: true,
             opacity: 0.5,
