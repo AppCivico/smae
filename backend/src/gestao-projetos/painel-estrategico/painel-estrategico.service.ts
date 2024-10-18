@@ -751,10 +751,12 @@ export class PainelEstrategicoService {
                             and t.termino_planejado <= current_date)::float as valor_custo_planejado_hoje,
                          orc.soma_valor_empenho ::float as valor_empenhado_total,
                          orc.soma_valor_liquidado::float as valor_liquidado_total,
-                         p.nome as nome_projeto
+                         p.nome as nome_projeto,
+                         p.codigo as codigo_projeto
                      from (select pr.id,
                                   pr.nome,
-                                  pr.orgao_responsavel_id
+                                  pr.orgao_responsavel_id,
+                                  pr.codigo
                            from projeto pr
                            where pr.removido_em is null
                              and pr.arquivado = false
@@ -763,7 +765,8 @@ export class PainelEstrategicoService {
                            union
                            select p.id,
                                   p.nome,
-                                  p.orgao_responsavel_id
+                                  p.orgao_responsavel_id,
+                                  p.codigo
                            from projeto p,
                                 portfolio_projeto_compartilhado pp
                            where pp.projeto_id = p.id

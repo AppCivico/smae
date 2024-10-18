@@ -81,6 +81,7 @@ export class PainelEstrategicoExecucaoOrcamentariaLista{
     valor_custo_planejado_hoje:number;
     valor_empenhado_total:number;
     valor_liquidado_total:number;
+    codigo_projeto:string;
 }
 export class PainelEstrategicoGeoLocalizacao{
     projeto_nome:string;
