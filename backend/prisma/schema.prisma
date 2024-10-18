@@ -1993,7 +1993,7 @@ model VariavelCategoricaValor {
     removedor     Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
     SerieVariavel SerieVariavel[]
 
-    @@unique([variavel_categorica_id, valor_variavel])
+    // @@unique([variavel_categorica_id, valor_variavel]) só quando removido_em is null
     @@unique([variavel_categorica_id, id])
     @@map("variavel_categorica_valor")
 }
@@ -5825,6 +5825,9 @@ model DistribuicaoRecursoSei {
     distribuicao_recurso_id Int
     distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
 
+    status_sei_id Int?
+    status_sei    StatusSEI? @relation(fields: [status_sei_id], references: [id])
+
     nome         String?
     processo_sei String
 
@@ -6997,7 +7000,8 @@ model StatusSEI {
     proxima_sincronizacao DateTime @default(now())
     sincronizacao_errmsg  String?
 
-    usuarios_lidos Int[]
+    usuarios_lidos               Int[]
+    processosDistribuicaoRecurso DistribuicaoRecursoSei[]
 
     sei_atualizado_em    DateTime? @db.Timestamptz(6)
     resumo_atualizado_em DateTime? @db.Timestamptz(6)

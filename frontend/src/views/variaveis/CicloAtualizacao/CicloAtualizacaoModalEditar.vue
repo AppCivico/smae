@@ -326,6 +326,7 @@
         </button>
 
         <button
+          v-if="!values.solicitar_complementacao"
           class="btn"
           :disabled="bloqueado"
           @click.prevent="submit({ aprovar: true })"

@@ -23,6 +23,7 @@ import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
+import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 
 const BCRYPT_ROUNDS = 10;
 const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['CadastroPessoa.administrador', 'CadastroPessoa.administrador.MDO'];
@@ -44,7 +45,7 @@ export class PessoaService {
         this.#matchEmailRFObrigatorio = process.env.MATCH_EMAIL_RF_OBRIGATORIO || '';
     }
 
-    pessoaAsHash(pessoa: Pessoa) {
+    pessoaAsHash(pessoa: PessoaDto) {
         return {
             nome_exibicao: pessoa.nome_exibicao,
             id: pessoa.id,
@@ -57,7 +58,7 @@ export class PessoaService {
         return await bcrypt.compare(senhaInformada, pessoa.senha);
     }
 
-    async incrementarSenhaInvalida(pessoa: Pessoa) {
+    async incrementarSenhaInvalida(pessoa: PessoaDto) {
         const updatedPessoa = await this.prisma.pessoa.update({
             where: { id: pessoa.id },
             data: {
@@ -71,7 +72,7 @@ export class PessoaService {
         }
     }
 
-    async criaNovaSenha(pessoa: Pessoa, solicitadoPeloUsuario: boolean) {
+    async criaNovaSenha(pessoa: PessoaDto, solicitadoPeloUsuario: boolean) {
         const newPass = this.#generateRndPass(10);
         this.logger.log(`new password: ${newPass}`, pessoa);
 
@@ -92,7 +93,7 @@ export class PessoaService {
     }
 
     async enviaEmailNovaSenha(
-        pessoa: Pessoa,
+        pessoa: PessoaDto,
         senha: string,
         solicitadoPeloUsuario: boolean,
         prisma: Prisma.TransactionClient
@@ -1286,38 +1287,44 @@ export class PessoaService {
         return this.pessoaAsHash(pessoa);
     }
 
-    async findByEmail(email: string) {
-        const pessoa = await this.prisma.pessoa.findUnique({ where: { email: email, AND: [{ id: { gt: 0 } }] } });
-        return pessoa;
+    async findByEmail(email: string): Promise<PessoaDto | null> {
+        return await this.findByInterno({ email });
     }
 
-    async findById(id: number) {
-        const pessoa = await this.prisma.pessoa.findUnique({ where: { id: id, AND: [{ id: { gt: 0 } }] } });
-        return pessoa;
+    async findById(id: number): Promise<PessoaDto | null> {
+        return await this.findByInterno({ id });
     }
 
     async findBySessionId(sessionId: number) {
-        const pessoa = await this.prisma.pessoa.findMany({
-            where: {
-                PessoaSessoesAtivas: {
-                    some: {
-                        id: sessionId,
-                    },
-                },
-            },
-            select: {
-                id: true,
-                nome_completo: true,
-                email: true,
-                nome_exibicao: true,
-                senha_bloqueada: true,
-                pessoa_fisica: true,
-                desativado: true,
-            },
-        });
-        if (!pessoa) return undefined;
+        return await this.findByInterno({ session_id: sessionId });
+    }
 
-        return pessoa[0];
+    private async findByInterno(opts: {
+        id?: number | undefined;
+        session_id?: number | undefined;
+        email?: string | undefined;
+    }): Promise<PessoaDto | null> {
+        const { id, session_id: sessionId, email } = opts;
+        if (!id && !sessionId && !email) return null;
+
+        const pessoa = await this.prisma.pessoa.findFirst({
+            where: {
+                PessoaSessoesAtivas: sessionId
+                    ? {
+                          some: {
+                              id: sessionId,
+                          },
+                      }
+                    : undefined,
+                id: id ? id : undefined,
+                email: email ? email.toLowerCase() : undefined,
+                AND: [{ id: { gt: 0 } }],
+            },
+            include: { pessoa_fisica: true },
+        });
+        if (!pessoa) return null;
+
+        return pessoa satisfies PessoaDto;
     }
 
     async newSessionForPessoa(id: number, ip: string): Promise<number> {

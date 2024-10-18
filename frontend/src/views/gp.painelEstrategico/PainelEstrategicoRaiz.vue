@@ -10,14 +10,12 @@ import ProjetosPorOrgaoResponsavel from '@/components/painelEstrategico/Projetos
 import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
+import ExecucaoOrcamentariaGrafico from '@/components/painelEstrategico/ExecucaoOrcamentariaGrafico.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
-import ProjetosPlanejadosMes from '@/components/painelEstrategico/ProjetosPlanejadosMes.vue';
-import ProjetosConcluidosMes from '@/components/painelEstrategico/ProjetosConcluidosMes.vue';
-import HorizontalSideBySideBarsChart from '@/components/HorizontalSideBySideBarsChart.vue';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
+import { watchEffect, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -29,6 +27,7 @@ const {
   locaisAgrupados,
   erros,
   paginacaoProjetos,
+  paginacaoOrcamentos,
 } = storeToRefs(painelEstrategicoStore);
 
 watchEffect(() => {
@@ -53,17 +52,35 @@ watchEffect(() => {
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
 });
 
-watchEffect(() => {
-  painelEstrategicoStore.buscarProjetos({
-    token_paginacao: route.query.token_paginacao,
-    pagina: route.query.pagina,
-    portfolio_id: route.query.portfolio_id,
-    orgao_responsavel_id: route.query.orgao_responsavel_id,
-    projeto_id: route.query.projeto_id,
-    ipp: 10,
-  });
-});
+watch(
+  () => [route.query.projetos_token_paginacao, route.query.projetos_pagina],
+  ([projetos_token_paginacao, projetos_pagina]) => {
+    painelEstrategicoStore.buscarProjetos({
+      token_paginacao: projetos_token_paginacao,
+      pagina: projetos_pagina,
+      portfolio_id: route.query.portfolio_id,
+      orgao_responsavel_id: route.query.orgao_responsavel_id,
+      projeto_id: route.query.projeto_id,
+      ipp: 10,
+    });
+  },
+  { immediate: true },
+);
 
+watch(
+  () => [route.query.orcamentos_token_paginacao, route.query.orcamentos_pagina],
+  ([orcamentos_token_paginacao, orcamentos_pagina]) => {
+    painelEstrategicoStore.buscarOrcamentos({
+      token_paginacao: orcamentos_token_paginacao,
+      pagina: orcamentos_pagina,
+      portfolio_id: route.query.portfolio_id,
+      orgao_responsavel_id: route.query.orgao_responsavel_id,
+      projeto_id: route.query.projeto_id,
+      ipp: 10,
+    });
+  },
+  { immediate: true },
+);
 
 </script>
 <template>
@@ -80,7 +97,7 @@ watchEffect(() => {
       class="flex flexwrap g2"
     >
       <pre class="f1 fb15em debug">anosMapaCalorConcluidos:
-      {{ painelEstrategicoStore.anosMapaCalorConcluidos }}</pre>
+{{ painelEstrategicoStore.anosMapaCalorConcluidos }}</pre>
       <pre class="f1 fb15em debug">anosMapaCalorPlanejados:
       {{ painelEstrategicoStore.anosMapaCalorPlanejados }}</pre>
       <pre class="f1 fb15em debug">grandesNumeros:
@@ -150,7 +167,7 @@ watchEffect(() => {
         />
       </CardEnvelope.Conteudo>
 
-      <CardEnvelope.default>
+      <CardEnvelope.Slide>
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por etapas"
@@ -160,7 +177,7 @@ watchEffect(() => {
           <ProjetosPorEtapa
             :projetos-por-etapas="painelEstrategicoStore.projetoEtapas"
           />
-        </CardEnvelope.conteudo>
+        </CardEnvelope.Conteudo>
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por status"
@@ -170,8 +187,8 @@ watchEffect(() => {
           <ProjetosPorStatus
             :projetos-por-status="painelEstrategicoStore.projetoStatus"
           />
-        </CardEnvelope.conteudo>
-      </CardEnvelope.default>
+        </CardEnvelope.Conteudo>
+      </CardEnvelope.Slide>
 
       <CardEnvelope.Conteudo class="cartao--mapa">
         <CardEnvelope.Titulo
@@ -184,7 +201,6 @@ watchEffect(() => {
           :geo-json="locaisAgrupados.enderecos"
           :camadas="locaisAgrupados.camadas"
           class="mb1"
-          agrupar-marcadores
           :opções-do-polígono="{
             fill: true,
             opacity: 0.5,
@@ -193,61 +209,8 @@ watchEffect(() => {
         />
       </CardEnvelope.conteudo>
 
-      <CardEnvelope.default>
-
-
+      <CardEnvelope.Slide>
         <CardEnvelope.Conteudo>
-          <CardEnvelope.Titulo
-              titulo="Projetos Planejados"
-              icone="box"
-              cor="#A77E11"
-              subtitulo="Volume de projetos planejados no ano vigente e nos anos futuros."
-          />
-          <HorizontalSideBySideBarsChart
-            :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
-            :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
-          />
-          <div style="margin-top: 25px;">
-            <hr>
-            <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
-              Volume de projetos planejados por Ano/Mês.
-            </p>
-          </div>
-          
-          <ProjetosPlanejadosMes
-            :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
-            :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
-            :anos-mapa-calor-planejados="painelEstrategicoStore.anosMapaCalorPlanejados"
-          />
-        </CardEnvelope.conteudo>
-
-        <CardEnvelope.Conteudo>
-            <CardEnvelope.Titulo
-              titulo="Projetos Concluídos"
-              icone="box"
-              cor="#D3A730"
-              subtitulo="Volume de projetos concluídos no ano vigente e nos anos anteriores."
-          />
-          <!--<HorizontalSideBySideBarsChart
-            :projetos-planejados-ano="painelEstrategicoStore.projetosPlanejadosAno"
-            :projetos-concluidos-ano="painelEstrategicoStore.projetosConcluidosAno"
-          />
-          <div style="margin-top: 25px;">
-            <hr>
-            <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
-              Volume de projetos planejados por Ano/Mês.
-            </p>
-          </div>-->
-
-          <ProjetosConcluidosMes
-          :projetos-planejados-mes="painelEstrategicoStore.projetosPlanejadosMes"
-          :projetos-concluidos-mes="painelEstrategicoStore.projetosConcluidosMes"
-          :anos-mapa-calor-concluidos="painelEstrategicoStore.anosMapaCalorConcluidos"
-          />
-        </CardEnvelope.conteudo>
-
-
-      <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por órgão responsável"
             subtitulo="Órgãos com os números mais expressivos de projetos. Demais órgãos apresentados em Outros."
@@ -256,9 +219,10 @@ watchEffect(() => {
             :projetos-orgao-responsavel="painelEstrategicoStore.projetoOrgaoResponsavel"
           />
         </CardEnvelope.conteudo>
- 
-
-      </CardEnvelope.default>
+        <CardEnvelope.Conteudo>
+          outro gráfico
+        </CardEnvelope.conteudo>
+      </CardEnvelope.Slide>
     </div>
 
     <ErrorComponent v-if="erros.projetosPaginados" />
@@ -276,9 +240,12 @@ watchEffect(() => {
           icone="moneyChart"
           cor="#D86B2C"
         />
-        <ExecucaoOrcamentaria />
+        <ExecucaoOrcamentaria
+          :execucao-orcamentaria="painelEstrategicoStore?.execucaoOrcamentariaAno"
+          :orcamentos="painelEstrategicoStore?.orcamentosPaginados"
+          :paginacao="paginacaoOrcamentos"
+        />
       </CardEnvelope.Conteudo>
-
       <CardEnvelope.Conteudo class="mt2">
         <CardEnvelope.Titulo>
           Projetos
@@ -290,8 +257,7 @@ watchEffect(() => {
         />
       </CardEnvelope.Conteudo>
     </div>
-    <TotalDeProjetos />
-    </Dashboard>
+  </Dashboard>
 </template>
 
 <style lang="less">

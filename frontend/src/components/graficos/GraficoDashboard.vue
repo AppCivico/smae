@@ -14,13 +14,14 @@ import {
   defineProps, provide, ref, computed,
 } from 'vue';
 
-import { BarChart } from 'echarts/charts';
+import { BarChart, LineChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
   MarkLineComponent,
   TitleComponent,
   TooltipComponent,
+  LabelLayout,
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -39,6 +40,7 @@ use([
   LegendComponent,
   GridComponent,
   BarChart,
+  LineChart,
   MarkLineComponent,
 ]);
 
@@ -100,7 +102,7 @@ const preparedOptions = computed(() => {
   padding: 5px !important;
   border: none !important;
 
-  display: flex !important;
+  display: none;
   flex-direction: column;
 
   &:before, &:after {
@@ -111,6 +113,9 @@ const preparedOptions = computed(() => {
     color: #232046;
     background: #232046;
   }
+}
+.grafico-dashboard__tooltip:has(.grafico-dashboard__tooltip-conteudo) {
+  display: flex !important;
 }
 
 .grafico-dashboard__tooltip-conteudo {

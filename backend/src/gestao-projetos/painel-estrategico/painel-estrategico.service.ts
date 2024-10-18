@@ -106,16 +106,18 @@ export class PainelEstrategicoService {
                                                 WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
                                 ${filtro})  as total_orgaos,
                            (SELECT
-                                count(distinct por.meta_id)  ::int
+                                count(distinct p.meta_id)  ::int
                             FROM projeto p
-                                     inner join projeto_origem por on por.projeto_id = p.id
+                                     left join meta m on p.meta_id = m.id
+                                     inner join pdm pm on pm.id = m.pdm_id
                                 full outer JOIN (SELECT
                                                     ppc.projeto_id,
                                                     po_1.id as portfolio_id
                                                 FROM portfolio_projeto_compartilhado ppc
                                                 JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                                                       WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                ${filtro}) as total_metas`;
+                                ${filtro}
+                                and pm.tipo = 'PDM' ) as total_metas`;
 
         return (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoGrandesNumeros[])[0];
     }
@@ -514,42 +516,49 @@ export class PainelEstrategicoService {
         //Constroi o filter
         let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
         //Cria apenas os projetos e orgãos responsáveis
-        strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
+        strFilterGeral = " WHERE 1 = 1 ";
         if (filtro.projeto_id.length > 0) {
-            strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
+            strFilterGeral += ' and bp.id in (' + filtro.projeto_id.toString() + ')';
         }
         if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
-            strFilterGeral += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
+            strFilterGeral += ' and bp.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
         //Cria o filtro de portfolio
         let strPortfolio = '';
+        let strPortfolio2 = '';
         if (filtro.portfolio_id && filtro.portfolio_id.length>0){
-            strPortfolio += ' and po_1.id in (+' + filtro.portfolio_id.toString() + ')';
+            strPortfolio = ' and pr.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
+            strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')'
         }
-
-        const sql = `select sum((select tc.previsao_custo
-                                  from tarefa_cronograma tc
-                                  where tc.removido_em is null
-                                    and tc.projeto_id = p.id))::float as custo_planejado_total,
-                             sum((select sum(orcr.soma_valor_empenho)
-                                  from orcamento_realizado orcr
-                                  where orcr.removido_em is null
-                                    and orcr.projeto_id = p.id))::float as valor_empenhado_total,
-                             sum((select sum(orcr.soma_valor_liquidado)
-                                  from orcamento_realizado orcr
-                                  where orcr.removido_em is null
-                                    and orcr.projeto_id = p.id))::float as valor_liquidado_total,
-                             date_part('year',current_date)::int as ano
-                     FROM projeto p full
-                     outer JOIN (SELECT
-                                    distinct
-                                    ppc.projeto_id
-                                    FROM portfolio_projeto_compartilhado ppc
-                                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                              WHERE ppc.removido_em IS NULL
-                                              ${strPortfolio}) po
-                                 ON po.projeto_id = p.id
-                    ${strFilterGeral} `
+        const sql = `select
+                         sum((select previsao_custo total_custo from tarefa_cronograma tc where tc.projeto_id = bp.id and tc.removido_em is null)) custo_planejado_total,
+                         sum((select sum(orc.soma_valor_empenho) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_empenhado_total,
+                         sum((select sum(orc.soma_valor_liquidado) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_liquidado_total
+                     from
+                         (select pr.id,
+                                 pr.nome,
+                                 pr.codigo,
+                                 (select m.id from meta m, pdm where pdm.tipo= 'PDM' and m.pdm_id = pdm.id and m.id = pr.meta_id) meta_id,
+                                 pr.orgao_responsavel_id
+                          from projeto pr
+                          where   pr.removido_em is null
+                            and pr.arquivado = false
+                            and pr.tipo = 'PP'
+                            ${strPortfolio}
+                          union
+                          select p.id,
+                                 p.nome,
+                                 p.codigo,
+                                 (select m.id from meta m, pdm where pdm.tipo= 'PDM' and m.pdm_id = pdm.id and m.id = p.meta_id) meta_id,
+                                 p.orgao_responsavel_id
+                          from projeto p, portfolio_projeto_compartilhado pp
+                          where pp.projeto_id = p.id
+                            and pp.removido_em is null
+                            and p.removido_em is null
+                            and p.arquivado = false
+                            and p.tipo = 'PP'
+                            ${strPortfolio2}) bp
+                            ${strFilterGeral} `
         return (await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoResumoOrcamentario[])[0];
     }
 
@@ -557,7 +566,7 @@ export class PainelEstrategicoService {
         //Constroi o filter
         let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
         //Cria apenas os projetos e orgãos responsáveis
-        strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
+        strFilterGeral = "";
         if (filtro.projeto_id.length > 0) {
             strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
@@ -566,36 +575,56 @@ export class PainelEstrategicoService {
         }
         //Cria o filtro de portfolio
         let strPortfolio = '';
+        let strPortfolio2 = '';
         if (filtro.portfolio_id && filtro.portfolio_id.length>0){
-            strPortfolio += ' and po_1.id in (+' + filtro.portfolio_id.toString() + ')';
+            strPortfolio += ' and  pr.portfolio_id  in (' + filtro.portfolio_id.toString() + ')';
+            strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
 
-        const sql = `select sum(custo_planejado_total) as custo_planejado_total,
-                            sum(valor_empenhado_total) as valor_empenhado_total,
-                            sum(valor_liquidado_total) as valor_liquidado_total,
-                            ano_referencia
-                            from (select
-                                    sum(coalesce(tc.previsao_custo, 0))::float as custo_planejado_total,
-                                    sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
-                                    sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total,
-                                    orcr.ano_referencia
-                                from orcamento_realizado orcr inner join  projeto p on orcr.projeto_id = p.id
-                                 full outer JOIN (SELECT
-                                                    distinct
-                                                    ppc.projeto_id
-                                                FROM portfolio_projeto_compartilhado ppc
-                                                JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                WHERE ppc.removido_em IS NULL
-                                                ${strPortfolio}) po ON po.projeto_id = p.id
-                                full outer join (select
-                                                    tc.previsao_custo,
-                                                    date_part('year',tc.previsao_termino) as ano_referencia ,
-                                                    tc.projeto_id
-                                                from tarefa_cronograma tc) as tc on tc.projeto_id = p.id
-                                                    and tc.ano_referencia = orcr.ano_referencia
-                            ${strFilterGeral}
-                             and orcr.ano_referencia between date_part('year', current_date)-3
+        const sql = `select  sum(custo_planejado_total) as custo_planejado_total,
+                             sum(valor_empenhado_total) as valor_empenhado_total,
+                             sum(valor_liquidado_total) as valor_liquidado_total,
+                             ano_referencia
+                     from (select
+                               sum(coalesce(tc.previsao_custo, 0))::float as custo_planejado_total,
+                               sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
+                               sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total,
+                               orcr.ano_referencia
+                           from orcamento_realizado orcr
+                                    inner join
+                                (select
+                                     pr.id,
+                                     pr.orgao_responsavel_id
+                                 from projeto pr
+                                 where   pr.removido_em is null
+                                   and pr.arquivado = false
+                                   and pr.tipo = 'PP'
+                                   ${strPortfolio}
+                                 union
+                                 select
+                                     p.id,
+                                     p.orgao_responsavel_id
+                                 from projeto p,
+                                      portfolio_projeto_compartilhado pp
+                                 where pp.projeto_id = p.id
+                                   and pp.removido_em is null
+                                   and p.removido_em is null
+                                   and p.arquivado = false
+                                   and p.tipo = 'PP'
+                                   ${strPortfolio2}
+                                ) p
+                                on orcr.projeto_id = p.id
+                               full outer join (select
+                               tc.previsao_custo,
+                               date_part('year',tc.previsao_termino) as ano_referencia ,
+                               tc.projeto_id
+                               from tarefa_cronograma tc
+                               where tc.removido_em is null) as tc on tc.projeto_id = p.id
+                               and tc.ano_referencia = orcr.ano_referencia
+                           WHERE orcr.ano_referencia between date_part('year', current_date)-3
                              and date_part('year', current_date)+3
+                             and orcr.removido_em is null
+                             ${strFilterGeral}
                            group by orcr.ano_referencia
                            union
                            select
@@ -603,7 +632,7 @@ export class PainelEstrategicoService {
                                0 as valor_empenhado_total,
                                0 as valor_liquidado_total,
                                t.yr as ano_referencia
-                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT +3) t(yr)) as t
+                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT + 3) t(yr)) as t
                      group by ano_referencia`
         return await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaAno[];
 
@@ -612,6 +641,7 @@ export class PainelEstrategicoService {
     private async encodeNextPageTokenListaExecucaoOrcamentaria(
         whereFilter: string,
         portifolio_filter:string,
+        portifolio_filter2:string,
         issued_at: Date,
         filter: PainelEstrategicoListaFilterDto,
         ipp?: number,
@@ -619,17 +649,41 @@ export class PainelEstrategicoService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const quantidade_rows = await this.prisma.$queryRawUnsafe(`select
-                                                                        count(*)::int as count
-                                                                   FROM projeto p
-                                                                       full outer JOIN (SELECT
-                                                                                            ppc.projeto_id,
-                                                                                            po_1.id as portfolio_id
-                                                                                        FROM portfolio_projeto_compartilhado ppc
-                                                                                        JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                                                        WHERE ppc.removido_em IS NULL
-                                                                                        ${portifolio_filter}) po ON po.projeto_id = p.id
-                                                                    ${whereFilter}`) as any;
+        const quantidade_rows = await this.prisma
+            .$queryRawUnsafe(`select
+                                   count(*)::int
+                               from
+                                   (select
+                                        pr.id,
+                                        pr.orgao_responsavel_id
+                                    from projeto pr
+                                    where   pr.removido_em is null
+                                      and pr.arquivado = false
+                                      and pr.tipo = 'PP'
+                                     ${portifolio_filter}
+                                    union
+                                    select
+                                        p.id,
+                                        p.orgao_responsavel_id
+                                    from projeto p,
+                                         portfolio_projeto_compartilhado pp
+                                    where pp.projeto_id = p.id
+                                      and pp.removido_em is null
+                                      and p.removido_em is null
+                                      and p.arquivado = false
+                                      and p.tipo = 'PP'
+                                      ${portifolio_filter2}) p
+                                       inner join (select vp.nome,
+                                                          vp.id                          as projeto_id,
+                                                          sum(orcr.soma_valor_empenho)   as soma_valor_empenho,
+                                                          sum(orcr.soma_valor_liquidado) as soma_valor_liquidado
+                                                   from orcamento_realizado orcr
+                                                            left join view_projetos vp on orcr.projeto_id = vp.id
+                                                            inner join projeto p on p.id = vp.id
+                                                   where p.tipo = 'PP'
+                                                     and p.removido_em is null
+                                                   group by vp.nome, vp.id) orc on orc.projeto_id = p.id
+                                                   ${whereFilter}`) as any;
         const body = {
             search_hash: Object2Hash(filter),
             ipp: ipp!,
@@ -659,7 +713,7 @@ export class PainelEstrategicoService {
 
         //Cria apenas os projetos e orgãos responsáveis
         filtro = await this.addPermissaoProjetos(filtro,user);
-        let strFilterGeral = " WHERE p.removido_em IS null and p.tipo ='PP' and arquivado = false ";
+        let strFilterGeral = "";
         if (filtro.projeto_id.length > 0) {
             strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
@@ -669,8 +723,10 @@ export class PainelEstrategicoService {
 
         //Cria o filtro de portfoliio
         let strPortfolio = '';
+        let strPortfolio2 = '';
         if (filtro.portfolio_id && filtro.portfolio_id.length>0){
-            strPortfolio += ' and po_1.id in (+' + filtro.portfolio_id.toString() + ')';
+            strPortfolio = ' and pr.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
+            strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
 
         if (filterToken) {
@@ -680,47 +736,65 @@ export class PainelEstrategicoService {
             now = new Date(decoded.issued_at);
         }
         const offset = (page - 1) * ipp;
-        const sql = `select
+        const sql = `select (select sum(t.custo_estimado)
+                             from tarefa_cronograma tc
+                                      inner join tarefa t on t.tarefa_cronograma_id = tc.id
+                             where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
+                               and tc.projeto_id = p.id
+                               and tc.removido_em is null)::float as valor_custo_planejado_total,
                          (select sum(t.custo_estimado)
-                          from tarefa_cronograma tc
-                                   inner join tarefa t on t.tarefa_cronograma_id = tc.id
-                          where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id)
-                            and tc.projeto_id = p.id)::float                as valor_custo_planejado_total,
-                         (select sum(t.custo_estimado)
-                          from tarefa_cronograma tc
-                                   inner join tarefa t on t.tarefa_cronograma_id = tc.id
-                          where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id)
+                            from tarefa_cronograma tc
+                             inner join tarefa t on t.tarefa_cronograma_id = tc.id
+                            where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
                             and tc.projeto_id = p.id
+                            and tc.removido_em is null
                             and t.termino_planejado <= current_date)::float as valor_custo_planejado_hoje,
                          orc.soma_valor_empenho ::float as valor_empenhado_total,
                          orc.soma_valor_liquidado::float as valor_liquidado_total,
-                         p.nome as nome_projeto
-                     from projeto p
-                         full outer JOIN (SELECT
-                                                    distinct
-                                                    ppc.projeto_id
-                                            FROM portfolio_projeto_compartilhado ppc
-                                            JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                            WHERE ppc.removido_em IS NULL
-                                            ${strPortfolio} ) po ON po.projeto_id = p.id
-                         inner join (select vp.nome,
-                                             vp.id                          as projeto_id,
-                                             sum(orcr.soma_valor_empenho)   as soma_valor_empenho,  -- verificar se esse valor é o valor atualizado
-                                             sum(orcr.soma_valor_liquidado) as soma_valor_liquidado -- verificar se esse valor é o valor atualizado
-                                             from orcamento_realizado orcr
-                                             left join view_projetos vp on orcr.projeto_id = vp.id
-                                             inner join projeto p on p.id = vp.id
-                                             where p.tipo = 'PP'
-                                             and p.removido_em is null
-                                    group by vp.nome, vp.id) orc on orc.projeto_id = p.id
-                     ${strFilterGeral}
+                         p.nome as nome_projeto,
+                         p.codigo as codigo_projeto
+                     from (select pr.id,
+                                  pr.nome,
+                                  pr.orgao_responsavel_id,
+                                  pr.codigo
+                           from projeto pr
+                           where pr.removido_em is null
+                             and pr.arquivado = false
+                             and pr.tipo = 'PP'
+                               ${strPortfolio}
+                           union
+                           select p.id,
+                                  p.nome,
+                                  p.orgao_responsavel_id,
+                                  p.codigo
+                           from projeto p,
+                                portfolio_projeto_compartilhado pp
+                           where pp.projeto_id = p.id
+                             and pp.removido_em is null
+                             and p.removido_em is null
+                             and p.arquivado = false
+                             and p.tipo = 'PP'
+                               ${strPortfolio2}) p
+                              inner join (select vp.nome,
+                                                 vp.id                          as projeto_id,
+                                                 sum(orcr.soma_valor_empenho)   as soma_valor_empenho,
+                                                 sum(orcr.soma_valor_liquidado) as soma_valor_liquidado
+                                          from orcamento_realizado orcr
+                                                   left join view_projetos vp on orcr.projeto_id = vp.id
+                                                   inner join projeto p on p.id = vp.id
+                                          where p.tipo = 'PP'
+                                            and p.removido_em is null
+                                            and orcr.removido_em is null
+                                          group by vp.nome, vp.id) orc on orc.projeto_id = p.id
+                     where 1 = 1 ${strFilterGeral}
                      limit ${ipp} offset ${offset}`
         const linhas = await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaLista[];
         // executar depois da query
         if (filterToken) {
             retToken = filterToken;
         } else {
-            const info = await this.encodeNextPageTokenListaExecucaoOrcamentaria(strFilterGeral ,strPortfolio, now, filtro, filtro.ipp);
+            const info = await this.encodeNextPageTokenListaExecucaoOrcamentaria(strFilterGeral
+                ,strPortfolio,strPortfolio2, now, filtro, filtro.ipp);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
         }

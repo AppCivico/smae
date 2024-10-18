@@ -71,7 +71,7 @@ export class AuthService {
             throw new BadRequestException('email| E-mail ou senha inválidos');
         }
 
-        return pessoa as Pessoa;
+        return pessoa;
     }
 
     async pessoaJwtFromId(pessoa_id: number): Promise<PessoaFromJwt> {
@@ -130,6 +130,8 @@ export class AuthService {
     async pessoaPeloSessionId(id: number): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findBySessionId(id);
         if (pessoa) {
+            if (pessoa.pessoa_fisica === null)
+                throw new UnauthorizedError(`Pessoa ID ${pessoa.id} não tem pessoa_fisica associada`);
             return pessoa;
         }
         throw new UnauthorizedError('Sessão não está mais ativa');
@@ -138,7 +140,9 @@ export class AuthService {
     async pessoaPeloId(id: number): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findById(id);
         if (pessoa) {
-            return pessoa;
+            if (pessoa.pessoa_fisica === null)
+                throw new UnauthorizedError(`Pessoa ID ${pessoa.id} não tem pessoa_fisica associada`);
+            return pessoa satisfies Pessoa;
         }
         throw new UnauthorizedError('Pessoa não está mais ativa');
     }

@@ -14,6 +14,7 @@ import {
 } from './entities/sei-entidade.entity';
 import { JwtService } from '@nestjs/jwt';
 import { DateTime } from 'luxon';
+import { uuidv7 } from 'uuidv7';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -23,11 +24,16 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class SeiIntegracaoService {
     private readonly logger = new Logger(SeiIntegracaoService.name);
+    baseUrl: string;
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly sei: SeiApiService,
         private readonly jwtService: JwtService
-    ) {}
+    ) {
+        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+    }
 
     /**
      * Remove não dígitos de uma string.
@@ -116,6 +122,7 @@ export class SeiIntegracaoService {
         const now = new Date();
         let statusSei = await this.prisma.statusSEI.findUnique({
             where: { processo_sei: params.processo_sei },
+            include: { processosDistribuicaoRecurso: true },
         });
 
         const needsUpdate =
@@ -146,6 +153,8 @@ export class SeiIntegracaoService {
                         proxima_sincronizacao: this.calculaProximaSync(),
                         usuarios_lidos: [],
                     },
+                    // TODO: tratar para não ser necessário chamar o include aqui. Problema de tipagem.
+                    include: { processosDistribuicaoRecurso: true },
                 });
             } else {
                 const updateData: Prisma.StatusSEIUpdateInput = {
@@ -160,6 +169,14 @@ export class SeiIntegracaoService {
                     updateData.json_resposta = JSON.stringify(dados);
                     updateData.sei_hash = newHash;
                     updateData.usuarios_lidos = []; // mudou o hash, então reset a lista de usuários que leram
+
+                    // Enviando email de notificação para gestores da Casa Civil
+                    if (statusSei.processosDistribuicaoRecurso.length > 0) {
+                        await this.enviarEmailNotificacaoSEI(
+                            params.processo_sei,
+                            statusSei.processosDistribuicaoRecurso[0].id
+                        );
+                    }
                 }
 
                 this.logger.verbose(
@@ -168,6 +185,8 @@ export class SeiIntegracaoService {
                 statusSei = await this.prisma.statusSEI.update({
                     where: { id: statusSei.id },
                     data: updateData,
+                    // TODO: tratar para não ser necessário chamar o include aqui. Problema de tipagem.
+                    include: { processosDistribuicaoRecurso: true },
                 });
             }
         } else {
@@ -491,5 +510,64 @@ export class SeiIntegracaoService {
 
     private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         return this.jwtService.sign(opt);
+    }
+
+    private async enviarEmailNotificacaoSEI(processo: string, distribuicao_recurso_id: number) {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirst({
+                where: {
+                    id: distribuicao_recurso_id,
+                    removido_em: null,
+                },
+                select: {
+                    transferencia: {
+                        select: { id: true },
+                    },
+                },
+            });
+
+            if (!distribuicaoRecurso) {
+                this.logger.log(
+                    `Processo SEI (${processo}) não possui distribuição de recurso atrelada, portanto não será enviado e-mail notificando mudança.`
+                );
+                return;
+            }
+
+            const gestores = await prismaTx.pessoa.findMany({
+                where: {
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: {
+                                nome: 'Gestor Casa Civil',
+                            },
+                        },
+                    },
+                },
+                select: { email: true },
+            });
+
+            for (const gestor of gestores) {
+                await prismaTx.emaildbQueue.create({
+                    data: {
+                        id: uuidv7(),
+                        config_id: 1,
+                        subject: `Alteração no processo SEI ${processo}`,
+                        template: 'processo-sei-atualizacao.html',
+                        to: gestor.email,
+                        variables: {
+                            numero_processo: processo,
+                            link: new URL(
+                                [
+                                    this.baseUrl,
+                                    'transferencias-voluntarias',
+                                    distribuicaoRecurso.transferencia.id,
+                                    'detalhes',
+                                ].join('/')
+                            ),
+                        },
+                    },
+                });
+            }
+        });
     }
 }

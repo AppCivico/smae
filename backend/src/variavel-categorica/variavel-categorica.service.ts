@@ -10,11 +10,15 @@ import {
     UpdateVariavelCategoricaDto,
     VariavelCategoricaItem,
 } from './dto/variavel-categorica.dto';
+import { VariavelService } from '../variavel/variavel.service';
 
 @Injectable()
 export class VariavelCategoricaService {
     private readonly logger = new Logger(VariavelCategoricaService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService
+    ) {}
 
     async create(dto: CreateVariavelCategoricaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         if (dto.tipo == 'Cronograma')
@@ -235,6 +239,7 @@ export class VariavelCategoricaService {
         user: PessoaFromJwt,
         now: Date
     ): Promise<void> {
+        const variaveisMod: number[] = [];
         const currentCatValor = await prismaTx.variavelCategoricaValor.findMany({
             where: {
                 removido_em: null,
@@ -270,12 +275,79 @@ export class VariavelCategoricaService {
 
         const operations = [];
         if (deleted.length > 0) {
+            const emUso = await prismaTx.serieVariavel.count({
+                where: {
+                    variavel_categorica_valor_id: { in: deleted },
+                    serie: { in: ['Realizado', 'Previsto'] },
+                },
+            });
+            if (emUso) {
+                const usadoEm = await prismaTx.serieVariavel.groupBy({
+                    where: {
+                        variavel_categorica_valor_id: { in: deleted },
+                        serie: { in: ['Realizado', 'Previsto'] },
+                    },
+                    by: ['variavel_categorica_valor_id', 'variavel_id'],
+                    _count: true,
+                });
+
+                const valoresInfo = await prismaTx.variavelCategoricaValor.findMany({
+                    where: {
+                        id: { in: deleted },
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                    },
+                });
+
+                const variaveisInfo = await prismaTx.variavel.findMany({
+                    where: {
+                        id: { in: usadoEm.map((r) => r.variavel_id) },
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                    },
+                });
+
+                const usageByValor = new Map();
+                usadoEm.forEach((usage) => {
+                    if (!usageByValor.has(usage.variavel_categorica_valor_id)) {
+                        usageByValor.set(usage.variavel_categorica_valor_id, new Set());
+                    }
+                    usageByValor.get(usage.variavel_categorica_valor_id).add(usage.variavel_id);
+                });
+
+                const totalUsage = usadoEm.reduce((sum, item) => sum + item._count, 0);
+
+                const usoDetalhado = valoresInfo
+                    .map((valor) => {
+                        const variaveis = usageByValor.get(valor.id) || new Set();
+                        const variaveisUsadas = Array.from(variaveis).map((varId) => {
+                            const varInfo = variaveisInfo.find((v) => v.id === varId);
+                            return varInfo ? varInfo.titulo : 'Variável desconhecida';
+                        });
+                        return `"${valor.titulo}" (usado em ${variaveis.size} variáveis: ${variaveisUsadas.join(', ')})`;
+                    })
+                    .join('\n');
+
+                throw new BadRequestException(
+                    `Não é possível remover valores de variável categórica: em uso em ${totalUsage} séries de ${variaveisInfo.length} variáveis.\n` +
+                        `Detalhes dos valores:\n${usoDetalhado}`
+                );
+            }
+
             operations.push(
-                prismaTx.variavelCategoricaValor.deleteMany({
+                prismaTx.variavelCategoricaValor.updateMany({
                     where: {
                         id: { in: deleted },
                         variavel_categorica_id: variavel_categorica_id,
                         removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                        removido_por: user.id,
                     },
                 })
             );
@@ -306,6 +378,15 @@ export class VariavelCategoricaService {
 
             // se mudou o valor, atualiza os valores da série-variavel tbm
             if (rPrev.valor_variavel !== r.valor_variavel) {
+                const variaveis = await prismaTx.serieVariavel.groupBy({
+                    where: {
+                        variavel_categorica_id: variavel_categorica_id,
+                        variavel_categorica_valor_id: rPrev.id,
+                    },
+                    by: ['variavel_id'],
+                });
+                variaveisMod.push(...variaveis.map((v) => v.variavel_id));
+
                 operations.push(
                     prismaTx.serieVariavel.updateMany({
                         where: {
@@ -319,7 +400,6 @@ export class VariavelCategoricaService {
                         },
                     })
                 );
-                // todo atualizar o indicador.
             }
         }
 
@@ -340,6 +420,12 @@ export class VariavelCategoricaService {
         }
 
         await Promise.all(operations);
+
+        if (variaveisMod.length) {
+            await this.variavelService.recalc_series_dependentes(variaveisMod, prismaTx);
+            await this.variavelService.recalc_indicador_usando_variaveis(variaveisMod, prismaTx);
+        }
+
         return;
     }
 
@@ -347,7 +433,13 @@ export class VariavelCategoricaService {
         const ordens = valores.map((v) => v.ordem);
         const ordensUnicas = new Set(ordens);
         if (ordens.length !== ordensUnicas.size) {
-            throw new BadRequestException('Valores de ordem devem ser únicos.');
+            throw new BadRequestException('Valores da ordem devem ser únicos.');
+        }
+
+        const valoresVariavel = valores.map((v) => v.valor_variavel);
+        const valoresUnicas = new Set(valoresVariavel);
+        if (valoresVariavel.length !== valoresUnicas.size) {
+            throw new BadRequestException('Valores devem ser únicos.');
         }
     }
 }

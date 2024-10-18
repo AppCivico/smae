@@ -6,9 +6,9 @@
       ref="elementoMapa"
       class="mapa br8"
       :style="{
-height: alturaCorrente || $props.height,
+        height: alturaCorrente || $props.height,
         minHeight: $props.height
-}"
+      }"
       @ready="mapReady"
     />
   </KeepAlive>
@@ -65,9 +65,10 @@ const props = defineProps({
     default: '32rem',
     validator: (value) => value.match(/^\d+(px|rem|em|vh|vw)$/),
   },
-  persistirEtiquetaCamada: {
-    type: Boolean,
-    default: false,
+  opcoesDoPainelFlutuante: {
+    type: Object,
+    default: () => ({
+    }),
   },
   agruparMarcadores: {
     type: Boolean,
@@ -164,6 +165,35 @@ function marcadorFoiMovido() {
   emits('marcadorFoiMovido', props.modelValue);
 }
 
+function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
+  let conteudo = '';
+
+  switch (true) {
+    case !!dados?.titulo:
+      conteudo = dados.titulo;
+      break;
+    case !!dados?.rotulo && !!dados?.descricao:
+      conteudo = `<strong>${dados.rotulo}</strong><br/>${dados.descricao}`;
+      break;
+    case !!dados?.rotulo && !!dados?.string_endereco:
+      conteudo = `<strong>${dados.rotulo}</strong><br/>${dados.string_endereco}`;
+      break;
+    case !!dados?.rotulo || !!dados?.string_endereco:
+      conteudo = dados?.rotulo || dados?.string_endereco;
+      break;
+    default:
+      break;
+  }
+
+  if (conteudo) {
+    item.bindTooltip(conteudo, {
+      direction: 'center',
+      ...props.opcoesDoPainelFlutuante,
+      ...opcoes,
+    });
+  }
+}
+
 // aceitar uma lista de marcadores, ao invés de um só, para a gente poder
 // identificar um entre muitos marcadores (no futuro)
 function criarMarcadores(marcadores = []) {
@@ -174,6 +204,8 @@ function criarMarcadores(marcadores = []) {
       marcadorNoMapa = marcador.coordenadas
         ? L.marker(marcador?.coordenadas, opções)
         : L.marker(marcador, props.opçõesDoMarcador);
+
+      atribuirPainelFlutuante(marcadorNoMapa, marcador);
 
       if (opções.draggable) {
         marcadorNoMapa.on('move', moverMarcador);
@@ -196,13 +228,13 @@ function criarMarcadores(marcadores = []) {
   }
 }
 
-function criarGeoJson(item) {
+function criarGeoJson(dados) {
   let geoJson;
 
-  if (item.geometry?.type === 'Point') {
+  if (dados.geometry?.type === 'Point') {
     let urlDoÍcone = marcadorPadrão;
 
-    switch (item.properties?.cor_do_marcador) {
+    switch (dados.properties?.cor_do_marcador) {
       case 'vermelho':
         urlDoÍcone = marcadorVermelho;
         break;
@@ -225,7 +257,7 @@ function criarGeoJson(item) {
       iconSize: [48, 48],
     });
 
-    geoJson = L.geoJSON(item, {
+    geoJson = L.geoJSON(dados, {
       pointToLayer: (_geoJsonPoint, latlng) => L.marker(latlng, { icon: ícone }),
     });
 
@@ -235,16 +267,12 @@ function criarGeoJson(item) {
       geoJson.addTo(mapa);
     }
   } else {
-    geoJson = L.geoJSON(item);
+    geoJson = L.geoJSON(dados);
 
     geoJson.addTo(mapa);
   }
 
-  if (item.properties?.rotulo && item.properties?.string_endereco) {
-    geoJson.bindTooltip(`<strong>${item.properties.rotulo}</strong><br/>${item.properties.string_endereco}`);
-  } else if (item.properties?.rotulo || item.properties?.string_endereco) {
-    geoJson.bindTooltip(item.properties?.rotulo || item.properties?.string_endereco);
-  }
+  atribuirPainelFlutuante(geoJson, dados?.properties);
 
   geoJsonsNoMapa.push(geoJson);
 }
@@ -254,7 +282,9 @@ function prepararGeoJsonS(items) {
     item.remove();
   });
 
-  grupoDeMarcadores.clearLayers();
+  if (grupoDeMarcadores) {
+    grupoDeMarcadores.clearLayers();
+  }
 
   const listaDeItens = Array.isArray(items)
     ? items
@@ -288,12 +318,7 @@ function criarPolígono(dadosDoPolígono) {
     : L.polygon(dadosDoPolígono.coordenadas, opções).addTo(mapa);
   polígono.id = dadosDoPolígono.id;
 
-  if (dadosDoPolígono.titulo) {
-    polígono.bindTooltip(dadosDoPolígono.titulo, {
-      permanent: props.persistirEtiquetaCamada,
-      direction: 'center',
-    });
-  }
+  atribuirPainelFlutuante(polígono, dadosDoPolígono);
 
   polígonosNoMapa.push(polígono);
 }
