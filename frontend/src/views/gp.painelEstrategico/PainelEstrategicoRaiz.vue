@@ -3,8 +3,13 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
+import HorizontalSideBySideBarsChart from '@/components/HorizontalSideBySideBarsChart.vue';
+import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
+import ExecucaoOrcamentariaGrafico from '@/components/painelEstrategico/ExecucaoOrcamentariaGrafico.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
 import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
+import ProjetosConcluidosMes from '@/components/painelEstrategico/ProjetosConcluidosMes.vue';
+import ProjetosPlanejadosMes from '@/components/painelEstrategico/ProjetosPlanejadosMes.vue';
 import ProjetosPorEtapa from '@/components/painelEstrategico/ProjetosPorEtapa.vue';
 import ProjetosPorOrgaoResponsavel from '@/components/painelEstrategico/ProjetosPorOrgaoResponsavel.vue';
 import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.vue';
@@ -122,10 +127,18 @@ watch(
   <Dashboard>
     <header class="mb2 cabecalho">
       <TítuloDePágina />
-      <FormularioQueryString v-slot="{ aplicarQueryStrings }">
-        <FiltroDeProjetos @enviado="aplicarQueryStrings" />
-      </FormularioQueryString>
     </header>
+
+    <FormularioQueryString v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }">
+      <pre>formularioSujo:{{ formularioSujo }}</pre>
+      <FiltroDeProjetos
+        :class="{
+          'formulario-sujo': formularioSujo
+        }"
+        @enviado="aplicarQueryStrings"
+        @campo-mudou="detectarMudancas"
+      />
+    </FormularioQueryString>
 
     <div
       v-scrollLockDebug
@@ -401,6 +414,11 @@ watch(
     grid-template-columns: 3fr 2fr;
     grid-template-columns: 2.5fr 1.5fr 2fr;
   }
+}
+
+.formulario-sujo ~ * {
+  filter: grayscale(1) blur(2px) opacity(0.35);
+  pointer-events: none;
 }
 
 .cartao--mapa {

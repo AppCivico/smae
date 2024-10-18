@@ -2,6 +2,7 @@
   <form
     class="flex flexwrap bottom mb2 g1"
     @submit.prevent="emit('enviado', dados)"
+    @change="(ev) => emit('campoMudou', ev)"
   >
     <div class="f1 fb15em">
       <label
@@ -22,7 +23,10 @@
         :grupo="listaDePortfolios"
         label="titulo"
         :aria-busy="chamadasPendentesDePortfolios.lista"
-        @change="projetoId.splice(0)"
+        @change="(valor) => {
+          projetoId.splice(0);
+          emit('campoMudou', { portfolio_id: valor });
+        }"
       />
       <ErrorComponent :erro="errosDePortfolios" />
     </div>
@@ -46,6 +50,7 @@
         label="nome"
         :aria-busy="chamadasPendentesDeProjetos.lista"
         :class="{ error: errosDeProjetos }"
+        @change="(valor) => emit('campoMudou', { projeto_id: valor })"
       />
       <ErrorComponent :erro="errosDeProjetos" />
     </div>
@@ -69,6 +74,7 @@
         label="sigla"
         :aria-busy="listaDeOrgaos.loading"
         :class="{ error: organs.error }"
+        @change="(valor) => emit('campoMudou', { orgao_responsavel_id: valor })"
       />
       <ErrorComponent :erro="organs.error" />
     </div>
@@ -102,6 +108,8 @@ defineProps({
     default: () => ({}),
   },
 });
+
+const emit = defineEmits(['enviado', 'campoMudou']);
 
 const rota = useRoute();
 const orgaosStore = useOrgansStore();
@@ -142,7 +150,6 @@ const dados = computed(() => ({
 }));
 
 const listaDeOrgaos = computed(() => (Array.isArray(organs.value) ? organs.value : []));
-const emit = defineEmits(['enviado']);
 
 function prepararValoresComoNumeros(valor: LocationQueryValue | LocationQueryValue[]): number[] {
   const lista = Array.isArray(valor) ? valor : [valor];
