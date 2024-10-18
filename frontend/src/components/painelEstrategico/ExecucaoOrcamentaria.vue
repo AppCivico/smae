@@ -11,6 +11,7 @@
         <col>
         <col>
         <col>
+        <col>
       </colgroup>
       <thead>
         <tr>
@@ -29,6 +30,7 @@
           <th class="tr">
             Valor liquidado total (em R$)
           </th>
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -51,6 +53,26 @@
           <td class="tr">
             {{ dinheiro(orcamento.valor_liquidado_total) || ' - ' }}
           </td>
+          <td>
+            <div class="grafico">
+              <div
+                class="grafico__liquidado"
+                :style="{ width: calcularPorcentagem(orcamento.valor_liquidado_total, calcularMaiorValor(orcamento)) + '%' }"
+              />
+              <div
+                class="grafico__empenho"
+                :style="{ width: calcularPorcentagem(orcamento.valor_empenhado_total, calcularMaiorValor(orcamento)) + '%' }"
+              />
+              <div
+                class="grafico__planejado-total"
+                :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_total, calcularMaiorValor(orcamento)) + '%' }"
+              />
+              <div
+                class="grafico__planejado"
+                :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_hoje, calcularMaiorValor(orcamento)) + '%' }"
+              />
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -72,7 +94,7 @@ import { defineProps } from 'vue';
 import dinheiro from '@/helpers/dinheiro';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
-defineProps({
+const props = defineProps({
   orcamentos: {
     type: Array,
     default: () => [],
@@ -82,9 +104,28 @@ defineProps({
     default: () => ({}),
   },
 });
+
+function calcularMaiorValor(orcamento) {
+  const valores = [
+    orcamento.valor_custo_planejado_total,
+    orcamento.valor_custo_planejado_hoje,
+    orcamento.valor_empenhado_total,
+    orcamento.valor_liquidado_total,
+  ];
+
+  return Math.max(...valores);
+}
+
+function calcularPorcentagem(valor, maiorValor) {
+  if (!maiorValor || !valor) {
+    return 0;
+  }
+  return (valor / maiorValor) * 100;
+}
+
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .tabela-orcamentos {
   width: 100%;
   border-collapse: collapse;
@@ -98,5 +139,44 @@ defineProps({
 }
 .tabela-orcamentos th {
   font-weight: bold;
+}
+
+.grafico {
+  min-width: 300px;
+  min-height: 1.5em;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.grafico__empenho {
+  background-color: #F1D7BB;
+  height: 100%;
+  position: absolute;
+  z-index: 2;
+}
+
+.grafico__planejado-total {
+  border-right: 2px solid #123753;
+  height: 100%;
+  position: absolute;
+  z-index: 3;
+
+}
+
+.grafico__planejado {
+  background-color: #DBDBDC;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+
+}
+
+.grafico__liquidado {
+  background-color: #D86B2C;
+  height: 4px;
+  border-radius: 0 999em 999em 0;
+  z-index: 4;
 }
 </style>
