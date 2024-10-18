@@ -63,17 +63,10 @@ const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
 </script>
 <style lang="less" scoped>
 .card-envelope-titulo__texto {
-  position: relative;
-
-  &::after {
-    content: '';
-    display: inline-block;
-    height: 2px;
-    background-color: v-bind(cor);
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-basis: 0;
-  }
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  justify-items: center;
+  align-items: center;
 
   &::before {
     content: '';
@@ -83,17 +76,29 @@ const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
     border-radius: 100%;
     color: v-bind(cor);
     background-color: currentColor;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    margin-top: -3px;
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
   }
+
+  &::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: v-bind(cor);
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+}
+
+.card-envelope-titulo__slot {
+  padding-right: 1rem;
 }
 
 .card-envelope-titulo__icone {
   background-color: v-bind(cor);
-  position: absolute;
-  right: 0;
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
 
   svg {
     fill: @branco;
