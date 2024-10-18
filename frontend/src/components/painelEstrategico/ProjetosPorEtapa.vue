@@ -1,20 +1,9 @@
 <template>
-  <div
-    role="region"
-    aria-label="Gráfico de projetos por etapa"
-    tabindex="0"
-  >
-    <div
-      class="min-width"
-      style="--min-width: 30rem;"
-    >
-      <GraficoDashboard
-        class="pb3"
-        :option="projetosPorEtapaChartOptions"
-        :tooltip-template="formatTooltip"
-      />
-    </div>
-  </div>
+  <GraficoDashboard
+    class="pb3"
+    :option="projetosPorEtapaChartOptions"
+    :tooltip-template="formatTooltip"
+  />
 </template>
 
 <script lang="ts" setup>
