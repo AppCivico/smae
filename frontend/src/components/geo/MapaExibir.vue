@@ -65,6 +65,7 @@ const props = defineProps({
     default: '32rem',
     validator: (value) => value.match(/^\d+(px|rem|em|vh|vw)$/),
   },
+  // @see https://leafletjs.com/reference.html#tooltip-option
   opcoesDoPainelFlutuante: {
     type: Object,
     default: () => ({
