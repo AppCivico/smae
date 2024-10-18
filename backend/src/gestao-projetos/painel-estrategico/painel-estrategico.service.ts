@@ -366,7 +366,7 @@ export class PainelEstrategicoService {
         Promise<PaginatedWithPagesDto<PainelEstrategicoProjeto>> {
         let retToken = filtro.token_paginacao;
         const filterToken = filtro.token_paginacao;
-        let ipp = filtro.ipp ?? 50;
+        let ipp = filtro.ipp ?? 25;
         const page = filtro.pagina ?? 1;
         let total_registros = 0;
         let tem_mais = false;
@@ -699,7 +699,7 @@ export class PainelEstrategicoService {
     async listaExecucaoOrcamentaria(filtro: PainelEstrategicoListaFilterDto, user: PessoaFromJwt) {
         let retToken = filtro.token_paginacao;
         const filterToken = filtro.token_paginacao;
-        let ipp = filtro.ipp ?? 50;
+        let ipp = filtro.ipp ?? 25;
         const page = filtro.pagina ?? 1;
         let total_registros = 3;
         let tem_mais = false;
