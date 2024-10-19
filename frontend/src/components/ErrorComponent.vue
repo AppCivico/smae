@@ -8,10 +8,15 @@ defineProps({
     type: null,
     default: '',
   },
+  as: {
+    type: String,
+    default: 'div',
+  },
 });
 </script>
 <template>
-  <div
+  <component
+    :is="as"
     v-if="slots.default || erro"
     class="error p1"
     aria-live="assertive"
@@ -21,5 +26,5 @@ defineProps({
         {{ erro }}
       </slot>
     </div>
-  </div>
+  </component>
 </template>
