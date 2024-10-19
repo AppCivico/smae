@@ -34,44 +34,65 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for=" (orcamento, index) in orcamentos"
-          :key="index"
-        >
-          <td class="tl">
-            {{ orcamento.nome_projeto || ' - ' }}
+        <tr v-if="chamadasPendentes">
+          <td
+            colspan="6"
+            aria-busy="true"
+          >
+            <LoadingComponent />
           </td>
-          <td class="tr">
-            {{ dinheiro(orcamento.valor_custo_planejado_total) || ' - ' }}
+        </tr>
+        <template v-else-if="orcamentos.length">
+          <tr
+            v-for=" (orcamento, index) in orcamentos"
+            :key="index"
+          >
+            <td class="tl">
+              {{ orcamento.nome_projeto || ' - ' }}
+            </td>
+            <td class="tr">
+              {{ dinheiro(orcamento.valor_custo_planejado_total) || ' - ' }}
+            </td>
+            <td class="tr">
+              {{ dinheiro(orcamento.valor_custo_planejado_hoje) || ' - ' }}
+            </td>
+            <td class="tr">
+              {{ dinheiro(orcamento.valor_empenhado_total) || ' - ' }}
+            </td>
+            <td class="tr">
+              {{ dinheiro(orcamento.valor_liquidado_total) || ' - ' }}
+            </td>
+            <td>
+              <div class="grafico">
+                <div
+                  class="grafico__liquidado"
+                  :style="{ width: calcularPorcentagem(orcamento.valor_liquidado_total, calcularMaiorValor(orcamento)) + '%' }"
+                />
+                <div
+                  class="grafico__empenho"
+                  :style="{ width: calcularPorcentagem(orcamento.valor_empenhado_total, calcularMaiorValor(orcamento)) + '%' }"
+                />
+                <div
+                  class="grafico__planejado-total"
+                  :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_total, calcularMaiorValor(orcamento)) + '%' }"
+                />
+                <div
+                  class="grafico__planejado"
+                  :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_hoje, calcularMaiorValor(orcamento)) + '%' }"
+                />
+              </div>
+            </td>
+          </tr>
+        </template>
+        <tr v-else>
+          <td colspan="6">
+            Nenhum resultado encontrado.
           </td>
-          <td class="tr">
-            {{ dinheiro(orcamento.valor_custo_planejado_hoje) || ' - ' }}
-          </td>
-          <td class="tr">
-            {{ dinheiro(orcamento.valor_empenhado_total) || ' - ' }}
-          </td>
-          <td class="tr">
-            {{ dinheiro(orcamento.valor_liquidado_total) || ' - ' }}
-          </td>
-          <td>
-            <div class="grafico">
-              <div
-                class="grafico__liquidado"
-                :style="{ width: calcularPorcentagem(orcamento.valor_liquidado_total, calcularMaiorValor(orcamento)) + '%' }"
-              />
-              <div
-                class="grafico__empenho"
-                :style="{ width: calcularPorcentagem(orcamento.valor_empenhado_total, calcularMaiorValor(orcamento)) + '%' }"
-              />
-              <div
-                class="grafico__planejado-total"
-                :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_total, calcularMaiorValor(orcamento)) + '%' }"
-              />
-              <div
-                class="grafico__planejado"
-                :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_hoje, calcularMaiorValor(orcamento)) + '%' }"
-              />
-            </div>
+        </tr>
+
+        <tr v-if="erro">
+          <td colspan="6">
+            Erro: {{ erro }}
           </td>
         </tr>
       </tbody>
@@ -83,7 +104,7 @@
         prefixo="orcamentos_"
       />
       <p class="w700 t12 tc tprimary">
-        Total de orcamentos: {{ paginacao.totalRegistros }}
+        Total de orçamentos: {{ paginacao.totalRegistros }}
       </p>
     </div>
   </div>
@@ -94,7 +115,7 @@ import { defineProps } from 'vue';
 import dinheiro from '@/helpers/dinheiro';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
-const props = defineProps({
+defineProps({
   orcamentos: {
     type: Array,
     default: () => [],
@@ -102,6 +123,14 @@ const props = defineProps({
   paginacao: {
     type: Object,
     default: () => ({}),
+  },
+  chamadasPendentes: {
+    type: Boolean,
+    default: false,
+  },
+  erro: {
+    type: [String, Object],
+    default: null,
   },
 });
 

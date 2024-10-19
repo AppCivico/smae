@@ -185,7 +185,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       } catch (erro: unknown) {
         this.erros.projetosPaginados = erro;
       }
-      this.chamadasPendentes.projetosPaginados = false;
+      this.chamadasPendentes.orcamentosPaginados = false;
     },
   },
 })();
