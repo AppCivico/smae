@@ -188,12 +188,12 @@ export class PainelEstrategicoService {
                                ${filtro}
                              and tc.realizado_termino is not null
                              and tc.removido_em is null
-                             and date_part('year', tc.realizado_termino) >= date_part('year', CURRENT_DATE) - 4
+                             and date_part('year', tc.realizado_termino) > date_part('year', CURRENT_DATE) - 3
                              and date_part('year', tc.realizado_termino) <= date_part('year', CURRENT_DATE)
                            group by date_part('year', tc.realizado_termino)
                            union
                            select 0 as quantidade, t.yr as ano_
-                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -4, DATE_PART('YEAR', CURRENT_DATE):: INT) t(yr)) t
+                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT) t(yr)) t
                      group by ano`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
     }
