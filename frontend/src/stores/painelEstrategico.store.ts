@@ -183,7 +183,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.paginacaoOrcamentos.temMais = temMais;
         this.paginacaoOrcamentos.totalRegistros = totalRegistros;
       } catch (erro: unknown) {
-        this.erros.projetosPaginados = erro;
+        this.erros.orcamentosPaginados = erro;
       }
       this.chamadasPendentes.orcamentosPaginados = false;
     },

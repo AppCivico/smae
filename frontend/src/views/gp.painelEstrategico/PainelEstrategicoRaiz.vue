@@ -311,14 +311,23 @@ watch(
       </CardEnvelope.Slide>
     </div>
 
-    <ErrorComponent v-if="erros.projetosPaginados" />
-
-    <LoadingComponent v-if="chamadasPendentes.projetosPaginados" />
-
     <div
       class="mt2"
     >
       <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo>
+          Projetos
+        </CardEnvelope.Titulo>
+        <TabelaProjetos
+          class="grid-full-column"
+          :projetos="painelEstrategicoStore?.projetosPaginados"
+          :paginacao="paginacaoProjetos"
+          :chamadas-pendentes="chamadasPendentes.projetosPaginados"
+          :erro="erros.projetosPaginados"
+        />
+      </CardEnvelope.Conteudo>
+
+      <CardEnvelope.Conteudo class="mt2">
         <CardEnvelope.Titulo
           titulo="Execução Orçamentária"
           subtitulo="Gráfico de análise orçamentária anual e planilha orçamentária detalhada por projeto."
@@ -334,16 +343,6 @@ watch(
           :paginacao="paginacaoOrcamentos"
           :chamadas-pendentes="chamadasPendentes.orcamentosPaginados"
           :erro="erros.orcamentosPaginados"
-        />
-      </CardEnvelope.Conteudo>
-      <CardEnvelope.Conteudo class="mt2">
-        <CardEnvelope.Titulo>
-          Projetos
-        </CardEnvelope.Titulo>
-        <TabelaProjetos
-          class="grid-full-column"
-          :projetos="painelEstrategicoStore?.projetosPaginados"
-          :paginacao="paginacaoProjetos"
         />
       </CardEnvelope.Conteudo>
     </div>

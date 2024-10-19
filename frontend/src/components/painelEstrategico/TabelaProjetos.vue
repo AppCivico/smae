@@ -14,6 +14,14 @@ defineProps({
     type: Object,
     default: () => ({}),
   },
+  chamadasPendentes: {
+    type: Boolean,
+    default: false,
+  },
+  erro: {
+    type: [String, Object],
+    default: null,
+  },
 });
 
 const projetoFormatado = (codigo, nome) => {
@@ -70,33 +78,54 @@ const projetoFormatado = (codigo, nome) => {
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="(projeto, index) in projetos"
-          :key="index"
-        >
-          <td class="tl">
-            {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
+        <tr v-if="chamadasPendentes">
+          <td
+            colspan="6"
+            aria-busy="true"
+          >
+            <LoadingComponent />
           </td>
-          <td class="tl">
-            {{ projeto.secretaria?.codigo || ' - ' }}
+        </tr>
+        <template v-else-if="projetos.length">
+          <tr
+            v-for="(projeto, index) in projetos"
+            :key="index"
+          >
+            <td class="tl">
+              {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
+            </td>
+            <td class="tl">
+              {{ projeto.secretaria?.codigo || ' - ' }}
+            </td>
+            <td class="tl">
+              {{ projeto.meta?.codigo || ' - ' }}
+            </td>
+            <td class="tl">
+              {{ statuses[projeto.status] || projeto.status }}
+            </td>
+            <td class="tl">
+              {{ projeto.etapa_atual || ' - ' }}
+            </td>
+            <td class="tl">
+              {{ dateToDate(projeto.termino_projetado) || ' - ' }}
+            </td>
+            <td class="tr">
+              {{ projeto.riscos_abertos || ' - ' }}
+            </td>
+            <td class="tr">
+              {{ projeto.percentual_atraso ? `${projeto.percentual_atraso}%` : ' - ' }}
+            </td>
+          </tr>
+        </template>
+        <tr v-else>
+          <td colspan="6">
+            Nenhum resultado encontrado.
           </td>
-          <td class="tl">
-            {{ projeto.meta?.codigo || ' - ' }}
-          </td>
-          <td class="tl">
-            {{ statuses[projeto.status] || projeto.status }}
-          </td>
-          <td class="tl">
-            {{ projeto.etapa_atual || ' - ' }}
-          </td>
-          <td class="tl">
-            {{ dateToDate(projeto.termino_projetado) || ' - ' }}
-          </td>
-          <td class="tr">
-            {{ projeto.riscos_abertos || ' - ' }}
-          </td>
-          <td class="tr">
-            {{ projeto.percentual_atraso ? `${projeto.percentual_atraso}%` : ' - ' }}
+        </tr>
+
+        <tr v-if="erro">
+          <td colspan="6">
+            Erro: {{ erro }}
           </td>
         </tr>
       </tbody>
