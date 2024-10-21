@@ -44,225 +44,230 @@
     *         chartTitle = "Projetos Planejados"                                                    *
     *************************************************************************************************/
 
-    const var1 = 300;
+    // Verifica se os dados retornaram íntegros
+    if(props.projetosPlanejadosMes != null && props.projetosPlanejadosMes.length > 0 && 
+       props.projetosConcluidosMes != null && props.projetosConcluidosMes.length > 0 && 
+       props.anosMapaCalorConcluidos != null && props.anosMapaCalorConcluidos.length == 4){
 
-    let data = props.projetosConcluidosMes;
-    let secondaryData = props.projetosPlanejadosMes;
-    let years = props.anosMapaCalorConcluidos.sort();
-    let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">CONCLUÍDOS</div>';
-    let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">PLANEJADOS</div>';
-    let colorArray = ['#e8e8e8', '#FDF3D6', '#FBE099', '#F7C233', '#D3A730'];     
-    let chartTitle = "Projetos Concluidos";
+        const var1 = 300;
 
-    console.log(data);
-    console.log(secondaryData);
+        let data = props.projetosConcluidosMes;
+        let secondaryData = props.projetosPlanejadosMes;
+        let years = props.anosMapaCalorConcluidos.reverse();
+        let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">CONCLUÍDOS</div>';
+        let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">PLANEJADOS</div>';
+        let colorArray = ['#e8e8e8', '#FDF3D6', '#FBE099', '#F7C233', '#D3A730'];     
+        let chartTitle = "Projetos Concluidos";
 
-    // Meses do eixo X
-    const months = [
-        'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
-    ];
+        // Meses do eixo X
+        const months = [
+            'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+        ];
 
-    // Meses por extenso do tooltip
-    const displayMonths = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
+        // Meses por extenso do tooltip
+        const displayMonths = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
 
-    // Ano atual para usar nas comparações.
-    const currentYear = new Date().getFullYear();
+        // Ano atual para usar nas comparações.
+        const currentYear = new Date().getFullYear();
 
-    // Maior valor dos dados
-    let maxValue = 0;
+        // Maior valor dos dados
+        let maxValue = 0;
 
-    // Menor valor dos dados
-    let minValue = 9999999999;
+        // Menor valor dos dados
+        let minValue = 9999999999;
 
-    // Redução dos dados para uso no gráfico
-    const chartData = data.reduce((acc, item) => {
-        // Monta o array para usar no gráfico
-        // Dados da plotagem
-        // [ posição Y no grid (começando no zero), posição X no grid (começando no zero), valor a ser plotado]
-        const tempArray = [];
-        tempArray.push(item.coluna);
-        tempArray.push(item.linha);
-        tempArray.push(item.quantidade);
-        const value = item.quantidade;
-        // Verifica a maior quantidade para usar no gráfico
-        if(maxValue < value){
-            maxValue = value;
-        }
-        // Verifica a menor quantidade para usar no gráfico
-        if(minValue >= value){
-            minValue = value;
-        }
-            acc.push(tempArray);
-        return [...acc ]
-    }, [])
-
-    let heatmapChart;
-
-    let option;
-
-    option = {
-        tooltip: {
-            position: 'bottom',
-            padding: 2,
-            cornerRadius: 20,
-            borderColor: '#ffffff',
-            textStyle: {
-                fontFamily: 'Roboto Slab',
-                color: '#221F43'
-            },
-            formatter: function (params) {
-                let footerQuantity = 0;
-                // Mês da posição atual do tooltip, independente do tipo de gráfico
-                let searchMonth = params.data[0] + 1;
-                // Recupera os valores de referência fora da plotagem do gráfico
-                // Ano da posição atual do tooltip
-                let searchYear = years[params.data[1]];
-                // Pega a quantidade
-                let finishedCurrentYear = secondaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
-                if(finishedCurrentYear[0]){
-                    footerQuantity = finishedCurrentYear[0].quantidade;
-                } else{
-                    footerQuantity = 0;
-                }
-                let monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
-                // Monta o HTML do tooltip
-                let response = 
-                    '<div class="grid-container">' +
-                        '<div class="firstLine">' +
-  	                        '<hr class="firstLineHR">' +
-                            '<div class="firstLineMonthYear">' +
-                                monthYear +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="secondLine">' +
-                            '<div class="secondLineQtd">' +
-                                '<b>' + params.data[2] + '</b>' +
-                            '</div>' +
-                            '<div class="secondLineDes">' +
-                                tooltipTitle.toUpperCase() +
-                            '</div>' +
-                        '</div>' +  
-                        '<div class="thirdLine">' +
-                            '<div class="thirdLineQtd">' +
-                                '<b>' + footerQuantity + '</b>' +
-                            '</div>' +
-                            '<div class="thirdLineDes"> ' +
-                                tooltipFooter.toUpperCase() +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="fourthLine">' +
-                            '<hr class="fourthLineHR">' +
-                        '</div>' +
-                    '</div>';
-                return response;
+        // Redução dos dados para uso no gráfico
+        const chartData = data.reduce((acc, item) => {
+            // Monta o array para usar no gráfico
+            // Dados da plotagem
+            // [ posição Y no grid (começando no zero), posição X no grid (começando no zero), valor a ser plotado]
+            const tempArray = [];
+            tempArray.push(item.coluna);
+            tempArray.push(item.linha);
+            tempArray.push(item.quantidade);
+            const value = item.quantidade;
+            // Verifica a maior quantidade para usar no gráfico
+            if(maxValue < value){
+                maxValue = value;
             }
-        },
-        grid: {
-            height: '50%',
-            width: '90%',
-            top: '10%',
-            left: '10%',
-            right: '20%'
-        },
-        xAxis: {
-            type: 'category',
-            axisLabel: {
-            align: 'center',
-            interval: 0
-            },
-            axisTick: {
-                alignWithLabel: true
-            },
-            data: months,
-            splitArea: {
-            show: true
-            },
-            axisLabel: {
-                fontFamily: 'Roboto',
-                fontWeight: 600,
-                color: '#7E858D',
-                fontSize: 12,
-            },
-            axisLine: { show: false },
-            axisTick: { show: false },           
-        },
-        yAxis: {
-            type: 'category',
-            data: years,
-            splitArea: {
-                show: true
-            },
-            axisLabel: {
-                fontFamily: 'Roboto',
-                fontWeight: 600,
-                color: '#7E858D',
-                fontSize: 12,
-            },
-            axisLine: { show: false },
-            axisTick: { show: false },            
-        },
-        visualMap: {
-            min: 0,
-            max: maxValue,
-            calculable: true,
-            orient: 'horizontal',
-            left: 'center',
-            bottom: '25%',
-            inRange : {   
-                    color: colorArray
-                },
-            itemWidth: 10,
-            itemHeight: var1,
-            align: 'top',
-            textStyle: {
-                fontFamily: 'Roboto Slab',
-                fontWeight: 400,
-                fontSize: 14,
-                color: '#7E858D',
-                height:60,
+            // Verifica a menor quantidade para usar no gráfico
+            if(minValue >= value){
+                minValue = value;
             }
-        },
-        series: [
-            {
-                name: chartTitle,
-                type: 'heatmap',
-                data: chartData,
-                label: {
-                    show: false
+                acc.push(tempArray);
+            return [...acc ]
+        }, [])
+
+        let heatmapChart;
+
+        let option;
+
+        option = {
+            tooltip: {
+                position: 'bottom',
+                padding: 2,
+                cornerRadius: 20,
+                borderColor: '#ffffff',
+                textStyle: {
+                    fontFamily: 'Roboto Slab',
+                    color: '#221F43'
                 },
-                emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)',
-                        padding: 10
+                formatter: function (params) {
+                    let footerQuantity = 0;
+                    // Mês da posição atual do tooltip, independente do tipo de gráfico
+                    let searchMonth = params.data[0] + 1;
+                    // Recupera os valores de referência fora da plotagem do gráfico
+                    // Ano da posição atual do tooltip
+                    let searchYear = years[params.data[1]];
+                    // Pega a quantidade
+                    let finishedCurrentYear = secondaryData.filter(d => d.ano === searchYear && d.mes === searchMonth);
+                    if(finishedCurrentYear[0]){
+                        footerQuantity = finishedCurrentYear[0].quantidade;
+                    } else{
+                        footerQuantity = 0;
                     }
+                    let monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
+                    // Monta o HTML do tooltip
+                    let response = 
+                        '<div class="grid-container">' +
+                            '<div class="firstLine">' +
+                                '<hr class="firstLineHR">' +
+                                '<div class="firstLineMonthYear">' +
+                                    monthYear +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="secondLine">' +
+                                '<div class="secondLineQtd">' +
+                                    '<b>' + params.data[2] + '</b>' +
+                                '</div>' +
+                                '<div class="secondLineDes">' +
+                                    tooltipTitle.toUpperCase() +
+                                '</div>' +
+                            '</div>' +  
+                            '<div class="thirdLine">' +
+                                '<div class="thirdLineQtd">' +
+                                    '<b>' + footerQuantity + '</b>' +
+                                '</div>' +
+                                '<div class="thirdLineDes"> ' +
+                                    tooltipFooter.toUpperCase() +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="fourthLine">' +
+                                '<hr class="fourthLineHR">' +
+                            '</div>' +
+                        '</div>';
+                    return response;
+                }
+            },
+            grid: {
+                height: '50%',
+                width: '90%',
+                top: '10%',
+                left: '10%',
+                right: '20%'
+            },
+            xAxis: {
+                type: 'category',
+                axisLabel: {
+                align: 'center',
+                interval: 0
                 },
-                itemStyle: {
-                    borderWidth: 3,
-                    borderColor: 'rgba(255, 255, 255, 1)',
+                axisTick: {
+                    alignWithLabel: true
                 },
-            }
-        ]
-    };
+                data: months,
+                splitArea: {
+                show: true
+                },
+                axisLabel: {
+                    fontFamily: 'Roboto',
+                    fontWeight: 600,
+                    color: '#7E858D',
+                    fontSize: 12,
+                },
+                axisLine: { show: false },
+                axisTick: { show: false },           
+            },
+            yAxis: {
+                type: 'category',
+                data: years,
+                splitArea: {
+                    show: true
+                },
+                axisLabel: {
+                    fontFamily: 'Roboto',
+                    fontWeight: 600,
+                    color: '#7E858D',
+                    fontSize: 12,
+                },
+                axisLine: { show: false },
+                axisTick: { show: false },            
+            },
+            visualMap: {
+                min: 0,
+                max: maxValue,
+                calculable: true,
+                orient: 'horizontal',
+                left: 'center',
+                bottom: '25%',
+                inRange : {   
+                        color: colorArray
+                    },
+                itemWidth: 10,
+                itemHeight: var1,
+                align: 'top',
+                textStyle: {
+                    fontFamily: 'Roboto Slab',
+                    fontWeight: 400,
+                    fontSize: 14,
+                    color: '#7E858D',
+                    height:60,
+                }
+            },
+            series: [
+                {
+                    name: chartTitle,
+                    type: 'heatmap',
+                    data: chartData,
+                    label: {
+                        show: false
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)',
+                            padding: 10
+                        }
+                    },
+                    itemStyle: {
+                        borderWidth: 3,
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                    },
+                }
+            ]
+        };
 
-    // Adicionar o listener para quando a página mudar de tamanho
-    window.addEventListener('resize', function() {
-        var tt = this;
-        this.setTimeout(function() {
-            heatmapChart.resize();
-        }, 100);    
-    });
-
-    // Espera para o DOM estar pronto (talvez possa ser substituido pelo READY).
-    setTimeout(() => {
-        let chartDom = document.getElementById('projetosConcluidosMesContainer');
-        heatmapChart = echarts.init(chartDom, null, {
-            renderer: 'canvas'
+        // Adicionar o listener para quando a página mudar de tamanho
+        window.addEventListener('resize', function() {
+            var tt = this;
+            this.setTimeout(function() {
+                heatmapChart.resize();
+            }, 100);    
         });
-        option && heatmapChart.setOption(option);
-    }, 1000 );
+
+        // Espera para o DOM estar pronto (talvez possa ser substituido pelo READY).
+        setTimeout(() => {
+            let chartDom = document.getElementById('projetosConcluidosMesContainer');
+            heatmapChart = echarts.init(chartDom, null, {
+                renderer: 'canvas'
+            });
+            option && heatmapChart.setOption(option);
+        }, 1000 );
+    } else{
+        throw new Error('Não foi possível mostrar o gráfico de calor de Projetos Concluídos! Por favor, contacte o atendimento: smae.prefeitura.sp@fgv.br.'); 
+    }
 
 </script>
 

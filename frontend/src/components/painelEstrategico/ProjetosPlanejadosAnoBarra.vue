@@ -125,89 +125,102 @@
         }
     });
 
-    // Array que receberá o tamanho das barras
-    let barsWidth = [];
+    // Verifica se os dados retornaram íntegros
+    if(props.projetosPlanejadosAno != null && props.projetosPlanejadosAno.length > 0){
 
-    // Variável que receberá o total dos valores de projetos
-    let totalProjects = 0;
+        // Array que receberá o tamanho das barras
+        let barsWidth = [];
 
-    // Array que receberá o título das barras
-    let labels = [];
+        // Variável que receberá o total dos valores de projetos
+        let totalProjects = 0;
 
-    // Define a cor da barra
-    let barsBackgroundColor = '';
+        // Array que receberá o título das barras
+        let labels = [];
 
-    for(let i=0; i < props.projetosPlanejadosAno.length; i++){
-        labels[i] = "" + props.projetosPlanejadosAno[i].ano;
-        barsWidth[i] = props.projetosPlanejadosAno[i].quantidade;
-        // Acumula o total de projetos
-        totalProjects = totalProjects + props.projetosPlanejadosAno[i].quantidade;
+        // Define a cor da barra
+        let barsBackgroundColor = '';
+
+        // Ordena o array de jsons da resposta da API pelo ano
+        let dataSortedByYear = props.projetosPlanejadosAno.sort((a, b) => {
+        if (a.ano < b.ano) {
+            return -1;
+        }
+        });
+
+        // Extrai as informações da resposta da API
+        for(let i=0; i < dataSortedByYear.length; i++){
+            labels[i] = "" + dataSortedByYear[i].ano;
+            barsWidth[i] = dataSortedByYear[i].quantidade;
+            // Acumula o total de projetos
+            totalProjects = totalProjects + dataSortedByYear[i].quantidade;
+        }
+    
+        // Cor das barras
+        barsBackgroundColor = "#A77E11";
+
+        // Calcula o percentual do tamanho das barras
+        barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
+        barsWidth[1] = Math.ceil(barsWidth[1] / totalProjects * 100);
+        barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
+        barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
+
+        function init(){
+
+            // Valores default para quando a quantidade for igual a 0
+            let barDefaultWidth1 = "0px";
+            let barDefaultWidth2 = "0px";
+            let barDefaultWidth3 = "0px";
+            let barDefaultWidth4 = "0px";
+            let barsBackgroundColor1 = "#ffffff";
+            let barsBackgroundColor2 = "#ffffff";
+            let barsBackgroundColor3 = "#ffffff";
+            let barsBackgroundColor4 = "#ffffff";
+
+            // Se o valor da barra for maior do que 0, define largura e cor da barra
+            if(barsWidth[0] > 0){
+                barDefaultWidth1 = barsWidth[0] + "%";
+                barsBackgroundColor1 = barsBackgroundColor; 
+            }
+            if(barsWidth[1] > 0){
+                barDefaultWidth2 = barsWidth[1] + "%";
+                barsBackgroundColor2 = barsBackgroundColor; 
+            }
+            if(barsWidth[2] > 0){
+                barDefaultWidth3 = barsWidth[2] + "%";
+                barsBackgroundColor3 = barsBackgroundColor; 
+            }
+            if(barsWidth[3] > 0){
+                barDefaultWidth4 = barsWidth[3] + "%";
+                barsBackgroundColor4 = barsBackgroundColor; 
+            }
+
+            // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
+            document.getElementById('ProjetosPlanejadosAnoLabel1').innerText=labels[0];
+            document.getElementById('ProjetosPlanejadosAnoLabel2').innerText=labels[1];
+            document.getElementById('ProjetosPlanejadosAnoLabel3').innerText=labels[2];
+            document.getElementById('ProjetosPlanejadosAnoLabel4').innerText=labels[3];
+            
+            // Define o tamanho, a cor e o texto do tooltip de cada barra.
+            document.getElementById('ProjetosPlanejadosAnoCol1').style.width=barDefaultWidth1;
+            document.getElementById('ProjetosPlanejadosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
+            document.getElementById('ProjetosPlanejadosAnoBarra1Qtd').innerText=props.projetosPlanejadosAno[0].quantidade
+            document.getElementById('ProjetosPlanejadosAnoCol2').style.width=barDefaultWidth2;
+            document.getElementById('ProjetosPlanejadosAnoBarra2').style.backgroundColor=barsBackgroundColor2;
+            document.getElementById('ProjetosPlanejadosAnoBarra2Qtd').innerText=props.projetosPlanejadosAno[1].quantidade
+            document.getElementById('ProjetosPlanejadosAnoCol3').style.width=barDefaultWidth3;
+            document.getElementById('ProjetosPlanejadosAnoBarra3').style.backgroundColor=barsBackgroundColor3;
+            document.getElementById('ProjetosPlanejadosAnoBarra3Qtd').innerText=props.projetosPlanejadosAno[2].quantidade
+            document.getElementById('ProjetosPlanejadosAnoCol4').style.width=barDefaultWidth4;
+            document.getElementById('ProjetosPlanejadosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
+            document.getElementById('ProjetosPlanejadosAnoBarra4Qtd').innerText=props.projetosPlanejadosAno[3].quantidade
+        }
+
+        setTimeout(() => {
+            init();
+        }, 100);
+    } else{
+        throw new Error('Não foi possível mostrar o gráfico de barras de Projetos Planejados! Por favor, contacte o atendimento: smae.prefeitura.sp@fgv.br.');
     }
-
-    barsBackgroundColor = "#A77E11";
-    // barsBackgroundColor = "#d3a730";
- 
-
-    // Calcula o percentual do tamanho das barras
-    barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
-    barsWidth[1] = Math.ceil(barsWidth[1] / totalProjects * 100);
-    barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
-    barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
-
-    function init(){
-
-        // Valores default para quando a quantidade for igual a 0
-        let barDefaultWidth1 = "0px";
-        let barDefaultWidth2 = "0px";
-        let barDefaultWidth3 = "0px";
-        let barDefaultWidth4 = "0px";
-        let barsBackgroundColor1 = "#ffffff";
-        let barsBackgroundColor2 = "#ffffff";
-        let barsBackgroundColor3 = "#ffffff";
-        let barsBackgroundColor4 = "#ffffff";
-
-        // Se o valor da barra for maior do que 0, define largura e cor da barra
-        if(barsWidth[0] > 0){
-            barDefaultWidth1 = barsWidth[0] + "%";
-            barsBackgroundColor1 = barsBackgroundColor; 
-        }
-        if(barsWidth[1] > 0){
-            barDefaultWidth2 = barsWidth[1] + "%";
-            barsBackgroundColor2 = barsBackgroundColor; 
-        }
-        if(barsWidth[2] > 0){
-            barDefaultWidth3 = barsWidth[2] + "%";
-            barsBackgroundColor3 = barsBackgroundColor; 
-        }
-        if(barsWidth[3] > 0){
-            barDefaultWidth4 = barsWidth[3] + "%";
-            barsBackgroundColor4 = barsBackgroundColor; 
-        }
-
-        // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
-        document.getElementById('ProjetosPlanejadosAnoLabel1').innerText=labels[0];
-        document.getElementById('ProjetosPlanejadosAnoLabel2').innerText=labels[1];
-        document.getElementById('ProjetosPlanejadosAnoLabel3').innerText=labels[2];
-        document.getElementById('ProjetosPlanejadosAnoLabel4').innerText=labels[3];
-        
-        // Define o tamanho, a cor e o texto do tooltip de cada barra.
-        document.getElementById('ProjetosPlanejadosAnoCol1').style.width=barDefaultWidth1;
-        document.getElementById('ProjetosPlanejadosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
-        document.getElementById('ProjetosPlanejadosAnoBarra1Qtd').innerText=props.projetosPlanejadosAno[0].quantidade
-        document.getElementById('ProjetosPlanejadosAnoCol2').style.width=barDefaultWidth2;
-        document.getElementById('ProjetosPlanejadosAnoBarra2').style.backgroundColor=barsBackgroundColor2;
-        document.getElementById('ProjetosPlanejadosAnoBarra2Qtd').innerText=props.projetosPlanejadosAno[1].quantidade
-        document.getElementById('ProjetosPlanejadosAnoCol3').style.width=barDefaultWidth3;
-        document.getElementById('ProjetosPlanejadosAnoBarra3').style.backgroundColor=barsBackgroundColor3;
-        document.getElementById('ProjetosPlanejadosAnoBarra3Qtd').innerText=props.projetosPlanejadosAno[2].quantidade
-        document.getElementById('ProjetosPlanejadosAnoCol4').style.width=barDefaultWidth4;
-        document.getElementById('ProjetosPlanejadosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
-        document.getElementById('ProjetosPlanejadosAnoBarra4Qtd').innerText=props.projetosPlanejadosAno[3].quantidade
-    }
-
-    setTimeout(() => {
-        init();
-    }, 100);
 
 </script>
 
