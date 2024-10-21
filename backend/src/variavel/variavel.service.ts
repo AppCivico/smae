@@ -24,7 +24,7 @@ import { PrismaHelpers } from '../common/PrismaHelpers';
 import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
-import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { Object2Hash } from '../common/object2hash';
 import { MetaService } from '../meta/meta.service';
@@ -1281,6 +1281,7 @@ export class VariavelService {
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             total_registros: total_registros,
             token_paginacao: retToken,
             paginas,

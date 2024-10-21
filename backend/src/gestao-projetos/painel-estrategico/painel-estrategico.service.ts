@@ -22,7 +22,7 @@ import {
 } from './entities/painel-estrategico-responses.dto';
 import { Prisma } from '@prisma/client';
 import { ProjetoService } from '../../pp/projeto/projeto.service';
-import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';
 import { JwtService } from '@nestjs/jwt';
 import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
@@ -457,6 +457,7 @@ export class PainelEstrategicoService {
             paginas: paginas,
             pagina_corrente: page,
             linhas: retorno,
+            token_ttl: PAGINATION_TOKEN_TTL,
         };
 
     }
@@ -807,6 +808,7 @@ export class PainelEstrategicoService {
             token_paginacao: retToken,
             paginas:paginas,
             linhas: linhas,
+            token_ttl: PAGINATION_TOKEN_TTL,
         } satisfies PaginatedWithPagesDto<PainelEstrategicoExecucaoOrcamentariaLista>;
 
     }
