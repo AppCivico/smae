@@ -48,19 +48,27 @@
             :key="index"
           >
             <td class="tl">
-              {{ orcamento.nome_projeto || ' - ' }}
+              {{ projetoFormatado(orcamento.codigo_projeto, orcamento.nome_projeto) }}
             </td>
             <td class="tr">
-              {{ dinheiro(orcamento.valor_custo_planejado_total) || ' - ' }}
+              {{ orcamento.valor_custo_planejado_total !== undefined &&
+                orcamento.valor_custo_planejado_total !== null
+                ? dinheiro(orcamento.valor_custo_planejado_total) : ' - ' }}
             </td>
             <td class="tr">
-              {{ dinheiro(orcamento.valor_custo_planejado_hoje) || ' - ' }}
+              {{ orcamento.valor_custo_planejado_hoje !== undefined
+                && orcamento.valor_custo_planejado_hoje !== null
+                ? dinheiro(orcamento.valor_custo_planejado_hoje) : ' - ' }}
             </td>
             <td class="tr">
-              {{ dinheiro(orcamento.valor_empenhado_total) || ' - ' }}
+              {{ orcamento.valor_empenhado_total !== undefined
+                && orcamento.valor_empenhado_total !== null
+                ? dinheiro(orcamento.valor_empenhado_total) : ' - ' }}
             </td>
             <td class="tr">
-              {{ dinheiro(orcamento.valor_liquidado_total) || ' - ' }}
+              {{ orcamento.valor_liquidado_total !== undefined &&
+                orcamento.valor_liquidado_total !== null
+                ? dinheiro(orcamento.valor_liquidado_total) : ' - ' }}
             </td>
             <td>
               <div class="grafico">
@@ -96,16 +104,43 @@
           </td>
         </tr>
       </tbody>
+      <tfoot>
+        <td colspan="5" />
+        <td>
+          <dl
+            class="legendas mt1"
+          >
+            <div class="legenda-item">
+              <dd class="custo-planejado-total" />
+              <dt>Custo Planejado Total</dt>
+            </div>
+            <div class="legenda-item">
+              <dd class="custo-planejado" />
+              <dt>Custo Planejado até a Presente Data</dt>
+            </div>
+            <div class="legenda-item">
+              <dd class="valor-empenhado" />
+              <dt>Valor Empenhado Total</dt>
+            </div>
+            <div class="legenda-item">
+              <dd class="valor-liquidado" />
+              <dt>Valor Liquidado Total</dt>
+            </div>
+          </dl>
+        </td>
+      </tfoot>
     </table>
-    <div>
-      <MenuPaginacao
-        class="mt2 bgt"
-        v-bind="paginacao"
-        prefixo="orcamentos_"
-      />
-      <p class="w700 t12 tc tprimary">
-        Total de orçamentos: {{ paginacao.totalRegistros }}
-      </p>
+    <div class="flex justifycenter">
+      <div>
+        <MenuPaginacao
+          class="mt2 bgt"
+          v-bind="paginacao"
+          prefixo="orcamentos_"
+        />
+        <p class="w700 t12 tc tprimary">
+          Total de orçamentos: {{ paginacao.totalRegistros }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -113,6 +148,7 @@
 <script setup>
 import { defineProps } from 'vue';
 import dinheiro from '@/helpers/dinheiro';
+import truncate from '@/helpers/truncate';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
 defineProps({
@@ -152,6 +188,12 @@ function calcularPorcentagem(valor, maiorValor) {
   return (valor / maiorValor) * 100;
 }
 
+const projetoFormatado = (codigo, nome) => {
+  if (codigo && nome) {
+    return `${codigo} - ${truncate(nome, 40)}`;
+  }
+  return codigo || nome || ' - ';
+};
 </script>
 
 <style scoped lang="less">
@@ -160,8 +202,8 @@ function calcularPorcentagem(valor, maiorValor) {
   border-collapse: collapse;
   min-width: 1000px;
 }
-.tabela-orcamentos th,
-.tabela-orcamentos td {
+.tabela-orcamentos tbody th,
+.tabela-orcamentos tbody td {
   border-bottom: 1px solid #ddd;
   padding: 8px;
   text-align: center;
@@ -208,4 +250,42 @@ function calcularPorcentagem(valor, maiorValor) {
   border-radius: 0 999em 999em 0;
   z-index: 4;
 }
+
+.legendas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+}
+
+dt {
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+dd {
+  width: 20px;
+  height: 10px;
+  margin: 0;
+}
+
+.custo-planejado-total {
+  border-right: 2px solid #123753;
+}
+
+.custo-planejado {
+  background-color: #DBDBDC;
+}
+
+.valor-empenhado {
+  background-color: #F1D7BB;
+}
+
+.valor-liquidado {
+  background-color: #D86B2C;
+}
+
 </style>
