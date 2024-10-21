@@ -169,6 +169,7 @@ export const useVariaveisStore = defineStore({
             incluir_auxiliares: true,
           } : undefined,
         );
+
         this.Valores[id] = r;
       } catch (error) {
         this.Valores[id] = { error };
