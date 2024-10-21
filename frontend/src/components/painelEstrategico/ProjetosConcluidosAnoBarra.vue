@@ -19,7 +19,7 @@
                                 
                             </div>
                             <div id="ProjetosConcluidosAnoBarra1Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                PROJETOS CONCLUÍDOS
                             </div>
                         </div>  
                         <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
@@ -46,7 +46,7 @@
                                 
                             </div>
                             <div id="ProjetosConcluidosAnoBarra2Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                PROJETOS CONCLUÍDOS
                             </div>
                         </div>  
                         <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
@@ -73,7 +73,7 @@
                                 
                             </div>
                             <div id="ProjetosConcluidosAnoBarra3Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                PROJETOS CONCLUÍDOS
                             </div>
                         </div>  
                         <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
@@ -100,7 +100,7 @@
                                 
                             </div>
                             <div id="ProjetosConcluidosAnoBarra4Desc" class="ProjetosConcluidosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                PROJETOS CONCLUÍDOS
                             </div>
                         </div>  
                         <div class="ProjetosConcluidosAnoThirdLine" style="margin-top: 5px;">
