@@ -392,7 +392,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </div>
       <div class="f1 fb33">
         <dt class="t16 w700 mb05 tamarelo">
-          Órgão concedente / Secretaria do órgão concedente
+          Órgão concedente / Gestor do órgão concedente
         </dt>
         <dd>
           {{ transferenciaEmFoco?.orgao_concedente?.sigla || '-' }} /

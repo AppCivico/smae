@@ -2298,7 +2298,7 @@ export const transferenciasVoluntarias = object({
         .nullable(),
     })),
   secretaria_concedente: string()
-    .label('Secretaria do órgão concedente')
+    .label('Gestor do órgão concedente')
     .nullable(),
 });
 
@@ -2493,7 +2493,6 @@ export const projeto = object()
       .label('Origem')
       .required('O projeto precisa de uma origem de recursos.')
       .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
-
     origens_extra: array()
       .label('Outras associações com PdM/Plano Setorial')
       .of(
