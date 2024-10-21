@@ -270,11 +270,17 @@ export class PainelEstrategicoService {
     }
 
     private async buildProjetosPlanejadosPorMesAno(filtro: string) {
-        const sql = `select sum(quantidade)::int as quantidade, ano,mes, linha,coluna from (
+        const sql = `select sum(quantidade)::int as quantidade, ano,mes,
+                            case
+                                when ano < date_part('YEAR', current_date) then -1
+                                when ano = date_part('YEAR', current_date) then 3
+                                when ano = date_part('YEAR', current_date) + 1 then 2
+                                when ano = date_part('YEAR', current_date) + 2 then 1
+                                when ano = date_part('YEAR', current_date) + 3 then 0
+                                end as linha,coluna from (
                         select * from (select date_part('year', tc.previsao_termino)      as ano,
                             date_part('month', tc.previsao_termino)     as mes,
                             count(distinct p.id)::int  as quantidade,
-                             date_part('year', tc.previsao_termino) - date_part('YEAR', current_date) as linha,
                             date_part('month', tc.previsao_termino) - 1 as coluna
                      FROM projeto p full outer JOIN (SELECT
                                                             ppc.projeto_id,
@@ -296,12 +302,11 @@ export class PainelEstrategicoService {
                             date_part('year', t.data_::date)                             as ano,
                             date_part('month', t.data_::date)                            as mes,
                             0                                                            as quantidade,
-                            date_part('year',t.data_ ) - date_part('YEAR', current_date) as linha,
                             date_part('month', t.data_) - 1                              as coluna
                         from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
                                              TO_DATE(DATE_PART('YEAR', current_date) + 3 || '12' || '01', 'YYYYMMDD')::timestamp,
                                              '1 month'::interval) t(data_) ) t) t
-                     group by ano, mes, linha, coluna
+                     group by ano, mes, coluna
                      order by ano,mes`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
