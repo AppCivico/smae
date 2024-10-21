@@ -48,15 +48,20 @@ function iniciar() {
   painelEstrategicoStore.buscarProjetosParaMapa(parametros);
 }
 
-const limparPaginacao = () => router.replace({
-  query: {
-    ...route.query,
-    projetos_token_paginacao: undefined,
-    projetos_pagina: undefined,
-    orcamentos_token_paginacao: undefined,
-    orcamentos_pagina: undefined,
-  },
-});
+const limparPaginacao = () => {
+  paginacaoProjetos.value.validoAte = 0;
+  paginacaoOrcamentos.value.validoAte = 0;
+
+  return router.replace({
+    query: {
+      ...route.query,
+      projetos_token_paginacao: undefined,
+      projetos_pagina: undefined,
+      orcamentos_token_paginacao: undefined,
+      orcamentos_pagina: undefined,
+    },
+  });
+};
 
 iniciar();
 
@@ -95,8 +100,6 @@ watch(
   async ([projetosTokenPaginacaoNovo, projetosPagina]) => {
     if (paginacaoProjetos.value.validoAte && paginacaoProjetos.value.validoAte <= Date.now()) {
       alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
-
-      paginacaoProjetos.value.validoAte = 0;
       await limparPaginacao();
     }
     painelEstrategicoStore.buscarProjetos({
@@ -116,8 +119,6 @@ watch(
   async ([orcamentosTokenPaginacaoNovo, orcamentosPaginaNovo]) => {
     if (paginacaoOrcamentos.value.validoAte && paginacaoOrcamentos.value.validoAte <= Date.now()) {
       alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
-
-      paginacaoOrcamentos.value.validoAte = 0;
       await limparPaginacao();
     }
     painelEstrategicoStore.buscarOrcamentos({
