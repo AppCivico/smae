@@ -202,12 +202,17 @@ const projetoFormatado = (codigo, nome) => {
   border-collapse: collapse;
   min-width: 1000px;
 }
+
 .tabela-orcamentos tbody th,
 .tabela-orcamentos tbody td {
   border-bottom: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
 }
+
+.tabela-orcamentos th,
+.tabela-orcamentos td {
+  padding: 8px;
+}
+
 .tabela-orcamentos th {
   font-weight: bold;
 }
@@ -241,7 +246,6 @@ const projetoFormatado = (codigo, nome) => {
   height: 100%;
   position: absolute;
   z-index: 1;
-
 }
 
 .grafico__liquidado {
