@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import { camelCase } from 'lodash';
 import type { StoreGeneric } from 'pinia';
 import { defineStore } from 'pinia';
@@ -27,6 +28,7 @@ type Estado = Record<string, unknown> & {
     paginaCorrente: number;
     temMais: boolean;
     totalRegistros: number;
+    validoAte: number;
   };
   paginacaoOrcamentos: {
     tokenPaginacao: string;
@@ -34,6 +36,7 @@ type Estado = Record<string, unknown> & {
     paginaCorrente: number;
     temMais: boolean;
     totalRegistros: number;
+    validoAte: number;
   };
 };
 
@@ -42,7 +45,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     anosMapaCalorConcluidos: [],
     anosMapaCalorPlanejados: [],
     execucaoOrcamentariaAno: [],
-    grandesNumeros: { },
+    grandesNumeros: {},
     projetoEtapas: [],
     projetoOrgaoResponsavel: [],
     projetoStatus: [],
@@ -73,6 +76,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       paginaCorrente: 0,
       temMais: true,
       totalRegistros: 0,
+      validoAte: 0,
     },
     // lista de orcamentos paginados
     orcamentosPaginados: [],
@@ -82,6 +86,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       paginaCorrente: 0,
       temMais: true,
       totalRegistros: 0,
+      validoAte: 0,
     },
   }),
   getters: {
@@ -168,6 +173,18 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.paginacaoProjetos.paginaCorrente = paginaCorrente;
         this.paginacaoProjetos.temMais = temMais;
         this.paginacaoProjetos.totalRegistros = totalRegistros;
+
+        if (!params.pagina || params.pagina === 1) {
+          try {
+            const { exp, iat } = jwtDecode(tokenPaginacao);
+
+            if (exp && iat) {
+              this.paginacaoProjetos.validoAte = Date.now() + (exp - iat);
+            }
+          } catch (erro) {
+            this.erros.projetosPaginados = erro;
+          }
+        }
       } catch (erro: unknown) {
         this.erros.projetosPaginados = erro;
       }
@@ -193,6 +210,18 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.paginacaoOrcamentos.paginaCorrente = paginaCorrente;
         this.paginacaoOrcamentos.temMais = temMais;
         this.paginacaoOrcamentos.totalRegistros = totalRegistros;
+
+        if (!params.pagina || params.pagina === 1) {
+          try {
+            const { exp, iat } = jwtDecode(tokenPaginacao);
+
+            if (exp && iat) {
+              this.paginacaoOrcamentos.validoAte = Date.now() + (exp - iat);
+            }
+          } catch (erro) {
+            this.erros.orcamentosPaginados = erro;
+          }
+        }
       } catch (erro: unknown) {
         this.erros.orcamentosPaginados = erro;
       }

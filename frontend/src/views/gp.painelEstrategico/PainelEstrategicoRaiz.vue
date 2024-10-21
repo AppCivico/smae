@@ -3,7 +3,6 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
-import HorizontalSideBySideBarsChart from '@/components/HorizontalSideBySideBarsChart.vue';
 import ExecucaoOrcamentaria from '@/components/painelEstrategico/ExecucaoOrcamentaria.vue';
 import ExecucaoOrcamentariaGrafico from '@/components/painelEstrategico/ExecucaoOrcamentariaGrafico.vue';
 import FiltroDeProjetos from '@/components/painelEstrategico/FiltroDeProjetos.vue';
@@ -18,6 +17,7 @@ import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
@@ -27,6 +27,8 @@ const route = useRoute();
 const router = useRouter();
 
 const painelEstrategicoStore = usePainelEstrategicoStore(route.meta.entidadeMãe as string);
+
+const alertStore = useAlertStore();
 
 const {
   chamadasPendentes,
@@ -90,10 +92,14 @@ watch(
 
 watch(
   () => [route.query.projetos_token_paginacao, route.query.projetos_pagina],
-  ([projetos_token_paginacao, projetos_pagina]) => {
+  async ([projetosTokenPaginacaoNovo, projetosPagina]) => {
+    if (paginacaoProjetos.value.validoAte && paginacaoProjetos.value.validoAte >= Date.now()) {
+      alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+      await limparPaginacao();
+    }
     painelEstrategicoStore.buscarProjetos({
-      token_paginacao: projetos_token_paginacao,
-      pagina: projetos_pagina,
+      token_paginacao: projetosTokenPaginacaoNovo,
+      pagina: projetosPagina,
       portfolio_id: route.query.portfolio_id,
       orgao_responsavel_id: route.query.orgao_responsavel_id,
       projeto_id: route.query.projeto_id,
@@ -105,10 +111,14 @@ watch(
 
 watch(
   () => [route.query.orcamentos_token_paginacao, route.query.orcamentos_pagina],
-  ([orcamentos_token_paginacao, orcamentos_pagina]) => {
+  async ([orcamentosTokenPaginacaoNovo, orcamentosPaginaNovo]) => {
+    if (paginacaoOrcamentos.value.validoAte && paginacaoOrcamentos.value.validoAte >= Date.now()) {
+      alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+      await limparPaginacao();
+    }
     painelEstrategicoStore.buscarOrcamentos({
-      token_paginacao: orcamentos_token_paginacao,
-      pagina: orcamentos_pagina,
+      token_paginacao: orcamentosTokenPaginacaoNovo,
+      pagina: orcamentosPaginaNovo,
       portfolio_id: route.query.portfolio_id,
       orgao_responsavel_id: route.query.orgao_responsavel_id,
       projeto_id: route.query.projeto_id,
