@@ -61,10 +61,10 @@ export class PainelEstrategicoService {
     private async addPermissaoProjetos(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt){
         if (!filtro.projeto_id) {
             filtro.projeto_id = [];
+            await this.projetoService.findAllIds('PP', user).then(ids => {
+                ids.forEach(n => filtro.projeto_id.push(n.id));
+            });
         }
-        await this.projetoService.findAllIds('PP', user).then(ids => {
-            ids.forEach(n => filtro.projeto_id.push(n.id));
-        });
         return filtro;
     }
 
@@ -200,38 +200,45 @@ export class PainelEstrategicoService {
     }
 
     async buildProjetosConcluidosPorMesAno(filtro: string) {
-        const sql = `
-                select * from (
-                    select count(distinct p.id)::int as quantidade,
-                            date_part('year', tc.realizado_termino) as ano,
-                            date_part('month', tc.realizado_termino)                                  as mes,
-                            date_part('YEAR', current_date) - date_part('year', tc.realizado_termino) as linha,
-                            date_part('month', tc.realizado_termino) - 1                              as coluna
-                     FROM projeto p
-                         full outer JOIN (SELECT
-                                            ppc.projeto_id,
-                                            po_1.id as portfolio_id
-                                        FROM portfolio_projeto_compartilhado ppc
-                                        JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                              WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                         inner join tarefa_cronograma tc on tc.projeto_id = p.id
-                         ${filtro}
-                       and tc.realizado_termino is not null
-                       and tc.removido_em is null
-                       and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
-                       and date_part('year', tc.realizado_termino) >= (date_part('YEAR', current_date) - 3)
-                     group by date_part('month', tc.realizado_termino),
-                         date_part('year', tc.realizado_termino)
-                     union
-                        select
-                               0                                                            as quantidade,
-                               date_part('year', t.data_::date)                             as ano,
-                               date_part('month', t.data_::date)                            as mes,
-                               date_part('year', current_date) - date_part('YEAR', t.data_) as linha,
-                               date_part('month', t.data_) - 1                              as coluna
-                        from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
-                                             TO_DATE(DATE_PART('YEAR', current_date)  || '12' || '01', 'YYYYMMDD')::timestamp,
-                                             '1 month'::interval) t(data_) ) t order by  ano,mes `;
+        const sql = ` select sum(quantidade)::int as quantidade,
+                             ano,
+                             mes,
+                             linha,
+                             coluna from (
+                        select count(distinct p.id)::int as quantidade,
+                                date_part('year', tc.realizado_termino) as ano,
+                                date_part('month', tc.realizado_termino)                                  as mes,
+                                date_part('YEAR', current_date) - date_part('year', tc.realizado_termino) as linha,
+                                date_part('month', tc.realizado_termino) - 1                              as coluna
+                         FROM projeto p
+                             full outer JOIN (SELECT
+                                                ppc.projeto_id,
+                                                po_1.id as portfolio_id
+                                            FROM portfolio_projeto_compartilhado ppc
+                                            JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                                                  WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
+                             inner join tarefa_cronograma tc on tc.projeto_id = p.id
+                             ${filtro}
+                           and tc.realizado_termino is not null
+                           and tc.removido_em is null
+                           and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
+                           and date_part('year', tc.realizado_termino) >= (date_part('YEAR', current_date) - 3)
+                         group by date_part('month', tc.realizado_termino),
+                             date_part('year', tc.realizado_termino)
+                         union
+                            select
+                                   0                                                            as quantidade,
+                                   date_part('year', t.data_::date)                             as ano,
+                                   date_part('month', t.data_::date)                            as mes,
+                                   date_part('year', current_date) - date_part('YEAR', t.data_) as linha,
+                                   date_part('month', t.data_) - 1                              as coluna
+                            from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
+                                                 TO_DATE(DATE_PART('YEAR', current_date)  || '12' || '01', 'YYYYMMDD')::timestamp,
+                                                 '1 month'::interval) t(data_) ) t group by ano,
+                                                                                            mes,
+                                                                                            linha,
+                                                                                            coluna
+                                                                                   order by  ano,mes `;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
 
@@ -263,7 +270,8 @@ export class PainelEstrategicoService {
     }
 
     private async buildProjetosPlanejadosPorMesAno(filtro: string) {
-        const sql = `select * from (select date_part('year', tc.previsao_termino)      as ano,
+        const sql = `select sum(quantidade)::int as quantidade, ano,mes, linha,coluna from (
+                        select * from (select date_part('year', tc.previsao_termino)      as ano,
                             date_part('month', tc.previsao_termino)     as mes,
                             count(distinct p.id)::int  as quantidade,
                              date_part('year', tc.previsao_termino) - date_part('YEAR', current_date) as linha,
@@ -292,7 +300,9 @@ export class PainelEstrategicoService {
                             date_part('month', t.data_) - 1                              as coluna
                         from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
                                              TO_DATE(DATE_PART('YEAR', current_date) + 3 || '12' || '01', 'YYYYMMDD')::timestamp,
-                                             '1 month'::interval) t(data_) ) t order by  ano,mes`;
+                                             '1 month'::interval) t(data_) ) t) t
+                     group by ano, mes, linha, coluna
+                     order by ano,mes`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
 
