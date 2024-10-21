@@ -82,7 +82,7 @@ function obterValorTabela(item, index) {
   }
 
   if (temVariavelCategorica.value) {
-    return props.g.dados_auxiliares.categoricas[valor];
+    return props.g.dados_auxiliares.categoricas[valor] || valor;
   }
 
   return valor;
