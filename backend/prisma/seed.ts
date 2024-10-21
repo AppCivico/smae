@@ -19,6 +19,8 @@ import {
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
 
+const ParticipanteEquipe = 'Participante em equipes';
+
 const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
     CadastroTipoOrgao: ['Tipos de Órgãos', 'SMAE'],
@@ -911,7 +913,7 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil('Participante em equipes', ['Participante de Grupo de Variáveis']),
+        nome: atualizarNomePerfil(ParticipanteEquipe, ['Participante de Grupo de Variáveis']),
         descricao:
             'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
         privilegios: [

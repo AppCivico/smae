@@ -39,19 +39,27 @@ export class EquipeRespService {
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
+                const pEnviados = await this.pessoaPrivService.pessoasComPriv([], dto.participantes);
                 const pComPriv = await this.pessoaPrivService.pessoasComPriv(
                     ['SMAE.GrupoVariavel.participante'],
                     dto.participantes
                 );
                 for (const pessoaId of dto.participantes) {
-                    const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!pessoa)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser participante do grupo.`);
-
+                    const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
                     if (pessoa.orgao_id != orgao_id)
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo em outro órgão.`
+                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
                         );
+
+                    const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPriv) {
+                        await this.pessoaPrivService.adicionaPerfilAcesso(
+                            pessoaId,
+                            'SMAE.GrupoVariavel.participante',
+                            prismaTx
+                        );
+                    }
                 }
 
                 const pComPriv2 = await this.pessoaPrivService.pessoasComPriv(
