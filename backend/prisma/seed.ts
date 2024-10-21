@@ -871,6 +871,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
             'CadastroPessoa.ativar',
+            'CadastroGrupoVariavel.colaborador_responsavel'
         ],
     },
 ];
