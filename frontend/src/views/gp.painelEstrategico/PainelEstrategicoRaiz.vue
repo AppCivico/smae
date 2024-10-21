@@ -93,11 +93,10 @@ watch(
 watch(
   () => [route.query.projetos_token_paginacao, route.query.projetos_pagina],
   async ([projetosTokenPaginacaoNovo, projetosPagina]) => {
-    if (paginacaoProjetos.value.validoAte && paginacaoProjetos.value.validoAte >= Date.now()) {
-      console.debug('paginacaoProjetos.value.validoAte', paginacaoProjetos.value.validoAte);
-      console.debug('Date.now()', Date.now());
-
+    if (paginacaoProjetos.value.validoAte && paginacaoProjetos.value.validoAte <= Date.now()) {
       alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+
+      paginacaoProjetos.value.validoAte = 0;
       await limparPaginacao();
     }
     painelEstrategicoStore.buscarProjetos({
@@ -115,11 +114,10 @@ watch(
 watch(
   () => [route.query.orcamentos_token_paginacao, route.query.orcamentos_pagina],
   async ([orcamentosTokenPaginacaoNovo, orcamentosPaginaNovo]) => {
-    if (paginacaoOrcamentos.value.validoAte && paginacaoOrcamentos.value.validoAte >= Date.now()) {
-      console.debug('paginacaoOrcamentos.value.validoAte', paginacaoOrcamentos.value.validoAte);
-      console.debug('Date.now()', Date.now());
-
+    if (paginacaoOrcamentos.value.validoAte && paginacaoOrcamentos.value.validoAte <= Date.now()) {
       alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+
+      paginacaoOrcamentos.value.validoAte = 0;
       await limparPaginacao();
     }
     painelEstrategicoStore.buscarOrcamentos({
