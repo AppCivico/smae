@@ -442,6 +442,49 @@ export class SeiIntegracaoService {
         this.logger.log('Fim do Sync do SEI');
     }
 
+    async syncDistribuicaoRecursoSEI() {
+        // Esta função busca todos os registros (nro SEI) de distribuição de recurso que estão ativos e não possuem status SEI.
+        const activeRecords = await this.prisma.distribuicaoRecursoSei.findMany({
+            where: {
+                removido_em: null,
+                status_sei_id: null,
+                distribuicao_recurso: {
+                    removido_em: null,
+                    transferencia: {
+                        removido_em: null,
+                    },
+                },
+            },
+            select: {
+                id: true,
+                processo_sei: true,
+            },
+        });
+
+        const operations = [];
+        for (const record of activeRecords) {
+            operations.push(
+                this.prisma.distribuicaoRecursoSei.update({
+                    where: { id: record.id },
+                    data: {
+                        status_sei: {
+                            create: {
+                                processo_sei: record.processo_sei,
+                                link: '',
+                                sei_hash: '',
+                                resumo_hash: '',
+                                ativo: true,
+                                proxima_sincronizacao: this.calculaProximaSync(),
+                            },
+                        },
+                    },
+                })
+            );
+        }
+
+        await Promise.all(operations);
+    }
+
     async listaProcessos(filters: FilterSeiListParams): Promise<PaginatedDto<SeiIntegracaoDto>> {
         const { relatorio_sincronizado_de: data_inicio, relatorio_sincronizado_ate: data_fim } = filters;
 
