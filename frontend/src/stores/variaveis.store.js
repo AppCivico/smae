@@ -162,9 +162,13 @@ export const useVariaveisStore = defineStore({
       try {
         if (!id) throw 'Variável inválida';
         this.Valores[id] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}/${id}/serie`, {
-          uso: leitura && 'leitura',
-        });
+        const r = await this.requestS.get(
+          `${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}/${id}/serie`,
+          leitura ? {
+            uso: 'leitura',
+            incluir_auxiliares: true,
+          } : undefined,
+        );
         this.Valores[id] = r;
       } catch (error) {
         this.Valores[id] = { error };
