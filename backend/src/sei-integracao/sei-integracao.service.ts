@@ -463,20 +463,30 @@ export class SeiIntegracaoService {
 
         const operations = [];
         for (const record of activeRecords) {
+            const processoSei = this.normalizaProcessoSei(record.processo_sei);
+
+            // Caso o registro já exista na table de status SEI, não é necessário criar um novo registro.
+            const rowExistente = await this.prisma.statusSEI.findFirst({
+                where: { processo_sei: processoSei },
+                select: { id: true },
+            });
+
             operations.push(
                 this.prisma.distribuicaoRecursoSei.update({
                     where: { id: record.id },
                     data: {
-                        status_sei: {
-                            create: {
-                                processo_sei: record.processo_sei,
-                                link: '',
-                                sei_hash: '',
-                                resumo_hash: '',
-                                ativo: true,
-                                proxima_sincronizacao: this.calculaProximaSync(),
-                            },
-                        },
+                        status_sei: rowExistente
+                            ? { connect: { id: rowExistente.id } }
+                            : {
+                                  create: {
+                                      processo_sei: processoSei,
+                                      link: '',
+                                      sei_hash: '',
+                                      resumo_hash: '',
+                                      ativo: true,
+                                      proxima_sincronizacao: this.calculaProximaSync(),
+                                  },
+                              },
                     },
                 })
             );
