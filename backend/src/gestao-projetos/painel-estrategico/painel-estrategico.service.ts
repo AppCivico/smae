@@ -194,12 +194,15 @@ export class PainelEstrategicoService {
                            union
                            select 0 as quantidade, t.yr as ano_
                            from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT) t(yr)) t
-                     group by ano`;
+                     group by ano
+                     order by ano`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
     }
 
     async buildProjetosConcluidosPorMesAno(filtro: string) {
-        const sql = `select count(distinct p.id)::int as quantidade,
+        const sql = `
+                select * from (
+                    select count(distinct p.id)::int as quantidade,
                             date_part('year', tc.realizado_termino) as ano,
                             date_part('month', tc.realizado_termino)                                  as mes,
                             date_part('YEAR', current_date) - date_part('year', tc.realizado_termino) as linha,
@@ -217,9 +220,18 @@ export class PainelEstrategicoService {
                        and tc.removido_em is null
                        and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
                        and date_part('year', tc.realizado_termino) >= (date_part('YEAR', current_date) - 3)
-
                      group by date_part('month', tc.realizado_termino),
-                         date_part('year', tc.realizado_termino)`;
+                         date_part('year', tc.realizado_termino)
+                     union
+                        select
+                               0                                                            as quantidade,
+                               date_part('year', t.data_::date)                             as ano,
+                               date_part('month', t.data_::date)                            as mes,
+                               date_part('year', current_date) - date_part('YEAR', t.data_) as linha,
+                               date_part('month', t.data_) - 1                              as coluna
+                        from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
+                                             TO_DATE(DATE_PART('YEAR', current_date)  || '12' || '01', 'YYYYMMDD')::timestamp,
+                                             '1 month'::interval) t(data_) ) t order by  ano,mes `;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
 
@@ -243,17 +255,17 @@ export class PainelEstrategicoService {
                            group by date_part('year', tc.previsao_termino)
                            union
                            select 0 as quantidade, t.yr as ano_
-                           from generate_series(DATE_PART('YEAR', CURRENT_DATE)::INT+3,
-                                                DATE_PART('YEAR', CURRENT_DATE)::INT) t(yr)) as t
+                           from generate_series(DATE_PART('YEAR', CURRENT_DATE)::INT,
+                                                DATE_PART('YEAR', CURRENT_DATE)::INT+3) t(yr)) as t
                      group by ano
                      order by ano desc`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
     }
 
     private async buildProjetosPlanejadosPorMesAno(filtro: string) {
-        const sql = `select date_part('year', tc.previsao_termino)      as ano,
+        const sql = `select * from (select date_part('year', tc.previsao_termino)      as ano,
                             date_part('month', tc.previsao_termino)     as mes,
-                            count(distinct p.id)::int                                                                 as quantidade,
+                            count(distinct p.id)::int  as quantidade,
                              date_part('year', tc.previsao_termino) - date_part('YEAR', current_date) as linha,
                             date_part('month', tc.previsao_termino) - 1 as coluna
                      FROM projeto p full outer JOIN (SELECT
@@ -270,7 +282,17 @@ export class PainelEstrategicoService {
                        and date_part('year', tc.previsao_termino) >= date_part('YEAR', current_date) - 3
                        and date_part('year', tc.previsao_termino) <= date_part('YEAR', current_date) + 3
                      group by date_part('year', tc.previsao_termino),
-                              date_part('month', tc.previsao_termino)`;
+                              date_part('month', tc.previsao_termino)
+                     union
+                        select
+                            date_part('year', t.data_::date)                             as ano,
+                            date_part('month', t.data_::date)                            as mes,
+                            0                                                            as quantidade,
+                            date_part('year',t.data_ ) - date_part('YEAR', current_date) as linha,
+                            date_part('month', t.data_) - 1                              as coluna
+                        from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
+                                             TO_DATE(DATE_PART('YEAR', current_date) + 3 || '12' || '01', 'YYYYMMDD')::timestamp,
+                                             '1 month'::interval) t(data_) ) t order by  ano,mes`;
         return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
     }
 
@@ -737,7 +759,9 @@ export class PainelEstrategicoService {
             now = new Date(decoded.issued_at);
         }
         const offset = (page - 1) * ipp;
-        const sql = `select (select sum(t.custo_estimado)
+        //ordernar pelo custo planejado total decrescente
+        const sql = `select * from (
+                            select (select sum(t.custo_estimado)
                              from tarefa_cronograma tc
                                       inner join tarefa t on t.tarefa_cronograma_id = tc.id
                              where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
@@ -787,7 +811,7 @@ export class PainelEstrategicoService {
                                             and p.removido_em is null
                                             and orcr.removido_em is null
                                           group by vp.nome, vp.id) orc on orc.projeto_id = p.id
-                     where 1 = 1 ${strFilterGeral}
+                     where 1 = 1 ${strFilterGeral} ) t order by valor_custo_planejado_total desc
                      limit ${ipp} offset ${offset}`
         const linhas = await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaLista[];
         // executar depois da query
