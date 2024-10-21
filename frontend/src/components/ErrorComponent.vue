@@ -1,8 +1,6 @@
 <script setup>
 import { useSlots } from 'vue';
 
-const slots = useSlots();
-
 defineProps({
   erro: {
     type: null,
@@ -17,7 +15,7 @@ defineProps({
 <template>
   <component
     :is="as"
-    v-if="slots.default || erro"
+    v-if="$slots?.default || erro"
     class="error p1"
     aria-live="assertive"
   >
