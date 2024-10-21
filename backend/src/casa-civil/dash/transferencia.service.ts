@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { NotaService } from '../../bloco-nota/nota/nota.service';
-import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TransferenciaService } from '../transferencia/transferencia.service';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
@@ -171,6 +171,7 @@ export class DashTransferenciaService {
 
         return {
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };

@@ -22,7 +22,7 @@ import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { read, utils, writeXLSX } from 'xlsx';
-import { PaginatedDto } from '../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { Stream2Buffer } from '../common/helpers/Streaming';
 import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
@@ -465,6 +465,7 @@ export class ImportacaoOrcamentoService {
 
         return {
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };

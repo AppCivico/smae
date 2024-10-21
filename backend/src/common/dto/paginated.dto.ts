@@ -10,6 +10,9 @@ export class PaginatedDto<TData> {
 
     @ApiHideProperty()
     linhas: TData[];
+
+    @ApiProperty()
+    token_ttl: number = PAGINATION_TOKEN_TTL;
 }
 
 export class PaginatedWithPagesDto<TData> {

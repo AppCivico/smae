@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
 import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
-import { PaginatedDto } from '../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService, SeiError } from '../sei-api/sei-api.service';
 import {
@@ -536,6 +536,7 @@ export class SeiIntegracaoService {
 
         return {
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };

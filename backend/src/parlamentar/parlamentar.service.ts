@@ -21,7 +21,7 @@ import {
     UpdateRepresentatividadeDto,
 } from './dto/update-parlamentar.dto';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 
 class NextPageTokenJwtBody {
@@ -197,6 +197,7 @@ export class ParlamentarService {
 
         return {
             linhas: linhas,
+            token_ttl: PAGINATION_TOKEN_TTL,
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
         };

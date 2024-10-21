@@ -14,7 +14,7 @@ import { resolve as resolvePath } from 'path';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
-import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
@@ -333,6 +333,7 @@ export class ReportsService {
                 };
             }),
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
         };
     }
