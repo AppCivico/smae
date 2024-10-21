@@ -412,7 +412,6 @@ watch(itemParaEdicao, (novosValores) => {
         />
       </div>
       <div
-        v-if="esferaSelecionada == 'Estadual'"
         class="f1"
       >
         <LabelFromYup
