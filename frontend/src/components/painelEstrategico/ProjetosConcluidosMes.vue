@@ -53,7 +53,7 @@
 
         let data = props.projetosConcluidosMes;
         let secondaryData = props.projetosPlanejadosMes;
-        let years = props.anosMapaCalorConcluidos.reverse();
+        let years = props.anosMapaCalorConcluidos;//.sort();
         let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">CONCLUÍDOS</div>';
         let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">PLANEJADOS</div>';
         let colorArray = ['#e8e8e8', '#FDF3D6', '#FBE099', '#F7C233', '#D3A730'];     
