@@ -1,4 +1,10 @@
 <script setup>
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field,
@@ -8,20 +14,14 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
 
 import { useAlertStore } from '@/stores/alert.store';
+import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { useClassificacaoStore } from '@/stores/classificacao.store';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
