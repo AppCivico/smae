@@ -87,10 +87,21 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
   getters: {
     locaisAgrupados: ({ projetosParaMapa }) => projetosParaMapa
       .reduce((acc, cur) => {
-        if (Array.isArray(cur.geolocalizacao)) {
+        if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
           cur.geolocalizacao.forEach((geolocalizacao) => {
             if (geolocalizacao.endereco) {
               acc.enderecos.push(geolocalizacao.endereco);
+
+              const rotulo = [cur.projeto_codigo, cur.projeto_nome].join(' - ');
+              const descricao = [cur.projeto_status, cur.projeto_etapa].join('<br/>');
+
+              if (rotulo) {
+                acc.enderecos[acc.enderecos.length - 1].properties.rotulo = rotulo;
+              }
+
+              if (descricao) {
+                acc.enderecos[acc.enderecos.length - 1].properties.descricao = descricao;
+              }
             }
             if (geolocalizacao.camadas) {
               acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
