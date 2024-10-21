@@ -1,25 +1,13 @@
 <template>
-  <div
-    role="region"
-    aria-label="Gráfico de projetos por orgão responsável"
-    tabindex="0"
-  >
-    <div
-      class="min-width"
-      style="--min-width: 30rem;"
-    >
-      <GraficoDashboard
-        class="pb3"
-        :option="projetosPorOrgaoResponsavelChartOptions"
-        :tooltip-template="formatTooltip"
-      />
-    </div>
-  </div>
+  <GraficoDashboard
+    class="pb3"
+    :option="projetosPorOrgaoResponsavelChartOptions"
+    :tooltip-template="formatTooltip"
+  />
 </template>
 
 <script lang="ts" setup>
 import { defineProps, computed } from 'vue';
-import criaOpcoesDoGraficoDeProjetos from '@/helpers/criaOpcoesDoGraficoDeProjetos';
 import GraficoDashboard, { TooltipOptions } from '@/components/graficos/GraficoDashboard.vue';
 
 const props = defineProps({
