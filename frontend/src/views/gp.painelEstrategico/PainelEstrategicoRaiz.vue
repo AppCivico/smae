@@ -250,7 +250,7 @@ watch(
         />
       </CardEnvelope.conteudo>
 
-      <CardEnvelope.Slide>
+      <CardEnvelope.Slide class="cartao-de-projetos">
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos Planejados"
@@ -409,6 +409,16 @@ watch(
   @media screen and (min-width: @duas-colunas) {
     grid-column: span 2;
     grid-row: span 2;
+  }
+}
+
+.cartao-de-projetos {
+  @media screen and (min-width: @duas-colunas) {
+    grid-column: span 2;
+  }
+
+  @media screen and (min-width: @tres-colunas) {
+    grid-column: auto;
   }
 }
 </style>
