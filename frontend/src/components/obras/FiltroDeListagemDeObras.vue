@@ -3,6 +3,7 @@
   <form
     class="mb2 fb100"
     @submit.prevent="tratandoSubmit"
+    @change="(ev) => emit('campoMudou', ev)"
   >
     <div class="flex g2 mb2 fb100 flexwrap">
       <div class="f1 fb15em">
@@ -324,7 +325,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['enviado']);
+const emit = defineEmits(['enviado', 'campoMudou']);
 
 const colunasParaOrdenacao = {
   id: {
