@@ -75,6 +75,7 @@ const chartOption = computed(() => ({
         rotate: 90,
         align: 'verticalCenter',
         position: 'center',
+        offset: [5, 0],
         formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, true, true)}` : ''),
         fontSize: 14,
         fontWeight: 600,
