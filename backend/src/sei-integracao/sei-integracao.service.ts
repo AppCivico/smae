@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
 import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
-import { PaginatedDto } from '../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService, SeiError } from '../sei-api/sei-api.service';
 import {
@@ -442,6 +442,59 @@ export class SeiIntegracaoService {
         this.logger.log('Fim do Sync do SEI');
     }
 
+    async syncDistribuicaoRecursoSEI() {
+        // Esta função busca todos os registros (nro SEI) de distribuição de recurso que estão ativos e não possuem status SEI.
+        const activeRecords = await this.prisma.distribuicaoRecursoSei.findMany({
+            where: {
+                removido_em: null,
+                status_sei_id: null,
+                distribuicao_recurso: {
+                    removido_em: null,
+                    transferencia: {
+                        removido_em: null,
+                    },
+                },
+            },
+            select: {
+                id: true,
+                processo_sei: true,
+            },
+        });
+
+        const operations = [];
+        for (const record of activeRecords) {
+            const processoSei = this.normalizaProcessoSei(record.processo_sei);
+
+            // Caso o registro já exista na table de status SEI, não é necessário criar um novo registro.
+            const rowExistente = await this.prisma.statusSEI.findFirst({
+                where: { processo_sei: processoSei },
+                select: { id: true },
+            });
+
+            operations.push(
+                this.prisma.distribuicaoRecursoSei.update({
+                    where: { id: record.id },
+                    data: {
+                        status_sei: rowExistente
+                            ? { connect: { id: rowExistente.id } }
+                            : {
+                                  create: {
+                                      processo_sei: processoSei,
+                                      link: '',
+                                      sei_hash: '',
+                                      resumo_hash: '',
+                                      ativo: true,
+                                      proxima_sincronizacao: this.calculaProximaSync(),
+                                  },
+                              },
+                    },
+                })
+            );
+        }
+
+        await Promise.all(operations);
+    }
+
     async listaProcessos(filters: FilterSeiListParams): Promise<PaginatedDto<SeiIntegracaoDto>> {
         const { relatorio_sincronizado_de: data_inicio, relatorio_sincronizado_ate: data_fim } = filters;
 
@@ -493,6 +546,7 @@ export class SeiIntegracaoService {
 
         return {
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };

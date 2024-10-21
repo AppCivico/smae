@@ -113,9 +113,11 @@ export const useIndicadoresStore = defineStore({
     },
     async getValores(id) {
       try {
-        if (!id) throw 'Inidicador inválida';
+        if (!id) throw new Error('Inidicador inválida');
+
         this.ValoresInd[id] = { loading: true };
         const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}/serie`);
+
         this.ValoresInd[id] = r;
       } catch (error) {
         this.ValoresInd[id] = { error };

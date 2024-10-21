@@ -1,12 +1,25 @@
 <script setup>
+import { defineProps } from 'vue';
+import isValidHtmlTag from '@/helpers/isValidHtmlTag';
+
+defineProps({
+  as: {
+    type: String,
+    default: 'div',
+    validator(value) { return isValidHtmlTag(value); },
+  },
+});
 </script>
 
 <template>
-  <div class="main-loading">
+  <component
+    :is="as"
+    class="main-loading"
+  >
     <slot>
       carregando
     </slot>
-  </div>
+  </component>
 </template>
 <style lang="less" scoped>
 @import '@/_less/variables.less';

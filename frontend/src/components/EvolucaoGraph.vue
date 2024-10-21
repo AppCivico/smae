@@ -28,6 +28,20 @@ const casasDecimais = computed(() => props.casasDecimais
   || props.dataserie.variavel?.casas_decimais
   || 0);
 
+const dadosAuxiliares = computed(() => props.dataserie?.dados_auxiliares);
+
+function obterDadosTraduzidos(valor) {
+  if (!valor) {
+    return '-';
+  }
+
+  if (!props.temCategorica || !dadosAuxiliares.value) {
+    return valor;
+  }
+
+  return dadosAuxiliares.value.categoricas[valor] || valor;
+}
+
 class smaeChart {
   constructor(ratio, sizes, transitionDuration, locale) {
     this.sizes = {
@@ -75,9 +89,16 @@ class smaeChart {
     // Eval yDomain and yScale for linear
     const Yp = d3.map(data.projetado, (d) => +d.value);
     const Yr = d3.map(data.realizado, (d) => +d.value);
-    const Y = Yp.concat(Yr);
+    let Y = Yp;
+    if (!props.temCategorica) {
+      Y = Yp.concat(Yr);
+    }
+
     const yDomain = d3.extent(Y);
-    const yScale = d3.scaleLinear(yDomain, [this.sizes.height - this.sizes.margin.bottom, this.sizes.margin.top]);
+    const yScale = d3.scaleLinear(yDomain, [
+      this.sizes.height - this.sizes.margin.bottom,
+      this.sizes.margin.top,
+    ]);
 
     // All dates unique on X and sorted by ASC
     X = X.map((date) => date.getTime())
@@ -168,7 +189,9 @@ class smaeChart {
     this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'previsto', transitionDuration: this.transitionDuration });
 
     /* DRAW REALIZADO */
-    this.drawDataPoints(svg, data.realizado, xScale, yScale, this.sizes, { name: 'realizado', transitionDuration: this.transitionDuration });
+    if (!props.temCategorica) {
+      this.drawDataPoints(svg, data.realizado, xScale, yScale, this.sizes, { name: 'realizado', transitionDuration: this.transitionDuration });
+    }
 
     /* DRAW META */
     const metaVal = Yp[Yp.length - 1];
@@ -176,9 +199,12 @@ class smaeChart {
       { date: d3.min(X), value: metaVal },
       { date: Xp[Xp.length - 1], value: metaVal },
     ];
-    this.drawDataPoints(svg, meta, xScale, yScale, this.sizes, {
-      name: 'meta', r: 10, strokeW: 4, firstCircle: false, transitionDuration: this.transitionDuration,
-    });
+
+    if (!props.temCategorica) {
+      this.drawDataPoints(svg, meta, xScale, yScale, this.sizes, {
+        name: 'meta', r: 10, strokeW: 4, firstCircle: false, transitionDuration: this.transitionDuration,
+      });
+    }
 
     /* DRAW INVISIBLE LINES FOR MOUSE EVENTS */
     this.drawDataToolTipsBars(svg, data, xScale, yScale, X, metaVal, this.sizes, 'rect');
@@ -268,17 +294,22 @@ class smaeChart {
 
     // Creating tooltip element
     const mes = this.locale.utcFormat('%B/%Y')(d.date);
-    const tipHtml = `<p class="t14 data tprimary">${mes}</p>
-        <p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal ?? '-'}</span></p>
-        <p class="tc300 t14">
+    const tipHtml = `
+      <p class="t14 data tprimary">${mes}</p>
+
+      ${props.temCategorica ? '' : `<p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal ?? '-'}</span></p>`}
+
+      ${props.temCategorica ? '' : `<p class="tc300 t14">
           Previsto acumulado até ${mes}: <span>${d.projetadoAcum ?? '-'}</span><br />
           <span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum ?? '-'}</span>
         </p>
+      `}
 
-        <p class="tc300 t11 mb0">
-          Previsto ${mes}: <span>${d.projetado ?? '-'}</span><br />
-          Realizado ${mes}: <span class="tamarelo">${d.realizado ?? '-'}</span>
-        </p>`;
+      <p class="tc300 t11 mb0">
+        Previsto ${mes}: <span>${obterDadosTraduzidos(d.projetado)}</span><br />
+        Realizado ${mes}: <span class="tamarelo">${obterDadosTraduzidos(d.realizado)}</span>
+      </p>
+    `;
 
     el.html(tipHtml);
   }

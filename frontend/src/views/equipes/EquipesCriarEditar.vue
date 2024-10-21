@@ -268,7 +268,6 @@ async function buscarPessoasSimplificadas() {
     const { linhas: linhasParticipantes } = await requestS.get(
       `${baseUrl}/pessoa/reduzido`,
       {
-        participante_grupo_variavel: true,
         orgao_id: orgao.value,
       },
     );

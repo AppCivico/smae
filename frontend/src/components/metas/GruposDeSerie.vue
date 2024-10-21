@@ -31,6 +31,8 @@ const mappedValues = computed(() => {
   return mapping;
 });
 
+const temVariavelCategorica = computed(() => !!props.g.variavel?.variavel_categorica_id);
+
 function nestLinhas(l) {
   const a = {};
   l.forEach((x) => {
@@ -64,6 +66,26 @@ function handleClick(obj) {
     buscarAnalise(obj.series[0].data_valor, props.g?.variavel?.id);
     openAnalise();
   }
+}
+
+function obterValorTabela(item, index) {
+  const serieIndex = props.g.ordem_series.indexOf(index);
+
+  if (!item.series[serieIndex]) {
+    return '-';
+  }
+
+  const valor = item.series[serieIndex].valor_nominal;
+
+  if (!valor) {
+    return '-';
+  }
+
+  if (temVariavelCategorica.value) {
+    return props.g.dados_auxiliares.categoricas[valor] || valor;
+  }
+
+  return valor;
 }
 </script>
 <template>
@@ -221,19 +243,10 @@ function handleClick(obj) {
             </div>
           </td>
           <td>
-            {{ val.series[g.ordem_series.indexOf('Previsto')]?.valor_nominal ?? '-' }}
+            {{ obterValorTabela(val, 'Previsto') }}
           </td>
           <td>
-            {{ val.series[g.ordem_series.indexOf('Realizado')]?.valor_nominal ?? '-' }}
-          </td>
-          <td>
-            <span v-if="!temVariavelAcumulada">
-              N/A
-            </span>
-
-            <span v-else>
-              {{ val.series[g.ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
-            </span>
+            {{ obterValorTabela(val, 'Realizado') }}
           </td>
           <td>
             <span v-if="!temVariavelAcumulada">
@@ -241,9 +254,16 @@ function handleClick(obj) {
             </span>
 
             <span v-else>
-              {{
-                val.series[g.ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal ?? '-'
-              }}
+              {{ obterValorTabela(val, 'PrevistoAcumulado') }}
+            </span>
+          </td>
+          <td>
+            <span v-if="!temVariavelAcumulada">
+              N/A
+            </span>
+
+            <span v-else>
+              {{ obterValorTabela(val, 'RealizadoAcumulado') }}
             </span>
           </td>
           <td style="white-space: nowrap; text-align: right;" />

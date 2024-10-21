@@ -24,7 +24,7 @@ import { PrismaHelpers } from '../common/PrismaHelpers';
 import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
-import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { Object2Hash } from '../common/object2hash';
 import { MetaService } from '../meta/meta.service';
@@ -1281,6 +1281,7 @@ export class VariavelService {
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             total_registros: total_registros,
             token_paginacao: retToken,
             paginas,
@@ -2530,8 +2531,9 @@ export class VariavelService {
             mapDocumentoCiclo[Date2YMD.toString(doc.referencia_data)] = doc;
         }
 
-        // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir (e agora com o plano setorial)
-        // isso mudou mais uma vez
+        // TODO bloquear acesso ao token pra quem não for admin ou tecnico dessa meta (no PDM),
+        // no Plano Setorial não tem problema vazar o token, pois lá tem controle na hora da escrita
+        // que tbm poderia ser implementado
 
         let indicadorId: number | null = null;
         if (tipo === 'PDM') {
@@ -2545,7 +2547,8 @@ export class VariavelService {
                 porPeriodo,
                 periodoYMD,
                 variavelId,
-                variavel
+                variavel,
+                filters.uso
             );
 
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
@@ -2573,8 +2576,15 @@ export class VariavelService {
                 ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
                 : null;
 
+            let categoricas: Record<string, string> | null = null;
+            if (categorica && categorica[0]) {
+                categoricas = categorica[0].valores
+                    .map((v) => ({ [v.valor_variavel]: v.titulo }))
+                    .reduce((acc, cur) => ({ ...acc, ...cur }), {});
+            }
+
             result.dados_auxiliares = {
-                categorica: categorica ? categorica[0] : null,
+                categoricas: categoricas,
             };
         }
 
@@ -2585,7 +2595,8 @@ export class VariavelService {
         porPeriodo: SerieValorPorPeriodo,
         periodoYMD: string,
         variavelId: number,
-        variavel: { acumulativa: boolean }
+        variavel: { acumulativa: boolean },
+        uso: TipoUso = 'escrita'
     ) {
         const seriesExistentes: SerieValorNomimal[] = [];
 
@@ -2600,7 +2611,7 @@ export class VariavelService {
             if (existeValor.Previsto) {
                 seriesExistentes.push(existeValor.Previsto);
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso));
             }
 
             if (existeValor.PrevistoAcumulado) {
@@ -2609,7 +2620,7 @@ export class VariavelService {
                 seriesExistentes.push(
                     this.referencia_boba(
                         variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado')
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso)
                     )
                 );
             }
@@ -2617,7 +2628,7 @@ export class VariavelService {
             if (existeValor.Realizado) {
                 seriesExistentes.push(existeValor.Realizado);
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
             }
 
             if (existeValor.RealizadoAcumulado) {
@@ -2626,15 +2637,15 @@ export class VariavelService {
                 seriesExistentes.push(
                     this.referencia_boba(
                         variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado')
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso)
                     )
                 );
             }
         } else {
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso));
         }
         return seriesExistentes;
     }
@@ -2646,10 +2657,15 @@ export class VariavelService {
         return sv;
     }
 
-    private buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
+    private buildNonExistingSerieValor(
+        periodo: DateYMD,
+        variavelId: number,
+        serie: Serie,
+        uso: TipoUso
+    ): SerieValorNomimal {
         return {
             data_valor: periodo,
-            referencia: this.getEditNonExistingSerieJwt(variavelId, periodo, serie),
+            referencia: uso == 'escrita' ? this.getEditNonExistingSerieJwt(variavelId, periodo, serie) : '',
             valor_nominal: '',
         };
     }

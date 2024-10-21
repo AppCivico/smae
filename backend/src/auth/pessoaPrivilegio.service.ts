@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 type PessoaOrgaoDto = {
     pessoa_id: number;
@@ -20,21 +21,23 @@ export class PessoaPrivilegioService {
                 desativado: false,
                 NOT: { pessoa_fisica_id: null },
 
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: {
-                                            in: privileges,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
+                PessoaPerfil: privileges.length
+                    ? {
+                          some: {
+                              perfil_acesso: {
+                                  perfil_privilegio: {
+                                      some: {
+                                          privilegio: {
+                                              codigo: {
+                                                  in: privileges,
+                                              },
+                                          },
+                                      },
+                                  },
+                              },
+                          },
+                      }
+                    : undefined,
             },
             select: {
                 id: true,
@@ -51,5 +54,21 @@ export class PessoaPrivilegioService {
             pessoa_id: result.id,
             orgao_id: result.pessoa_fisica!.orgao_id,
         }));
+    }
+
+    async adicionaPerfilAcesso(pessoaId: number, perfil: string, prismaTx: Prisma.TransactionClient): Promise<void> {
+        const perfilAcesso = await prismaTx.perfilAcesso.findFirstOrThrow({
+            where: {
+                nome: perfil,
+                removido_em: null,
+            },
+        });
+
+        await prismaTx.pessoaPerfil.create({
+            data: {
+                pessoa_id: pessoaId,
+                perfil_acesso_id: perfilAcesso.id,
+            },
+        });
     }
 }

@@ -16,7 +16,7 @@ import { NotaService } from '../bloco-nota/nota/nota.service';
 import { CONST_BOT_USER_ID, CONST_TIPO_NOTA_TRANSF_GOV } from '../common/consts';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_TRANSFERE_GOV_LOCK } from '../common/dto/locks';
-import { PaginatedDto } from '../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -194,6 +194,7 @@ export class TransfereGovSyncService {
             this.logger.log(`Criando ${novosItems.length} notas`);
 
             for (const item of novosItems) {
+                // pessoas com perfil de 'Gestor Casa Civil'
                 if (orgaoEmail && orgaoEmail.email) {
                     await prismaTx.emaildbQueue.create({
                         data: {
@@ -312,6 +313,7 @@ export class TransfereGovSyncService {
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
+            token_ttl: PAGINATION_TOKEN_TTL,
         };
     }
 
@@ -567,6 +569,7 @@ export class TransfereGovSyncService {
 
         return {
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };

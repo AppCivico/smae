@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import { camelCase } from 'lodash';
 import type { StoreGeneric } from 'pinia';
 import { defineStore } from 'pinia';
@@ -27,6 +28,7 @@ type Estado = Record<string, unknown> & {
     paginaCorrente: number;
     temMais: boolean;
     totalRegistros: number;
+    validoAte: number;
   };
   paginacaoOrcamentos: {
     tokenPaginacao: string;
@@ -34,6 +36,7 @@ type Estado = Record<string, unknown> & {
     paginaCorrente: number;
     temMais: boolean;
     totalRegistros: number;
+    validoAte: number;
   };
 };
 
@@ -42,7 +45,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     anosMapaCalorConcluidos: [],
     anosMapaCalorPlanejados: [],
     execucaoOrcamentariaAno: [],
-    grandesNumeros: { },
+    grandesNumeros: {},
     projetoEtapas: [],
     projetoOrgaoResponsavel: [],
     projetoStatus: [],
@@ -73,6 +76,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       paginaCorrente: 0,
       temMais: true,
       totalRegistros: 0,
+      validoAte: 0,
     },
     // lista de orcamentos paginados
     orcamentosPaginados: [],
@@ -82,15 +86,27 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       paginaCorrente: 0,
       temMais: true,
       totalRegistros: 0,
+      validoAte: 0,
     },
   }),
   getters: {
     locaisAgrupados: ({ projetosParaMapa }) => projetosParaMapa
       .reduce((acc, cur) => {
-        if (Array.isArray(cur.geolocalizacao)) {
+        if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
           cur.geolocalizacao.forEach((geolocalizacao) => {
             if (geolocalizacao.endereco) {
               acc.enderecos.push(geolocalizacao.endereco);
+
+              const rotulo = [cur.projeto_codigo, cur.projeto_nome].join(' - ');
+              const descricao = [cur.projeto_status, cur.projeto_etapa].join('<br/>');
+
+              if (rotulo) {
+                acc.enderecos[acc.enderecos.length - 1].properties.rotulo = rotulo;
+              }
+
+              if (descricao) {
+                acc.enderecos[acc.enderecos.length - 1].properties.descricao = descricao;
+              }
             }
             if (geolocalizacao.camadas) {
               acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
@@ -157,6 +173,18 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.paginacaoProjetos.paginaCorrente = paginaCorrente;
         this.paginacaoProjetos.temMais = temMais;
         this.paginacaoProjetos.totalRegistros = totalRegistros;
+
+        if (!params.pagina || params.pagina === 1) {
+          try {
+            const { exp, iat } = jwtDecode(tokenPaginacao);
+
+            if (exp && iat) {
+              this.paginacaoProjetos.validoAte = Date.now() + (exp - iat);
+            }
+          } catch (erro) {
+            this.erros.projetosPaginados = erro;
+          }
+        }
       } catch (erro: unknown) {
         this.erros.projetosPaginados = erro;
       }
@@ -182,10 +210,22 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
         this.paginacaoOrcamentos.paginaCorrente = paginaCorrente;
         this.paginacaoOrcamentos.temMais = temMais;
         this.paginacaoOrcamentos.totalRegistros = totalRegistros;
+
+        if (!params.pagina || params.pagina === 1) {
+          try {
+            const { exp, iat } = jwtDecode(tokenPaginacao);
+
+            if (exp && iat) {
+              this.paginacaoOrcamentos.validoAte = Date.now() + (exp - iat);
+            }
+          } catch (erro) {
+            this.erros.orcamentosPaginados = erro;
+          }
+        }
       } catch (erro: unknown) {
-        this.erros.projetosPaginados = erro;
+        this.erros.orcamentosPaginados = erro;
       }
-      this.chamadasPendentes.projetosPaginados = false;
+      this.chamadasPendentes.orcamentosPaginados = false;
     },
   },
 })();

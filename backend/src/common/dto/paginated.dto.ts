@@ -1,5 +1,6 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
+export const PAGINATION_TOKEN_TTL = 86400;
 export class PaginatedDto<TData> {
     @ApiProperty()
     tem_mais: boolean;
@@ -9,6 +10,9 @@ export class PaginatedDto<TData> {
 
     @ApiHideProperty()
     linhas: TData[];
+
+    @ApiProperty()
+    token_ttl: number = PAGINATION_TOKEN_TTL;
 }
 
 export class PaginatedWithPagesDto<TData> {
@@ -32,6 +36,9 @@ export class PaginatedWithPagesDto<TData> {
 
     @ApiHideProperty()
     total_registros_revisados?: number;
+
+    @ApiProperty()
+    token_ttl: number = PAGINATION_TOKEN_TTL;
 }
 
 export class AnyPageTokenJwtBody {

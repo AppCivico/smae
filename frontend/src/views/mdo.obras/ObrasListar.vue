@@ -12,7 +12,7 @@
     </header>
 
     <FormularioQueryString
-      v-slot="{ aplicarQueryStrings }"
+      v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }"
       :valores-iniciais="{
         ordem_direcao: 'asc',
         ipp: gblIpp,
@@ -24,7 +24,9 @@
     >
       <FiltroDeListagemDeObras
         :aria-busy="chamadasPendentes.lista"
+        :class="{ 'formulario-sujo': formularioSujo }"
         @submit="aplicarQueryStrings"
+        @campo-mudou="detectarMudancas"
       />
     </FormularioQueryString>
 

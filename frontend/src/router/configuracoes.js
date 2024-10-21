@@ -1027,6 +1027,7 @@ export default [
   {
     path: '/paineis-grupos',
     meta: {
+      entidadeMãe: 'pdm',
       limitarÀsPermissões: [
         'CadastroGrupoPaineis.inserir',
         'CadastroGrupoPaineis.editar',

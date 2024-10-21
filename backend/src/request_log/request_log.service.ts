@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { FilterRequestLogDto, GroupByFieldsDto } from './dto/request_log.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RequestLogDto, RequestSummaryRow } from './entities/request_log.entity';
-import { PaginatedDto } from '../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 
@@ -16,7 +16,9 @@ function tryDecodeJson(input: string | null): string | object | null {
         try {
             const decoded = JSON.parse(input);
             return decoded;
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error trying to parse JSON:', input);
+        }
     }
     return input;
 }
@@ -91,6 +93,7 @@ export class RequestLogService {
 
         return {
             tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };

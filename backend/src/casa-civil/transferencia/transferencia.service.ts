@@ -2,7 +2,7 @@ import { BadRequestException, forwardRef, HttpException, Inject, Injectable } fr
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DistribuicaoRecursoService } from 'src/casa-civil/distribuicao-recurso/distribuicao-recurso.service';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
@@ -1191,6 +1191,7 @@ export class TransferenciaService {
 
         return {
             linhas: linhas,
+            token_ttl: PAGINATION_TOKEN_TTL,
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
         };

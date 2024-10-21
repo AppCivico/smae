@@ -251,7 +251,7 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
               </div>
               <EvolucaoGraph
                 :dataserie="Valores[v.id]"
-                :tem-categorica="!!variavel_categorica_id"
+                :tem-categorica="!!v.variavel_categorica_id"
               />
             </header>
             <div>

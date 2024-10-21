@@ -1,14 +1,15 @@
 <template>
   <slot
-    class="formulario-query-string"
     :aplicar-query-strings="aplicarFiltros"
+    :detectar-mudancas="detectarMudancas"
+    :formulario-sujo="!!camposSujos.length"
   />
 </template>
 <script setup lang="ts">
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
 import type { UrlParams } from '@vueuse/core';
-import { pick } from 'lodash';
-import { onMounted } from 'vue';
+import { cloneDeep, isEqualWith, pick } from 'lodash';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const emit = defineEmits(['aplicado', 'montado']);
@@ -23,7 +24,52 @@ const props = defineProps({
   },
 });
 
-function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): void {
+const camposSujos = ref<string[]>([]);
+
+function comparadorSimples(campo: unknown, parametro: unknown) {
+  // eslint-disable-next-line eqeqeq
+  return campo == parametro
+    || (
+      campo === '' && parametro === undefined
+    )
+    || (
+      (Array.isArray(campo) && !campo.length)
+      && (parametro === undefined || !(parametro as string)?.length)
+    )
+    || undefined;
+}
+
+function detectarMudancas(eventoOuObjeto: Event | Record<string, unknown>): void {
+  let chaveValor: Record<string, unknown> = {};
+
+  if (eventoOuObjeto instanceof Event) {
+    if ((eventoOuObjeto.target as HTMLInputElement)?.name) {
+      chaveValor = {
+        [(eventoOuObjeto.target as HTMLInputElement).name as string]: (eventoOuObjeto.target as HTMLInputElement).value ?? '',
+      };
+    }
+  } else {
+    chaveValor = eventoOuObjeto;
+  }
+
+  if (Object.keys(chaveValor).length) {
+    Object.keys(chaveValor).forEach((chave) => {
+      if (!isEqualWith(chaveValor[chave], route.query[chave], comparadorSimples)) {
+        if (!camposSujos.value.includes(chave)) {
+          camposSujos.value.push(chave);
+        }
+      } else {
+        const index = camposSujos.value.indexOf(chave);
+
+        if (index > -1) {
+          camposSujos.value.splice(index, 1);
+        }
+      }
+    });
+  }
+}
+
+function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): Promise<void> {
   let parametros: UrlParams = {};
 
   if (eventoOuObjeto instanceof SubmitEvent) {
@@ -60,8 +106,8 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
   }
 
   parametros = {
-    ...route.query,
-    ...parametros,
+    ...cloneDeep(route.query),
+    ...cloneDeep(parametros),
   };
 
   // Remover propriedades com valores de string vazia
@@ -74,10 +120,12 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
   // Ordenar os parâmetros
   parametros = pick(parametros, Object.keys(parametros).sort());
 
-  emit('aplicado', parametros);
-
-  router.replace({
+  return router.replace({
     query: parametros,
+  }).then(() => {
+    emit('aplicado', parametros);
+
+    detectarMudancas(eventoOuObjeto);
   });
 }
 

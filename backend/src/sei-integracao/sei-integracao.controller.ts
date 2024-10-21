@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
     AtivarDesativarSeiDto,
     FilterSeiListParams,
@@ -9,6 +9,7 @@ import {
 import { SeiIntegracaoService } from './sei-integracao.service';
 import { PaginatedDto } from '../common/dto/paginated.dto';
 import { ApiPaginatedResponse } from '../auth/decorators/paginated.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('sei-integracao')
 @ApiTags('SEI Integração')
@@ -39,5 +40,13 @@ export class SeiIntegracaoController {
     async ativarDesativarProcessos(@Body() params: AtivarDesativarSeiDto) {
         await this.seiIntegracaoService.atualizaStatusAtivo(params.processos_sei, params.ativo);
         return { message: 'Processos atualizados com sucesso' };
+    }
+
+    @Post('sync-distribuicao-recurso-sei')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    async syncDistribuicaoRecursoSEI() {
+        await this.seiIntegracaoService.syncDistribuicaoRecursoSEI();
+        return { message: 'Sincronização de distribuição de recurso concluída' };
     }
 }

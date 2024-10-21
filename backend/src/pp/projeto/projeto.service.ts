@@ -37,7 +37,7 @@ import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 
-import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { CompromissoOrigemHelper } from '../../common/helpers/CompromissoOrigem';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { Object2Hash } from '../../common/object2hash';
@@ -947,6 +947,7 @@ export class ProjetoService {
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
             total_registros: total_registros,
             total_registros_revisados: total_registros_revisados,
             token_paginacao: retToken,

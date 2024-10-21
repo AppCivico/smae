@@ -6,7 +6,7 @@ import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CONST_TIPO_NOTA_DIST_RECURSO, CONST_TIPO_NOTA_TRANSF_GOV } from '../../common/consts';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -99,7 +99,7 @@ export class NotaService {
 
                     bloco_nota_id: blocoId,
                     criado_por: user.id,
-                    orgao_responsavel_id: 'orgao_id' in user ? user.orgao_id ?? null : null,
+                    orgao_responsavel_id: 'orgao_id' in user ? (user.orgao_id ?? null) : null,
                     pessoa_responsavel_id: user.id,
                     tipo_nota_id: tipo.id,
                     usuarios_lidos: [], // agora precisa inicializar, se não os hasSome/hasEvery não funcionam
@@ -906,6 +906,7 @@ export class NotaService {
         const token_proxima_pagina = tem_mais ? this.encodeNextPageToken({ offset: offset + limit }) : null;
 
         return {
+            token_ttl: PAGINATION_TOKEN_TTL,
             linhas,
             tem_mais,
             token_proxima_pagina,
