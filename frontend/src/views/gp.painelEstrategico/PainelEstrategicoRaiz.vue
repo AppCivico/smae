@@ -126,7 +126,7 @@ watch(
       portfolio_id: route.query.portfolio_id,
       orgao_responsavel_id: route.query.orgao_responsavel_id,
       projeto_id: route.query.projeto_id,
-      ipp: 10,
+      ipp: 15,
     });
   },
   { immediate: true },
