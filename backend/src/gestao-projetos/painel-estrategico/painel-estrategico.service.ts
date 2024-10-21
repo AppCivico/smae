@@ -357,6 +357,15 @@ export class PainelEstrategicoService {
                 anoBase = anoBase + 1;
                 resultado.push(anoBase);
             }
+            resultado.sort((a, b) => {
+                if (a > b){
+                    return -1;
+                }
+                if (a < b){
+                    return 1;
+                }
+                return 0;
+            });
         } else {
             for (let i = 0; i > quantidadeAnos; i--) {
                 anoBase = anoBase - 1;

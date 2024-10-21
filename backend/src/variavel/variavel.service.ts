@@ -3088,6 +3088,7 @@ export class VariavelService {
         user: PessoaFromJwt
     ) {
         if (!mesesParaRemover.length) return;
+        this.logger.debug(`Variáveis globais: removendo liberação para ${JSON.stringify(mesesParaRemover)}`);
 
         await prismaTxn.variavelGlobalCicloAnalise.updateMany({
             where: {
@@ -3099,6 +3100,27 @@ export class VariavelService {
                 }),
                 removido_em: null,
                 fase: 'Liberacao',
+                ultima_revisao: true,
+            },
+            data: {
+                removido_em: now,
+                removido_por: user.id,
+                ultima_revisao: false,
+            },
+        });
+
+        // caso tenha alguma validação já feita, remove também
+        await prismaTxn.variavelGlobalCicloAnalise.updateMany({
+            where: {
+                OR: mesesParaRemover.map((e) => {
+                    return {
+                        variavel_id: e.variavel_id,
+                        referencia_data: e.referencia_data,
+                    };
+                }),
+                removido_em: null,
+                fase: 'Validacao',
+                ultima_revisao: true,
             },
             data: {
                 removido_em: now,
