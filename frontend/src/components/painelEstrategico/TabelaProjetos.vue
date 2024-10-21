@@ -80,7 +80,7 @@ const projetoFormatado = (codigo, nome) => {
       <tbody>
         <tr v-if="chamadasPendentes">
           <td
-            colspan="6"
+            colspan="8"
             aria-busy="true"
           >
             <LoadingComponent />
@@ -118,13 +118,13 @@ const projetoFormatado = (codigo, nome) => {
           </tr>
         </template>
         <tr v-else>
-          <td colspan="6">
+          <td colspan="8">
             Nenhum resultado encontrado.
           </td>
         </tr>
 
         <tr v-if="erro">
-          <td colspan="6">
+          <td colspan="8">
             Erro: {{ erro }}
           </td>
         </tr>
