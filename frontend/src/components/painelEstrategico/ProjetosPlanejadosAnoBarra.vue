@@ -19,7 +19,7 @@
                                 
                             </div>
                             <div id="ProjetosPlanejadosAnoBarra1Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                
                             </div>
                         </div>  
                         <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
@@ -46,7 +46,7 @@
                                 
                             </div>
                             <div id="ProjetosPlanejadosAnoBarra2Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                
                             </div>
                         </div>  
                         <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
@@ -73,7 +73,7 @@
                                 
                             </div>
                             <div id="ProjetosPlanejadosAnoBarra3Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                
                             </div>
                         </div>  
                         <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
@@ -100,7 +100,7 @@
                                 
                             </div>
                             <div id="ProjetosPlanejadosAnoBarra4Desc" class="ProjetosPlanejadosAnoSecondLineDes" style="margin-top: -15px;">
-                                PROJETOS PLANEJADOS
+                                
                             </div>
                         </div>  
                         <div class="ProjetosPlanejadosAnoThirdLine" style="margin-top: 5px;">
@@ -125,10 +125,16 @@
         }
     });
 
+    // Define a cor da barra
+    let barsBackgroundColor = '#A77E11';
+    
     // Verifica se os dados retornaram íntegros
     if(props.projetosPlanejadosAno != null && props.projetosPlanejadosAno.length > 0){
 
-        // Array que receberá o tamanho das barras
+        // Array que receberá o tamanho original das barras, para saber se é plural ou singular
+        let originalBarsWidth = [];
+
+        // Array que receberá o tamanho das barras para usar no gráfico
         let barsWidth = [];
 
         // Variável que receberá o total dos valores de projetos
@@ -136,9 +142,6 @@
 
         // Array que receberá o título das barras
         let labels = [];
-
-        // Define a cor da barra
-        let barsBackgroundColor = '';
 
         // Ordena o array de jsons da resposta da API pelo ano
         let dataSortedByYear = props.projetosPlanejadosAno.sort((a, b) => {
@@ -150,19 +153,16 @@
         // Extrai as informações da resposta da API
         for(let i=0; i < dataSortedByYear.length; i++){
             labels[i] = "" + dataSortedByYear[i].ano;
-            barsWidth[i] = dataSortedByYear[i].quantidade;
+            originalBarsWidth[i] = dataSortedByYear[i].quantidade;
             // Acumula o total de projetos
             totalProjects = totalProjects + dataSortedByYear[i].quantidade;
         }
-    
-        // Cor das barras
-        barsBackgroundColor = "#A77E11";
 
         // Calcula o percentual do tamanho das barras
-        barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
-        barsWidth[1] = Math.ceil(barsWidth[1] / totalProjects * 100);
-        barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
-        barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
+        barsWidth[0] = Math.ceil(originalBarsWidth[0] / totalProjects * 100);
+        barsWidth[1] = Math.ceil(originalBarsWidth[1] / totalProjects * 100);
+        barsWidth[2] = Math.ceil(originalBarsWidth[2] / totalProjects * 100);
+        barsWidth[3] = Math.ceil(originalBarsWidth[3] / totalProjects * 100);
 
         function init(){
 
@@ -199,7 +199,27 @@
             document.getElementById('ProjetosPlanejadosAnoLabel2').innerText=labels[1];
             document.getElementById('ProjetosPlanejadosAnoLabel3').innerText=labels[2];
             document.getElementById('ProjetosPlanejadosAnoLabel4').innerText=labels[3];
-            
+
+            // Define se a descrição da quantidade é no singular ou plural
+            let singularExpression = "PROJETO PLANEJADO";
+            let pluralExpression = "PROJETOS PLANEJADOS";
+            document.getElementById('ProjetosPlanejadosAnoBarra1Desc').innerHTML=pluralExpression;
+            document.getElementById('ProjetosPlanejadosAnoBarra2Desc').innerHTML=pluralExpression;
+            document.getElementById('ProjetosPlanejadosAnoBarra3Desc').innerHTML=pluralExpression;
+            document.getElementById('ProjetosPlanejadosAnoBarra4Desc').innerHTML=pluralExpression;
+            if(originalBarsWidth[0] == 1){
+                document.getElementById('ProjetosPlanejadosAnoBarra1Desc').innerHTML=singularExpression;
+            }
+            if(originalBarsWidth[1] == 1){
+                document.getElementById('ProjetosPlanejadosAnoBarra2Desc').innerHTML=singularExpression;
+            }
+            if(originalBarsWidth[2] == 1){
+                document.getElementById('ProjetosPlanejadosAnoBarra3Desc').innerHTML=singularExpression;
+            }
+            if(originalBarsWidth[3] == 1){
+                document.getElementById('ProjetosPlanejadosAnoBarra4Desc').innerHTML=singularExpression;
+            }
+
             // Define o tamanho, a cor e o texto do tooltip de cada barra.
             document.getElementById('ProjetosPlanejadosAnoCol1').style.width=barDefaultWidth1;
             document.getElementById('ProjetosPlanejadosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
@@ -236,7 +256,7 @@
     .ProjetosPlanejadosHorizontalBar {
         border-radius: 15px;
         height: 30px;  
-        border: 1px solid #A77E11;
+        border: 1px solid v-bind('barsBackgroundColor');
     }
 
     #ProjetosPlanejadosAnoBarra1:hover{

@@ -49,13 +49,13 @@
        props.projetosConcluidosMes != null && props.projetosConcluidosMes.length > 0 && 
        props.anosMapaCalorPlanejados != null && props.anosMapaCalorPlanejados.length == 4){
 
-        const var1 = 300;
-
         let data = props.projetosPlanejadosMes;
         let secondaryData = props.projetosConcluidosMes;
         let years = props.anosMapaCalorPlanejados;//.sort();
-        let tooltipTitle = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
-        let tooltipFooter = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
+        let tooltipTitlePlural = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
+        let tooltipTitleSingular = '<div>PROJETO</div><div style="margin-top: -13px;">PLANEJADO</div>';
+        let tooltipFooterPlural = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
+        let tooltipFooterSingular = '<div>PROJETO</div><div style="margin-top: -15px;">CONCLUÍDO</div>';
         let colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];     
         let chartTitle = "Projetos Planejados";
 
@@ -132,6 +132,15 @@
                         footerQuantity = 0;
                     }
                     let monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
+                    // Verifica se a quantidade principal par definir plural e singular
+                    let tooltipTitle = tooltipTitlePlural;
+                    let tooltipFooter = tooltipFooterPlural;
+                    if(params.data[2] == 1){
+                        tooltipTitle = tooltipTitleSingular
+                    }
+                    if(footerQuantity == 1){
+                        tooltipFooter = tooltipFooterSingular
+                    }
                     // Monta o HTML do tooltip
                     let response = 
                         '<div class="grid-container">' +
@@ -146,7 +155,7 @@
                                     '<b>' + params.data[2] + '</b>' +
                                 '</div>' +
                                 '<div class="secondLineDes">' +
-                                    tooltipTitle.toUpperCase() +
+                                    tooltipTitle +
                                 '</div>' +
                             '</div>' +  
                             '<div class="thirdLine">' +
@@ -154,7 +163,7 @@
                                     '<b>' + footerQuantity + '</b>' +
                                 '</div>' +
                                 '<div class="thirdLineDes"> ' +
-                                    tooltipFooter.toUpperCase() +
+                                    tooltipFooter +
                                 '</div>' +
                             '</div>' +
                             '<div class="fourthLine">' +
@@ -219,7 +228,7 @@
                         color: colorArray
                     },
                 itemWidth: 10,
-                itemHeight: var1,
+                itemHeight: 300,
                 align: 'top',
                 textStyle: {
                     fontFamily: 'Roboto Slab',
@@ -353,7 +362,7 @@
     // Quantidade secundária
     .thirdLineQtd{
         padding-right: 2px; 
-        margin-bottom: 5px; 
+        margin-bottom: 0px; 
         font-size: 16px; 
         text-align: end; 
         float: left; 
