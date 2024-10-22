@@ -501,11 +501,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
-    TransfereGov: [
-        ['TransfereGov.listar', 'Listar oportunidades e comunicados do TransfereGov'],
-        ['TransfereGov.atualizar', 'Atualizar oportunidades do TransfereGov'],
-        ['TransfereGov.sincronizar', 'Sincronizar oportunidades e comunicados do TransfereGov'],
-    ],
     CadastroClassificacao: [
         ['CadastroClassificacao.editar', 'Editar Classificação'],
         ['CadastroClassificacao.inserir', 'Incluir Classificação'],
