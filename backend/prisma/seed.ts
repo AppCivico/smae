@@ -15,11 +15,10 @@ import {
     CONST_TIPO_NOTA_DIST_RECURSO,
     CONST_TIPO_NOTA_TRANSF_GOV,
     CONST_VAR_SEM_UN_MEDIDA,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
-
-export const ParticipanteEquipe = 'Participante em equipes';
 
 const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
@@ -921,7 +920,7 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil(ParticipanteEquipe, ['Participante de Grupo de Variáveis']),
+        nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
         descricao:
             'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
         privilegios: [
