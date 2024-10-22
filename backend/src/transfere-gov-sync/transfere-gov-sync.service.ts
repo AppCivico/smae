@@ -43,11 +43,6 @@ class NextPageTokenJwtBody {
     ipp: number;
 }
 
-enum TipoEmail {
-    NovoComunicado,
-    NovaOportunidade,
-}
-
 @Injectable()
 export class TransfereGovSyncService {
     private readonly logger = new Logger(TransfereGovSyncService.name);
