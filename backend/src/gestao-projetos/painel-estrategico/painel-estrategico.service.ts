@@ -184,12 +184,12 @@ export class PainelEstrategicoService {
 								FROM portfolio_projeto_compartilhado ppc
 							 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
 							          WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                               INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
+                               INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.id
                                ${filtro}
                              and tc.realizado_termino is not null
                              and tc.removido_em is null
-                             and date_part('year', tc.realizado_termino) > date_part('year', CURRENT_DATE) - 3
-                             and date_part('year', tc.realizado_termino) <= date_part('year', CURRENT_DATE)
+                             and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
+                             and date_part('year', tc.realizado_termino) >= date_part('YEAR', current_date) -3
                            group by date_part('year', tc.realizado_termino)
                            union
                            select 0 as quantidade, t.yr as ano_
@@ -222,7 +222,7 @@ export class PainelEstrategicoService {
                            and tc.realizado_termino is not null
                            and tc.removido_em is null
                            and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
-                           and date_part('year', tc.realizado_termino) >= (date_part('YEAR', current_date) - 3)
+                           and date_part('year', tc.realizado_termino) >= date_part('YEAR', current_date) -3
                          group by date_part('month', tc.realizado_termino),
                              date_part('year', tc.realizado_termino)
                          union

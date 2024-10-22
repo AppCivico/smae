@@ -175,11 +175,7 @@ BEGIN
             v_ultimo_p_valido_corrente := v_ultimo_periodo_valido;
         END IF;
 
-        -- caso o atraso tenha sido resolvido pelo banco de variáveis, não há alteração previa na
-        -- variavel_ciclo_corrente então façamos a correção aqui
-        IF (v_atrasos[1] IS NULL AND v_fase_corrente != 'Liberacao') THEN
-            v_fase_corrente := 'Liberacao';
-        END IF;
+
 
         -- se ta na liberação, mas não tem nenhuma fase, então apagaram o valor depois já ter sido liberado alguma vez
         -- previamente, então resetamos para preenchimento
@@ -188,9 +184,11 @@ BEGIN
             v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
 
-        -- sem atraso, ta na fase de liberacao, considera que a liberacao enviada, mesmo se não existir o envio
-        IF (v_eh_liberacao_auto AND v_fase_corrente = 'Liberacao' AND v_atrasos[1] IS NULL) THEN
+        -- caso o atraso tenha sido resolvido pelo banco de variáveis [v_eh_liberacao_auto=true]
+        -- então façamos a correção aqui do status para liberacao caso esteja sem atraso
+        IF (v_eh_liberacao_auto AND v_atrasos[1] IS NULL) THEN
             v_liberacao_enviada := true;
+            v_fase_corrente := 'Liberacao';
             v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
 

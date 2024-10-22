@@ -43,6 +43,11 @@ class NextPageTokenJwtBody {
     ipp: number;
 }
 
+enum TipoEmail {
+    NovoComunicado,
+    NovaOportunidade,
+}
+
 @Injectable()
 export class TransfereGovSyncService {
     private readonly logger = new Logger(TransfereGovSyncService.name);
@@ -175,12 +180,8 @@ export class TransfereGovSyncService {
         const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
         const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
         const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
-        const orgaoEmail = orgaoId
-            ? await this.prisma.orgao.findUnique({
-                  where: { id: orgaoId },
-                  select: { email: true },
-              })
-            : null;
+        // TODO? talvez essa regra aqui mude e não seja necessário disparar erro quando não houver configuração.
+        if (!orgaoId) throw new Error('Erro ao buscar configuração de orgão para envio de email');
 
         const now = new Date();
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -193,13 +194,14 @@ export class TransfereGovSyncService {
             });
             this.logger.log(`Criando ${novosItems.length} notas`);
 
+            const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, orgaoId);
+
             for (const item of novosItems) {
-                // pessoas com perfil de 'Gestor Casa Civil'
-                if (orgaoEmail && orgaoEmail.email) {
+                for (const email of recipientes) {
                     await prismaTx.emaildbQueue.create({
                         data: {
                             id: uuidv7(),
-                            to: orgaoEmail.email,
+                            to: email,
                             subject: subject || `Novo comunicado Transfere GOV: ${item.titulo}`,
                             template: 'comunicado-transfere-gov.html',
                             variables: {
@@ -391,28 +393,20 @@ export class TransfereGovSyncService {
                 // Quando forem adicionadas oportunidades novas de transferência
                 // Deve ser enviado um email.
                 // "Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”"
-                const gestores = await prismaTx.pessoa.findMany({
-                    where: {
-                        PessoaPerfil: {
-                            some: {
-                                perfil_acesso: {
-                                    nome: 'Gestor Casa Civil',
-                                },
-                            },
-                        },
-                    },
-                    select: { email: true },
-                });
+                const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+                if (!orgaoConfig) throw new Error('Erro ao buscar configuração de orgão para envio de email');
+
+                const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, parseInt(orgaoConfig, 10));
 
                 for (const oportunidadePrograma of novasTransferencias) {
-                    for (const gestor of gestores) {
+                    for (const recipiente of recipientes) {
                         await prismaTx.emaildbQueue.create({
                             data: {
                                 id: uuidv7(),
                                 config_id: 1,
                                 subject: `Nova emenda disponível`,
                                 template: 'transferegov-nova-oportunidade.html',
-                                to: gestor.email,
+                                to: recipiente,
                                 variables: {
                                     programa: oportunidadePrograma,
                                     link: new URL([this.baseUrl, 'oportunidades'].join('/')),
@@ -425,6 +419,41 @@ export class TransfereGovSyncService {
         }
 
         return newItems;
+    }
+
+    private async buscarRecipientesEmailCasaCivil(
+        prismaTx: Prisma.TransactionClient,
+        orgaoId: number
+    ): Promise<string[]> {
+        const gestoresCasaCivil = await prismaTx.pessoa.findMany({
+            where: {
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            nome: 'Gestor Casa Civil',
+                        },
+                    },
+                },
+            },
+            select: { email: true },
+        });
+
+        const pessoasCasaCivil = await prismaTx.pessoa.findMany({
+            orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
+            where: {
+                id: { gt: 0 },
+                NOT: { pessoa_fisica_id: null },
+                desativado: false,
+                pessoa_fisica: {
+                    orgao_id: orgaoId,
+                },
+            },
+            select: { email: true },
+        });
+
+        const recipientes = [...new Set([...gestoresCasaCivil, ...pessoasCasaCivil].map((item) => item.email))];
+
+        return recipientes;
     }
 
     private async syncOportunidadesEndpoint(

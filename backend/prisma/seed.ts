@@ -392,6 +392,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferencia.listar', 'Listar Transferência dos órgãos ao qual pertence'],
         ['CadastroTransferencia.inserir', 'Inserir Transferência'],
         ['CadastroTransferencia.remover', 'Remover Transferência'],
+        ['CadastroTransferencia.dashboard', 'Ver dashboard de Transferências'],
+        ['TransfereGov.listar', 'Listar oportunidades e comunicados do TransfereGov'],
+        ['TransfereGov.atualizar', 'Atualizar oportunidades do TransfereGov'],
+        ['TransfereGov.sincronizar', 'Sincronizar oportunidades e comunicados do TransfereGov'],
     ],
     CadastroWorkflow: [
         ['CadastroWorkflows.editar', 'Editar Workflows'],
@@ -851,6 +855,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroClassificacao.editar',
             'CadastroClassificacao.inserir',
             'CadastroClassificacao.remover',
+            'TransfereGov.atualizar',
+            'TransfereGov.listar',
+            'TransfereGov.sincronizar',
+            'CadastroTransferencia.dashboard',
         ],
     },
     {
@@ -873,7 +881,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
             'CadastroPessoa.ativar',
-            'CadastroGrupoVariavel.colaborador_responsavel'
+            'CadastroGrupoVariavel.colaborador_responsavel',
         ],
     },
 ];
@@ -930,8 +938,7 @@ PerfilAcessoConfig.push(
         nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
         descricao: 'Pode utilizar o orçamento para as metas que participa, não pode reabrir o orçamento.',
         privilegios: ['CadastroMetaPS.orcamento'],
-    },
-
+    }
 );
 
 // Remover os perfis que não são mais utilizados
@@ -950,7 +957,7 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Responsável por meta na CP'),
     removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial'),
     removerNomePerfil('Administrador de Plano Setorial'),
-    removerNomePerfil('Administrador de equipes'),
+    removerNomePerfil('Administrador de equipes')
 );
 
 async function main() {

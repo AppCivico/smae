@@ -39,16 +39,6 @@ const {
   paginacaoOrcamentos,
 } = storeToRefs(painelEstrategicoStore);
 
-function iniciar() {
-  const parametros = {
-    portfolio_id: route.query.portfolio_id,
-    orgao_responsavel_id: route.query.orgao_responsavel_id,
-    projeto_id: route.query.projeto_id,
-  };
-  painelEstrategicoStore.buscarDados(parametros);
-  painelEstrategicoStore.buscarProjetosParaMapa(parametros);
-}
-
 const limparPaginacao = () => {
   paginacaoProjetos.value.validoAte = 0;
   paginacaoOrcamentos.value.validoAte = 0;
@@ -63,6 +53,81 @@ const limparPaginacao = () => {
     },
   });
 };
+
+function buscarProjetos() {
+  const projetosTokenPaginacaoNovo = route.query.projetos_token_paginacao;
+  const projetosPaginaNovo = route.query.projetos_pagina;
+
+  if (Number(projetosPaginaNovo) > 1) {
+    if (
+      paginacaoProjetos.value.validoAte
+      && paginacaoProjetos.value.validoAte <= Date.now()
+    ) {
+      alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+      limparPaginacao();
+    }
+  } else {
+    router.replace({
+      query: {
+        ...route.query,
+        projetos_token_paginacao: undefined,
+      },
+    });
+  }
+
+  painelEstrategicoStore.buscarProjetos({
+    token_paginacao: projetosTokenPaginacaoNovo,
+    pagina: projetosPaginaNovo,
+    portfolio_id: route.query.portfolio_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    projeto_id: route.query.projeto_id,
+    ipp: 10,
+  });
+}
+
+function buscarOrcamentos() {
+  const orcamentosTokenPaginacaoNovo = route.query.orcamentos_token_paginacao;
+  const orcamentosPaginaNovo = route.query.orcamentos_pagina;
+
+  if (Number(orcamentosPaginaNovo) > 1) {
+    if (
+      paginacaoOrcamentos.value.validoAte
+      && paginacaoOrcamentos.value.validoAte <= Date.now()
+    ) {
+      alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+      limparPaginacao();
+    }
+  } else {
+    router.replace({
+      query: {
+        ...route.query,
+        orcamentos_token_paginacao: undefined,
+      },
+    });
+  }
+
+  painelEstrategicoStore.buscarOrcamentos({
+    token_paginacao: orcamentosTokenPaginacaoNovo,
+    pagina: orcamentosPaginaNovo,
+    portfolio_id: route.query.portfolio_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    projeto_id: route.query.projeto_id,
+    ipp: 15,
+  });
+}
+
+function iniciar() {
+  const parametros = {
+    portfolio_id: route.query.portfolio_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    projeto_id: route.query.projeto_id,
+  };
+
+  painelEstrategicoStore.buscarDados(parametros);
+  painelEstrategicoStore.buscarProjetosParaMapa(parametros);
+  buscarProjetos();
+  buscarOrcamentos();
+}
 
 iniciar();
 
@@ -101,36 +166,7 @@ watch(
     () => route.query.projetos_token_paginacao,
     () => route.query.projetos_pagina,
   ],
-  async (
-    [projetosTokenPaginacaoNovo, projetosPaginaNovo],
-  ) => {
-    if (Number(projetosPaginaNovo) > 1) {
-      if (
-        paginacaoProjetos.value.validoAte
-        && paginacaoProjetos.value.validoAte <= Date.now()
-      ) {
-        alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
-        await limparPaginacao();
-      }
-    } else {
-      await router.replace({
-        query: {
-          ...route.query,
-          projetos_token_paginacao: undefined,
-        },
-      });
-    }
-
-    painelEstrategicoStore.buscarProjetos({
-      token_paginacao: projetosTokenPaginacaoNovo,
-      pagina: projetosPaginaNovo,
-      portfolio_id: route.query.portfolio_id,
-      orgao_responsavel_id: route.query.orgao_responsavel_id,
-      projeto_id: route.query.projeto_id,
-      ipp: 10,
-    });
-  },
-  { immediate: true },
+  buscarProjetos,
 );
 
 watch(
@@ -138,37 +174,8 @@ watch(
     () => route.query.orcamentos_token_paginacao,
     () => route.query.orcamentos_pagina,
   ],
-  async (
-    [orcamentosTokenPaginacaoNovo, orcamentosPaginaNovo],
-  ) => {
-    if (Number(orcamentosPaginaNovo) > 1) {
-      if (
-        paginacaoOrcamentos.value.validoAte
-        && paginacaoOrcamentos.value.validoAte <= Date.now()
-      ) {
-        alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
-        await limparPaginacao();
-      }
-    } else {
-      await router.replace({
-        query: {
-          ...route.query,
-          orcamentos_token_paginacao: undefined,
-        },
-      });
-    }
-    painelEstrategicoStore.buscarOrcamentos({
-      token_paginacao: orcamentosTokenPaginacaoNovo,
-      pagina: orcamentosPaginaNovo,
-      portfolio_id: route.query.portfolio_id,
-      orgao_responsavel_id: route.query.orgao_responsavel_id,
-      projeto_id: route.query.projeto_id,
-      ipp: 15,
-    });
-  },
-  { immediate: true },
+  buscarOrcamentos,
 );
-
 </script>
 <template>
   <Dashboard>

@@ -58,9 +58,11 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.chamadasPendentes.lista = true;
       this.erro = null;
 
+      // TO-DO: Revisar o uso desse chaveamento. Parece que salvar em duas listas
+      // diferentes seria mais seguro.
       const rotaNaApi = paraProjetos
-        ? "/portfolio/para-projetos"
-        : "/portfolio";
+        ? '/portfolio/para-projetos'
+        : '/portfolio';
 
       try {
         const { linhas } = await this.requestS.get(
