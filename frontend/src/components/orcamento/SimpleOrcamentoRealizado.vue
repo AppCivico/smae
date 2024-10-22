@@ -10,10 +10,12 @@ import { storeToRefs } from 'pinia';
 import {
   computed, inject, ref, watch,
 } from 'vue';
+import { useRoute } from 'vue-router';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 
+const rota = useRoute();
 const gblLimiteDeSeleçãoSimultânea = inject('gblLimiteDeSeleçãoSimultânea');
 
 const emit = defineEmits(['apagar', 'editar']);
@@ -124,6 +126,7 @@ async function excluirEmLote(ids) {
         órgãoEUnidadeSelecionados.value = '';
         linhasSelecionadas.value = [];
         alertStore.success(mensagem);
+        await OrcamentosStore.getOrcamentoRealizadoById(rota.params.meta_id, rota.query.aba);
       }
     } catch (error) {
       alertStore.error(error);
