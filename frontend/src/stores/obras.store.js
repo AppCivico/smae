@@ -1,5 +1,6 @@
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem.ts';
 import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas.ts';
 
@@ -298,14 +299,7 @@ export const useObrasStore = defineStore('obrasStore', {
         orgao_colaborador_id: null,
         orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
         origens_extra: Array.isArray(emFoco?.origens_extra)
-          ? emFoco.origens_extra.map((origem) => ({
-            atividade_id: origem?.atividade?.id || null,
-            id: origem?.id || null,
-            iniciativa_id: origem?.iniciativa?.id || null,
-            meta_id: origem?.meta?.id || null,
-            origem_tipo: origem?.origem_tipo || 'PdmSistema',
-            pdm_escolhido: origem?.pdm?.id || null,
-          }))
+          ? emFoco.origens_extra.map((origem) => simplificadorDeOrigem(origem, { origem_tipo: 'PdmSistema' }))
           : [],
         pdm_escolhido: emFoco?.meta?.pdm_id || null,
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,

@@ -5,6 +5,7 @@ import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelac
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
+import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -142,7 +143,7 @@ const valoresIniciais = computed(() => ({
   tema_id: singleMeta.value.tema?.id || route.params.tema_id,
 
   origens_extra: Array.isArray(singleMeta.value?.origens_extra)
-    ? singleMeta.value.origens_extra
+    ? singleMeta.value.origens_extra.map((origem) => simplificarOrigem(origem))
     : [],
 
   tags: Array.isArray(singleMeta.value?.tags)
