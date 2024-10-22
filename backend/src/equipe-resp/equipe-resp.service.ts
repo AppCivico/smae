@@ -7,6 +7,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
+import { ParticipanteEquipe } from '../../prisma/seed';
 
 @Injectable()
 export class EquipeRespService {
@@ -56,7 +57,7 @@ export class EquipeRespService {
                     if (!temPriv) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
-                            'SMAE.GrupoVariavel.participante',
+                            ParticipanteEquipe,
                             prismaTx
                         );
                     }
@@ -293,7 +294,7 @@ export class EquipeRespService {
                     if (!temPriv) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
-                            'SMAE.GrupoVariavel.participante',
+                            ParticipanteEquipe,
                             prismaTx
                         );
                     }

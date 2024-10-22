@@ -19,7 +19,7 @@ import {
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
 
-const ParticipanteEquipe = 'Participante em equipes';
+export const ParticipanteEquipe = 'Participante em equipes';
 
 const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
