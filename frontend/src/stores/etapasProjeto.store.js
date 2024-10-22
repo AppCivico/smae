@@ -14,6 +14,7 @@ function caminhoParaApi(rotaMeta) {
 
     case rotaMeta.prefixoParaFilhas === 'mdo':
     case rotaMeta.entidadeMãe === 'mdo':
+    case rotaMeta.entidadeMãe === 'obras':
       return 'projeto-etapa-mdo';
 
     default:
