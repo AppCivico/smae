@@ -89,7 +89,7 @@ export class EquipeRespService {
 
                 await prismaTx.grupoResponsavelEquipeParticipante.createMany({
                     data: dto.participantes.map((pessoaId) => {
-                        const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
+                        const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
 
                         return {
                             grupo_responsavel_equipe_id: gp.id,
