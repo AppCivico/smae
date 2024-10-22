@@ -172,7 +172,7 @@ BEGIN
     ELSE
 
         IF (v_atrasos[1] IS NULL) THEN -- se não há atraso, o ciclo atual é o último válido
-            v_ultimo_periodo_valido := v_ultimo_periodo_valido;
+            v_ultimo_p_valido_corrente := v_ultimo_periodo_valido;
         END IF;
 
         -- caso o atraso tenha sido resolvido pelo banco de variáveis, não há alteração previa na
