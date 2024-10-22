@@ -7,7 +7,7 @@
                 </li>
                 <li id="ProjetosConcluidosAnoBarra1" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da primeira barra -->
-                    <div id="ProjetosConcluidosAnoBarra1Tooltip" class="ProjetosConcluidosTooltipText">
+                    <div id="ProjetosConcluidosAnoBarra1Tooltip" class="ProjetosConcluidosTooltipTextLeft">
                         <div class="ProjetosConcluidosAnoFirstLine">
                             <hr class="ProjetosConcluidosAnoFirstLineHR">
                             <div id="ProjetosConcluidosAnoBarra1Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
@@ -34,7 +34,7 @@
                 </li>
                 <li id="ProjetosConcluidosAnoBarra2" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da segunda barra -->
-                    <div id="ProjetosConcluidosAnoBarra2Tooltip" class="ProjetosConcluidosTooltipText">
+                    <div id="ProjetosConcluidosAnoBarra2Tooltip" class="ProjetosConcluidosTooltipTextLeft">
                         <div class="ProjetosConcluidosAnoFirstLine">
                             <hr class="ProjetosConcluidosAnoFirstLineHR">
                             <div id="ProjetosConcluidosAnoBarra2Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
@@ -61,7 +61,7 @@
                 </li>
                 <li id="ProjetosConcluidosAnoBarra3" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="ProjetosConcluidosAnoBarra3Tooltip" class="ProjetosConcluidosTooltipText">
+                    <div id="ProjetosConcluidosAnoBarra3Tooltip" class="ProjetosConcluidosTooltipTextLeft">
                         <div class="ProjetosConcluidosAnoFirstLine">
                             <hr class="ProjetosConcluidosAnoFirstLineHR">
                             <div id="ProjetosConcluidosAnoBarra3Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
@@ -88,7 +88,7 @@
                 </li>
                 <li id="ProjetosConcluidosAnoBarra4" class="ProjetosConcluidosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="ProjetosConcluidosAnoBarra4Tooltip" class="ProjetosConcluidosTooltipText">
+                    <div id="ProjetosConcluidosAnoBarra4Tooltip" class="ProjetosConcluidosTooltipTextRight">
                         <div class="ProjetosConcluidosAnoFirstLine">
                             <hr class="ProjetosConcluidosAnoFirstLineHR">
                             <div id="ProjetosConcluidosAnoBarra4Total" class="ProjetosConcluidosAnoFirstLineMonthYear">
@@ -284,7 +284,44 @@
     width: 5px;
     }
 
-    .ProjetosConcluidosTooltipText {
+    .ProjetosConcluidosTooltipTextRight {
+        visibility: hidden;
+        background-color: #fff;
+        color: #555;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: fixed;
+        z-index: 2;
+        margin-top: 30px;
+        margin-left: -85px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        display: grid;
+        grid-template-areas:
+            'monthYear'
+            'mainQtd'
+            'footerQtd'
+            'footerLine';
+        gap: 2px;
+        padding: 2px;
+        min-width: 110px;
+        box-shadow: 0 0 .4em rgb(230, 230, 228);
+    }
+
+    .ProjetosConcluidosTooltipTextRight::after {
+        content: "";
+        width: 1px;
+        position: relative;
+        top: -57px;
+        margin-left: 90px;
+        z-index: 1;
+        border-width: 5px;
+        border-style: solid;
+        border-color:  transparent transparent #fff transparent;
+    }
+
+    .ProjetosConcluidosTooltipTextLeft {
         visibility: hidden;
         background-color: #fff;
         color: #555;
@@ -309,7 +346,7 @@
         box-shadow: 0 0 .4em rgb(230, 230, 228);
     }
 
-    .ProjetosConcluidosTooltipText::after {
+    .ProjetosConcluidosTooltipTextLeft::after {
         content: "";
         width: 3px;
         position: relative;
