@@ -3,7 +3,7 @@
     <mj-title>[% subject %]</mj-title>
     <mj-attributes>
       <mj-column padding="0" />
-      <mj-button background-color="#f7c234" border-radius="24px" color="#fff" />
+      <mj-button background-color="#011c50" border-radius="24px" color="#fff" />
       <mj-section padding="0" />
       <mj-social inner-padding="20px" />
       <mj-social-element border-radius="24px" icon-size="18px" />
@@ -12,7 +12,15 @@
 
   </mj-head>
 
-  <mj-body background-color="#fafafa">
+  <mj-body background-color="#011c50">
+
+    <mj-section full-width="full-width" padding-bottom="0">
+      <mj-column width="100%">
+
+        <mj-image src="https://homol-smae-api.appcivico.com/public/email-templates/img/header.png" width="600px" alt="" padding="0" href="https://google.com" />
+      </mj-column>
+    </mj-section>
+
 
     <mj-section background-color="#fff">
       <mj-column>
@@ -31,6 +39,13 @@
           <p>Obrigado!</p>
         </mj-text>
 
+      </mj-column>
+    </mj-section>
+
+    <mj-section full-width="full-width" padding-bottom="0">
+      <mj-column width="100%">
+
+        <mj-image src="https://homol-smae-api.appcivico.com/public/email-templates/img/footer.png" width="600px" alt="" padding="0" href="https://google.com" />
       </mj-column>
     </mj-section>
 
