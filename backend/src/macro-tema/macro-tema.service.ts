@@ -80,7 +80,7 @@ export class MacroTemaService {
     async update(tipo: TipoPdm, id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
         delete updateEixoDto.pdm_id; // nao deixa editar o PDM
 
-        const self = await this.prisma.subTema.findFirstOrThrow({
+        const self = await this.prisma.macroTema.findFirstOrThrow({
             where: { id },
             select: { pdm_id: true },
         });
@@ -125,7 +125,7 @@ export class MacroTemaService {
     }
 
     async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
-        const self = await this.prisma.subTema.findFirstOrThrow({
+        const self = await this.prisma.macroTema.findFirstOrThrow({
             where: { id },
             select: { pdm_id: true },
         });
