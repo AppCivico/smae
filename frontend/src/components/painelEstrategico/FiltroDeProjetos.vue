@@ -94,7 +94,7 @@ import { usePortfolioStore } from '@/stores/portfolios.store';
 import { useProjetosStore } from '@/stores/projetos.store';
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 import type { LocationQueryValue } from 'vue-router';
 import { useRoute } from 'vue-router';
 
@@ -165,9 +165,10 @@ function prepararValoresComoNumeros(valor: LocationQueryValue | LocationQueryVal
 }
 
 function iniciar() {
-  if (!listaDePortfolios.value.length && !chamadasPendentesDePortfolios.value.lista) {
-    portfoliosStore.buscarTudo();
-  }
+  portfoliosStore.$reset();
+  // Buscar os portfolios no endpoint que filtra por permissões. Por isso,
+  // limpamos a lista para ter certeza.
+  portfoliosStore.buscarTudo({}, true);
 
   if (!listaDeProjetos.value.length && !chamadasPendentesDeProjetos.value.lista) {
     projetosStore.buscarTudo();
@@ -203,4 +204,9 @@ function iniciar() {
 }
 
 iniciar();
+
+onUnmounted(() => {
+  // limpando o store para evitar que os valores do endpoint alternativo fiquem salvos
+  portfoliosStore.$reset();
+});
 </script>
