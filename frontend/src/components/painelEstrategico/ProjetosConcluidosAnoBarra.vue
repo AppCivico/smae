@@ -87,7 +87,7 @@
                     <p id="ProjetosConcluidosAnoLabel4" style="min-width: fit-content;"></p>
                 </li>
                 <li id="ProjetosConcluidosAnoBarra4" class="ProjetosConcluidosHorizontalBar">
-                    <!-- TOOLTIP da terceira barra -->
+                    <!-- TOOLTIP da quarta barra -->
                     <div id="ProjetosConcluidosAnoBarra4Tooltip" class="ProjetosConcluidosTooltipTextRight">
                         <div class="ProjetosConcluidosAnoFirstLine">
                             <hr class="ProjetosConcluidosAnoFirstLineHR">
@@ -175,6 +175,10 @@
             let barsBackgroundColor2 = "#ffffff";
             let barsBackgroundColor3 = "#ffffff";
             let barsBackgroundColor4 = "#ffffff";
+            let barsBorder1 = '1px solid ' + barsBackgroundColor;
+            let barsBorder2 = '1px solid ' + barsBackgroundColor;
+            let barsBorder3 = '1px solid ' + barsBackgroundColor;
+            let barsBorder4 = '1px solid ' + barsBackgroundColor;
 
             // Se o valor da barra for maior do que 0, define largura e cor da barra
             if(barsWidth[0] > 0){
@@ -203,16 +207,19 @@
             // Define o tamanho, a cor e o texto do tooltip de cada barra.
             document.getElementById('ProjetosConcluidosAnoCol1').style.width=barDefaultWidth1;
             document.getElementById('ProjetosConcluidosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
-            document.getElementById('ProjetosConcluidosAnoBarra1Qtd').innerText=props.projetosConcluidosAno[0].quantidade
+            document.getElementById('ProjetosConcluidosAnoBarra1Qtd').innerText=props.projetosConcluidosAno[0].quantidade;
+            //document.getElementById('ProjetosConcluidosAnoBarra1Qtd').style.border="1px solid blue";
             document.getElementById('ProjetosConcluidosAnoCol2').style.width=barDefaultWidth2;
             document.getElementById('ProjetosConcluidosAnoBarra2').style.backgroundColor=barsBackgroundColor2;
-            document.getElementById('ProjetosConcluidosAnoBarra2Qtd').innerText=props.projetosConcluidosAno[1].quantidade
+            document.getElementById('ProjetosConcluidosAnoBarra2Qtd').innerText=props.projetosConcluidosAno[1].quantidade;
             document.getElementById('ProjetosConcluidosAnoCol3').style.width=barDefaultWidth3;
             document.getElementById('ProjetosConcluidosAnoBarra3').style.backgroundColor=barsBackgroundColor3;
-            document.getElementById('ProjetosConcluidosAnoBarra3Qtd').innerText=props.projetosConcluidosAno[2].quantidade
+            document.getElementById('ProjetosConcluidosAnoBarra3Qtd').innerText=props.projetosConcluidosAno[2].quantidade;
             document.getElementById('ProjetosConcluidosAnoCol4').style.width=barDefaultWidth4;
             document.getElementById('ProjetosConcluidosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
-            document.getElementById('ProjetosConcluidosAnoBarra4Qtd').innerText=props.projetosConcluidosAno[3].quantidade
+            document.getElementById('ProjetosConcluidosAnoBarra4Qtd').innerText=props.projetosConcluidosAno[3].quantidade;
+            document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft="42%";
+            console.log(barsWidth[3]/2);
         }
 
         setTimeout(() => {
@@ -233,8 +240,9 @@
     }
 
     .ProjetosConcluidosHorizontalBar {
-    border-radius: 15px;
-    height: 30px;  
+        border-radius: 15px;
+        height: 30px;  
+        border: 1px solid #d3a730;
     }
 
     #ProjetosConcluidosAnoBarra1:hover{

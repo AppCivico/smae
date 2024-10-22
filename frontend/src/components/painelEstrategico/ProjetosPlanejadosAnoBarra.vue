@@ -87,7 +87,7 @@
                     <p id="ProjetosPlanejadosAnoLabel4" style="min-width: fit-content;"></p>
                 </li>
                 <li id="ProjetosPlanejadosAnoBarra4" class="ProjetosPlanejadosHorizontalBar">
-                    <!-- TOOLTIP da terceira barra -->
+                    <!-- TOOLTIP da quarta barra -->
                     <div id="ProjetosPlanejadosAnoBarra4Tooltip" class="ProjetosConcluidosTooltipTextRight">
                         <div class="ProjetosPlanejadosAnoFirstLine">
                             <hr class="ProjetosPlanejadosAnoFirstLineHR">
@@ -203,16 +203,17 @@
             // Define o tamanho, a cor e o texto do tooltip de cada barra.
             document.getElementById('ProjetosPlanejadosAnoCol1').style.width=barDefaultWidth1;
             document.getElementById('ProjetosPlanejadosAnoBarra1').style.backgroundColor=barsBackgroundColor1;
-            document.getElementById('ProjetosPlanejadosAnoBarra1Qtd').innerText=props.projetosPlanejadosAno[0].quantidade
+            document.getElementById('ProjetosPlanejadosAnoBarra1Qtd').innerText=props.projetosPlanejadosAno[0].quantidade;
             document.getElementById('ProjetosPlanejadosAnoCol2').style.width=barDefaultWidth2;
             document.getElementById('ProjetosPlanejadosAnoBarra2').style.backgroundColor=barsBackgroundColor2;
-            document.getElementById('ProjetosPlanejadosAnoBarra2Qtd').innerText=props.projetosPlanejadosAno[1].quantidade
+            document.getElementById('ProjetosPlanejadosAnoBarra2Qtd').innerText=props.projetosPlanejadosAno[1].quantidade;
             document.getElementById('ProjetosPlanejadosAnoCol3').style.width=barDefaultWidth3;
             document.getElementById('ProjetosPlanejadosAnoBarra3').style.backgroundColor=barsBackgroundColor3;
-            document.getElementById('ProjetosPlanejadosAnoBarra3Qtd').innerText=props.projetosPlanejadosAno[2].quantidade
+            document.getElementById('ProjetosPlanejadosAnoBarra3Qtd').innerText=props.projetosPlanejadosAno[2].quantidade;
             document.getElementById('ProjetosPlanejadosAnoCol4').style.width=barDefaultWidth4;
             document.getElementById('ProjetosPlanejadosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
-            document.getElementById('ProjetosPlanejadosAnoBarra4Qtd').innerText=props.projetosPlanejadosAno[3].quantidade
+            document.getElementById('ProjetosPlanejadosAnoBarra4Qtd').innerText=props.projetosPlanejadosAno[3].quantidade;
+            document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft="42%";
         }
 
         setTimeout(() => {
@@ -233,8 +234,9 @@
     }
 
     .ProjetosPlanejadosHorizontalBar {
-    border-radius: 15px;
-    height: 30px;  
+        border-radius: 15px;
+        height: 30px;  
+        border: 1px solid #A77E11;
     }
 
     #ProjetosPlanejadosAnoBarra1:hover{
