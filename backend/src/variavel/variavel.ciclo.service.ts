@@ -909,7 +909,7 @@ export class VariavelCicloService {
             where: { variavel_id: variavelId },
             data: {
                 fase: nextPhase,
-                liberacao_enviada: nextPhase === 'Liberacao',
+                liberacao_enviada: false,
                 pedido_complementacao: false,
             },
         });

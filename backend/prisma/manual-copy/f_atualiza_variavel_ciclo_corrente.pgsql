@@ -171,6 +171,10 @@ BEGIN
         RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
 
+        IF (v_atrasos[1] IS NULL) THEN -- se não há atraso, o ciclo atual é o último válido
+            v_ultimo_periodo_valido := v_ultimo_periodo_valido;
+        END IF;
+
         -- caso o atraso tenha sido resolvido pelo banco de variáveis, não há alteração previa na
         -- variavel_ciclo_corrente então façamos a correção aqui
         IF (v_atrasos[1] IS NULL AND v_fase_corrente != 'Liberacao') THEN
@@ -268,7 +272,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-select f_atualiza_variavel_ciclo_corrente (6779 ) ;
+--select f_atualiza_variavel_ciclo_corrente (6785 ) ;
 
 --select f_atualiza_variavel_ciclo_corrente(4648);
 
