@@ -29,6 +29,7 @@ const casasDecimais = computed(() => props.casasDecimais
   || 0);
 
 const dadosAuxiliares = computed(() => props.dataserie?.dados_auxiliares);
+const linhas = computed(() => props.dataserie?.linhas);
 
 function obterDadosTraduzidos(valor) {
   if (!valor) {
@@ -185,12 +186,11 @@ class smaeChart {
       .attr('height', 22)
       .attr('rx', 11);
 
-    /* DRAW PROJETADO */
-    this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'previsto', transitionDuration: this.transitionDuration });
-
-    /* DRAW REALIZADO */
     if (!props.temCategorica) {
+      this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'previsto', transitionDuration: this.transitionDuration });
       this.drawDataPoints(svg, data.realizado, xScale, yScale, this.sizes, { name: 'realizado', transitionDuration: this.transitionDuration });
+    } else {
+      this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'realizado', transitionDuration: this.transitionDuration });
     }
 
     /* DRAW META */
@@ -292,6 +292,12 @@ class smaeChart {
       .attr('x1', pos.x)
       .attr('x2', pos.x);
 
+    let previsto = d.projetado;
+    if (props.temCategorica) {
+      const iPrevisto = props.dataserie.ordem_series.indexOf('Previsto');
+      previsto = linhas.value[d.index].series[iPrevisto].valor_nominal;
+    }
+
     // Creating tooltip element
     const mes = this.locale.utcFormat('%B/%Y')(d.date);
     const tipHtml = `
@@ -306,7 +312,7 @@ class smaeChart {
       `}
 
       <p class="tc300 t11 mb0">
-        Previsto ${mes}: <span>${obterDadosTraduzidos(d.projetado)}</span><br />
+        Previsto ${mes}: <span>${obterDadosTraduzidos(previsto)}</span><br />
         Realizado ${mes}: <span class="tamarelo">${obterDadosTraduzidos(d.realizado)}</span>
       </p>
     `;
@@ -355,6 +361,7 @@ class smaeChart {
               .minus(aux[dataKeys[i]])
               .toFixed(casasDecimais.value);
             aux[dataKeys[i]] = data[dataKeys[i]][j].value;
+            tipArray[k].index = j;
             break;
           }
         }
