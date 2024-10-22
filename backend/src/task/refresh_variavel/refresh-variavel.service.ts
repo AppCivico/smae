@@ -3,11 +3,15 @@ import { RetryOperation } from '../../common/RetryOperation';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRefreshVariavelDto } from './dto/create-refresh-variavel.dto';
+import { VariavelService } from '../../variavel/variavel.service';
 
 @Injectable()
 export class RefreshVariavelService implements TaskableService {
     private readonly logger = new Logger(RefreshVariavelService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService
+    ) {}
 
     async executeJob(inputParams: CreateRefreshVariavelDto, taskId: string): Promise<any> {
         const before = Date.now();
@@ -22,6 +26,15 @@ export class RefreshVariavelService implements TaskableService {
         AND status='pending' AND id != ${task.id}
         AND (params::text, criado_em) = (select params::text, criado_em from task_queue where id = ${task.id})
         `;
+
+        const variavel = await this.prisma.variavel.findFirst({
+            where: { id: inputParams.variavel_id },
+            select: {
+                id: true,
+                tipo: true,
+            },
+        });
+        if (!variavel) return { success: false, error: 'Variável não encontrada' };
 
         await RetryOperation(
             5,
@@ -42,6 +55,11 @@ export class RefreshVariavelService implements TaskableService {
                 throw error;
             }
         );
+
+        if (variavel.tipo == 'Calculada') {
+            // recalcular indicadores que usam essa variável
+            await this.variavelService.recalc_indicador_usando_variaveis([inputParams.variavel_id], this.prisma);
+        }
 
         const took = Date.now() - before;
         return {
