@@ -15,6 +15,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('transfere-gov')
 @ApiTags('TransfereGov Integração')
@@ -23,6 +24,7 @@ export class TransfereGovController {
 
     @Post('sync')
     @ApiBearerAuth('access-token')
+    @Roles(['TransfereGov.sincronizar'])
     async manualSync(): Promise<TransfereGovSyncDto> {
         const newItems = await this.transfereGovSyncService.manualSync();
         return { novos_itens: newItems.map((item) => item.id) };
@@ -31,12 +33,14 @@ export class TransfereGovController {
     @Get('lista')
     @ApiBearerAuth('access-token')
     @ApiPaginatedResponse(TransfereGovDto)
+    @Roles(['TransfereGov.listar'])
     async listaComunicados(@Query() params: FilterTransfereGovListDto): Promise<PaginatedDto<TransfereGovDto>> {
         return await this.transfereGovSyncService.listaComunicados(params);
     }
 
     @Post('sync-transferencias')
     @ApiBearerAuth('access-token')
+    @Roles(['TransfereGov.sincronizar'])
     async syncTransferencias(): Promise<TransfereGovSyncDto> {
         const newItems = await this.transfereGovSyncService.manualSyncTransferencias();
         return { novos_itens: newItems.map((item) => item.id) };
@@ -45,6 +49,7 @@ export class TransfereGovController {
     @Get('transferencia')
     @ApiBearerAuth('access-token')
     @ApiPaginatedResponse(TransfereGovTransferenciasDto)
+    @Roles(['TransfereGov.listar'])
     async listaTransferencias(
         @Query() params: FilterTransfereGovTransferenciasDto
     ): Promise<PaginatedDto<TransfereGovTransferenciasDto>> {
@@ -54,6 +59,7 @@ export class TransfereGovController {
     @Patch('transferencia/:id')
     @ApiBearerAuth('access-token')
     @ApiPaginatedResponse(TransfereGovDto)
+    @Roles(['TransfereGov.atualizar'])
     async updateTransferencia(
         @Param() params: FindOneParams,
         @Body() dto: UpdateTransfereGovTransferenciaDto,
