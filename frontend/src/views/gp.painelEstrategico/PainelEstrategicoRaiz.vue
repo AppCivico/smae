@@ -19,6 +19,7 @@ import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
+import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -83,9 +84,9 @@ watch(
     switch (true) {
       // comparando evitar chamadas desnecessárias quando os valores são apenas
       // reavaliados
-      case portfolioIdNovo !== portfolioIdAnterior:
-      case orgaoResponsavelIdNovo !== orgaoResponsavelIdAnterior:
-      case projetoIdNovo !== projetoIdAnterior:
+      case !isEqual(portfolioIdNovo, portfolioIdAnterior):
+      case !isEqual(orgaoResponsavelIdNovo, orgaoResponsavelIdAnterior):
+      case !isEqual(projetoIdNovo, projetoIdAnterior):
         await limparPaginacao();
         iniciar();
         break;
@@ -96,15 +97,33 @@ watch(
 );
 
 watch(
-  () => [route.query.projetos_token_paginacao, route.query.projetos_pagina],
-  async ([projetosTokenPaginacaoNovo, projetosPagina]) => {
-    if (paginacaoProjetos.value.validoAte && paginacaoProjetos.value.validoAte <= Date.now()) {
-      alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
-      await limparPaginacao();
+  [
+    () => route.query.projetos_token_paginacao,
+    () => route.query.projetos_pagina,
+  ],
+  async (
+    [projetosTokenPaginacaoNovo, projetosPaginaNovo],
+  ) => {
+    if (Number(projetosPaginaNovo) > 1) {
+      if (
+        paginacaoProjetos.value.validoAte
+        && paginacaoProjetos.value.validoAte <= Date.now()
+      ) {
+        alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+        await limparPaginacao();
+      }
+    } else {
+      await router.replace({
+        query: {
+          ...route.query,
+          projetos_token_paginacao: undefined,
+        },
+      });
     }
+
     painelEstrategicoStore.buscarProjetos({
       token_paginacao: projetosTokenPaginacaoNovo,
-      pagina: projetosPagina,
+      pagina: projetosPaginaNovo,
       portfolio_id: route.query.portfolio_id,
       orgao_responsavel_id: route.query.orgao_responsavel_id,
       projeto_id: route.query.projeto_id,
@@ -115,11 +134,28 @@ watch(
 );
 
 watch(
-  () => [route.query.orcamentos_token_paginacao, route.query.orcamentos_pagina],
-  async ([orcamentosTokenPaginacaoNovo, orcamentosPaginaNovo]) => {
-    if (paginacaoOrcamentos.value.validoAte && paginacaoOrcamentos.value.validoAte <= Date.now()) {
-      alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
-      await limparPaginacao();
+  [
+    () => route.query.orcamentos_token_paginacao,
+    () => route.query.orcamentos_pagina,
+  ],
+  async (
+    [orcamentosTokenPaginacaoNovo, orcamentosPaginaNovo],
+  ) => {
+    if (Number(orcamentosPaginaNovo) > 1) {
+      if (
+        paginacaoOrcamentos.value.validoAte
+        && paginacaoOrcamentos.value.validoAte <= Date.now()
+      ) {
+        alertStore.error('Resultados obsoletos. Buscando novamente e retornando à primeira página');
+        await limparPaginacao();
+      }
+    } else {
+      await router.replace({
+        query: {
+          ...route.query,
+          orcamentos_token_paginacao: undefined,
+        },
+      });
     }
     painelEstrategicoStore.buscarOrcamentos({
       token_paginacao: orcamentosTokenPaginacaoNovo,
