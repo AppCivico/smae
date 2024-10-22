@@ -218,8 +218,7 @@
             document.getElementById('ProjetosConcluidosAnoCol4').style.width=barDefaultWidth4;
             document.getElementById('ProjetosConcluidosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
             document.getElementById('ProjetosConcluidosAnoBarra4Qtd').innerText=props.projetosConcluidosAno[3].quantidade;
-            document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft="42%";
-            console.log(barsWidth[3]/2);
+            document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft="20px";
         }
 
         setTimeout(() => {

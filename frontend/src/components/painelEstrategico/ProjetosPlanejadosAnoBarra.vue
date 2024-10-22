@@ -213,7 +213,7 @@
             document.getElementById('ProjetosPlanejadosAnoCol4').style.width=barDefaultWidth4;
             document.getElementById('ProjetosPlanejadosAnoBarra4').style.backgroundColor=barsBackgroundColor4;
             document.getElementById('ProjetosPlanejadosAnoBarra4Qtd').innerText=props.projetosPlanejadosAno[3].quantidade;
-            document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft="42%";
+            document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft="20px";
         }
 
         setTimeout(() => {
