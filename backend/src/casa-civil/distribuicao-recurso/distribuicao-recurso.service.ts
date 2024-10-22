@@ -1271,18 +1271,15 @@ export class DistribuicaoRecursoService {
                             .filter((e) => {
                                 const statusUltimaRow = e.distribuicao_recurso.status[0];
                                 if (!statusUltimaRow) return true;
-                                console.log(statusUltimaRow);
 
                                 const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-                                console.log(statusConfig);
-
                                 return statusConfig!.valor_distribuicao_contabilizado == true;
                             })
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 
                         console.log(relParlamentar);
-                        console.log(rowsParlamentarDist, { depth: 2 });
+                        console.dir(rowsParlamentarDist, { depth: 2 });
                         console.log(+sumValor);
                         console.log(+valorNaTransf);
                         console.log('\n==========================');
