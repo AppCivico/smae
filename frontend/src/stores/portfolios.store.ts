@@ -59,8 +59,8 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.erro = null;
 
       const rotaNaApi = paraProjetos
-        ? "/portfolio/para-projetos"
-        : "/portfolio";
+        ? '/portfolio/para-projetos'
+        : '/portfolio';
 
       try {
         const { linhas } = await this.requestS.get(
