@@ -13,8 +13,9 @@
           :to="{
             query: {
               ...$route.query,
-              [`${prefixo}token_paginacao`]: tokenPaginacao
-                || $route.query[`${prefixo}token_paginacao`],
+              [`${prefixo}token_paginacao`]: paginaCorrente === 2
+                ? undefined
+                : tokenPaginacao || $route.query[`${prefixo}token_paginacao`],
               [`${prefixo}pagina`]: paginaCorrente -1,
             },
           }"
@@ -129,7 +130,9 @@ async function irParaPagina(numero) {
   await router.push({
     query: {
       ...route.query,
-      [`${props.prefixo}token_paginacao`]: props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+      [`${props.prefixo}token_paginacao`]: numero === 1
+        ? undefined
+        : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
       [`${props.prefixo}pagina`]: numero,
     },
   });
