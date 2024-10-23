@@ -573,6 +573,7 @@ export class MetaService {
                 PdmPerfil: {
                     where: {
                         removido_em: null,
+                        etapa_id: null,
                     },
                     select: {
                         tipo: true,

@@ -352,7 +352,10 @@ export class AtividadeService {
                     },
                 },
                 PdmPerfil: {
-                    where: { removido_em: null },
+                    where: {
+                        removido_em: null,
+                        etapa_id: null,
+                    },
                     select: {
                         equipe_id: true,
                         tipo: true,
