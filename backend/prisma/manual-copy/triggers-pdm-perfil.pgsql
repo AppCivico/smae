@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION check_pdm_perfil_relations() RETURNS TRIGGER AS $$
 DECLARE
     _string varchar;
+    _equipe varchar;
     _filhas integer[];
 BEGIN
     -- Inserção e atualização (exceto remoção)
@@ -105,6 +106,8 @@ BEGIN
                   AND p.relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE')
                   AND COALESCE(m.id, i.id, a.id) IS NOT NULL -- verifica se existe alguma linha de meta/iniciativa/atividade
             ) THEN
+                SELECT e.titulo INTO _equipe
+                FROM grupo_responsavel_equipe e WHERE id = OLD.equipe_id;
                 -- aqui pode usar left join pois as linhas removidas não vão importar
                 SELECT
                     string_agg(lower(relacionamento::text) || ' ' ||
@@ -131,7 +134,7 @@ BEGIN
                   AND COALESCE(m.id, i.id, a.id) IS NOT NULL;
 
                 RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
-                    'message', 'Não é possível equipe enquanto existirem relacionamentos utilizando: ' || _string,
+                    'message', 'Não é possível equipe '|| _equipe ||' enquanto existirem relacionamentos utilizando: ' || _string,
                     'code', 400
                 );
             END IF;
@@ -177,6 +180,8 @@ BEGIN
                   )
 
             ) THEN
+                SELECT e.titulo INTO _equipe
+                FROM grupo_responsavel_equipe e WHERE id = OLD.equipe_id;
                 -- select usage
                 SELECT
                     string_agg(lower(relacionamento::text) || ' ' ||
@@ -236,7 +241,7 @@ BEGIN
                   );
 
                 RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
-                    'message', 'Não é possível remover a linha enquanto existirem relacionamentos utilizando: ' || _string,
+                    'message', 'Não é possível equipe '|| _equipe ||' enquanto existirem relacionamentos utilizando: ' || _string,
                     'code', 400
                 );
             END IF;
