@@ -75,7 +75,7 @@ const $route = useRoute();
 const tabs = {
   ComunicadosDaSemana: {
     aberta: true,
-    etiqueta: 'Comunicados da semana',
+    etiqueta: 'Comunicados não lidos',
     id: 'comunicados-da-semana',
     aba: 'comunicados-da-semana',
   },
