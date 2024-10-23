@@ -43,7 +43,10 @@ export class TribunalDeContasService implements ReportableService {
                     },
                 },
                 parlamentares: {
-                    where: { removido_em: null },
+                    where: {
+                        removido_em: null,
+                        AND: [{ valor: { not: null } }, { valor: { gt: 0 } }],
+                    },
                     select: {
                         parlamentar: {
                             select: {
@@ -66,16 +69,17 @@ export class TribunalDeContasService implements ReportableService {
                         status: true,
                         status_base: true,
                     },
-                }
+                },
             },
         });
 
-        
         const out: RelTribunalDeContasDto[] = distribuicoes.map((distribuicao) => {
             const distribuicaoStatusRow = distribuicao.status[0] ? distribuicao.status[0] : null;
             let statusReport: string | undefined;
             if (distribuicaoStatusRow) {
-                statusReport = distribuicaoStatusRow.status ? distribuicaoStatusRow.status.nome : distribuicaoStatusRow.status_base?.nome;
+                statusReport = distribuicaoStatusRow.status
+                    ? distribuicaoStatusRow.status.nome
+                    : distribuicaoStatusRow.status_base?.nome;
             }
 
             return {
