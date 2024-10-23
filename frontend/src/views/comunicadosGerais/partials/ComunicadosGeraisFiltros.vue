@@ -54,7 +54,7 @@ const valoresIniciais = computed(() => {
   return {
     data_inicio: format(subDays(today, 7), formatoData),
     data_fim: format(today, formatoData),
-    aba: 'comunicados-da-semana',
+    aba: 'comunicados-nao-lidos',
   };
 });
 </script>
