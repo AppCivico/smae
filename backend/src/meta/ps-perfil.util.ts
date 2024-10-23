@@ -3,7 +3,9 @@ import { PdmPerfilRelacionamento, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 
-export async function upsertPSPerfis(
+// Existe a upsertPSPerfisEtapa que é muito semelhante a essa função, também trabalha na tabela pdm_perfil
+// mas nos registros com etapa_id preenchido, enquanto essa função trabalha com registros sem etapa_id
+export async function upsertPSPerfisMetaIniAtv(
     entityId: number,
     entityType: 'meta' | 'iniciativa' | 'atividade',
     newEquipes: CreatePSEquipeTecnicoCPDto | CreatePSEquipePontoFocalDto,
@@ -25,6 +27,7 @@ export async function upsertPSPerfis(
                 [entityType + '_id']: entityId,
                 equipe_id: equipeId,
                 tipo: tipo,
+                etapa_id: null,
             },
             data: {
                 removido_em: new Date(),
@@ -57,6 +60,7 @@ export async function upsertPSPerfis(
                 criado_por: user.id,
                 criado_em: new Date(),
                 orgao_id: equipe.orgao_id,
+                etapa_id: null,
             },
         });
     }

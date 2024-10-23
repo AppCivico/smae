@@ -426,7 +426,7 @@ export class EtapaService {
                         throw new BadRequestException('Etapa não está associada a uma meta, iniciativa ou atividade');
                     }
 
-                    await this.upsertPSPerfis(
+                    await this.upsertPSPerfisEtapa(
                         self.id,
                         dto.ps_ponto_focal,
                         'PONTO_FOCAL',
@@ -592,7 +592,7 @@ export class EtapaService {
         return { id };
     }
 
-    private async upsertPSPerfis(
+    private async upsertPSPerfisEtapa(
         etapaId: number,
         newEquipes: CreatePSEquipePontoFocalDto,
         tipo: 'PONTO_FOCAL',

@@ -34,7 +34,7 @@ import {
     MetaPdmRelacionamentoDirecao,
     RelacionadosDTO,
 } from './entities/meta.entity';
-import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
+import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -141,11 +141,11 @@ export class MetaService {
                     if (psTecnicoCP) {
                         validatePSEquipes(psTecnicoCP.equipes, pdm.PdmPerfil, 'CP', pdm.id);
 
-                        await upsertPSPerfis(meta.id, 'meta', psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
+                        await upsertPSPerfisMetaIniAtv(meta.id, 'meta', psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
                     }
                     if (psPontoFocal) {
                         validatePSEquipes(psPontoFocal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                        await upsertPSPerfis(meta.id, 'meta', psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
+                        await upsertPSPerfisMetaIniAtv(meta.id, 'meta', psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
                     }
 
                     const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
@@ -843,7 +843,7 @@ export class MetaService {
                     if (psTecnicoCP) {
                         validatePSEquipes(psTecnicoCP.equipes, detailPdm.PdmPerfil, 'CP', loadMeta.pdm_id);
 
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             meta.id,
                             'meta',
                             psTecnicoCP,
@@ -858,7 +858,7 @@ export class MetaService {
                     if (psPontoFocal) {
                         validatePSEquipes(psPontoFocal.equipes, detailPdm.PdmPerfil, 'PONTO_FOCAL', loadMeta.pdm_id);
 
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             meta.id,
                             'meta',
                             psPontoFocal,

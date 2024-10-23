@@ -74,15 +74,18 @@ BEGIN
         IF OLD.relacionamento = 'PDM' THEN
             IF EXISTS (
                 SELECT 1
-                FROM pdm_perfil
-                WHERE pdm_id = NEW.pdm_id
-                  AND equipe_id = NEW.equipe_id
-                  AND tipo = NEW.tipo
-                  AND removido_em IS NULL
-                  AND relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE')
+                FROM pdm_perfil p
+                LEFT JOIN meta m on m.id = p.meta_id AND m.removido_em IS NULL
+                LEFT JOIN iniciativa i on i.id = p.iniciativa_id AND i.removido_em IS NULL
+                LEFT JOIN atividade a ON a.id = p.atividade_id AND a.removido_em IS NULL
+                WHERE p.pdm_id = NEW.pdm_id
+                  AND p.equipe_id = NEW.equipe_id
+                  AND p.tipo = NEW.tipo
+                  AND p.removido_em IS NULL
+                  AND p.relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE')
+                  AND COALESCE(m.id, i.id, a.id) IS NOT NULL -- verifica se existe alguma linha de meta/iniciativa/atividade
             ) THEN
-
-                -- select usage
+                -- aqui pode usar left join pois as linhas removidas não vão importar
                 SELECT
                     string_agg(lower(relacionamento::text) || ' ' ||
                         coalesce(
@@ -97,14 +100,15 @@ BEGIN
                         )
                     , ', ') INTO _string
                 FROM pdm_perfil p
-                LEFT JOIN meta m ON m.id = p.meta_id
-                LEFT JOIN iniciativa i ON i.id = p.iniciativa_id
-                LEFT JOIN atividade a ON a.id = p.atividade_id
+                LEFT JOIN meta m ON m.id = p.meta_id AND m.removido_em IS NULL
+                LEFT JOIN iniciativa i ON i.id = p.iniciativa_id AND i.removido_em IS NULL
+                LEFT JOIN atividade a ON a.id = p.atividade_id AND a.removido_em IS NULL
                 WHERE p.pdm_id = NEW.pdm_id
                   AND p.equipe_id = NEW.equipe_id
                   AND p.tipo = NEW.tipo
                   AND p.removido_em IS NULL
-                  AND p.relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE');
+                  AND p.relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE')
+                  AND COALESCE(m.id, i.id, a.id) IS NOT NULL;
 
                 RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
                     'message', 'Não é possível equipe enquanto existirem relacionamentos utilizando: ' || _string,
@@ -115,20 +119,27 @@ BEGIN
         ELSIF OLD.relacionamento IN ('META', 'INICIATIVA', 'ATIVIDADE') THEN
             IF EXISTS (
                 SELECT 1
-                FROM pdm_perfil
-                WHERE pdm_id = NEW.pdm_id
-                  AND equipe_id = NEW.equipe_id
-                  AND tipo = NEW.tipo
-                  AND removido_em IS NULL
+                FROM pdm_perfil p
+                WHERE p.id != OLD.id
+                  AND p.pdm_id = NEW.pdm_id
+                  AND p.equipe_id = NEW.equipe_id
+                  AND p.tipo = NEW.tipo
+                  AND p.removido_em IS NULL
+                  AND OLD.etapa_id IS NULL -- está removendo uma linha de meta/iniciativa/atividade itself
                   AND (
                     (
-                        relacionamento = 'INICIATIVA'
-                        AND iniciativa_id = OLD.iniciativa_id
+                        p.relacionamento = 'INICIATIVA'
+                        AND p.iniciativa_id = OLD.iniciativa_id
                     )
                     OR
                     (
-                        relacionamento = 'ATIVIDADE'
-                        AND atividade_id = (
+                        p.relacionamento = 'ATIVIDADE'
+                        AND p.atividade_id = OLD.atividade_id
+                    )
+                    OR
+                    (
+                        p.relacionamento = 'ATIVIDADE'
+                        AND p.atividade_id = (
                             SELECT a.id
                             FROM atividade a
                             JOIN iniciativa i ON i.id = a.iniciativa_id
@@ -136,6 +147,7 @@ BEGIN
                         )
                     )
                   )
+
             ) THEN
                 -- select usage
                 SELECT
@@ -172,19 +184,17 @@ BEGIN
                     OR
                     (
                         p.relacionamento = 'ATIVIDADE'
-                        AND p.atividade_id = (
-                            SELECT a.id FROM atividade a
-                            JOIN iniciativa i ON i.id = a.iniciativa_id
-                            WHERE i.meta_id = NEW.meta_id AND a.removido_em IS NULL
-                        )
+                        AND atividade_id = OLD.atividade_id
                     )
-                  );
+                  )
+                  AND p.id != OLD.id;
 
                 RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
                     'message', 'Não é possível remover a linha enquanto existirem relacionamentos utilizando: ' || _string,
                     'code', 400
                 );
             END IF;
+
 
         END IF;
     END IF;

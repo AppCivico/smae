@@ -9,7 +9,7 @@ import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-l
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
-import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
+import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from '../meta/ps-perfil.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
@@ -121,7 +121,7 @@ export class IniciativaService {
 
                     if (ps_tecnico_cp) {
                         validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             iniciativa.id,
                             'iniciativa',
                             ps_tecnico_cp,
@@ -134,7 +134,7 @@ export class IniciativaService {
                     }
                     if (ps_ponto_focal) {
                         validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             iniciativa.id,
                             'iniciativa',
                             ps_ponto_focal,
@@ -554,7 +554,7 @@ export class IniciativaService {
 
                 if (ps_tecnico_cp) {
                     validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
-                    await upsertPSPerfis(
+                    await upsertPSPerfisMetaIniAtv(
                         id,
                         'iniciativa',
                         ps_tecnico_cp,
@@ -568,7 +568,7 @@ export class IniciativaService {
 
                 if (ps_ponto_focal) {
                     validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                    await upsertPSPerfis(
+                    await upsertPSPerfisMetaIniAtv(
                         id,
                         'iniciativa',
                         ps_ponto_focal,
