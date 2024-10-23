@@ -302,7 +302,6 @@ export class MetaService {
     }
 
     private async getMetasPermissionSet(tipo: TipoPdm, user: PessoaFromJwt | undefined, isBi: boolean) {
-        console.trace(`meta-service: getMetasPermissionSet ${tipo} ${isBi}`);
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
@@ -483,8 +482,6 @@ export class MetaService {
         context?: string,
         readonly: 'readonly' | 'readwrite' = 'readwrite'
     ): Promise<MetaItemDto> {
-        console.trace(`meta-service: assertMetaWriteOrThrow ${meta_id} ${context} ${readonly}`);
-
         const meta = await this.findAll(tipo, { id: meta_id }, user, true);
         if (!meta || meta.length == 0) {
             throw new HttpException(
@@ -789,7 +786,6 @@ export class MetaService {
                 if (Array.isArray(origens_extra)) {
                     origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
                 }
-                console.log(origem_cache);
 
                 const meta = await prismaTx.meta.update({
                     where: { id: id },
@@ -1331,9 +1327,6 @@ export class MetaService {
         atividades.push(...revAtiv);
 
         const metaPdmDtoList: MetaPdmDto[] = [];
-
-        console.log('metas', metas);
-
         // Process Metas
         for (const meta of metas) {
             const metaPdm: MetaPdmDto = {
