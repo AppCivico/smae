@@ -280,9 +280,15 @@ export class SofApiService {
                 })
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            //console.dir(response , {depth: 99});
 
             // busca por nota e por processo deve continuar da forma que estava,
-            if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/dotacao')) {
+            if ('metadados' in response && response.metadados.sucess
+                && (
+                    endpoint.includes('v1/empenhos/dotacao') ||
+                    endpoint.includes('v1/empenhos/processo')
+                )
+            ) {
                 const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: ResDataObj, d) => {
                     const dotacao = TrataDotacaoGrande(d.dotacao);
                     const processo = String(d.processo);
