@@ -57,7 +57,7 @@ export const useComunicadosGeraisStore = defineStore('comunicadosGerais', {
           token_proxima_pagina: token_paginacao,
         };
         const valoresQuery = Object.keys(params).reduce<any>((amount, item) => {
-          if (params[item]) {
+          if (params[item] !== undefined) {
             // eslint-disable-next-line no-param-reassign
             amount[item] = params[item];
           }

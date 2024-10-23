@@ -76,8 +76,8 @@ const tabs = {
   ComunicadosDaSemana: {
     aberta: true,
     etiqueta: 'Comunicados não lidos',
-    id: 'comunicados-da-semana',
-    aba: 'comunicados-da-semana',
+    id: 'comunicados-nao-lidos',
+    aba: 'comunicados-nao-lidos',
   },
   Historico: {
     id: 'historico',
@@ -111,7 +111,7 @@ watch(() => $route.query, (query) => {
     ...query,
     lido: $route.query?.aba === tabs.Historico.id,
   });
-});
+}, { immediate: true });
 
 </script>
 
