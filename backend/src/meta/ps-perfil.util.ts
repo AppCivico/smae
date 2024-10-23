@@ -44,7 +44,7 @@ export async function upsertPSPerfis(
         const map: Record<typeof entityType, PdmPerfilRelacionamento> = {
             meta: 'META',
             iniciativa: 'INICIATIVA',
-            atividade: 'META',
+            atividade: 'ATIVIDADE',
         };
 
         await prismaTx.pdmPerfil.create({
