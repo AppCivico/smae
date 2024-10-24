@@ -1051,6 +1051,7 @@ export class TransferenciaService {
                     },
                 },
                 workflow_fase_atual: {
+                    where: { removido_em: null },
                     select: {
                         fase: true,
                         transferenciaAndamento: {
@@ -1059,6 +1060,7 @@ export class TransferenciaService {
                             where: { removido_em: null },
                             select: {
                                 workflow_situacao: {
+                                    where: { removido_em: null },
                                     select: {
                                         situacao: true,
                                     },
