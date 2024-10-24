@@ -17,8 +17,8 @@ const props = defineProps({
 });
 
 // eslint-disable-next-line max-len
-const representatividade = computed(() => (Array.isArray(emFoco?.value?.mandato_atual?.representatividade)
-  ? emFoco.value.mandato_atual.representatividade.reduce((acc, cur) => {
+const representatividade = computed(() => (Array.isArray(emFoco?.value?.ultimo_mandato?.representatividade)
+  ? emFoco.value.ultimo_mandato.representatividade.reduce((acc, cur) => {
     if (cur.municipio_tipo === 'Capital') {
       acc.capital.push(cur);
     }
