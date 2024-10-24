@@ -65,8 +65,8 @@ function iniciar() {
   }
 }
 
-function excluirItem(tipo, id) {
-  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
+function excluirItem(tipo, id, nome) {
+useAlertStore().confirmAction(`Deseja mesmo remover ${nome || 'esse item' }?`, async () => {
     let tentativa;
     let mensagem;
 
@@ -285,7 +285,7 @@ iniciar();
                 arial-label="excluir"
                 title="excluir"
                 type="button"
-                @click="excluirItem(item.tipo === 'Assessor' ? 'assessor' : 'contato', item.id)"
+                @click="excluirItem(item.tipo === 'Assessor' ? 'assessor' : 'contato', item.id, item.nome)"
               >
                 <svg
                   width="20"
