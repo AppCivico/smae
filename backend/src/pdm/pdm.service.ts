@@ -639,6 +639,28 @@ export class PdmService {
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const emUso = await prismaTx.pdm.count({
+                where: {
+                    pdm_anteriores: { has: id },
+                    removido_em: null,
+                },
+            });
+            if (emUso > 0) {
+                const lista = await prismaTx.pdm.findMany({
+                    where: {
+                        pdm_anteriores: { has: id },
+                        removido_em: null,
+                    },
+                    select: { id: true, nome: true },
+                });
+                throw new HttpException(
+                    `Este ${tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'} está sendo referenciado como anterior por ${emUso} ${
+                        emUso == 1 ? 'outro registro' : 'outros registros'
+                    }: ${lista.map((item) => item.nome).join(', ')}`,
+                    400
+                );
+            }
+
             await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
