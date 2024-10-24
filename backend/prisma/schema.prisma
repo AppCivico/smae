@@ -4825,6 +4825,7 @@ model feature_flag {
 
     panorama Boolean @default(false)
     mf_v2    Boolean @default(false)
+    pp_pe    Boolean @default(false) // liga ou desliga o Painel Estratégico de Projetos
 
     // TODO? adicionar controle de sync de SEI aqui.
 }
