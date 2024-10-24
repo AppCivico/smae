@@ -203,7 +203,7 @@ export class TransfereGovSyncService {
                                 titulo: item.titulo,
                                 data: Date2YMD.dbDateToDMY(item.publicado_em),
                                 descricao: item.descricao,
-                                link: item.link,
+                                link: new URL([this.baseUrl, 'comunicados-gerais'].join('/')),
                                 tipo: item.tipo,
                             },
                             config_id: 1,

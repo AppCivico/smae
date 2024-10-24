@@ -611,7 +611,7 @@ export class SeiIntegracaoService {
                     data: {
                         id: uuidv7(),
                         config_id: 1,
-                        subject: `Alteração no processo SEI ${processo}`,
+                        subject: `SMAE - Alteração no processo SEI ${processo}`,
                         template: 'processo-sei-atualizacao.html',
                         to: gestor.email,
                         variables: {
