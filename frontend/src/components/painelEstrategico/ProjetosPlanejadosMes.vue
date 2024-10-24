@@ -132,7 +132,7 @@
                         footerQuantity = 0;
                     }
                     let monthYear = displayMonths[params.data[0]] + ' ' + years[params.data[1]];
-                    // Verifica se a quantidade principal par definir plural e singular
+                    // Verifica se a quantidade principal e secondária para definir plural e singular
                     let tooltipTitle = tooltipTitlePlural;
                     let tooltipFooter = tooltipFooterPlural;
                     if(params.data[2] == 1){
@@ -218,6 +218,7 @@
                 axisTick: { show: false },            
             },
             visualMap: {
+                type: 'continuous',
                 min: 0,
                 max: maxValue,
                 calculable: true,
@@ -235,7 +236,7 @@
                     fontWeight: 400,
                     fontSize: 14,
                     color: '#7E858D',
-                    height:60,
+                    height:60
                 }
             },
             series: [
@@ -286,7 +287,7 @@
 
     .chartContainer{
         width: auto; 
-        min-height: 400px; 
+        height: auto; 
         text-align: center; 
         float: center;
     }
