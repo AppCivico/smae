@@ -1053,23 +1053,23 @@ export class TransferenciaService {
                 workflow_fase_atual: {
                     where: { removido_em: null },
                     select: {
+                        id: true,
                         fase: true,
-                        transferenciaAndamento: {
-                            take: 1,
-                            orderBy: { criado_em: 'desc' },
-                            where: { removido_em: null },
+                    },
+                },
+                andamentoWorkflow: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        workflow_etapa_id: true,
+                        workflow_fase_id: true,
+                        workflow_situacao: {
                             select: {
-                                workflow_situacao: {
-                                    where: { removido_em: null },
-                                    select: {
-                                        situacao: true,
-                                    },
-                                },
+                                situacao: true,
                             },
                         },
                     },
                 },
-
                 tipo: {
                     select: {
                         id: true,
@@ -1145,6 +1145,11 @@ export class TransferenciaService {
         }
 
         const linhas = rows.map((r) => {
+            const faseStatusAtual = r.workflow_fase_atual
+                ? r.andamentoWorkflow.find((e) => e.workflow_fase_id == r.workflow_fase_atual!.id)?.workflow_situacao
+                      ?.situacao
+                : null;
+            console.log(faseStatusAtual);
             return {
                 id: r.id,
                 ano: r.ano,
@@ -1178,12 +1183,7 @@ export class TransferenciaService {
                 secretaria_concedente: r.secretaria_concedente_str,
                 andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
                 andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
-                fase_status:
-                    r.workflow_fase_atual &&
-                    r.workflow_fase_atual.transferenciaAndamento.length &&
-                    r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao
-                        ? r.workflow_fase_atual.transferenciaAndamento[0].workflow_situacao.situacao
-                        : null,
+                fase_status: r.workflow_fase_atual && faseStatusAtual ? faseStatusAtual : null,
                 classificacao: r.classificacao,
                 orgao_gestor: r.distribuicao_recursos.length
                     ? r.distribuicao_recursos.map((e) => e.orgao_gestor)
