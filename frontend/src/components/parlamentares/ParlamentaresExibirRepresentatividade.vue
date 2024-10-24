@@ -39,6 +39,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
 }
 
 function formatarNumero(numero) {
+  if (!numero) {
+    return '';
+  }
   return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 </script>
