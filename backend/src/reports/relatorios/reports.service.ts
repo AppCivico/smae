@@ -36,6 +36,7 @@ import { RelatorioDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
+import * as XLSX from 'xlsx';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -123,86 +124,72 @@ export class ReportsService {
         return await service.toFileOutput(parametros, mockContext);
     }
 
+    private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
+        // Parse CSV content
+        const workbook = XLSX.read(csvContent, {
+            type: 'string',
+            cellDates: true,
+            dateNF: 'yyyy-mm-dd',
+        });
+
+        // Write to buffer with proper options
+        return XLSX.write(workbook, {
+            type: 'buffer',
+            bookType: 'xlsx',
+            bookSST: false,
+            compression: true,
+        });
+    }
+
     async zipFiles(files: FileOutput[]) {
         const zip = new AdmZip();
 
         for (const file of files) {
-            let csvFile: string | undefined = undefined;
-            let tmpDir: string | undefined = undefined;
+            try {
+                let csvContent: string | undefined = undefined;
 
-            if (file.buffer) {
-                zip.addFile(file.name, file.buffer);
+                if (file.buffer) {
+                    zip.addFile(file.name, file.buffer);
 
-                // write buffer to a temporary file
-                const tmpFilePath = GetTempFileName(file.name);
-                fs.writeFileSync(tmpFilePath, file.buffer);
-                csvFile = tmpFilePath;
-            } else if (file.localFile) {
-                // move o arquivo para a pasta temporária, renomeia para file.name e adiciona ao zip (bug conhecido)
-                // se não o nome do arquivo no zip será o nome do arquivo temporário e o file.name sera um diretório
-                tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'my-tmp-'));
+                    if (file.name.endsWith('.csv')) {
+                        csvContent = file.buffer.toString('utf-8');
+                    }
+                } else if (file.localFile) {
+                    // move o arquivo para a pasta temporária, renomeia para file.name e adiciona ao zip
+                    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'my-tmp-'));
+                    const fileName = path.basename(file.name);
+                    const tmpFilePath = path.join(tmpDir, fileName);
 
-                const fileName = path.basename(file.name);
-                const tmpFilePath = path.join(tmpDir, fileName);
+                    fs.renameSync(file.localFile, tmpFilePath);
+                    zip.addLocalFile(tmpFilePath);
 
-                fs.renameSync(file.localFile, tmpFilePath);
-                zip.addLocalFile(tmpFilePath);
-                csvFile = tmpFilePath;
-            } else {
-                throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
+                    if (file.name.endsWith('.csv')) {
+                        csvContent = fs.readFileSync(tmpFilePath, 'utf-8');
+                    }
+
+                    // Cleanup temp dir
+                    fs.rmSync(tmpDir, { recursive: true, force: true });
+                } else {
+                    throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
+                }
+
+                if (file.name.endsWith('.csv') && csvContent) {
+                    try {
+                        const xlsxBuffer = await this.convertCsvToXlsx(csvContent);
+                        const xlsxName = file.name.replace('.csv', '.xlsx');
+                        zip.addFile(xlsxName, xlsxBuffer);
+                    } catch (error) {
+                        this.logger.error(`Erro ao converter CSV para XLSX: ${error}`);
+                        throw new InternalServerErrorException('Erro na conversão para XLSX');
+                    }
+                }
+            } catch (error) {
+                this.logger.error(`Erro ao processar arquivo ${file.name}: ${error}`);
+                throw error;
             }
-
-            if (file.name.endsWith('.csv') && csvFile) {
-                const xlsx = GetTempFileName(file.name, '.xlsx');
-
-                let success: boolean = false;
-                let error: any | undefined = undefined;
-                await new Promise<void>((resolve, reject) => {
-                    const child = fork(resolvePath(__dirname, '../../../src/bin/') + '/duckdb-csv2xlsx.js', [
-                        csvFile,
-                        xlsx,
-                    ]);
-
-                    child.on('error', (err: any) => {
-                        this.logger.error(`error: ${err} converting ${csvFile} to ${xlsx}`);
-                    });
-
-                    child.on('message', (msg: any) => {
-                        if (msg.event == 'success') {
-                            success = true;
-                        } else if (msg.event == 'error') {
-                            error = msg.error;
-                        }
-                    });
-
-                    child.on('exit', (code: number, signal: string) => {
-                        if (error) reject(error);
-                        if (success) resolve();
-
-                        if (code !== null) reject(`process exited with code ${code}`);
-                        if (signal !== null) reject(`process was killed with signal ${signal}`);
-                    });
-                });
-
-                if (!success)
-                    throw new InternalServerErrorException(`process did not finished successfully, check logs`);
-
-                // já pode apagar o do csv
-                if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
-
-                tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'my-tmp-'));
-
-                const fileName = path.basename(xlsx);
-                const tmpFilePath = path.join(tmpDir, fileName);
-
-                fs.renameSync(xlsx, tmpFilePath);
-                zip.addLocalFile(tmpFilePath);
-            }
-
-            if (tmpDir) fs.rmSync(tmpDir, { recursive: true });
         }
-        const zipBuffer = zip.toBuffer();
-        return zipBuffer;
+
+        return zip.toBuffer();
     }
 
     async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt | null): Promise<RecordWithId> {
