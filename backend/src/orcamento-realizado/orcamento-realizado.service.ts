@@ -1163,7 +1163,8 @@ export class OrcamentoRealizadoService {
 
             // só retorna o ano quando for diferente do ano de referencia
             if (orcaRealizado.nota_empenho && orcaRealizado.nota_empenho.includes('/' + orcaRealizado.ano_referencia)) {
-                orcaRealizado.nota_empenho = orcaRealizado.nota_empenho.substring(0, 5);
+                const tmp  = orcaRealizado.nota_empenho.split('/');
+                orcaRealizado.nota_empenho = tmp[0];
             }
 
             const orc_config = await this.prisma.pdmOrcamentoConfig.findFirst({

@@ -149,16 +149,19 @@ export class PSMonitoramentoMensal implements ReportableService {
                         and vgcaP.fase = 'Preenchimento'
                         and vgcaP.ultima_revisao = true
                         and vgcaP.removido_em is null
+                        and vgcaP.aprovada = true
                     LEFT JOIN variavel_global_ciclo_analise vgcaV ON vgcaV.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaV.referencia_data = sv.data_valor
                         and vgcaV.fase = 'Validacao'
                         and vgcaV.ultima_revisao = true
                         and vgcaV.removido_em is null
+                        and vgcaV.aprovada = true
                     LEFT JOIN variavel_global_ciclo_analise vgcaL ON vgcaL.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaL.referencia_data = sv.data_valor
                         and vgcaL.fase = 'Liberacao'
                         and vgcaL.ultima_revisao = true
                         and vgcaL.removido_em is null
+                        and vgcaL.aprovada = true
                     LEFT JOIN pessoa vgcal_cp ON vgcaL.criado_por = vgcal_cp.id
                     LEFT JOIN variavel_categorica_valor vcv ON vcv.id = sv.variavel_categorica_valor_id
 

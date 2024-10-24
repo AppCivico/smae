@@ -154,13 +154,15 @@ export class PainelEstrategicoService {
         const sql = ` select t.etapa, count(distinct t.id) ::int quantidade
                       from (SELECT case
                                        when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then pe.descricao
+                                       when p.projeto_etapa_id IS NULL THEN 'Sem Informação'
                                        else 'Outros' end as etapa,
                                    case
                                        when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then p.projeto_etapa_id
+                                       WHEN p.projeto_etapa_id IS NULL THEN -1
                                        else 0 end as ordem,
                                    p.id
                             FROM projeto p
-                                     inner join projeto_etapa pe on pe.id = p.projeto_etapa_id
+                                     left join projeto_etapa pe on pe.id = p.projeto_etapa_id
                                 full outer JOIN (SELECT
 								ppc.projeto_id,
 								po_1.id as portfolio_id

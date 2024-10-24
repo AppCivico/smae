@@ -1,6 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
@@ -49,7 +50,7 @@ const valoresIniciais = computed(() => ({
   ...singleAtividade.value,
 
   origens_extra: Array.isArray(singleAtividade.value?.origens_extra)
-    ? singleAtividade.value.origens_extra
+    ? singleAtividade.value.origens_extra.map((origem) => SimplificadorDeOrigem(origem))
     : [],
 
   ps_ponto_focal: {

@@ -34,7 +34,7 @@ import {
     MetaPdmRelacionamentoDirecao,
     RelacionadosDTO,
 } from './entities/meta.entity';
-import { upsertPSPerfis, validatePSEquipes } from './ps-perfil.util';
+import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -141,11 +141,11 @@ export class MetaService {
                     if (psTecnicoCP) {
                         validatePSEquipes(psTecnicoCP.equipes, pdm.PdmPerfil, 'CP', pdm.id);
 
-                        await upsertPSPerfis(meta.id, 'meta', psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
+                        await upsertPSPerfisMetaIniAtv(meta.id, 'meta', psTecnicoCP, 'CP', [], user, prismaTx, pdm.id);
                     }
                     if (psPontoFocal) {
                         validatePSEquipes(psPontoFocal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                        await upsertPSPerfis(meta.id, 'meta', psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
+                        await upsertPSPerfisMetaIniAtv(meta.id, 'meta', psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
                     }
 
                     const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
@@ -302,7 +302,6 @@ export class MetaService {
     }
 
     private async getMetasPermissionSet(tipo: TipoPdm, user: PessoaFromJwt | undefined, isBi: boolean) {
-        console.trace(`meta-service: getMetasPermissionSet ${tipo} ${isBi}`);
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
@@ -483,8 +482,6 @@ export class MetaService {
         context?: string,
         readonly: 'readonly' | 'readwrite' = 'readwrite'
     ): Promise<MetaItemDto> {
-        console.trace(`meta-service: assertMetaWriteOrThrow ${meta_id} ${context} ${readonly}`);
-
         const meta = await this.findAll(tipo, { id: meta_id }, user, true);
         if (!meta || meta.length == 0) {
             throw new HttpException(
@@ -576,6 +573,7 @@ export class MetaService {
                 PdmPerfil: {
                     where: {
                         removido_em: null,
+                        etapa_id: null,
                     },
                     select: {
                         tipo: true,
@@ -789,7 +787,6 @@ export class MetaService {
                 if (Array.isArray(origens_extra)) {
                     origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
                 }
-                console.log(origem_cache);
 
                 const meta = await prismaTx.meta.update({
                     where: { id: id },
@@ -846,7 +843,7 @@ export class MetaService {
                     if (psTecnicoCP) {
                         validatePSEquipes(psTecnicoCP.equipes, detailPdm.PdmPerfil, 'CP', loadMeta.pdm_id);
 
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             meta.id,
                             'meta',
                             psTecnicoCP,
@@ -861,7 +858,7 @@ export class MetaService {
                     if (psPontoFocal) {
                         validatePSEquipes(psPontoFocal.equipes, detailPdm.PdmPerfil, 'PONTO_FOCAL', loadMeta.pdm_id);
 
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             meta.id,
                             'meta',
                             psPontoFocal,
@@ -1331,9 +1328,6 @@ export class MetaService {
         atividades.push(...revAtiv);
 
         const metaPdmDtoList: MetaPdmDto[] = [];
-
-        console.log('metas', metas);
-
         // Process Metas
         for (const meta of metas) {
             const metaPdm: MetaPdmDto = {

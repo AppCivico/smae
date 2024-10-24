@@ -1,5 +1,6 @@
 <script setup>
 import tiposDePlanos from '@/consts/tiposDePlanos';
+import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
 import truncate from '@/helpers/truncate';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 import { storeToRefs } from 'pinia';
@@ -92,14 +93,10 @@ watchEffect(async () => {
   await Promise.allSettled(promessas);
 
   if (Array.isArray(props.valoresIniciais)) {
-    valores.value = props.valoresIniciais.map((origem) => ({
-      atividade_id: origem?.atividade_id || origem?.atividade?.id || null,
-      id: origem?.id || null,
-      iniciativa_id: origem?.iniciativa_id || origem?.iniciativa?.id || null,
-      meta_id: origem?.meta_id || origem?.meta?.id || null,
-      origem_tipo: origem?.origem_tipo || origem?.origem_tipo || null,
-      pdm_escolhido: origem?.pdm_escolhido || origem?.pdm?.id || null,
-    }));
+    // OBSOLETO: Não vale a pena manipular aqui dentro porque pode "sujar" o
+    // formulário.
+    // Melhor só atribuir.
+    valores.value = props.valoresIniciais.map((origem) => simplificarOrigem(origem));
   }
 
   campoPronto.value = false;

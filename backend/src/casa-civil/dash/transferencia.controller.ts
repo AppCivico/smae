@@ -21,7 +21,7 @@ export class DashTransferenciaController {
 
     @Get('transferencias')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.dashboard'])
+    @Roles(['CadastroTransferencia.listar'])
     @ApiExtraModels(ListMfDashTransferenciasDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListMfDashTransferenciasDto, RequestInfoDto) },
@@ -42,7 +42,7 @@ export class DashTransferenciaController {
 
     @Get('notas')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.dashboard'])
+    @Roles(['CadastroTransferencia.listar'])
     @ApiExtraModels(MfDashNotasDto)
     async notas(
         @Query() params: FilterDashNotasDto,

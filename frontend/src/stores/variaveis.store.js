@@ -158,9 +158,9 @@ export const useVariaveisStore = defineStore({
       if (await this.requestS.delete(`${baseUrl}/indicador/${indicador_id}/formula-composta/${formula_composta_id}`)) return true;
       return false;
     },
-    async getValores(id, { leitura = false }) {
+    async getValores(id, { leitura = false } = {}) {
       try {
-        if (!id) throw 'Variável inválida';
+        if (!id) throw new Error('Variável inválida');
         this.Valores[id] = { loading: true };
         const r = await this.requestS.get(
           `${baseUrl}/${caminhoParaApi(this.route.meta, 'indicador-variavel')}/${id}/serie`,

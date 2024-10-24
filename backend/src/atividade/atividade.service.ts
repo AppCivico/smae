@@ -10,7 +10,7 @@ import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-l
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
-import { upsertPSPerfis, validatePSEquipes } from '../meta/ps-perfil.util';
+import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from '../meta/ps-perfil.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
@@ -161,7 +161,7 @@ export class AtividadeService {
 
                     if (ps_tecnico_cp) {
                         validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             atividade.id,
                             'atividade',
                             ps_tecnico_cp,
@@ -175,7 +175,7 @@ export class AtividadeService {
 
                     if (ps_ponto_focal) {
                         validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                        await upsertPSPerfis(
+                        await upsertPSPerfisMetaIniAtv(
                             atividade.id,
                             'atividade',
                             ps_ponto_focal,
@@ -352,7 +352,10 @@ export class AtividadeService {
                     },
                 },
                 PdmPerfil: {
-                    where: { removido_em: null },
+                    where: {
+                        removido_em: null,
+                        etapa_id: null,
+                    },
                     select: {
                         equipe_id: true,
                         tipo: true,
@@ -616,7 +619,7 @@ export class AtividadeService {
 
                 if (ps_tecnico_cp) {
                     validatePSEquipes(ps_tecnico_cp.equipes, pdm.PdmPerfil, 'CP', pdm.id);
-                    await upsertPSPerfis(
+                    await upsertPSPerfisMetaIniAtv(
                         id,
                         'atividade',
                         ps_tecnico_cp,
@@ -630,7 +633,7 @@ export class AtividadeService {
 
                 if (ps_ponto_focal) {
                     validatePSEquipes(ps_ponto_focal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                    await upsertPSPerfis(
+                    await upsertPSPerfisMetaIniAtv(
                         id,
                         'atividade',
                         ps_ponto_focal,

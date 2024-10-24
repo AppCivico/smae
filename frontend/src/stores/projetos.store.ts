@@ -16,6 +16,7 @@ import type {
 import type { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
 
@@ -325,14 +326,7 @@ export const useProjetosStore = defineStore('projetos', {
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       origem_outro: emFoco?.origem_outro || '',
       origens_extra: Array.isArray(emFoco?.origens_extra)
-        ? emFoco.origens_extra.map((origem) => ({
-          atividade_id: origem?.atividade?.id || null,
-          id: origem?.id || null,
-          iniciativa_id: origem?.iniciativa?.id || null,
-          meta_id: origem?.meta?.id || null,
-          origem_tipo: origem?.origem_tipo || 'PdmSistema',
-          pdm_escolhido: origem?.pdm?.id || null,
-        }))
+        ? emFoco.origens_extra.map((origem) => simplificadorDeOrigem(origem, { origem_tipo: 'PdmSistema' }))
         : [],
       pdm_escolhido: emFoco?.meta?.pdm_id || null,
       portfolios_compartilhados: emFoco?.portfolios_compartilhados?.map((x) => x.id) || null,

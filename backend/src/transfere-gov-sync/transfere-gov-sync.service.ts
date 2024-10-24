@@ -197,13 +197,13 @@ export class TransfereGovSyncService {
                         data: {
                             id: uuidv7(),
                             to: email,
-                            subject: subject || `Novo comunicado Transfere GOV: ${item.titulo}`,
+                            subject: subject || `SMAE - Novo comunicado Transfere GOV: ${item.titulo}`,
                             template: 'comunicado-transfere-gov.html',
                             variables: {
                                 titulo: item.titulo,
                                 data: Date2YMD.dbDateToDMY(item.publicado_em),
                                 descricao: item.descricao,
-                                link: item.link,
+                                link: new URL([this.baseUrl, 'comunicados-gerais'].join('/')),
                                 tipo: item.tipo,
                             },
                             config_id: 1,
@@ -399,7 +399,7 @@ export class TransfereGovSyncService {
                             data: {
                                 id: uuidv7(),
                                 config_id: 1,
-                                subject: `Nova emenda disponível`,
+                                subject: `SMAE - Nova emenda disponível`,
                                 template: 'transferegov-nova-oportunidade.html',
                                 to: recipiente,
                                 variables: {

@@ -1,0 +1,26 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "../"
+    },
+    {
+      "name": "frontend",
+      "path": "../frontend"
+    },
+    {
+      "name": "backend",
+      "path": "../backend"
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "node_modules/": true,
+    },
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+    ],
+  }
+}

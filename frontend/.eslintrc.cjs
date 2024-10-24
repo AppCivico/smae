@@ -11,7 +11,7 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-    project: ['./tsconfig.json'],
+    project: 'tsconfig.json',
     tsconfigRootDir: __dirname,
     parser: '@typescript-eslint/parser',
   },
@@ -32,7 +32,8 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['@', './frontend/src'],
+          ['@', './src'],
+          ['@back', '../backend/src'],
         ],
         extensions: ['.js', '.ts', '.vue'],
       },

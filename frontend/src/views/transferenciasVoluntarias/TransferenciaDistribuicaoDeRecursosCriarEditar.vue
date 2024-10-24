@@ -1021,7 +1021,7 @@ function fecharForm() {
         <Field
           :name="`parlamentares[${idx}].parlamentar_id`"
           type="hidden"
-          :value="parlamentar.parlamentar_id"
+          :value="values?.parlamentares?.[idx]?.parlamentar_id || parlamentar?.parlamentar?.id"
         />
 
         <div class="flex g2">
@@ -1037,7 +1037,7 @@ function fecharForm() {
               type="text"
               aria-readonly="true"
               readonly
-              :value="parlamentar?.parlamentar?.nome_popular"
+              :value="values?.parlamentares?.[idx]?.parlamentar?.nome_popular || parlamentar?.parlamentar?.nome_popular"
             >
           </div>
           <div class="f1">

@@ -280,9 +280,15 @@ export class SofApiService {
                 })
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            //console.dir(response , {depth: 99});
 
+            const byProcesso = endpoint.includes('v1/empenhos/processo');
             // busca por nota e por processo deve continuar da forma que estava,
-            if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/dotacao')) {
+            if (
+                'metadados' in response &&
+                response.metadados.sucess &&
+                (endpoint.includes('v1/empenhos/dotacao') || byProcesso)
+            ) {
                 const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: ResDataObj, d) => {
                     const dotacao = TrataDotacaoGrande(d.dotacao);
                     const processo = String(d.processo);
@@ -303,6 +309,20 @@ export class SofApiService {
 
                     return row;
                 }, {} as ResDataObj);
+
+                if (byProcesso) {
+                    // adiciona a versão original do processo (com a dotação completa
+                    for (const item of (response as SuccessEmpenhosResponse).data) {
+                        if (item.dotacao.length <= 35) continue;
+
+                        processedData[item.dotacao] = {
+                            dotacao: String(item.dotacao),
+                            processo: String(item.processo),
+                            empenho_liquido: Number(item.empenho_liquido),
+                            val_liquidado: Number(item.val_liquidado),
+                        };
+                    }
+                }
 
                 return {
                     data: Object.values(processedData),

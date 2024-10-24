@@ -258,6 +258,7 @@ const projetoFormatado = (codigo, nome) => {
 .legendas {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 0 0.5em;
 }
 
 .legenda-item {
