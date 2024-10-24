@@ -380,21 +380,36 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
 
         <hr class="mt2 mb2">
 
-        <label class="label">
-          Equipe Responsável
-        </label>
-        <div class="flex mb1">
-          <div class="f1">
+        <template v-if="$route.meta.entidadeMãe === 'pdm'">
+          <label class="label">
+            Responsável
+          </label>
+          <div class="f1 mb1">
             <AutocompleteField
-              :controlador="{
-                busca: '',
-                participantes: values?.ps_ponto_focal?.equipes || [],
-              }"
-              :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa.ps_ponto_focal.equipes)"
-              label="titulo"
+              :controlador="responsaveis"
+              :grupo="usersAvailable"
+              label="nome_exibicao"
             />
           </div>
-        </div>
+        </template>
+
+        <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+          <label class="label">
+            Equipe Responsável
+          </label>
+          <div class="flex mb1">
+            <div class="f1">
+              <AutocompleteField
+                :controlador="{
+                  busca: '',
+                  participantes: values?.ps_ponto_focal?.equipes || [],
+                }"
+                :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa.ps_ponto_focal.equipes)"
+                label="titulo"
+              />
+            </div>
+          </div>
+        </template>
 
         <hr
           v-if="singleCronograma.regionalizavel && tempRegions.length"

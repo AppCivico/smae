@@ -402,20 +402,35 @@ function maskDate(el) {
 
       <hr class="mt2 mb2">
 
-      <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
-      <div class="flex">
+      <template v-if="$route.meta.entidadeMãe === 'pdm'">
+        <label class="label">
+          Responsável
+        </label>
         <div class="f1 mb1">
           <AutocompleteField
-            name="ps_ponto_focal.equipes"
-            :controlador="{
-              busca: '',
-              participantes: values?.ps_ponto_focal?.equipes || [],
-            }"
-            :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
-            label="titulo"
+            :controlador="responsaveis"
+            :grupo="usersAvailable"
+            label="nome_exibicao"
           />
         </div>
-      </div>
+      </template>
+
+      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
+        <div class="flex">
+          <div class="f1 mb1">
+            <AutocompleteField
+              name="ps_ponto_focal.equipes"
+              :controlador="{
+                busca: '',
+                participantes: values?.ps_ponto_focal?.equipes || [],
+              }"
+              :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
+              label="titulo"
+            />
+          </div>
+        </div>
+      </template>
 
       <hr
         v-if="singleCronograma.regionalizavel && regions"
