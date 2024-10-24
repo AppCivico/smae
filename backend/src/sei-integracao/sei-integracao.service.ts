@@ -171,7 +171,13 @@ export class SeiIntegracaoService {
                     updateData.usuarios_lidos = []; // mudou o hash, então reset a lista de usuários que leram
 
                     // Enviando email de notificação para gestores da Casa Civil
-                    if (statusSei.processosDistribuicaoRecurso.length > 0) {
+                    if (
+                        statusSei.processosDistribuicaoRecurso.length > 0 &&
+                        statusSei.sei_hash !== '' &&
+                        statusSei.resumo_hash !== ''
+                    ) {
+                        // Verificando hashes, pois caso ambas vazias, foi criado pelo endpoint de sync de distribuições.
+                        // Logo, não é necessário enviar email de notificação deste primeiro sync.
                         await this.enviarEmailNotificacaoSEI(
                             params.processo_sei,
                             statusSei.processosDistribuicaoRecurso[0].id
