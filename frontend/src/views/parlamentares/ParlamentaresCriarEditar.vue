@@ -280,20 +280,6 @@ iniciar();
             <td>{{ item.nome }}</td>
             <td>{{ item.tipo }}</td>
             <td>
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirItem(item.tipo === 'Assessor' ? 'assessor' : 'contato', item.id, item.nome)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td>
               <router-link
                 :to="{
                   name: 'parlamentaresEditarEquipe',
@@ -307,6 +293,20 @@ iniciar();
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
               </router-link>
+            </td>
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                type="button"
+                @click="excluirItem(item.tipo === 'Assessor' ? 'assessor' : 'contato', item.id, item.nome)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -372,6 +372,17 @@ iniciar();
             <td>{{ item.votos_estado }}</td>
 
             <td>
+              <router-link
+                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+            </td>
+            <td>
               <button
                 class="like-a__text"
                 arial-label="excluir"
@@ -384,17 +395,6 @@ iniciar();
                   height="20"
                 ><use xlink:href="#i_remove" /></svg>
               </button>
-            </td>
-            <td>
-              <router-link
-                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
-                class="tprimary"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
             </td>
           </tr>
         </tbody>
