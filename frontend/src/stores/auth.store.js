@@ -161,7 +161,26 @@ export const useAuthStore = defineStore({
         || this.moduloDaRotaAnterior
         || this.sistemaEscolhido;
     },
-    dadosDoSistemaEscolhido: ({ sistemaCorrente }) => modulos[sistemaCorrente] || {},
+    dadosDoSistemaEscolhido({ sistemaCorrente, user }) {
+      const dados = modulos[sistemaCorrente];
+
+      // em duas condições porque arrays como parâmetro da função
+      // `temPermissãoPara()` funcionam como **ou** e primeira condição é
+      // obrigatória
+      if (this.temPermissãoPara('SMAE.loga_direto_na_analise')
+        && this.temPermissãoPara([
+          'Reports.dashboard_pdm',
+          'Reports.dashboard_portfolios',
+          'SMAE.espectador_de_painel_externo',
+        ])
+      ) {
+        dados.rotaInicial = { name: 'análises' };
+      } else if (sistemaCorrente === 'Projetos' && !user?.sessao?.flags?.pp_pe) {
+        dados.rotaInicial = { name: 'projetosListar' };
+      }
+
+      return dados || {};
+    },
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissoes) => (Array.isArray(permissoes)
       ? permissoes
