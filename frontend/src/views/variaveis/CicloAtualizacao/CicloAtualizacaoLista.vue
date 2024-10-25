@@ -287,7 +287,7 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .ciclo-atualizacao-lista__abas {
-  :deep(.abas__navegação) {
+  :deep(.abas__navegacao) {
     margin: 0 !important;
   }
 }
