@@ -1,10 +1,10 @@
 <script setup>
 import { Dashboard } from '@/components';
+import dateToField from '@/helpers/dateToField';
+import dateToTitle from '@/helpers/dateToTitle';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
-import dateToField from '@/helpers/dateToField';
-import dateToTitle from '@/helpers/dateToTitle';
 import { computed } from 'vue';
 
 const panoramaStore = usePanoramaStore();

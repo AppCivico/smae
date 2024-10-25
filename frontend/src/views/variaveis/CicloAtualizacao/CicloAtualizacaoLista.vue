@@ -158,16 +158,13 @@
 </template>
 
 <script lang="ts" setup>
-import { useRoute } from 'vue-router';
-
-import { watch, computed, onMounted } from 'vue';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-
-import { useEquipesStore } from '@/stores/equipes.store';
-import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
-
-import truncate from '@/helpers/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
+import truncate from '@/helpers/truncate';
+import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
