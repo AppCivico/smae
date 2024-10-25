@@ -1,0 +1,21 @@
+<mjml>
+  <mj-include path="../components/head.mjml" />
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+          <p>Há uma nova emenda disponível: [% programa %]</p>
+        </mj-text>
+        <mj-text>
+          <p>Para maiores detalhes acesse o SMAE.</p>
+        </mj-text>
+        <mj-button href="[% link %]">Acessar sistema</mj-button>
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+</mjml>

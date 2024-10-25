@@ -1,0 +1,11 @@
+<mj-head>
+  <mj-title>[% subject %]</mj-title>
+  <mj-attributes>
+    <mj-column padding="0" />
+    <mj-button background-color="#011c50" border-radius="24px" color="#fff" />
+    <mj-section padding="0" />
+    <mj-social inner-padding="20px" />
+    <mj-social-element border-radius="24px" icon-size="18px" />
+    <mj-text color="#202020" font-family="'Arial', 'Helvetica Neue', 'Helvetica', sans-serif" font-size="16px" line-height="24px" />
+  </mj-attributes>
+</mj-head>
