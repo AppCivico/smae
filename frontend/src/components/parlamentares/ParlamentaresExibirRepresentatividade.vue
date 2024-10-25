@@ -16,6 +16,10 @@ const props = defineProps({
   },
 });
 
+const temMandato = computed(() => emFoco?.value?.mandatos?.length);
+const temMandatoSP = computed(() => emFoco?.value?.mandatos?.some((mandato) => mandato.uf === 'SP'));
+const habilitarBotaoDeRepresentatividade = computed(() => temMandato.value && temMandatoSP.value);
+
 // eslint-disable-next-line max-len
 const representatividade = computed(() => (Array.isArray(emFoco?.value?.ultimo_mandato?.representatividade)
   ? emFoco.value.ultimo_mandato.representatividade.reduce((acc, cur) => {
@@ -129,11 +133,21 @@ function formatarNumero(numero) {
         </tbody>
       </table>
       <p v-else>
-        Sem representatividade cadastrada na Capital
+        <template v-if="!temMandato">
+          É necessário ao menos um mandato para cadastrar representatividade na Capital
+        </template>
+        <template v-else-if="!temMandatoSP">
+          É necessário ao menos um mandato em São Paulo para cadastrar representatividade na Capital
+        </template>
+        <template v-else>
+          Sem representatividade cadastrada na Capital
+        </template>
       </p>
 
-      <router-link
+      <component
+        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'routerLink'"
         v-if="exibirEdição && emFoco?.id"
+        :class="{ disabled: !habilitarBotaoDeRepresentatividade }"
         :to="{
           name: 'parlamentaresEditarRepresentatividade',
           params: { parlamentarId: emFoco.id },
@@ -145,7 +159,7 @@ function formatarNumero(numero) {
           width="20"
           height="20"
         ><use xlink:href="#i_+" /></svg>Registrar representatividade
-      </router-link>
+      </component>
     </div>
 
     <div class="mb4">
@@ -229,10 +243,20 @@ function formatarNumero(numero) {
         </tbody>
       </table>
       <p v-else>
-        Sem representatividade cadastrada no Interior
+        <template v-if="!temMandato">
+          É necessário ao menos um mandato para cadastrar representatividade na Capital
+        </template>
+        <template v-else-if="!temMandatoSP">
+          É necessário ao menos um mandato em São Paulo para cadastrar representatividade na Capital
+        </template>
+        <template v-else>
+          Sem representatividade cadastrada no Interior
+        </template>
       </p>
-      <router-link
+      <component
+        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'routerLink'"
         v-if="exibirEdição && emFoco?.id"
+        :class="{ disabled: !habilitarBotaoDeRepresentatividade }"
         :to="{
           name: 'parlamentaresEditarRepresentatividade',
           params: { parlamentarId: emFoco.id },
@@ -244,7 +268,7 @@ function formatarNumero(numero) {
           width="20"
           height="20"
         ><use xlink:href="#i_+" /></svg>Registrar representatividade
-      </router-link>
+      </component>
     </div>
   </div>
 </template>

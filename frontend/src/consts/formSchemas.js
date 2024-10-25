@@ -3272,7 +3272,6 @@ export const representatividade = object()
       .max(1000)
       .required(),
     regiao_id: number()
-      .label('Região')
       .required(),
   });
 
