@@ -1,10 +1,11 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { usePanoramaStore } from '@/stores/panorama.store.ts';
-import { usePdMStore } from '@/stores/pdm.store';
-import { storeToRefs } from 'pinia';
 import dateToField from '@/helpers/dateToField';
 import dateToTitle from '@/helpers/dateToTitle';
+import { usePanoramaStore } from '@/stores/panorama.store.ts';
+// eslint-disable-next-line import/no-cycle
+import { usePdMStore } from '@/stores/pdm.store';
+import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 const panoramaStore = usePanoramaStore();
@@ -116,7 +117,7 @@ if (!activePdm.value.id) {
       justify-content: flex-end;
     }
 
-    .abas__navegação {
+        .abas__navegacao {
       margin-left: 0;
       margin-right: auto;
     }

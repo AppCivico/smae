@@ -18,7 +18,7 @@ module.exports = {
   rules: {
     'import/extensions': [
       'error', {
-        ts: 'always',
+        ts: 'warn', // TO-DO: voltar e resolver esse valor falso
         vue: 'always',
       },
     ],

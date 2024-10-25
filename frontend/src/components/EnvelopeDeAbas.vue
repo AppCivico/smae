@@ -103,8 +103,8 @@ iniciar();
 <template>
   <div class="abas">
     <nav
-      class="abas__navegação mb3"
-      :class="`abas__navegação--${alinhamento}`"
+      class="abas__navegacao mb3"
+      :class="`abas__navegacao--${alinhamento}`"
     >
       <ul
         ref="listaDeAbas"
@@ -147,9 +147,9 @@ iniciar();
       <div
         v-show="!abaAberta
           ? i === 0
-          : abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+          : String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
-        class="abas__conteúdo"
+        class="abas__conteudo"
       >
         <slot
           :name="nomeDaAba"
@@ -160,18 +160,18 @@ iniciar();
   </div>
 </template>
 <style lang="less">
-.abas__navegação {
+.abas__navegacao {
   max-width: max-content;
   margin-left: auto;
   margin-right: auto;
 }
 
-.abas__navegação--esquerda {
+.abas__navegacao--esquerda {
   margin-left: 0;
   margin-right: auto;
 }
 
-.abas__navegação--direita {
+.abas__navegacao--direita {
   margin-left: auto;
   margin-right: 0;
 }
