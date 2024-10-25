@@ -215,16 +215,17 @@
                 axisTick: { show: false },            
             },
             visualMap: {
+                type: 'continuous',
                 min: 0,
                 max: maxValue,
                 calculable: true,
                 orient: 'horizontal',
                 left: 'center',
-                bottom: '25%',
+                bottom: '20%',
                 inRange : {   
                         color: colorArray
                     },
-                itemWidth: 10,
+                itemWidth: 15,
                 itemHeight: 300,
                 align: 'top',
                 textStyle: {
@@ -232,8 +233,7 @@
                     fontWeight: 400,
                     fontSize: 14,
                     color: '#7E858D',
-                    height:60,
-                }
+                },
             },
             series: [
                 {
