@@ -1,0 +1,21 @@
+<mjml>
+  <mj-include path="../components/head.mjml" />
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+          <p>Aviso para nota [% objeto %]</p>
+        </mj-text>
+        <mj-button href="[% link %]">Acessar sistema</mj-button>
+        <mj-text>
+          <p>Nota: [% nota | raw%]</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+</mjml>

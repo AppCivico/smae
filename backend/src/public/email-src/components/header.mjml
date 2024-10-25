@@ -1,0 +1,5 @@
+<mj-section full-width="full-width" padding-bottom="0">
+  <mj-column width="100%">
+    <mj-image src="https://homol-smae-api.appcivico.com/public/email-templates/img/header.png" width="600px" alt="Logo do SMAE" padding="0" />
+  </mj-column>
+</mj-section>

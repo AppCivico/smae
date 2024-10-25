@@ -1,0 +1,33 @@
+<mjml>
+  <mj-include path="../components/head.mjml" />
+
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+           [% texto_inicial | raw %]
+
+        <mj-raw>
+        [% FOREACH p IN partes %]
+            [% IF p.t == 'i' %]
+                <p>[% p.c %]</p>
+            [% ELSIF p.t == 't' %]
+                <div style="padding-left: 5px;">
+                    <p>[% p.c %]</p>
+                </div>
+            [% END %]
+        [% END %]
+        </mj-raw>
+
+           [% texto_final | raw %]
+        </mj-text>
+
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+</mjml>
