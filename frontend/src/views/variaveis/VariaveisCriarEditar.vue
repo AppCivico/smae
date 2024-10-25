@@ -150,7 +150,7 @@ const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVaria
   ? órgãosComoLista.value
   : órgãosComoLista.value.filter((orgao) => orgao.id === user.value.orgao_id)));
 
-const ehNumerica = computed(() => values.variavel_categorica_id === '' || values.variavel_categorica_id === undefined);
+const ehNumerica = computed(() => values.variavel_categorica_id === '' || !values.variavel_categorica_id);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
