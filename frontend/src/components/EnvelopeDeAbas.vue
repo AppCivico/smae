@@ -147,7 +147,7 @@ iniciar();
       <div
         v-show="!abaAberta
           ? i === 0
-          : abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+          : String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
         class="abas__conteudo"
       >
