@@ -3746,9 +3746,10 @@ export const variávelComposta = object()
 // criação ou geração
 const variavelGlobalEhNumberica = (variavelCategoricaId, field) => {
   if (variavelCategoricaId === null || variavelCategoricaId === undefined) {
-    return field.nullableOuVazio();
+    return field.required();
   }
-  return field.required();
+
+  return field.nullableOuVazio();
 };
 export const variavelGlobal = object({
   acumulativa: boolean()

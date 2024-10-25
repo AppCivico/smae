@@ -226,8 +226,8 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
 
 watch(() => values.variavel_categorica_id, () => {
   if (
-    values.variavel_categorica_id === ''
-    || values.variavel_categorica_id === undefined
+    values.variavel_categorica_id !== ''
+    || values.variavel_categorica_id
   ) {
     const fields = {
       unidade_medida_id: null,
@@ -492,7 +492,7 @@ watch(() => values.variavel_categorica_id, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.polaridade }"
-            :disabled="ehNumerica"
+            :disabled="!ehNumerica"
           >
             <option value="">
               Selecionar
@@ -519,10 +519,7 @@ watch(() => values.variavel_categorica_id, () => {
             name="polaridade"
           />
         </div>
-        <div
-          v-if="!ehNumerica"
-          class="f2 fb15em"
-        >
+        <div class="f2 fb15em">
           <LabelFromYup
             name="unidade_medida_id"
             :schema="schema"
@@ -533,7 +530,7 @@ watch(() => values.variavel_categorica_id, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.unidade_medida_id }"
-            :disabled="ehNumerica"
+            :disabled="!ehNumerica"
           >
             <option value="">
               Selecione
@@ -560,10 +557,7 @@ watch(() => values.variavel_categorica_id, () => {
             name="unidade_medida_id"
           />
         </div>
-        <div
-          v-if="!ehNumerica"
-          class="f1 fb10em"
-        >
+        <div class="f1 fb10em">
           <LabelFromYup
             name="casas_decimais"
             :schema="schema"
@@ -574,7 +568,7 @@ watch(() => values.variavel_categorica_id, () => {
             min="0"
             class="inputtext light mb1"
             :class="{ error: errors.casas_decimais }"
-            :disabled="ehNumerica"
+            :disabled="!ehNumerica"
           />
           <ErrorMessage
             class="error-msg"
@@ -598,7 +592,7 @@ watch(() => values.variavel_categorica_id, () => {
             :standalone="!!variavelId"
             :readonly="!!variavelId"
             :class="{ error: errors.valor_base }"
-            :disabled="ehNumerica"
+            :disabled="!ehNumerica"
           />
           <ErrorMessage
             class="error-msg"
@@ -617,7 +611,7 @@ watch(() => values.variavel_categorica_id, () => {
             min="1900"
             class="inputtext light mb1"
             :class="{ error: errors.ano_base }"
-            :disabled="ehNumerica"
+            :disabled="!ehNumerica"
           />
           <input
             v-else
@@ -902,7 +896,7 @@ watch(() => values.variavel_categorica_id, () => {
               type="checkbox"
               :value="true"
               :unchecked-value="false"
-              :disabled="ehNumerica"
+              :disabled="!ehNumerica"
             />
             <LabelFromYup
               name="acumulativa"
