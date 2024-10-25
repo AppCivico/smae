@@ -10,7 +10,9 @@ import MonitoramentosTarefas from '@/views/monitoramento/MonitoramentoPorTarefas
 import MonitoramentosVariáveis from '@/views/monitoramento/MonitoramentoPorVariaveis.vue';
 import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
 // Stores
+// eslint-disable-next-line import/no-cycle
 import { useCiclosStore } from '@/stores/ciclos.store';
+// eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
 
 // Apesar dessa função para normalizar o comportamento, há exceções
