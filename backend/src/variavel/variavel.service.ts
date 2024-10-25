@@ -75,7 +75,7 @@ export const ORDEM_SERIES_RETORNO: Serie[] = ['Previsto', 'PrevistoAcumulado', '
 
 const InicioFimErrMsg =
     'Inicio/Fim da medição da variável não pode ser nulo quando a periodicidade da variável é diferente do indicador';
-type VariavelGlobalAprovacao = {
+type VariavelGlobalLiberacao = {
     referencia_data: Date;
     variavel_id: number;
 };
@@ -92,6 +92,7 @@ type IndicadorInfo = {
 export type VariavelComCategorica = {
     id: number;
     acumulativa: boolean;
+    variavel_mae_id: number | null;
     variavel_categorica: {
         id: number;
         tipo: TipoVariavelCategorica;
@@ -157,6 +158,7 @@ export class VariavelService {
                 id: true,
                 acumulativa: true,
                 tipo: true,
+                variavel_mae_id: true,
                 VariavelGrupoResponsavelEquipe: {
                     where: { removido_em: null },
                     select: {
@@ -2742,18 +2744,27 @@ export class VariavelService {
         if (!orgao_id) throw new BadRequestException('Usuário sem órgão');
 
         const globais = variaveisInfo.filter((v) => v.tipo === 'Global');
+        if (tipo != 'Global' && globais.length)
+            throw new BadRequestException('Não é possível editar variáveis globais.');
 
+        // just in case, não poder editar o Calc mesmo por engano
+        const naoPermitidos = variaveisInfo.filter((v) => v.tipo !== 'Global' && v.tipo !== 'PDM');
+        if (naoPermitidos.length)
+            throw new BadRequestException('Não é possível um ou mais tipos de variáveis enviados.');
+
+        // validação de permissão de escrita para globais
         if (globais.length && !user.hasSomeRoles(['CadastroVariavelGlobal.administrador'])) {
             const collab = await user.getEquipesColaborador(this.prisma);
             const ehAdminNoOrgao = user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao']);
+
             for (const variavel of variaveisInfo) {
                 // PDM só valida pela listagem de variáveis, no momento
                 if (variavel.tipo != 'Global') continue;
 
-                if (!variavel.orgao_proprietario_id) throw new BadRequestException('Variável sem órgão proprietário');
+                if (!variavel.orgao_proprietario_id) throw new BadRequestException('Variável sem órgão proprietário.');
 
                 if (ehAdminNoOrgao && variavel.orgao_proprietario_id !== orgao_id) {
-                    throw new HttpException('Você não pode editar variáveis de outro órgão proprietário', 400);
+                    throw new HttpException('Você não pode editar variáveis de outro órgão proprietário.', 400);
                 }
 
                 const variavelEquipes = variavel.VariavelGrupoResponsavelEquipe.filter(
@@ -2761,7 +2772,7 @@ export class VariavelService {
                         g.grupo_responsavel_equipe.perfil === 'Liberacao' ||
                         g.grupo_responsavel_equipe.perfil === 'Validacao'
                 );
-                if (!variavelEquipes.length) throw new BadRequestException('Variável sem grupo de escrita definido');
+                if (!variavelEquipes.length) throw new BadRequestException('Variável sem grupo de escrita definido.');
 
                 const variavelEquipesIds = variavelEquipes.map((e) => e.grupo_responsavel_equipe.id);
                 if (!collab.some((e) => variavelEquipesIds.includes(e))) {
@@ -2773,14 +2784,30 @@ export class VariavelService {
             }
         }
 
+        // validações para caso tenha global, não pode ter mais de um pai presente no batch
+        let variavelMaeId: number | undefined = undefined;
+        if (globais.length) {
+            const variavelMaes = new Set<number>();
+
+            for (const variavel of variaveisInfo) {
+                console.log(variavel);
+                if (variavel.variavel_mae_id) variavelMaes.add(variavel.variavel_mae_id);
+            }
+
+            if (variavelMaes.size && variavelMaes.size > 1)
+                throw new BadRequestException('Não é possível editar variáveis de diferentes pais ao mesmo tempo.');
+
+            variavelMaeId = variavelMaes.size ? (variavelMaes.values().next().value as number) : undefined;
+        }
+
         const variaveisModificadas: Record<number, boolean> = {};
         const now = new Date(Date.now());
 
         // apenas para as Globais, atualização do VariavelGlobalCicloAnalise
         // acontecerá aprovação de todas as variaveis que foram recebidas, mesmo que não tenham sido modificadas
         // uma vez que a conferencia é feita da mesma forma (e o refactor seria grande pra fazer um teste desnecessário)
-        let mesesParaRemover: VariavelGlobalAprovacao[] = [];
-        const mesesParaAprovar: VariavelGlobalAprovacao[] = [];
+        let mesesParaRemover: VariavelGlobalLiberacao[] = [];
+        const mesesParaLiberar: VariavelGlobalLiberacao[] = [];
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
@@ -2798,12 +2825,11 @@ export class VariavelService {
                     const variavelInfo = variaveisInfo.filter((e) => e.id === valor.referencia.v)[0];
                     if (!variavelInfo) throw new Error('Variável não encontrada, mas deveria já ter sido carregada.');
 
-                    if (
-                        !variavelInfo.acumulativa &&
-                        (valor.referencia.s == 'RealizadoAcumulado' || valor.referencia.s == 'PrevistoAcumulado')
-                    ) {
+                    // não é para ser possível editar essas séries
+                    // pois uma é pra ser a copia (no caso de acumulativa=false) e a outra é sempre gerado como "SS"
+                    // logo não deveria ser possível editar por aqui
+                    if (valor.referencia.s == 'RealizadoAcumulado' || valor.referencia.s == 'PrevistoAcumulado')
                         continue;
-                    }
 
                     let variavel_categorica_valor_id: number | null = null;
                     // busca os valores vazios mas que já existem, para serem removidos
@@ -2862,8 +2888,8 @@ export class VariavelService {
                         };
 
                         if ('id' in valor.referencia) {
-                            if (globais.length)
-                                mesesParaAprovar.push({
+                            if (globais.length && valor.referencia.s == 'Realizado')
+                                mesesParaLiberar.push({
                                     referencia_data: Date2YMD.fromString(valor.referencia.p),
                                     variavel_id: valor.referencia.v,
                                 });
@@ -2973,7 +2999,9 @@ export class VariavelService {
                     });
                     if (globais.length)
                         for (const v of createList) {
-                            mesesParaAprovar.push({
+                            if (v.serie !== 'Realizado') continue;
+
+                            mesesParaLiberar.push({
                                 referencia_data:
                                     typeof v.data_valor == 'string' ? Date2YMD.fromString(v.data_valor) : v.data_valor,
                                 variavel_id: v.variavel_id,
@@ -2981,8 +3009,20 @@ export class VariavelService {
                         }
                 }
 
-                await this.batchUpsertRemoveLiberacao(prismaTxn, mesesParaRemover, now, user);
-                await this.batchUpsertLiberaMeses(prismaTxn, mesesParaAprovar, logger, user);
+                if (variavelMaeId) {
+                    await this.batchUpsertCicloVariavelMae(
+                        prismaTxn,
+                        variavelMaeId,
+                        mesesParaRemover,
+                        mesesParaLiberar,
+                        now,
+                        logger,
+                        user
+                    );
+                } else {
+                    await this.batchUpsertRemoveLiberacao(prismaTxn, mesesParaRemover, now, user);
+                    await this.batchUpsertLiberaMeses(prismaTxn, mesesParaLiberar, logger, user);
+                }
 
                 const variaveisMod = Object.keys(variaveisModificadas).map((e) => +e);
                 logger.log(`Variáveis recebidas: ${JSON.stringify(variaveisMod)}`);
@@ -3007,9 +3047,110 @@ export class VariavelService {
         );
     }
 
+    private async batchUpsertCicloVariavelMae(
+        prismaTxn: Prisma.TransactionClient,
+        variavelMaeId: number,
+        mesesParaRemover: VariavelGlobalLiberacao[],
+        mesesParaLiberar: VariavelGlobalLiberacao[],
+        now: Date,
+        logger: LoggerWithLog,
+        user: PessoaFromJwt
+    ) {
+        const variaveisFilhas = await prismaTxn.variavel.findMany({
+            where: {
+                variavel_mae_id: variavelMaeId,
+                removido_em: null,
+                tipo: 'Global',
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        const statusSeries = await prismaTxn.serieVariavel.findMany({
+            where: {
+                variavel_id: { in: variaveisFilhas.map((e) => e.id) },
+                data_valor: { in: mesesParaLiberar.map((e) => e.referencia_data) },
+                serie: 'Realizado',
+            },
+            select: {
+                variavel_id: true,
+                data_valor: true,
+                conferida: true,
+            },
+        });
+
+        const conferidoStatus: Record<number, Record<DateYMD, boolean>> = {};
+        for (const status of statusSeries) {
+            if (!conferidoStatus[status.variavel_id]) conferidoStatus[status.variavel_id] = {};
+            conferidoStatus[status.variavel_id][Date2YMD.toString(status.data_valor)] = status.conferida;
+        }
+
+        for (const exSerie of mesesParaRemover) {
+            if (!conferidoStatus[exSerie.variavel_id]) conferidoStatus[exSerie.variavel_id] = {};
+
+            conferidoStatus[exSerie.variavel_id][Date2YMD.toString(exSerie.referencia_data)] = false;
+        }
+
+        const mesesResultado: Record<DateYMD, boolean> = {};
+
+        const todosPeriodos = new Set<string>();
+        for (const varId in conferidoStatus) {
+            const monthStatuses = conferidoStatus[varId];
+            for (const date in monthStatuses) {
+                todosPeriodos.add(date);
+            }
+        }
+
+        // Para cada periodo, verifica se todas as variáveis filhas estão conferidas
+        const periodos = Array.from(todosPeriodos);
+        for (let i = 0; i < periodos.length; i++) {
+            const data = periodos[i];
+
+            // Começa assumindo que está tudo conferido
+            // se a variavel voltou na query, vai seguir com o motivo da tabela
+            // senão, ela vai ter um registro como false por ter sido colocada no loop do mesesParaRemover
+            let todosConferidos = true;
+
+            for (const variavelFilha of variaveisFilhas) {
+                const statusVar = conferidoStatus[variavelFilha.id];
+
+                // para assim que não estiver conferido
+                if (!statusVar || !statusVar[data]) {
+                    todosConferidos = false;
+                    break;
+                }
+            }
+
+            mesesResultado[data] = todosConferidos;
+        }
+        logger.log(`Variável mãe ${variavelMaeId} - Resultado de liberação: ${JSON.stringify(mesesResultado)}`);
+
+        const ajusteRemocao: VariavelGlobalLiberacao[] = [];
+        const ajusteLiberacao: VariavelGlobalLiberacao[] = [];
+
+        for (const data in mesesResultado) {
+            const aprovado = mesesResultado[data];
+            if (aprovado) {
+                ajusteLiberacao.push({
+                    referencia_data: Date2YMD.fromString(data),
+                    variavel_id: variavelMaeId,
+                });
+            } else {
+                ajusteRemocao.push({
+                    referencia_data: Date2YMD.fromString(data),
+                    variavel_id: variavelMaeId,
+                });
+            }
+        }
+
+        await this.batchUpsertRemoveLiberacao(prismaTxn, ajusteRemocao, now, user);
+        await this.batchUpsertLiberaMeses(prismaTxn, ajusteLiberacao, logger, user);
+    }
+
     private async batchUpsertLiberaMeses(
         prismaTxn: Prisma.TransactionClient,
-        mesesParaAprovar: VariavelGlobalAprovacao[],
+        mesesParaAprovar: VariavelGlobalLiberacao[],
         logger: LoggerWithLog,
         user: PessoaFromJwt
     ) {
@@ -3083,7 +3224,7 @@ export class VariavelService {
 
     private async batchUpsertRemoveLiberacao(
         prismaTxn: Prisma.TransactionClient,
-        mesesParaRemover: VariavelGlobalAprovacao[],
+        mesesParaRemover: VariavelGlobalLiberacao[],
         now: Date,
         user: PessoaFromJwt
     ) {
@@ -3137,7 +3278,7 @@ export class VariavelService {
     ) {
         logger.log(`Variáveis globais: buscando meses para remover liberação...`);
         const dbRows = await prismaTxn.serieVariavel.findMany({
-            where: { id: { in: idsToBeRemoved } },
+            where: { id: { in: idsToBeRemoved }, serie: 'Realizado' },
             select: {
                 variavel_id: true,
                 data_valor: true,
@@ -3148,7 +3289,7 @@ export class VariavelService {
                 ({
                     variavel_id: e.variavel_id,
                     referencia_data: e.data_valor,
-                }) satisfies VariavelGlobalAprovacao
+                }) satisfies VariavelGlobalLiberacao
         );
         logger.log(`Variáveis globais: meses para remover liberação: ${JSON.stringify(mesesParaRemover)}`);
         return mesesParaRemover;
