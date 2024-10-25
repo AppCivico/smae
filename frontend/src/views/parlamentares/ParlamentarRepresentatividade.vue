@@ -65,6 +65,8 @@ const {
   validationSchema: schema,
 });
 
+const éCapital = computed(() => values.municipio_tipo === 'Capital');
+
 const regiõesFiltradas = computed(() => {
   switch (values.municipio_tipo) {
     case 'Capital':
@@ -175,7 +177,7 @@ watch(representatividadeParaEdição, (novoValor) => {
         <div
           v-if="!props.representatividadeId"
           class="f1"
-          :hidden="!pessoaId && !!tipoSugerido"
+          :hidden="!!tipoSugerido"
         >
           <LabelFromYup
             name="municipio_tipo"
@@ -210,7 +212,9 @@ watch(representatividadeParaEdição, (novoValor) => {
           <LabelFromYup
             name="regiao_id"
             :schema="schema"
-          />
+          >
+            {{ éCapital ? 'Região' : 'Município' }}
+          </LabelFromYup>
           <Field
             v-if="!props.representatividadeId"
             name="regiao_id"
