@@ -55,6 +55,7 @@ import {
     PsMonitoramentoMensalModule
 } from './reports/ps-monitoramento-mensal/ps-monitoramento-mensal.module';
 import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
+import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/categoria-assunto-variavel.module';
 
 // Hacks pro JS
 /*
@@ -110,6 +111,7 @@ import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/pa
         TaskModule,
         ClassificacaoModule,
         PainelEstrategicoModule,
+        CategoriaAssuntoVariavelModule
     ],
     controllers: [AppController],
     providers: [

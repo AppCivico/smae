@@ -486,6 +486,10 @@ model Pessoa {
 
     projetosRevisao ProjetoPessoaRevisao[]
 
+    CategoriaAssuntoVariavelQCriei     CategoriaAssuntoVariavel[] @relation("criador")
+    CategoriaAssuntoVariavelQAtualizei CategoriaAssuntoVariavel[] @relation("atualizador")
+    CategoriaAssuntoVariavelQRemovi    CategoriaAssuntoVariavel[] @relation("removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -1819,7 +1823,7 @@ model AssuntoVariavel {
     id Int @id @default(autoincrement())
 
     nome String
-
+    categoria_assunto_variavel_id Int?
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
@@ -1833,6 +1837,7 @@ model AssuntoVariavel {
     atualizador             Pessoa?                   @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor               Pessoa?                   @relation("Removedor", fields: [removido_por], references: [id])
     VariavelAssuntoVariavel VariavelAssuntoVariavel[]
+    categoria_assunto_variavel CategoriaAssuntoVariavel? @relation("categoria_assunto_variavel", fields: [categoria_assunto_variavel_id], references: [id])
 
     @@map("assunto_variavel")
 }
@@ -7216,4 +7221,21 @@ model Classificacao {
 
     @@index([nome])
     @@map("classificacao")
+}
+
+model CategoriaAssuntoVariavel{
+    id                    Int               @id @default(autoincrement())
+    nome                  String
+    criado_por            Int
+    criado_em             DateTime          @default(now()) @db.Timestamptz(6)
+    atualizado_por        Int?
+    atualizado_em         DateTime          @default(now()) @db.Timestamptz(6)
+    removido_por          Int?
+    removido_em           DateTime?         @db.Timestamptz(6)
+    criador               Pessoa            @relation("criador", fields: [criado_por], references: [id])
+    atualizador           Pessoa?           @relation("atualizador", fields: [atualizado_por], references: [id])
+    removedor             Pessoa?           @relation("removedor", fields: [removido_por], references: [id])
+    assunto_variavel      AssuntoVariavel[] @relation("categoria_assunto_variavel")
+    @@index([nome])
+    @@map("categoria_assunto_variavel")
 }

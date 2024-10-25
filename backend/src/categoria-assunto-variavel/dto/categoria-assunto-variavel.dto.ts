@@ -1,18 +1,15 @@
 import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
-import { CategoriaAssuntoVariavelDto } from '../../categoria-assunto-variavel/dto/categoria-assunto-variavel.dto';
 
-export class CreateAssuntoVariavelDto {
+export class CreateCategoriaAssuntoVariavelDto {
     @IsString({ message: '$property| Nome: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| Nome: Máximo 250 caracteres' })
     nome: string;
-    @IsOptional()
-    categoria_assunto_variavel_id:number
 }
 
-export class UpdateAssuntoVariavelDto extends PartialType(CreateAssuntoVariavelDto) {}
-export class FilterAssuntoVariavelDto {
+export class UpdateCategoriaAssuntoVariavelDto extends PartialType(CreateCategoriaAssuntoVariavelDto) {}
+export class FilterCategoriaAssuntoVariavelDto {
     /**
      * Filtrar por id?
      * @example ""
@@ -23,10 +20,11 @@ export class FilterAssuntoVariavelDto {
     id?: number;
 }
 
-export class AssuntoVariavelDto {
+export class CategoriaAssuntoVariavelDto {
     nome: string;
+    id: number;
 }
 
 export class ListAssuntoVariavelDto {
-    linhas: AssuntoVariavelDto[];
+    linhas: CategoriaAssuntoVariavelDto[];
 }

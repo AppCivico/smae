@@ -1,18 +1,18 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import {
-    CreateAssuntoVariavelDto,
-    FilterAssuntoVariavelDto,
-    UpdateAssuntoVariavelDto,
-} from './dto/assunto-variavel.dto';
+    CreateCategoriaAssuntoVariavelDto,
+    FilterCategoriaAssuntoVariavelDto,
+    UpdateCategoriaAssuntoVariavelDto,
+} from './dto/categoria-assunto-variavel.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 @Injectable()
-export class AssuntoVariavelService {
+export class CategoriaAssuntoVariavelService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(dto: CreateAssuntoVariavelDto, user: PessoaFromJwt) {
-        const similarExists = await this.prisma.assuntoVariavel.count({
+    async create(dto: CreateCategoriaAssuntoVariavelDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.categoriaAssuntoVariavel.count({
             where: {
                 nome: { equals: dto.nome, mode: 'insensitive' },
                 removido_em: null,
@@ -22,21 +22,18 @@ export class AssuntoVariavelService {
         if (similarExists > 0)
             throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
-        const created = await this.prisma.assuntoVariavel.create({
+        return  await this.prisma.categoriaAssuntoVariavel.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 nome: dto.nome,
-                categoria_assunto_variavel_id: dto.categoria_assunto_variavel_id
             },
             select: { id: true },
         });
-
-        return created;
     }
 
-    async findAll(filters: FilterAssuntoVariavelDto) {
-        const listActive = await this.prisma.assuntoVariavel.findMany({
+    async findAll(filters: FilterCategoriaAssuntoVariavelDto) {
+        return await this.prisma.categoriaAssuntoVariavel.findMany({
             where: {
                 removido_em: null,
                 id: filters.id,
@@ -44,7 +41,7 @@ export class AssuntoVariavelService {
             select: {
                 id: true,
                 nome: true,
-                categoria_assunto_variavel:{
+                assunto_variavel:{
                     select :{
                         nome: true,
                         id: true,
@@ -53,18 +50,16 @@ export class AssuntoVariavelService {
             },
             orderBy: { nome: 'asc' },
         });
-
-        return listActive;
     }
 
-    async update(id: number, dto: UpdateAssuntoVariavelDto, user: PessoaFromJwt) {
-        const self = await this.prisma.assuntoVariavel.findFirstOrThrow({
+    async update(id: number, dto: UpdateCategoriaAssuntoVariavelDto, user: PessoaFromJwt) {
+        const self = await this.prisma.categoriaAssuntoVariavel.findFirstOrThrow({
             where: { id: id },
             select: { id: true },
         });
 
         if (dto.nome !== undefined) {
-            const similarExists = await this.prisma.assuntoVariavel.count({
+            const similarExists = await this.prisma.categoriaAssuntoVariavel.count({
                 where: {
                     nome: { equals: dto.nome, mode: 'insensitive' },
                     removido_em: null,
@@ -77,13 +72,12 @@ export class AssuntoVariavelService {
                 throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        await this.prisma.assuntoVariavel.update({
+        await this.prisma.categoriaAssuntoVariavel.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 nome: dto.nome,
-                categoria_assunto_variavel_id: dto.categoria_assunto_variavel_id,
             },
         });
 
@@ -91,22 +85,22 @@ export class AssuntoVariavelService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const emUso = await this.prisma.variavelAssuntoVariavel.findMany({
+        const emUso = await this.prisma.assuntoVariavel.findMany({
             where: {
-                assunto_variavel_id: id,
+                categoria_assunto_variavel_id: id,
             },
             select: {
                 id: true,
-                variavel: { select: { titulo: true } },
+                nome: true ,
             },
         });
 
         if (emUso.length)
             throw new BadRequestException(
-                'Registro em uso em variáveis: ' + emUso.map((v) => v.variavel.titulo).join(', ')
+                'Registro em uso nos assuntos: ' + emUso.map((v) => v.nome).join(', ')
             );
 
-        const created = await this.prisma.assuntoVariavel.updateMany({
+        return await this.prisma.categoriaAssuntoVariavel.updateMany({
             where: { id: id },
             data: {
                 removido_por: user.id,
@@ -114,6 +108,5 @@ export class AssuntoVariavelService {
             },
         });
 
-        return created;
     }
 }
