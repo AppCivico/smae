@@ -33,6 +33,7 @@ export class FeatureFlagService {
             this.data = {
                 mf_v2: updated.mf_v2,
                 panorama: updated.panorama,
+                pp_pe: updated.pp_pe,
             };
         }
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
@@ -45,8 +46,9 @@ export class FeatureFlagService {
 
         // default se o banco estiver vazio
         return {
-            mf_v2: false,
-            panorama: false,
+            mf_v2: true,
+            panorama: true,
+            pp_pe: false,
         };
     }
 }

@@ -64,6 +64,24 @@ addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path}
   });
 });
 
+addMethod(string, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' ? null : v));
+});
+
+addMethod(mixed, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' || v === false ? null : v));
+});
+
+addMethod(number, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v));
+});
+
 /**
  * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
  */
@@ -3726,15 +3744,21 @@ export const variávelComposta = object()
   });
 
 // criação ou geração
+const variavelGlobalEhNumberica = (variavelCategoricaId, field) => {
+  if (variavelCategoricaId === null || variavelCategoricaId === undefined) {
+    return field.nullableOuVazio();
+  }
+  return field.required();
+};
 export const variavelGlobal = object({
   acumulativa: boolean()
     .label('Variável acumulativa')
-    .required(),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   ano_base: number()
     .label('Ano base')
     .positive()
     .integer()
-    .nullable(),
+    .nullableOuVazio(),
   assuntos: array()
     .label('Assuntos')
     .nullable()
@@ -3752,7 +3776,7 @@ export const variavelGlobal = object({
     .integer()
     .min(0)
     .max(12)
-    .required(),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   dado_aberto: boolean()
     .label('Disponível como dado aberto')
     .nullable(),
@@ -3833,15 +3857,15 @@ export const variavelGlobal = object({
     .required(),
   polaridade: mixed()
     .label('Polaridade')
-    .oneOf(Object.keys(polaridadeDeVariaveis))
-    .required(),
+    .oneOf([...Object.keys(polaridadeDeVariaveis), null])
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   titulo: string()
     .label('Nome')
     .max(256)
     .required(),
   unidade_medida_id: number()
     .label('Unidade de medida')
-    .required(),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   validacao_grupo_ids: array()
     .label('Grupos de validação')
     .nullable()
@@ -3853,11 +3877,10 @@ export const variavelGlobal = object({
   valor_base: number() // como string
     .label('Valor base')
     .min(0)
-    .required('Preencha o valor base'),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   variavel_categorica_id: number()
     .label('Tipo de variável')
-    .positive()
-    .nullable(),
+    .nullableOuVazio(),
 });
 
 export const variavelGlobalParaGeracao = variavelGlobal.concat(
