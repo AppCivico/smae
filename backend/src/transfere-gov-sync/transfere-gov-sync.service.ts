@@ -422,6 +422,7 @@ export class TransfereGovSyncService {
     ): Promise<string[]> {
         const gestoresCasaCivil = await prismaTx.pessoa.findMany({
             where: {
+                desativado: false,
                 PessoaPerfil: {
                     some: {
                         perfil_acesso: {
