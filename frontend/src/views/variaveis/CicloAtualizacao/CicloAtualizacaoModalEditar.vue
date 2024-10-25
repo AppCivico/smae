@@ -62,7 +62,7 @@
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_aprovador"
-              :disabled="!forumlariosAExibir.aprovacao.liberado"
+              :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
             />
 
             <ErrorMessage
@@ -124,7 +124,9 @@
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
-              :disabled="!forumlariosAExibir.cadastro.liberado"
+              :disabled="!forumlariosAExibir.cadastro.liberado
+                || fase === 'aprovacao'
+                || fase === 'liberacao'"
             />
           </div>
         </article>
