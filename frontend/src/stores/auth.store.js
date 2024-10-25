@@ -175,7 +175,7 @@ export const useAuthStore = defineStore({
         ])
       ) {
         dados.rotaInicial = { name: 'análises' };
-      } else if (sistemaCorrente === 'Projetos' && !user?.sessao?.flags?.pp_pe) {
+      } else if (sistemaCorrente === 'Projetos' && !user?.flags?.pp_pe) {
         dados.rotaInicial = { name: 'projetosListar' };
       }
 
