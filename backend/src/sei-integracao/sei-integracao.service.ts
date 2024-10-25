@@ -595,6 +595,7 @@ export class SeiIntegracaoService {
 
             const gestores = await prismaTx.pessoa.findMany({
                 where: {
+                    desativado: false,
                     PessoaPerfil: {
                         some: {
                             perfil_acesso: {
