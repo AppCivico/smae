@@ -112,7 +112,7 @@ const schema = computed(() => (gerarMultiplasVariaveis.value
 ));
 
 const {
-  errors, handleSubmit, resetForm, resetField, values,
+  errors, handleSubmit, resetForm, resetField, values, validateField, setFieldValue,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema.value,
@@ -149,6 +149,8 @@ const estãoTodasAsRegiõesSelecionadas = computed({
 const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVariavelGlobal.administrador')
   ? órgãosComoLista.value
   : órgãosComoLista.value.filter((orgao) => orgao.id === user.value.orgao_id)));
+
+const ehNumerica = computed(() => values.variavel_categorica_id === '' || values.variavel_categorica_id === undefined);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
@@ -219,6 +221,27 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
     resetField('criar_formula_composta', { value: null });
     resetField('nivel_regionalizacao', { value: null });
     resetField('regioes', { value: null });
+  }
+});
+
+watch(() => values.variavel_categorica_id, () => {
+  if (
+    values.variavel_categorica_id === ''
+    || values.variavel_categorica_id === undefined
+  ) {
+    const fields = {
+      unidade_medida_id: null,
+      casas_decimais: 0,
+      ano_base: null,
+      valor_base: null,
+      polaridade: null,
+      acumulativa: false,
+    };
+
+    Object.entries(fields).forEach(([key, value]) => {
+      setFieldValue(key, value);
+      validateField(key);
+    });
   }
 });
 </script>
@@ -469,6 +492,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.polaridade }"
+            :disabled="ehNumerica"
           >
             <option value="">
               Selecionar
@@ -495,7 +519,10 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="polaridade"
           />
         </div>
-        <div class="f2 fb15em">
+        <div
+          v-if="!ehNumerica"
+          class="f2 fb15em"
+        >
           <LabelFromYup
             name="unidade_medida_id"
             :schema="schema"
@@ -506,6 +533,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.unidade_medida_id }"
+            :disabled="ehNumerica"
           >
             <option value="">
               Selecione
@@ -532,7 +560,10 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="unidade_medida_id"
           />
         </div>
-        <div class="f1 fb10em">
+        <div
+          v-if="!ehNumerica"
+          class="f1 fb10em"
+        >
           <LabelFromYup
             name="casas_decimais"
             :schema="schema"
@@ -543,6 +574,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             min="0"
             class="inputtext light mb1"
             :class="{ error: errors.casas_decimais }"
+            :disabled="ehNumerica"
           />
           <ErrorMessage
             class="error-msg"
@@ -566,6 +598,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             :standalone="!!variavelId"
             :readonly="!!variavelId"
             :class="{ error: errors.valor_base }"
+            :disabled="ehNumerica"
           />
           <ErrorMessage
             class="error-msg"
@@ -584,6 +617,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             min="1900"
             class="inputtext light mb1"
             :class="{ error: errors.ano_base }"
+            :disabled="ehNumerica"
           />
           <input
             v-else
@@ -868,6 +902,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               type="checkbox"
               :value="true"
               :unchecked-value="false"
+              :disabled="ehNumerica"
             />
             <LabelFromYup
               name="acumulativa"
