@@ -15,6 +15,20 @@ const winston = require('winston'),
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+    // Add global unhandled promise rejection handler
+    process.on('unhandledRejection', (reason: Error, promise: Promise<any>) => {
+        console.error('Unhandled Promise Rejection:');
+        console.error('Promise:', promise);
+        console.error('Reason:', reason);
+    });
+
+    // Add global uncaught exception handler
+    process.on('uncaughtException', (error: Error) => {
+        console.error('Uncaught Exception:');
+        console.error(error);
+    });
+
     app.setGlobalPrefix('api');
     const desc = `*SMAE* (Sistema de Monitoramento e Acompanhamento Estratégico) é um software livre e de código aberto.
 
