@@ -3033,6 +3033,12 @@ export class VariavelService {
 
                     if (globais.length) {
                         this.logger.log(`Variáveis globais: atualizando ciclo corrente...`);
+                        // hack para atualizar apenas a variável mae
+                        if (variavelMaeId) {
+                            globais.length = 1;
+                            globais[0].id = variavelMaeId;
+                        }
+
                         await prismaTxn.$queryRaw`
                         select f_atualiza_variavel_ciclo_corrente(varId::int)::varchar
                         from unnest(${globais.map((n) => n.id)}::int[]) as varId;`;
