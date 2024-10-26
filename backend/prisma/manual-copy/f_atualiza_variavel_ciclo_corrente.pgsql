@@ -48,12 +48,12 @@ BEGIN
         AND removido_em IS NULL;
 
     IF v_registro IS NULL THEN
-        RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
+        --RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
         RETURN;
     END IF;
 
     IF v_registro.inicio_medicao IS NULL THEN
-        RAISE NOTICE 'Variável % sem data de início', p_variavel_id;
+        --RAISE NOTICE 'Variável % sem data de início', p_variavel_id;
         RETURN;
     END IF;
 
@@ -92,7 +92,7 @@ BEGIN
         ORDER BY 1 DESC
     ) LOOP
 
-    raise notice 'v_ciclo: %', v_ciclo;
+    --raise notice 'v_ciclo: %', v_ciclo;
         IF (v_ultimo_periodo_valido IS NULL) THEN
             v_ultimo_periodo_valido := v_ciclo.ciclo_data;
             v_primeiro_registro := v_ciclo;
@@ -114,10 +114,10 @@ BEGIN
 
     END LOOP;
 
-    raise notice 'v_ultimo_periodo_valido x -> %', v_ultimo_periodo_valido;
+    --raise notice 'v_ultimo_periodo_valido x -> %', v_ultimo_periodo_valido;
 
     IF (v_ultimo_periodo_valido IS NULL) THEN
-        RAISE NOTICE 'Nenhum periodo encontrado, removendo variavel_ciclo_corrente para variável ID %', p_variavel_id;
+        --RAISE NOTICE 'Nenhum periodo encontrado, removendo variavel_ciclo_corrente para variável ID %', p_variavel_id;
         DELETE FROM variavel_ciclo_corrente
         WHERE variavel_id = p_variavel_id;
         RETURN;
@@ -129,12 +129,12 @@ BEGIN
     -- Se houver atrasos, calcula o prazo
     -- e o atraso não é o mesmo do ciclo corrente (em progresso/preenchimento)
 
-    raise notice 'v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
-    raise notice 'v_atrasos -> %', v_atrasos;
+    --raise notice 'v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
+    --raise notice 'v_atrasos -> %', v_atrasos;
 
     IF array_length(v_atrasos, 1) > 0 AND v_ultimo_p_valido_corrente != v_atrasos[1] THEN
-    raise notice 'v_atrasos: %', v_atrasos;
-    raise notice 'v_ultimo_p_valido_corrente: %', v_ultimo_p_valido_corrente;
+    --raise notice 'v_atrasos: %', v_atrasos;
+    --raise notice 'v_ultimo_p_valido_corrente: %', v_ultimo_p_valido_corrente;
 
 
         v_prazo := v_atrasos[1];
@@ -168,7 +168,7 @@ BEGIN
         -- prazo já tava atraso né... então ta estouradão
         v_proximo_periodo := v_prazo + v_registro.intervalo_atraso;
 
-        RAISE NOTICE 'v_prazo: %', v_prazo;
+        --RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
 
         IF (v_atrasos[1] IS NULL) THEN -- se não há atraso, o ciclo atual é o último válido
@@ -192,11 +192,11 @@ BEGIN
             v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
 
-        raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
+        --raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
 
         v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
 
-        raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
+        --raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
 
         IF (v_fase_corrente = 'Preenchimento') THEN
             v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
@@ -218,23 +218,23 @@ BEGIN
     END IF;
 
 
-    RAISE NOTICE 'v_registro: %', v_registro;
+    --RAISE NOTICE 'v_registro: %', v_registro;
 
     -- Assume que sempre é corrente
     v_corrente := true;
-    RAISE NOTICE 'v_dia_atual: %', v_dia_atual;
-    RAISE NOTICE 'v_corrente: %', v_corrente;
+    --RAISE NOTICE 'v_dia_atual: %', v_dia_atual;
+    --RAISE NOTICE 'v_corrente: %', v_corrente;
 
     v_dias_desde_inicio := (v_dia_atual - v_proximo_periodo) + 1;
-    RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
-    raise notice 'v_proximo_periodo -> %', v_proximo_periodo;
+    --RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
+    --raise notice 'v_proximo_periodo -> %', v_proximo_periodo;
 
     IF v_fase_corrente = 'Preenchimento' THEN
         v_corrente := true;
         IF v_dias_desde_inicio < v_registro.periodo_preenchimento[1] THEN
             -- Esconde a fase de preenchimento enquanto não chegar na data
             v_corrente := false;
-            RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: < %', v_registro.periodo_preenchimento[1];
+            --RAISE NOTICE 'eh_corrente := false pois v_dias_desde_inicio: < %', v_registro.periodo_preenchimento[1];
         END IF;
     END IF;
 
