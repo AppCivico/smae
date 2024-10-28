@@ -130,7 +130,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       r = await usersStore.register(carga);
       msg = 'Usuário adicionado com sucesso!';
     }
-    if (r == true) {
+    if (r === true) {
       await router.push({ name: 'gerenciarUsuários' });
       alertStore.success(msg);
     }
