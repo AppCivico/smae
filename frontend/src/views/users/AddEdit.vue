@@ -1,4 +1,8 @@
 <script setup>
+import tipoDePerfil from '@/consts/tipoDePerfil';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '@back/common/consts';
+// Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
@@ -8,6 +12,7 @@ import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
 import { useUsersStore } from '@/stores/users.store';
@@ -24,6 +29,13 @@ usersStore.clear();
 const alertStore = useAlertStore();
 const route = useRoute();
 const { id } = route.params;
+
+const equipesStore = useEquipesStore();
+const {
+  equipesPorOrgaoIdPorPerfil,
+  chamadasPendentes: chamadasPendentesDeEquipes,
+  erro: erroDeEquipes,
+} = storeToRefs(equipesStore);
 
 const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
@@ -42,7 +54,7 @@ const {
 } = storeToRefs(usersStore);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetForm, resetField, setFieldValue, values,
 } = useForm({
   initialValues: user,
   validationSchema: schema,
@@ -306,6 +318,7 @@ watch(accessProfiles, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.orgao_id }"
+            @change="resetField('equipes', { value: [] })"
           >
             <option value="">
               Selecionar
@@ -389,6 +402,53 @@ watch(accessProfiles, () => {
 
                 <pre v-ScrollLockDebug>pode_editar:{{ perfil.pode_editar }}</pre>
                 <pre v-ScrollLockDebug>modulos_sistemas:{{ perfil.modulos_sistemas }}</pre>
+
+                <TransitionExpand
+                  v-if="perfil.nome === CONST_PERFIL_PARTICIPANTE_EQUIPE"
+                >
+                  <ErrorComponent v-if="erroDeEquipes">
+                    {{ erroDeEquipes }}
+                  </ErrorComponent>
+                  <ul
+                    v-if="values.perfil_acesso_ids?.includes(perfil.id)
+                      && equipesPorOrgaoIdPorPerfil[values.orgao_id]"
+                    :aria-busy="chamadasPendentesDeEquipes"
+                    class="lista-de-perfis"
+                  >
+                    <li
+                      v-for="(perfilDeEquipe, chave) in
+                        equipesPorOrgaoIdPorPerfil[values.orgao_id] "
+                      :key="chave"
+                      class="lista-de-perfis__item"
+                    >
+                      <strong class="block mb1">
+                        {{ tipoDePerfil[chave].nome || chave }}
+                      </strong>
+                      <ul class="lista-de-perfis mb2">
+                        <li
+                          v-for="equipe in perfilDeEquipe"
+                          :key="equipe.id"
+                          class="lista-de-perfis__item"
+                        >
+                          <label
+                            class="block mb1 perfil"
+                            :for="`${módulo.id}__${perfil.id}__${chave}__${equipe.id}`"
+                          >
+                            <Field
+                              :id="`${módulo.id}__${perfil.id}__${chave}__${equipe.id}`"
+                              name="equipes"
+                              type="checkbox"
+                              :class="{ 'error': errors.equipes }"
+                              :disabled="(!perfil.pode_editar) || undefined"
+                              :value="equipe.id"
+                            />
+                            {{ equipe.titulo }}
+                          </label>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </TransitionExpand>
 
                 <button
                   type="button"
@@ -497,6 +557,10 @@ watch(accessProfiles, () => {
 
   @media screen and(min-width: @coluna * 2) {
     padding-right: calc(@coluna + 2rem);
+  }
+
+  .lista-de-perfis {
+    padding-right: 0;
   }
 }
 
