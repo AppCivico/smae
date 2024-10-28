@@ -211,7 +211,11 @@ watch(accessProfiles, () => {
             <Field
               name="desativado"
               type="checkbox"
-              value="1"
+              :value="true"
+              :unchecked-value="false"
+              @update:model-value="resetField(
+                'desativado_motivo', { value: user.desativado_motivo }
+              )"
             /><span>Inativar usuário</span>
           </label>
         </div>
