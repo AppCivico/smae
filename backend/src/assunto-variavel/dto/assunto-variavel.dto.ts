@@ -1,13 +1,15 @@
 import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
-import { CategoriaAssuntoVariavelDto } from '../../categoria-assunto-variavel/dto/categoria-assunto-variavel.dto';
 
 export class CreateAssuntoVariavelDto {
     @IsString({ message: '$property| Nome: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| Nome: Máximo 250 caracteres' })
     nome: string;
+
+    @Type(()=>Number)
     @IsOptional()
+    @IsInt({ message: '$property| categoria_assunto_variavel_id' })
     categoria_assunto_variavel_id:number
 }
 
