@@ -215,6 +215,7 @@
                 axisTick: { show: false },            
             },
             visualMap: {
+                id: 1,
                 type: 'continuous',
                 min: 0,
                 max: maxValue,
@@ -234,6 +235,17 @@
                     fontSize: 14,
                     color: '#7E858D',
                 },
+                indicatorIcon: 'line',
+                indicatorSize: '90%',
+                indicatorStyle: {
+                    color: '#A8A8A8',
+                    borderColor: '#A8A8A8',
+                    borderWidth: 5,
+                    borderType: 'solid',
+                    shadowColor: '#FFFFCC',
+                    shadowBlur: 10,
+                    borderCap: 'round'
+                }
             },
             series: [
                 {
