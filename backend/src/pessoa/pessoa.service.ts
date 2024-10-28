@@ -595,7 +595,7 @@ export class PessoaService {
                         );
                     updatePessoaDto.perfil_acesso_ids = Array.isArray(updatePessoaDto.perfil_acesso_ids)
                         ? updatePessoaDto.perfil_acesso_ids
-                        : await this.loadPrivPessoa(pessoaId, prismaTx);
+                        : await this.loadPrivPessoa(pessoaId, prismaTx, perfisVisiveis);
 
                     const perfilEquipe = await prismaTx.perfilAcesso.findFirstOrThrow({
                         where: {
@@ -632,7 +632,6 @@ export class PessoaService {
 
                 const perfilDeInteresse: ListaDePrivilegios[] = [
                     'PDM.coordenador_responsavel_cp',
-                    'PS.tecnico_cp',
                     'SMAE.gestor_de_projeto',
                     'SMAE.colaborador_de_projeto',
                     'SMAE.espectador_de_painel_externo',
@@ -725,13 +724,19 @@ export class PessoaService {
         return { id: pessoaId };
     }
 
-    async loadPrivPessoa(pessoaId: number, prismaTx: Prisma.TransactionClient): Promise<number[]> {
-        return await prismaTx.pessoaPerfil
+    async loadPrivPessoa(
+        pessoaId: number,
+        prismaTx: Prisma.TransactionClient,
+        perfisVisiveis: number[]
+    ): Promise<number[]> {
+        const rows = await prismaTx.pessoaPerfil
             .findMany({
                 where: { pessoa_id: pessoaId },
                 select: { perfil_acesso_id: true },
             })
             .then((r) => r.map((e) => e.perfil_acesso_id));
+
+        return rows.filter((e) => perfisVisiveis.includes(e));
     }
 
     private async removeAcessoOuAbortaTx(
