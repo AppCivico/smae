@@ -520,7 +520,7 @@ export class PessoaService {
                 await this.trocouDeOrgao(prismaTx, { ...self, pessoa_fisica: self.pessoa_fisica }, now, logger);
             }
 
-            await prismaTx.pessoa.update({
+            const updated = await prismaTx.pessoa.update({
                 where: {
                     id: pessoaId,
                 },
@@ -540,6 +540,7 @@ export class PessoaService {
                     },
                     GruposDePaineisQueParticipo: grupos ? { createMany: { data: grupos_to_assign } } : undefined,
                 },
+                select: { id: true, pessoa_fisica: { select: { orgao_id: true } } },
             });
 
             if (updatePessoaDto.desativado === true) {
@@ -587,6 +588,10 @@ export class PessoaService {
                 const equipesAntesSorted = equipesAntes.sort((a, b) => a - b).join(',');
 
                 if (novasEquipesSorted !== equipesAntesSorted) {
+                    if (!updated.pessoa_fisica?.orgao_id)
+                        throw new BadRequestException(
+                            'Órgão da pessoa não encontrado, necessário para atualizar equipes'
+                        );
                     updatePessoaDto.perfil_acesso_ids = Array.isArray(updatePessoaDto.perfil_acesso_ids)
                         ? updatePessoaDto.perfil_acesso_ids
                         : [];
@@ -611,7 +616,12 @@ export class PessoaService {
                         updatePessoaDto.perfil_acesso_ids.push(perfilEquipe.id);
                     }
 
-                    await this.equipeRespService.atualizaEquipe(pessoaId, updatePessoaDto.equipes, prismaTx);
+                    await this.equipeRespService.atualizaEquipe(
+                        pessoaId,
+                        updatePessoaDto.equipes,
+                        prismaTx,
+                        updated.pessoa_fisica.orgao_id
+                    );
                 }
             }
 

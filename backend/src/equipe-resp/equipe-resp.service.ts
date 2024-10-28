@@ -138,7 +138,12 @@ export class EquipeRespService {
         return rows.map((r) => r.id);
     }
 
-    async atualizaEquipe(pessoaId: number, equipes: number[], prismaTx: Prisma.TransactionClient): Promise<void> {
+    async atualizaEquipe(
+        pessoaId: number,
+        equipes: number[],
+        prismaTx: Prisma.TransactionClient,
+        orgao_id: number
+    ): Promise<void> {
         const equipesAtuais = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
             where: {
                 pessoa_id: pessoaId,
@@ -175,13 +180,14 @@ export class EquipeRespService {
                     where: {
                         id: teamId,
                         removido_em: null,
+                        orgao_id,
                     },
                     select: {
                         orgao_id: true,
                     },
                 });
 
-                if (!team) throw new BadRequestException(`Equipe ID ${teamId} não encontrada.`);
+                if (!team) throw new BadRequestException(`Equipe ID ${teamId} não encontrada, órgão ${orgao_id}.`);
 
                 await prismaTx.grupoResponsavelEquipeParticipante.create({
                     data: {
