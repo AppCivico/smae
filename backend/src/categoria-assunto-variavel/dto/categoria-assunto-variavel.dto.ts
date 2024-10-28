@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
@@ -8,7 +7,7 @@ export class CreateCategoriaAssuntoVariavelDto {
     nome: string;
 }
 
-export class UpdateCategoriaAssuntoVariavelDto extends PartialType(CreateCategoriaAssuntoVariavelDto) {}
+export class UpdateCategoriaAssuntoVariavelDto extends CreateCategoriaAssuntoVariavelDto {}
 export class FilterCategoriaAssuntoVariavelDto {
     /**
      * Filtrar por id?

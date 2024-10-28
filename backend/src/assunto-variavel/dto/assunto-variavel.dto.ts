@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
@@ -8,12 +7,11 @@ export class CreateAssuntoVariavelDto {
     nome: string;
 
     @Type(()=>Number)
-    @IsOptional()
     @IsInt({ message: '$property| categoria_assunto_variavel_id' })
     categoria_assunto_variavel_id:number
 }
 
-export class UpdateAssuntoVariavelDto extends PartialType(CreateAssuntoVariavelDto) {}
+export class UpdateAssuntoVariavelDto extends CreateAssuntoVariavelDto {}
 export class FilterAssuntoVariavelDto {
     /**
      * Filtrar por id?

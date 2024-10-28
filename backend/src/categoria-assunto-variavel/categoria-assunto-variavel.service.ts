@@ -12,16 +12,9 @@ export class CategoriaAssuntoVariavelService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateCategoriaAssuntoVariavelDto, user: PessoaFromJwt) {
-        const similarExists = await this.prisma.categoriaAssuntoVariavel.count({
-            where: {
-                nome: { equals: dto.nome, mode: 'insensitive' },
-                removido_em: null,
-            },
-        });
-
-        if (similarExists > 0)
+        if (await this.existeSemelhante((dto.nome))) {
             throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
-
+        }
         return  await this.prisma.categoriaAssuntoVariavel.create({
             data: {
                 criado_por: user.id,
@@ -53,25 +46,9 @@ export class CategoriaAssuntoVariavelService {
     }
 
     async update(id: number, dto: UpdateCategoriaAssuntoVariavelDto, user: PessoaFromJwt) {
-        const self = await this.prisma.categoriaAssuntoVariavel.findFirstOrThrow({
-            where: { id: id },
-            select: { id: true },
-        });
-
-        if (dto.nome !== undefined) {
-            const similarExists = await this.prisma.categoriaAssuntoVariavel.count({
-                where: {
-                    nome: { equals: dto.nome, mode: 'insensitive' },
-                    removido_em: null,
-
-                    NOT: { id: self.id },
-                },
-            });
-
-            if (similarExists > 0)
-                throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
+        if (await this.existeSemelhante(dto.nome,id)) {
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
         }
-
         await this.prisma.categoriaAssuntoVariavel.update({
             where: { id: id },
             data: {
@@ -108,5 +85,25 @@ export class CategoriaAssuntoVariavelService {
             },
         });
 
+    }
+
+    async existeSemelhante(nome:string,id?:number){
+        if (!id) {
+            return await this.prisma.categoriaAssuntoVariavel.count({
+                where: {
+                    nome: { equals: nome, mode: 'insensitive' },
+                    removido_em: null,
+                },
+            }) > 0;
+        }else{
+            return await this.prisma.categoriaAssuntoVariavel.count({
+                where: {
+                    nome: { equals: nome, mode: 'insensitive' },
+                    removido_em: null,
+
+                    NOT: { id: id },
+                },
+            });
+        }
     }
 }
