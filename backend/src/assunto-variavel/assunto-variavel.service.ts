@@ -39,6 +39,7 @@ export class AssuntoVariavelService {
             select: {
                 id: true,
                 nome: true,
+                categoria_assunto_variavel_id:true,
                 categoria_assunto_variavel:{
                     select :{
                         nome: true,
