@@ -68,9 +68,11 @@ const perfisPorMódulo = computed(() => (Array.isArray(accessProfiles.value)
           etiqueta: módulosDoSistema[módulo]?.nome || módulo,
           nome: módulo,
           perfis: [],
+          totalSelecionado: 0,
         };
       }
 
+      acc[módulo].totalSelecionado += values.perfil_acesso_ids?.includes(cur.id) ? 1 : 0;
       acc[módulo].perfis.push(cur);
     });
 
@@ -89,17 +91,6 @@ const módulosOrdenados = computed(() => Object.values(perfisPorMódulo.value)
         return a.etiqueta.localeCompare(b.etiqueta);
     }
   }));
-
-const dadosExtrasDeAbas = computed(() => Object.keys(perfisPorMódulo.value)
-  .reduce((acc, cur) => {
-    if (perfisPorMódulo.value[cur]?.id) {
-      acc[perfisPorMódulo.value[cur]?.id] = {
-        etiqueta: perfisPorMódulo.value[cur]?.etiqueta || cur,
-        id: perfisPorMódulo.value[cur]?.id || cur,
-      };
-    }
-    return acc;
-  }, {}));
 
 usersStore.getProfiles();
 
@@ -347,10 +338,22 @@ watch(accessProfiles, () => {
         -->
         <EnvelopeDeAbas
           v-if="módulosOrdenados.length"
-          :meta-dados-por-id="dadosExtrasDeAbas"
           nome-da-chave-de-abas="modulo"
           class="mb2"
         >
+          <template
+            v-for="(módulo) in módulosOrdenados"
+            #[`${módulo.id}__cabecalho`]
+            :key="módulo.id"
+          >
+            {{ módulo.etiqueta }}
+            <sup
+              class="contador-de-perfis"
+            >
+              {{ perfisPorMódulo[módulo.nome]?.totalSelecionado }}
+            </sup>
+          </template>
+
           <template
             v-for="(módulo) in módulosOrdenados"
             #[módulo.id]
@@ -478,6 +481,13 @@ watch(accessProfiles, () => {
 </template>
 <style lang="less">
 @coluna: 22.5em;
+
+.contador-de-perfis {
+  border-radius: 999em;
+  background-color: @c600;
+  color: @branco;
+  padding: 0 0.25em;
+}
 
 .lista-de-perfis {
   position: relative;
