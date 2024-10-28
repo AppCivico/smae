@@ -99,4 +99,9 @@ export class CreatePessoaDto {
     @IsOptional()
     @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
     grupos?: number[];
+
+    @IsArray()
+    @IsOptional()
+    @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
+    equipes?: number[];
 }

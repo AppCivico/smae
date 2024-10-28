@@ -25,6 +25,7 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '../common/consts';
 
 const BCRYPT_ROUNDS = 10;
 const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['CadastroPessoa.administrador', 'CadastroPessoa.administrador.MDO'];
@@ -431,6 +432,8 @@ export class PessoaService {
             },
         });
 
+        const equipesAntes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
+
         const targetUserPrivileges = new Set(
             self.PessoaPerfil.flatMap((pp) => pp.perfil_acesso.perfil_privilegio.map((priv) => priv.privilegio.codigo))
         ) as Set<ListaDePrivilegios>;
@@ -579,6 +582,39 @@ export class PessoaService {
                 });
             }
 
+            if (Array.isArray(updatePessoaDto.equipes)) {
+                const novasEquipesSorted = updatePessoaDto.equipes.sort((a, b) => a - b).join(',');
+                const equipesAntesSorted = equipesAntes.sort((a, b) => a - b).join(',');
+
+                if (novasEquipesSorted !== equipesAntesSorted) {
+                    updatePessoaDto.perfil_acesso_ids = Array.isArray(updatePessoaDto.perfil_acesso_ids)
+                        ? updatePessoaDto.perfil_acesso_ids
+                        : [];
+
+                    const perfilEquipe = await prismaTx.perfilAcesso.findFirstOrThrow({
+                        where: {
+                            nome: CONST_PERFIL_PARTICIPANTE_EQUIPE,
+                            removido_em: null,
+                        },
+                        select: { id: true },
+                    });
+
+                    logger.log(`Equipes antes: ${equipesAntesSorted}`);
+                    logger.log(`Equipes agora: ${novasEquipesSorted}`);
+
+                    // se a pessoa não está em nenhuma equipe, remove o perfil de acesso
+                    if (updatePessoaDto.equipes.length == 0) {
+                        updatePessoaDto.perfil_acesso_ids = updatePessoaDto.perfil_acesso_ids.filter(
+                            (e) => e != perfilEquipe.id
+                        );
+                    } else if (updatePessoaDto.perfil_acesso_ids.indexOf(perfilEquipe.id) == -1) {
+                        updatePessoaDto.perfil_acesso_ids.push(perfilEquipe.id);
+                    }
+
+                    await this.equipeRespService.atualizaEquipe(pessoaId, updatePessoaDto.equipes, prismaTx);
+                }
+            }
+
             if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
                 logger.verbose(`Perfis de acessos recebidos: ${JSON.stringify(updatePessoaDto.perfil_acesso_ids)}`);
                 const promises = [];
@@ -663,14 +699,16 @@ export class PessoaService {
         if (prismaCtx) {
             await performUpdate(prismaCtx);
         } else {
-            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-                return await performUpdate(prismaTx);
-            }, {
-                isolationLevel: 'Serializable',
-                maxWait: 5000,
-                timeout: 5000,
-
-            });
+            await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performUpdate(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
         }
 
         return { id: pessoaId };
