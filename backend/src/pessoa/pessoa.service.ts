@@ -329,7 +329,7 @@ export class PessoaService {
 
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user);
-
+        const equipes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 id: pessoaId,
@@ -365,7 +365,7 @@ export class PessoaService {
             select: { id: true, codigo: true, nome: true },
         });
 
-        const listFixed = {
+        const listFixed: DetalhePessoaDto = {
             id: pessoa.id,
             nome_completo: pessoa.nome_completo,
             nome_exibicao: pessoa.nome_exibicao,
@@ -374,7 +374,7 @@ export class PessoaService {
             desativado: pessoa.desativado,
             desativado_motivo: pessoa.desativado_motivo,
             email: pessoa.email,
-            lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : undefined,
+            lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : null,
             orgao_id: pessoa.pessoa_fisica?.orgao_id || undefined,
             cargo: pessoa.pessoa_fisica?.cargo || null,
             registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
@@ -384,6 +384,7 @@ export class PessoaService {
             ),
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
+            equipes,
         };
 
         return listFixed;
