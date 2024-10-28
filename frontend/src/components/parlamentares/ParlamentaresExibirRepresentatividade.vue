@@ -134,13 +134,13 @@ function formatarNumero(numero) {
       </table>
       <p v-else>
         <template v-if="!temMandato">
-          É necessário ao menos um mandato para cadastrar representatividade na Capital
+          É necessário ao menos um mandato para cadastrar representatividade na capital
         </template>
         <template v-else-if="!temMandatoSP">
-          É necessário ao menos um mandato em São Paulo para cadastrar representatividade na Capital
+          É necessário ao menos um mandato em SP para cadastrar representatividade na capital
         </template>
         <template v-else>
-          Sem representatividade cadastrada na Capital
+          Sem representatividade cadastrada na capital
         </template>
       </p>
 
@@ -244,10 +244,10 @@ function formatarNumero(numero) {
       </table>
       <p v-else>
         <template v-if="!temMandato">
-          É necessário ao menos um mandato para cadastrar representatividade na Capital
+          É necessário ao menos um mandato para cadastrar representatividade na capital
         </template>
         <template v-else-if="!temMandatoSP">
-          É necessário ao menos um mandato em São Paulo para cadastrar representatividade na Capital
+          É necessário ao menos um mandato em SP para cadastrar representatividade no interior
         </template>
         <template v-else>
           Sem representatividade cadastrada no Interior
