@@ -27,7 +27,6 @@ const { id } = route.params;
 
 const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
-organsStore.getAll();
 
 const PaineisGruposStore = usePaineisGruposStore();
 const { PaineisGrupos } = storeToRefs(PaineisGruposStore);

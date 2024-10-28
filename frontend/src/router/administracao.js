@@ -571,6 +571,7 @@ export default [
 
   {
     path: '/usuarios',
+    component: () => import('@/views/users/UsuariosRaiz.vue'),
     meta: {
       limitarÀsPermissões: 'CadastroPessoa.',
       título: 'Gerenciar usuários',
