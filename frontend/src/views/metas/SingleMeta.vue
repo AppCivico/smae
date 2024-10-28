@@ -1,6 +1,7 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
+import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import statusObras from '@/consts/statusObras';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
@@ -17,8 +18,6 @@ import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxil
 defineOptions({
   inheritAttrs: false,
 });
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -168,42 +167,20 @@ iniciar();
             </div>
           </div>
         </div>
-        <hr class="mt2 mb2">
-        <div v-if="singleMeta?.tags.length">
-          <h4>Tags</h4>
-          <ul class="flex flexwrap center g2">
-            <li
-              v-for="tag in singleMeta.tags"
-              :key="tag.id"
-              class="fb10em"
-            >
-              <a
-                v-if="tag.download_token"
-                class="block"
-                :href="baseUrl + '/download/' + tag.download_token"
-                download
-              >
-                <img
-                  :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
-                  width="140"
-                  height="140"
-                  class="icone-de-tag"
-                >
-              </a>
-              <strong
-                v-else
-                class="block"
-              >
-                {{ tag.descricao }}
-              </strong>
-            </li>
-          </ul>
+
+        <div
+          v-if="singleMeta?.tags.length"
+          class="mb2"
+        >
           <hr class="mt2 mb2">
+          <TagsDeMetas :lista-de-tags="singleMeta.tags" />
         </div>
+
         <div
           v-if="activePdm.possui_contexto_meta"
           class="mr2 f2"
         >
+          <hr class="mb2">
           <h4>{{ activePdm.rotulo_contexto_meta }}</h4>
           <div>{{ singleMeta.contexto }}</div>
           <hr class="mt2 mb2">

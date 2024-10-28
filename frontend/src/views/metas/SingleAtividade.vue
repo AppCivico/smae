@@ -1,6 +1,7 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
+import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -11,7 +12,6 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
@@ -123,34 +123,7 @@ iniciar();
 
       <div v-if="singleAtividade?.tags.length">
         <hr class="mt2 mb2">
-        <h4>Tags</h4>
-        <ul class="flex flexwrap center g2">
-          <li
-            v-for="tag in singleAtividade.tags"
-            :key="tag.id"
-            class="fb10em"
-          >
-            <a
-              v-if="tag.download_token"
-              class="block"
-              :href="baseUrl + '/download/' + tag.download_token"
-              download
-            >
-              <img
-                :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
-                width="140"
-                height="140"
-                class="icone-de-tag"
-              >
-            </a>
-            <strong
-              v-else
-              class="block"
-            >
-              {{ tag.descricao }}
-            </strong>
-          </li>
-        </ul>
+        <TagsDeMetas :lista-de-tags="singleAtividade.tags" />
       </div>
 
       <template v-if="singleAtividade.contexto">
