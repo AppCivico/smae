@@ -1,9 +1,9 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -19,9 +19,9 @@ import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
-const { atividade_id } = route.params;
+const { meta_id: metaId } = route.params;
+const { iniciativa_id: iniciativaId } = route.params;
+const { atividade_id: atividadeId } = route.params;
 const oktogo = ref(0);
 
 const MetasStore = useMetasStore();
@@ -30,7 +30,7 @@ MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
-IniciativasStore.getById(meta_id, iniciativa_id);
+IniciativasStore.getById(metaId, iniciativaId);
 
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
@@ -39,12 +39,12 @@ AtividadesStore.clearEdit();
 const EquipesStore = useEquipesStore();
 EquipesStore.buscarTudo();
 
-const orgaos_participantes = ref([
+const orgaosParticipantes = ref([
   {
     orgao_id: null, responsavel: true, participantes: [], busca: '',
   },
 ]);
-const coordenadores_cp = ref({ participantes: [], busca: '' });
+const coordenadoresCp = ref({ participantes: [], busca: '' });
 
 const valoresIniciais = computed(() => ({
   ...singleAtividade.value,
@@ -67,13 +67,13 @@ let title = 'Cadastro de';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
-const compoe_indicador_iniciativa = ref(singleAtividade.value.compoe_indicador_iniciativa);
-if (atividade_id) {
+const compoeIndicadorIniciativa = ref(singleAtividade.value.compoe_indicador_iniciativa);
+if (atividadeId) {
   title = 'Editar';
 }
 (async () => {
-  await IniciativasStore.getById(meta_id, iniciativa_id);
-  if (atividade_id) await AtividadesStore.getByIdReal(atividade_id);
+  await IniciativasStore.getById(metaId, iniciativaId);
+  if (atividadeId) await AtividadesStore.getByIdReal(atividadeId);
 
   singleIniciativa.value.orgaos_participantes?.forEach((x) => {
     x.orgao_id = x.orgao.id;
@@ -85,20 +85,21 @@ if (atividade_id) {
     coordsAvailable.value.push(x);
   });
 
-  if (atividade_id) {
+  if (atividadeId) {
     if (singleAtividade.value.orgaos_participantes) {
-      orgaos_participantes.value.splice(0);
+      orgaosParticipantes.value.splice(0);
       singleAtividade.value.orgaos_participantes.forEach((x) => {
         const z = {};
         z.orgao_id = x.orgao.id;
         z.busca = '';
         z.participantes = x.participantes.map((y) => y?.id ?? y);
         z.responsavel = x.responsavel;
-        orgaos_participantes.value.push(z);
+        orgaosParticipantes.value.push(z);
       });
     }
     if (singleAtividade.value.coordenadores_cp) {
-      coordenadores_cp.value.participantes = singleAtividade.value.coordenadores_cp.map((x) => x?.id ?? x);
+      coordenadoresCp.value.participantes = singleAtividade.value.coordenadores_cp
+        .map((x) => x?.id ?? x);
     }
   }
   oktogo.value = true;
@@ -117,33 +118,33 @@ const schema = Yup.object().shape({
 async function onSubmit(values) {
   try {
     const er = [];
-    values.orgaos_participantes = unref(orgaos_participantes);
+    values.orgaos_participantes = unref(orgaosParticipantes);
     values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
       if (x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
       return x.orgao_id;
     });
 
     if (route.meta.entidadeMãe === 'pdm') {
-      values.coordenadores_cp = coordenadores_cp.value.participantes;
+      values.coordenadores_cp = coordenadoresCp.value.participantes;
       if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
     }
 
-    if (!values.iniciativa_id) values.iniciativa_id = iniciativa_id;
+    if (!values.iniciativa_id) values.iniciativa_id = iniciativaId;
     values.compoe_indicador_iniciativa = !!values.compoe_indicador_iniciativa;
 
-    if (er.length) throw er.join('<br />');
+    if (er.length) throw new Error(er.join('<br />'));
 
     let msg;
     let r;
     let rota;
-    if (atividade_id && singleAtividade.value.id) {
+    if (atividadeId && singleAtividade.value.id) {
       r = await AtividadesStore.update(singleAtividade.value.id, values);
       msg = 'Dados salvos com sucesso!';
-      rota = `/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${atividade_id}`;
+      rota = `/metas/${metaId}/iniciativas/${iniciativaId}/atividades/${atividadeId}`;
     } else {
       r = await AtividadesStore.insert(values);
       msg = 'Item adicionado com sucesso!';
-      rota = `/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${r}`;
+      rota = `/metas/${metaId}/iniciativas/${iniciativaId}/atividades/${r}`;
     }
     if (r) {
       AtividadesStore.clear();
@@ -168,15 +169,17 @@ async function onSubmit(values) {
 }
 async function checkDelete(id) {
   if (id) {
+    // mantendo o comportamento legado
+    // eslint-disable-next-line eqeqeq
     if (singleAtividade.value.id == id) {
       alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-        if (await AtividadesStore.delete(meta_id, id)) {
+        if (await AtividadesStore.delete(metaId, id)) {
           AtividadesStore.clear();
 
           if (route.meta.rotaDeEscape) {
             router.push({ name: route.meta.rotaDeEscape });
           } else if (route.meta.entidadeMãe === 'pdm') {
-            await router.push(`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+            await router.push(`/metas/${metaId}/iniciativas/${iniciativaId}`);
           } else {
             throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
           }
@@ -194,7 +197,7 @@ async function checkClose() {
       });
     } else if (route.meta.entidadeMãe === 'pdm') {
       router.push({
-        path: `/metas/${meta_id}/iniciativas/${iniciativa_id}`,
+        path: `/metas/${metaId}/iniciativas/${iniciativaId}`,
       });
     } else {
       throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
@@ -317,12 +320,14 @@ function filterResponsible(orgao_id) {
       >
         <label class="block">
           <Field
-            v-model="compoe_indicador_iniciativa"
+            v-model="compoeIndicadorIniciativa"
             name="compoe_indicador_iniciativa"
             type="checkbox"
             value="1"
             class="inputcheckbox"
-          /><span :class="{ error: errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
+          /><span
+            :class="{ error: errors.compoe_indicador_iniciativa }"
+          >Compõe o Indicador da iniciativa</span>
         </label>
         <div class="error-msg">
           {{ errors.compoe_indicador_iniciativa }}
@@ -339,7 +344,7 @@ function filterResponsible(orgao_id) {
           <div style="flex-basis: 30px;" />
         </div>
         <template
-          v-for="(item, index) in orgaos_participantes"
+          v-for="(item, index) in orgaosParticipantes"
           :key="index"
         >
           <div class="flex mb1 g2">
@@ -351,7 +356,10 @@ function filterResponsible(orgao_id) {
                 @change="item.participantes=[]"
               >
                 <option
-                  v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
+                  v-for="o in organsAvailable
+                    .filter(a => a.orgao_id == item.orgao_id
+                      || !orgaosParticipantes.map(b => b.orgao_id).includes(a.orgao_id)
+                    )"
                   :key="o.orgao_id"
                   :value="o.orgao_id"
                   :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
@@ -371,7 +379,7 @@ function filterResponsible(orgao_id) {
               <a
                 v-if="index"
                 class="addlink mt1"
-                @click="removeOrgao(orgaos_participantes,index)"
+                @click="removeOrgao(orgaosParticipantes, index)"
               ><svg
                 width="20"
                 height="20"
@@ -381,7 +389,7 @@ function filterResponsible(orgao_id) {
         </template>
         <a
           class="addlink"
-          @click="addOrgao(orgaos_participantes,true)"
+          @click="addOrgao(orgaosParticipantes, true)"
         ><svg
           width="20"
           height="20"
@@ -419,7 +427,7 @@ function filterResponsible(orgao_id) {
             class="f1"
           >
             <AutocompleteField
-              :controlador="coordenadores_cp"
+              :controlador="coordenadoresCp"
               :grupo="coordsAvailable"
               label="nome_exibicao"
             />
@@ -487,7 +495,7 @@ function filterResponsible(orgao_id) {
     </div>
   </template>
 
-  <template v-if="atividade_id && singleAtividade.id && atividade_id == singleAtividade.id">
+  <template v-if="atividadeId && singleAtividade.id && atividadeId == singleAtividade.id">
     <hr class="mt2 mb2">
     <button
       class="btn amarelo big"
