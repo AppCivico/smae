@@ -43,16 +43,13 @@ defineProps({
 .lista-de-tags {}
 
 .lista-de-tags__item {
-  min-width: 6.857143rem;
-  min-height: 6.857143rem;
-}
-
-.lista-de-tags__item--apenas-titulo {
-  flex-grow: 1;
+  width: 6.857143rem;
+  height: 6.857143rem;
 }
 
 .lista-de-tags__nome {
   border: 1px solid @c400;
   width: 100%;
+  text-overflow: ellipsis;
 }
 </style>
