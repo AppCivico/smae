@@ -2,6 +2,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import truncate from '@/helpers/truncate';
@@ -60,6 +61,10 @@ const valoresIniciais = computed(() => ({
   ps_tecnico_cp: {
     equipes: singleAtividade.value?.ps_tecnico_cp?.equipes || [],
   },
+
+  tags: Array.isArray(singleAtividade.value?.tags)
+    ? singleAtividade.value.tags.map((tag) => tag.id)
+    : [],
 }));
 
 let title = 'Cadastro de';
@@ -243,6 +248,7 @@ function filterResponsible(orgao_id) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </header>
+
   <template v-if="oktogo && !(singleAtividade?.loading || singleAtividade?.error)">
     <Form
       v-slot="{ errors, isSubmitting, values }"
@@ -332,6 +338,18 @@ function filterResponsible(orgao_id) {
         <div class="error-msg">
           {{ errors.compoe_indicador_iniciativa }}
         </div>
+      </div>
+
+      <div class="fieldset mb1">
+        <legend class="legend mb1">
+          Tags
+        </legend>
+        <CampoDeTagsComBuscaPorCategoria
+          v-model="values.tags"
+          name="tags"
+          :valores-iniciais="valoresIniciais.tags || []"
+          :pdm-id="activePdm.id"
+        />
       </div>
 
       <hr class="mt2 mb2">
