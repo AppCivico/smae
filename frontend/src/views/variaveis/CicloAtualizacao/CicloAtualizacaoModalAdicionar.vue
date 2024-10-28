@@ -18,7 +18,10 @@
       </div>
     </div>
 
-    <article class="variaveis-configuracoes flex g4 mt3 mb1">
+    <article
+      v-if="!temCategorica"
+      class="variaveis-configuracoes flex g4 mt3 mb1"
+    >
       <div
         v-for="(variavelItem, variavelItemIndex) in variaveis"
         :key="`variavel-configuracao-item--${variavelItemIndex}`"
