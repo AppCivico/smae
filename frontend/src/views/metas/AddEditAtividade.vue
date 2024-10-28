@@ -415,7 +415,7 @@ function filterResponsible(orgao_id) {
       </template>
 
       <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
-        <label class="label">Órgãos responsáveis <span class="tvermelho">*</span></label>
+        <label class="label">Órgãos responsáveis</label>
         <div
           class="flex flexwrap g2 mb1"
         >
