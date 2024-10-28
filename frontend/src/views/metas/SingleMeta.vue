@@ -1,6 +1,6 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import statusObras from '@/consts/statusObras';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
@@ -24,9 +24,9 @@ const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
-const { meta_id } = route.params;
+const { meta_id: metaId } = route.params;
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}`;
 
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta, relacionadosMeta } = storeToRefs(MetasStore);
@@ -37,24 +37,25 @@ const EquipesStore = useEquipesStore();
 async function iniciar() {
   const promessas = [];
 
-  if (meta_id && singleMeta.value.id != meta_id) {
-    promessas.push(MetasStore.getById(meta_id));
+  // eslint-disable-next-line eqeqeq
+  if (metaId && singleMeta.value.id != metaId) {
+    promessas.push(MetasStore.getById(metaId));
     promessas.push(EquipesStore.buscarTudo());
   }
-  if (meta_id && !activePdm.value.id) {
+  if (metaId && !activePdm.value.id) {
     promessas.push(MetasStore.getPdM());
   }
-  if (!Iniciativas.value[meta_id]) {
-    promessas.push(IniciativasStore.getAll(meta_id));
+  if (!Iniciativas.value[metaId]) {
+    promessas.push(IniciativasStore.getAll(metaId));
   }
 
   if (promessas.length) {
     await Promise.allSettled(promessas);
   }
 
-  if (meta_id && activePdm.value.id) {
+  if (metaId && activePdm.value.id) {
     MetasStore.getRelacionados({
-      meta_id, pdm_id: activePdm.value.id,
+      metaId, pdm_id: activePdm.value.id,
     });
   }
 
@@ -218,7 +219,7 @@ iniciar();
 
         <SimpleIndicador
           :parentlink="parentlink"
-          :parent_id="meta_id"
+          :parent_id="metaId"
           parent_field="meta_id"
         />
         <template v-if="activePdm.possui_iniciativa">
@@ -242,10 +243,10 @@ iniciar();
           </div>
 
           <template
-            v-if="Array.isArray(Iniciativas[meta_id])"
+            v-if="Array.isArray(Iniciativas[metaId])"
           >
             <div
-              v-for="ini in Iniciativas[meta_id]"
+              v-for="ini in Iniciativas[metaId]"
               :id="`iniciativa__${ini.id}`"
               :key="ini.id"
               class="board_variavel mb2"
@@ -324,7 +325,7 @@ iniciar();
           </template>
 
           <div
-            v-if="Iniciativas[meta_id].loading"
+            v-if="Iniciativas[metaId].loading"
             class="board_vazio"
           >
             <div class="tc">
@@ -338,10 +339,10 @@ iniciar();
             </div>
           </div>
           <ErrorComponent
-            v-else-if="Iniciativas[meta_id].error"
+            v-else-if="Iniciativas[metaId].error"
             class="board_vazio"
           >
-            {{ Iniciativas[meta_id].error }}
+            {{ Iniciativas[metaId].error }}
           </ErrorComponent>
 
           <div

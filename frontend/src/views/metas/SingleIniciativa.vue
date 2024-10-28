@@ -1,6 +1,6 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
@@ -20,10 +20,10 @@ const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
+const { meta_id: metaId } = route.params;
+const { iniciativa_id: iniciativaId } = route.params;
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}`;
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}`;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
@@ -32,7 +32,6 @@ MetasStore.getPdM();
 const IniciativasStore = useIniciativasStore();
 const {
   singleIniciativa,
-  órgãosResponsáveisNaIniciativaEmFoco,
   relacionadosIniciativa,
 } = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
@@ -41,12 +40,13 @@ const { Atividades } = storeToRefs(AtividadesStore);
 async function iniciar() {
   const promessas = [];
 
-  if (singleIniciativa.value.id != iniciativa_id) {
-    promessas.push(IniciativasStore.getById(meta_id, iniciativa_id));
+  // eslint-disable-next-line eqeqeq
+  if (singleIniciativa.value.id != iniciativaId) {
+    promessas.push(IniciativasStore.getById(metaId, iniciativaId));
     promessas.push(EquipesStore.buscarTudo());
   }
-  if (!Atividades.value[iniciativa_id]) {
-    promessas.push(AtividadesStore.getAll(iniciativa_id));
+  if (!Atividades.value[iniciativaId]) {
+    promessas.push(AtividadesStore.getAll(iniciativaId));
   }
 
   if (promessas.length) {
@@ -92,7 +92,7 @@ iniciar();
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm'
       ])"
-      :to="`/metas/${meta_id}/iniciativas/editar/${iniciativa_id}`"
+      :to="`/metas/${metaId}/iniciativas/editar/${iniciativaId}`"
       class="btn big ml2"
     >
       Editar
@@ -192,7 +192,7 @@ iniciar();
 
       <SimpleIndicador
         :parentlink="parentlink"
-        :parent_id="iniciativa_id"
+        :parent_id="iniciativaId"
         parent_field="iniciativa_id"
       />
 
@@ -214,9 +214,9 @@ iniciar();
           </SmaeLink>
         </div>
 
-        <template v-if="Atividades[iniciativa_id].length">
+        <template v-if="Atividades[iniciativaId].length">
           <div
-            v-for="ini in Atividades[iniciativa_id]"
+            v-for="ini in Atividades[iniciativaId]"
             :id="`atividade__${ini.id}`"
             :key="ini.id"
             class="board_variavel mb2"
@@ -289,7 +289,7 @@ iniciar();
         </template>
 
         <div
-          v-if="Atividades[iniciativa_id].loading"
+          v-if="Atividades[iniciativaId].loading"
           class="board_vazio"
         >
           <div class="tc">
