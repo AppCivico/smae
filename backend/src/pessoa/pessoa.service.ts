@@ -594,7 +594,7 @@ export class PessoaService {
                         );
                     updatePessoaDto.perfil_acesso_ids = Array.isArray(updatePessoaDto.perfil_acesso_ids)
                         ? updatePessoaDto.perfil_acesso_ids
-                        : [];
+                        : await this.loadPrivPessoa(pessoaId, prismaTx);
 
                     const perfilEquipe = await prismaTx.perfilAcesso.findFirstOrThrow({
                         where: {
@@ -722,6 +722,15 @@ export class PessoaService {
         }
 
         return { id: pessoaId };
+    }
+
+    async loadPrivPessoa(pessoaId: number, prismaTx: Prisma.TransactionClient): Promise<number[]> {
+        return await prismaTx.pessoaPerfil
+            .findMany({
+                where: { pessoa_id: pessoaId },
+                select: { perfil_acesso_id: true },
+            })
+            .then((r) => r.map((e) => e.perfil_acesso_id));
     }
 
     private async removeAcessoOuAbortaTx(
