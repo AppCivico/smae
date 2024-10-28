@@ -30,7 +30,7 @@ const usersFiltered = computed(() => listaFiltradaPorTermoDeBusca.value
   .filter((x) => (!perfil.value ? true : x.perfil_acesso_ids.includes(perfil.value))));
 
 function filterOrgan(orgao_id) {
-  return organs.value.length ? organs.value.find((o) => o.id == orgao_id) : '-';
+  return organs.value.length ? organs.value.find((o) => o.id === orgao_id) : '-';
 }
 function filterPerfil(ids) {
   let vs;
