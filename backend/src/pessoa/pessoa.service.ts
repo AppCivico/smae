@@ -748,7 +748,7 @@ export class PessoaService {
             if (!privDepoisUpdate.find((r) => r.codigo == priv) && privAntesUpdate.find((r) => r.codigo == priv)) {
                 logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
 
-                if (priv == 'PDM.coordenador_responsavel_cp' || priv == 'PS.tecnico_cp') {
+                if (priv == 'PDM.coordenador_responsavel_cp') {
                     const metaResp = await prismaTx.meta.findMany({
                         where: {
                             removido_em: null,
