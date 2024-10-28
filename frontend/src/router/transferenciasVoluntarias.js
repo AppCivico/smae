@@ -195,6 +195,14 @@ export default {
             rotaDeEscape: 'notasListar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
+              'notasListar',
+            ],
+
+
+
+            
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',
               'notasListar',
             ],
