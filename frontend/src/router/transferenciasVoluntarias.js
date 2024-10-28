@@ -175,6 +175,14 @@ export default {
           meta: {
             título: 'Nova nota',
             rotaDeEscape: 'notasListar',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'notasListar',
+            ],
+
+
+
+            
           },
         },
         {

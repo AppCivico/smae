@@ -75,6 +75,7 @@ watch([
 
 </script>
 <template>
+  <MigalhasDePão />
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
