@@ -156,7 +156,7 @@ async function onSubmit(values) {
             atividade_id: route.params.atividade_id || r,
           },
         });
-      } else if (route.meta.entidadeMãe === 'metas') {
+      } else if (route.meta.entidadeMãe === 'pdm') {
         await router.push(rota);
       } else {
         throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
