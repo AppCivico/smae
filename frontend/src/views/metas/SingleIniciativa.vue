@@ -71,7 +71,9 @@ async function iniciar() {
 async function checkDelete(iniciativa) {
   if (iniciativa) {
     alertStore.confirmAction(`Deseja mesmo remover a iniciativa "${iniciativa.titulo}"?`, async () => {
+      alertStore.setLoading(true);
       if (await AtividadesStore.delete(metaId, iniciativa.id)) {
+        alertStore.setLoading(false);
         AtividadesStore.clear();
         alertStore.success('Iniciativa removida.');
       }
