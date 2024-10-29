@@ -255,9 +255,9 @@ export class VariavelService {
         }
 
         await this.validaEquipeResponsavel(dto, {
-            liberacao_orgao_id: MIN_DTO_SAFE_NUM,
-            medicao_orgao_id: MIN_DTO_SAFE_NUM,
-            validacao_orgao_id: MIN_DTO_SAFE_NUM,
+            liberacao_orgao_id: dto.orgao_id ?? MIN_DTO_SAFE_NUM,
+            medicao_orgao_id: dto.orgao_id ?? MIN_DTO_SAFE_NUM,
+            validacao_orgao_id: dto.orgao_id ?? MIN_DTO_SAFE_NUM,
         });
         await this.validaCamposCategorica(dto, 'create');
 
@@ -1562,9 +1562,9 @@ export class VariavelService {
             throw new HttpException('Variável filha não pode ser atualizada diretamente', 400);
 
         await this.validaEquipeResponsavel(dto, {
-            liberacao_orgao_id: selfBefUpdate.liberacao_orgao_id ?? MIN_DTO_SAFE_NUM,
-            medicao_orgao_id: selfBefUpdate.medicao_orgao_id ?? MIN_DTO_SAFE_NUM,
-            validacao_orgao_id: selfBefUpdate.validacao_orgao_id ?? MIN_DTO_SAFE_NUM,
+            liberacao_orgao_id: selfBefUpdate.liberacao_orgao_id ?? dto.orgao_id ?? MIN_DTO_SAFE_NUM,
+            medicao_orgao_id: selfBefUpdate.medicao_orgao_id ?? dto.orgao_id ?? MIN_DTO_SAFE_NUM,
+            validacao_orgao_id: selfBefUpdate.validacao_orgao_id ?? dto.orgao_id ?? MIN_DTO_SAFE_NUM,
         });
         await this.validaCamposCategorica(dto, 'update');
 
