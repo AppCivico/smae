@@ -110,9 +110,9 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     grupos: {
       linhas: [
         [
-          { label: 'Grupos de medição', valor: formatarLista(emFoco.value.medicao_grupo) },
-          { label: 'Grupos de validação', valor: formatarLista(emFoco.value.validacao_grupo) },
-          { label: 'Grupos de liberação', valor: formatarLista(emFoco.value.liberacao_grupo) },
+          { label: 'Equipes de medição', valor: formatarLista(emFoco.value.medicao_grupo) },
+          { label: 'Equipes de validação', valor: formatarLista(emFoco.value.validacao_grupo) },
+          { label: 'Equipes de liberação', valor: formatarLista(emFoco.value.liberacao_grupo) },
         ],
       ],
     },
