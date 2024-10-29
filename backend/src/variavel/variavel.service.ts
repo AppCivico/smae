@@ -66,6 +66,7 @@ import {
 } from './entities/variavel.entity';
 import { VariavelUtilService } from './variavel.util.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
+import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -253,7 +254,11 @@ export class VariavelService {
             throw new BadRequestException('Tipo de variável inválido para criação manual');
         }
 
-        await this.validaGruposResponsavel(dto, MIN_DTO_SAFE_NUM);
+        await this.validaEquipeResponsavel(dto, {
+            liberacao_orgao_id: MIN_DTO_SAFE_NUM,
+            medicao_orgao_id: MIN_DTO_SAFE_NUM,
+            validacao_orgao_id: MIN_DTO_SAFE_NUM,
+        });
         await this.validaCamposCategorica(dto, 'create');
 
         this.checkOrgaoProprietario(tipo, dto, user);
@@ -456,6 +461,7 @@ export class VariavelService {
                         {
                             ...dto,
                             titulo: dto.titulo,
+                            possui_variaveis_filhas: true,
                         },
                         indicador,
                         responsaveis,
@@ -654,12 +660,16 @@ export class VariavelService {
         if (jaEmUso > 0 && tipo == 'Global')
             throw new BadRequestException(`Código ${codigo} já está em uso no sistema.`);
 
-        // TODO verificar quem pode usar o orgao_proprietario_id
-        // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo_ids
-
         const periodos = dto.periodos ? this.getPeriodTuples(dto.periodos, dto.periodicidade) : {};
 
         const equipes_configuradas = this.isEquipesConfiguradas(dto);
+
+        const orgao_id = dto.orgao_id ?? (tipo == 'Global' ? dto.orgao_proprietario_id : null);
+        if (!orgao_id) throw new BadRequestException('Órgão é obrigatório para criar variável');
+
+        const medicao_orgao_id = dto.medicao_orgao_id ?? orgao_id;
+        const validacao_orgao_id = dto.validacao_orgao_id ?? orgao_id;
+        const liberacao_orgao_id = dto.liberacao_orgao_id ?? orgao_id;
 
         const variavel = await prismaTxn.variavel.create({
             data: {
@@ -675,7 +685,7 @@ export class VariavelService {
                 valor_base: dto.valor_base ?? 0,
                 periodicidade: dto.periodicidade,
                 polaridade: dto.polaridade,
-                orgao_id: dto.orgao_id,
+                orgao_id: orgao_id,
                 regiao_id: dto.regiao_id,
                 variavel_categorica_id: dto.variavel_categorica_id,
                 casas_decimais: dto.casas_decimais,
@@ -683,6 +693,12 @@ export class VariavelService {
                 inicio_medicao: dto.inicio_medicao,
                 fim_medicao: dto.fim_medicao,
                 supraregional: dto.supraregional,
+
+                possui_variaveis_filhas: dto.possui_variaveis_filhas,
+
+                medicao_orgao_id,
+                validacao_orgao_id,
+                liberacao_orgao_id,
 
                 dado_aberto: dto.dado_aberto,
                 metodologia: dto.metodologia,
@@ -720,14 +736,14 @@ export class VariavelService {
 
         const variavelId = variavel.id;
 
-        await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
+        await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger);
 
         await this.recalc_series_dependentes([variavel.id], prismaTxn);
 
         return variavel;
     }
 
-    private async insertVariavelResponsavel(
+    private async insertEquipeResponsavel(
         dto: UpdateVariavelDto,
         prismaTxn: Prisma.TransactionClient,
         variavelId: number,
@@ -1111,7 +1127,7 @@ export class VariavelService {
                 },
                 variavel_categorica_id: true,
                 // Apenas utilizado para fornecer boolean de se possui filhas.
-                variaveis_filhas: { take: 1, where: { removido_em: null }, select: { id: true } },
+                possui_variaveis_filhas: true,
             },
         });
 
@@ -1185,7 +1201,7 @@ export class VariavelService {
                 indicador_variavel: indicador_variavel,
                 responsaveis: responsaveis,
                 suspendida: row.suspendida_em ? true : false,
-                possui_variaveis_filhas: row.variaveis_filhas.length > 0,
+                possui_variaveis_filhas: row.possui_variaveis_filhas,
                 supraregional: row.supraregional,
                 recalculando: row.recalculando,
                 recalculo_erro: row.recalculo_erro,
@@ -1529,7 +1545,9 @@ export class VariavelService {
                 periodicidade: true,
                 supraregional: true,
                 variavel_categorica_id: true,
-                orgao_id: true,
+                liberacao_orgao_id: true,
+                medicao_orgao_id: true,
+                validacao_orgao_id: true,
                 inicio_medicao: true,
                 fim_medicao: true,
                 variavel_mae_id: true,
@@ -1543,7 +1561,11 @@ export class VariavelService {
         if (selfBefUpdate.variavel_mae_id)
             throw new HttpException('Variável filha não pode ser atualizada diretamente', 400);
 
-        await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_id ?? MIN_DTO_SAFE_NUM);
+        await this.validaEquipeResponsavel(dto, {
+            liberacao_orgao_id: selfBefUpdate.liberacao_orgao_id ?? MIN_DTO_SAFE_NUM,
+            medicao_orgao_id: selfBefUpdate.medicao_orgao_id ?? MIN_DTO_SAFE_NUM,
+            validacao_orgao_id: selfBefUpdate.validacao_orgao_id ?? MIN_DTO_SAFE_NUM,
+        });
         await this.validaCamposCategorica(dto, 'update');
 
         let indicador_id: number | undefined = undefined;
@@ -1597,7 +1619,6 @@ export class VariavelService {
                     }
                 });
             }
-
         } else if (tipo == 'Global') {
             this.checkPeriodoVariavelGlobal({
                 ...dto,
@@ -1654,32 +1675,23 @@ export class VariavelService {
 
             await this.updateCategorica(selfBefUpdate.variavel_categorica_id, dto, prismaTxn, variavelId, self);
 
-            const gruposRecebidosSorted = [
+            const gruposRecebidos = [
                 ...(dto.medicao_grupo_ids ?? []),
                 ...(dto.validacao_grupo_ids ?? []),
                 ...(dto.liberacao_grupo_ids ?? []),
-            ]
-                .sort()
-                .join(',');
-            const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id)
-                .sort()
-                .join(',');
+            ];
+            const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id);
 
             let equipes_configuradas: boolean | undefined = undefined;
-            if (
-                gruposRecebidosSorted !== gruposAtuais &&
-                (Array.isArray(dto.medicao_grupo_ids) ||
-                    Array.isArray(dto.validacao_grupo_ids) ||
-                    Array.isArray(dto.liberacao_grupo_ids))
-            ) {
-                logger.log('Grupos de responsáveis alterados...');
+            if (IsArrayContentsChanged(gruposRecebidos, gruposAtuais)) {
+                logger.log('Equipe responsáveis alteradas...');
                 equipes_configuradas = this.isEquipesConfiguradas(dto);
 
                 await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
                     where: { variavel_id: variavelId, removido_em: null },
                     data: { removido_em: now },
                 });
-                await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
+                await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger);
             }
 
             dto.orgao_proprietario_id = dto.orgao_proprietario_id ?? selfBefUpdate.orgao_proprietario_id;
@@ -1836,12 +1848,15 @@ export class VariavelService {
             }
 
             if (tipo === 'PDM' && indicador) {
-                await this.trataPeriodosSerieVariavel(prismaTxn,variavelId,indicador.id,
-                    dto.inicio_medicao===null?undefined:dto.inicio_medicao,
-                    dto.fim_medicao===null?undefined:dto.fim_medicao);
+                await this.trataPeriodosSerieVariavel(
+                    prismaTxn,
+                    variavelId,
+                    indicador.id,
+                    dto.inicio_medicao === null ? undefined : dto.inicio_medicao,
+                    dto.fim_medicao === null ? undefined : dto.fim_medicao
+                );
             }
             await logger.saveLogs(prismaTxn, user.getLogData());
-
         });
 
         return { id: variavelId };
@@ -1851,56 +1866,61 @@ export class VariavelService {
       Função para remover as series inválidas quando a periodicidade da variável é alterada
       deve ser utilizada apenas para tipo PDM
      */
-    public async trataPeriodosSerieVariavel(prismaTxn: Prisma.TransactionClient, variavelId: number, indicadorId:number,
-                                            dataInicio?:Date, dataFim?:Date) {
+    public async trataPeriodosSerieVariavel(
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number,
+        indicadorId: number,
+        dataInicio?: Date,
+        dataFim?: Date
+    ) {
         let periodoValido: string[] = [];
         if (!dataInicio && !dataFim) {
             periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId);
-        }else {
+        } else {
             const filtro = new FilterPeriodoDto();
             filtro.data_inicio = dataInicio;
             filtro.data_fim = dataFim;
-            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId,filtro);
+            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filtro);
         }
         //Recupera as series que serao excluidas
-        const seriesAfetadas =  await prismaTxn.serieVariavel.findMany({
-            where : {
+        const seriesAfetadas = await prismaTxn.serieVariavel.findMany({
+            where: {
                 NOT: {
                     data_valor: {
-                        in: periodoValido.map(data=> Date2YMD.fromString(data))
-                    }
+                        in: periodoValido.map((data) => Date2YMD.fromString(data)),
+                    },
                 },
                 variavel_id: variavelId,
-            }
+            },
         });
 
         //Cria os registros na tabela de historico
         for (const serie of seriesAfetadas) {
             await prismaTxn.serieVariavelHistorico.create({
-                data:{
+                data: {
                     serie_variavel_id: serie.id,
                     variavel_id: serie.variavel_id,
                     serie: serie.serie,
-                    data_valor : serie.data_valor,
-                    valor_nominal : serie.valor_nominal,
-                    variavel_categorica_id : serie.variavel_categorica_id,
+                    data_valor: serie.data_valor,
+                    valor_nominal: serie.valor_nominal,
+                    variavel_categorica_id: serie.variavel_categorica_id,
                     variavel_categorica_valor_id: serie.variavel_categorica_id,
-                    atualizado_em : serie.atualizado_em,
-                    atualizado_por : serie.atualizado_por,
-                    conferida : serie.conferida,
-                    conferida_por :serie.conferida_por,
-                    conferida_em :serie.conferida_em,
-                    ciclo_fisico_id : serie.ciclo_fisico_id
-                }
+                    atualizado_em: serie.atualizado_em,
+                    atualizado_por: serie.atualizado_por,
+                    conferida: serie.conferida,
+                    conferida_por: serie.conferida_por,
+                    conferida_em: serie.conferida_em,
+                    ciclo_fisico_id: serie.ciclo_fisico_id,
+                },
             });
         }
         //Exclui os registros invalidos
         await prismaTxn.serieVariavel.deleteMany({
-            where :{
+            where: {
                 NOT: {
                     data_valor: {
-                        in: periodoValido.map(data=> Date2YMD.fromString(data))
-                    }
+                        in: periodoValido.map((data) => Date2YMD.fromString(data)),
+                    },
                 },
                 variavel_id: variavelId,
             },
@@ -2125,12 +2145,21 @@ export class VariavelService {
         }
     }
 
-    private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_id: number | undefined) {
-        const orgao_id = dto.orgao_id ?? current_orgao_id;
+    private async validaEquipeResponsavel(
+        dto: UpdateVariavelDto,
+        antigo: {
+            liberacao_orgao_id: number;
+            medicao_orgao_id: number;
+            validacao_orgao_id: number;
+        }
+    ) {
+        const medicao_orgao_id = dto.medicao_orgao_id ?? antigo.medicao_orgao_id;
+        const validacao_orgao_id = dto.validacao_orgao_id ?? antigo.validacao_orgao_id;
+        const liberacao_orgao_id = dto.liberacao_orgao_id ?? antigo.liberacao_orgao_id;
 
         const grupoPrefetch = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
-                orgao_id: orgao_id,
+                orgao_id: { in: [medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id] },
                 id: {
                     in: [
                         ...(dto.medicao_grupo_ids ?? []),
@@ -2142,12 +2171,13 @@ export class VariavelService {
             select: {
                 id: true,
                 perfil: true,
+                orgao_id: true,
             },
         });
 
         if (Array.isArray(dto.medicao_grupo_ids)) {
             for (const grupoId of dto.medicao_grupo_ids) {
-                const grupo = grupoPrefetch.find((g) => g.id === grupoId);
+                const grupo = grupoPrefetch.find((g) => g.id === grupoId && g.orgao_id === medicao_orgao_id);
                 if (!grupo) {
                     throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Responsável.`, 400);
                 }
@@ -2159,7 +2189,7 @@ export class VariavelService {
 
         if (Array.isArray(dto.validacao_grupo_ids)) {
             for (const grupoId of dto.validacao_grupo_ids) {
-                const grupo = grupoPrefetch.find((g) => g.id === grupoId);
+                const grupo = grupoPrefetch.find((g) => g.id === grupoId && g.orgao_id === validacao_orgao_id);
                 if (!grupo) {
                     throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Responsável.`, 400);
                 }
@@ -2171,7 +2201,7 @@ export class VariavelService {
 
         if (Array.isArray(dto.liberacao_grupo_ids)) {
             for (const grupoId of dto.liberacao_grupo_ids) {
-                const grupo = grupoPrefetch.find((g) => g.id === grupoId);
+                const grupo = grupoPrefetch.find((g) => g.id === grupoId && g.orgao_id === liberacao_orgao_id);
                 if (!grupo) {
                     throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Responsável.`, 400);
                 }
@@ -3605,11 +3635,14 @@ export class VariavelService {
         });
         if (jaEmUso > 0) throw new HttpException(`Código ${codigo} já está em uso no indicador.`, 400);
 
+        const orgao_id = dto.orgao_id;
+        if (!orgao_id) throw new HttpException('Orgão não informado', 400);
+
         const variavel = await prismaTxn.variavel.create({
             data: {
                 codigo: codigo,
                 titulo: dto.titulo,
-                orgao_id: dto.orgao_id,
+                orgao_id: orgao_id,
                 casas_decimais: 0,
                 acumulativa: true,
                 variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,

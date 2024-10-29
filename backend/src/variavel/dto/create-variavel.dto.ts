@@ -1,4 +1,4 @@
-import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { Periodicidade, Polaridade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
@@ -53,11 +53,12 @@ export class VariaveisPeriodosDto {
 
 export class CreateVariavelBaseDto {
     /**
-     * ID do órgão
+     * ID do órgão, se for enviado e não for enviado medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id, ira sobrescrevê-los
      */
-    @IsInt({ message: '$property| órgão responsável' })
+    @IsOptional()
+    @IsInt({ message: 'órgão responsável' })
     @Type(() => Number)
-    orgao_id: number;
+    orgao_id?: number;
 
     /**
      * ID da região (opcional)
@@ -207,6 +208,16 @@ export class CreateVariavelBaseDto {
     orgao_proprietario_id?: number | null;
 
     @IsOptional()
+    @IsInt()
+    medicao_orgao_id?: number | null;
+    @IsOptional()
+    @IsInt()
+    validacao_orgao_id?: number | null;
+    @IsOptional()
+    @IsInt()
+    liberacao_orgao_id?: number | null;
+
+    @IsOptional()
     @IsInt({ each: true })
     @IsArray()
     @ArrayMaxSize(1000)
@@ -223,6 +234,11 @@ export class CreateVariavelBaseDto {
     @IsArray()
     @ArrayMaxSize(1000)
     liberacao_grupo_ids?: number[] | null;
+
+    @ApiHideProperty()
+    @IsOptional()
+    @IsBoolean()
+    possui_variaveis_filhas?: boolean;
 }
 
 export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
@@ -263,6 +279,8 @@ export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
     @IsBoolean()
     @IsOptional()
     criar_formula_composta?: boolean;
+
+
 }
 
 export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {
