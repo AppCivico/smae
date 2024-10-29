@@ -270,17 +270,15 @@ export class CreatePeloIndicadorDto extends PickType(CreateVariavelBaseDto, ['ti
 }
 
 export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
-    @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
-    @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
-    @ArrayMaxSize(1000, { message: '$property| tag(s): precisa ter no máximo 1000 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'Região precisa ser uma array.' })
+    @ArrayMinSize(1, { message: 'Região precisa ter pelo menos um item' })
+    @ArrayMaxSize(1000, { message: 'Região precisa ter no máximo 1000 items' })
+    @IsInt({ each: true, message: 'Região, cada item precisa ser um número inteiro' })
     regioes: number[];
 
     @IsBoolean()
     @IsOptional()
     criar_formula_composta?: boolean;
-
-
 }
 
 export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {
