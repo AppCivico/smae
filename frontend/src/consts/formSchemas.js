@@ -3797,7 +3797,7 @@ export const variavelGlobal = object({
     .required()
     .min(dataMin),
   liberacao_grupo_ids: array()
-    .label('Grupos de liberação')
+    .label('Equipes de liberação')
     .nullable()
     .of(
       number()
@@ -3805,7 +3805,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   medicao_grupo_ids: array()
-    .label('Grupos de medição')
+    .label('Equipes de medição')
     .nullable()
     .of(
       number()
@@ -3867,7 +3867,7 @@ export const variavelGlobal = object({
     .label('Unidade de medida')
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
   validacao_grupo_ids: array()
-    .label('Grupos de validação')
+    .label('Equipes de validação')
     .nullable()
     .of(
       number()
