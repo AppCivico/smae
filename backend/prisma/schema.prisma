@@ -7239,3 +7239,22 @@ model CategoriaAssuntoVariavel{
     @@index([nome])
     @@map("categoria_assunto_variavel")
 }
+
+model SerieVariavelHistorico {
+    id          Int      @id @default(autoincrement())
+    serie_variavel_id Int
+    variavel_id Int
+    serie Serie
+    data_valor    DateTime @db.Date()
+    valor_nominal Decimal  @db.Decimal(65, 30)
+
+    variavel_categorica_id Int?
+    variavel_categorica_valor_id Int?
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    conferida     Boolean   @default(true)
+    conferida_por Int?
+    conferida_em  DateTime?
+    ciclo_fisico_id Int?
+    @@map("serie_variavel_historico")
+}
