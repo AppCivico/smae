@@ -1,14 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Transform, Type, plainToClass } from 'class-transformer';
-import {
-    IsArray,
-    IsEnum,
-    IsOptional,
-    IsString,
-    IsUrl,
-    ValidateNested,
-    validate
-} from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString, IsUrl, ValidateNested, validate } from 'class-validator';
 import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
 import { IsOnlyDate } from '../common/decorators/IsDateOnly';
@@ -166,10 +158,18 @@ export class SeiApiService {
     }
 
     private async doGetRequest<T>(endpoint: string, params: any, dto: new () => T): Promise<T> {
-        this.logger.debug(`chamando GET ${endpoint}`);
+        const logStr =
+            'GET ' +
+            endpoint +
+            '?' +
+            Object.entries(params)
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&');
+
+        this.logger.debug(`Iniciando ${logStr}...`);
         try {
             const response = await this.got.get(endpoint, { searchParams: params }).json();
-            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            this.logger.debug(`${logStr} resposta: ${JSON.stringify(response)}`);
 
             // Validate the response
             const dtoInstance = plainToClass(dto, response);
@@ -181,11 +181,11 @@ export class SeiApiService {
 
             return dtoInstance as T;
         } catch (error: any) {
-            this.logger.debug(`${endpoint} falhou: ${error}`);
+            this.logger.debug(`${logStr} falhou: ${error}`);
             let body = '';
             if (error instanceof got.HTTPError) {
                 body = String(error.response.body);
-                this.logger.debug(`${endpoint}.res.body: ${body}`);
+                this.logger.debug(`${logStr}.res.body: ${body}`);
             }
 
             if (error instanceof HttpException) {
