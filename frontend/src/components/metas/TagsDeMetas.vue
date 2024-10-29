@@ -4,25 +4,26 @@
     <li
       v-for="tag in listaDeTags"
       :key="tag.id"
-      class="lista-de-tags__item flex"
+      class="lista-de-tags__item flex center"
       :class="{
-        'lista-de-tags__item--apenas-titulo': !tag.download_token
+        'lista-de-tags__item--apenas-titulo': !tag.download_token,
       }"
     >
       <a
         v-if="tag.download_token"
         :href="baseUrl + '/download/' + tag.download_token"
         download
-        class="lista-de-tags__icone block"
+        class="lista-de-tags__link block"
       >
         <img
+          class="lista-de-tags__icone"
           :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
           width="250"
         >
       </a>
       <strong
         v-else
-        class="lista-de-tags__nome flex p1 center justifycenter"
+        class="lista-de-tags__nome"
       >
         {{ tag.descricao }}
       </strong>
@@ -47,9 +48,23 @@ defineProps({
   height: 6.857143rem;
 }
 
-.lista-de-tags__nome {
-  border: 1px solid @c400;
+.lista-de-tags__icone {
   width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
+}
+
+.lista-de-tags__item--apenas-titulo {
+  padding: 1rem;
+  border: 1px solid @c400;
+  min-width: min-content;
+}
+
+.lista-de-tags__nome {
+  display: block;
+  width: 100%;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 </style>
