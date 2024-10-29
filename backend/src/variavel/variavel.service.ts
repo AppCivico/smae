@@ -1,11 +1,11 @@
 import {
     BadRequestException,
+    forwardRef,
     HttpException,
     Inject,
     Injectable,
     Logger,
     NotFoundException,
-    forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -1583,10 +1583,8 @@ export class VariavelService {
 
         // e com o indicador verdadeiro, temos os dados para recalcular os níveis
         const indicador = indicador_id ? await this.buscaIndicadorParaVariavel(indicador_id) : undefined;
-
         let oldValue = selfBefUpdate.periodicidade;
         if (dto.periodicidade) oldValue = dto.periodicidade;
-
         if (tipo == 'PDM') {
             if (!indicador) throw new BadRequestException('Indicador é necessário para variáveis do PDM');
             if (oldValue === indicador.periodicidade) {
@@ -1599,6 +1597,7 @@ export class VariavelService {
                     }
                 });
             }
+
         } else if (tipo == 'Global') {
             this.checkPeriodoVariavelGlobal({
                 ...dto,
@@ -1836,10 +1835,76 @@ export class VariavelService {
                 await this.recalc_series_dependentes([variavelId], prismaTxn);
             }
 
+            if (tipo === 'PDM' && indicador) {
+                await this.trataPeriodosSerieVariavel(prismaTxn,variavelId,indicador.id,
+                    dto.inicio_medicao===null?undefined:dto.inicio_medicao,
+                    dto.fim_medicao===null?undefined:dto.fim_medicao);
+            }
             await logger.saveLogs(prismaTxn, user.getLogData());
+
         });
 
         return { id: variavelId };
+    }
+
+    /*
+      Função para remover as series inválidas quando a periodicidade da variável é alterada
+      deve ser utilizada apenas para tipo PDM
+     */
+    public async trataPeriodosSerieVariavel(prismaTxn: Prisma.TransactionClient, variavelId: number, indicadorId:number,
+                                            dataInicio?:Date, dataFim?:Date) {
+        let periodoValido: string[] = [];
+        if (!dataInicio && !dataFim) {
+            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId);
+        }else {
+            const filtro = new FilterPeriodoDto();
+            filtro.data_inicio = dataInicio;
+            filtro.data_fim = dataFim;
+            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId,filtro);
+        }
+        //Recupera as series que serao excluidas
+        const seriesAfetadas =  await prismaTxn.serieVariavel.findMany({
+            where : {
+                NOT: {
+                    data_valor: {
+                        in: periodoValido.map(data=> Date2YMD.fromString(data))
+                    }
+                },
+                variavel_id: variavelId,
+            }
+        });
+
+        //Cria os registros na tabela de historico
+        for (const serie of seriesAfetadas) {
+            await prismaTxn.serieVariavelHistorico.create({
+                data:{
+                    serie_variavel_id: serie.id,
+                    variavel_id: serie.variavel_id,
+                    serie: serie.serie,
+                    data_valor : serie.data_valor,
+                    valor_nominal : serie.valor_nominal,
+                    variavel_categorica_id : serie.variavel_categorica_id,
+                    variavel_categorica_valor_id: serie.variavel_categorica_id,
+                    atualizado_em : serie.atualizado_em,
+                    atualizado_por : serie.atualizado_por,
+                    conferida : serie.conferida,
+                    conferida_por :serie.conferida_por,
+                    conferida_em :serie.conferida_em,
+                    ciclo_fisico_id : serie.ciclo_fisico_id
+                }
+            });
+        }
+        //Exclui os registros invalidos
+        await prismaTxn.serieVariavel.deleteMany({
+            where :{
+                NOT: {
+                    data_valor: {
+                        in: periodoValido.map(data=> Date2YMD.fromString(data))
+                    }
+                },
+                variavel_id: variavelId,
+            },
+        });
     }
 
     private isEquipesConfiguradas(dto: UpdateVariavelDto) {

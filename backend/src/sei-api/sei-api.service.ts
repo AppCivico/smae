@@ -1,9 +1,18 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Transform, Type, plainToClass } from 'class-transformer';
-import { IsArray, IsEnum, IsOptional, IsString, IsUrl, ValidateNested, validate } from 'class-validator';
+import {
+    IsArray,
+    IsEnum,
+    IsOptional,
+    IsString,
+    IsUrl,
+    ValidateNested,
+    validate
+} from 'class-validator';
 import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
 import { IsOnlyDate } from '../common/decorators/IsDateOnly';
+import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 
 export class SeiError extends Error {
     constructor(msg: string) {
@@ -175,12 +184,13 @@ export class SeiApiService {
             const dtoInstance = plainToClass(dto, response);
             const errors = await validate(dtoInstance as any);
             if (errors.length > 0) {
-                const errorMessages = errors.map((error) => Object.values((error as any).constraints)).flat();
-                throw new HttpException(`Validation failed: ${errorMessages.join(', ')}`, 400);
+                const errorMessages = FormatValidationErrors(errors);
+                throw new HttpException(`Falha na resposta do SEI: ${errorMessages.join(', ')}`, 400);
             }
 
             return dtoInstance as T;
         } catch (error: any) {
+            console.trace(error);
             this.logger.debug(`${logStr} falhou: ${error}`);
             let body = '';
             if (error instanceof got.HTTPError) {

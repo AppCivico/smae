@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { FonteRelatorio } from '@prisma/client';
 import { registerDecorator, validate, ValidationArguments, ValidationOptions } from 'class-validator';
 import { ParseParametrosDaFonte } from '../utils/utils.service';
+import { FormatValidationErrors } from '../../common/helpers/FormatValidationErrors';
 
 export function ReportValidatorOf(property: string, validationOptions?: ValidationOptions) {
     return function (value: Object, propertyName: string) {
@@ -17,7 +18,8 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
             },
             validator: {
                 async validate(value: any, args: ValidationArguments) {
-                    if (!value || typeof value !== 'object') throw new BadRequestException('Informe os parâmetros da fonte');
+                    if (!value || typeof value !== 'object')
+                        throw new BadRequestException('Informe os parâmetros da fonte');
 
                     const [fonteNome] = args.constraints;
                     const fonte = (args.object as any)[fonteNome] as FonteRelatorio;
@@ -25,11 +27,7 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                     const validatorObject = ParseParametrosDaFonte(fonte, value);
                     const validations = await validate(validatorObject);
                     if (validations.length) {
-                        throw new BadRequestException(
-                            validations.reduce((acc, curr) => {
-                                return [...acc, ...Object.values(curr.constraints as any)];
-                            }, [])
-                        );
+                        throw new BadRequestException(FormatValidationErrors(validations));
                     }
 
                     return true;
