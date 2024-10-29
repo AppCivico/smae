@@ -67,12 +67,17 @@ const {
 
 const éCapital = computed(() => values.municipio_tipo === 'Capital');
 
+const mandatosEmSp = computed(() => {
+  const { mandatos } = emFoco.value;
+  return mandatos ? mandatos.filter((mandato) => mandato.uf === 'SP') : [];
+});
+
 const regiõesFiltradas = computed(() => {
   switch (values.municipio_tipo) {
     case 'Capital':
-      return regiõesPorNível.value[3].slice().sort((a, b) => a.descricao.localeCompare(b.descricao));
+      return regiõesPorNível.value[3]?.slice().sort((a, b) => a.descricao.localeCompare(b.descricao));
     case 'Interior':
-      return regiõesPorNível.value[1].slice().sort((a, b) => a.descricao.localeCompare(b.descricao));
+      return regiõesPorNível.value[1]?.slice().sort((a, b) => a.descricao.localeCompare(b.descricao));
     default:
       return [];
   }
@@ -264,7 +269,7 @@ watch(representatividadeParaEdição, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="mandato in emFoco?.mandatos || []"
+              v-for="mandato in mandatosEmSp || []"
               :key="mandato.id"
               :value="mandato.id"
             >
