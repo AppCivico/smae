@@ -172,28 +172,6 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
-async function checkDelete(id) {
-  if (id) {
-    // mantendo o comportamento legado
-    // eslint-disable-next-line eqeqeq
-    if (singleAtividade.value.id == id) {
-      alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-        if (await AtividadesStore.delete(metaId, id)) {
-          AtividadesStore.clear();
-
-          if (route.meta.rotaDeEscape) {
-            router.push({ name: route.meta.rotaDeEscape });
-          } else if (route.meta.entidadeMãe === 'pdm') {
-            await router.push(`/metas/${metaId}/iniciativas/${iniciativaId}`);
-          } else {
-            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
-          }
-          alertStore.success('Iniciativa removida.');
-        }
-      }, 'Remover');
-    }
-  }
-}
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     if (route.meta.rotaDeEscape) {
@@ -511,15 +489,5 @@ function filterResponsible(orgao_id) {
         {{ singleAtividade.error }}
       </div>
     </div>
-  </template>
-
-  <template v-if="atividadeId && singleAtividade.id && atividadeId == singleAtividade.id">
-    <hr class="mt2 mb2">
-    <button
-      class="btn amarelo big"
-      @click="checkDelete(singleAtividade.id)"
-    >
-      Remover item
-    </button>
   </template>
 </template>

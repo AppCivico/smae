@@ -13,8 +13,10 @@ import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+import { useAlertStore } from '@/stores/alert.store';
 
 const EquipesStore = useEquipesStore();
+const alertStore = useAlertStore();
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -64,6 +66,17 @@ async function iniciar() {
   nextTick().then(() => {
     rolarTelaPara();
   });
+}
+
+async function checkDelete(iniciativa) {
+  if (iniciativa) {
+    alertStore.confirmAction(`Deseja mesmo remover a iniciativa "${iniciativa.titulo}"?`, async () => {
+      if (await AtividadesStore.delete(metaId, iniciativa.id)) {
+        AtividadesStore.clear();
+        alertStore.success('Iniciativa removida.');
+      }
+    }, 'Remover');
+  }
 }
 
 iniciar();
@@ -196,7 +209,7 @@ iniciar();
           </SmaeLink>
         </div>
 
-        <template v-if="Atividades[iniciativaId].length">
+        <template v-if="Atividades[iniciativaId]?.length">
           <div
             v-for="ini in Atividades[iniciativaId]"
             :id="`atividade__${ini.id}`"
@@ -228,6 +241,7 @@ iniciar();
                 </SmaeLink>
                 <div class="f0">
                   <SmaeLink
+                    title="editar"
                     :to="`${parentlink}/atividades/editar/${ini.id}`"
                     class="tprimary"
                   >
@@ -237,6 +251,17 @@ iniciar();
                     ><use xlink:href="#i_edit" /></svg>
                   </SmaeLink>
                 </div>
+                <button
+                  class="like-a__text"
+                  arial-label="excluir"
+                  title="excluir"
+                  @click="checkDelete(ini)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_waste" /></svg>
+                </button>
               </div>
               <div class="f1 ml2">
                 <div class="flex g2 ml2">
@@ -271,7 +296,7 @@ iniciar();
         </template>
 
         <div
-          v-if="Atividades[iniciativaId].loading"
+          v-if="Atividades[iniciativaId]?.loading"
           class="board_vazio"
         >
           <div class="tc">
