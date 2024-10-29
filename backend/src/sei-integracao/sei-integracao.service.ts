@@ -437,6 +437,7 @@ export class SeiIntegracaoService {
                 const updateData: Prisma.StatusSEIUpdateInput = {
                     status_code: 500,
                     sincronizacao_errmsg: 'message' in error ? error.message : 'Erro desconhecido: ' + error.toString(),
+                    proxima_sincronizacao: this.calculaProximaSync(),
                 };
 
                 if (error instanceof HttpException) {
