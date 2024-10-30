@@ -67,7 +67,7 @@ export default {
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
-        título: 'Formulário de registro',
+        título: 'Formulário de registro 123',
       },
     },
     {
@@ -84,7 +84,10 @@ export default {
       meta: {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ],
       },
     },
     {
@@ -102,7 +105,10 @@ export default {
         título: 'Recurso financeiro',
         títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ],
       },
     },
     {
@@ -149,7 +155,10 @@ export default {
           component: NotasLista,
           meta: {
             título: 'Notas',
-            rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes'
+            ],
           },
         },
         {
@@ -164,6 +173,7 @@ export default {
             título: 'Nota',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
               'notasListar',
             ],
           },
@@ -177,12 +187,9 @@ export default {
             rotaDeEscape: 'notasListar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
               'notasListar',
             ],
-
-
-
-            
           },
         },
         {
@@ -215,7 +222,10 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ],
       },
     },
     {
@@ -230,7 +240,10 @@ export default {
       meta: {
         título: 'Documentos',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ],
       },
       children: [
         {
@@ -293,7 +306,10 @@ export default {
             título: 'Cronograma',
             títuloParaMenu: 'Cronograma',
             rotasParaMenuSecundário,
-            rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes'
+            ],
           },
           props: ({ params }) => ({
             ...params,
