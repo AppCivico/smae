@@ -67,7 +67,7 @@ export default {
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
-        título: 'Formulário de registro',
+        título: 'Formulário de registro 123',
       },
     },
     {
@@ -201,10 +201,6 @@ export default {
               'TransferenciasVoluntariasDetalhes',
               'notasListar',
             ],
-
-
-
-            
           },
         },
         /* FIM DE INCLUSÃO DE NOTA */
