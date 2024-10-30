@@ -122,7 +122,7 @@ const schema = Yup.object().shape({
   compoe_indicador_meta: Yup.string().nullable(),
 });
 
-async function onSubmit(values) {
+async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
     values.orgaos_participantes = unref(orgaos_participantes);
@@ -169,6 +169,7 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
+
 async function checkDelete(id) {
   if (id) {
     if (singleIniciativa.value.id == id) {
