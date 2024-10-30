@@ -9,8 +9,14 @@ import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
 const showModal = ref(false);
 const analise = ref(null);
 const props = defineProps({
-  g: {},
-  variavel: {},
+  g: {
+    type: Object,
+    default: () => ({}),
+  },
+  variavel: {
+    type: Boolean,
+    default: false,
+  },
   temVariavelAcumulada: {
     type: Boolean,
     default: true,
@@ -65,13 +71,13 @@ async function buscarAnalise(dataValor, variavelId) {
 
 function handleClick(obj) {
   if (hasModal(obj.ciclo_fisico)) {
-    buscarAnalise(obj.series[0].data_valor, props.g?.variavel?.id);
+    buscarAnalise(obj.series[0].data_valor, props.g.variavel?.id);
     openAnalise();
   }
 }
 
 function obterValorTabela(item, index) {
-  const serieIndex = props.g.ordem_series.indexOf(index);
+  const serieIndex = props.g.ordem_series?.indexOf(index);
 
   if (!item.series[serieIndex]) {
     return '-';
@@ -84,7 +90,7 @@ function obterValorTabela(item, index) {
   }
 
   if (temVariavelCategorica.value) {
-    return props.g.dados_auxiliares.categoricas?.[valor] || valor;
+    return props.g.dados_auxiliares?.categoricas?.[valor] || valor;
   }
 
   return valor;
