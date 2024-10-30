@@ -31,7 +31,7 @@ const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
 
-const parentlink = computed(() => {
+const parentlink = (() => {
   let baseLink = window.location.origin;
 
   if (meta_id) {
@@ -47,13 +47,9 @@ const parentlink = computed(() => {
   }
 
   return baseLink;
-});
+})();
 
-const ehPlanoSetorial = computed(() => {
-  console.log(route.path);
-
-  return route.path.includes('planos-setoriais');
-});
+const ehPlanoSetorial = computed(() => route.meta.entidadeMãe === 'planoSetorial');
 
 const dialogoAtivo = computed(() => {
   switch (props.group) {
