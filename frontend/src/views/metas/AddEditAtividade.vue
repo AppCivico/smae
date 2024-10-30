@@ -120,7 +120,7 @@ const schema = Yup.object().shape({
   compoe_indicador_iniciativa: Yup.string().nullable(),
 });
 
-async function onSubmit(values) {
+async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
     values.orgaos_participantes = unref(orgaosParticipantes);
