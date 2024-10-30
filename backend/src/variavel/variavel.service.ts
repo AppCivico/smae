@@ -57,6 +57,8 @@ import {
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
     SACicloFisicoDto,
+    SerieIndicadorValorNominal,
+    SerieValorCategoricaComposta,
     SerieValorNomimal,
     SerieValorPorPeriodo,
     TipoUso,
@@ -2662,7 +2664,7 @@ export class VariavelService {
 
         const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
         for (const periodoYMD of todosPeriodos) {
-            const seriesExistentes: SerieValorNomimal[] = this.populaSeriesExistentes(
+            const seriesExistentes = this.populaSeriesExistentes(
                 porPeriodo,
                 periodoYMD,
                 variavelId,
@@ -2716,7 +2718,7 @@ export class VariavelService {
         variavelId: number,
         variavel: { acumulativa: boolean },
         uso: TipoUso = 'escrita'
-    ) {
+    ): SerieIndicadorValorNominal[] | SerieValorNomimal[] | SerieValorCategoricaComposta[] {
         const seriesExistentes: SerieValorNomimal[] = [];
 
         const existeValor = porPeriodo[periodoYMD];
@@ -2766,6 +2768,13 @@ export class VariavelService {
             seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
             seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso));
         }
+
+        if (uso == 'leitura') {
+            for (const e of seriesExistentes) {
+                delete (e as any).referencia;
+            }
+        }
+
         return seriesExistentes;
     }
 

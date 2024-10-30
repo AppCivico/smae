@@ -3,6 +3,7 @@ import { Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from '../indicador/dto/create-indicador.dto';
 import { IndicadorFormulaCompostaService } from '../indicador/indicador.formula-composta.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,9 +17,8 @@ import {
     PeriodoFormulaCompostaDto,
     UpdatePSFormulaCompostaDto,
 } from './dto/variavel.formula-composta.dto';
-import { SerieValorNomimal, VariavelItemDto } from './entities/variavel.entity';
+import { VariavelItemDto } from './entities/variavel.entity';
 import { ORDEM_SERIES_RETORNO, VariavelService } from './variavel.service';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
 
 @Injectable()
 export class VariavelFormulaCompostaService {
@@ -132,7 +132,7 @@ export class VariavelFormulaCompostaService {
                 { data_valor: filter.periodo }
             );
             const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
-            const seriesExistentes: SerieValorNomimal[] = this.variavelService.populaSeriesExistentes(
+            const seriesExistentes = this.variavelService.populaSeriesExistentes(
                 porPeriodo,
                 periodoYMD,
                 variavelId,
