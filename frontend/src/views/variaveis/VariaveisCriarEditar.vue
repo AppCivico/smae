@@ -485,7 +485,13 @@ watch(() => values.variavel_categorica_id, () => {
           <LabelFromYup
             name="polaridade"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.polaridade.spec.label }}
+            <span
+              v-if="ehNumerica"
+              class="tvermelho"
+            >*</span>
+          </LabelFromYup>
           <Field
             v-if="!variavelId"
             name="polaridade"
@@ -526,7 +532,10 @@ watch(() => values.variavel_categorica_id, () => {
           <LabelFromYup
             name="unidade_medida_id"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.unidade_medida_id.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <Field
             v-if="!variavelId"
             name="unidade_medida_id"
@@ -566,7 +575,10 @@ watch(() => values.variavel_categorica_id, () => {
           <LabelFromYup
             name="casas_decimais"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.casas_decimais.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <Field
             name="casas_decimais"
             type="number"
@@ -589,7 +601,10 @@ watch(() => values.variavel_categorica_id, () => {
           <LabelFromYup
             name="valor_base"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.valor_base.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <MaskedFloatInput
             :value="values.valor_base"
             name="valor_base"
