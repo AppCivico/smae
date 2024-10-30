@@ -27,10 +27,29 @@ const { atividade_id } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
+
+const parentlink = (() => {
+  let baseLink = window.location.origin;
+
+  if (meta_id) {
+    baseLink += `/metas/${meta_id}`;
+  }
+
+  if (iniciativa_id) {
+    baseLink += `/iniciativas/${iniciativa_id}`;
+  }
+
+  if (atividade_id) {
+    baseLink += `/atividades/${atividade_id}`;
+  }
+
+  return baseLink;
+})();
+
+const ehPlanoSetorial = computed(() => route.meta.entidadeMãe === 'planoSetorial');
 
 const dialogoAtivo = computed(() => {
   switch (props.group) {
@@ -247,6 +266,50 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                       Suspensa do monitoramento físico em {{ dateToField(v.suspendida_em) }}
                     </div>
                   </div>
+                </div>
+
+                <div
+                  v-if="
+                    !ehPlanoSetorial
+                      && !v.etapa
+                      && temPermissãoPara([
+                        'CadastroMeta.administrador_no_pdm',
+                        'CadastroMetaPS.administrador_no_pdm'
+                      ])
+                  "
+                  class="f0 dropbtn right"
+                >
+                  <span class="tamarelo"><svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_more" /></svg></span>
+                  <ul>
+                    <li>
+                      <SmaeLink
+                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}`"
+                        class="tprimary"
+                      >
+                        Editar variável
+                      </SmaeLink>
+                    </li>
+                    <li>
+                      <SmaeLink
+                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/valores`"
+                        class="tprimary"
+                      >
+                        Valores previstos
+                      </SmaeLink>
+                    </li>
+                    <li>
+                      <SmaeLink
+                        v-if="temPermissãoPara(['CadastroPessoa.administrador'])"
+                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
+                        class="tprimary"
+                      >
+                        Valores realizados retroativos
+                      </SmaeLink>
+                    </li>
+                  </ul>
                 </div>
               </div>
               <EvolucaoGraph
