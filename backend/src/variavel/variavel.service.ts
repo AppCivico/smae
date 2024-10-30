@@ -2861,6 +2861,7 @@ export class VariavelService {
                 s: decoded.serie,
                 id: Number(decoded.id),
             };
+            if (referenciaDecoded.id == undefined) delete (referenciaDecoded as any).id;
 
             // garantia que o tipo é ou string, ou um texto em branco
             valids.push({
