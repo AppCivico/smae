@@ -1,11 +1,8 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import SmallModal from '@/components/SmallModal.vue';
-import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
-import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
+import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
+import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
@@ -14,6 +11,9 @@ import { useVariaveisStore } from '@/stores/variaveis.store';
 import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const props = defineProps(['group']);
 
@@ -21,29 +21,33 @@ const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
-const { atividade_id } = route.params;
+const { meta_id: metaId } = route.params;
+const { iniciativa_id: iniciativaId } = route.params;
+const { atividade_id: atividadeId } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
-const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
-const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
-const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
+const parentId = atividadeId ?? iniciativaId ?? metaId ?? false;
+// mantendo comportamento legado
+// eslint-disable-next-line no-nested-ternary
+const parentField = atividadeId ? 'atividade_id' : iniciativaId ? 'iniciativa_id' : metaId ? 'meta_id' : false;
+// mantendo comportamento legado
+// eslint-disable-next-line no-nested-ternary
+const parentLabel = ref(atividadeId ? '-' : iniciativaId ? '-' : metaId ? 'Meta' : false);
 
 const parentlink = (() => {
   let baseLink = window.location.origin;
 
-  if (meta_id) {
-    baseLink += `/metas/${meta_id}`;
+  if (metaId) {
+    baseLink += `/metas/${metaId}`;
   }
 
-  if (iniciativa_id) {
-    baseLink += `/iniciativas/${iniciativa_id}`;
+  if (iniciativaId) {
+    baseLink += `/iniciativas/${iniciativaId}`;
   }
 
-  if (atividade_id) {
-    baseLink += `/atividades/${atividade_id}`;
+  if (atividadeId) {
+    baseLink += `/atividades/${atividadeId}`;
   }
 
   return baseLink;
@@ -66,8 +70,8 @@ const dialogoAtivo = computed(() => {
 
 (async () => {
   await MetasStore.getPdM();
-  if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
-  else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+  if (atividadeId) parentLabel.value = activePdm.value.rotulo_atividade;
+  else if (iniciativaId) parentLabel.value = activePdm.value.rotulo_iniciativa;
 })();
 
 const IndicadoresStore = useIndicadoresStore();
@@ -77,7 +81,11 @@ const VariaveisStore = useVariaveisStore();
 const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 
 (async () => {
-  if (!tempIndicadores.value.length || tempIndicadores.value[0][parent_field] != parent_id) await IndicadoresStore.filterIndicadores(parent_id, parent_field);
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  if (!tempIndicadores.value.length || tempIndicadores.value[0][parentField] != parentId) {
+    await IndicadoresStore.filterIndicadores(parentId, parentField);
+  }
   if (tempIndicadores.value[0]?.id) {
     IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
     await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
@@ -125,22 +133,36 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                   color="#F2890D"
                   class="f0"
                   xmlns="http://www.w3.org/2000/svg"
-                > <path
-                  d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104 1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364 3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244 26.8377C1.6739 27.3492 2.36759 27.6365 3.09091 27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376 26.8377C27.349 26.3262 27.6364 25.6325 27.6364 24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376 1.16257C26.3261 0.651104 25.6324 0.36377 24.9091 0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818 10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909 11.2729H3.09091V3.09104H24.9091ZM3.09091 24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636 9.22741L22.1818 14.5456L25.5909 11.2729H24.9091V24.9092H3.09091Z"
-                  fill="currentColor"
-                /> <path
-                  d="M7.18182 19.4547H4.45455V23.5456H7.18182V19.4547Z"
-                  fill="currentColor"
-                /> <path
-                  d="M12.6364 18.091H9.90909V23.5456H12.6364V18.091Z"
-                  fill="currentColor"
-                /> <path
-                  d="M18.0909 15.3638H15.3636V23.5456H18.0909V15.3638Z"
-                  fill="currentColor"
-                /> <path
-                  d="M23.5455 18.091H20.8182V23.5456H23.5455V18.091Z"
-                  fill="currentColor"
-                /> </svg>
+                >
+                  <path
+                    d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104
+                    1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364
+                    3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244
+                    26.8377C1.6739 27.3492 2.36759 27.6365 3.09091
+                    27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376
+                    26.8377C27.349 26.3262 27.6364 25.6325 27.6364
+                    24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376
+                    1.16257C26.3261 0.651104 25.6324 0.36377 24.9091
+                    0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818
+                    10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909
+                    11.2729H3.09091V3.09104H24.9091ZM3.09091
+                    24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636
+                    9.22741L22.1818 14.5456L25.5909
+                    11.2729H24.9091V24.9092H3.09091Z"
+                    fill="currentColor"
+                  /> <path
+                    d="M7.18182 19.4547H4.45455V23.5456H7.18182V19.4547Z"
+                    fill="currentColor"
+                  /> <path
+                    d="M12.6364 18.091H9.90909V23.5456H12.6364V18.091Z"
+                    fill="currentColor"
+                  /> <path
+                    d="M18.0909 15.3638H15.3636V23.5456H18.0909V15.3638Z"
+                    fill="currentColor"
+                  /> <path
+                    d="M23.5455 18.091H20.8182V23.5456H23.5455V18.091Z"
+                    fill="currentColor"
+                  /> </svg>
                 <h2 class="mt1 mb1 ml1">
                   {{ ind.codigo }} - {{ ind.titulo }}
                 </h2>
@@ -183,7 +205,9 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                     <svg
                       width="20"
                       height="20"
-                    ><use xlink:href="#i_i" /></svg><div>Indicador calculado pelo média móvel das variáveis</div>
+                    ><use xlink:href="#i_i" /></svg><div>
+                      Indicador calculado pelo média móvel das variáveis
+                    </div>
                   </div>
                 </div>
               </div>
@@ -236,7 +260,20 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                     color="#8EC122"
                     xmlns="http://www.w3.org/2000/svg"
                   > <path
-                    d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104 1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364 3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244 26.8377C1.6739 27.3492 2.36759 27.6365 3.09091 27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376 26.8377C27.349 26.3262 27.6364 25.6325 27.6364 24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376 1.16257C26.3261 0.651104 25.6324 0.36377 24.9091 0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818 10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909 11.2729H3.09091V3.09104H24.9091ZM3.09091 24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636 9.22741L22.1818 14.5456L25.5909 11.2729H24.9091V24.9092H3.09091Z"
+                    d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104
+                    1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364
+                    3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244
+                    26.8377C1.6739 27.3492 2.36759 27.6365 3.09091
+                    27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376
+                    26.8377C27.349 26.3262 27.6364 25.6325 27.6364
+                    24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376
+                    1.16257C26.3261 0.651104 25.6324 0.36377 24.9091
+                    0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818
+                    10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909
+                    11.2729H3.09091V3.09104H24.9091ZM3.09091
+                    24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636
+                    9.22741L22.1818 14.5456L25.5909
+                    11.2729H24.9091V24.9092H3.09091Z"
                     fill="currentColor"
                   /> <path
                     d="M7.18182 19.4547H4.45455V23.5456H7.18182V19.4547Z"
@@ -328,11 +365,16 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                       <svg
                         width="20"
                         height="20"
-                      ><use xlink:href="#i_i" /></svg><div>Indicador calculado pelo média móvel das variáveis</div>
+                      ><use xlink:href="#i_i" /></svg><div>
+                        Indicador calculado pelo média móvel das variáveis
+                      </div>
                     </div>
                   </div>
                   <!-- <div>
-                        <a class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Adicionar período</span></a>
+                        <a class="addlink"><svg width="20"
+                          height="20"><use xlink:href="#i_+"></use></svg><span>
+                          Adicionar período
+                        </span></a>
                     </div> -->
                 </div>
               </div>
