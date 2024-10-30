@@ -14,7 +14,6 @@ import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
-import { useAlertStore } from '@/stores/alert.store';
 
 const EquipesStore = useEquipesStore();
 const alertStore = useAlertStore();
