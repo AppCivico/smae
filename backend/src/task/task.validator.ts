@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { task_type } from '@prisma/client';
 import { registerDecorator, validate, ValidationArguments, ValidationOptions } from 'class-validator';
 import { ParseParams } from './task.parseParams';
+import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 
 export function TaskValidatorOf(property: string, validationOptions?: ValidationOptions) {
     return function (value: Object, propertyName: string) {
@@ -17,7 +18,8 @@ export function TaskValidatorOf(property: string, validationOptions?: Validation
             },
             validator: {
                 async validate(value: any, args: ValidationArguments) {
-                    if (!value || typeof value !== 'object') throw new BadRequestException('Informe os parâmetros da tarefa');
+                    if (!value || typeof value !== 'object')
+                        throw new BadRequestException('Informe os parâmetros da tarefa');
 
                     const [fieldName] = args.constraints;
                     const taskType = (args.object as any)[fieldName] as task_type;
@@ -26,11 +28,7 @@ export function TaskValidatorOf(property: string, validationOptions?: Validation
                     try {
                         const validations = await validate(validatorObject);
                         if (validations.length) {
-                            throw new BadRequestException(
-                                validations.reduce((acc, curr) => {
-                                    return [...acc, ...Object.values(curr.constraints as any)];
-                                }, [])
-                            );
+                            throw new BadRequestException(FormatValidationErrors(validations));
                         }
                     } catch (error) {
                         console.log('Erro na validação dos parâmetros:', error);

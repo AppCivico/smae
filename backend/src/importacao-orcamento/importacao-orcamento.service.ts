@@ -29,6 +29,7 @@ import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
+import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -874,11 +875,7 @@ export class ImportacaoOrcamentoService {
         const validations = await validate(row);
         this.logger.verbose(`processing row ${JSON.stringify(row)}: ${JSON.stringify(validations)}`);
         if (validations.length) {
-            let response =
-                'Linha inválida: ' +
-                validations.reduce((acc, curr) => {
-                    return [...acc, ...Object.values(curr.constraints as any)];
-                }, []);
+            let response = 'Linha inválida: ' + FormatValidationErrors(validations);
 
             if (process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER) {
                 response +=

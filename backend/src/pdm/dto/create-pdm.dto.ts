@@ -98,7 +98,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsString({ message: 'Descrição: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: 'Descrição: Máximo 250 caracteres' })
+    @MaxLength(2500, { message: 'Descrição: Máximo 2500 caracteres' })
     descricao?: string | null;
 
     /**
