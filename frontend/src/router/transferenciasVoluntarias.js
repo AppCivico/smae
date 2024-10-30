@@ -67,7 +67,7 @@ export default {
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
-        título: 'Formulário de registro',
+        título: 'Formulário de registro 123',
       },
     },
     {
@@ -86,7 +86,10 @@ export default {
         rotasParaMenuSecundário,
         limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
+          
           'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ,
           'TransferenciasVoluntariasDetalhes'
         ],
       },
@@ -106,11 +109,7 @@ export default {
         título: 'Recurso financeiro',
         títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
-        rotasParaMigalhasDePão: [
-          'TransferenciasVoluntariasListar',
-          'TransferenciasVoluntariasDetalhes'
-        ],
+        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
     {
@@ -195,17 +194,13 @@ export default {
             rotaDeEscape: 'notasListar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
               'notasListar',
             ],
 
 
 
             
-            rotasParaMigalhasDePão: [
-              'TransferenciasVoluntariasListar',
-              'TransferenciasVoluntariasDetalhes',
-              'notasListar',
-            ],
           },
         },
         /* FIM DE INCLUSÃO DE NOTA */
@@ -248,11 +243,7 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
-        rotasParaMigalhasDePão: [
-          'TransferenciasVoluntariasListar',
-          'TransferenciasVoluntariasDetalhes'
-        ],
+        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
     /* FIM DE TRANSFERÊNCIA - IDENTIFICAÇÃO */
