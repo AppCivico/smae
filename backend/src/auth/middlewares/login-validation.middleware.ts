@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NestMiddleware } from '@nestjs/common'
 import { validate } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
 import { LoginRequestBody } from '../models/LoginRequestBody.dto';
+import { FormatValidationErrors } from '../../common/helpers/FormatValidationErrors';
 
 @Injectable()
 export class LoginValidationMiddleware implements NestMiddleware {
@@ -15,11 +16,7 @@ export class LoginValidationMiddleware implements NestMiddleware {
         const validations = await validate(loginRequestBody);
 
         if (validations.length) {
-            throw new BadRequestException(
-                validations.reduce((acc, curr) => {
-                    return [...acc, ...Object.values(curr.constraints as any)];
-                }, [])
-            );
+            throw new BadRequestException(FormatValidationErrors(validations));
         }
 
         next();

@@ -50,9 +50,9 @@ import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 
-import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
-import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
+import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
+import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -571,6 +571,7 @@ export default [
 
   {
     path: '/usuarios',
+    component: () => import('@/views/users/UsuariosRaiz.vue'),
     meta: {
       limitarÀsPermissões: 'CadastroPessoa.',
       título: 'Gerenciar usuários',

@@ -1,8 +1,10 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
-import requestS from '@/helpers/requestS.ts';
 import { computed, defineProps, ref } from 'vue';
+
+import SmallModal from '@/components/SmallModal.vue';
+
+import requestS from '@/helpers/requestS.ts';
+import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
 
 const showModal = ref(false);
 const analise = ref(null);
@@ -82,7 +84,7 @@ function obterValorTabela(item, index) {
   }
 
   if (temVariavelCategorica.value) {
-    return props.g.dados_auxiliares.categoricas[valor] || valor;
+    return props.g.dados_auxiliares.categoricas?.[valor] || valor;
   }
 
   return valor;

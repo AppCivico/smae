@@ -30,6 +30,8 @@ import {
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
     SerieIndicadorValorNominal,
+    SerieValorCategoricaComposta,
+    SerieValorCategoricaElemento,
     SerieValorNomimal,
     VariavelGlobalItemDto,
 } from './entities/variavel.entity';
@@ -229,7 +231,12 @@ export class VariavelGlobalController {
     }
 
     // Manter em sync o getSeriePrevistoRealizadoCopia
-    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
+    @ApiExtraModels(
+        SerieValorNomimal,
+        SerieIndicadorValorNominal,
+        SerieValorCategoricaComposta,
+        SerieValorCategoricaElemento
+    )
     @Get('variavel/:id/serie')
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])

@@ -39,6 +39,8 @@ const props = defineProps({
 
 const listaDeAbas = ref(null);
 
+const abas = computed(() => Object.keys(slots).filter((x) => !x.includes('__cabecalho')));
+
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
 // chaves de rota no componente raiz. Ver `App.vue`.
@@ -111,7 +113,7 @@ iniciar();
         class="abas__lista flex"
       >
         <li
-          v-for="nomeDaAba in Object.keys(slots)"
+          v-for="nomeDaAba in abas"
           :key="nomeDaAba"
           class="pt1 pb1"
         >
@@ -132,14 +134,16 @@ iniciar();
               ? 'page'
               : undefined"
           >
-            {{ dadosConsolidadosPorId?.[nomeDaAba]?.etiqueta || nomeDaAba }}
+            <slot :name="`${nomeDaAba}__cabecalho`">
+              {{ dadosConsolidadosPorId?.[nomeDaAba]?.etiqueta || nomeDaAba }}
+            </slot>
           </router-link>
         </li>
       </ul>
     </nav>
 
     <Transition
-      v-for="(_slot, nomeDaAba, i) in slots"
+      v-for="(nomeDaAba, i) in abas"
       :key="nomeDaAba"
       appear
       name="slide"
@@ -203,5 +207,7 @@ iniciar();
   display: block;
   min-width: 0;
   overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 </style>

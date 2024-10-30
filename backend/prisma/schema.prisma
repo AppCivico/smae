@@ -584,6 +584,9 @@ model Orgao {
     statusDistribuicaoRecusro         DistribuicaoRecursoStatus[]
     ViewProjetoMDO                    ViewProjetoMDO[]
     VariavelProprietario              Variavel[]                           @relation("proprietario")
+    MedicaoOrgaoVariavel              Variavel[]                           @relation("medicao_orgao")
+    MalidacaoOrgaoVariavel            Variavel[]                           @relation("validacao_orgao")
+    MiberacaoOrgaoVariavel            Variavel[]                           @relation("liberacao_orgao")
     GrupoResponsavelEquipe            GrupoResponsavelEquipe[]
     GrupoResponsavelEquipePessoa      GrupoResponsavelEquipeParticipante[]
     contratos                         Contrato[]
@@ -1609,6 +1612,15 @@ model Variavel {
     variavel_categorica_id Int?
     variavel_categorica    VariavelCategorica? @relation(fields: [variavel_categorica_id], references: [id])
 
+    medicao_orgao_id Int?
+    medicao_orgao    Orgao? @relation("medicao_orgao", fields: [medicao_orgao_id], references: [id])
+
+    validacao_orgao_id Int?
+    validacao_orgao    Orgao? @relation("validacao_orgao", fields: [validacao_orgao_id], references: [id])
+
+    liberacao_orgao_id Int?
+    liberacao_orgao    Orgao? @relation("liberacao_orgao", fields: [liberacao_orgao_id], references: [id])
+
     tipo TipoVariavel @default(PDM)
 
     polaridade Polaridade @default(Neutra)
@@ -1659,6 +1671,8 @@ model Variavel {
     periodo_liberacao     Int[]   @default([]) @db.SmallInt
     dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
     equipes_configuradas  Boolean @default(false) // calculado automaticamente
+
+    possui_variaveis_filhas Boolean @default(false) // calculado automaticamente
 
     // para variaveis calculadas, há um atraso no preenchimento assim como no indicador
     recalculando    Boolean  @default(false)
@@ -1822,10 +1836,10 @@ model VariavelAssuntoVariavel {
 model AssuntoVariavel {
     id Int @id @default(autoincrement())
 
-    nome String
+    nome                          String
     categoria_assunto_variavel_id Int?
-    criado_por Int
-    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por                    Int
+    criado_em                     DateTime @default(now()) @db.Timestamptz(6)
 
     atualizado_por Int?
     atualizado_em  DateTime? @db.Timestamptz(6)
@@ -1833,10 +1847,10 @@ model AssuntoVariavel {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
-    criador                 Pessoa                    @relation("Criador", fields: [criado_por], references: [id])
-    atualizador             Pessoa?                   @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor               Pessoa?                   @relation("Removedor", fields: [removido_por], references: [id])
-    VariavelAssuntoVariavel VariavelAssuntoVariavel[]
+    criador                    Pessoa                    @relation("Criador", fields: [criado_por], references: [id])
+    atualizador                Pessoa?                   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor                  Pessoa?                   @relation("Removedor", fields: [removido_por], references: [id])
+    VariavelAssuntoVariavel    VariavelAssuntoVariavel[]
     categoria_assunto_variavel CategoriaAssuntoVariavel? @relation("categoria_assunto_variavel", fields: [categoria_assunto_variavel_id], references: [id])
 
     @@map("assunto_variavel")
@@ -7223,19 +7237,40 @@ model Classificacao {
     @@map("classificacao")
 }
 
-model CategoriaAssuntoVariavel{
-    id                    Int               @id @default(autoincrement())
-    nome                  String
-    criado_por            Int
-    criado_em             DateTime          @default(now()) @db.Timestamptz(6)
-    atualizado_por        Int?
-    atualizado_em         DateTime          @default(now()) @db.Timestamptz(6)
-    removido_por          Int?
-    removido_em           DateTime?         @db.Timestamptz(6)
-    criador               Pessoa            @relation("criador", fields: [criado_por], references: [id])
-    atualizador           Pessoa?           @relation("atualizador", fields: [atualizado_por], references: [id])
-    removedor             Pessoa?           @relation("removedor", fields: [removido_por], references: [id])
-    assunto_variavel      AssuntoVariavel[] @relation("categoria_assunto_variavel")
+model CategoriaAssuntoVariavel {
+    id               Int               @id @default(autoincrement())
+    nome             String
+    criado_por       Int
+    criado_em        DateTime          @default(now()) @db.Timestamptz(6)
+    atualizado_por   Int?
+    atualizado_em    DateTime          @default(now()) @db.Timestamptz(6)
+    removido_por     Int?
+    removido_em      DateTime?         @db.Timestamptz(6)
+    criador          Pessoa            @relation("criador", fields: [criado_por], references: [id])
+    atualizador      Pessoa?           @relation("atualizador", fields: [atualizado_por], references: [id])
+    removedor        Pessoa?           @relation("removedor", fields: [removido_por], references: [id])
+    assunto_variavel AssuntoVariavel[] @relation("categoria_assunto_variavel")
+
     @@index([nome])
     @@map("categoria_assunto_variavel")
+}
+
+model SerieVariavelHistorico {
+    id                Int      @id @default(autoincrement())
+    serie_variavel_id Int
+    variavel_id       Int
+    serie             Serie
+    data_valor        DateTime @db.Date()
+    valor_nominal     Decimal  @db.Decimal(65, 30)
+
+    variavel_categorica_id       Int?
+    variavel_categorica_valor_id Int?
+    atualizado_em                DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por               Int?
+    conferida                    Boolean   @default(true)
+    conferida_por                Int?
+    conferida_em                 DateTime?
+    ciclo_fisico_id              Int?
+
+    @@map("serie_variavel_historico")
 }

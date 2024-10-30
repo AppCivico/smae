@@ -972,7 +972,7 @@ export const liçãoAprendida = object()
 export const macrotema = object({
   descricao: string()
     .label('Nome')
-    .max(250)
+    .max(500)
     .required(),
 });
 
@@ -1548,7 +1548,7 @@ export const planoSetorial = object({
     .transform((v) => (!v ? null : v)),
   descricao: string()
     .label('Descrição')
-    .max(250)
+    .max(2500)
     .nullable()
     .required(),
   equipe_tecnica: string()
@@ -1951,7 +1951,7 @@ export const statusDistribuicaoWorkflow = object({
 export const subtema = object({
   descricao: string()
     .label('Nome')
-    .max(250)
+    .max(500)
     .required(),
 });
 
@@ -1967,7 +1967,7 @@ export const suplentes = object({
 export const tema = object({
   descricao: string()
     .label('Nome')
-    .max(250)
+    .max(500)
     .required(),
 });
 

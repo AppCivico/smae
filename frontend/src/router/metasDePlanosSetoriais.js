@@ -608,7 +608,7 @@ export default [
         path: 'editar/:iniciativa_id',
         component: AddEditIniciativa,
         meta: {
-          rotaDeEscape: 'planoSetorial:listaDeIniciativas',
+          rotaDeEscape: 'planoSetorial:resumoDeIniciativa',
           rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
         },
       },

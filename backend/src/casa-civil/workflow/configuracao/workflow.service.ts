@@ -34,24 +34,6 @@ export class WorkflowService {
                 if (similarExists > 0)
                     throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
-                // Tratando boolean de ativo.
-                let ativo: boolean = false;
-                const now = DateTime.now().startOf('day');
-
-                // Se o início for =< now, ele é elegível para ser o ativo, mas deve ser verificado.
-                if (DateTime.fromJSDate(dto.inicio).setZone('utc').toMillis() <= now.toMillis()) {
-                    // Verificando se já existe um ativo.
-                    const workflowAtivo = await prismaTxn.workflow.count({
-                        where: {
-                            ativo: true,
-                            transferencia_tipo_id: dto.transferencia_tipo_id,
-                            removido_em: null,
-                        },
-                    });
-
-                    ativo = !workflowAtivo;
-                }
-
                 // Populando com todos statuses base de distribuição.
                 const statuses_base = await prismaTxn.distribuicaoStatusBase.findMany({
                     select: { id: true },
@@ -61,7 +43,7 @@ export class WorkflowService {
                     data: {
                         nome: dto.nome,
                         transferencia_tipo_id: dto.transferencia_tipo_id,
-                        ativo: ativo,
+                        ativo: false,
                         inicio: dto.inicio,
                         termino: dto.termino,
                         criado_por: user.id,
@@ -167,6 +149,29 @@ export class WorkflowService {
                 }
 
                 if (dto.ativo != undefined && dto.ativo != self.ativo && dto.ativo == true) {
+                    // Verificando se possui etapas e fase.
+                    const etapas = await prismaTxn.fluxo.findMany({
+                        where: {
+                            removido_em: null,
+                            workflow_id: id,
+                        },
+                        select: {
+                            id: true,
+                            fases: {
+                                where: { removido_em: null },
+                                select: { id: true },
+                            },
+                        },
+                    });
+
+                    if (!etapas.length) {
+                        throw new HttpException('ativo| Workflow não possui etapas configuradas.', 400);
+                    }
+
+                    if (!etapas.every((e) => e.fases.length)) {
+                        throw new HttpException('ativo| Workflow não possui fases configuradas.', 400);
+                    }
+
                     // Verificando se já não existe workflow ativo.
                     const workflowJaAtivo = await prismaTxn.workflow.count({
                         where: {

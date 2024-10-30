@@ -41,11 +41,13 @@ export function DateTransformDMY(a: TransformFnParams): Date | undefined | null 
     if (timeStr) {
         const timeParts = timeStr.split(':').map(Number);
         [hours, minutes, seconds] = timeParts;
+
+        if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return NaN as any as Date; // invalid time parts
     }
 
     const dt = DateTime.fromObject(
         { year, month, day, hour: hours, minute: minutes, second: seconds },
-        { zone: SYSTEM_TIMEZONE }
+        { zone: timeStr ? SYSTEM_TIMEZONE : 'UTC' }
     );
 
     if (!dt.isValid) {

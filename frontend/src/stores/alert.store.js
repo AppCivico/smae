@@ -4,8 +4,12 @@ export const useAlertStore = defineStore({
   id: 'alert',
   state: () => ({
     alertas: [],
+    estaCarregando: false,
   }),
   actions: {
+    setLoading(value) {
+      this.estaCarregando = value;
+    },
     success(message) {
       this.alertas.push({ message, type: 'alert-success' });
     },

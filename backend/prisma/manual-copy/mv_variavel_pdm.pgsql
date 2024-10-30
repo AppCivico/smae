@@ -69,6 +69,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
+
 --CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel
 --AFTER INSERT OR UPDATE ON indicador_variavel
 --FOR EACH ROW
@@ -88,15 +91,8 @@ DECLARE
 BEGIN
     IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
         REFRESH MATERIALIZED VIEW mv_variavel_pdm;
-
-        FOR v_meta_id IN (
-            SELECT DISTINCT me.meta_id
-            FROM iniciativa me
-            JOIN mv_variavel_pdm mvp ON mvp.iniciativa_id = me.id
-            WHERE me.id = NEW.iniciativa_id
-        ) LOOP
-            PERFORM f_add_refresh_meta_task(v_meta_id);
-        END LOOP;
+        v_meta_id := (SELECT me.meta_id FROM iniciativa me WHERE me.id = NEW.iniciativa_id);
+        CALL add_refresh_meta_task(v_meta_id);
     END IF;
 
     RETURN NEW;

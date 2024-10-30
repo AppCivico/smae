@@ -12,6 +12,7 @@ import {
 import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
 import { IsOnlyDate } from '../common/decorators/IsDateOnly';
+import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 
 export class SeiError extends Error {
     constructor(msg: string) {
@@ -166,26 +167,35 @@ export class SeiApiService {
     }
 
     private async doGetRequest<T>(endpoint: string, params: any, dto: new () => T): Promise<T> {
-        this.logger.debug(`chamando GET ${endpoint}`);
+        const logStr =
+            'GET ' +
+            endpoint +
+            '?' +
+            Object.entries(params)
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&');
+
+        this.logger.debug(`Iniciando ${logStr}...`);
         try {
             const response = await this.got.get(endpoint, { searchParams: params }).json();
-            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            this.logger.debug(`${logStr} resposta: ${JSON.stringify(response)}`);
 
             // Validate the response
             const dtoInstance = plainToClass(dto, response);
             const errors = await validate(dtoInstance as any);
             if (errors.length > 0) {
-                const errorMessages = errors.map((error) => Object.values((error as any).constraints)).flat();
-                throw new HttpException(`Validation failed: ${errorMessages.join(', ')}`, 400);
+                const errorMessages = FormatValidationErrors(errors);
+                throw new HttpException(`Falha na resposta do SEI: ${errorMessages.join(', ')}`, 400);
             }
 
             return dtoInstance as T;
         } catch (error: any) {
-            this.logger.debug(`${endpoint} falhou: ${error}`);
+            console.trace(error);
+            this.logger.debug(`${logStr} falhou: ${error}`);
             let body = '';
             if (error instanceof got.HTTPError) {
                 body = String(error.response.body);
-                this.logger.debug(`${endpoint}.res.body: ${body}`);
+                this.logger.debug(`${logStr}.res.body: ${body}`);
             }
 
             if (error instanceof HttpException) {

@@ -13,6 +13,7 @@ import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
@@ -25,6 +26,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const route = useRoute();
 const { meta_id: metaId } = route.params;
 
+const alertStore = useAlertStore();
 const parentlink = `${metaId ? `/metas/${metaId}` : ''}`;
 
 const MetasStore = useMetasStore();
@@ -61,6 +63,19 @@ async function iniciar() {
   nextTick().then(() => {
     rolarTelaPara();
   });
+}
+
+async function checkDelete(iniciativa) {
+  if (iniciativa) {
+    alertStore.confirmAction(`Deseja mesmo remover a iniciativa "${iniciativa.titulo}"?`, async () => {
+      alertStore.setLoading(true);
+      if (await IniciativasStore.delete(metaId, iniciativa.id)) {
+        alertStore.setLoading(false);
+        IniciativasStore.clear();
+        alertStore.success('Iniciativa removida.');
+      }
+    }, 'Remover');
+  }
 }
 
 iniciar();
@@ -256,7 +271,7 @@ iniciar();
                       'CadastroMeta.administrador_no_pdm',
                       'CadastroMetaPS.administrador_no_pdm'
                     ])"
-                    class="f0"
+                    class="f0 flex g1"
                   >
                     <SmaeLink
                       :to="`${parentlink}/iniciativas/editar/${ini.id}`"
@@ -267,6 +282,17 @@ iniciar();
                         height="20"
                       ><use xlink:href="#i_edit" /></svg>
                     </SmaeLink>
+                    <button
+                      class="like-a__text"
+                      arial-label="excluir"
+                      title="excluir"
+                      @click="checkDelete(ini)"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                      ><use xlink:href="#i_waste" /></svg>
+                    </button>
                   </div>
                 </div>
                 <div class="f1 ml2">
@@ -302,7 +328,7 @@ iniciar();
           </template>
 
           <div
-            v-if="Iniciativas[metaId].loading"
+            v-if="Iniciativas[metaId]?.loading"
             class="board_vazio"
           >
             <div class="tc">
@@ -316,10 +342,10 @@ iniciar();
             </div>
           </div>
           <ErrorComponent
-            v-else-if="Iniciativas[metaId].error"
+            v-else-if="Iniciativas[metaId]?.error"
             class="board_vazio"
           >
-            {{ Iniciativas[metaId].error }}
+            {{ Iniciativas[metaId]?.error }}
           </ErrorComponent>
 
           <div
@@ -436,7 +462,7 @@ iniciar();
         </template>
         <PlanosMetasRelacionados :relacionamentos="relacionadosMeta?.metas || []" />
       </template>
-      <template v-else-if="singleMeta.loading">
+      <template v-else-if="singleMeta?.loading">
         <div class="p1">
           <span>Carregando</span> <svg
             class="ml1 ib"
