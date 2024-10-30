@@ -2856,9 +2856,9 @@ export class VariavelService {
                     : valor.valor;
 
             const referenciaDecoded: NonExistingSerieJwt = {
-                p: decoded.periodo,
-                v: decoded.variavelId,
-                s: decoded.serie,
+                periodo: decoded.periodo,
+                variable_id: decoded.variavelId,
+                serie: decoded.serie,
             };
             if (decoded.id !== undefined) (referenciaDecoded as any).id = Number(decoded.id);
 
@@ -2883,7 +2883,7 @@ export class VariavelService {
         const variaveisInfo = await this.loadVariaveisComCategorica(
             tipo,
             this.prisma,
-            valoresValidos.map((e) => e.referencia.v)
+            valoresValidos.map((e) => e.referencia.variable_id)
         );
         const varIdsSorted = variaveisInfo.map((e) => e.id).sort();
 
@@ -2969,44 +2969,44 @@ export class VariavelService {
                 const createList: Prisma.SerieVariavelUncheckedCreateInput[] = [];
 
                 for (const valor of valoresValidos) {
-                    const variavelInfo = variaveisInfo.filter((e) => e.id === valor.referencia.v)[0];
+                    const variavelInfo = variaveisInfo.filter((e) => e.id === valor.referencia.variable_id)[0];
                     if (!variavelInfo) throw new Error('Variável não encontrada, mas deveria já ter sido carregada.');
 
                     // não é para ser possível editar essas séries
                     // pois uma é pra ser a copia (no caso de acumulativa=false) e a outra é sempre gerado como "SS"
                     // logo não deveria ser possível editar por aqui
-                    if (valor.referencia.s == 'RealizadoAcumulado' || valor.referencia.s == 'PrevistoAcumulado')
+                    if (valor.referencia.serie == 'RealizadoAcumulado' || valor.referencia.serie == 'PrevistoAcumulado')
                         continue;
 
                     let variavel_categorica_valor_id: number | null = null;
                     // busca os valores vazios mas que já existem, para serem removidos
                     if (valor.valor === '' && 'id' in valor.referencia) {
-                        logger.log(`Variável ${valor.referencia.v} com valor vazio, será removida`);
+                        logger.log(`Variável ${valor.referencia.variable_id} com valor vazio, será removida`);
                         idsToBeRemoved.push(valor.referencia.id);
 
-                        if (!variaveisModificadas[valor.referencia.v]) {
-                            variaveisModificadas[valor.referencia.v] = true;
+                        if (!variaveisModificadas[valor.referencia.variable_id]) {
+                            variaveisModificadas[valor.referencia.variable_id] = true;
                         }
 
                         if (
                             !variavelInfo.acumulativa &&
-                            (valor.referencia.s === 'Realizado' || valor.referencia.s === 'Previsto')
+                            (valor.referencia.serie === 'Realizado' || valor.referencia.serie === 'Previsto')
                         ) {
                             const acumuladoSerie =
-                                valor.referencia.s === 'Realizado' ? 'RealizadoAcumulado' : 'PrevistoAcumulado';
+                                valor.referencia.serie === 'Realizado' ? 'RealizadoAcumulado' : 'PrevistoAcumulado';
                             deletePromises.push(
                                 prismaTxn.serieVariavel.deleteMany({
                                     where: {
-                                        variavel_id: valor.referencia.v,
+                                        variavel_id: valor.referencia.variable_id,
                                         serie: acumuladoSerie,
-                                        data_valor: Date2YMD.fromString(valor.referencia.p),
+                                        data_valor: Date2YMD.fromString(valor.referencia.periodo),
                                     },
                                 })
                             );
                         }
                     } else if (valor.valor !== '') {
-                        if (!variaveisModificadas[valor.referencia.v]) {
-                            variaveisModificadas[valor.referencia.v] = true;
+                        if (!variaveisModificadas[valor.referencia.variable_id]) {
+                            variaveisModificadas[valor.referencia.variable_id] = true;
                         }
                         if (variavelInfo.variavel_categorica) {
                             const valorExiste = variavelInfo.variavel_categorica.valores.find(
@@ -3021,10 +3021,10 @@ export class VariavelService {
                         }
 
                         const updateOrCreateData: Prisma.SerieVariavelCreateManyInput = {
-                            data_valor: Date2YMD.fromString(valor.referencia.p),
+                            data_valor: Date2YMD.fromString(valor.referencia.periodo),
                             valor_nominal: valor.valor,
-                            variavel_id: valor.referencia.v,
-                            serie: valor.referencia.s,
+                            variavel_id: valor.referencia.variable_id,
+                            serie: valor.referencia.serie,
                             atualizado_em: now,
                             atualizado_por: user.id,
                             conferida: true,
@@ -3035,10 +3035,10 @@ export class VariavelService {
                         };
 
                         if ('id' in valor.referencia) {
-                            if (globais.length && valor.referencia.s == 'Realizado')
+                            if (globais.length && valor.referencia.serie == 'Realizado')
                                 mesesParaLiberar.push({
-                                    referencia_data: Date2YMD.fromString(valor.referencia.p),
-                                    variavel_id: valor.referencia.v,
+                                    referencia_data: Date2YMD.fromString(valor.referencia.periodo),
+                                    variavel_id: valor.referencia.variable_id,
                                 });
 
                             updatePromises.push(
@@ -3066,27 +3066,27 @@ export class VariavelService {
                         } else {
                             createList.push({
                                 ...updateOrCreateData,
-                                variavel_id: valor.referencia.v,
-                                serie: valor.referencia.s,
-                                data_valor: Date2YMD.fromString(valor.referencia.p),
+                                variavel_id: valor.referencia.variable_id,
+                                serie: valor.referencia.serie,
+                                data_valor: Date2YMD.fromString(valor.referencia.periodo),
                             });
                         }
 
                         // Sync 'RealizadoAcumulado' and 'PrevistoAcumulado' for non-accumulative variables
                         if (
                             !variavelInfo.acumulativa &&
-                            (valor.referencia.s === 'Realizado' || valor.referencia.s === 'Previsto')
+                            (valor.referencia.serie === 'Realizado' || valor.referencia.serie === 'Previsto')
                         ) {
                             const acumuladoSerie =
-                                valor.referencia.s === 'Realizado' ? 'RealizadoAcumulado' : 'PrevistoAcumulado';
+                                valor.referencia.serie === 'Realizado' ? 'RealizadoAcumulado' : 'PrevistoAcumulado';
 
                             updatePromises.push(
                                 prismaTxn.serieVariavel.upsert({
                                     where: {
                                         serie_variavel_id_data_valor: {
-                                            variavel_id: valor.referencia.v,
+                                            variavel_id: valor.referencia.variable_id,
                                             serie: acumuladoSerie,
-                                            data_valor: Date2YMD.fromString(valor.referencia.p),
+                                            data_valor: Date2YMD.fromString(valor.referencia.periodo),
                                         },
                                     },
                                     update: {

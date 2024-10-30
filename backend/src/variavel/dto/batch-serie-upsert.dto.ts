@@ -3,16 +3,16 @@ import { Type } from 'class-transformer';
 import { IsArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
 
 export class ExistingSerieJwt {
-    p: string; // periodo
+    periodo: string; // periodo
     id: number;
-    v: number; // variable_id
-    s: Serie;
+    variable_id: number; // variable_id
+    serie: Serie;
 }
 
 export class NonExistingSerieJwt {
-    p: string; // periodo
-    v: number; // variable_id
-    s: Serie;
+    periodo: string; // periodo
+    variable_id: number; // variable_id
+    serie: Serie;
 }
 
 export type SerieJwt = ExistingSerieJwt | NonExistingSerieJwt;
