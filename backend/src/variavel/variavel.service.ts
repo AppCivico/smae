@@ -222,6 +222,8 @@ export class VariavelService {
         logger.log(`Dados recebidos: ${JSON.stringify(dto)}`);
         if (dto.supraregional === null) delete dto.supraregional;
 
+
+
         let indicador: IndicadorInfo | undefined = undefined;
         let codigo: string;
         if (tipo == 'PDM') {
@@ -246,9 +248,11 @@ export class VariavelService {
             await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
 
             this.fixIndicadorInicioFim(dto, indicador);
+            await this.checkDup(dto, undefined, indicador.id);
         } else if (tipo == 'Global') {
             this.checkPeriodoVariavelGlobal(dto);
 
+            await this.checkDup(dto, undefined, undefined);
             // Verificar: todo mundo pode criar pra qualquer órgão (responsavel, além do orgao_proprietario_id que é usado no grupo)
         } else {
             throw new BadRequestException('Tipo de variável inválido para criação manual');
@@ -1578,30 +1582,7 @@ export class VariavelService {
             if (dto.suspendida) throw new HttpException('Variáveis do plano setorial não podem ser suspensas.', 400); // uso necessita do ciclo do PDM, e tbm o caso de copiar o valor dos ids das categóricas
         }
 
-        if (dto.codigo !== undefined) {
-            const jaEmUso = await this.prisma.variavel.count({
-                where: {
-                    removido_em: null,
-                    codigo: dto.codigo,
-                    NOT: { id: variavelId },
-
-                    OR: [
-                        {
-                            tipo: 'Global',
-                        },
-                        indicador_id
-                            ? {
-                                  tipo: 'PDM',
-                                  indicador_variavel: {
-                                      some: { indicador_id: indicador_id },
-                                  },
-                              }
-                            : {},
-                    ],
-                },
-            });
-            if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
-        }
+        await this.checkDup(dto, variavelId, indicador_id);
 
         // e com o indicador verdadeiro, temos os dados para recalcular os níveis
         const indicador = indicador_id ? await this.buscaIndicadorParaVariavel(indicador_id) : undefined;
@@ -1860,6 +1841,39 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private async checkDup(dto: UpdateVariavelDto, variavelId: number | undefined, indicador_id: number | undefined) {
+        const checkDup: ('codigo' | 'titulo')[] = ['codigo', 'titulo'];
+        for (const col of checkDup) {
+            if (dto[col] !== undefined) {
+                const jaEmUso = await this.prisma.variavel.count({
+                    where: {
+                        removido_em: null,
+                        [col]: { eq: dto[col], mode: 'insensitive' },
+                        NOT: variavelId ? { id: variavelId } : undefined,
+                        OR: [
+                            {
+                                tipo: 'Global',
+                            },
+                            indicador_id
+                                ? {
+                                      tipo: 'PDM',
+                                      indicador_variavel: {
+                                          some: { indicador_id: indicador_id },
+                                      },
+                                  }
+                                : {},
+                        ],
+                    },
+                });
+                if (jaEmUso > 0)
+                    throw new HttpException(
+                        `${col == 'codigo' ? 'Código' : 'Título'} já está em uso no indicador.`,
+                        400
+                    );
+            }
+        }
     }
 
     /*
