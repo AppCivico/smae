@@ -26,16 +26,12 @@ import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
 import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-    ExistingSerieJwt,
-    NonExistingSerieJwt,
-    SerieJwt,
-    SerieUpsert,
-    ValidatedUpsert,
-} from './dto/batch-serie-upsert.dto';
+import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
+import { ExistingSerieJwt, SerieUpsert, ValidatedUpsert } from './dto/batch-serie-upsert.dto';
 import {
     CreateGeradorVariaveBaselDto,
     CreateGeradorVariavelPDMDto,
@@ -66,9 +62,8 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
+import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
-import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
-import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -138,6 +133,7 @@ function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
 @Injectable()
 export class VariavelService {
     private readonly logger = new Logger(VariavelService.name);
+    private readonly serieToken = new SerieCompactToken(process.env.SESSION_JWT_SECRET + 'for-variables');
     constructor(
         private readonly jwtService: JwtService,
         @Inject(forwardRef(() => MetaService))
@@ -2541,7 +2537,8 @@ export class VariavelService {
     getValorSerieExistentePorPeriodo(
         valoresExistentes: ValorSerieExistente[],
         variavel_id: number,
-        uso: TipoUso = 'escrita'
+        uso: TipoUso = 'escrita',
+        user: PessoaFromJwt
     ): SerieValorPorPeriodo {
         const porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
         for (const serieValor of valoresExistentes) {
@@ -2563,7 +2560,8 @@ export class VariavelService {
                               Date2YMD.toString(serieValor.data_valor),
                               serieValor.id,
                               variavel_id,
-                              serieValor.serie
+                              serieValor.serie,
+                              user
                           )
                         : '',
                 conferida: serieValor.conferida,
@@ -2596,7 +2594,7 @@ export class VariavelService {
 
         // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
-        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId, filters.uso);
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId, filters.uso, user);
 
         const result: ListSeriesAgrupadas = {
             variavel: {
@@ -2669,7 +2667,8 @@ export class VariavelService {
                 periodoYMD,
                 variavelId,
                 variavel,
-                filters.uso
+                filters.uso,
+                user
             );
 
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
@@ -2717,7 +2716,8 @@ export class VariavelService {
         periodoYMD: string,
         variavelId: number,
         variavel: { acumulativa: boolean },
-        uso: TipoUso = 'escrita'
+        uso: TipoUso = 'escrita',
+        user: PessoaFromJwt
     ): SerieIndicadorValorNominal[] | SerieValorNomimal[] | SerieValorCategoricaComposta[] {
         const seriesExistentes: SerieValorNomimal[] = [];
 
@@ -2732,7 +2732,7 @@ export class VariavelService {
             if (existeValor.Previsto) {
                 seriesExistentes.push(existeValor.Previsto);
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso, user));
             }
 
             if (existeValor.PrevistoAcumulado) {
@@ -2741,7 +2741,7 @@ export class VariavelService {
                 seriesExistentes.push(
                     this.referencia_boba(
                         variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso)
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso, user)
                     )
                 );
             }
@@ -2749,7 +2749,7 @@ export class VariavelService {
             if (existeValor.Realizado) {
                 seriesExistentes.push(existeValor.Realizado);
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso, user));
             }
 
             if (existeValor.RealizadoAcumulado) {
@@ -2758,15 +2758,19 @@ export class VariavelService {
                 seriesExistentes.push(
                     this.referencia_boba(
                         variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso)
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso, user)
                     )
                 );
             }
         } else {
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso));
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso, user));
+            seriesExistentes.push(
+                this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso, user)
+            );
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso, user));
+            seriesExistentes.push(
+                this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso, user)
+            );
         }
 
         if (uso == 'leitura') {
@@ -2789,57 +2793,74 @@ export class VariavelService {
         periodo: DateYMD,
         variavelId: number,
         serie: Serie,
-        uso: TipoUso
+        uso: TipoUso,
+        user: PessoaFromJwt
     ): SerieValorNomimal {
         return {
             data_valor: periodo,
-            referencia: uso == 'escrita' ? this.getEditNonExistingSerieJwt(variavelId, periodo, serie) : '',
+            referencia: uso == 'escrita' ? this.getEditNonExistingSerieJwt(variavelId, periodo, serie, user) : '',
             valor_nominal: '',
         };
     }
 
-    private getEditExistingSerieJwt(periodo: DateYMD, id: number, variavelId: number, serie: Serie): string {
+    private getEditExistingSerieJwt(
+        periodo: DateYMD,
+        id: number,
+        variavelId: number,
+        serie: Serie,
+        user: PessoaFromJwt
+    ): string {
         // TODO opcionalmente adicionar o modificado_em aqui
-        return this.jwtService.sign({
-            p: periodo,
-            id: id,
-            v: variavelId,
-            s: serie,
-        } satisfies ExistingSerieJwt);
+        return this.serieToken.encode({
+            serie,
+            periodo,
+            variavelId,
+            id: BigInt(id),
+            userId: BigInt(user.id),
+        });
     }
 
-    private getEditNonExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
-        return this.jwtService.sign({
-            p: period,
-            v: variavelId,
-            s: serie,
-        } satisfies NonExistingSerieJwt);
+    private getEditNonExistingSerieJwt(
+        variavelId: number,
+        periodo: DateYMD,
+        serie: Serie,
+        user: PessoaFromJwt
+    ): string {
+        return this.serieToken.encode({
+            serie,
+            periodo,
+            variavelId: variavelId,
+            userId: BigInt(user.id),
+        });
     }
 
-    private validarValoresJwt(valores: SerieUpsert[]): ValidatedUpsert[] {
+    private validarValoresJwt(valores: SerieUpsert[], user: PessoaFromJwt): ValidatedUpsert[] {
         const valids: ValidatedUpsert[] = [];
-        console.log({ log: 'validation', valores });
         for (const valor of valores) {
             if (valor.referencia === 'SS')
                 // server-side
                 continue;
-            let referenciaDecoded: SerieJwt | null = null;
-            try {
-                referenciaDecoded = this.jwtService.verify(valor.referencia) as SerieJwt;
-            } catch (error) {
-                this.logger.error(error);
-            }
-            if (!referenciaDecoded)
-                throw new HttpException(
-                    'Tempo para edição dos valores já expirou. Abra em uma nova aba e faça o preenchimento novamente.',
-                    400
-                );
 
+            let decoded;
+            try {
+                decoded = this.serieToken.decode(valor.referencia, BigInt(user.id));
+            } catch (error) {
+                if (error instanceof HttpException) throw error;
+
+                throw new HttpException('Token inválido ou não autorizado.', 400);
+            }
             // se chegou como number, converte pra string
             const asText =
                 typeof valor.valor == 'number' && valor.valor !== undefined
                     ? Number(valor.valor).toString()
                     : valor.valor;
+
+            const referenciaDecoded: ExistingSerieJwt = {
+                p: decoded.periodo,
+                v: decoded.variavelId,
+                s: decoded.serie,
+                id: Number(decoded.id),
+            };
 
             // garantia que o tipo é ou string, ou um texto em branco
             valids.push({
@@ -2857,7 +2878,7 @@ export class VariavelService {
         // em relação ao momento JWT foi assinado, pra evitar sobrescrita da informação sem aviso para o usuário
         // da mesma forma, ao buscar os que não tem ID, não deve existir outro valor já existente no periodo
 
-        const valoresValidos = this.validarValoresJwt(valores);
+        const valoresValidos = this.validarValoresJwt(valores, user);
 
         const variaveisInfo = await this.loadVariaveisComCategorica(
             tipo,

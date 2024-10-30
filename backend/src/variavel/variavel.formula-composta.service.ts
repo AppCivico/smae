@@ -86,7 +86,8 @@ export class VariavelFormulaCompostaService {
 
     async getFormulaCompostaSeries(
         formula_composta_id: number,
-        filter: FilterPeriodoFormulaCompostaDto
+        filter: FilterPeriodoFormulaCompostaDto,
+        user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
         // TODO: Implementar verificação de permissão, não deve ser retornado o token de acesso
         // para os usuários que não possuem permissão de escrita na variável (quem não está na meta e etc)
@@ -131,12 +132,20 @@ export class VariavelFormulaCompostaService {
                 ORDEM_SERIES_RETORNO,
                 { data_valor: filter.periodo }
             );
-            const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
+            // eu acho que aqui não precisa de escrita, afinal, estamos na tela de formula composta
+            const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(
+                valoresExistentes,
+                variavelId,
+                'leitura',
+                user
+            );
             const seriesExistentes = this.variavelService.populaSeriesExistentes(
                 porPeriodo,
                 periodoYMD,
                 variavelId,
-                variavel
+                variavel,
+                'leitura',
+                user
             );
 
             result.linhas.push({
