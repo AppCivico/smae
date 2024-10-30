@@ -151,7 +151,7 @@ const valoresIniciais = computed(() => ({
     : [],
 }));
 
-async function onSubmit(values) {
+async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
 
