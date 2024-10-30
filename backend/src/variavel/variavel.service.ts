@@ -31,7 +31,7 @@ import { Object2Hash } from '../common/object2hash';
 import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
-import { ExistingSerieJwt, SerieUpsert, ValidatedUpsert } from './dto/batch-serie-upsert.dto';
+import { NonExistingSerieJwt, SerieUpsert, ValidatedUpsert } from './dto/batch-serie-upsert.dto';
 import {
     CreateGeradorVariaveBaselDto,
     CreateGeradorVariavelPDMDto,
@@ -2855,13 +2855,12 @@ export class VariavelService {
                     ? Number(valor.valor).toString()
                     : valor.valor;
 
-            const referenciaDecoded: ExistingSerieJwt = {
+            const referenciaDecoded: NonExistingSerieJwt = {
                 p: decoded.periodo,
                 v: decoded.variavelId,
                 s: decoded.serie,
-                id: Number(decoded.id),
             };
-            if (referenciaDecoded.id == undefined) delete (referenciaDecoded as any).id;
+            if (decoded.id !== undefined) (referenciaDecoded as any).id = Number(decoded.id);
 
             // garantia que o tipo é ou string, ou um texto em branco
             valids.push({
