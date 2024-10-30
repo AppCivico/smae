@@ -222,8 +222,6 @@ export class VariavelService {
         logger.log(`Dados recebidos: ${JSON.stringify(dto)}`);
         if (dto.supraregional === null) delete dto.supraregional;
 
-
-
         let indicador: IndicadorInfo | undefined = undefined;
         let codigo: string;
         if (tipo == 'PDM') {
@@ -1850,7 +1848,7 @@ export class VariavelService {
                 const jaEmUso = await this.prisma.variavel.count({
                     where: {
                         removido_em: null,
-                        [col]: { eq: dto[col], mode: 'insensitive' },
+                        [col]: { equals: dto[col], mode: 'insensitive' },
                         NOT: variavelId ? { id: variavelId } : undefined,
                         OR: [
                             {
