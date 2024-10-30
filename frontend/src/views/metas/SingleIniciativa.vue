@@ -12,8 +12,8 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
-import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 import { useAlertStore } from '@/stores/alert.store';
+import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const EquipesStore = useEquipesStore();
 const alertStore = useAlertStore();
