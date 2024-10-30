@@ -87,6 +87,17 @@ type IndicadorInfo = {
     periodicidade?: Periodicidade;
 };
 
+interface CicloAnalise {
+    id: number;
+    referencia_data: Date;
+    analise_qualitativa?: string | null;
+}
+
+interface CicloDocumento {
+    referencia_data: Date;
+    _count: number;
+}
+
 export type VariavelComCategorica = {
     id: number;
     acumulativa: boolean;
@@ -2616,30 +2627,11 @@ export class VariavelService {
             ordem_series: ORDEM_SERIES_RETORNO,
         };
 
-        const [analisesCiclo, documentoCiclo] = await Promise.all([
-            this.prisma.variavelCicloFisicoQualitativo.findMany({
-                where: {
-                    variavel_id: variavelId,
-                    referencia_data: { in: valoresExistentes.map((v) => v.data_valor) },
-                    removido_em: null,
-                },
-                distinct: ['referencia_data'],
-                select: {
-                    id: true,
-                    referencia_data: true,
-                    analise_qualitativa: true,
-                },
-            }),
-            this.prisma.variavelCicloFisicoDocumento.groupBy({
-                where: {
-                    variavel_id: variavelId,
-                    removido_em: null,
-                    referencia_data: { in: valoresExistentes.map((v) => v.data_valor) },
-                },
-                by: ['referencia_data'],
-                _count: true,
-            }),
-        ]);
+        const [analisesCiclo, documentoCiclo] = await this.procuraCicloAnaliseDocumento(
+            tipo,
+            variavelId,
+            valoresExistentes
+        );
 
         const mapAnalisesCiclo: Record<string, (typeof analisesCiclo)[0]> = {};
         for (const analise of analisesCiclo) {
@@ -2709,6 +2701,77 @@ export class VariavelService {
         }
 
         return result;
+    }
+
+    private async procuraCicloAnaliseDocumento(
+        tipo: TipoVariavel,
+        variavelId: number,
+        valoresExistentes: ValorSerieExistente[]
+    ): Promise<[CicloAnalise[], CicloDocumento[]]> {
+        const dataValores = valoresExistentes.map((v) => v.data_valor);
+
+        if (tipo == TipoVariavel.PDM) {
+            return await Promise.all([
+                this.prisma.variavelCicloFisicoQualitativo.findMany({
+                    where: {
+                        variavel_id: variavelId,
+                        referencia_data: { in: dataValores },
+                        removido_em: null,
+                    },
+                    distinct: ['referencia_data'],
+                    select: {
+                        id: true,
+                        referencia_data: true,
+                        analise_qualitativa: true,
+                    },
+                }),
+                this.prisma.variavelCicloFisicoDocumento.groupBy({
+                    where: {
+                        variavel_id: variavelId,
+                        removido_em: null,
+                        referencia_data: { in: dataValores },
+                    },
+                    by: ['referencia_data'],
+                    _count: true,
+                }),
+            ]);
+        } else if (tipo == TipoVariavel.Global) {
+            // Caso a variável seja filha, dados relevantes são da mãe.
+            const variavel = await this.prisma.variavel.findFirst({
+                where: { id: variavelId },
+                select: { variavel_mae_id: true },
+            });
+            if (!variavel) throw new Error('Erro Interno! Variável não encontrada em função de variável global.');
+
+            const [analises, documentos] = await Promise.all([
+                this.prisma.variavelGlobalCicloAnalise.findMany({
+                    where: {
+                        variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
+                        referencia_data: { in: dataValores },
+                        removido_em: null,
+                        ultima_revisao: true,
+                    },
+                    distinct: ['referencia_data'],
+                    select: {
+                        id: true,
+                        referencia_data: true,
+                    },
+                }),
+                this.prisma.variavelGlobalCicloDocumento.groupBy({
+                    where: {
+                        variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
+                        removido_em: null,
+                        referencia_data: { in: dataValores },
+                    },
+                    by: ['referencia_data'],
+                    _count: true,
+                }),
+            ]);
+
+            return [analises, documentos];
+        } else {
+            return [[], []];
+        }
     }
 
     populaSeriesExistentes(
