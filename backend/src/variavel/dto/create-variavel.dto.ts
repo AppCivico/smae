@@ -115,7 +115,7 @@ export class CreateVariavelBaseDto {
     @IsEnum(Polaridade, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
     })
-    polaridade?: Polaridade;
+    polaridade: Polaridade;
 
     @IsOptional()
     @IsInt({ message: '$property| unidade de medida precisa ser numérico' })
