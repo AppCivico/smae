@@ -607,7 +607,16 @@ export class IndicadorService {
                             }),
                         });
                 }
-
+                //Tratamento para series inválidas
+                if (tipo === 'PDM'){
+                    const variaveis = await prismaTx.indicadorVariavel
+                        .findMany({ where:{ indicador_id: indicador.id,
+                            indicador_origem_id : null,} });
+                    for (const variavel of variaveis) {
+                        await this.variavelService.trataPeriodosSerieVariavel(prismaTx, variavel.variavel_id,indicador.id,
+                            indicador.inicio_medicao,indicador.fim_medicao);
+                    }
+                }
                 return indicador;
             },
             {

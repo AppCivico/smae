@@ -1100,6 +1100,10 @@ p {
     max-width: 100%;
     white-space: pre-wrap;
   }
+
+  [aria-busy="true"] {
+    animation: none;
+  }
 }
 
 .card-shadow {
@@ -1391,6 +1395,15 @@ p {
   position: relative;
   padding: .5rem 0;
 
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1rem;
+    right: -1rem;
+    bottom: -1rem;
+    left: -1rem;
+  }
+
   ul {
     position: absolute;
     top: 100%;
@@ -1429,6 +1442,7 @@ p {
       a {
         .t14;
         .w700;
+        display: block;
         color: @primary;
 
         &:hover {
@@ -1436,7 +1450,7 @@ p {
         }
       }
 
-      +li {
+      + li {
         margin-top: .5em;
       }
     }

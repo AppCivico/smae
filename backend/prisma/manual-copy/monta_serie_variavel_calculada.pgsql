@@ -19,6 +19,8 @@ DECLARE
     vPeriodo DATE;
     vVariavelFormula RECORD;
     skip_period BOOLEAN;
+    vElementos INT[][];
+    vCategoricaJSON JSON;
 BEGIN
     vStartTime := clock_timestamp();
 
@@ -46,6 +48,11 @@ BEGIN
     INTO vVariavel
     FROM Variavel v
     WHERE v.id = pVariavelId;
+
+    IF vVariavel.variavel_categorica_id IS NOT NULL THEN
+        -- Initiate vElementos tuple
+        vElementos := ARRAY[]::INT[][];
+    END IF;
 
     -- Determine the calculation period
     WITH varPeriodos as (
@@ -128,6 +135,12 @@ BEGIN
                         AND serie = vSerieLookup
                         AND data_valor <= vPeriodo
                         AND data_valor > vPeriodo - (vJanela || ' months')::interval;
+
+                    IF resultado IS NOT NULL AND vVariavel.variavel_categorica_id IS NOT NULL THEN
+                        -- Use array concatenation operator instead of array_append
+                        vElementos := vElementos || ARRAY[ARRAY[vVariavelIdLookup, resultado::int]];
+                    END IF;
+
                 ELSIF vJanela > 1 THEN
                     -- Average of Past N Periods
                     SELECT
@@ -147,6 +160,11 @@ BEGIN
                     WHERE variavel_id = vVariavelIdLookup
                         AND serie = vSerieLookup
                         AND data_valor = vPeriodo - (abs(vJanela) || ' months')::interval;
+
+                    IF resultado IS NOT NULL AND vVariavel.variavel_categorica_id IS NOT NULL THEN
+                        -- Use array concatenation operator instead of array_append
+                        vElementos := vElementos || ARRAY[ARRAY[vVariavelIdLookup, resultado::int]];
+                    END IF;
                 END IF;
 
                 -- Check if resultado is NULL and set skip_period flag
@@ -165,10 +183,15 @@ BEGIN
                 CONTINUE;
             END IF;
 
+            -- Put into vCategoriaJSON if vElementos is not null on key categorica
+            IF vVariavel.variavel_categorica_id IS NOT NULL THEN
+                vCategoricaJSON := json_build_object('categorica', vElementos);
+            END IF;
+
             -- Evaluate the expression and insert the result into Serie_Variavel
             EXECUTE 'SELECT ' || vFormula INTO resultado;
-            INSERT INTO Serie_Variavel (variavel_id, serie, data_valor, valor_nominal)
-            VALUES (pVariavelId, vSerieAtual, vPeriodo, resultado);
+            INSERT INTO Serie_Variavel (variavel_id, serie, data_valor, valor_nominal, elementos)
+            VALUES (pVariavelId, vSerieAtual, vPeriodo, resultado, vCategoricaJSON);
         END LOOP;
     END LOOP;
 

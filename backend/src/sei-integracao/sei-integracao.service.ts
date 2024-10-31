@@ -43,12 +43,18 @@ export class SeiIntegracaoService {
     }
 
     private jsonFlatHash(obj: any): string {
-        const sortedJson = convertToJsonString(obj);
-        return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
+        if (!obj) return '';
+        try {
+            const sortedJson = convertToJsonString(obj);
+            return crypto.createHash('sha256').update(sortedJson).digest('hex').substring(0, 32);
+        } catch (error) {
+            this.logger.error(`Error generating hash: ${error.message}`);
+            return '';
+        }
     }
 
     private createProcessado(dados: RetornoRelatorioProcesso | null | undefined): SeiProcessadoDto | null {
-        if (!dados || !dados.ultimo_andamento) return null;
+        if (!dados?.ultimo_andamento?.usuario?.nome || !dados.ultimo_andamento.unidade) return null;
 
         return {
             ultimo_andamento_em: dados.ultimo_andamento.data,
@@ -57,10 +63,10 @@ export class SeiIntegracaoService {
                 rf: dados.ultimo_andamento.usuario.rf,
             },
             ultimo_andamento_unidade: {
-                descricao: dados.ultimo_andamento.unidade.descricao,
-                id_unidade: dados.ultimo_andamento.unidade.id_unidade,
-                sigla: dados.ultimo_andamento.unidade.sigla,
-                tipo_unidade: dados.ultimo_andamento.unidade.tipo_unidade,
+                descricao: dados.ultimo_andamento.unidade.descricao || '',
+                id_unidade: dados.ultimo_andamento.unidade.id_unidade || '',
+                sigla: dados.ultimo_andamento.unidade.sigla || '',
+                tipo_unidade: dados.ultimo_andamento.unidade.tipo_unidade || '',
             },
         };
     }
@@ -130,90 +136,97 @@ export class SeiIntegracaoService {
             !statusSei.relatorio_sincronizado_em ||
             statusSei.sei_hash == '' ||
             statusSei.status_code !== 200 ||
-            now.getTime() - statusSei.relatorio_sincronizado_em.getTime() > 60 * 60 * 1000; // 1 hour
+            now.getTime() - statusSei.relatorio_sincronizado_em.getTime() > 60 * 60 * 1000;
 
-        let dados;
+        let dados: RetornoRelatorioProcesso | null = null;
         if (needsUpdate) {
-            this.logger.log(`Buscando dados do SEI para ${params.processo_sei}`);
-            dados = await this.sei.getRelatorioProcesso(params.processo_sei);
-            const newHash = this.jsonFlatHash(dados);
+            try {
+                this.logger.log(`Buscando dados do SEI para ${params.processo_sei}`);
+                dados = await this.sei.getRelatorioProcesso(params.processo_sei);
 
-            if (!statusSei) {
-                statusSei = await this.prisma.statusSEI.create({
-                    data: {
-                        processo_sei: params.processo_sei,
-                        link: dados.link,
-                        status_code: 200,
-                        json_resposta: dados as any,
-                        sei_hash: newHash,
-                        resumo_hash: '',
-                        ativo: false, // não é ativo por padrão
-                        sei_atualizado_em: null,
-                        relatorio_sincronizado_em: now,
-                        proxima_sincronizacao: this.calculaProximaSync(),
-                        usuarios_lidos: [],
-                    },
-                    // TODO: tratar para não ser necessário chamar o include aqui. Problema de tipagem.
-                    include: { processosDistribuicaoRecurso: true },
-                });
-            } else {
-                const updateData: Prisma.StatusSEIUpdateInput = {
-                    relatorio_sincronizado_em: now,
-                    link: dados.link,
-                    status_code: 200,
-                    proxima_sincronizacao: this.calculaProximaSync(),
-                };
-
-                if (statusSei.sei_hash !== newHash) {
-                    updateData.sei_atualizado_em = now;
-                    updateData.json_resposta = JSON.stringify(dados);
-                    updateData.sei_hash = newHash;
-                    updateData.usuarios_lidos = []; // mudou o hash, então reset a lista de usuários que leram
-
-                    // Enviando email de notificação para gestores da Casa Civil
-                    if (
-                        statusSei.processosDistribuicaoRecurso.length > 0 &&
-                        statusSei.sei_hash !== '' &&
-                        statusSei.resumo_hash !== ''
-                    ) {
-                        // Verificando hashes, pois caso ambas vazias, foi criado pelo endpoint de sync de distribuições.
-                        // Logo, não é necessário enviar email de notificação deste primeiro sync.
-                        await this.enviarEmailNotificacaoSEI(
-                            params.processo_sei,
-                            statusSei.processosDistribuicaoRecurso[0].id
-                        );
-                    }
+                if (!dados) {
+                    throw new Error('Dados do SEI não retornados');
                 }
 
-                this.logger.verbose(
-                    `Atualizando dados do SEI para ${params.processo_sei} ${JSON.stringify(updateData)}`
-                );
-                statusSei = await this.prisma.statusSEI.update({
-                    where: { id: statusSei.id },
-                    data: updateData,
-                    // TODO: tratar para não ser necessário chamar o include aqui. Problema de tipagem.
-                    include: { processosDistribuicaoRecurso: true },
-                });
+                const newHash = this.jsonFlatHash(dados);
+
+                if (!statusSei) {
+                    statusSei = await this.prisma.statusSEI.create({
+                        data: {
+                            processo_sei: params.processo_sei,
+                            link: dados.link || '',
+                            status_code: 200,
+                            json_resposta: dados as any,
+                            sei_hash: newHash,
+                            resumo_hash: '',
+                            ativo: false,
+                            sei_atualizado_em: null,
+                            relatorio_sincronizado_em: now,
+                            proxima_sincronizacao: this.calculaProximaSync(),
+                            usuarios_lidos: [],
+                        },
+                        include: { processosDistribuicaoRecurso: true },
+                    });
+                } else {
+                    const updateData: Prisma.StatusSEIUpdateInput = {
+                        relatorio_sincronizado_em: now,
+                        link: dados.link || '',
+                        status_code: 200,
+                        proxima_sincronizacao: this.calculaProximaSync(),
+                    };
+
+                    if (statusSei.sei_hash !== newHash) {
+                        updateData.sei_atualizado_em = now;
+                        updateData.json_resposta = JSON.stringify(dados);
+                        updateData.sei_hash = newHash;
+                        updateData.usuarios_lidos = []; // mudou o hash, então reset a lista de usuários que leram
+
+                        // Enviando email de notificação para gestores da Casa Civil
+                        if (
+                            statusSei.processosDistribuicaoRecurso?.length > 0 &&
+                            statusSei.sei_hash !== '' &&
+                            statusSei.resumo_hash !== ''
+                        ) {
+                            // Verificando hashes, pois caso ambas vazias, foi criado pelo endpoint de sync de distribuições.
+                            // Logo, não é necessário enviar email de notificação deste primeiro sync.
+                            await this.enviarEmailNotificacaoSEI(
+                                params.processo_sei,
+                                statusSei.processosDistribuicaoRecurso[0].id
+                            );
+                        }
+                    }
+
+                    statusSei = await this.prisma.statusSEI.update({
+                        where: { id: statusSei.id },
+                        data: updateData,
+                        // TODO: tratar para não ser necessário chamar o include aqui. Problema de tipagem.
+                        include: { processosDistribuicaoRecurso: true },
+                    });
+                }
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+                throw new SeiError(`Erro ao processar dados do SEI: ${errorMessage}`);
             }
         } else {
-            console.log(statusSei);
-
-            dados = statusSei?.json_resposta?.valueOf() as any as RetornoRelatorioProcesso;
+            dados = statusSei?.json_resposta?.valueOf() as RetornoRelatorioProcesso;
         }
-        if (!dados || !statusSei) throw new Error('Erro ao salvar dados do SEI no banco de dados');
+
+        if (!dados || !statusSei) {
+            throw new Error('Erro ao salvar ou recuperar dados do SEI no banco de dados');
+        }
 
         const processado = this.createProcessado(dados);
 
         return {
             id: statusSei.id,
             ativo: statusSei.ativo,
-            link: dados.link,
+            link: dados.link || '',
             resumo_sincronizado_em: statusSei.resumo_sincronizado_em,
             resumo_status_code: statusSei.resumo_status_code,
             relatorio_sincronizado_em: statusSei.relatorio_sincronizado_em,
             json_resposta: dados,
             processado: processado,
-            processo_sei: dados.numero_processo,
+            processo_sei: dados.numero_processo || params.processo_sei,
             resumo_atualizado_em: statusSei.resumo_atualizado_em,
             sei_atualizado_em: statusSei.sei_atualizado_em,
             status_code: statusSei.status_code,
@@ -424,6 +437,7 @@ export class SeiIntegracaoService {
                 const updateData: Prisma.StatusSEIUpdateInput = {
                     status_code: 500,
                     sincronizacao_errmsg: 'message' in error ? error.message : 'Erro desconhecido: ' + error.toString(),
+                    proxima_sincronizacao: this.calculaProximaSync(),
                 };
 
                 if (error instanceof HttpException) {
