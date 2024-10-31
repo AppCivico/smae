@@ -38,7 +38,7 @@ BEGIN
         ((periodo_validacao[2] - periodo_validacao[1] + 1) || ' days')::interval  as dur_validacao_interval,
         ((periodo_liberacao[2] - periodo_liberacao[1] + 1) || ' days')::interval as dur_liberacao_interval,
 
-        periodicidade_intervalo(periodicidade) * atraso_meses AS intervalo_atraso
+        '1 month'::interval * atraso_meses AS intervalo_atraso
     INTO v_registro
     FROM variavel
     WHERE
