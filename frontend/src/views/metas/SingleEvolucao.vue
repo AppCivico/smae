@@ -1,9 +1,10 @@
 <script setup>
+import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
 import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
+import EvolucaoDeMetaIniciativaAtividade from '@/components/metas/EvolucaoDeMetaIniciativaAtividade.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SmallModal from '@/components/SmallModal.vue';
-import dateToField from '@/helpers/dateToField';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useMetasStore } from '@/stores/metas.store';
@@ -35,7 +36,7 @@ const parentField = atividadeId ? 'atividade_id' : iniciativaId ? 'iniciativa_id
 // eslint-disable-next-line no-nested-ternary
 const parentLabel = ref(atividadeId ? '-' : iniciativaId ? '-' : metaId ? 'Meta' : false);
 
-const parentlink = (() => {
+const parentLink = (() => {
   let baseLink = window.location.origin;
 
   if (metaId) {
@@ -52,8 +53,6 @@ const parentlink = (() => {
 
   return baseLink;
 })();
-
-const ehPlanoSetorial = computed(() => route.meta.entidadeMãe === 'planoSetorial');
 
 const dialogoAtivo = computed(() => {
   switch (props.group) {
@@ -78,7 +77,7 @@ const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis, Valores } = storeToRefs(VariaveisStore);
+const { Variaveis } = storeToRefs(VariaveisStore);
 
 (async () => {
   // mantendo comportamento legado
@@ -89,12 +88,6 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
   if (tempIndicadores.value[0]?.id) {
     IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
     await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
-  }
-
-  if (Variaveis.value[tempIndicadores.value[0]?.id]) {
-    Variaveis.value[tempIndicadores.value[0]?.id].forEach((x) => {
-      VariaveisStore.getValores(x.id, { leitura: true });
-    });
   }
 })();
 </script>
@@ -180,7 +173,7 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
                   'CadastroMeta.administrador_no_pdm',
                   'CadastroMetaPS.administrador_no_pdm'
                 ])"
-                :to="`${parentlink}/indicadores/${ind.id}`"
+                :to="`${parentLink}/indicadores/${ind.id}`"
                 class="tprimary"
               >
                 <svg
@@ -243,172 +236,20 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
           Variáveis
         </div>
         <hr class="mb2">
+
         <template v-if="!Variaveis[ind.id]?.loading">
-          <div
+          <EsperarEntrarNaTela
             v-for="v in Variaveis[ind.id]"
             :key="v.id"
-            class="board_variavel mb2"
           >
-            <header class="p1">
-              <div class="flex center g2">
-                <div class="flex center f1">
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 28 28"
-                    class="f0"
-                    color="#8EC122"
-                    xmlns="http://www.w3.org/2000/svg"
-                  > <path
-                    d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104
-                    1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364
-                    3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244
-                    26.8377C1.6739 27.3492 2.36759 27.6365 3.09091
-                    27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376
-                    26.8377C27.349 26.3262 27.6364 25.6325 27.6364
-                    24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376
-                    1.16257C26.3261 0.651104 25.6324 0.36377 24.9091
-                    0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818
-                    10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909
-                    11.2729H3.09091V3.09104H24.9091ZM3.09091
-                    24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636
-                    9.22741L22.1818 14.5456L25.5909
-                    11.2729H24.9091V24.9092H3.09091Z"
-                    fill="currentColor"
-                  /> <path
-                    d="M7.18182 19.4547H4.45455V23.5456H7.18182V19.4547Z"
-                    fill="currentColor"
-                  /> <path
-                    d="M12.6364 18.091H9.90909V23.5456H12.6364V18.091Z"
-                    fill="currentColor"
-                  /> <path
-                    d="M18.0909 15.3638H15.3636V23.5456H18.0909V15.3638Z"
-                    fill="currentColor"
-                  /> <path
-                    d="M23.5455 18.091H20.8182V23.5456H23.5455V18.091Z"
-                    fill="currentColor"
-                  /> </svg>
-                  <h2 class="mt1 mb1 ml1 f1">
-                    {{ v.codigo }} - {{ v.titulo }}
-                  </h2>
-                  <div
-                    v-if="v.suspendida"
-                    class="tipinfo left"
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      color="#F2890D"
-                    ><use xlink:href="#i_alert" /></svg><div>
-                      Suspensa do monitoramento físico em {{ dateToField(v.suspendida_em) }}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  v-if="
-                    !ehPlanoSetorial
-                      && !v.etapa
-                      && temPermissãoPara([
-                        'CadastroMeta.administrador_no_pdm',
-                        'CadastroMetaPS.administrador_no_pdm'
-                      ])
-                  "
-                  class="f0 dropbtn right"
-                >
-                  <span class="tamarelo"><svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_more" /></svg></span>
-                  <ul>
-                    <li>
-                      <SmaeLink
-                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}`"
-                        class="tprimary"
-                      >
-                        Editar variável
-                      </SmaeLink>
-                    </li>
-                    <li>
-                      <SmaeLink
-                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/valores`"
-                        class="tprimary"
-                      >
-                        Valores previstos
-                      </SmaeLink>
-                    </li>
-                    <li>
-                      <SmaeLink
-                        v-if="temPermissãoPara(['CadastroPessoa.administrador'])"
-                        :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/retroativos`"
-                        class="tprimary"
-                      >
-                        Valores realizados retroativos
-                      </SmaeLink>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <EvolucaoGraph
-                :dataserie="Valores[v.id]"
-                :tem-categorica="!!v.variavel_categorica_id"
-              />
-            </header>
-            <div>
-              <div class="tablepreinfo">
-                <div class="flex spacebetween">
-                  <div class="flex center">
-                    <div class="t12 lh1 w700 uc tc400">
-                      Previsto X Realizado
-                    </div>
-                    <div class="tipinfo ml1">
-                      <svg
-                        width="20"
-                        height="20"
-                      ><use xlink:href="#i_i" /></svg><div>
-                        Indicador calculado pelo média móvel das variáveis
-                      </div>
-                    </div>
-                  </div>
-                  <!-- <div>
-                        <a class="addlink"><svg width="20"
-                          height="20"><use xlink:href="#i_+"></use></svg><span>
-                          Adicionar período
-                        </span></a>
-                    </div> -->
-                </div>
-              </div>
-              <table class="tablemain">
-                <thead>
-                  <tr>
-                    <th style="width: 25%">
-                      Mês/Ano
-                    </th>
-                    <th style="width: 17.5%">
-                      Previsto Mensal
-                    </th>
-                    <th style="width: 17.5%">
-                      Realizado Mensal
-                    </th>
-                    <th style="width: 17.5%">
-                      Previsto Acumulado
-                    </th>
-                    <th style="width: 17.5%">
-                      Realizado Acumulado
-                    </th>
-                    <th style="width: 5%" />
-                  </tr>
-                </thead>
-
-                <GruposDeSerie
-                  :g="Valores[v.id]"
-                  variavel="true"
-                  :tem-variavel-acumulada="!!v.acumulativa"
-                />
-              </table>
-            </div>
-          </div>
+            <EvolucaoDeMetaIniciativaAtividade
+              :variavel="v"
+              :parent-link="parentLink"
+              :indicador="ind"
+            />
+          </EsperarEntrarNaTela>
         </template>
+
         <div
           v-else
           class="p1"
@@ -439,7 +280,7 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
       >
         <div class="tc">
           <SmaeLink
-            :to="`${parentlink}/indicadores/novo`"
+            :to="`${parentLink}/indicadores/novo`"
             class="btn mt1 mb1"
           >
             <span>Adicionar indicador</span>
