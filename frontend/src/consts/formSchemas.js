@@ -3818,10 +3818,16 @@ export const variavelGlobal = object({
   mostrar_monitoramento: boolean()
     .label('Utilizar esta variável composta no ciclo de monitoramento')
     .required(),
-  orgao_id: number()
-    .label('Órgão responsável')
+  medicao_orgao_id: number()
+    .label('Órgão responsável pela medição')
     .positive()
     .required(),
+  validacao_orgao_id: number()
+    .label('Órgão responsável pela validação')
+    .positive(),
+  liberacao_orgao_id: number()
+    .label('Órgão responsável pela liberação')
+    .positive(),
   orgao_proprietario_id: number()
     .label('Órgão proprietário')
     .required()
