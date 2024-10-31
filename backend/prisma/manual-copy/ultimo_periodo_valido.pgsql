@@ -57,6 +57,44 @@ END;
 $$ LANGUAGE plpgsql;
 */
 
+/**
+ * Calcula a data do último período válido para medição considerando a periodicidade,
+ * atraso permitido e data de início das medições.
+ *
+ * Esta função é utilizada para determinar qual é o período mais recente que pode receber medições,
+ * levando em conta o atraso permitido para inserção dos dados e alinhando com a periodicidade
+ * definida a partir da data de início.
+ *
+ * @param pperiodicidade - Periodicidade da medição ('Mensal', 'Bimestral', 'Trimestral', etc)
+ * @param patrasomeses - Quantidade de meses de atraso permitido para inserção dos dados
+ * @param piniciomedicao - Data de início das medições (base para cálculo dos períodos)
+ *
+ * @returns Data do último período válido para medição
+ *
+ * Exemplos de uso:
+ *   Considerando hoje como 2024-01-01:
+ *
+ *   1. Medição Anual com 1 mês de atraso, iniciada em 1999-12:
+ *      SELECT ultimo_periodo_valido('Anual', 1, '1999-12-01') -> 2023-12-01
+ *      Explicação: Como permite 1 mês de atraso, e estamos em Jan/2024,
+ *                  o último período válido é Dez/2023
+ *
+ *   2. Medição Anual com 2 meses de atraso, iniciada em 1999-12:
+ *      SELECT ultimo_periodo_valido('Anual', 2, '1999-12-01') -> 2022-12-01
+ *      Explicação: Com 2 meses de atraso, o último período válido volta para Dez/2022,
+ *                  pois alinha com a periodicidade anual a partir da data inicial
+ *
+ *   3. Medição Mensal com diferentes atrasos, iniciada em 1999-12:
+ *      - Com 1 mês: 2023-12-01 (pode medir dezembro em janeiro)
+ *      - Com 2 meses: 2023-11-01 (pode medir até novembro em janeiro)
+ *      - Com 3 meses: 2023-10-01 (pode medir até outubro em janeiro)
+ *
+ * Observações:
+ * - A data retornada sempre será alinhada com a periodicidade e a data de início,
+ *   ou seja, se a medição é trimestral começando em Fev, os períodos serão
+ *   Fev/Mai/Ago/Nov
+ */
+
 CREATE OR REPLACE FUNCTION public.ultimo_periodo_valido(pperiodicidade "Periodicidade", patrasomeses integer, piniciomedicao date)
  RETURNS date
  LANGUAGE plpgsql
@@ -66,10 +104,8 @@ DECLARE
     vMesesPorPeriodo INT;
     vUltimoPeriodo DATE;
 BEGIN
-    -- Get current date truncated to month
-    vAgora := date_trunc('month', replaceable_now() AT TIME ZONE 'America/Sao_Paulo');
+    vAgora := date_trunc('month', now() AT TIME ZONE 'America/Sao_Paulo');
 
-    -- Convert periodicidade to number of months
     vMesesPorPeriodo := CASE pPeriodicidade
         WHEN 'Mensal' THEN 1
         WHEN 'Bimestral' THEN 2
@@ -81,11 +117,24 @@ BEGIN
         ELSE 1
     END;
 
-    -- Calculate last valid period by moving backwards from current date
-    -- until we find a valid period considering the delay
+    -- Calcular o último período válido movendo para trás a partir da data atual
+
+    -- 1. Subtrai os meses de atraso da data atual
+    -- Ex: Se hoje é Jan/2024 e atraso é 2 meses, move para Nov/2023
     vUltimoPeriodo := vAgora - INTERVAL '1 month' * pAtrasoMeses;
 
-    -- Align with the measurement frequency by moving backwards to the last valid period
+    -- 2. Alinha o período com a data inicial e periodicidade
+    -- Exemplo para periodicidade Trimestral começando em Fev/2023:
+    -- a) Calcula quantos meses se passaram desde o início (EXTRACT/diferença entre as datas)
+    -- b) Divide pelo tamanho do período (vMesesPorPeriodo) e arredonda para baixo (FLOOR)
+    -- c) Multiplica novamente pelo tamanho do período para achar o último período completo
+    -- d) Soma à data inicial para obter a data final alinhada
+    --
+    -- Ex: Se vUltimoPeriodo é Nov/2023 e início em Fev/2023:
+    -- Meses passados = 9 meses
+    -- Para trimestral (3 meses): 9 ÷ 3 = 3 períodos completos
+    -- 3 períodos × 3 meses = 9 meses
+    -- Fev/2023 + 9 meses = Nov/2023 (mantém pois já está alinhado)
     vUltimoPeriodo := pInicioMedicao + (
         FLOOR(
             (EXTRACT(YEAR FROM vUltimoPeriodo) - EXTRACT(YEAR FROM pInicioMedicao)) * 12 +
