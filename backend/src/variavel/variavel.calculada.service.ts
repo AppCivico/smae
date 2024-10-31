@@ -84,6 +84,7 @@ export class VariavelCalculadaService {
                 { key: 'metodologia', label: 'Metodologia' },
                 { key: 'periodicidade', label: 'Periodicidade' },
                 { key: 'unidade_medida_id', label: 'Unidade de Medida' },
+                { key: 'variavel_categorica_id', label: 'Variável Categórica' },
             ];
 
             const inicioMedicao = variaveis.map((v) => v.inicio_medicao);
@@ -176,6 +177,7 @@ export class VariavelCalculadaService {
                         periodicidade: fc.calc_periodicidade ?? getUniqueValues('periodicidade')[0],
                         unidade_medida_id: unidade_medida_id,
                         fonte_id: fonte_id.length === 1 && fonte_id[0] ? fonte_id[0] : null,
+                        variavel_categorica_id: getUniqueValues('variavel_categorica_id')[0],
                         orgao_proprietario_id: orgao_id,
                         orgao_id: orgao_id!, // not really, mas é required
                         dado_aberto: dado_aberto.find((v) => v == false) ? false : true,

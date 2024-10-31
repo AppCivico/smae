@@ -16,3 +16,8 @@ ALTER TABLE "variavel" ADD CONSTRAINT "variavel_liberacao_orgao_id_fkey" FOREIGN
 update variavel set possui_variaveis_filhas = true where id in (
     select variavel_mae_id from variavel where variavel_mae_id is not null
 );
+
+-- update variavel_categorica_id based on parent if variavel_categorica_id is null
+update variavel set variavel_categorica_id = (select variavel_categorica_id from variavel where id = variavel_mae_id)
+where variavel_categorica_id is null and variavel_mae_id is not null
+and variavel_categorica_id != (select variavel_categorica_id from variavel where id = variavel_mae_id);
