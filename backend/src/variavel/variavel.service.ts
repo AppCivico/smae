@@ -2161,7 +2161,7 @@ export class VariavelService {
             dto.acumulativa = false;
             dto.casas_decimais = 0;
             dto.unidade_medida_id = CONST_VAR_SEM_UN_MEDIDA;
-            //dto.polaridade = 'Neutra';
+            dto.polaridade = 'Neutra';
         }
 
         if (op == 'create' && !dto.variavel_categorica_id) {
