@@ -26,49 +26,11 @@ $$;
 
 create index if not exists idx_serie_variavel_variavel_id_data_valor on serie_variavel( serie, variavel_id , data_valor);
 
-CREATE OR REPLACE FUNCTION ultimo_periodo_valido(
+drop function if exists ultimo_periodo_valido (
     pPeriodicidade "Periodicidade",
     pAtrasoPeriodos INT,
     pInicioMedicao DATE
-)
-RETURNS DATE
-AS $$
-DECLARE
-    vUltimoPeriodo DATE;
-    vIntervalo INTERVAL;
-    vMesesIntervalo INT;
-    meses_desde_inicio INT;
-    numero_periodos INT;
-BEGIN
-    vIntervalo := periodicidade_intervalo(pPeriodicidade);
-
-    -- Calcula o número de meses no intervalo
-    vMesesIntervalo := EXTRACT(YEAR FROM vIntervalo) * 12 + EXTRACT(MONTH FROM vIntervalo);
-
-    -- Trata o caso onde o intervalo é 0 (ex: para 'Secular')
-    IF vMesesIntervalo = 0 THEN
-        vMesesIntervalo := 12 * 100; -- Assume que 'Secular' significa 100 anos
-    END IF;
-
-    -- Calcula após subtrair o atraso
-    vUltimoPeriodo := date_trunc('month', now() AT TIME ZONE 'America/Sao_Paulo') - (pAtrasoPeriodos * vIntervalo);
-
-    -- Calcula o número de períodos completos desde o início da medição até vUltimoPeriodo
-    meses_desde_inicio := (EXTRACT(YEAR FROM vUltimoPeriodo) - EXTRACT(YEAR FROM pInicioMedicao)) * 12 +
-                          (EXTRACT(MONTH FROM vUltimoPeriodo) - EXTRACT(MONTH FROM pInicioMedicao));
-
-    -- Arredonda pra CIMA o número de períodos
-    numero_periodos := CEILING(meses_desde_inicio::float / vMesesIntervalo);
-
-    -- Garantir que o número de períodos não seja negativo
-    numero_periodos := GREATEST(numero_periodos, 0);
-
-    -- Calcula o último período válido alinhado com a periodicidade
-    vUltimoPeriodo := pInicioMedicao + (numero_periodos * vIntervalo);
-
-    RETURN vUltimoPeriodo;
-END;
-$$ LANGUAGE plpgsql;
+);
 
 drop function if exists ultimo_periodo_valido("Periodicidade", INT);
 
@@ -94,3 +56,43 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 */
+
+CREATE OR REPLACE FUNCTION public.ultimo_periodo_valido(pperiodicidade "Periodicidade", patrasomeses integer, piniciomedicao date)
+ RETURNS date
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    vAgora DATE;
+    vMesesPorPeriodo INT;
+    vUltimoPeriodo DATE;
+BEGIN
+    -- Get current date truncated to month
+    vAgora := date_trunc('month', replaceable_now() AT TIME ZONE 'America/Sao_Paulo');
+
+    -- Convert periodicidade to number of months
+    vMesesPorPeriodo := CASE pPeriodicidade
+        WHEN 'Mensal' THEN 1
+        WHEN 'Bimestral' THEN 2
+        WHEN 'Trimestral' THEN 3
+        WHEN 'Quadrimestral' THEN 4
+        WHEN 'Semestral' THEN 6
+        WHEN 'Anual' THEN 12
+        WHEN 'Secular' THEN 12 * 100
+        ELSE 1
+    END;
+
+    -- Calculate last valid period by moving backwards from current date
+    -- until we find a valid period considering the delay
+    vUltimoPeriodo := vAgora - INTERVAL '1 month' * pAtrasoMeses;
+
+    -- Align with the measurement frequency by moving backwards to the last valid period
+    vUltimoPeriodo := pInicioMedicao + (
+        FLOOR(
+            (EXTRACT(YEAR FROM vUltimoPeriodo) - EXTRACT(YEAR FROM pInicioMedicao)) * 12 +
+            (EXTRACT(MONTH FROM vUltimoPeriodo) - EXTRACT(MONTH FROM pInicioMedicao))
+        )::int / vMesesPorPeriodo
+    ) * vMesesPorPeriodo * INTERVAL '1 month';
+
+    RETURN vUltimoPeriodo;
+END;
+$function$
