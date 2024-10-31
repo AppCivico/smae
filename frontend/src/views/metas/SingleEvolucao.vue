@@ -13,13 +13,19 @@ import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import {
+  computed, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
-
-const props = defineProps(['group']);
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
+
+const IndicadoresStore = useIndicadoresStore();
+const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
+
+const VariaveisStore = useVariaveisStore();
+const { Variaveis } = storeToRefs(VariaveisStore);
 
 const route = useRoute();
 const { meta_id: metaId } = route.params;
@@ -28,16 +34,16 @@ const { atividade_id: atividadeId } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
-const parentId = atividadeId ?? iniciativaId ?? metaId ?? false;
+const parentId = computed(() => atividadeId ?? iniciativaId ?? metaId ?? false);
 // mantendo comportamento legado
 // eslint-disable-next-line no-nested-ternary
-const parentField = atividadeId ? 'atividade_id' : iniciativaId ? 'iniciativa_id' : metaId ? 'meta_id' : false;
+const parentField = computed(() => (atividadeId ? 'atividade_id' : iniciativaId ? 'iniciativa_id' : metaId ? 'meta_id' : false));
 // mantendo comportamento legado
 // eslint-disable-next-line no-nested-ternary
 const parentLabel = ref(atividadeId ? '-' : iniciativaId ? '-' : metaId ? 'Meta' : false);
 
-const parentLink = (() => {
-  let baseLink = window.location.origin;
+const parentLink = computed(() => {
+  let baseLink = '';
 
   if (metaId) {
     baseLink += `/metas/${metaId}`;
@@ -52,10 +58,10 @@ const parentLink = (() => {
   }
 
   return baseLink;
-})();
+});
 
 const dialogoAtivo = computed(() => {
-  switch (props.group) {
+  switch (route.meta.group) {
     case 'variaveis':
       return AddEditVariavel;
     case 'valores':
@@ -67,29 +73,22 @@ const dialogoAtivo = computed(() => {
   }
 });
 
-(async () => {
+async function iniciar() {
   await MetasStore.getPdM();
   if (atividadeId) parentLabel.value = activePdm.value.rotulo_atividade;
   else if (iniciativaId) parentLabel.value = activePdm.value.rotulo_iniciativa;
-})();
-
-const IndicadoresStore = useIndicadoresStore();
-const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
-
-const VariaveisStore = useVariaveisStore();
-const { Variaveis } = storeToRefs(VariaveisStore);
-
-(async () => {
   // mantendo comportamento legado
-  // eslint-disable-next-line eqeqeq
-  if (!tempIndicadores.value.length || tempIndicadores.value[0][parentField] != parentId) {
-    await IndicadoresStore.filterIndicadores(parentId, parentField);
+  // eslint-disable-next-line eqeqeq, max-len
+  if (!tempIndicadores.value?.length || tempIndicadores.value?.[0]?.[parentField.value] != parentId.value) {
+    await IndicadoresStore.filterIndicadores(parentId.value, parentField.value);
   }
   if (tempIndicadores.value[0]?.id) {
     IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
     await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
   }
-})();
+}
+
+watch([parentId, parentField], iniciar, { immediate: true });
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
