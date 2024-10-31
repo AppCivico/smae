@@ -170,26 +170,6 @@ async function onSubmit(_, { controlledValues: values }) {
   }
 }
 
-async function checkDelete(id) {
-  if (id) {
-    if (singleIniciativa.value.id == id) {
-      alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-        if (await IniciativasStore.delete(meta_id, id)) {
-          IniciativasStore.clear();
-
-          if (route.meta.rotaDeEscape) {
-            router.push({ name: route.meta.rotaDeEscape });
-          } else if (route.meta.entidadeMãe === 'pdm') {
-            await router.push(`/metas/${meta_id}`);
-          } else {
-            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
-          }
-          alertStore.success('Iniciativa removida.');
-        }
-      }, 'Remover');
-    }
-  }
-}
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     alertStore.$reset();
@@ -507,15 +487,5 @@ function filterResponsible(orgao_id) {
         {{ singleIniciativa.error }}
       </div>
     </div>
-  </template>
-
-  <template v-if="iniciativa_id && singleIniciativa.id && iniciativa_id == singleIniciativa.id">
-    <hr class="mt2 mb2">
-    <button
-      class="btn amarelo big"
-      @click="checkDelete(singleIniciativa.id)"
-    >
-      Remover item
-    </button>
   </template>
 </template>
