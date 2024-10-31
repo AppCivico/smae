@@ -2045,6 +2045,8 @@ model SerieVariavel {
     conferidor      Pessoa? @relation("Conferidor", fields: [conferida_por], references: [id])
     ciclo_fisico_id Int?
 
+    elementos Json? @db.Json
+
     @@unique([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@index([variavel_id, data_valor])
     @@map("serie_variavel")
