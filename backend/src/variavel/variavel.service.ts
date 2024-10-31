@@ -1265,9 +1265,6 @@ export class VariavelService {
                 variavel: {
                     select: {
                         supraregional: true,
-                        medicao_orgao_id: true,
-                        validacao_orgao_id: true,
-                        liberacao_orgao_id: true,
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1364,9 +1361,6 @@ export class VariavelService {
                     pode_excluir: pode_editar && r.planos.length == 0,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
-                    medicao_orgao_id: r.variavel.medicao_orgao_id,
-                    validacao_orgao_id: r.variavel.validacao_orgao_id,
-                    liberacao_orgao_id: r.variavel.liberacao_orgao_id,
                     regiao: r.regiao
                         ? ({
                               id: r.regiao.id,
@@ -3816,6 +3810,9 @@ export class VariavelService {
                         descricao: true,
                     },
                 },
+                medicao_orgao_id: true,
+                validacao_orgao_id: true,
+                liberacao_orgao_id: true,
                 VariavelGrupoResponsavelEquipe: {
                     where: {
                         removido_em: null,
@@ -3896,6 +3893,9 @@ export class VariavelService {
 
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
+                medicao_orgao_id: detalhes.medicao_orgao_id,
+                validacao_orgao_id: detalhes.validacao_orgao_id,
+                liberacao_orgao_id: detalhes.liberacao_orgao_id,
                 orgao_proprietario: detalhes.orgao_proprietario!,
                 medicao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
                     (e) => e.grupo_responsavel_equipe.perfil === 'Medicao'

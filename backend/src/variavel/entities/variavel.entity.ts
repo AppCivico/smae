@@ -83,9 +83,6 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     pode_editar: boolean;
     pode_editar_valor: boolean;
     pode_excluir: boolean;
-    medicao_orgao_id: number | null;
-    validacao_orgao_id: number | null;
-    liberacao_orgao_id: number | null;
 }
 
 export class FilterPeriodoDto {
