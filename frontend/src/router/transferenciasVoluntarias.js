@@ -67,7 +67,7 @@ export default {
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
-        título: 'Formulário de registro 123',
+        título: 'Formulário de registro',
       },
     },
     {
@@ -84,6 +84,7 @@ export default {
       meta: {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
         limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
           
@@ -109,7 +110,10 @@ export default {
         título: 'Recurso financeiro',
         títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ],
       },
     },
     {
@@ -243,7 +247,10 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes'
+        ],
       },
     },
     /* FIM DE TRANSFERÊNCIA - IDENTIFICAÇÃO */
