@@ -65,6 +65,8 @@ async function iniciar() {
 iniciar();
 </script>
 <template>
+  <MigalhasDePão />
+  <div class="spacebetween">&nbsp</div>
   <div class="flex spacebetween center mb2">
     <div>
       <div class="t12 uc w700 tamarelo">
