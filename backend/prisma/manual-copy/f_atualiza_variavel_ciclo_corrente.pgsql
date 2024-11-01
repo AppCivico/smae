@@ -225,7 +225,7 @@ BEGIN
     --RAISE NOTICE 'v_dia_atual: %', v_dia_atual;
     --RAISE NOTICE 'v_corrente: %', v_corrente;
 
-    v_dias_desde_inicio := (v_dia_atual - v_proximo_periodo) + 1;
+    v_dias_desde_inicio := v_dia_atual::date - (v_ultimo_periodo_valido::date + v_registro.intervalo_atraso)::date + 1;
     --RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
     --raise notice 'v_proximo_periodo -> %', v_proximo_periodo;
 
