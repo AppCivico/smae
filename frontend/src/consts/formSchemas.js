@@ -3750,7 +3750,8 @@ const variavelGlobalEhNumberica = (variavelCategoricaId, field) => {
 
   return field.nullableOuVazio();
 };
-export const variavelGlobal = object({
+
+export const variavelGlobal = object().shape({
   acumulativa: boolean()
     .label('Variável acumulativa')
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
@@ -3825,6 +3826,10 @@ export const variavelGlobal = object({
   validacao_orgao_id: number()
     .label('Órgão responsável pela validação')
     .positive(),
+  orgao_id: number()
+    .label('Órgão responsável')
+    .positive()
+    .required(),
   liberacao_orgao_id: number()
     .label('Órgão responsável pela liberação')
     .positive(),
@@ -3889,6 +3894,7 @@ export const variavelGlobal = object({
     .nullableOuVazio(),
 });
 
+// projeto.concat(obras).shape(
 export const variavelGlobalParaGeracao = variavelGlobal.concat(
   object({
     criar_formula_composta: boolean()
