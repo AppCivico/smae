@@ -85,8 +85,6 @@ export default {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
         limitarÀsPermissões: 'CadastroTransferencia.editar',
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
           
           'TransferenciasVoluntariasListar',
