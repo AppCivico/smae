@@ -403,6 +403,8 @@ export class PessoaService {
         const sistema = user.assertOneModuloSistema('editar', 'pessoa');
         logger.log(`Editando Pessoa ID=${pessoaId}, pelo sistema ${sistema}`);
 
+        if (updatePessoaDto.email) updatePessoaDto.email = updatePessoaDto.email.toLowerCase();
+
         const perfisVisiveis = await this.buscaPerfisVisiveis(user, sistema);
         this.verificaPerfilAcesso(updatePessoaDto, perfisVisiveis);
 
