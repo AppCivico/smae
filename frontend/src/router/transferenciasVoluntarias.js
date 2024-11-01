@@ -67,7 +67,7 @@ export default {
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
-        título: 'Formulário de registro',
+        título: 'Formulário de registro 123',
       },
     },
     {
@@ -86,10 +86,7 @@ export default {
         rotasParaMenuSecundário,
         limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
-          
           'TransferenciasVoluntariasListar',
-          'TransferenciasVoluntariasDetalhes'
-        ,
           'TransferenciasVoluntariasDetalhes'
         ],
       },
@@ -493,8 +490,8 @@ export default {
         /* FIM DE AÇÕES COM TAREFAS */
       ],
     },
-      ],
-    },
+      //],
+    //},
     /* FIM DE TAREFAS E CRONOGRAMA */
   ],
 };
