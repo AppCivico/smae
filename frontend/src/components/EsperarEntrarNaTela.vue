@@ -5,11 +5,14 @@
       v-if="!entrouNaTela"
       ref="elementoTemporario"
       class="marcador-de-posicao"
+      v-bind="$attrs"
     >
       <slot
         v-if="$slots.marcadorDePosicao"
         name="conteudoDoMarcadorDePosicao"
-      />
+      >
+        <LoadingComponent />
+      </slot>
     </component>
     <slot
       v-else-if="entrouNaTela"
@@ -19,6 +22,10 @@
 <script lang="ts" setup>
 import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 import { defineProps, onMounted, ref } from 'vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const emit = defineEmits(['entrouNaTela']);
 
@@ -53,3 +60,8 @@ onMounted(() => {
   }
 });
 </script>
+<style scoped>
+.marcador-de-posicao + .marcador-de-posicao {
+  min-height: 2rem;
+}
+</style>

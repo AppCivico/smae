@@ -32,6 +32,10 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     medicao_grupo_ids: number[] | null;
     validacao_grupo_ids: number[] | null;
     liberacao_grupo_ids: number[] | null;
+
+    medicao_orgao_id: number | null;
+    validacao_orgao_id: number | null;
+    liberacao_orgao_id: number | null;
 }
 
 export class VariavelResumoInput {

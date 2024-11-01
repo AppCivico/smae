@@ -796,7 +796,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         nome: 'Analista de dados',
         descricao: 'Entra diretamente para as análises e tem acesso total para metas e projetos',
         privilegios: [
-            'SMAE.loga_direto_na_analise',
+            //'SMAE.loga_direto_na_analise', não é mais necessário no SMAE de 2024/10
             'SMAE.acesso_bi',
             'Reports.dashboard_pdm',
             'Reports.dashboard_portfolios',

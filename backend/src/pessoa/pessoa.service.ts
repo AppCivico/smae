@@ -406,7 +406,7 @@ export class PessoaService {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user, sistema);
         this.verificaPerfilAcesso(updatePessoaDto, perfisVisiveis);
 
-        await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
+        if (!prismaCtx) await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
         this.verificarCPFObrigatorio(updatePessoaDto);
         this.verificarRFObrigatorio(updatePessoaDto);
 
@@ -1090,6 +1090,8 @@ export class PessoaService {
 
         this.verificarCPFObrigatorio(createPessoaDto);
         this.verificarRFObrigatorio(createPessoaDto);
+
+        await this.verificarPrivilegiosCriacao(createPessoaDto, user);
 
         logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         const newPass = this.#generateRndPass(10);

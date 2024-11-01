@@ -279,55 +279,57 @@ export default {
       component: SingleEvolucao,
       meta: {
         títuloParaMenu: 'Evolução',
+        rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
-    },
-    {
-      path: ':meta_id/evolucao/:indicador_id',
-      component: SingleEvolucao,
-      meta: {
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
-    },
-    {
-      path: ':meta_id/evolucao/:indicador_id/variaveis/novo',
-      component: SingleEvolucao,
-      props: { group: 'variaveis' },
-      meta: {
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
-    },
-    {
-      path: ':meta_id/evolucao/:indicador_id/variaveis/novo/:copy_id',
-      component: SingleEvolucao,
-      props: { group: 'variaveis' },
-      meta: {
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
-    },
-    {
-      path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id',
-      component: SingleEvolucao,
-      props: { group: 'variaveis' },
-      meta: {
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
-    },
-    {
-      path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores',
-      component: SingleEvolucao,
-      props: { group: 'valores' },
-      meta: {
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
-    },
-    {
-      path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/retroativos',
-      component: SingleEvolucao,
-      props: { group: 'retroativos' },
-      meta: {
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
+      children: [
+        {
+          path: ':indicador_id',
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
+        },
+        {
+          path: ':indicador_id/variaveis/novo',
+          meta: {
+            group: 'variaveis',
+            rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
+        },
+        {
+          path: ':indicador_id/variaveis/novo/:copy_id',
+          meta: {
+            group: 'variaveis',
+            rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
+        },
+        {
+          path: ':indicador_id/variaveis/:var_id',
+          meta: {
+            group: 'variaveis',
+            rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
+        },
+        {
+          path: ':indicador_id/variaveis/:var_id/valores',
+          meta: {
+            group: 'valores',
+            rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
+        },
+        {
+          path: ':indicador_id/variaveis/:var_id/retroativos',
+          meta: {
+            group: 'retroativos',
+            rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
+        },
+      ],
     },
     {
       path: ':meta_id/cronograma',
@@ -717,55 +719,57 @@ export default {
           component: SingleEvolucao,
           meta: {
             títuloParaMenu: 'Evolução',
+            rotaPrescindeDeChave: true,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
-        },
-        {
-          path: ':iniciativa_id/evolucao/:indicador_id',
-          component: SingleEvolucao,
-          meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
-          },
-        },
-        {
-          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo',
-          component: SingleEvolucao,
-          props: { group: 'variaveis' },
-          meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
-          },
-        },
-        {
-          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo/:copy_id',
-          component: SingleEvolucao,
-          props: { group: 'variaveis' },
-          meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
-          },
-        },
-        {
-          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id',
-          component: SingleEvolucao,
-          props: { group: 'variaveis' },
-          meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
-          },
-        },
-        {
-          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/valores',
-          component: SingleEvolucao,
-          props: { group: 'valores' },
-          meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
-          },
-        },
-        {
-          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/retroativos',
-          component: SingleEvolucao,
-          props: { group: 'retroativos' },
-          meta: {
-            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
-          },
+          children: [
+            {
+              path: ':indicador_id',
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
+            },
+            {
+              path: ':indicador_id/variaveis/novo',
+              meta: {
+                group: 'variaveis',
+                rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
+            },
+            {
+              path: ':indicador_id/variaveis/novo/:copy_id',
+              meta: {
+                group: 'variaveis',
+                rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
+            },
+            {
+              path: ':indicador_id/variaveis/:var_id',
+              meta: {
+                group: 'variaveis',
+                rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
+            },
+            {
+              path: ':indicador_id/variaveis/:var_id/valores',
+              meta: {
+                group: 'valores',
+                rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
+            },
+            {
+              path: ':indicador_id/variaveis/:var_id/retroativos',
+              meta: {
+                group: 'retroativos',
+                rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
+            },
+          ],
         },
         {
           path: ':iniciativa_id/cronograma',
@@ -1027,55 +1031,57 @@ export default {
               component: SingleEvolucao,
               meta: {
                 títuloParaMenu: 'Evolução',
+                rotaPrescindeDeChave: true,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
-            },
-            {
-              path: ':atividade_id/evolucao/:indicador_id',
-              component: SingleEvolucao,
-              meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
-              },
-            },
-            {
-              path: ':atividade_id/evolucao/:indicador_id/variaveis/novo',
-              component: SingleEvolucao,
-              props: { group: 'variaveis' },
-              meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
-              },
-            },
-            {
-              path: ':atividade_id/evolucao/:indicador_id/variaveis/novo/:copy_id',
-              component: SingleEvolucao,
-              props: { group: 'variaveis' },
-              meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
-              },
-            },
-            {
-              path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id',
-              component: SingleEvolucao,
-              props: { group: 'variaveis' },
-              meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
-              },
-            },
-            {
-              path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/valores',
-              component: SingleEvolucao,
-              props: { group: 'valores' },
-              meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
-              },
-            },
-            {
-              path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/retroativos',
-              component: SingleEvolucao,
-              props: { group: 'retroativos' },
-              meta: {
-                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
-              },
+              children: [
+                {
+                  path: ':indicador_id',
+                  meta: {
+                    rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                  },
+                },
+                {
+                  path: ':indicador_id/variaveis/novo',
+                  meta: {
+                    group: 'variaveis',
+                    rotaPrescindeDeChave: true,
+                    rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                  },
+                },
+                {
+                  path: ':indicador_id/variaveis/novo/:copy_id',
+                  meta: {
+                    group: 'variaveis',
+                    rotaPrescindeDeChave: true,
+                    rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                  },
+                },
+                {
+                  path: ':indicador_id/variaveis/:var_id',
+                  meta: {
+                    group: 'variaveis',
+                    rotaPrescindeDeChave: true,
+                    rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                  },
+                },
+                {
+                  path: ':indicador_id/variaveis/:var_id/valores',
+                  meta: {
+                    group: 'valores',
+                    rotaPrescindeDeChave: true,
+                    rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                  },
+                },
+                {
+                  path: ':indicador_id/variaveis/:var_id/retroativos',
+                  meta: {
+                    group: 'retroativos',
+                    rotaPrescindeDeChave: true,
+                    rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+                  },
+                },
+              ],
             },
             {
               path: ':atividade_id/cronograma',
