@@ -8,6 +8,7 @@ import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
+import type { Store } from 'pinia';
 import { createPinia } from 'pinia';
 import {
   createApp, markRaw, nextTick,
@@ -54,17 +55,36 @@ declare module 'pinia' {
     requestS: RequestS;
     router: Router;
     route: RouteLocationNormalizedLoaded;
+    resetAllStores: () => void;
   }
   export interface PiniaCustomStateProperties {
     route: RouteLocationNormalizedLoaded;
   }
 }
 
+const stores:Store[] = [];
+
 pinia.use(() => ({
   router: markRaw(router),
   route: (markRaw(router).currentRoute) as unknown as RouteLocationNormalizedLoaded,
   requestS: markRaw(requestS),
 }));
+
+// @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
+pinia.use(({ store }) => {
+  stores.push(store);
+
+  return {
+    resetAllStores: () => {
+      stores.forEach((eachStore) => {
+        eachStore.$reset();
+      });
+
+      stores.splice(0);
+    },
+  };
+});
+
 app.directive('ScrollLockDebug', {
   beforeMount: (el, binding) => {
     const primária = 'Control';
