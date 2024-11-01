@@ -1460,6 +1460,9 @@ export class VariavelService {
             {
                 AND: firstSet,
                 removido_em: null,
+                medicao_orgao_id: filters.medicao_orgao_id,
+                validacao_orgao_id: filters.validacao_orgao_id,
+                liberacao_orgao_id: filters.liberacao_orgao_id,
                 variavel_categorica_id: variavel_categorica_id,
                 VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
                     ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
