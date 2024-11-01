@@ -367,7 +367,8 @@ export default {
             },
           ],
         },
-
+        /* FIM DE CRONOGRAMA*/
+        /* INCLUIR TAREFA */
         {
           name: 'TransferenciasVoluntariasTarefasCriar',
           path: 'nova',
@@ -492,5 +493,8 @@ export default {
         /* FIM DE AÇÕES COM TAREFAS */
       ],
     },
+      ],
+    },
+    /* FIM DE TAREFAS E CRONOGRAMA */
   ],
 };
