@@ -55,6 +55,7 @@ import {
     SACicloFisicoDto,
     SerieIndicadorValorNominal,
     SerieValorCategoricaComposta,
+    SerieValorCategoricaElemento,
     SerieValorNomimal,
     SerieValorPorPeriodo,
     TipoUso,
@@ -2538,6 +2539,7 @@ export class VariavelService {
                 data_valor: true,
                 serie: true,
                 conferida: true,
+                elementos: true,
             },
         });
     }
@@ -2573,6 +2575,7 @@ export class VariavelService {
                           )
                         : '',
                 conferida: serieValor.conferida,
+                elementos: serieValor.elementos,
             };
         }
 
@@ -2775,7 +2778,7 @@ export class VariavelService {
         porPeriodo: SerieValorPorPeriodo,
         periodoYMD: string,
         variavelId: number,
-        variavel: { acumulativa: boolean },
+        variavel: { acumulativa: boolean; variavel_categorica_id: number | null },
         uso: TipoUso = 'escrita',
         user: PessoaFromJwt
     ): SerieIndicadorValorNominal[] | SerieValorNomimal[] | SerieValorCategoricaComposta[] {
@@ -2790,7 +2793,11 @@ export class VariavelService {
                 existeValor.RealizadoAcumulado)
         ) {
             if (existeValor.Previsto) {
-                seriesExistentes.push(existeValor.Previsto);
+                seriesExistentes.push(
+                    variavel.variavel_categorica_id
+                        ? this.serieCategoricaComElementos(existeValor.Previsto)
+                        : existeValor.Previsto
+                );
             } else {
                 seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso, user));
             }
@@ -2807,7 +2814,11 @@ export class VariavelService {
             }
 
             if (existeValor.Realizado) {
-                seriesExistentes.push(existeValor.Realizado);
+                seriesExistentes.push(
+                    variavel.variavel_categorica_id
+                        ? this.serieCategoricaComElementos(existeValor.Realizado)
+                        : existeValor.Realizado
+                );
             } else {
                 seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso, user));
             }
@@ -2842,10 +2853,39 @@ export class VariavelService {
         return seriesExistentes;
     }
 
+    private serieCategoricaComElementos(serie: SerieValorNomimal): SerieValorNomimal {
+        interface Elementos {
+            categorica: number[][];
+        }
+
+        const retorno: SerieValorNomimal = {
+            valor_nominal: serie.valor_nominal,
+            referencia: serie.referencia,
+            data_valor: serie.data_valor,
+            ha_conferencia_pendente: serie.ha_conferencia_pendente,
+            conferida: serie.conferida,
+        };
+
+        if (!serie.elementos || typeof serie.elementos !== 'object') return retorno;
+
+        const elementosParsed: Elementos = serie.elementos as unknown as Elementos;
+        if (!elementosParsed.categorica) return retorno;
+
+        retorno.elementos = elementosParsed.categorica.map((e) => {
+            return {
+                variavel_id: e[0],
+                categoria: e[1].toString(),
+            } satisfies SerieValorCategoricaElemento;
+        });
+
+        return retorno;
+    }
+
     private referencia_boba(varServerSideAcumulativa: boolean, sv: SerieValorNomimal): SerieValorNomimal {
         if (varServerSideAcumulativa) {
             sv.referencia = 'SS';
         }
+        sv.elementos = null;
         return sv;
     }
 
