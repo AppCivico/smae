@@ -368,8 +368,8 @@ export default {
                 },
               ],
             },
-          //],
-        //},
+          ],
+        },
         /* FIM DE CRONOGRAMA*/
         /* INCLUIR TAREFA */
         {
@@ -496,8 +496,8 @@ export default {
         /* FIM DE AÇÕES COM TAREFAS */
       ],
     },
-      ],
-    },
+      //],
+    //},
     /* FIM DE TAREFAS E CRONOGRAMA */
   ],
 };
