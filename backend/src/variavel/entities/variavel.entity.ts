@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
-import { Periodicidade, Polaridade, Serie, TipoVariavel } from '@prisma/client';
+import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
@@ -168,6 +168,8 @@ export class SerieValorNomimal {
      * Apenas em variaveis
      **/
     conferida?: boolean;
+
+    elementos?: Prisma.JsonValue | null;
 }
 
 export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>;
@@ -253,6 +255,7 @@ export class ValorSerieExistente {
      * Apenas em variaveis
      **/
     conferida?: boolean;
+    elementos?: Prisma.JsonValue | null;
 }
 
 export class Iniciativa {
