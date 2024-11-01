@@ -6,10 +6,8 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
-// usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
-// @ts-ignore
-import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
 import {
   createApp, markRaw, nextTick,
@@ -41,13 +39,14 @@ app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
 
 const pinia = createPinia();
 
+type ParametrosDeRequisicao = URLSearchParams | Record<string, unknown> | FormData | undefined;
 interface RequestS {
-  get: (url: RequestInfo | URL, params?: URLSearchParams | {} | undefined) => Promise<any>;
-  post: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  upload: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  put: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  patch: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  delete: (url: RequestInfo | URL, params?: URLSearchParams | {} | undefined) => Promise<any>;
+  get: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
+  post: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  upload: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  put: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  patch: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  delete: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
 }
 
 declare module 'pinia' {
