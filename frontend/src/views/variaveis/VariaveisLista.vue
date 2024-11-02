@@ -44,7 +44,7 @@ watchEffect(() => {
     codigo: route.query.codigo,
     descricao: route.query.descricao,
     meta_id: route.query.meta_id,
-    orgao_id: route.query.orgao_id,
+    medicao_orgao_id: route.query.medicao_orgao_id,
     orgao_proprietario_id: route.query.orgao_proprietario_id,
     nivel_regionalizacao: route.query.nivel_regionalizacao,
     palavra_chave: route.query.palavra_chave,

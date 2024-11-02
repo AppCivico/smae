@@ -33,7 +33,7 @@
           {{ schema.fields.periodicidade?.spec.label }}
         </th>
         <th>
-          {{ schema.fields.orgao_id?.spec.label }}
+          {{ schema.fields.medicao_orgao_id?.spec.label }}
         </th>
         <th>
           Planos
