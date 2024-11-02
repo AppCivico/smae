@@ -488,7 +488,6 @@ watch(() => values.variavel_categorica_id, () => {
           >
             {{ schema.fields.polaridade.spec.label }}
             <span
-              v-if="ehNumerica"
               class="tvermelho"
             >*</span>
           </LabelFromYup>
@@ -498,7 +497,6 @@ watch(() => values.variavel_categorica_id, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.polaridade }"
-            :disabled="!ehNumerica"
           >
             <option value="">
               Selecionar
