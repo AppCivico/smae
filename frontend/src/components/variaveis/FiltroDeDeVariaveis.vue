@@ -414,10 +414,6 @@ const props = defineProps({
 const emit = defineEmits(['enviado']);
 
 const colunasParaOrdenacao = {
-  id: {
-    valor: 'id',
-    nome: '',
-  },
   titulo: {
     valor: 'titulo',
     nome: schema.fields.titulo?.spec.label,
@@ -425,26 +421,6 @@ const colunasParaOrdenacao = {
   codigo: {
     valor: 'codigo',
     nome: 'Código',
-  },
-  assunto_variavel: {
-    valor: 'assunto_variavel',
-    nome: schema.fields.assuntos?.spec.label || 'campo faltando no schema',
-  },
-  orgao_nome: {
-    valor: 'orgao_nome',
-    nome: schema.fields.orgao_id.spec.label,
-  },
-  orgao_proprietario_nome: {
-    valor: 'orgao_proprietario_nome',
-    nome: schema.fields.orgao_proprietario_id?.spec.label || 'campo faltando no schema',
-  },
-  periodicidade: {
-    valor: 'periodicidade',
-    nome: schema.fields.periodicidade?.spec.label,
-  },
-  regiao: {
-    valor: 'regiao',
-    nome: 'Região',
   },
   criado_em: {
     valor: 'criado_em',
