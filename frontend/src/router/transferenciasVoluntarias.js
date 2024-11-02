@@ -84,6 +84,7 @@ export default {
       meta: {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes'
@@ -105,6 +106,7 @@ export default {
         título: 'Recurso financeiro',
         títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes'
@@ -132,6 +134,7 @@ export default {
         rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
+    /* NOTAS */
     {
       name: 'TransferenciasVoluntariasNotas',
       path: ':transferenciaId/notas',
@@ -149,6 +152,7 @@ export default {
         rotasParaMenuSecundário,
       },
       children: [
+        /* LISTAR NOTAS */
         {
           name: 'notasListar',
           path: '',
@@ -161,6 +165,8 @@ export default {
             ],
           },
         },
+        /* FIM DE LISTAR NOTAS */
+        /* DETALHE DA NOTA */
         {
           path: ':notaId/detalhes',
           name: 'notaDetalhe',
@@ -178,6 +184,8 @@ export default {
             ],
           },
         },
+        /* FIM DE DETALHE DA NOTA */
+        /* INCLUSÃO DE NOTA */
         {
           name: 'notasCriar',
           path: 'nova',
@@ -192,6 +200,8 @@ export default {
             ],
           },
         },
+        /* FIM DE INCLUSÃO DE NOTA */
+        /* EDIÇÃO DE NOTA */
         {
           path: ':notaId',
           name: 'notasEditar',
@@ -204,10 +214,18 @@ export default {
           meta: {
             título: 'Editar nota',
             rotaDeEscape: 'notasListar',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'notasListar',
+            ],
           },
         },
+        /* FIM DE EDIÇÃO DE NOTA */
       ],
     },
+    /* FIM DE NOTAS */
+    /* TRANSFERÊNCIA - IDENTIFICAÇÃO */
     {
       path: ':transferenciaId',
       name: 'TransferenciasVoluntariaEditar',
@@ -222,12 +240,15 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes'
         ],
       },
     },
+    /* FIM DE TRANSFERÊNCIA - IDENTIFICAÇÃO */
+    /* DOCUMENTOS */
     {
       path: ':transferenciaId/documentos',
       component: TransferenciasVoluntariasDocumentos,
@@ -246,6 +267,7 @@ export default {
         ],
       },
       children: [
+        /* INCLUSÃO DE DOCUMENTO */
         {
           path: 'novo',
           component: DialogWrapper,
@@ -262,6 +284,8 @@ export default {
             },
           ],
         },
+        /* FIM DE INCLUSÃO DE DOCUMENTO */
+        /* EDIÇÃO DE DOCUMENTO */
         {
           path: ':arquivoId',
           component: DialogWrapper,
@@ -282,8 +306,11 @@ export default {
             },
           ],
         },
+        /* FIM DE EDIÇÃO DE DOCUMENTO */
       ],
     },
+    /* FIM DE DOCUMENTOS */
+    /* TAREFAS E CRONOGRAMA */
     {
       path: ':transferenciaId/tarefas',
       component: TarefasRaiz,
@@ -298,6 +325,7 @@ export default {
         títuloParaMenu: 'Tarefas',
       },
       children: [
+        /* CRONOGRAMA */ 
         {
           name: 'TransferenciaCronograma',
           path: '',
@@ -316,7 +344,7 @@ export default {
             transferenciaId:
               Number.parseInt(params.transferenciaId, 10) || undefined,
           }),
-
+          
           children: [
             {
               path: 'disparo-email',
@@ -336,7 +364,8 @@ export default {
             },
           ],
         },
-
+        /* FIM DE CRONOGRAMA*/
+        /* INCLUIR TAREFA */
         {
           name: 'TransferenciasVoluntariasTarefasCriar',
           path: 'nova',
@@ -345,9 +374,15 @@ export default {
             título: 'Nova tarefa',
             títuloParaMenu: 'Nova tarefa',
             rotaDeEscape: 'TransferenciaCronograma',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'TransferenciaCronograma'
+            ],
           },
         },
-
+        /* FIM DE INCLUIR TAREFA */
+        /* AÇÕES COM TAREFAS */
         {
           path: ':tarefaId',
           component: TarefasItem,
@@ -359,6 +394,7 @@ export default {
           }),
 
           children: [
+            /* DETALHE DA TAREFA */
             {
               name: 'TransferenciasVoluntarias.TarefasDetalhes',
               path: 'resumo',
@@ -373,35 +409,36 @@ export default {
                 rotaDeEscape: 'TransferenciasVoluntariasListar',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaCronograma'
                 ],
               },
             },
+            /* FIM DE DETALHE DA TAREFA */
+            /* EDITAR TAREFA */
             {
-              path: '',
+              path: 'teste',
               name: 'TransferenciasVoluntariasTarefasEditar',
               component: TarefasCriarEditar,
               props: ({ params }) => ({
                 ...params,
                 transferenciaId:
                   Number.parseInt(params.transferenciaId, 10) || undefined,
-                tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+                tarefasId: Number.parseInt(params.tarefaId, 10) || undefined,
               }),
-
               meta: {
                 título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
                 títuloParaMenu: 'Editar tarefa',
-
                 rotaDeEscape: 'TransferenciaCronograma',
-
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
-                  'TransferenciasVoluntariasTarefasListar',
-                  'tarefasEditar',
+                  'TransferenciaCronograma'
                 ],
               },
             },
-
+            /* FIM DE EDITAR TAREFA */
+            /* PROGRESSO DA TAREFA */
             {
               path: 'progresso',
               name: 'TransferenciasVoluntariasTarefasProgresso',
@@ -425,8 +462,7 @@ export default {
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
-                  'TransferenciasVoluntariasTarefasListar',
-                  'TransferenciasVoluntariasTarefasProgresso',
+                  'TransferenciaCronograma'
                 ],
               },
               children: [
@@ -448,9 +484,14 @@ export default {
                 },
               ],
             },
+            /* FIM DE PROGRESSO DA TAREFA */
           ],
         },
+        /* FIM DE AÇÕES COM TAREFAS */
       ],
     },
+      //],
+    //},
+    /* FIM DE TAREFAS E CRONOGRAMA */
   ],
 };
