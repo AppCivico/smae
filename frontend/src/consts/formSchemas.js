@@ -3750,8 +3750,7 @@ const variavelGlobalEhNumberica = (variavelCategoricaId, field) => {
 
   return field.nullableOuVazio();
 };
-
-export const variavelGlobal = object().shape({
+export const variavelGlobal = object({
   acumulativa: boolean()
     .label('Variável acumulativa')
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
@@ -3868,6 +3867,7 @@ export const variavelGlobal = object().shape({
     .required(),
   polaridade: mixed()
     .label('Polaridade')
+    .required()
     .oneOf([...Object.keys(polaridadeDeVariaveis), null])
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
   titulo: string()
@@ -3894,7 +3894,6 @@ export const variavelGlobal = object().shape({
     .nullableOuVazio(),
 });
 
-// projeto.concat(obras).shape(
 export const variavelGlobalParaGeracao = variavelGlobal.concat(
   object({
     criar_formula_composta: boolean()
