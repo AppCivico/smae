@@ -254,11 +254,11 @@
           class="label"
           for="orgao-id"
         >
-          {{ schema.fields.orgao_id?.spec.label || 'Campo faltando no schema' }}
+          {{ schema.fields.medicao_orgao_id?.spec.label || 'Campo faltando no schema' }}
         </label>
         <select
           id="orgao-id"
-          name="orgao_id"
+          name="medicao_orgao_id"
           class="inputtext light"
           :aria-busy="organs.loading"
           :class="{ error: organs.error }"
@@ -268,7 +268,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($route.query?.orgao_id) === orgao.id"
+            :selected="Number($route.query?.medicao_orgao_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -384,6 +384,12 @@
   </form>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import type { Ref } from 'vue';
+import {
+  computed, ref,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
@@ -395,12 +401,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
-import { storeToRefs } from 'pinia';
-import type { Ref } from 'vue';
-import {
-  computed, ref
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
