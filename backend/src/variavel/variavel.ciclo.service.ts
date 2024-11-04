@@ -736,6 +736,7 @@ export class VariavelCicloService {
                     criado_em: true,
                     pessoaCriador: { select: { nome_exibicao: true } },
                     fase: true,
+                    eh_liberacao_auto: true,
                     ultima_revisao: true,
                 },
             });
@@ -757,6 +758,7 @@ export class VariavelCicloService {
                         criado_em: r.criado_em,
                         criador_nome: r.pessoaCriador.nome_exibicao,
                         fase: r.fase,
+                        eh_liberacao_auto: r.eh_liberacao_auto,
                     }) satisfies AnaliseQualitativaDto
             );
 
