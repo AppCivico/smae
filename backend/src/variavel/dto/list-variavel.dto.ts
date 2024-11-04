@@ -57,7 +57,7 @@ export class VariavelResumoInput {
 export class VariavelAssuntoDto {
     id: number;
     nome: string;
-    categoria_assunto_variavel_id: number;
+    categoria_assunto_variavel_id?: number | null;
 }
 
 export class VariavelResumo {
