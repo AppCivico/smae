@@ -152,6 +152,18 @@ watch(statusSelecionado, (novoValor) => {
           }}
         </td>
         <td>
+          <router-link
+            v-if="item?.pode_editar && item?.id_jwt"
+            :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
+        </td>        
+        <td>
           <button
             v-if="item.pode_editar"
             class="like-a__text"
@@ -167,18 +179,7 @@ watch(statusSelecionado, (novoValor) => {
             </svg>
           </button>
         </td>
-        <td>
-          <router-link
-            v-if="item?.pode_editar && item?.id_jwt"
-            :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
+
       </tr>
       <tr>
         <td colspan="6">

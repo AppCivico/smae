@@ -326,6 +326,8 @@ export default {
 
       meta: {
         títuloParaMenu: 'Tarefas',
+        rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário,
       },
       children: [
         /* CRONOGRAMA */ 
@@ -493,8 +495,6 @@ export default {
         /* FIM DE AÇÕES COM TAREFAS */
       ],
     },
-      //],
-    //},
     /* FIM DE TAREFAS E CRONOGRAMA */
   ],
 };

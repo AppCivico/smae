@@ -100,21 +100,6 @@ function formatarNumero(numero) {
             <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
             <td>{{ item.pct_participacao }}%</td>
             <td v-if="exibirEdição">
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-
-            <td v-if="exibirEdição">
               <router-link
                 :to="{
                   name: 'parlamentaresEditarRepresentatividade',
@@ -128,6 +113,20 @@ function formatarNumero(numero) {
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
               </router-link>
+            </td>
+            <td v-if="exibirEdição">
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                type="button"
+                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -211,20 +210,6 @@ function formatarNumero(numero) {
             <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
             <td>{{ item.pct_participacao }}%</td>
             <td v-if="exibirEdição">
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td v-if="exibirEdição">
               <router-link
                 :to="{
                   name: 'parlamentaresEditarRepresentatividade',
@@ -238,6 +223,20 @@ function formatarNumero(numero) {
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
               </router-link>
+            </td>
+            <td v-if="exibirEdição">
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                type="button"
+                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
             </td>
           </tr>
         </tbody>
