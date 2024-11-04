@@ -1714,7 +1714,6 @@ export class TarefaService {
                 let textoFormatado = 'Há uma ou mais referências circulares nas dependências:\n';
                 let encontrouExemplos = false;
                 for (const cycle of cycles) {
-                    encontrouExemplos = true;
                     textoFormatado +=
                         cycle
                             .map((nodeId: string) => {
@@ -1723,14 +1722,16 @@ export class TarefaService {
                                 const tarefa = tarefasDb.filter((t) => t.id == +tarefa_id)[0];
                                 let titulo;
                                 if (!tarefa) {
-                                    titulo = `Nova tarefa corrente → `;
+                                    titulo = `Nova tarefa corrente ￫ `;
                                 } else {
                                     titulo = `Tarefa "${tarefa.tarefa}" número (${tarefa.numero}) → `;
                                 }
 
                                 return `Tarefa ${titulo} (${tipo == 'start' ? 'Início' : 'Término'})`;
                             })
-                            .join(' → ') + '\n';
+                            .join(' ￫ ') + '\n';
+                    encontrouExemplos = true;
+                    break;
                 }
 
                 if (!encontrouExemplos) textoFormatado += 'Ciclo sem exemplo';
