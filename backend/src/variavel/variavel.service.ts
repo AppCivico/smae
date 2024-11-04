@@ -3886,7 +3886,7 @@ export class VariavelService {
         let detailDto: VariavelDetailDto | VariavelDetailComAuxiliaresDto = {
             ...selfItem[0],
             assuntos: detalhes.VariavelAssuntoVariavel.map((e) => {
-                return { id: e.assunto_variavel.id, nome: e.assunto_variavel.nome };
+                return { id: e.assunto_variavel.id, nome: e.assunto_variavel.nome, categoria_assunto_variavel_id: e.assunto_variavel.categoria_assunto_variavel_id };
             }),
             periodos: {
                 preenchimento_inicio: detalhes.periodo_preenchimento[0],
