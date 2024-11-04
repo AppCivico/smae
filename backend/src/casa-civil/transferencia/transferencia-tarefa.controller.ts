@@ -19,7 +19,6 @@ import {
     ApiNoContentResponse,
     ApiResponse,
     ApiTags,
-
     refs,
 } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
@@ -179,7 +178,11 @@ export class TransferenciaTarefaController {
     ): Promise<DependenciasDatasDto> {
         const transferencia = await this.transferenciaService.findOneTransferencia(params.id, user);
 
-        const result = await this.tarefaService.calcula_dependencias_tarefas(transferencia.id, dto, user);
+        const result = await this.tarefaService.calcula_dependencias_tarefas(
+            { transferencia_id: transferencia.id },
+            dto,
+            user
+        );
         if (!result) throw new HttpException('Faltando dependências', 400);
 
         return result;
