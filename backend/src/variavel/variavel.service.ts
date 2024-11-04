@@ -2745,20 +2745,26 @@ export class VariavelService {
             if (!variavel) throw new Error('Erro Interno! Variável não encontrada em função de variável global.');
 
             const [analises, documentos] = await Promise.all([
-                this.prisma.variavelGlobalCicloAnalise.findMany({
-                    where: {
-                        variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
-                        referencia_data: { in: dataValores },
-                        removido_em: null,
-                        ultima_revisao: true,
-                    },
-                    distinct: ['referencia_data'],
-                    select: {
-                        id: true,
-                        referencia_data: true,
-                        fase: true,
-                    },
-                }),
+                this.prisma.variavelGlobalCicloAnalise
+                    .groupBy({
+                        where: {
+                            variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
+                            referencia_data: { in: dataValores },
+                            removido_em: null,
+                            ultima_revisao: true,
+                        },
+                        by: ['referencia_data'],
+                        _count: true,
+                    })
+                    .then((analises) => {
+                        return analises.map((a) => {
+                            return {
+                                referencia_data: a.referencia_data,
+                                analise_qualitativa: '',
+                                contagem_qualitativa: a._count,
+                            } as CicloAnalise;
+                        });
+                    }),
                 this.prisma.variavelGlobalCicloDocumento.groupBy({
                     where: {
                         variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
