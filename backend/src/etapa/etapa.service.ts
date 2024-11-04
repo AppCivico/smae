@@ -686,6 +686,9 @@ export class EtapaService {
                     throw new BadRequestException('Código e título da variável são obrigatórios');
             } else {
                 if (!dto.variavel.titulo) throw new BadRequestException('Título da variável é obrigatório');
+
+                if (dto.variavel.codigo === 'GERAR_CODIGO')
+                    delete (dto.variavel as any).codigo;
             }
 
             let orgao_id: number | null = null;
