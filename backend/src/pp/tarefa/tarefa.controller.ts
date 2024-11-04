@@ -190,7 +190,7 @@ export class TarefaController {
     ): Promise<DependenciasDatasDto> {
         const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
-        const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
+        const result = await this.tarefaService.calcula_dependencias_tarefas({ projeto_id: projeto.id }, dto, user);
         if (!result) throw new HttpException('Faltando dependências', 400);
 
         return result;
@@ -337,7 +337,7 @@ export class TarefaMDOController {
     ): Promise<DependenciasDatasDto> {
         const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
 
-        const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
+        const result = await this.tarefaService.calcula_dependencias_tarefas({ projeto_id: projeto.id }, dto, user);
         if (!result) throw new HttpException('Faltando dependências', 400);
 
         return result;
