@@ -1723,9 +1723,9 @@ export class TarefaService {
                                 const tarefa = tarefasDb.filter((t) => t.id == +tarefa_id)[0];
                                 let titulo;
                                 if (!tarefa) {
-                                    titulo = `Nova tarefa corrente => `;
+                                    titulo = `Nova tarefa corrente → `;
                                 } else {
-                                    titulo = `Tarefa "${tarefa.tarefa}" número (${tarefa.numero}) => `;
+                                    titulo = `Tarefa "${tarefa.tarefa}" número (${tarefa.numero}) → `;
                                 }
 
                                 return `Tarefa ${titulo} (${tipo == 'start' ? 'Início' : 'Término'})`;
