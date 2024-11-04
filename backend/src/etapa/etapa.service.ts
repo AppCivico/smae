@@ -735,6 +735,7 @@ export class EtapaService {
                     titulo: dto.variavel.titulo,
                     orgao_id: orgao_id,
                     indicador_id: indicadorInfo.indicador.id,
+                    variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,
                 },
                 dto.variavel.codigo,
                 user,

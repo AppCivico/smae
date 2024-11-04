@@ -1235,7 +1235,7 @@ export class VariavelService {
             },
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
-                variavel: { select: { supraregional: true } },
+                variavel: { select: { supraregional: true, variavel_categorica_id:true, } },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
                 regiao: {
                     select: {
@@ -1299,10 +1299,11 @@ export class VariavelService {
                     }
                 }
 
-                if (r.tipo == 'Calculada') {
+                if (r.tipo == 'Calculada' || r.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ) {
                     pode_editar = false;
                     pode_editar_valor = false;
                 }
+
                 if (r.variavel_mae_id) pode_editar = false;
 
                 return {
