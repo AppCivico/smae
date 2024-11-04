@@ -52,10 +52,10 @@
         let data = props.projetosPlanejadosMes;
         let secondaryData = props.projetosConcluidosMes;
         let years = props.anosMapaCalorPlanejados;//.sort();
-        let tooltipTitlePlural = '<div>PROJETOS</div><div style="margin-top: -13px;">PLANEJADOS</div>';
-        let tooltipTitleSingular = '<div>PROJETO</div><div style="margin-top: -13px;">PLANEJADO</div>';
-        let tooltipFooterPlural = '<div>PROJETOS</div><div style="margin-top: -15px;">CONCLUÍDOS</div>';
-        let tooltipFooterSingular = '<div>PROJETO</div><div style="margin-top: -15px;">CONCLUÍDO</div>';
+        let tooltipTitlePlural = '<div>PROJETOS</div><div style="margin-top: -11px;">PLANEJADOS</div>';
+        let tooltipTitleSingular = '<div>PROJETO</div><div style="margin-top: -11px;">PLANEJADO</div>';
+        let tooltipFooterPlural = '<div>PROJETOS</div><div style="margin-top: -13px;">CONCLUÍDOS</div>';
+        let tooltipFooterSingular = '<div>PROJETO</div><div style="margin-top: -13px;">CONCLUÍDO</div>';
         let colorArray = ['#e8e8e8', '#ede5cf', '#d3bf88', '#a77e11', '#7e6113'];     
         let chartTitle = "Projetos Planejados";
 
@@ -297,7 +297,7 @@
 
     .chartContainer{
         width: auto; 
-        height: auto; 
+        min-height: 400px; 
         text-align: center; 
         float: center;
     }
@@ -320,14 +320,14 @@
 
     // Traço inicial
     .firstLineHR{
-        width: 50%; 
+        width: 65%; 
         margin-left: auto; 
         margin-right: auto;
     }
 
     // Mês e ano
     .firstLineMonthYear{
-        font-size: 7px; 
+        font-size: 10px; 
         height: 13px; 
         line-height: 13px; 
         margin-top: 0px;
@@ -337,7 +337,7 @@
     .secondLine { 
         grid-area: mainQtd; 
         display: flex;
-        margin-top: -15px;
+        margin-top: -12px;
         justify-content: center; 
         align-items: center;
     }
@@ -345,7 +345,7 @@
     // Quantidade principal
     .secondLineQtd{
         margin-bottom: 7px; 
-        font-size: 28px; 
+        font-size: 30px; 
         text-align: end;  
         float: left; 
         width: 50%;
@@ -354,7 +354,7 @@
     // Descrição da quantidade principal
     .secondLineDes{ 
         margin-left: 2px; 
-        font-size: 8px; 
+        font-size: 10px; 
         text-align: start; 
         align-self: flex-end; 
         float: right; 
@@ -365,7 +365,7 @@
     .thirdLine { 
         grid-area: footerQtd; 
         display: flex;
-        margin-top: -10px; 
+        margin-top: -7px; 
         justify-content: center; 
         align-items: center;
     }
@@ -374,7 +374,7 @@
     .thirdLineQtd{
         padding-right: 2px; 
         margin-bottom: 0px; 
-        font-size: 16px; 
+        font-size: 18px; 
         text-align: end; 
         float: left; 
         width: 50%;
@@ -383,7 +383,7 @@
     // Descrição da quantidade secundária
     .thirdLineDes{
         margin-bottom: -5px; 
-        font-size: 6px; 
+        font-size: 8px; 
         text-align: start; 
         align-self: flex-end; 
         float: left; 
@@ -397,8 +397,8 @@
 
     // Traço final
     .fourthLineHR{
-        width: 50%; 
-        margin-top: -5px; 
+        width: 65%; 
+        margin-top: -2px; 
         margin-left: auto; 
         margin-right: auto;
     }
@@ -412,7 +412,7 @@
         'footerLine';
     gap: 2px;
     padding: 2px;
-    min-width: 110px;
+    min-width: 135px;
     }
 
     .grid-container > div {

@@ -26,7 +26,6 @@ if (listaTipo.value.length === 0) {
 
 </script>
 <template>
-  <MigalhasDePão />
   <div class="flex spacebetween center mb2">
     <h1>Nota</h1>
     <hr class="ml2 f1">

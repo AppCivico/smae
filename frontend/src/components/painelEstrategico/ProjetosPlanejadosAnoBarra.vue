@@ -6,7 +6,7 @@
                     <p id="ProjetosPlanejadosAnoLabel1" style="min-width: fit-content;"></p>
                 </li>
                 <li id="ProjetosPlanejadosAnoBarra1" class="ProjetosPlanejadosHorizontalBar">
-                    <!-- TOOLTIP da primeira barra -->
+                    <!-- TOOLTIP da primeira barra  -->
                     <div id="ProjetosPlanejadosAnoBarra1Tooltip" class="ProjetosConcluidosTooltipTextLeft">
                         <div class="ProjetosPlanejadosAnoFirstLine">
                             <hr class="ProjetosPlanejadosAnoFirstLineHR">
@@ -61,7 +61,7 @@
                 </li>
                 <li id="ProjetosPlanejadosAnoBarra3" class="ProjetosPlanejadosHorizontalBar">
                     <!-- TOOLTIP da terceira barra -->
-                    <div id="ProjetosPlanejadosAnoBarra3Tooltip" class="ProjetosConcluidosTooltipTextLeft">
+                    <div id="ProjetosPlanejadosAnoBarra3Tooltip" class="ProjetosConcluidosTooltipTextRight">
                         <div class="ProjetosPlanejadosAnoFirstLine">
                             <hr class="ProjetosPlanejadosAnoFirstLineHR">
                             <div id="ProjetosPlanejadosAnoBarra3Total" class="ProjetosPlanejadosAnoFirstLineMonthYear">
@@ -307,6 +307,7 @@
     }
 
     .ProjetosConcluidosTooltipTextRight {
+        font-family: Roboto Slab;
         visibility: hidden;
         background-color: #fff;
         color: #555;
@@ -344,6 +345,7 @@
     }
 
     .ProjetosConcluidosTooltipTextLeft {
+        font-family: Roboto Slab;
         visibility: hidden;
         background-color: #fff;
         color: #555;
@@ -398,14 +400,14 @@
 
     // Traço inicial
     .ProjetosPlanejadosAnoFirstLineHR{
-        width: 50%; 
+        width: 65%; 
         margin-left: auto; 
         margin-right: auto;
     }
 
     // Mês e ano
     .ProjetosPlanejadosAnoFirstLineMonthYear{
-        font-size: 8px; 
+        font-size: 10px; 
         height: 18px; 
         line-height: 13px; 
         margin-top: 0px;
@@ -423,7 +425,7 @@
     // Quantidade principal
     .ProjetosPlanejadosAnoSecondLineQtd{
         margin-bottom: -5px; 
-        font-size: 28px; 
+        font-size: 30px; 
         text-align: end;  
         float: left; 
         width: 50%;
@@ -432,7 +434,7 @@
     // Descrição da quantidade principal
     .ProjetosPlanejadosAnoSecondLineDes{ 
         margin-left: 2px; 
-        font-size: 8px; 
+        font-size: 10px; 
         text-align: start; 
         align-self: flex-end; 
         float: right; 
@@ -452,7 +454,7 @@
     .thirdLineQtd{
         padding-right: 2px; 
         margin-bottom: 0px; 
-        font-size: 16px; 
+        font-size: 18px; 
         text-align: end; 
         float: left; 
         width: 50%;
@@ -460,7 +462,7 @@
 
     // Descrição da quantidade secundária
     .thirdLineDes{
-        font-size: 6px; 
+        font-size: 8px; 
         text-align: start; 
         align-self: flex-end; 
         margin-top: -30px;
@@ -475,7 +477,7 @@
 
     // Traço final
     .ProjetosPlanejadosAnoThirdLineHR{
-        width: 50%; 
+        width: 65%; 
         margin-top: -5px; 
         margin-left: auto; 
         margin-right: auto;
