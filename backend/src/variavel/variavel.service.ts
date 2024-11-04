@@ -92,6 +92,7 @@ interface CicloAnalise {
     id: number;
     referencia_data: Date;
     analise_qualitativa?: string | null;
+    contagem_qualitativa?: number | null;
 }
 
 interface CicloDocumento {
@@ -2737,6 +2738,13 @@ export class VariavelService {
                 }),
             ]);
         } else if (tipo == TipoVariavel.Global) {
+            type RawQueryResult = {
+                id: number;
+                referencia_data: Date;
+                fase: string;
+                contagem_qualitativa: number;
+            };
+
             // Caso a variável seja filha, dados relevantes são da mãe.
             const variavel = await this.prisma.variavel.findFirst({
                 where: { id: variavelId },
@@ -2745,19 +2753,29 @@ export class VariavelService {
             if (!variavel) throw new Error('Erro Interno! Variável não encontrada em função de variável global.');
 
             const [analises, documentos] = await Promise.all([
-                this.prisma.variavelGlobalCicloAnalise.findMany({
-                    where: {
-                        variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
-                        referencia_data: { in: dataValores },
-                        removido_em: null,
-                        ultima_revisao: true,
-                    },
-                    distinct: ['referencia_data'],
-                    select: {
-                        id: true,
-                        referencia_data: true,
-                    },
-                }),
+                this.prisma.$queryRaw<RawQueryResult[]>`
+                    SELECT 
+                        MIN(id) as id,
+                        referencia_data,
+                        MIN(fase) as fase,
+                        COUNT(*) as contagem_qualitativa
+                    FROM VarGlobalCicloAnalise
+                    WHERE 
+                        variavel_id = ${variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId}
+                        AND referencia_data IN (${Prisma.join(dataValores)})
+                        AND removido_em IS NULL
+                        AND ultima_revisao = true
+                    GROUP BY referencia_data
+                    ORDER BY referencia_data ASC
+                `.then((results) =>
+                    // Convert the results to match CicloAnalise interface
+                    results.map((row) => ({
+                        id: row.id,
+                        referencia_data: row.referencia_data,
+                        fase: row.fase,
+                        contagem_qualitativa: Number(row.contagem_qualitativa), // Convert bigint to number
+                    }))
+                ),
                 this.prisma.variavelGlobalCicloDocumento.groupBy({
                     where: {
                         variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
