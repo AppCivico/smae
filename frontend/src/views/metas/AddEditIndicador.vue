@@ -178,9 +178,9 @@ async function onSubmit(values) {
 
     // Parent
     if (atividadeId) {
-      values.atividade_id = Number(atividadeId);
+      values.atividadeId = Number(atividadeId);
     } else if (iniciativaId) {
-      values.iniciativa_id = Number(iniciativaId);
+      values.iniciativaId = Number(iniciativaId);
     } else {
       values.meta_id = Number(metaId);
     }
@@ -310,7 +310,7 @@ watch(() => props.group, () => {
     <TítuloDePágina
       :ícone="activePdm?.logo"
     >
-      <template v-if="indicador_id">
+      <template v-if="indicadorId">
         Editar Indicador
       </template>
       <template v-else>
@@ -330,13 +330,13 @@ watch(() => props.group, () => {
     </button>
   </div>
   <div
-    v-if="atividade_id"
+    v-if="atividadeId"
     class="t24 mb2"
   >
     {{ activePdm.rotulo_atividade }} {{ singleAtividade.codigo }} {{ singleAtividade.titulo }}
   </div>
   <div
-    v-else-if="iniciativa_id"
+    v-else-if="iniciativaId"
     class="t24 mb2"
   >
     {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.codigo }} {{ singleIniciativa.titulo }}
@@ -426,7 +426,7 @@ watch(() => props.group, () => {
           <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
 
           <Field
-            v-if="!indicador_id"
+            v-if="!indicadorId"
             name="periodicidade"
             as="select"
             class="inputtext light mb1"
@@ -511,7 +511,7 @@ watch(() => props.group, () => {
       </div>
 
       <div
-        v-if="!indicador_id"
+        v-if="!indicadorId"
         class=""
       >
         <div class="mb1">
@@ -644,18 +644,18 @@ watch(() => props.group, () => {
 
       <hr class="mt2 mb2">
 
-      <div v-if="indicador_id && !Variaveis[indicador_id]?.loading">
+      <div v-if="indicadorId && !Variaveis[indicadorId]?.loading">
         <EditorDeFormula
           v-model="formula"
           v-model:variaveis-formula="variaveisFormula"
-          :variáveis-do-indicador="Array.isArray(Variaveis[indicador_id])
-            ? Variaveis[indicador_id]
+          :variáveis-do-indicador="Array.isArray(Variaveis[indicadorId])
+            ? Variaveis[indicadorId]
             : []"
           :variáveis-em-uso="Array.isArray(singleIndicadores.formula_variaveis)
             ? singleIndicadores.formula_variaveis
             : []"
-          :variáveis-compostas="Array.isArray(variáveisCompostas[indicador_id])
-            ? variáveisCompostas[indicador_id]
+          :variáveis-compostas="Array.isArray(variáveisCompostas[indicadorId])
+            ? variáveisCompostas[indicadorId]
             : []"
         />
 
@@ -695,7 +695,7 @@ watch(() => props.group, () => {
           </div>
         </div>
       </div>
-      <div v-else-if="Variaveis[indicador_id]?.loading">
+      <div v-else-if="Variaveis[indicadorId]?.loading">
         <span class="spinner">Carregando</span>
       </div>
 
@@ -721,7 +721,7 @@ watch(() => props.group, () => {
       </div>
     </div>
   </template>
-  <template v-if="(!indicador_id && singleIndicadores.length)">
+  <template v-if="(!indicadorId && singleIndicadores.length)">
     <div class="error p1">
       <div class="error-msg">
         Somente um indicador por meta
@@ -738,15 +738,15 @@ watch(() => props.group, () => {
   </template>
 
   <EnvelopeDeAbas
-    v-if="indicador_id"
+    v-if="indicadorId"
     :meta-dados-por-id="dadosExtrasDeAbas"
     class="mt2 mb2"
   >
     <template #TabelaDeVariaveis="{ estáAberta }">
       <TabelaDeVariaveis
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
-        :variáveis="Variaveis[indicador_id]"
+        :variáveis="Variaveis[indicadorId]"
         :parentlink="parentlink"
         :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       >
@@ -776,10 +776,10 @@ watch(() => props.group, () => {
       #TabelaDeVariaveisCompostas="{ estáAberta }"
     >
       <TabelaDeVariaveisCompostas
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
-        :variáveis-compostas="Array.isArray(variáveisCompostas[indicador_id])
-          ? variáveisCompostas[indicador_id]
+        :variáveis-compostas="Array.isArray(variáveisCompostas[indicadorId])
+          ? variáveisCompostas[indicadorId]
           : []"
         :parentlink="parentlink"
       />
@@ -790,22 +790,22 @@ watch(() => props.group, () => {
       #TabelaDeVariaveisCompostasEmUso="{ estáAberta }"
     >
       <TabelaDeVariaveisCompostasEmUso
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
-        :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
+        :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicadorId]"
         :parentlink="parentlink"
       />
     </template>
 
     <template #TabelaDeVariaveisEmUso="{ estáAberta }">
       <TabelaDeVariaveisEmUso
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :parentlink="parentlink"
         :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       />
     </template>
   </EnvelopeDeAbas>
 
-  <template v-if="indicador_id && $route.meta.entidadeMãe === 'planoSetorial'">
+  <template v-if="indicadorId && $route.meta.entidadeMãe === 'planoSetorial'">
     <SmallModal
       v-if="AssociadorDeVariaveisEstaAberto"
       class="largura-total"
@@ -818,7 +818,7 @@ watch(() => props.group, () => {
     </SmallModal>
   </template>
 
-  <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
+  <template v-if="indicadorId && singleIndicadores.id && indicadorId == singleIndicadores.id">
     <hr class="mt2 mb2">
     <button
       class="btn amarelo big"
