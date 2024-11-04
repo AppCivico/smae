@@ -1045,6 +1045,7 @@ export class VariavelService {
                 inicio_medicao: true,
                 atraso_meses: true,
                 suspendida_em: true,
+                variavel_mae_id:true,
                 mostrar_monitoramento: true,
                 polaridade: true,
                 unidade_medida: {
@@ -1219,6 +1220,7 @@ export class VariavelService {
                 recalculando: row.recalculando,
                 recalculo_erro: row.recalculo_erro,
                 recalculo_tempo: row.recalculo_tempo,
+                variavel_mae_id: row.variavel_mae_id,
             } satisfies VariavelItemDto;
         });
 
@@ -2623,6 +2625,7 @@ export class VariavelService {
                 recalculando: variavel.recalculando,
                 recalculo_erro: variavel.recalculo_erro,
                 recalculo_tempo: variavel.recalculo_tempo,
+                variavel_mae_id: variavel.variavel_mae_id,
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,

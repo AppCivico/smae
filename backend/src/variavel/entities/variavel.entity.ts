@@ -61,6 +61,7 @@ export class VariavelItemDto {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_mae_id: number | null;
     // TODO mover fonte pra cá, ou criar novo detail para tipo global
 }
 
