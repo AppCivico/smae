@@ -1708,8 +1708,12 @@ export class TarefaService {
                         numero: true,
                         tarefa: true,
                         id: true,
+                        tarefa_cronograma_id: true,
                     },
                 });
+                if (!tarefasDb.length) throw new HttpException('Tarefas não encontradas', 500);
+
+                const tarefasHierarquia = await this.tarefasHierarquia(tarefasDb[0].tarefa_cronograma_id);
 
                 let textoFormatado = 'Há uma ou mais referências circulares nas dependências:\n';
                 let encontrouExemplos = false;
@@ -1724,12 +1728,12 @@ export class TarefaService {
                                 if (!tarefa) {
                                     titulo = `Nova tarefa corrente`;
                                 } else {
-                                    titulo = `Tarefa "${tarefa.tarefa}" número (${tarefa.numero})`;
+                                    titulo = `Tarefa ${tarefasHierarquia[tarefa.id]} "${tarefa.tarefa}"`;
                                 }
 
-                                return `${titulo} (${tipo == 'start' ? 'Início' : 'Término'})`;
+                                return `${tipo == 'start' ? 'Início' : 'Término'} da tarefa ${titulo}`;
                             })
-                            .join(' ￫ ') + '\n';
+                            .join(' dependência do ') + '\n';
                     encontrouExemplos = true;
                     break;
                 }
