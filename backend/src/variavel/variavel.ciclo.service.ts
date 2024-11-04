@@ -663,7 +663,10 @@ export class VariavelCicloService {
             },
         });
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
-        if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
+        if (
+            !dto.consulta_historica &&
+            Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia)
+        )
             throw new BadRequestException(
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem.`
             );

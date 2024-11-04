@@ -175,6 +175,9 @@ export class FilterVariavelAnaliseQualitativaGetDto {
 
     @IsDateYMD({ description: 'Data de referência' })
     data_referencia: Date;
+
+    @IsBoolean()
+    consulta_historica?: boolean;
 }
 
 export class VariavelValorDto {
