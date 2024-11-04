@@ -1,10 +1,8 @@
 <script setup>
-import { computed, defineProps, ref } from 'vue';
-
 import SmallModal from '@/components/SmallModal.vue';
-
-import requestS from '@/helpers/requestS.ts';
 import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
+import requestS from '@/helpers/requestS.ts';
+import { computed, defineProps, ref } from 'vue';
 
 const showModal = ref(false);
 const analise = ref(null);
@@ -232,9 +230,11 @@ function obterValorTabela(item, index) {
         >
           <td>
             <div class="flex center">
-              <div
+              <component
+                :is="hasModal(val.ciclo_fisico) ? 'button' : 'span'"
                 v-if="variavel"
-                class="mr1"
+                :type="hasModal(val.ciclo_fisico) ? 'button' : null"
+                class="mr1 like-a__text"
                 :style="{ color: hasModal(val.ciclo_fisico) ? '#94DA00' : '#B8C0CC' }"
                 @click="handleClick(val)"
               >
@@ -242,7 +242,7 @@ function obterValorTabela(item, index) {
                   width="16"
                   height="20"
                 ><use xlink:href="#i_document" /></svg>
-              </div>
+              </component>
               <div
                 v-else
                 class="farol i1"
