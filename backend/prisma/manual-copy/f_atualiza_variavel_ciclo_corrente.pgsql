@@ -166,7 +166,6 @@ BEGIN
         v_ultimo_periodo_valido := v_atrasos[1];
 
         -- prazo já tava atraso né... então ta estouradão
-        v_proximo_periodo := v_prazo + v_registro.intervalo_atraso;
 
         --RAISE NOTICE 'v_prazo: %', v_prazo;
     ELSE
@@ -199,23 +198,23 @@ BEGIN
         --raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
 
         IF (v_fase_corrente = 'Preenchimento') THEN
-            v_prazo := v_ultimo_periodo_valido + v_registro.dur_preench_interval;
+            v_prazo := v_ultimo_periodo_valido + v_registro.intervalo_atraso + v_registro.dur_preench_interval;
         ELSIF (v_fase_corrente = 'Validacao') THEN
-            v_prazo := v_ultimo_periodo_valido + v_registro.dur_validacao_interval;
+            v_prazo := v_ultimo_periodo_valido + v_registro.intervalo_atraso + v_registro.dur_validacao_interval;
         ELSE
 
             -- acabou todos os ciclos, não tem mais prazo
             IF v_liberacao_enviada AND v_atrasos[1] IS NULL THEN
                 v_prazo := NULL;
             ELSE
-                v_prazo := v_ultimo_periodo_valido + v_registro.dur_liberacao_interval;
+                v_prazo := v_ultimo_periodo_valido + v_registro.intervalo_atraso + v_registro.dur_liberacao_interval;
             END IF;
 
         END IF;
 
-        v_proximo_periodo := v_ultimo_periodo_valido + v_registro.intervalo_atraso;
-
     END IF;
+
+    v_proximo_periodo := v_ultimo_periodo_valido + periodicidade_intervalo(v_registro.periodicidade);
 
 
     --RAISE NOTICE 'v_registro: %', v_registro;
@@ -225,7 +224,7 @@ BEGIN
     --RAISE NOTICE 'v_dia_atual: %', v_dia_atual;
     --RAISE NOTICE 'v_corrente: %', v_corrente;
 
-    v_dias_desde_inicio := (v_dia_atual - v_proximo_periodo) + 1;
+    v_dias_desde_inicio := v_dia_atual::date - (v_ultimo_periodo_valido::date + v_registro.intervalo_atraso)::date + 1;
     --RAISE NOTICE 'v_dias_desde_inicio: %', v_dias_desde_inicio;
     --raise notice 'v_proximo_periodo -> %', v_proximo_periodo;
 

@@ -3797,7 +3797,7 @@ export const variavelGlobal = object({
     .required()
     .min(dataMin),
   liberacao_grupo_ids: array()
-    .label('Grupos de liberação')
+    .label('Equipes de liberação')
     .nullable()
     .of(
       number()
@@ -3805,7 +3805,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   medicao_grupo_ids: array()
-    .label('Grupos de medição')
+    .label('Equipes de medição')
     .nullable()
     .of(
       number()
@@ -3818,10 +3818,20 @@ export const variavelGlobal = object({
   mostrar_monitoramento: boolean()
     .label('Utilizar esta variável composta no ciclo de monitoramento')
     .required(),
+  medicao_orgao_id: number()
+    .label('Órgão responsável pela medição')
+    .positive()
+    .required(),
+  validacao_orgao_id: number()
+    .label('Órgão responsável pela validação')
+    .positive(),
   orgao_id: number()
     .label('Órgão responsável')
     .positive()
     .required(),
+  liberacao_orgao_id: number()
+    .label('Órgão responsável pela liberação')
+    .positive(),
   orgao_proprietario_id: number()
     .label('Órgão proprietário')
     .required()
@@ -3857,6 +3867,7 @@ export const variavelGlobal = object({
     .required(),
   polaridade: mixed()
     .label('Polaridade')
+    .required()
     .oneOf([...Object.keys(polaridadeDeVariaveis), null])
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
   titulo: string()
@@ -3867,7 +3878,7 @@ export const variavelGlobal = object({
     .label('Unidade de medida')
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
   validacao_grupo_ids: array()
-    .label('Grupos de validação')
+    .label('Equipes de validação')
     .nullable()
     .of(
       number()

@@ -104,7 +104,10 @@ export const useAuthStore = defineStore({
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('permissions');
-      this.$reset();
+
+      // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
+      this.resetAllStores();
+
       this.router.push('/login');
     },
     setPermissions() {
@@ -140,15 +143,13 @@ export const useAuthStore = defineStore({
         'Projeto',
       ];
 
-      for (const c in a) {
-        if (per[a[c]] && !per[a[c]].listar && !per[a[c]].visualizar) {
-          per.algumAdmin = 1;
-          break;
-        }
+      if (a.some((c) => per[c] && !per[c].listar && !per[c].visualizar)) {
+        per.algumAdmin = 1;
       }
 
       localStorage.setItem('permissions', JSON.stringify(per));
-      return this.permissions = per;
+      this.permissions = per;
+      return per;
     },
   },
   getters: {
