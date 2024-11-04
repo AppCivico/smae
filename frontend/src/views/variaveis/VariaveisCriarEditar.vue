@@ -14,6 +14,8 @@ import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
+
 import {
   variavelGlobal as schemaCriacao,
   variavelGlobalParaGeracao as schemaGeracao,
@@ -47,6 +49,7 @@ const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
 const {
   lista: listaDeAssuntos,
+  categorias: listaDeCategorias,
   chamadasPendentes: chamadasPendentesDeAssuntos,
   erro: erroDeAssuntos,
 } = storeToRefs(assuntosStore);
@@ -118,6 +121,8 @@ const {
   validationSchema: schema.value,
 });
 
+const agrupadorSelecionado = computed(() => itemParaEdicao.value.assuntos_mapeados);
+
 const estãoTodasAsRegiõesSelecionadas = computed({
   get: () => {
     if (!values.regioes) {
@@ -153,6 +158,8 @@ const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVaria
 const ehNumerica = computed(() => values.variavel_categorica_id === '' || !values.variavel_categorica_id);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  console.log('valoresControlados', valoresControlados)
+  return
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
   let msg = props.variavelId
@@ -187,6 +194,7 @@ const formularioSujo = useIsFormDirty();
 async function iniciar() {
   ÓrgãosStore.getAll();
   assuntosStore.buscarTudo();
+  assuntosStore.buscarCategorias();
   fontesStore.buscarTudo();
   equipesStore.buscarTudo();
   usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true });
@@ -244,6 +252,21 @@ watch(() => values.variavel_categorica_id, () => {
     });
   }
 });
+
+function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, listaDeItems) {
+  const opcoes = selecionados.reduce((amount, linha) => {
+    amount.push({
+      listaDeAgrupadores,
+      listaDeItems: listaDeItems.filter(
+        (item) => item.categoria_assunto_variavel_id === linha.agrupadorId,
+      ),
+    });
+
+    return amount;
+  }, []);
+
+  return opcoes;
+}
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
@@ -409,31 +432,33 @@ watch(() => values.variavel_categorica_id, () => {
           </div>
         </div>
       </div>
+    </fieldset>
 
+    <fieldset>
       <div class="flex flexwrap g2 mb1">
-        <div class="f1 fb25em">
-          <LabelFromYup
-            name="assuntos"
-            :schema="schema"
+        <Field
+          v-slot="{ field }"
+          name="assuntos"
+        >
+          <AgrupadorDeAutocomplete
+            v-bind="field"
+            :valores-iniciais="agrupadorSelecionado"
+            class="f1"
+            titulo="Assunto"
+            name-principal="assuntos"
+            label-campo-item="Assuntos"
+            label-campo-agrupador="Categoria de Assuntos"
+            :lista-de-items="listaDeAssuntos"
+            :lista-de-agrupadores="listaDeCategorias"
+            :logica-mapeamento-de-opcoes="logicaMapeamentoDeOpcoesDeAssunto"
+            @update:model-value="onChange"
           />
-          <AutocompleteField
-            name="assuntos"
-            :controlador="{
-              busca: '',
-              participantes: values.assuntos || []
-            }"
-            :grupo="listaDeAssuntos || []"
-            :aria-busy="chamadasPendentesDeAssuntos.lista"
-            :class="{
-              error: errors.assuntos
-            }"
-            label="nome"
-          />
-          <ErrorMessage
-            class="error-msg"
-            name="assuntos"
-          />
-        </div>
+        </Field>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
         <div class="f1 fb10em">
           <LabelFromYup
             name="variavel_categorica_id"
@@ -476,11 +501,7 @@ watch(() => values.variavel_categorica_id, () => {
             name="variavel_categorica_id"
           />
         </div>
-      </div>
-    </fieldset>
 
-    <fieldset>
-      <div class="flex flexwrap g2 mb1">
         <div class="f1 fb10em">
           <LabelFromYup
             name="polaridade"
