@@ -194,6 +194,7 @@ export class AnaliseQualitativaDto {
     criado_em: Date;
     criador_nome: string;
     fase: VariavelFase;
+    eh_liberacao_auto: boolean;
 }
 
 export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
