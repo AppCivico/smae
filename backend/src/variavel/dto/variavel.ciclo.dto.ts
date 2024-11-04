@@ -177,6 +177,7 @@ export class FilterVariavelAnaliseQualitativaGetDto {
     data_referencia: Date;
 
     @IsBoolean()
+    @Transform(({ value }) => value === 'true')
     consulta_historica?: boolean;
 }
 
