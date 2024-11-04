@@ -508,8 +508,36 @@ watch(() => props.group, () => {
             {{ errors.fim_medicao }}
           </div>
         </div>
+        <div class="f1 fb20em">
+          <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
+          <select
+            id="variavel_categorica_id"
+            name="variavel_categorica_id"
+            class="inputtext light"
+          >
+            <option
+              :value="-2147483648"
+              :selected="Number($route.query.variavel_categorica_id) === -2147483648"
+            >
+              Calculado
+            </option>
+            <optgroup
+              v-if="Variaveis[indicadorId]"
+              label="Categórica"
+            >
+              <option
+                v-for="(variavel, index) in Variaveis[indicadorId]
+                  .filter(v => v.variavel_categorica_id !== null)"
+                :key="index"
+                :value="variavel.id"
+                :title="variavel.titulo"
+              >
+                {{ variavel.titulo }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
       </div>
-
       <div
         v-if="!indicadorId"
         class=""
