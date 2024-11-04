@@ -4,9 +4,10 @@ import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from
 import { Transform, Type, plainToInstance } from 'class-transformer';
 import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { DateTime } from 'luxon';
-import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { TransferenciaService } from 'src/casa-civil/transferencia/transferencia.service';
+import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
@@ -31,16 +32,9 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
-import { DateTransform } from '../../auth/transforms/date.transform';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
-
-class LoopError extends Error {
-    constructor() {
-        super();
-    }
-}
 
 export class InferenciaDatasDto {
     @Transform(DateTransform)
@@ -1583,25 +1577,10 @@ export class TarefaService {
             },
         });
 
-        const grafoInicio: Graph = new graphlib.Graph({ directed: true });
-        const grafoTermino: Graph = new graphlib.Graph({ directed: true });
-
         const selfTasks = deps.map((d) => ({ ...d, id: 0, tarefa_id: dto.tarefa_corrente_id ?? 0 }));
 
-        const ordemInicio = await this.valida_grafo_dependencias(
-            grafoInicio,
-            [...tarefaDepsProj, ...selfTasks],
-            ['termina_pro_inicio', 'inicia_pro_inicio'],
-            deps,
-            tarefa_corrente_id
-        );
-        const ordemTermino = await this.valida_grafo_dependencias(
-            grafoTermino,
-            [...tarefaDepsProj, ...selfTasks],
-            ['inicia_pro_termino', 'termina_pro_termino'],
-            deps,
-            tarefa_corrente_id
-        );
+        const { ordem_topologica_inicio_planejado: ordemInicio, ordem_topologica_termino_planejado: ordemTermino } =
+            await this.valida_grafo_dependencias([...tarefaDepsProj, ...selfTasks], deps, tarefa_corrente_id);
 
         const json = JSON.stringify(deps);
         const res = (await prismaTx.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)`) as any;
@@ -1644,139 +1623,150 @@ export class TarefaService {
     }
 
     private async valida_grafo_dependencias(
-        grafo: Graph,
         todasTarefaDepsProj: TarefaDependente[],
-        tipos: TarefaDependenteTipo[],
         todasDeps: TarefaDependenciaDto[] | undefined | null,
         tarefa_corrente_id: number
-    ): Promise<number[]> {
-        if (!todasDeps || !Array.isArray(todasDeps)) return [];
+    ): Promise<{ ordem_topologica_inicio_planejado: number[]; ordem_topologica_termino_planejado: number[] }> {
+        if (!todasDeps || !Array.isArray(todasDeps))
+            return {
+                ordem_topologica_inicio_planejado: [],
+                ordem_topologica_termino_planejado: [],
+            };
 
-        // se ta vazio, já ta ordenado!
-        const dependencias = todasDeps.filter((r) => tipos.includes(r.tipo));
-        if (dependencias.length === 0) return [];
+        const grafo: Graph = new graphlib.Graph({ directed: true });
 
-        // aqui eu já estou com um pouco mais de duvida se tem como criar um loop
-        // diretamente só com as deps de um unico POST
-        // acredito que não é possivel
-        // então se não há nenhuma dependencia do tipo, já retorna
-        const repositorioDependencias = todasTarefaDepsProj.filter((r) => tipos.includes(r.tipo));
-        if (repositorioDependencias.length === 0) return [];
+        // Auxiliar para criar IDs de nó para horários de início e término
+        const genInicioId = (taskId: number) => `${taskId}_start`;
+        const genTerminoId = (taskId: number) => `${taskId}_end`;
+
+        // Adicionar dependência implícita entre o início e o fim da mesma tarefa
+        const addImplicitDep = (taskId: number) => {
+            grafo.setEdge(genInicioId(taskId), genTerminoId(taskId));
+        };
+
+        const todasTarefasIds = new Set<number>();
+        todasTarefasIds.add(tarefa_corrente_id);
+        for (const dep of todasTarefaDepsProj) {
+            todasTarefasIds.add(dep.tarefa_id);
+            todasTarefasIds.add(dep.dependencia_tarefa_id);
+        }
+
+        for (const dep of todasDeps) {
+            todasTarefasIds.add(dep.dependencia_tarefa_id);
+        }
+
+        for (const taskId of todasTarefasIds) {
+            grafo.setNode(genInicioId(taskId));
+            grafo.setNode(genTerminoId(taskId));
+            addImplicitDep(taskId);
+        }
+
+        // Cria a conexão das dependências apontando para os nós de início ou término, de acordo com o tipo
+        const adicionaDependencia = (fromTaskId: number, toTaskId: number, tipo: TarefaDependenteTipo) => {
+            switch (tipo) {
+                case TarefaDependenteTipo.termina_pro_inicio:
+                    grafo.setEdge(genTerminoId(fromTaskId), genInicioId(toTaskId));
+                    break;
+                case TarefaDependenteTipo.inicia_pro_inicio:
+                    grafo.setEdge(genInicioId(fromTaskId), genInicioId(toTaskId));
+                    break;
+                case TarefaDependenteTipo.inicia_pro_termino:
+                    grafo.setEdge(genInicioId(fromTaskId), genTerminoId(toTaskId));
+                    break;
+                case TarefaDependenteTipo.termina_pro_termino:
+                    grafo.setEdge(genTerminoId(fromTaskId), genTerminoId(toTaskId));
+                    break;
+            }
+        };
+
+        // Adiciona os já existentes
+        for (const dep of todasTarefaDepsProj) {
+            adicionaDependencia(dep.dependencia_tarefa_id, dep.tarefa_id, dep.tipo);
+        }
+
+        // Adiciona as novas
+        for (const dep of todasDeps) {
+            adicionaDependencia(dep.dependencia_tarefa_id, tarefa_corrente_id, dep.tipo);
+        }
 
         this.logger.debug(`Iniciando validação do grafo...`);
-
-        // eslint-disable-next-line
-        const self = this;
-        function novaDependencias(tarefaId: string, depsId: string[], recursionLevel: number): void {
-            const prefix = '='.repeat(recursionLevel + 1);
-
-            self.logger.debug(`${prefix}> Adicionando ${depsId.length} dependência(s) da tarefa ${tarefaId}`);
-            for (const depId of depsId) {
-                self.logger.debug(`${prefix}: setEdge (${tarefaId}, ${depId})`);
-
-                grafo = grafo.setEdge(tarefaId, depId);
-
-                const isAcyclic = graphlib.alg.isAcyclic(grafo);
-                if (isAcyclic === false) {
-                    self.logger.debug(`${prefix}! Loop detectado. Procurando por algum ciclo para ajudar o usuário.`);
-                    throw new LoopError();
-                }
-
-                const depDeps = repositorioDependencias.filter((r) => r.tarefa_id === +depId);
-                //console.log({ depDeps, cond: `r.tarefa_id === depId (${depId})` });
-                if (depDeps.length > 0) {
-                    novaDependencias(
-                        depId,
-                        depDeps.map((dep) => dep.dependencia_tarefa_id.toString()),
-                        recursionLevel + 1
-                    );
-                } else {
-                    self.logger.debug(`${prefix}: Não há dependência na tarefa ${depId}`);
-                }
-            }
-        }
-
         try {
-            for (const dependencia of dependencias) {
-                this.logger.debug(
-                    `=: setEdge ( ${tarefa_corrente_id.toString()}, ${dependencia.dependencia_tarefa_id.toString()})`
-                );
-                grafo = grafo.setEdge(tarefa_corrente_id.toString(), dependencia.dependencia_tarefa_id.toString());
-
-                this.logger.debug(
-                    `=> Verificando ${dependencia.dependencia_tarefa_id} (${dependencia.tipo} com ${dependencia.latencia} dias)`
-                );
-
-                const depDeps = repositorioDependencias.filter(
-                    (r) => r.tarefa_id === dependencia.dependencia_tarefa_id
-                );
-                //console.log({ depDeps, cond: `r.tarefa_id === dependencia.dependencia_tarefa_id (${dependencia.dependencia_tarefa_id})` });
-
-                if (depDeps.length > 0) {
-                    novaDependencias(
-                        dependencia.dependencia_tarefa_id.toString(),
-                        depDeps.map((dep) => dep.dependencia_tarefa_id.toString()),
-                        1
-                    );
-                } else {
-                    this.logger.debug(`=: Não há nenhuma dependência na tarefa ${dependencia.dependencia_tarefa_id}`);
-                }
-            }
-        } catch (error) {
-            if (error instanceof LoopError) {
-                // há alguns bugs, que acredito que não ocorrem no nosso caso simples
-                // mas essa função, o mais correto seria ser chamada de findSomeCycles,
+            // Check for cycles in the combined graph
+            if (!graphlib.alg.isAcyclic(grafo)) {
+                // há alguns bugs na lib do grafo, que acredito que não ocorrem no nosso caso simples
+                // mas essa função, o mais correto seria ser chamada de findSomeCycles
                 // pois ela pode não encontrar todos os ciclos que podem existir.
-                const cilosDetectados = graphlib.alg.findCycles(grafo) as string[][];
-                console.log(cilosDetectados);
-                let textoFormatado = '';
+                // de qualquer forma, se um dia existir um bug no isAcyclic (da mesma forma que existe no findCycles)
+                // o toposort nunca iria deixar passar, pois é realmente impossível fazer o toposort com um loop
+                // ai vai dar erro 500 na hora de validar/salvar
 
-                if (cilosDetectados.length > 0) {
-                    const tarefasDb = await this.prisma.tarefa.findMany({
-                        where: {
-                            id: {
-                                in: cilosDetectados[0].map((n) => parseInt(n, 10)),
-                            },
-                        },
-                        select: {
-                            nivel: true,
-                            numero: true,
-                            tarefa: true,
-                            id: true,
-                        },
-                    });
+                const cycles = graphlib.alg.findCycles(grafo);
+                const tarefasDb = await this.prisma.tarefa.findMany({
+                    where: { id: { in: Array.from(todasTarefasIds) } },
+                    select: {
+                        nivel: true,
+                        numero: true,
+                        tarefa: true,
+                        id: true,
+                    },
+                });
 
-                    for (const tarefaId of cilosDetectados[0]) {
-                        const tarefa = tarefasDb.filter((t) => t.id == +tarefaId)[0];
-                        // se não encontrou no banco, 99% de chance que é o id 0 e não um delete sem where sem rollback
-                        if (!tarefa) {
-                            textoFormatado += `Nova tarefa corrente => `;
-                        } else {
-                            textoFormatado += `Tarefa "${tarefa.tarefa}" número (${tarefa.numero}) => `;
-                        }
-                    }
+                let textoFormatado = 'Há uma ou mais referências circulares nas dependências:\n';
+                let encontrouExemplos = false;
+                for (const cycle of cycles) {
+                    encontrouExemplos = true;
+                    textoFormatado +=
+                        cycle
+                            .map((nodeId: string) => {
+                                const [tarefa_id, tipo] = nodeId.split('_');
 
-                    textoFormatado = textoFormatado.slice(0, -4) + '.\n\nDependência circulares não são suportadas.';
-                } else {
-                    textoFormatado =
-                        'Não foi possível encontrar um exemplo do ciclo com a biblioteca utilizada no momento.';
+                                const tarefa = tarefasDb.filter((t) => t.id == +tarefa_id)[0];
+                                let titulo;
+                                if (!tarefa) {
+                                    titulo = `Nova tarefa corrente => `;
+                                } else {
+                                    titulo = `Tarefa "${tarefa.tarefa}" número (${tarefa.numero}) => `;
+                                }
+
+                                return `Tarefa ${titulo} (${tipo == 'start' ? 'Início' : 'Término'})`;
+                            })
+                            .join(' → ') + '\n';
                 }
 
-                throw new HttpException(
-                    `Há uma ou mais referências circulares nas dependências do tipo ${tipos.join(
-                        ' ou '
-                    )}.\nCiclos detectados: ${textoFormatado}`,
-                    400
-                );
-            } else {
-                throw error;
-            }
-        }
+                if (!encontrouExemplos) textoFormatado += 'Ciclo sem exemplo';
 
-        // de qualquer forma, se um dia existir um bug no isAcyclic (da mesma forma que existe no findCycles)
-        // o toposort nunca iria deixar passar, pois é realmente impossivel fazer o toposort com um loop
-        // ai vai dar erro 500 na hora de validar/salvar
-        return (graphlib.alg.topsort(grafo) as string[]).map((n) => +n);
+                throw new HttpException(textoFormatado, 400);
+            }
+
+            // faz a ordem topológica para todo o gráfico duma vez
+            const ordemTopologica = graphlib.alg.topsort(grafo);
+
+            // cria um index com a posição de cada tarefa em cada lista
+            // usa um map para garantir que a ordem seja mantida,
+            // o ultimo item é o que tem o maior index ganha, já que pode aparecer mais de uma vez
+            const iniNodes = new Map<number, number>();
+            const termNodes = new Map<number, number>();
+
+            for (const [index, nodeId] of ordemTopologica.entries()) {
+                const [tarefa_id, type] = nodeId.split('_');
+                const tarefa_id_number = parseInt(tarefa_id);
+
+                if (type === 'start') {
+                    iniNodes.set(tarefa_id_number, index);
+                } else {
+                    termNodes.set(tarefa_id_number, index);
+                }
+            }
+
+            return {
+                ordem_topologica_inicio_planejado: Array.from(iniNodes.keys()),
+                ordem_topologica_termino_planejado: Array.from(termNodes.keys()),
+            };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            console.error(error);
+            throw new HttpException('Erro na validação das dependências', 500);
+        }
     }
 
     @Cron('15 * * * *')
