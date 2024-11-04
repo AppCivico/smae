@@ -134,7 +134,7 @@ export default [
         path: 'portfolios',
         component: PortfoliosRaiz,
         meta: {
-          título: 'Portfolios',
+          título: 'Portfólios',
           entidadeMãe: 'projeto',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
@@ -154,7 +154,8 @@ export default [
             path: '',
             component: PortfoliosLista,
             meta: {
-              título: 'Portfolios',
+              título: 'Configurações de portfólios',
+              títuloParaMenu: 'Portfólios',
             },
           },
           {
@@ -163,6 +164,9 @@ export default [
             component: PortfoliosCriarEditar,
             meta: {
               título: 'Novo portfólio',
+              rotasParaMigalhasDePão: [
+                'portfoliosListar',
+              ],
             },
           },
           {
@@ -176,6 +180,9 @@ export default [
 
             meta: {
               título: 'Editar portfólio',
+              rotasParaMigalhasDePão: [
+                'portfoliosListar',
+              ],
             },
           },
         ],

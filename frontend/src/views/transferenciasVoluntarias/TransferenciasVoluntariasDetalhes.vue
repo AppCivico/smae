@@ -97,7 +97,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
-    <MigalhasDePão />
 
     <TítuloDePágina />
 

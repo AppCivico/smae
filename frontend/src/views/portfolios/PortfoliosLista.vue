@@ -75,6 +75,18 @@ if (!organs.length) {
         </td>
         <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
         <td>
+          <router-link
+            v-if="item?.pode_editar"
+            :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
+        </td>
+        <td>
           <button
             v-if="item?.pode_editar"
             class="like-a__text"
@@ -87,18 +99,6 @@ if (!organs.length) {
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            v-if="item?.pode_editar"
-            :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">

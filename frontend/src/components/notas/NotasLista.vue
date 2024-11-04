@@ -80,7 +80,6 @@ watch(statusSelecionado, (novoValor) => {
 });
 </script>
 <template>
-  <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
     <h1>{{ $route?.meta?.título || "Notas" }}</h1>
     <hr class="ml2 f1">

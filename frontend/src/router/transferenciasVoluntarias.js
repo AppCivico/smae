@@ -67,7 +67,10 @@ export default {
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
-        título: 'Formulário de registro 123',
+        título: 'Formulário de registro',
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+        ],
       },
     },
     {
