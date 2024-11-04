@@ -1267,7 +1267,7 @@ export class VariavelService {
                 variavel: {
                     select: {
                         supraregional: true,
-                        variavel_categorica_id:true,
+                        variavel_categorica_id: true,
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -2759,7 +2759,7 @@ export class VariavelService {
                         referencia_data,
                         MIN(fase) as fase,
                         COUNT(*) as contagem_qualitativa
-                    FROM VarGlobalCicloAnalise
+                    FROM variavel_global_ciclo_analise
                     WHERE 
                         variavel_id = ${variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId}
                         AND referencia_data IN (${Prisma.join(dataValores)})
