@@ -138,6 +138,7 @@ export class SACicloFisicoDto {
     id: number;
     analise: string;
     tem_documentos: boolean;
+    contagem_qualitativa?: number | null;
 }
 
 export class SerieValorNomimal {
