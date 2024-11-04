@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import {
+  ref, unref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
@@ -8,6 +14,12 @@ import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisComp
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
+import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
+import AddEditValores from '@/views/metas/AddEditValores.vue';
+import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
+import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
+import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
+import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
@@ -19,18 +31,6 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
-import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
-import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
-import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
-import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
-import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import {
-  ref, unref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -40,25 +40,28 @@ const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
 const {
-  meta_id, iniciativa_id, atividade_id, indicador_id,
+  meta_id: metaId,
+  iniciativa_id: iniciativaId,
+  atividade_id: atividadeId,
+  indicador_id: indicadorId,
 } = route.params;
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}${atividadeId ? `/atividades/${atividadeId}` : ''}`;
 
 const props = defineProps(['group']);
 
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
-MetasStore.getById(meta_id);
+MetasStore.getById(metaId);
 MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
-if (iniciativa_id) IniciativasStore.getById(meta_id, iniciativa_id);
+if (iniciativaId) IniciativasStore.getById(metaId, iniciativaId);
 
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
-if (atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
+if (atividadeId) AtividadesStore.getById(iniciativaId, atividadeId);
 
 const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
@@ -137,6 +140,8 @@ function start() {
 }
 
 // Formula
+// desabilitando lint para manter compatibilidade com o código legado
+// eslint-disable-next-line consistent-return
 async function validadeFormula(f) {
   try {
     if (typeof window.formula_parser !== 'undefined') {
@@ -172,15 +177,15 @@ async function onSubmit(values) {
     }
 
     // Parent
-    if (atividade_id) {
-      values.atividade_id = Number(atividade_id);
-    } else if (iniciativa_id) {
-      values.iniciativa_id = Number(iniciativa_id);
+    if (atividadeId) {
+      values.atividade_id = Number(atividadeId);
+    } else if (iniciativaId) {
+      values.iniciativa_id = Number(iniciativaId);
     } else {
-      values.meta_id = Number(meta_id);
+      values.meta_id = Number(metaId);
     }
 
-    if (indicador_id) {
+    if (indicadorId) {
       values.formula = formula.value.trim();
 
       if (values.formula) {
@@ -205,7 +210,7 @@ async function onSubmit(values) {
       IndicadoresStore.clear();
       msg = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
+    if (r === true) {
       MetasStore.clear();
       alertStore.success(msg);
 
@@ -259,15 +264,15 @@ async function checkClose() {
   });
 }
 
-if (indicador_id) {
+if (indicadorId) {
   const chamadas = [
-    IndicadoresStore.getById(indicador_id),
-    VariaveisStore.getAll(indicador_id),
+    IndicadoresStore.getById(indicadorId),
+    VariaveisStore.getAll(indicadorId),
   ];
 
   if (route.meta.entidadeMãe === 'pdm') {
-    chamadas.push(VariaveisStore.getAllCompound(indicador_id));
-    chamadas.push(VariaveisStore.getAllCompoundInUse(indicador_id));
+    chamadas.push(VariaveisStore.getAllCompound(indicadorId));
+    chamadas.push(VariaveisStore.getAllCompoundInUse(indicadorId));
   }
 
   Promise.all(chamadas).then(() => {
@@ -280,17 +285,17 @@ if (indicador_id) {
       }
     }
   });
-} else if (atividade_id) {
-  IndicadoresStore.getAll(atividade_id, 'atividade_id');
-} else if (iniciativa_id) {
-  IndicadoresStore.getAll(iniciativa_id, 'iniciativa_id');
+} else if (atividadeId) {
+  IndicadoresStore.getAll(atividadeId, 'atividade_id');
+} else if (iniciativaId) {
+  IndicadoresStore.getAll(iniciativaId, 'iniciativa_id');
 } else {
-  IndicadoresStore.getAll(meta_id, 'meta_id');
+  IndicadoresStore.getAll(metaId, 'meta_id');
 }
 
 watch(AssociadorDeVariaveisEstaAberto, (novoValor) => {
   if (!novoValor) {
-    VariaveisStore.getAll(indicador_id);
+    VariaveisStore.getAll(indicadorId);
   }
 });
 
@@ -347,7 +352,7 @@ watch(() => props.group, () => {
     <Form
       v-slot="{ errors, isSubmitting, setFieldValue, values }"
       :validation-schema="schema"
-      :initial-values="indicador_id ? singleIndicadores : {}"
+      :initial-values="indicadorId ? singleIndicadores : {}"
       @submit="onSubmit"
     >
       <div class="flex g2">
