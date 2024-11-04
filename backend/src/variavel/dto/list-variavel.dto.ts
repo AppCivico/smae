@@ -13,7 +13,7 @@ export class ListVariavelDto {
 }
 
 export class VariavelDetailDto extends VariavelItemDto {
-    assuntos: IdNomeDto[];
+    assuntos: VariavelAssuntoDto[];
     periodos: VariaveisPeriodosDto;
     dado_aberto: boolean;
     metodologia: string | null;
@@ -52,6 +52,12 @@ export class VariavelResumoInput {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+}
+
+export class VariavelAssuntoDto {
+    id: number;
+    nome: string;
+    categoria_assunto_variavel_id: number;
 }
 
 export class VariavelResumo {
