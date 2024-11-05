@@ -147,6 +147,7 @@ if (etapa_id) {
     });
   }
 }
+
 (async () => {
   if (atividade_id) {
     if (atividade_id) await AtividadesStore.getById(iniciativa_id, atividade_id);
@@ -288,6 +289,20 @@ const onSubmit = handleSubmit(async () => {
     alertStore.error(error);
   }
 });
+
+function redefinirVariavel(habilitar = false) {
+  const valorInicial = route.meta.entidadeMãe === 'planoSetorial'
+    ? {
+      codigo: valoresIniciais.value?.variavel?.codigo || 'GERAR_CODIGO',
+      titulo: valoresIniciais.value?.variavel?.titulo || '',
+    }
+    : {
+      codigo: valoresIniciais.value?.variavel?.codigo || '',
+      titulo: valoresIniciais.value?.variavel?.titulo || '',
+    };
+
+  setFieldValue('variavel', habilitar ? valorInicial : null);
+}
 
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
@@ -630,15 +645,7 @@ watch(valoresIniciais, (novoValor) => {
             :value="{}"
             :unchecked-value="null"
             class="inputcheckbox"
-            @change="($e) => {
-              setFieldValue('variavel', $e.target.checked
-                ? {
-                  codigo: valoresIniciais?.variavel?.codigo || '',
-                  titulo: valoresIniciais?.variavel?.titulo || '',
-                }
-                : null
-              );
-            }"
+            @change="($e) => redefinirVariavel($e.target.checked)"
           >
           <label
             for="associar-variavel"
@@ -650,19 +657,33 @@ watch(valoresIniciais, (novoValor) => {
           v-if="!!values.variavel"
           class="fb100 flex g2"
         >
-          <div class="f1">
+          <div
+            class="f1"
+            :hidden="$route.meta.entidadeMãe === 'planoSetorial' && !singleEtapa.value?.variavel"
+          >
             <LabelFromYup
               :schema="schema.fields.variavel"
               :required="true"
               name="codigo"
             />
+            <input
+              v-if="!!singleEtapa.value?.variavel"
+              :value="singleEtapa.value?.variavel.codigo"
+              type="text"
+              class="inputtext light mb1"
+              aria-readonly="true"
+              readonly
+            >
+
             <Field
+              v-else
               name="variavel.codigo"
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors['variavel.codigo'] }"
               maxlength="60"
             />
+
             <div class="error-msg">
               {{ errors['variavel.codigo'] }}
             </div>
