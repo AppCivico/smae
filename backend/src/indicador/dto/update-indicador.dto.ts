@@ -140,7 +140,6 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
 
     @IsOptional()
     @IsInt({ message: 'variavel_categoria_id precisa ser um número ou null' })
-    @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     variavel_categoria_id?: number | null;
 }
