@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia';
-
 import type {
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
 } from '@back/variavel/dto/list-variavel.dto';
 import type { VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
-
 import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
