@@ -26,4 +26,5 @@ export class Indicador {
     ha_avisos_data_fim: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_categoria_id: number | null;
 }

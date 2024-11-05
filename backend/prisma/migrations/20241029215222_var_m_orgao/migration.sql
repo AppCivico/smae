@@ -13,6 +13,8 @@ ALTER TABLE "variavel" ADD CONSTRAINT "variavel_validacao_orgao_id_fkey" FOREIGN
 -- AddForeignKey
 ALTER TABLE "variavel" ADD CONSTRAINT "variavel_liberacao_orgao_id_fkey" FOREIGN KEY ("liberacao_orgao_id") REFERENCES "orgao"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+update variavel set medicao_orgao_id = orgao_id, liberacao_orgao_id = orgao_id, validacao_orgao_id = orgao_id where tipo = 'Global';
+
 update variavel set possui_variaveis_filhas = true where id in (
     select variavel_mae_id from variavel where variavel_mae_id is not null
 );

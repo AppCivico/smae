@@ -1394,6 +1394,8 @@ model Indicador {
     complemento           String?
     casas_decimais        Int?          @db.SmallInt
 
+    variavel_categoria_id Int?
+
     ha_avisos_data_fim Boolean @default(false)
 
     recalculando    Boolean  @default(false)

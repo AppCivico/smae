@@ -175,6 +175,11 @@ export class FilterVariavelAnaliseQualitativaGetDto {
 
     @IsDateYMD({ description: 'Data de referência' })
     data_referencia: Date;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }) => value === 'true')
+    consulta_historica?: boolean;
 }
 
 export class VariavelValorDto {
@@ -190,6 +195,7 @@ export class AnaliseQualitativaDto {
     criado_em: Date;
     criador_nome: string;
     fase: VariavelFase;
+    eh_liberacao_auto: boolean;
 }
 
 export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [

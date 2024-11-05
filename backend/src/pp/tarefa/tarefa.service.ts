@@ -1612,11 +1612,14 @@ export class TarefaService {
     }
 
     async calcula_dependencias_tarefas(
-        projetoId: number,
+        tarefaCronoInput: TarefaCronogramaInput,
         dto: CheckDependenciasDto,
         user: PessoaFromJwt
     ): Promise<DependenciasDatasDto | null> {
-        const resp = await this.calcDataDependencias(projetoId, this.prisma, dto);
+
+        const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+
+        const resp = await this.calcDataDependencias(tarefaCronoId, this.prisma, dto);
         if (!resp) return null;
 
         return resp.dependencias_datas;

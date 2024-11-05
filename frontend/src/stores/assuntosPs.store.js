@@ -5,6 +5,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 export const useAssuntosStore = defineStore('assuntosStore', {
   state: () => ({
     lista: [],
+    categorias: [],
     emFoco: null,
 
     chamadasPendentes: {
@@ -74,6 +75,25 @@ export const useAssuntosStore = defineStore('assuntosStore', {
         this.erro = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
+      }
+    },
+
+    async buscarCategorias() {
+      this.chamadasPendentes.categorias = false;
+      this.erro = null;
+
+      try {
+        this.chamadasPendentes.categorias = true;
+
+        const data = await this.requestS.get(
+          `${baseUrl}/categoria-assunto-variavel`,
+        );
+
+        this.categorias = data.linhas;
+      } catch (erro) {
+        this.erro = erro;
+      } finally {
+        this.chamadasPendentes.categorias = false;
       }
     },
   },

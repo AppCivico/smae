@@ -24,6 +24,7 @@
     <thead>
       <tr>
         <th> Nome </th>
+        <th> Categoria </th>
         <th />
         <th />
       </tr>
@@ -34,6 +35,7 @@
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
+        <td>{{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}</td>
         <td>
           <router-link
             :to="{ name: 'assuntosEditar', params: { assuntoId: item.id } }"

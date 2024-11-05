@@ -1045,6 +1045,7 @@ export class VariavelService {
                 inicio_medicao: true,
                 atraso_meses: true,
                 suspendida_em: true,
+                variavel_mae_id:true,
                 mostrar_monitoramento: true,
                 polaridade: true,
                 unidade_medida: {
@@ -1219,6 +1220,7 @@ export class VariavelService {
                 recalculando: row.recalculando,
                 recalculo_erro: row.recalculo_erro,
                 recalculo_tempo: row.recalculo_tempo,
+                variavel_mae_id: row.variavel_mae_id,
             } satisfies VariavelItemDto;
         });
 
@@ -2623,6 +2625,7 @@ export class VariavelService {
                 recalculando: variavel.recalculando,
                 recalculo_erro: variavel.recalculo_erro,
                 recalculo_tempo: variavel.recalculo_tempo,
+                variavel_mae_id: variavel.variavel_mae_id,
             },
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,
@@ -2673,6 +2676,7 @@ export class VariavelService {
                     id: analiseCiclo.id,
                     analise: analiseCiclo.analise_qualitativa || '',
                     tem_documentos: (docCiclo?._count || 0) > 0,
+                    contagem_qualitativa: analiseCiclo.contagem_qualitativa,
                 };
             }
 
@@ -2745,20 +2749,26 @@ export class VariavelService {
             if (!variavel) throw new Error('Erro Interno! Variável não encontrada em função de variável global.');
 
             const [analises, documentos] = await Promise.all([
-                this.prisma.variavelGlobalCicloAnalise.findMany({
-                    where: {
-                        variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
-                        referencia_data: { in: dataValores },
-                        removido_em: null,
-                        ultima_revisao: true,
-                    },
-                    distinct: ['referencia_data'],
-                    select: {
-                        id: true,
-                        referencia_data: true,
-                        fase: true,
-                    },
-                }),
+                this.prisma.variavelGlobalCicloAnalise
+                    .groupBy({
+                        where: {
+                            variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
+                            referencia_data: { in: dataValores },
+                            removido_em: null,
+                            ultima_revisao: true,
+                        },
+                        by: ['referencia_data'],
+                        _count: true,
+                    })
+                    .then((analises) => {
+                        return analises.map((a) => {
+                            return {
+                                referencia_data: a.referencia_data,
+                                analise_qualitativa: '',
+                                contagem_qualitativa: a._count,
+                            } as CicloAnalise;
+                        });
+                    }),
                 this.prisma.variavelGlobalCicloDocumento.groupBy({
                     where: {
                         variavel_id: variavel.variavel_mae_id ? variavel.variavel_mae_id : variavelId,
@@ -3880,7 +3890,11 @@ export class VariavelService {
         let detailDto: VariavelDetailDto | VariavelDetailComAuxiliaresDto = {
             ...selfItem[0],
             assuntos: detalhes.VariavelAssuntoVariavel.map((e) => {
-                return { id: e.assunto_variavel.id, nome: e.assunto_variavel.nome };
+                return {
+                    id: e.assunto_variavel.id,
+                    nome: e.assunto_variavel.nome,
+                    categoria_assunto_variavel_id: e.assunto_variavel.categoria_assunto_variavel_id,
+                };
             }),
             periodos: {
                 preenchimento_inicio: detalhes.periodo_preenchimento[0],

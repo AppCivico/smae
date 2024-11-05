@@ -52,6 +52,7 @@ export class VariavelResumoInput {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_mae_id: number | null;
 }
 
 export class VariavelAssuntoDto {
@@ -90,6 +91,7 @@ export class VariavelResumo {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_mae_id: number | null;
 }
 
 export class ListSeriesAgrupadas {

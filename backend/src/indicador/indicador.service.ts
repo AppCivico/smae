@@ -368,7 +368,7 @@ export class IndicadorService {
                         400
                     );
                 }
-            }else{
+            } else {
                 throw new HttpException(
                     `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não pode ser usada em Fórmula Composta (Plano Setorial)`,
                     400
@@ -467,6 +467,7 @@ export class IndicadorService {
                 recalculo_erro: true,
                 recalculo_tempo: true,
                 ha_avisos_data_fim: true,
+                variavel_categoria_id: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -536,6 +537,29 @@ export class IndicadorService {
 
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.variavel_categoria_id !== undefined) {
+                    if (!dto.formula || !dto.formula_variaveis)
+                        throw new HttpException(
+                            'Para alterar a categoria da variável é necessário enviar a formula e as variáveis',
+                            400
+                        );
+
+                    if (dto.variavel_categoria_id == null) {
+                        if (dto.formula_variaveis.length > 0)
+                            throw new HttpException('Nenhuma variável é permitida para a categoria vazia', 400);
+                        if (dto.formula.indexOf('$') !== -1)
+                            throw new HttpException('A formula não pode ter referências de variáveis', 400);
+                    } else {
+                        if (dto.formula_variaveis.length > 1)
+                            throw new HttpException('Apenas uma variável é permitida para a categoria', 400);
+                        if (dto.formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)
+                            throw new HttpException('A variável da categoria deve ser a mesma da formula', 400);
+                        const referencia = dto.formula_variaveis[0].referencia;
+                        if (dto.formula.indexOf(referencia) === -1)
+                            throw new HttpException('A referência da variável da categoria deve estar na formula', 400);
+                    }
+                }
+
                 const indicador = await prismaTx.indicador.update({
                     where: { id: id },
                     data: {
@@ -608,13 +632,18 @@ export class IndicadorService {
                         });
                 }
                 //Tratamento para series inválidas
-                if (tipo === 'PDM'){
-                    const variaveis = await prismaTx.indicadorVariavel
-                        .findMany({ where:{ indicador_id: indicador.id,
-                            indicador_origem_id : null,} });
+                if (tipo === 'PDM') {
+                    const variaveis = await prismaTx.indicadorVariavel.findMany({
+                        where: { indicador_id: indicador.id, indicador_origem_id: null },
+                    });
                     for (const variavel of variaveis) {
-                        await this.variavelService.trataPeriodosSerieVariavel(prismaTx, variavel.variavel_id,indicador.id,
-                            indicador.inicio_medicao,indicador.fim_medicao);
+                        await this.variavelService.trataPeriodosSerieVariavel(
+                            prismaTx,
+                            variavel.variavel_id,
+                            indicador.id,
+                            indicador.inicio_medicao,
+                            indicador.fim_medicao
+                        );
                     }
                 }
                 return indicador;

@@ -29,6 +29,33 @@
           name="nome"
         />
       </div>
+
+      <div class="f1">
+        <LabelFromYup
+          name="categoria_assunto_variavel_id"
+          :schema="schema"
+        />
+        <Field
+          name="categoria_assunto_variavel_id"
+          as="select"
+          class="inputtext light mb1"
+        >
+          <option value="">
+            Selecione
+          </option>
+          <option
+            v-for="categoriaAssunto in categoriasAssunto"
+            :key="categoriaAssunto.id"
+            :value="categoriaAssunto.id"
+          >
+            {{ categoriaAssunto.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="categoria_assunto_variavel_id"
+        />
+      </div>
     </div>
     <FormErrorsList :errors="errors" />
 
@@ -65,12 +92,12 @@
 </template>
 
 <script setup>
-import { assunto as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import { assunto as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
 
 const router = useRouter();
 const route = useRoute();
@@ -83,7 +110,9 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(assuntosStore);
+const {
+  chamadasPendentes, erro, itemParaEdicao, categorias: categoriasAssunto,
+} = storeToRefs(assuntosStore);
 
 async function onSubmit(values) {
   try {
@@ -113,6 +142,7 @@ async function onSubmit(values) {
 }
 
 assuntosStore.$reset();
+assuntosStore.buscarCategorias();
 // não foi usada a prop.assuntoId pois estava vazando do edit na hora de criar uma nova
 if (route.params?.assuntoId) {
   assuntosStore.buscarItem(route.params?.assuntoId);

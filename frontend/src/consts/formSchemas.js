@@ -347,6 +347,9 @@ export const assunto = object()
       .min(3)
       .label('Nome')
       .required(),
+    categoria_assunto_variavel_id: number()
+      .label('Categorias de assunto')
+      .required(),
   });
 
 export const autenticação = object()
