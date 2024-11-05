@@ -156,9 +156,23 @@ async function onSubmit(values) {
   try {
     let msg;
     let r;
+
+    if (values.variavel_categoria_id) {
+      values.formula_variaveis = [
+        {
+          variavel_id: values.variavel_categoria_id,
+          referencia: '_1',
+          janela: 1,
+          usar_serie_acumulada: false,
+        },
+      ];
+      values.formula = '$_1';
+    }
+
     values.inicio_medicao = fieldToDate(values.inicio_medicao);
     values.fim_medicao = fieldToDate(values.fim_medicao);
     values.regionalizavel = !!values.regionalizavel;
+    values.variavel_categoria_id = values.variavel_categoria_id === '' ? null : values.variavel_categoria_id;
     values.nivel_regionalizacao = values.regionalizavel
       ? Number(values.nivel_regionalizacao)
       : null;
@@ -185,9 +199,7 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if (indicadorId) {
-      values.formula = formula.value.trim();
-
+    if ((indicadorId && values.formula !== '$_1') || values.variavel_categoria_id) {
       if (values.formula) {
         const er = await validadeFormula(values.formula);
         if (er) {
@@ -196,8 +208,9 @@ async function onSubmit(values) {
         }
       }
 
-      values.formula_variaveis = unref(variaveisFormula);
-
+      if (!values.variavel_categoria_id) {
+        values.formula_variaveis = unref(variaveisFormula);
+      }
       if (singleIndicadores.value.id) {
         r = await IndicadoresStore.update(singleIndicadores.value.id, values);
         MetasStore.clear();
@@ -407,7 +420,10 @@ watch(() => props.group, () => {
             {{ errors.polaridade }}
           </div>
         </div>
-        <div class="f1">
+        <div
+          v-show="!values.variavel_categoria_id"
+          class="f1"
+        >
           <label class="label">Casas decimais</label>
           <Field
             name="casas_decimais"
@@ -510,15 +526,13 @@ watch(() => props.group, () => {
         </div>
         <div class="f1 fb20em">
           <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
-          <select
-            id="variavel_categorica_id"
-            name="variavel_categorica_id"
+          <Field
+            id="variavel_categoria_id"
+            as="select"
+            name="variavel_categoria_id"
             class="inputtext light"
           >
-            <option
-              :value="-2147483648"
-              :selected="Number($route.query.variavel_categorica_id) === -2147483648"
-            >
+            <option value="">
               Calculado
             </option>
             <optgroup
@@ -535,7 +549,7 @@ watch(() => props.group, () => {
                 {{ variavel.titulo }}
               </option>
             </optgroup>
-          </select>
+          </Field>
         </div>
       </div>
       <div
@@ -672,7 +686,10 @@ watch(() => props.group, () => {
 
       <hr class="mt2 mb2">
 
-      <div v-if="indicadorId && !Variaveis[indicadorId]?.loading">
+      <div
+        v-if="indicadorId && !Variaveis[indicadorId]?.loading"
+        v-show="!values.variavel_categoria_id"
+      >
         <EditorDeFormula
           v-model="formula"
           v-model:variaveis-formula="variaveisFormula"
