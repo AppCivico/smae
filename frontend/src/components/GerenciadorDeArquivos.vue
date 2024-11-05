@@ -170,7 +170,7 @@ watchEffect(async () => {
       @editar="($params) => $emit('editar', $params)"
     />
 
-    <router-link
+    <SmaeLink
       v-if="props.rotaDeAdição"
       :to="props.rotaDeAdição"
       class="addlink mt1"
@@ -182,7 +182,7 @@ watchEffect(async () => {
         <use xlink:href="#i_+" />
       </svg>
       Adicionar arquivo
-    </router-link>
+    </SmaeLink>
   </div>
 </template>
 <style lang="less">

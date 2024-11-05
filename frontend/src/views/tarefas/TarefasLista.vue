@@ -149,7 +149,7 @@ export default {
         </ul>
       </div>
 
-      <router-link
+      <SmaeLink
         v-if="(!apenasLeitura)
           || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
         :to="{
@@ -159,9 +159,9 @@ export default {
         class="dropbtn"
       >
         <span class="btn">Nova tarefa</span>
-      </router-link>
+      </SmaeLink>
 
-      <router-link
+      <SmaeLink
         v-if="route.meta.entidadeMãe === 'projeto'
           || route.meta.entidadeMãe === 'obras'"
         :to="{
@@ -171,7 +171,7 @@ export default {
         class="dropbtn"
       >
         <span class="btn"> Clonar tarefas </span>
-      </router-link>
+      </SmaeLink>
     </nav>
   </div>
 
@@ -210,7 +210,7 @@ export default {
     v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
     class="flex center mb4"
   >
-    <router-link
+    <SmaeLink
       :to="{ name: 'transferenciaEmailModal' }"
       class="addlink mb1"
     >
@@ -222,7 +222,7 @@ export default {
       </svg>
       <span v-if="emailEmFoco?.linhas[0]?.id">Editar envio de e-mail </span>
       <span v-else>Adicionar envio de e-mail</span>
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="mb2">

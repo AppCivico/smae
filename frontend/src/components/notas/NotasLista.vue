@@ -6,6 +6,7 @@ import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref, watch } from 'vue';
+import SmaeLink from '../SmaeLink.vue';
 
 const status = {
   Programado: {
@@ -83,12 +84,12 @@ watch(statusSelecionado, (novoValor) => {
   <div class="flex spacebetween center mb2">
     <h1>{{ $route?.meta?.título || "Notas" }}</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'notasCriar' }"
       class="btn big ml1"
     >
       Nova nota
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="mb1">
@@ -152,7 +153,7 @@ watch(statusSelecionado, (novoValor) => {
           }}
         </td>
         <td>
-          <router-link
+          <SmaeLink
             v-if="item?.pode_editar && item?.id_jwt"
             :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
             class="tprimary"
@@ -161,7 +162,7 @@ watch(statusSelecionado, (novoValor) => {
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>        
         <td>
           <button
@@ -183,7 +184,7 @@ watch(statusSelecionado, (novoValor) => {
       </tr>
       <tr>
         <td colspan="6">
-          <router-link
+          <SmaeLink
             v-if="item?.id_jwt"
             :to="{
               name: 'notaDetalhe',
@@ -192,7 +193,7 @@ watch(statusSelecionado, (novoValor) => {
             class="tprimary"
           >
             {{ removerHtml(item?.nota) }}
-          </router-link>
+          </SmaeLink>
         </td>
       </tr>
     </tbody>
