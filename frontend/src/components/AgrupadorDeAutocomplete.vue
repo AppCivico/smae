@@ -116,7 +116,7 @@ type MapaOpcoes = {
 type Props = {
   titulo?: string;
   valoresIniciais: ValoresSelecionados,
-  modelValue: number[],
+  modelValue?: number[],
   listaDeAgrupadores: Opcoes,
   listaDeItems: Opcoes,
   namePrincipal?: string
@@ -133,7 +133,11 @@ type Emits = {
   (event: 'update:modelValue', items: Items): void
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  titulo: undefined,
+  namePrincipal: undefined,
+  modelValue: () => [],
+});
 const emit = defineEmits<Emits>();
 
 const selecoes = ref<ValoresSelecionados>([]);

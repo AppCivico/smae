@@ -20,7 +20,7 @@
     </div>
 
     <div
-      v-for="(linha, linhaIndex) in linhas"
+      v-for="(linha, linhaIndex) in linhasMapeadas"
       :key="`variavel-linha--${linhaIndex}`"
       class="variavel-detalhe-sessao__linha"
       :style="{
@@ -64,29 +64,41 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
+
 type PossiveisValores = string | number | null | any;
 
 type SessaoDeDetalheLinha = {
   label: string
   valor?: PossiveisValores
   col?: number
+  esconder?: boolean
 }[];
 
 export type SessaoDeDetalheLinhas = SessaoDeDetalheLinha[];
 
 type Props = {
-  linhas: SessaoDeDetalheLinha[]
+  linhas: SessaoDeDetalheLinhas
   removerDivisoria?: boolean
   titulo?: string
+  quantidadeColunas?: number
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const linhasMapeadas = computed<SessaoDeDetalheLinhas>(() => (
+  props.linhas.map((linha) => linha.filter((item) => !item.esconder))
+));
 
 function valorEhArray(valor: PossiveisValores): boolean {
   return !!Array.isArray(valor);
 }
 
 function obterLinhas(quantidadeLinhas: number): number {
+  if (props.quantidadeColunas) {
+    return props.quantidadeColunas;
+  }
+
   if (quantidadeLinhas < 3) {
     return 3;
   }
@@ -108,6 +120,7 @@ function obterLinhas(quantidadeLinhas: number): number {
 .variavel-detalhe-sessao__linha {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 0;
 }
 
 .variavel-detalhe-sessao__item {
