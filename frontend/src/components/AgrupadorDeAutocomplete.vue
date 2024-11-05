@@ -62,6 +62,7 @@
         class="like-a__text addlink"
         arial-label="excluir"
         title="excluir"
+        type="button"
         @click="removerItem(linhaSelecaoIndex)"
       >
         <svg
@@ -88,9 +89,8 @@
 </template>
 
 <script lang="ts" setup>
-import _ from 'lodash';
+import { cloneDeep } from 'lodash';
 import { watch, computed, ref } from 'vue';
-
 import AutocompleteField2 from './AutocompleteField2.vue';
 
 type Items = (string | number)[];
@@ -173,7 +173,7 @@ function limparCampoItem(itemIndex: number) {
 }
 
 watch(() => props.valoresIniciais, (v) => {
-  selecoes.value = _.cloneDeep(v);
+  selecoes.value = cloneDeep(v);
 }, { immediate: true, deep: true });
 
 watch(() => selecoes.value, () => {
