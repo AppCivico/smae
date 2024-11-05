@@ -435,11 +435,11 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
     <fieldset>
       <div class="flex flexwrap g2 mb1">
         <Field
-          v-slot="{ field }"
+          v-slot="{ field: { onChange, value } }"
           name="assuntos"
         >
           <AgrupadorDeAutocomplete
-            v-bind="field"
+            :model-value="value"
             :valores-iniciais="agrupadorSelecionado"
             class="f1"
             titulo="Assunto"
