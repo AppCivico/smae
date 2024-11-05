@@ -85,6 +85,7 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'variaveisCategoricasListar',
+      'categoriaAssuntosListar',
       'assuntosListar',
       'modalidadesListar',
       'fontesListar',
@@ -896,6 +897,52 @@ export default [
           título: 'Editar tipo de variável categórica',
           rotasParaMigalhasDePão: [
             'variaveisCategoricasListar',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/categoria-assunto',
+    component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: 'AssuntoVariavel.',
+      título: 'Categoria de Assuntos',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        name: 'categoriaAssuntosListar',
+        path: '',
+        component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoLista.vue'),
+        meta: {
+          título: 'Categoria de Assuntos',
+        },
+      },
+      {
+        name: 'categoriaAssuntosCriar',
+        path: 'novo',
+        component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
+        meta: {
+          título: 'Novo assunto',
+          rotasParaMigalhasDePão: [
+            'categoriaAssuntosListar',
+          ],
+        },
+      },
+      {
+        name: 'categoriaAssuntosEditar',
+        path: ':categoriaAssuntoId',
+        component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
+        props: ({ params }) => ({
+          ...params,
+          ...{ categoriaAssuntoId: Number.parseInt(params.categoriaAssuntoId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar assunto',
+          rotasParaMigalhasDePão: [
+            'categoriaAssuntosListar',
           ],
         },
       },
