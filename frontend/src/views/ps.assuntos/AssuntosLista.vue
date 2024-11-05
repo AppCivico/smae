@@ -34,8 +34,12 @@
         v-for="item in listaFiltradaPorTermoDeBusca"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
-        <td>{{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}</td>
+        <td style="width: 100%">
+          {{ item.nome }}
+        </td>
+        <td style="width: 100%">
+          {{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}
+        </td>
         <td>
           <router-link
             :to="{ name: 'assuntosEditar', params: { assuntoId: item.id } }"
