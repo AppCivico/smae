@@ -176,6 +176,7 @@ export class FilterVariavelAnaliseQualitativaGetDto {
     @IsDateYMD({ description: 'Data de referência' })
     data_referencia: Date;
 
+    @IsOptional()
     @IsBoolean()
     @Transform(({ value }) => value === 'true')
     consulta_historica?: boolean;
