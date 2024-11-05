@@ -44,7 +44,7 @@
         <label
           class="label"
           :for="`${namePrincipal}[${linhaSelecaoIndex}].campo-item`"
-        >{{ labelCampoAgrupador }}</label>
+        >{{ labelCampoItem }}</label>
 
         <AutocompleteField2
           :id="`${namePrincipal}[${linhaSelecaoIndex}].campo-item`"
