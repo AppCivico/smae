@@ -29,13 +29,13 @@ if (listaTipo.value.length === 0) {
   <div class="flex spacebetween center mb2">
     <h1>Nota</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       v-if="emFoco?.id_jwt && emFoco?.pode_editar"
       :to="{ name: 'notasEditar', params: { notaId: emFoco?.id_jwt } }"
       class="btn big ml2"
     >
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
   <div
     class="mb1"

@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
+import SmaeLink from '@/components/SmaeLink.vue';
 
 const AndamentoDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
@@ -327,7 +328,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       Identificação
     </h3>
     <hr class="f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
       class="btn with-icon bgnone tcprimary p0"
@@ -337,7 +338,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         height="20"
       ><use xlink:href="#i_edit" /></svg>
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex g2 center mt3 mb2">
@@ -623,7 +624,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       Recurso Financeiro
     </h3>
     <hr class="f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
       title="Editar recursos financeiros"
       class="btn with-icon bgnone tcprimary p0"
@@ -633,7 +634,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         height="20"
       ><use xlink:href="#i_edit" /></svg>
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex flexwrap g2 mb3">
@@ -748,7 +749,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       Distribuição de Recursos
     </h3>
     <hr class="f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"
@@ -758,7 +759,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         height="20"
       ><use xlink:href="#i_edit" /></svg>
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <ListaDeDistribuicaoItem

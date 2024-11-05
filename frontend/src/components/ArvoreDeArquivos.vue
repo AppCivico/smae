@@ -89,7 +89,7 @@ const éPossívelAbrir = (item) => !item.children?.length
             {{ item.id }}
           </strong>
 
-          <router-link
+          <SmaeLink
             v-if="props.rotaDeAdição && !apenasLeitura"
             class="like-a__text arvore-de-arquivos__adicionar"
             :aria-label="`adicionar arquivo em ${item.caminho}`"
@@ -104,7 +104,7 @@ const éPossívelAbrir = (item) => !item.children?.length
               width="20"
               height="20"
             ><use xlink:href="#i_+" /></svg>
-          </router-link>
+          </SmaeLink>
         </span>
 
         <ArvoreDeArquivos
@@ -150,7 +150,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                   {{ dateToField(arquivo?.data) }}
                 </small>
 
-                <router-link
+                <SmaeLink
                   v-if="props.rotaDeEdição && !apenasLeitura"
                   class="like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
@@ -165,7 +165,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </router-link>
+                </SmaeLink>
 
                 <button
                   v-if="!apenasLeitura"

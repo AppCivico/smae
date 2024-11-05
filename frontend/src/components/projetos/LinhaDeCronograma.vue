@@ -190,7 +190,7 @@ export default {
       <td
         class="center"
       >
-        <router-link
+        <SmaeLink
           v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1) && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
             && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'
@@ -212,12 +212,12 @@ export default {
             width="20"
             height="20"
           ><use xlink:href="#i_+" /></svg>
-        </router-link>
+        </SmaeLink>
       </td>
       <td
         class="center"
       >
-        <router-link
+        <SmaeLink
           v-if="linha.pode_editar"
           :to="{
             name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
@@ -232,7 +232,7 @@ export default {
             width="20"
             height="20"
           ><use xlink:href="#i_edit" /></svg>
-        </router-link>
+        </SmaeLink>
       </td>
       <td
         class="center"

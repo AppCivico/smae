@@ -68,6 +68,7 @@ export default {
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
         título: 'Formulário de registro',
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
         ],
@@ -196,6 +197,7 @@ export default {
           meta: {
             título: 'Nova nota',
             rotaDeEscape: 'notasListar',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',
@@ -217,6 +219,7 @@ export default {
           meta: {
             título: 'Editar nota',
             rotaDeEscape: 'notasListar',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',
@@ -278,6 +281,7 @@ export default {
             rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
             título: 'Novo documento da transferencia voluntária',
             títuloParaMenu: 'Novo documento',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
           },
           children: [
             {
@@ -300,6 +304,7 @@ export default {
             rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
             título: 'Editar documento da transferencia',
             títuloParaMenu: 'Editar documento',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
           },
           children: [
             {
@@ -358,6 +363,7 @@ export default {
                 rotaDeEscape: 'TransferenciaCronograma',
                 título: 'Novo disparo de e-mail para cronograma',
                 títuloParaMenu: 'Novo e-mail',
+                limitarÀsPermissões: 'CadastroTransferencia.editar',
               },
               children: [
                 {
@@ -379,6 +385,7 @@ export default {
             título: 'Nova tarefa',
             títuloParaMenu: 'Nova tarefa',
             rotaDeEscape: 'TransferenciaCronograma',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',
@@ -435,6 +442,7 @@ export default {
                 título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
                 títuloParaMenu: 'Editar tarefa',
                 rotaDeEscape: 'TransferenciaCronograma',
+                limitarÀsPermissões: 'CadastroTransferencia.editar',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
@@ -461,9 +469,8 @@ export default {
                   }`
                   : 'Registrar progresso'),
                 títuloParaMenu: 'Progresso',
-
                 rotaDeEscape: 'TransferenciaCronograma',
-
+                limitarÀsPermissões: 'CadastroTransferencia.editar',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
@@ -478,6 +485,7 @@ export default {
                     rotaDeEscape: 'TransferenciasVoluntariasTarefasProgresso',
                     título: 'Novo disparo de e-mail',
                     títuloParaMenu: 'Novo e-mail',
+                    limitarÀsPermissões: 'CadastroTransferencia.editar',
                   },
                   children: [
                     {
