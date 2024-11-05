@@ -158,8 +158,6 @@ const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVaria
 const ehNumerica = computed(() => values.variavel_categorica_id === '' || !values.variavel_categorica_id);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  console.log('valoresControlados', valoresControlados)
-  return
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
   let msg = props.variavelId
