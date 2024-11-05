@@ -91,6 +91,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           </strong>
 
           <SmaeLink
+          <SmaeLink
             v-if="props.rotaDeAdição && !apenasLeitura"
             class="like-a__text arvore-de-arquivos__adicionar"
             :aria-label="`adicionar arquivo em ${item.caminho}`"
@@ -105,6 +106,7 @@ const éPossívelAbrir = (item) => !item.children?.length
               width="20"
               height="20"
             ><use xlink:href="#i_+" /></svg>
+          </SmaeLink>
           </SmaeLink>
         </span>
         <ArvoreDeArquivos
@@ -152,6 +154,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                 </small>
 
                 <SmaeLink
+                <SmaeLink
                   v-if="props.rotaDeEdição && !apenasLeitura"
                   class="like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
@@ -167,6 +170,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
                 </SmaeLink>
+
                 <button
                   v-if="oArquivoEhEditavel(apenasLeitura, arquivo.pode_editar)"
                   type="button"
