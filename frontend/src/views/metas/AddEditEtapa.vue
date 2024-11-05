@@ -15,8 +15,8 @@ import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, defineOptions, ref } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
 
@@ -114,6 +114,13 @@ const valoresIniciais = computed(() => (singleEtapa.value?.loading
     geolocalizacao: singleEtapa.value?.etapa?.geolocalizacao?.map((x) => x.token) || [],
   }));
 
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  validationSchema: schema,
+  initialValues: valoresIniciais,
+});
+
 if (etapa_id) {
   title = 'Editar etapa';
   if (!singleEtapa.value.id) {
@@ -182,7 +189,7 @@ if (etapa_id) {
   }
 })();
 
-async function onSubmit(values) {
+const onSubmit = handleSubmit(async () => {
   try {
     let msg;
     let r;
@@ -280,7 +287,8 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
+
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.clear();
@@ -333,6 +341,10 @@ function maskDate(el) {
     }
   }
 }
+
+watch(valoresIniciais, (novoValor) => {
+  resetForm({ values: novoValor });
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -350,10 +362,7 @@ function maskDate(el) {
   </div>
 
   <template v-if="!(singleEtapa?.loading || singleEtapa?.error) && singleCronograma?.id">
-    <Form
-      v-slot="{ errors, isSubmitting, setFieldValue, values }"
-      :validation-schema="schema"
-      :initial-values="valoresIniciais"
+    <form
       @submit="onSubmit"
     >
       <div>
@@ -851,7 +860,7 @@ function maskDate(el) {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-if="singleEtapa?.loading">
     <span class="spinner">Carregando</span>
