@@ -158,8 +158,6 @@ const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVaria
 const ehNumerica = computed(() => values.variavel_categorica_id === '' || !values.variavel_categorica_id);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  console.log('valoresControlados', valoresControlados)
-  return
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
   let msg = props.variavelId
@@ -437,11 +435,10 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
     <fieldset>
       <div class="flex flexwrap g2 mb1">
         <Field
-          v-slot="{ field }"
+          v-slot="{ field: { onChange } }"
           name="assuntos"
         >
           <AgrupadorDeAutocomplete
-            v-bind="field"
             :valores-iniciais="agrupadorSelecionado"
             class="f1"
             titulo="Assunto"

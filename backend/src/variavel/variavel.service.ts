@@ -1045,7 +1045,7 @@ export class VariavelService {
                 inicio_medicao: true,
                 atraso_meses: true,
                 suspendida_em: true,
-                variavel_mae_id:true,
+                variavel_mae_id: true,
                 mostrar_monitoramento: true,
                 polaridade: true,
                 unidade_medida: {
@@ -2790,7 +2790,7 @@ export class VariavelService {
         porPeriodo: SerieValorPorPeriodo,
         periodoYMD: string,
         variavelId: number,
-        variavel: { acumulativa: boolean; variavel_categorica_id: number | null },
+        variavel: { acumulativa: boolean; variavel_categorica_id: number | null; id: number },
         uso: TipoUso = 'escrita',
         user: PessoaFromJwt
     ): SerieIndicadorValorNominal[] | SerieValorNomimal[] | SerieValorCategoricaComposta[] {
@@ -2807,7 +2807,7 @@ export class VariavelService {
             if (existeValor.Previsto) {
                 seriesExistentes.push(
                     variavel.variavel_categorica_id
-                        ? this.serieCategoricaComElementos(existeValor.Previsto)
+                        ? this.serieCategoricaComElementos(existeValor.Previsto, variavel.id)
                         : existeValor.Previsto
                 );
             } else {
@@ -2828,7 +2828,7 @@ export class VariavelService {
             if (existeValor.Realizado) {
                 seriesExistentes.push(
                     variavel.variavel_categorica_id
-                        ? this.serieCategoricaComElementos(existeValor.Realizado)
+                        ? this.serieCategoricaComElementos(existeValor.Realizado, variavel.id)
                         : existeValor.Realizado
                 );
             } else {
@@ -2865,7 +2865,7 @@ export class VariavelService {
         return seriesExistentes;
     }
 
-    private serieCategoricaComElementos(serie: SerieValorNomimal): SerieValorNomimal {
+    private serieCategoricaComElementos(serie: SerieValorNomimal, variavelId: number): SerieValorNomimal {
         interface Elementos {
             categorica: number[][];
         }
@@ -2878,7 +2878,14 @@ export class VariavelService {
             conferida: serie.conferida,
         };
 
-        if (!serie.elementos || typeof serie.elementos !== 'object') return retorno;
+        if (!serie.elementos || typeof serie.elementos !== 'object') {
+            retorno.elementos = [
+                {
+                    variavel_id: variavelId,
+                    categoria: serie.valor_nominal,
+                } satisfies SerieValorCategoricaElemento,
+            ];
+        }
 
         const elementosParsed: Elementos = serie.elementos as unknown as Elementos;
         if (!elementosParsed.categorica) return retorno;

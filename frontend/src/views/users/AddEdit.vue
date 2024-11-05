@@ -371,8 +371,8 @@ watch(accessProfiles, () => {
           </template>
 
           <template
-            v-for="(módulo) in módulosOrdenados"
-            #[módulo.id]
+            v-for="módulo in módulosOrdenados"
+            #[módulo.id]="{ abaEstaAberta }"
             :key="módulo.id"
           >
             <ul class="lista-de-perfis t12">
@@ -467,8 +467,7 @@ watch(accessProfiles, () => {
                 </button>
                 <TransitionExpand>
                   <ul
-                    v-show="perfilParaDetalhar === perfil.id
-                      && módulo.id === $route.query.modulo"
+                    v-show="perfilParaDetalhar === perfil.id && abaEstaAberta"
                     :aria-label="`Privilégios de ${perfil.nome}`"
                     class="perfil__lista-de-privilegios card-shadow p2"
                   >

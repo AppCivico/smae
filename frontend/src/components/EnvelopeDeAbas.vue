@@ -74,12 +74,16 @@ async function rolarParaAbaCorrente() {
 }
 
 async function iniciar() {
-  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta)
-    || Object.keys(slots)?.[0];
+  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
   const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
 
   const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
-    || dadosDaAbaPadrão?.id;
+    || dadosDaAbaPadrão?.id
+    || abas.value?.[0];
+
+  if (props.metaDadosPorId) {
+    console.warn('O uso de `metaDadosPorId` é obsoleto. Utilize slots com o sufixo `__cabecalho` em seus nomes.');
+  }
 
   if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
@@ -143,21 +147,20 @@ iniciar();
     </nav>
 
     <Transition
-      v-for="(nomeDaAba, i) in abas"
+      v-for="nomeDaAba in abas"
       :key="nomeDaAba"
       appear
       name="slide"
     >
       <div
-        v-show="!abaAberta
-          ? i === 0
-          : String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+        v-show="String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
         class="abas__conteudo"
       >
         <slot
           :name="nomeDaAba"
           :está-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+          :aba-esta-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         />
       </div>
     </Transition>

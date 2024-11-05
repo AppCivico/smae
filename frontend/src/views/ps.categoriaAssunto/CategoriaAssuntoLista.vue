@@ -2,17 +2,17 @@
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'assuntosCriar' }"
+    <SmaeLink
+      :to="{ name: 'categoriaAssuntosCriar' }"
       class="btn big ml1"
     >
-      Novo assunto
-    </router-link>
+      Nova categoria de assunto
+    </SmaeLink>
   </div>
   <div class="flex center mb2 spacebetween">
     <LocalFilter
       v-model="listaFiltradaPorTermoDeBusca"
-      :lista="lista"
+      :lista="categorias"
       class="mr1"
     />
     <hr class="ml2 f1">
@@ -24,7 +24,6 @@
     <thead>
       <tr>
         <th> Nome </th>
-        <th> Categoria </th>
         <th />
         <th />
       </tr>
@@ -34,15 +33,13 @@
         v-for="item in listaFiltradaPorTermoDeBusca"
         :key="item.id"
       >
-        <td style="width: 100%">
-          {{ item.nome }}
-        </td>
-        <td style="width: 100%">
-          {{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}
-        </td>
+        <td>{{ item.nome }}</td>
         <td>
           <router-link
-            :to="{ name: 'assuntosEditar', params: { assuntoId: item.id } }"
+            :to="{
+              name: 'categoriaAssuntosEditar',
+              params: { categoriaAssuntoId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -87,25 +84,24 @@
 <script setup>
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import LocalFilter from '@/components/LocalFilter.vue';
-
-const route = useRoute();
+import SmaeLink from '@/components/SmaeLink.vue';
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(assuntosStore);
+const { categorias, chamadasPendentes, erro } = storeToRefs(assuntosStore);
+
 const listaFiltradaPorTermoDeBusca = ref([]);
 
 async function excluirAssunto(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
-      if (await assuntosStore.excluirItem(id)) {
+      if (await assuntosStore.excluirCategoria(id)) {
         assuntosStore.$reset();
-        assuntosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        assuntosStore.buscarCategorias();
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -114,7 +110,7 @@ async function excluirAssunto(id, descricao) {
 }
 
 assuntosStore.$reset();
-assuntosStore.buscarTudo();
+assuntosStore.buscarCategorias();
 </script>
 
 <style></style>

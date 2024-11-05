@@ -100,7 +100,8 @@ export class VariavelCicloService {
 
     async getPermissionSet(
         filters: FilterVariavelGlobalCicloDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        consulta_historica: boolean = false
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
         const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
 
@@ -113,7 +114,7 @@ export class VariavelCicloService {
         const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
             {
                 id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
-                equipes_configuradas: true,
+                equipes_configuradas: consulta_historica ? undefined : true,
                 removido_em: null,
             },
         ];
@@ -142,7 +143,7 @@ export class VariavelCicloService {
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
 
-        if (!isRoot) {
+        if (!isRoot && consulta_historica === false) {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
                 where: {
                     removido_em: null,
@@ -671,7 +672,7 @@ export class VariavelCicloService {
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem.`
             );
 
-        const whereFilter = await this.getPermissionSet({}, user);
+        const whereFilter = await this.getPermissionSet({}, user, true);
 
         const variavel = await this.prisma.variavel.findFirst({
             where: {
