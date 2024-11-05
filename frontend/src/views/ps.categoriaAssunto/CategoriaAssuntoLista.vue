@@ -2,12 +2,12 @@
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'categoriaAssuntosCriar' }"
       class="btn big ml1"
     >
       Nova categoria de assunto
-    </router-link>
+    </SmaeLink>
   </div>
   <div class="flex center mb2 spacebetween">
     <LocalFilter
@@ -87,6 +87,7 @@ import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
