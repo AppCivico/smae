@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/naming-convention -->
+<!-- mantendo a nomenclatura legada-->
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
@@ -7,11 +9,11 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useCronogramasStore } from '@/stores/cronogramas.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtapasStore } from '@/stores/etapas.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions, ref } from 'vue';
@@ -33,6 +35,8 @@ const { cronograma_id } = route.params;
 const { etapa_id } = route.params;
 
 const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
+// mantendo comportamento legado
+// eslint-disable-next-line no-nested-ternary
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const currentEdit = route.path.slice(0, route.path.indexOf('/cronograma') + 11);
 
@@ -48,6 +52,8 @@ const { singleAtividade } = storeToRefs(AtividadesStore);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
+// mantendo comportamento legado
+// eslint-disable-next-line eqeqeq, max-len
 if (cronograma_id && (!singleCronograma?.value?.id || singleCronograma?.value.id != cronograma_id)) {
   CronogramasStore.getById(parentVar, parentField, cronograma_id);
 }
@@ -142,6 +148,8 @@ if (etapa_id) {
     if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
     lastParent.value = singleIniciativa.value;
   } else {
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     if (!singleMeta.value?.id || singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
     lastParent.value = singleMeta.value;
   }
@@ -193,12 +201,16 @@ async function onSubmit(values) {
       let rota = false;
       let etapa_id_gen = false;
       if (etapa_id) {
+        // mantendo comportamento legado
+        // eslint-disable-next-line eqeqeq
         if (singleEtapa.value.etapa_id == etapa_id) {
           r = await EtapasStore.update(etapa_id, values);
           msg = 'Dados salvos com sucesso!';
           rota = currentEdit;
           etapa_id_gen = etapa_id;
 
+          // mantendo comportamento legado
+          // eslint-disable-next-line eqeqeq
           if (values.ordem != singleEtapa.value.ordem) {
             await EtapasStore.monitorar({
               cronograma_id: Number(cronograma_id),
@@ -240,7 +252,7 @@ async function onSubmit(values) {
             }
           }
         } else {
-          throw 'Ocorreu um erro inesperado.';
+          throw new Error('Ocorreu um erro inesperado.');
         }
 
         EtapasStore.clear();
@@ -278,25 +290,44 @@ async function checkClose() {
 }
 function lastlevel() {
   let r;
-  if (singleCronograma.value.nivel_regionalizacao == 2 && level1.value !== null) {
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  if (singleCronograma.value.nivel_regionalizacao == 2
+    && level1.value !== null
+  ) {
     r = regions.value[0].children[level1.value].id;
   }
-  if (singleCronograma.value.nivel_regionalizacao == 3 && level1.value !== null && level2.value !== null) {
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  if (singleCronograma.value.nivel_regionalizacao == 3
+    && level1.value !== null
+    && level2.value !== null
+  ) {
     r = regions.value[0].children[level1.value].children[level2.value].id;
   }
-  if (singleCronograma.value.nivel_regionalizacao == 4 && level1.value !== null && level2.value !== null && level3.value !== null) {
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  if (singleCronograma.value.nivel_regionalizacao == 4
+    && level1.value !== null
+    && level2.value !== null
+    && level3.value !== null
+  ) {
     r = regions.value[0].children[level1.value].children[level2.value].children[level3.value].id;
   }
   regiao_id_mount.value = r;
 }
 function maskDate(el) {
+  // mantendo comportamento legado
+  // eslint-disable-next-line no-restricted-globals
   const kC = event.keyCode;
   let data = el.target.value.replace(/[^0-9/]/g, '');
-  if (kC != 8 && kC != 46) {
-    if (data.length == 2) {
-      el.target.value = data += '/';
-    } else if (data.length == 5) {
-      el.target.value = data += '/';
+  if (kC !== 8 && kC !== 46) {
+    if (data.length === 2) {
+      data += '/';
+      el.target.value = data;
+    } else if (data.length === 5) {
+      data += '/';
+      el.target.value = data;
     } else {
       el.target.value = data;
     }
@@ -318,7 +349,7 @@ function maskDate(el) {
     </button>
   </div>
 
-  <template v-if="!(singleEtapa?.loading || singleEtapa?.error)&&singleCronograma?.id">
+  <template v-if="!(singleEtapa?.loading || singleEtapa?.error) && singleCronograma?.id">
     <Form
       v-slot="{ errors, isSubmitting, setFieldValue, values }"
       :validation-schema="schema"
