@@ -1,12 +1,8 @@
 <script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-
-import { computed } from 'vue';
-
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
@@ -148,7 +144,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
 
   <section
     v-if="sessoes"
-    class="variavei-detalhe"
+    class="variavel-detalhe"
   >
     <VariaveisResumoSessao
       :linhas="sessaoPrincipal"
