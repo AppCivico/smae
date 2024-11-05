@@ -544,12 +544,7 @@ export class IndicadorService {
                             400
                         );
 
-                    if (dto.variavel_categoria_id == null) {
-                        if (formula_variaveis.length > 0)
-                            throw new HttpException('Nenhuma variável é permitida para a categoria vazia', 400);
-                        if (formula.indexOf('$') !== -1)
-                            throw new HttpException('A formula não pode ter referências de variáveis', 400);
-                    } else {
+                    if (dto.variavel_categoria_id !== null) {
                         if (formula_variaveis.length > 1)
                             throw new HttpException('Apenas uma variável é permitida para a categoria', 400);
                         if (formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)
