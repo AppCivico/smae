@@ -340,6 +340,15 @@ export const arquivoSimples = object()
       .nullable(),
   });
 
+export const categoriaAssunto = object()
+  .shape({
+    nome: string()
+      .max(250)
+      .min(3)
+      .label('Nome')
+      .required(),
+  });
+
 export const assunto = object()
   .shape({
     nome: string()
