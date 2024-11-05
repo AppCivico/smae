@@ -207,10 +207,8 @@ async function iniciar() {
   }
 }
 
-function redefinirCamposDeGrupos() {
-  resetField('medicao_grupo_ids', { value: [] });
-  resetField('validacao_grupo_ids', { value: [] });
-  resetField('liberacao_grupo_ids', { value: [] });
+function redefinirCamposDeGrupos(campo) {
+  resetField(`${campo}_grupo_ids`, { value: [] });
 }
 
 iniciar();
@@ -230,10 +228,10 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
   }
 });
 
-watch(() => values.variavel_categorica_id, () => {
+function limparCampoReferenteVariavelCategorica({ target }) {
   if (
-    values.variavel_categorica_id !== ''
-    || values.variavel_categorica_id
+    (target.value !== ''
+    || target.value)
   ) {
     const fields = {
       unidade_medida_id: null,
@@ -249,7 +247,7 @@ watch(() => values.variavel_categorica_id, () => {
       validateField(key);
     });
   }
-});
+}
 
 function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, listaDeItems) {
   const opcoes = selecionados.reduce((amount, linha) => {
@@ -469,6 +467,7 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             :aria-disabled="!listaDeVariaveisCategoricas.length || !!variavelId"
             :aria-busy="chamadasPendentesDeVariaveisCategoricas.lista"
             :class="{ error: errors.variavel_categorica_id }"
+            @change="limparCampoReferenteVariavelCategorica"
           >
             <option value="">
               Numérica
@@ -825,13 +824,14 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             name="medicao_orgao_id"
             :schema="schema"
           />
+          medicao_orgao_id
           <Field
             name="medicao_orgao_id"
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.medicao_orgao_id }"
             :aria-busy="organs.loading"
-            @change="redefinirCamposDeGrupos"
+            @change="redefinirCamposDeGrupos('medicao')"
           >
             <option
               v-for="orgao in órgãosComoLista"
@@ -879,13 +879,14 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             name="validacao_orgao_id"
             :schema="schema"
           />
+          validacao_orgao_id
           <Field
             name="validacao_orgao_id"
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.validacao_orgao_id }"
             :aria-busy="organs.loading"
-            @change="redefinirCamposDeGrupos"
+            @change="redefinirCamposDeGrupos('validacao')"
           >
             <option
               v-for="orgao in órgãosComoLista"
@@ -932,13 +933,14 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             name="liberacao_orgao_id"
             :schema="schema"
           />
+          liberacao_orgao_id
           <Field
             name="liberacao_orgao_id"
             as="select"
             class="inputtext light mb1"
             :class="{ error: errors.liberacao_orgao_id }"
             :aria-busy="organs.loading"
-            @change="redefinirCamposDeGrupos"
+            @change="redefinirCamposDeGrupos('liberacao')"
           >
             <option
               v-for="orgao in órgãosComoLista"

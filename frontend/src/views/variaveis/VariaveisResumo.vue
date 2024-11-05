@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
@@ -12,6 +12,7 @@ type SessaoDeDetalhe = {
   [key in SessaoDeDetalheOptions]: {
     titulo?: string,
     linhas: SessaoDeDetalheLinhas,
+    quantidadeColunas?: number
   }
 };
 
@@ -47,6 +48,14 @@ const obterTipo = computed<{ nome: string; tipo: string }>(() => {
   };
 });
 
+const temVariavelCategorica = computed<boolean>(() => {
+  if (!emFoco.value) {
+    return false;
+  }
+
+  return !!emFoco.value.variavel_categorica_id;
+});
+
 const sessaoPrincipal = computed<SessaoDeDetalheLinhas>(() => {
   if (!emFoco.value) {
     return [];
@@ -78,18 +87,15 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
 
   return {
     propriedades: {
+      quantidadeColunas: 3,
       linhas: [
         [
           { label: 'Polaridade', valor: emFoco.value.polaridade },
-          { label: 'Unidade de medida', valor: `${emFoco.value.unidade_medida.sigla} - ${emFoco.value.unidade_medida.descricao}` },
-          { label: 'Casas decimais', valor: emFoco.value.casas_decimais },
-        ],
-        [
-          { label: 'Valor base', valor: emFoco.value.valor_base },
-          { label: 'Ano base', valor: emFoco.value.ano_base || '-' },
+          { label: 'Unidade de medida', valor: `${emFoco.value.unidade_medida.sigla} - ${emFoco.value.unidade_medida.descricao}`, esconder: temVariavelCategorica.value },
+          { label: 'Casas decimais', valor: emFoco.value.casas_decimais, esconder: temVariavelCategorica.value },
+          { label: 'Valor base', valor: emFoco.value.valor_base, esconder: temVariavelCategorica.value },
+          { label: 'Ano base', valor: emFoco.value.ano_base || '-', esconder: temVariavelCategorica.value },
           { label: 'Início da medição', valor: emFoco.value.inicio_medicao ? dateIgnorarTimezone(emFoco.value.inicio_medicao, 'MM/yyyy') : '-' },
-        ],
-        [
           { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? dateIgnorarTimezone(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
           { label: 'Defasagem da medição', valor: emFoco.value.atraso_meses },
@@ -115,7 +121,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     variavel: {
       linhas: [
         [
-          { label: 'Variável acumulativa?', valor: simNao(emFoco.value.acumulativa) },
+          { label: 'Variável acumulativa', valor: simNao(emFoco.value.acumulativa), esconder: temVariavelCategorica.value },
           { label: 'Disponível como dado aberto', valor: simNao(emFoco.value.dado_aberto) },
         ],
       ],
@@ -176,6 +182,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       :key="`sessao--${sessaoIndex}`"
       :titulo="sessao.titulo"
       :linhas="sessao.linhas"
+      :quantidade-colunas="sessao.quantidadeColunas"
     />
   </section>
 </template>
