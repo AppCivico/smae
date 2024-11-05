@@ -538,24 +538,24 @@ export class IndicadorService {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.variavel_categoria_id !== undefined) {
-                    if (!dto.formula || !dto.formula_variaveis)
+                    if (!formula || !formula_variaveis)
                         throw new HttpException(
                             'Para alterar a categoria da variável é necessário enviar a formula e as variáveis',
                             400
                         );
 
                     if (dto.variavel_categoria_id == null) {
-                        if (dto.formula_variaveis.length > 0)
+                        if (formula_variaveis.length > 0)
                             throw new HttpException('Nenhuma variável é permitida para a categoria vazia', 400);
-                        if (dto.formula.indexOf('$') !== -1)
+                        if (formula.indexOf('$') !== -1)
                             throw new HttpException('A formula não pode ter referências de variáveis', 400);
                     } else {
-                        if (dto.formula_variaveis.length > 1)
+                        if (formula_variaveis.length > 1)
                             throw new HttpException('Apenas uma variável é permitida para a categoria', 400);
-                        if (dto.formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)
+                        if (formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)
                             throw new HttpException('A variável da categoria deve ser a mesma da formula', 400);
-                        const referencia = dto.formula_variaveis[0].referencia;
-                        if (dto.formula.indexOf(referencia) === -1)
+                        const referencia = formula_variaveis[0].referencia;
+                        if (formula.indexOf(referencia) === -1)
                             throw new HttpException('A referência da variável da categoria deve estar na formula', 400);
                     }
                 }
