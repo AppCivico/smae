@@ -108,6 +108,7 @@ const valoresIniciais = computed(() => (singleEtapa.value?.loading
     percentual_execucao: 0,
     endereco_obrigatorio: false,
     geolocalizacao: [],
+    variavel: null,
   }
   : {
     ...singleEtapa.value?.etapa,
@@ -293,12 +294,12 @@ const onSubmit = handleSubmit(async () => {
 function redefinirVariavel(habilitar = false) {
   const valorInicial = route.meta.entidadeMãe === 'planoSetorial'
     ? {
-      codigo: valoresIniciais.value?.variavel?.codigo || 'GERAR_CODIGO',
-      titulo: valoresIniciais.value?.variavel?.titulo || '',
+      codigo: singleEtapa.value?.variavel?.codigo || 'GERAR_CODIGO',
+      titulo: singleEtapa.value?.variavel?.titulo || '',
     }
     : {
-      codigo: valoresIniciais.value?.variavel?.codigo || '',
-      titulo: valoresIniciais.value?.variavel?.titulo || '',
+      codigo: singleEtapa.value?.variavel?.codigo || '',
+      titulo: singleEtapa.value?.variavel?.titulo || '',
     };
 
   setFieldValue('variavel', habilitar ? valorInicial : null);
@@ -311,6 +312,7 @@ async function checkClose() {
     router.go(-1);
   });
 }
+
 function lastlevel() {
   let r;
   // mantendo comportamento legado
@@ -339,6 +341,7 @@ function lastlevel() {
   }
   regiao_id_mount.value = r;
 }
+
 function maskDate(el) {
   // mantendo comportamento legado
   // eslint-disable-next-line no-restricted-globals
@@ -359,7 +362,9 @@ function maskDate(el) {
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
-});
+  // rodando mesmo sem uma mudança inicial porque... Bem, não sei. As
+  // modificações não são detectadas.
+}, { immediate: true });
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -642,8 +647,8 @@ watch(valoresIniciais, (novoValor) => {
             name="associar-variavel"
             type="checkbox"
             :checked="!!values.variavel"
-            :value="{}"
-            :unchecked-value="null"
+            :true-value="{}"
+            :false-value="null"
             class="inputcheckbox"
             @change="($e) => redefinirVariavel($e.target.checked)"
           >
@@ -778,7 +783,7 @@ watch(valoresIniciais, (novoValor) => {
               if (!singleEtapa.n_filhos_imediatos) {
                 setFieldValue('percentual_execucao', $e.target.value
                   ? 100
-                  : valoresIniciais.percentual_execucao
+                  : singleEtapa.percentual_execucao
                 );
               }
             }"
