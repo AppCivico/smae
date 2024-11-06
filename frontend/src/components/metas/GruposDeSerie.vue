@@ -132,6 +132,7 @@ function obterValorTabela(item, index) {
       :is="conteudoDoModal"
       :analise="analise"
       :periodo="periodo"
+      :dados-auxiliares="g.dados_auxiliares"
     />
   </SmallModal>
 

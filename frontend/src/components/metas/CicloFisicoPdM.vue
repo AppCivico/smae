@@ -116,6 +116,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  dadosAuxiliares: {
+    type: Object,
+    default: () => null,
+  },
 });
 
 const mappedValues = computed(() => {
