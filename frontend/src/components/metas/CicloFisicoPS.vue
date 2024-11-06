@@ -14,7 +14,14 @@
       v-if="Array.isArray(analise?.valores) && analise?.valores.length"
       class="tablemain horizontal-lines mb1"
     >
+      <col class="col--minimum">
+      <col>
+      <col>
+      <col v-if="analise?.valores[0].variavel.acumulativa">
       <thead>
+        <th colspan="2">
+          Variável
+        </th>
         <th>Realizado</th>
         <th v-if="analise?.valores[0].variavel.acumulativa">
           Acumulado
@@ -24,7 +31,9 @@
         <tr
           v-for="(valor, i) in analise?.valores"
           :key="i"
-        >   
+        >
+          <td>{{ valor.variavel.codigo }}</td>
+          <th>{{ valor.variavel.titulo }}</th>
           <td>
             <template v-if="valor.variavel?.variavel_categorica_id && valor.valor_realizado">
               {{ dadosAuxiliares?.categoricas?.[valor.valor_realizado] || valor.valor_realizado }}
