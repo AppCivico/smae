@@ -109,7 +109,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     >
       <li class="f0">
         <button
-          v-if="transferenciaEmFoco?.workflow_id"
+          v-if="transferenciaEmFoco?.workflow_id && temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn bgnone outline tcprimary"
           @click="abrirConfigurarWorkflow"
@@ -121,7 +121,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <button
           type="button"
           class="btn"
-          :disabled="!inícioDeFasePermitido"
+          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
           @click="iniciarFase(idDaPróximaFasePendente)"
         >
           Iniciar fase
@@ -129,10 +129,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
       <li class="f0">
         <button
-          v-if="workflow"
+          v-if="workflow.pode_passar_para_proxima_etapa && temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn"
-          :disabled="!workflow.pode_passar_para_proxima_etapa"
           @click="avançarEtapa"
         >
           Avançar etapa
