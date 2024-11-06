@@ -194,11 +194,13 @@ const totalCategoryCounts = computed(() => {
 
 function formatTooltip(param) {
   const [xIndex, yIndex, count] = param.data;
+  const categoria = categorias[yIndex];
   const totalForCategory = totalCategoryCounts.value[yIndex] || 1;
   const percentage = ((count / totalForCategory) * 100).toFixed(2);
 
   return `
     <div class="projeto-tooltip" style="color: #333">
+      <p class="projeto-tooltip__valor">${categoria}</p>
       <p class="projeto-tooltip__valor">Contagem: ${count}</p>
       <p class="projeto-tooltip__valor">Percentual: ${percentage}%</p>
     </div>
