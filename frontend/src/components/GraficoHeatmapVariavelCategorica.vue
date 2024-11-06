@@ -114,6 +114,9 @@ const updateChartData = () => {
   });
 
   chartOption.value = {
+    grid: {
+      left: '10%',
+    },
     visualMap: {
       min: 0,
       max: Math.max(...filteredData.map(([, , value]) => value)) || 1, // Não gostei, mas funciona
@@ -140,12 +143,23 @@ const updateChartData = () => {
       type: 'category',
       data: Object.values(categorias || { 1: 'Sem dados em elementos' }),
       boundaryGap: true,
+      nameGap: 140,
+      axisLabel: {
+        formatter(value) {
+          const maxLength = 20;
+          if (value.length > maxLength) {
+            return `${value.slice(0, maxLength)}...`;
+          }
+          return value.split(' ').join('\n');
+        },
+        rotate: 45,
+      },
       axisTick: {
         show: false,
       },
       axisLine: {
         show: false,
-      }
+      },
     },
     series: [
       {
