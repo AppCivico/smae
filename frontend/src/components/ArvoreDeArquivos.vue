@@ -106,7 +106,8 @@ const éPossívelAbrir = (item) => !item.children?.length
             ><use xlink:href="#i_+" /></svg>
           </SmaeLink>
         </span>
-
+123
+        
         <ArvoreDeArquivos
           :key="`diretorio--${item.id || i}__arvore`"
           :aninhado="true"
@@ -121,6 +122,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           @editar="($params) => $emit('editar', $params)"
         >
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
+            
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
               :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"
@@ -168,7 +170,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                 </SmaeLink>
 
                 <button
-                  v-if="!apenasLeitura"
+                  v-if="!apenasLeitura && arquivo.pode_editar"
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
@@ -179,6 +181,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                     height="20"
                   ><use xlink:href="#i_waste" /></svg>
                 </button>
+
               </span>
             </li>
           </template>

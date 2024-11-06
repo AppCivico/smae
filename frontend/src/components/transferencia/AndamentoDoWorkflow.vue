@@ -6,6 +6,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useUsersStore } from '@/stores/users.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
 import {
@@ -39,6 +40,9 @@ const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const workflowAndamento = useWorkflowAndamentoStore();
 const { workflow, etapaCorrente, chamadasPendentes } = storeToRefs(workflowAndamento);
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const faseSelecionada = ref(0);
 const listaDeFases = ref(null);
@@ -222,7 +226,7 @@ watch(itemParaEdicao, () => {
   </div>
 
   <SmallModal
-    v-if="faseSelecionada"
+    v-if="faseSelecionada && temPermissãoPara('CadastroWorkflows.editar')"
   >
     <div class="flex center mb2">
       <h2
