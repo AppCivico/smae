@@ -868,7 +868,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'AndamentoWorkflow.listar',
             // TODO? Maybe precisa ter permissões para editar e remover, e ai precisaria melhorar
             // o "pode_editar" do crono
-            'CadastroCronogramaTransferencia.inserir',
             'CadastroCronogramaTransferencia.listar',
         ],
     },
