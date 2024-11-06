@@ -2885,6 +2885,8 @@ export class VariavelService {
                     categoria: serie.valor_nominal,
                 } satisfies SerieValorCategoricaElemento,
             ];
+
+            return retorno;
         }
 
         const elementosParsed: Elementos = serie.elementos as unknown as Elementos;

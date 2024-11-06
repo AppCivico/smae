@@ -810,9 +810,29 @@ export class IndicadorService {
     ): Promise<ListSeriesAgrupadas> {
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: +id },
-            select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true },
+            select: {
+                id: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+                periodicidade: true,
+                variavel_categoria_id: true,
+            },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
+
+        // caso seja variável categórica, pega a série de proxy
+        if (indicador.variavel_categoria_id) {
+            const proxy = await this.variavelService.getSeriePrevistoRealizado(
+                tipo == 'PS' ? 'Global' : 'PDM',
+                {
+                    uso: 'leitura',
+                    incluir_auxiliares: true,
+                },
+                indicador.variavel_categoria_id,
+                user
+            );
+            return proxy;
+        }
 
         const result: ListSeriesAgrupadas = {
             variavel: undefined,

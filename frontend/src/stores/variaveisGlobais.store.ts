@@ -83,8 +83,9 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
+      } finally {
+        this.chamadasPendentes.emFoco = false;
       }
-      this.chamadasPendentes.emFoco = false;
     },
 
     async buscarFilhas(variavelId: number, params = {}): Promise<void> {

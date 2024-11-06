@@ -116,6 +116,7 @@ function obterValorTabela(item, index) {
 <template>
   <SmallModal
     v-if="showModal"
+    class="largura-total"
   >
     <div class="flex spacebetween center mb2">
       <h2>
@@ -132,6 +133,7 @@ function obterValorTabela(item, index) {
       :is="conteudoDoModal"
       :analise="analise"
       :periodo="periodo"
+      :dados-auxiliares="g.dados_auxiliares"
     />
   </SmallModal>
 

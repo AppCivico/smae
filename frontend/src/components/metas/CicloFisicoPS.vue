@@ -14,7 +14,14 @@
       v-if="Array.isArray(analise?.valores) && analise?.valores.length"
       class="tablemain horizontal-lines mb1"
     >
+      <col class="col--minimum">
+      <col>
+      <col>
+      <col v-if="analise?.valores[0].variavel.acumulativa">
       <thead>
+        <th colspan="2">
+          Variável
+        </th>
         <th>Realizado</th>
         <th v-if="analise?.valores[0].variavel.acumulativa">
           Acumulado
@@ -25,7 +32,16 @@
           v-for="(valor, i) in analise?.valores"
           :key="i"
         >
-          <td>{{ valor.valor_realizado }}</td>
+          <td>{{ valor.variavel.codigo }}</td>
+          <th>{{ valor.variavel.titulo }}</th>
+          <td>
+            <template v-if="valor.variavel?.variavel_categorica_id && valor.valor_realizado">
+              {{ dadosAuxiliares?.categoricas?.[valor.valor_realizado] || valor.valor_realizado }}
+            </template>
+            <template v-else>
+              {{ valor.valor_realizado }}
+            </template>
+          </td>
           <td v-if="valor.variavel.acumulativa">
             {{ valor.valor_realizado_acumulado }}
           </td>
@@ -126,9 +142,8 @@
 import fasesDaVariavel from '@/consts/fasesDaVariavel';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
-import type {
-  VariavelAnaliseQualitativaResponseDto,
-} from '@back/variavel/dto/variavel.ciclo.dto';
+import type { VariavelAuxiliarDto } from '@back/variavel/dto/list-variavel.dto';
+import type { VariavelAnaliseQualitativaResponseDto } from '@back/variavel/dto/variavel.ciclo.dto';
 import { computed, PropType } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -141,6 +156,10 @@ const props = defineProps({
   periodo: {
     type: String,
     default: '',
+  },
+  dadosAuxiliares: {
+    type: Object as PropType<VariavelAuxiliarDto>,
+    default: () => null,
   },
 });
 

@@ -687,8 +687,7 @@ export class EtapaService {
             } else {
                 if (!dto.variavel.titulo) throw new BadRequestException('Título da variável é obrigatório');
 
-                if (dto.variavel.codigo === 'GERAR_CODIGO')
-                    delete (dto.variavel as any).codigo;
+                if (dto.variavel.codigo === 'GERAR_CODIGO') delete (dto.variavel as any).codigo;
             }
 
             let orgao_id: number | null = null;
@@ -768,7 +767,7 @@ export class EtapaService {
                 where: { id: self.variavel_id },
                 data: {
                     titulo: dto.variavel.titulo,
-                    codigo: dto.variavel.codigo,
+                    codigo: tipoPdm == 'PS' ? undefined : dto.variavel.codigo,
                 },
             });
         } else if (self.variavel_id && dto.variavel === null) {
