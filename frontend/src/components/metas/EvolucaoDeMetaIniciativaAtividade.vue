@@ -109,7 +109,10 @@
       </div>
 
       <LoadingComponent v-if="haChamadasPendentes" />
-
+      <GraficoHeatmapVariavelCategorica
+        v-else-if="!!variavel.variavel_categorica_id"
+        :valores="Valores[(variavel.id as keyof {})]"
+      />
       <EvolucaoGraph
         v-else
         :dataserie="Valores[(variavel.id as keyof {})]"
@@ -183,6 +186,7 @@
 <script lang="ts" setup>
 import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
