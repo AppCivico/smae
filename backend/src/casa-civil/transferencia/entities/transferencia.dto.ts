@@ -115,6 +115,7 @@ export class TransferenciaAnexoDto {
     id: number;
     descricao: string | null;
     data: Date | null;
+    pode_editar: boolean;
 }
 
 export class ListTransferenciaAnexoDto {

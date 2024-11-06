@@ -1424,12 +1424,12 @@ export class TransferenciaService {
     }
 
     async list_document(transferenciaId: number, user: PessoaFromJwt) {
-        const arquivos: TransferenciaAnexoDto[] = await this.findAllDocumentos(transferenciaId);
+        const arquivos: TransferenciaAnexoDto[] = await this.findAllDocumentos(transferenciaId, user);
 
         return arquivos;
     }
 
-    private async findAllDocumentos(transferenciaId: number): Promise<TransferenciaAnexoDto[]> {
+    private async findAllDocumentos(transferenciaId: number, user: PessoaFromJwt): Promise<TransferenciaAnexoDto[]> {
         const documentosDB = await this.prisma.transferenciaAnexo.findMany({
             where: { transferencia_id: transferenciaId, removido_em: null },
             orderBy: [{ descricao: 'asc' }, { data: 'asc' }],
@@ -1448,12 +1448,15 @@ export class TransferenciaService {
             },
         });
 
+        const pode_editar: boolean = user.hasSomeRoles(['CasaCivil.gestor_distribuicao_recurso']) ? false : true;
+
         const documentosRet: TransferenciaAnexoDto[] = documentosDB.map((d) => {
             const link = this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token;
             return {
                 id: d.id,
                 data: d.data,
                 descricao: d.descricao,
+                pode_editar: pode_editar,
                 arquivo: {
                     descricao: null,
                     id: d.arquivo.id,
