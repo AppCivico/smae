@@ -20,7 +20,10 @@ type SessaoDeDetalhe = {
 type CategororiaComAssunto = {
   id: number,
   nome: string,
-  assuntos: any[]
+  assuntos: {
+    id: number,
+    nome: string,
+  }[]
 };
 
 type CategoriaComAssuntoMapeado = {
@@ -164,21 +167,23 @@ const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() =>
   }
 
   return emFoco.value.assuntos.reduce<CategoriaComAssuntoMapeado>((amount, item) => {
-    if (!item.categoria_assunto_variavel_id) {
+    const categoriaId: number | null | undefined = item.categoria_assunto_variavel_id;
+
+    if (!categoriaId) {
       return amount;
     }
 
-    if (!amount[item.categoria_assunto_variavel_id]) {
-      const categoria = categoriasPorId.value[item.categoria_assunto_variavel_id];
+    if (!amount[categoriaId]) {
+      const categoria = categoriasPorId.value[categoriaId];
 
-      amount[item.categoria_assunto_variavel_id] = {
+      amount[categoriaId] = {
         nome: categoria.nome,
-        id: item.categoria_assunto_variavel_id,
+        id: categoriaId,
         assuntos: [],
       };
     }
 
-    amount[item.categoria_assunto_variavel_id].assuntos.push(item);
+    amount[categoriaId].assuntos.push(item);
 
     return amount;
   }, {} as CategoriaComAssuntoMapeado);
