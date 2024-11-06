@@ -129,11 +129,23 @@ const updateChartData = () => {
       type: 'category',
       boundaryGap: true,
       data: filteredXAxisData,
+      axisTick: {
+        show: false,
+      },
+      axisLine: {
+        show: false,
+      },
     },
     yAxis: {
       type: 'category',
       data: Object.values(categorias || { 1: 'Sem dados em elementos' }),
       boundaryGap: true,
+      axisTick: {
+        show: false,
+      },
+      axisLine: {
+        show: false,
+      }
     },
     series: [
       {
