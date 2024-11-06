@@ -221,7 +221,7 @@ const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() =>
           :key="`assunto-categoria--${assuntoComCategoria.id}`"
           class="assuntos-categoria-item"
         >
-          <h5 class="assuntos-categoria__nome">
+          <h5 class="uc">
             {{ assuntoComCategoria.nome }}
           </h5>
 
@@ -277,9 +277,5 @@ const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() =>
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-}
-
-.assuntos-categoria__nome {
-  text-transform: uppercase;
 }
 </style>
