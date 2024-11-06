@@ -4,18 +4,31 @@
     aria-label="Gráfico de execução orçamentária"
     tabindex="0"
   >
-    <select
-      v-model="selectedYear"
-      @change="updateChartData"
+    <div
+      v-if="years.length > 1"
+      class="flex flexwrap"
     >
-      <option
-        v-for="year in years"
-        :key="year"
-        :value="year"
+      <label
+        class="label tc300"
+        for="grafico-ano"
       >
-        {{ year }}
-      </option>
-    </select>
+        Ano
+      </label>
+      <select
+        id="grafico-ano"
+        v-model="selectedYear"
+        class="inputtext"
+        @change="updateChartData"
+      >
+        <option
+          v-for="year in years"
+          :key="year"
+          :value="year"
+        >
+          {{ year }}
+        </option>
+      </select>
+    </div>
     <div
       v-if="heatmapData.length > 0"
       class="min-width"
