@@ -824,7 +824,6 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             name="medicao_orgao_id"
             :schema="schema"
           />
-          medicao_orgao_id
           <Field
             name="medicao_orgao_id"
             as="select"
@@ -879,7 +878,6 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             name="validacao_orgao_id"
             :schema="schema"
           />
-          validacao_orgao_id
           <Field
             name="validacao_orgao_id"
             as="select"
@@ -933,7 +931,6 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
             name="liberacao_orgao_id"
             :schema="schema"
           />
-          liberacao_orgao_id
           <Field
             name="liberacao_orgao_id"
             as="select"
