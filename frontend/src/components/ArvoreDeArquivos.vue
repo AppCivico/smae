@@ -168,7 +168,6 @@ const éPossívelAbrir = (item) => !item.children?.length
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
                 </SmaeLink>
-
                 <button
                   v-if="oArquivoEhEditavel(apenasLeitura, arquivo.pode_editar)"
                   type="button"
