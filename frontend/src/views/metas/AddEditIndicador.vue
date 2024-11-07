@@ -192,9 +192,9 @@ async function onSubmit(values) {
 
     // Parent
     if (atividadeId) {
-      values.atividadeId = Number(atividadeId);
+      values.atividade_id = Number(atividadeId);
     } else if (iniciativaId) {
-      values.iniciativaId = Number(iniciativaId);
+      values.iniciativa_id = Number(iniciativaId);
     } else {
       values.meta_id = Number(metaId);
     }
