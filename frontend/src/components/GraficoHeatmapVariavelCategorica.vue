@@ -194,22 +194,25 @@ const updateChartData = () => {
   };
 };
 
-const totalCategoryCounts = computed(() => {
-  const counts = {};
+const totalCountsPerMonth = computed(() => {
+  const totals = {};
 
   heatmapData.value.forEach(([xIndex, yIndex, count]) => {
-    if (!counts[yIndex]) counts[yIndex] = 0;
-    counts[yIndex] += count;
+    const monthYear = xAxisDataWithCounts.value[xIndex]; // Pegue a data formatada como 'mm/yyyy'
+    if (!totals[monthYear]) {
+      totals[monthYear] = 0;
+    }
+    totals[monthYear] += count;
   });
-
-  return counts;
+  return totals;
 });
 
 function formatTooltip(param) {
   const [xIndex, yIndex, count] = param.data;
   const categoria = Object.values(categorias)[yIndex];
-  const totalForCategory = totalCategoryCounts.value[yIndex] || 1;
-  const percentage = ((count / totalForCategory) * 100).toFixed(2);
+  const monthYear = xAxisDataWithCounts.value[xIndex];
+  const totalForMonth = totalCountsPerMonth.value[monthYear] || 1;
+  const percentage = ((count / totalForMonth) * 100).toFixed(2);
 
   return `
     <div class="projeto-tooltip" style="color: #333">
