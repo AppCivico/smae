@@ -167,7 +167,6 @@ const éPossívelAbrir = (item) => !item.children?.length
                   ><use xlink:href="#i_edit" /></svg>
                 </SmaeLink>
                 <button
-                  <!-- TETSE -->
                   v-if="(arquivo.pode_editar != null && arquivo.pode_editar != undefined && arquivo.pode_editar && !apenasLeitura) || (arquivo.pode_editar == null && arquivo.pode_editar == undefined && !apenasLeitura)"
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
