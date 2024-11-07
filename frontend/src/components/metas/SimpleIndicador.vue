@@ -1,4 +1,5 @@
 <script setup>
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
@@ -92,7 +93,14 @@ const activePdm = computed(() => {
             ><use xlink:href="#i_edit" /></svg>
           </SmaeLink>
         </div>
-        <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
+        <GraficoHeatmapVariavelCategorica
+          v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
+          :valores="ValoresInd[ind.id]"
+        />
+        <EvolucaoGraph
+          v-else
+          :dataserie="ValoresInd[ind.id]"
+        />
         <div class="tc">
           <SmaeLink
             :to="`${parentlink}/evolucao`"

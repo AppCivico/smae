@@ -14,14 +14,14 @@ import {
   defineProps, provide, ref, computed,
 } from 'vue';
 
-import { BarChart, LineChart } from 'echarts/charts';
+import { BarChart, LineChart, HeatmapChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
   MarkLineComponent,
   TitleComponent,
   TooltipComponent,
-  LabelLayout,
+  VisualMapComponent,
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -37,10 +37,12 @@ use([
   CanvasRenderer,
   TitleComponent,
   TooltipComponent,
+  VisualMapComponent,
   LegendComponent,
   GridComponent,
   BarChart,
   LineChart,
+  HeatmapChart,
   MarkLineComponent,
 ]);
 
