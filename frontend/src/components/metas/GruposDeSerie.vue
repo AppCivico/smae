@@ -96,7 +96,7 @@ function handleClick(obj) {
 function obterValorTabela(item, index) {
   const serieIndex = props.g.ordem_series?.indexOf(index);
 
-  if (!item.series[serieIndex]) {
+  if (!item.series[serieIndex] || item.series[serieIndex].elementos?.length) {
     return '-';
   }
 
