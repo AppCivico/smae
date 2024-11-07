@@ -207,7 +207,7 @@ const totalCategoryCounts = computed(() => {
 
 function formatTooltip(param) {
   const [xIndex, yIndex, count] = param.data;
-  const categoria = categorias[yIndex];
+  const categoria = Object.values(categorias)[yIndex];
   const totalForCategory = totalCategoryCounts.value[yIndex] || 1;
   const percentage = ((count / totalForCategory) * 100).toFixed(2);
 
