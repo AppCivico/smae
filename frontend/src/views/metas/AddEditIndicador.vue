@@ -173,6 +173,9 @@ async function onSubmit(values) {
         },
       ];
       values.formula = '$_1';
+    } else {
+      values.formula = formula.value.trim();
+      values.formula_variaveis = unref(variaveisFormula);
     }
 
     values.inicio_medicao = fieldToDate(values.inicio_medicao);
@@ -205,7 +208,7 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if ((indicadorId && values.formula !== '$_1') || values.variavel_categoria_id) {
+    if (indicadorId || values.variavel_categoria_id) {
       if (values.formula) {
         const er = await validadeFormula(values.formula);
         if (er) {
@@ -214,9 +217,6 @@ async function onSubmit(values) {
         }
       }
 
-      if (!values.variavel_categoria_id) {
-        values.formula_variaveis = unref(variaveisFormula);
-      }
       if (singleIndicadores.value.id) {
         r = await IndicadoresStore.update(singleIndicadores.value.id, values);
         MetasStore.clear();
@@ -229,6 +229,7 @@ async function onSubmit(values) {
       IndicadoresStore.clear();
       msg = 'Item adicionado com sucesso!';
     }
+
     if (r === true) {
       MetasStore.clear();
       alertStore.success(msg);
