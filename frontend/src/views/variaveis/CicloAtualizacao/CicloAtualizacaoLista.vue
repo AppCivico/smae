@@ -193,6 +193,7 @@ const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
 const $route = useRoute();
 
+// TO-DO: passar para v-slots
 const tabs = {
   coleta: {
     aberta: true,
@@ -201,7 +202,7 @@ const tabs = {
     aba: 'coleta',
   },
   aprovacao: {
-    etiqueta: 'Aprovação',
+    etiqueta: 'Conferência',
     id: 'Validacao',
     aba: 'aprovacao',
   },
