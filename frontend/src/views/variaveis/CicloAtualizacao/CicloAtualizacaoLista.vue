@@ -43,7 +43,7 @@
       <thead>
         <tr>
           <th scope="col">
-            CÓDIGO/NOME
+            Código/Nome
           </th>
 
           <th scope="col">
@@ -55,11 +55,11 @@
           </th>
 
           <th scope="col">
-            equipes repsonsáveis
+            Equipes responsáveis
           </th>
 
           <th scope="col">
-            prazo
+            Prazo
           </th>
 
           <th scope="col" />
@@ -76,7 +76,6 @@
             scope="row"
             class="flex center g05"
           >
-            <!--  -->
             <div class="listagem-item__icone">
               <svg
                 :width="cicloAtualizacao.icone.tamanho"
