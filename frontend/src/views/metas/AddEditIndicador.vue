@@ -1,10 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import {
-  ref, unref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
@@ -14,12 +8,6 @@ import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisComp
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
-import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
-import AddEditValores from '@/views/metas/AddEditValores.vue';
-import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
-import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
-import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
-import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
@@ -31,6 +19,18 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
+import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
+import AddEditValores from '@/views/metas/AddEditValores.vue';
+import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
+import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
+import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
+import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import {
+  ref, unref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
