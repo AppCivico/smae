@@ -536,7 +536,7 @@ watch(() => props.group, () => {
               Numérica
             </option>
             <optgroup
-              v-if="Variaveis[indicadorId]"
+              v-if="Array.isArray(Variaveis[indicadorId])"
               label="Categórica"
             >
               <option
