@@ -1,10 +1,10 @@
 export default {
   Preenchimento: {
-    nome: 'Preenchimento',
+    nome: 'Coleta',
     valor: 'Preenchimento',
   },
   Validacao: {
-    nome: 'Validação',
+    nome: 'Conferência',
     valor: 'Validacao',
   },
   Liberacao: {

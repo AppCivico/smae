@@ -133,8 +133,8 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     grupos: {
       linhas: [
         [
-          { label: 'Equipes de medição', valor: formatarLista(emFoco.value.medicao_grupo) },
-          { label: 'Equipes de validação', valor: formatarLista(emFoco.value.validacao_grupo) },
+          { label: 'Equipes de coleta', valor: formatarLista(emFoco.value.medicao_grupo) },
+          { label: 'Equipes de conferência', valor: formatarLista(emFoco.value.validacao_grupo) },
           { label: 'Equipes de liberação', valor: formatarLista(emFoco.value.liberacao_grupo) },
         ],
       ],
@@ -151,9 +151,9 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       titulo: 'Intervalos de interação',
       linhas: [
         [
-          { label: 'Início do preenchimento', valor: emFoco.value.periodos.preenchimento_inicio },
-          { label: 'Duração do preenchimento', valor: emFoco.value.periodos.preenchimento_duracao },
-          { label: 'Duração da validação', valor: emFoco.value.periodos.validacao_duracao },
+          { label: 'Início da coleta', valor: emFoco.value.periodos.preenchimento_inicio },
+          { label: 'Duração da coleta', valor: emFoco.value.periodos.preenchimento_duracao },
+          { label: 'Duração da conferência', valor: emFoco.value.periodos.validacao_duracao },
           { label: 'Duração da liberação', valor: emFoco.value.periodos.liberacao_duracao },
         ],
       ],

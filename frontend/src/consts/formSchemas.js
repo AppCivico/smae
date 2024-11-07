@@ -43,7 +43,9 @@ const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE
 const endYear = new Date().getFullYear() + 5;
 const startYear = 2003;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   return this.test('teste', errorMessage, function __(value) {
     const { path, createError } = this;
 
@@ -64,18 +66,21 @@ addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path}
   });
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'nullableOuVazio', function _() {
   return this
     .nullable()
     .transform((v) => (v === '' ? null : v));
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(mixed, 'nullableOuVazio', function _() {
   return this
     .nullable()
     .transform((v) => (v === '' || v === false ? null : v));
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(number, 'nullableOuVazio', function _() {
   return this
     .nullable()
@@ -85,6 +90,7 @@ addMethod(number, 'nullableOuVazio', function _() {
 /**
  * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não encontrado em ${arrayToCompare}') {
   return this.test({
     message,
@@ -3817,7 +3823,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   medicao_grupo_ids: array()
-    .label('Equipes de medição')
+    .label('Equipes de coleta')
     .nullable()
     .of(
       number()
@@ -3831,11 +3837,11 @@ export const variavelGlobal = object({
     .label('Utilizar esta variável composta no ciclo de monitoramento')
     .required(),
   medicao_orgao_id: number()
-    .label('Órgão responsável pela medição')
+    .label('Órgão responsável pela coleta')
     .positive()
     .required(),
   validacao_orgao_id: number()
-    .label('Órgão responsável pela validação')
+    .label('Órgão responsável pela conferência')
     .positive(),
   orgao_id: number()
     .label('Órgão responsável')
@@ -3854,18 +3860,18 @@ export const variavelGlobal = object({
     .required(),
   periodos: object({
     preenchimento_inicio: number()
-      .label('Dia inicio do preenchimento')
+      .label('Dia inicio da coleta')
       .min(1)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     preenchimento_duracao: number()
-      .label('Duração do preenchimento')
+      .label('Duração da coleta')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     validacao_duracao: number()
-      .label('Duração da validação')
+      .label('Duração da conferência')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
@@ -3890,7 +3896,7 @@ export const variavelGlobal = object({
     .label('Unidade de medida')
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
   validacao_grupo_ids: array()
-    .label('Equipes de validação')
+    .label('Equipes de conferência')
     .nullable()
     .of(
       number()
