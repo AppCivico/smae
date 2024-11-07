@@ -533,7 +533,7 @@ watch(() => props.group, () => {
             class="inputtext light"
           >
             <option value="">
-              Calculado
+              Numérica
             </option>
             <optgroup
               v-if="Variaveis[indicadorId]"
