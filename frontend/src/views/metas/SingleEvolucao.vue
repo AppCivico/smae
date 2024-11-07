@@ -26,7 +26,7 @@ const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis, Valores } = storeToRefs(VariaveisStore);
+const { Variaveis } = storeToRefs(VariaveisStore);
 
 const route = useRoute();
 const { meta_id: metaId } = route.params;
