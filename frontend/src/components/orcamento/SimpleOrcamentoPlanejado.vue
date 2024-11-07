@@ -159,7 +159,7 @@ const somaDasLinhas = computed(() => ({
             <LinhaPlanejado
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
-              :permissao="config.previsao_custo_disponivel"
+              :permissao="config.planejado_disponivel"
               :parentlink="parentlink"
             />
           </tbody>
@@ -184,7 +184,7 @@ const somaDasLinhas = computed(() => ({
               <LinhaPlanejado
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
-                :permissao="config.previsao_custo_disponivel"
+                :permissao="config.planejado_disponivel"
                 :parentlink="parentlink"
               />
             </tbody>
@@ -209,7 +209,7 @@ const somaDasLinhas = computed(() => ({
                 <LinhaPlanejado
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
-                  :permissao="config.previsao_custo_disponivel"
+                  :permissao="config.planejado_disponivel"
                   :parentlink="parentlink"
                 />
               </tbody>
