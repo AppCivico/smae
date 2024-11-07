@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
@@ -16,11 +17,31 @@ type SessaoDeDetalhe = {
   }
 };
 
+type CategororiaComAssunto = {
+  id: number,
+  nome: string,
+  assuntos: {
+    id: number,
+    nome: string,
+  }[]
+};
+
+type CategoriaComAssuntoMapeado = {
+  [key: number]: CategororiaComAssunto
+};
+
+const assuntosStore = useAssuntosStore();
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const {
   emFoco,
 } = storeToRefs(variaveisGlobaisStore);
+
+const {
+  categoriasPorId,
+} = storeToRefs(assuntosStore);
+
+assuntosStore.buscarCategorias();
 
 function simNao(valor: boolean) {
   return valor ? 'Sim' : 'Não';
@@ -139,6 +160,34 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     },
   };
 });
+
+const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() => {
+  if (!emFoco.value) {
+    return {};
+  }
+
+  return emFoco.value.assuntos.reduce<CategoriaComAssuntoMapeado>((amount, item) => {
+    const categoriaId: number | null | undefined = item.categoria_assunto_variavel_id;
+
+    if (!categoriaId) {
+      return amount;
+    }
+
+    if (!amount[categoriaId]) {
+      const categoria = categoriasPorId.value[categoriaId];
+
+      amount[categoriaId] = {
+        nome: categoria.nome,
+        id: categoriaId,
+        assuntos: [],
+      };
+    }
+
+    amount[categoriaId].assuntos.push(item);
+
+    return amount;
+  }, {} as CategoriaComAssuntoMapeado);
+});
 </script>
 
 <template>
@@ -160,19 +209,31 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     <article class="mt2 sessao sessao--assunto">
       <div class="flex center g4 sessao__divider">
         <h2 class="sessao__divider-titulo">
-          Assunto
+          Assuntos
         </h2>
 
         <hr class="f1">
       </div>
 
-      <ul class="mt3 flex g1">
+      <ul class="mt3 g1 assuntos-categoria">
         <li
-          v-for="assunto in emFoco?.assuntos"
-          :key="`assunto--${assunto.id}`"
-          class="particula"
+          v-for="assuntoComCategoria in assuntosComCategoriasMapeados"
+          :key="`assunto-categoria--${assuntoComCategoria.id}`"
+          class="assuntos-categoria-item"
         >
-          {{ assunto.nome }}
+          <h5 class="uc">
+            {{ assuntoComCategoria.nome }}
+          </h5>
+
+          <ul class="flex column g05">
+            <li
+              v-for="assunto in assuntoComCategoria.assuntos"
+              :key="`assunto-${assuntoComCategoria.id}--${assunto.id}`"
+              class="particula"
+            >
+              {{ assunto.nome }}
+            </li>
+          </ul>
         </li>
       </ul>
     </article>
@@ -210,5 +271,11 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
   &:first-of-type {
     border-top: .97px solid;
   }
+}
+
+.assuntos-categoria {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 </style>
