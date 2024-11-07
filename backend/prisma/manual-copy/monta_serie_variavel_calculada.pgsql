@@ -49,10 +49,6 @@ BEGIN
     FROM Variavel v
     WHERE v.id = pVariavelId;
 
-    IF vVariavel.variavel_categorica_id IS NOT NULL THEN
-        -- Initiate vElementos tuple
-        vElementos := ARRAY[]::INT[][];
-    END IF;
 
     -- Determine the calculation period
     WITH varPeriodos as (
@@ -99,6 +95,14 @@ BEGIN
 
             -- Construct the formula expression
             vFormula := vFormulaComposta.formula_compilada;
+
+
+            IF vVariavel.variavel_categorica_id IS NOT NULL THEN
+                -- Initiate vElementos tuple
+                vElementos := ARRAY[]::INT[][];
+            ELSE
+                vElementos := NULL;
+            END IF;
 
             -- Initialize skip_period flag for each period
             skip_period := FALSE;

@@ -183,5 +183,7 @@ export const useAssuntosStore = defineStore('assuntosStore', {
         ...categoriaEmFoco,
       };
     },
+    categoriasPorId: ({ categorias }) => categorias
+      .reduce((amount, categoria) => ({ ...amount, [categoria.id]: categoria }), {}),
   },
 });

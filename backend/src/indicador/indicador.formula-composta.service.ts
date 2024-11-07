@@ -133,13 +133,6 @@ export class IndicadorFormulaCompostaService {
                 calc_orgao_id: 'orgao_id' in dto ? dto.orgao_id : undefined,
                 calc_unidade_medida_id: 'unidade_medida_id' in dto ? dto.unidade_medida_id : undefined,
 
-                IndicadorFormulaComposta: indicador
-                    ? {
-                          create: {
-                              indicador_id: indicador.id,
-                          },
-                      }
-                    : undefined,
                 FormulaCompostaVariavel: formula_variaveis
                     ? {
                           createMany: {
@@ -303,8 +296,6 @@ export class IndicadorFormulaCompostaService {
                     },
                 });
 
-                // pensando bem, isso aqui nem é 100% necessário, nem aqui, nem nas variaveis
-                // só é necessário em update do indicador
                 if (indicador) await this.resyncFormulaCompostaIndicators(indicador, self.id, prismaTx);
 
                 // essa parte aqui se torna 100% obrigatória pois não da para saber no que mexeram na formula
@@ -457,6 +448,14 @@ export class IndicadorFormulaCompostaService {
             },
         });
 
+        await prismaTx.indicadorFormulaComposta.create({
+            data: {
+                indicador_id: indicador.id,
+                formula_composta_id,
+                indicador_origem_id: null,
+            },
+        });
+
         this.logger.log(
             `resyncFormulaComposta: formula_composta_id ${formula_composta_id}, indicador: ${JSON.stringify(indicador)}`
         );
@@ -579,6 +578,8 @@ export class IndicadorFormulaCompostaService {
                 }
             }
         }
+
+
     }
 
     async geradorFormula(

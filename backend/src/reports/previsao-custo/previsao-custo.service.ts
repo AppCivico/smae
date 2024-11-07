@@ -54,6 +54,7 @@ export class PrevisaoCustoService implements ReportableService {
                 ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
                 ano_referencia: ano,
                 removido_em: null,
+                ultima_revisao: true,
             },
             select: {
                 id: true,
