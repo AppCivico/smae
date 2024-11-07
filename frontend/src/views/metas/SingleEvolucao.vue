@@ -1,6 +1,7 @@
 <script setup>
 import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
 import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import EvolucaoDeMetaIniciativaAtividade from '@/components/metas/EvolucaoDeMetaIniciativaAtividade.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
@@ -25,7 +26,7 @@ const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis } = storeToRefs(VariaveisStore);
+const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 
 const route = useRoute();
 const { meta_id: metaId } = route.params;
@@ -181,7 +182,12 @@ watch([parentId, parentField], iniciar, { immediate: true });
                 ><use xlink:href="#i_edit" /></svg>
               </SmaeLink>
             </div>
+            <GraficoHeatmapVariavelCategorica
+              v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
+              :valores="ValoresInd[ind.id]"
+            />
             <EvolucaoGraph
+              v-else
               :dataserie="ValoresInd[ind.id]"
               :casas-decimais="ind.casas_decimais"
             />
