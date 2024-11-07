@@ -28,6 +28,7 @@ import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
+  computed,
   ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
@@ -100,6 +101,11 @@ const formula = ref('');
 const variaveisFormula = ref([]);
 const errFormula = ref('');
 const AssociadorDeVariaveisEstaAberto = ref(false);
+
+// eslint-disable-next-line max-len
+const variaveisCategoricasDisponiveis = computed(() => (Array.isArray(Variaveis.value?.[route.params.indicador_id])
+  ? Variaveis.value?.[route.params.indicador_id].filter((v) => v.variavel_categorica_id !== null)
+  : []));
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -536,12 +542,11 @@ watch(() => props.group, () => {
               Numérica
             </option>
             <optgroup
-              v-if="Array.isArray(Variaveis[indicadorId])"
+              v-if="variaveisCategoricasDisponiveis.length"
               label="Categórica"
             >
               <option
-                v-for="(variavel, index) in Variaveis[indicadorId]
-                  .filter(v => v.variavel_categorica_id !== null)"
+                v-for="(variavel, index) in variaveisCategoricasDisponiveis"
                 :key="index"
                 :value="variavel.id"
                 :title="variavel.titulo"
