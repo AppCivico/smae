@@ -1,37 +1,38 @@
 <script setup>
-import TabelaBásica from '@/components/relatorios/TabelaBasica.vue';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
+import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
-import { prepararEtiquetas, prepararTags, prepararPdm } from './helpers/preparadorDeColunaParametros';
+import { localizarDataHorario } from '@/helpers/dateToDate';
+import { relatorioPlanoSetorialBase as schema } from '@/consts/formSchemas';
 
-const relatóriosStore = useRelatoriosStore();
+const alertStore = useAlertStore();
+const relatoriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
-const fonte = 'PSPrevisaoCusto';
-const etiquetasParaValoresDeParâmetros = ref({
-  iniciativa_id: {},
-  atividade_id: {},
-  pdm_id: {},
-  meta_id: {},
-  tags: {},
-});
 
-const etiquetasParaParâmetros = {
-  ...prepararEtiquetas(schema),
-  // TODO: vai dar um trampo enorme pegar esse pessoal. Vamos desabilitá-los por enquanto
-  atividade_id: undefined,
-  iniciativa_id: undefined,
-  meta_id: undefined,
-};
+const fonte = 'PSPrevisaoCusto';
+
+const campos = computed(() => schema.fields);
+
+const lista = computed(() => relatoriosStore.lista.map((item) => ({
+  id: item.id,
+  criado_em: localizarDataHorario(item.criado_em, 'dd/MM/yyyy'),
+  criador: item.criador.nome_exibicao,
+  parametros: `Ano Referência: ${item.parametros.ano}`,
+  arquivo: item.arquivo,
+})));
+
+function excluirRelatório(id) {
+  alertStore.confirmAction('Deseja remover o relatório?', () => {
+    relatoriosStore.delete(id);
+  }, 'Remover');
+}
 
 async function iniciar() {
-  relatóriosStore.$reset();
-  relatóriosStore.getAll({ fonte });
-  etiquetasParaValoresDeParâmetros.value.tags = await prepararTags();
-  etiquetasParaValoresDeParâmetros.value.pdm_id = await prepararPdm();
+  relatoriosStore.$reset();
+  relatoriosStore.getAll({ fonte });
 }
 iniciar();
 </script>
@@ -47,12 +48,87 @@ iniciar();
       Novo relatório
     </router-link>
   </div>
-  <p class="texto--explicativo">SMAE gera uma planilha contendo os registros de previsão de custo registrados nas metas</p>
-  <TabelaBásica
-    class="mb1"
-    :etiquetas-para-valores-de-parâmetros="etiquetasParaValoresDeParâmetros"
-    :etiquetas-para-parâmetros="etiquetasParaParâmetros"
-  />
+
+  <p class="texto--explicativo">
+    SMAE gera uma planilha contendo os registros de previsão de custo registrados nas metas
+  </p>
+
+  <table class="tablemain">
+    <thead>
+      <tr>
+        <th
+          v-for="(campo, campoIndex) in campos"
+          :key="`relatorio-mensal__head--${campoIndex}`"
+        >
+          {{ campo.spec.label }}
+        </th>
+        <th />
+        <th v-if="temPermissãoPara(['Reports.remover.'])" />
+      </tr>
+    </thead>
+    <tbody>
+      <template v-if="lista.length">
+        <tr
+          v-for="item in lista"
+          :key="item.id"
+        >
+          <td
+            v-for="(_, campoIndex) in campos"
+            :key="`relatorio-mensal__body--${campoIndex}`"
+          >
+            {{ item[campoIndex] }}
+          </td>
+
+          <td class="tc">
+            <a
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            ><img
+              src="../../assets/icons/baixar.svg"
+            ></a>
+          </td>
+
+          <td
+            v-if="temPermissãoPara(['Reports.remover.'])"
+            class="tc"
+          >
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="excluirRelatório(item.id)"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </template>
+      <tr v-else-if="relatoriosStore.loading">
+        <td
+          :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4"
+          aria-busy="true"
+        >
+          Carregando
+        </td>
+      </tr>
+      <tr v-else-if="relatoriosStore.error">
+        <td :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4">
+          erro: {{ relatoriosStore.error }}
+        </td>
+      </tr>
+      <tr v-else>
+        <td :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4">
+          Nenhum resultado encontrado.
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <BotãoParaCarregarMais :fonte="fonte" />
 </template>

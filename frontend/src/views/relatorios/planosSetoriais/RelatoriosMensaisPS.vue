@@ -1,20 +1,33 @@
 <script setup>
-import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
-import { localizarDataHorario } from '@/helpers/dateToDate';
-import { useAuthStore } from '@/stores/auth.store';
-import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import SmaeLink from '@/components/SmaeLink.vue';
+import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
+import { localizarDataHorario } from '@/helpers/dateToDate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
+import { relatorioMensalPlanoSetorial as schema } from '@/consts/formSchemas';
 
+const alertStore = useAlertStore();
+const relatoriosStore = useRelatoriosStore();
 const planosMetasSimplificadosStore = usePlanosSimplificadosStore();
 const { planosPorId } = storeToRefs(planosMetasSimplificadosStore);
-
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 
-const relatoriosStore = useRelatoriosStore();
-
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const campos = computed(() => schema.fields);
+
+const lista = computed(() => relatoriosStore.lista.map((item) => ({
+  id: item.id,
+  criado_em: localizarDataHorario(item.criado_em, 'dd/MM/yyyy'),
+  criador: item.criador.nome_exibicao,
+  referencia: `${item.parametros.mes}/${item.parametros.ano}`,
+  parametros: `Meta: ${planosPorId.value[item.parametros.plano_setorial_id]?.metas?.map((meta) => meta.codigo).join(', ')}`,
+  arquivo: item.arquivo,
+})));
 
 function excluirRelatório(id) {
   alertStore.confirmAction('Deseja remover o relatório?', () => {
@@ -45,37 +58,45 @@ relatoriosStore.getAll({ fonte });
   </p>
 
   <table class="tablemain">
-    <colgroup>
-      <col>
-      <col>
-      <col class="col--dataHora">
-      <col
-        v-if="temPermissãoPara(['Reports.remover.'])"
-        class="col--botão-de-ação"
-      >
-      <col class="col--botão-de-ação">
-    </colgroup>
     <thead>
       <tr>
-        <th>mês/ano</th>
-        <th>Plano</th>
-        <th>gerado em</th>
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
+        <th
+          v-for="(campo, campoIndex) in campos"
+          :key="`relatorio-mensal__head--${campoIndex}`"
+        >
+          {{ campo.spec.label }}
+        </th>
         <th />
+        <th v-if="temPermissãoPara(['Reports.remover.'])" />
       </tr>
     </thead>
     <tbody>
-      <template v-if="relatoriosStore.lista.length">
+      <template v-if="lista.length">
         <tr
-          v-for="item in relatoriosStore.lista"
+          v-for="item in lista"
           :key="item.id"
         >
-          <td>{{ item.parametros.mes }}/{{ item.parametros.ano }}</td>
-          <td>
-            {{ planosPorId[item.parametros?.plano_setorial_id]?.nome || '-' }}
+          <td
+            v-for="(_, campoIndex) in campos"
+            :key="`relatorio-mensal__body--${campoIndex}`"
+          >
+            {{ item[campoIndex] }}
           </td>
-          <td>{{ localizarDataHorario(item.criado_em) }}</td>
-          <td v-if="temPermissãoPara(['Reports.remover.'])">
+
+          <td class="tc">
+            <a
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            ><img
+              src="../../../assets/icons/baixar.svg"
+            ></a>
+          </td>
+
+          <td
+            v-if="temPermissãoPara(['Reports.remover.'])"
+            class="tc"
+          >
             <button
               class="like-a__text addlink"
               arial-label="excluir"
@@ -87,15 +108,6 @@ relatoriosStore.getAll({ fonte });
                 height="20"
               ><use xlink:href="#i_remove" /></svg>
             </button>
-          </td>
-          <td>
-            <a
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            ><img
-              src="../../../assets/icons/baixar.svg"
-            ></a>
           </td>
         </tr>
       </template>
