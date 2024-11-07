@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
@@ -487,12 +487,18 @@ export class IndicadorService {
             atividade_id: true,
             iniciativa_id: true,
             meta_id: true,
+            variavel_categoria_id: true,
             formula_variaveis: {
                 select: {
                     variavel_id: true,
                     janela: true,
                     referencia: true,
                     usar_serie_acumulada: true,
+                    variavel: {
+                        select: {
+                            variavel_categorica_id: true,
+                        },
+                    },
                 },
             },
         };
@@ -565,9 +571,31 @@ export class IndicadorService {
                         acumulado_usa_formula:
                             dto.acumulado_usa_formula === null ? undefined : dto.acumulado_usa_formula,
                     },
-                    select: indicadorSelectData,
+                    select: {
+                        ...indicadorSelectData,
+                        formula_variaveis: {
+                            select: {
+                                variavel_id: true,
+                                janela: true,
+                                referencia: true,
+                                usar_serie_acumulada: true,
+                                variavel: {
+                                    select: {
+                                        variavel_categorica_id: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 });
 
+                if (indicador.variavel_categoria_id == null) {
+                    if (indicador.formula_variaveis.some((fv) => fv.variavel.variavel_categorica_id)) {
+                        throw new BadRequestException(
+                            'Não é possível usar uma variável categórica em um indicador calculado.'
+                        );
+                    }
+                }
                 //const newVersion = IndicadorService.getIndicadorHash(indicador);
                 //this.logger.debug({ oldVersion, newVersion });
 
@@ -626,6 +654,7 @@ export class IndicadorService {
                             }),
                         });
                 }
+
                 //Tratamento para series inválidas
                 if (tipo === 'PDM') {
                     const variaveis = await prismaTx.indicadorVariavel.findMany({
