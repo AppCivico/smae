@@ -62,21 +62,20 @@ const props = defineProps({
   },
 });
 
-const categorias = props.valores.dados_auxiliares?.categoricas || {};
-const ordemSeries = props.valores.ordem_series;
-const indexRealizado = ordemSeries.indexOf('Realizado');
+const categorias = computed(() => props.valores.dados_auxiliares?.categoricas || {});
+const indexRealizado = computed(() => props.valores.ordem_series.indexOf('Realizado'));
 const selectedYear = ref(null);
 const heatmapData = ref([]);
 const chartOption = ref({});
 
-if (indexRealizado === -1) {
+if (indexRealizado.value === -1) {
   console.error('Série "Realizado" não encontrada na ordem das séries.');
 }
 
 const xAxisDataWithCounts = computed(() => {
   const dates = [];
   props.valores.linhas.forEach(({ series }) => {
-    const serieRealizado = series[indexRealizado];
+    const serieRealizado = series[indexRealizado.value];
     if (serieRealizado && serieRealizado.elementos?.length) {
       const formattedDate = dateToMonthYear(serieRealizado.data_valor);
       if (!dates.includes(formattedDate)) {
@@ -92,7 +91,7 @@ const years = computed(() => [...new Set(xAxisDataWithCounts.value.map((date) =>
 const populateHeatmapData = () => {
   const data = [];
   props.valores.linhas.forEach(({ series }) => {
-    const serieRealizado = series[indexRealizado];
+    const serieRealizado = series[indexRealizado.value];
     if (serieRealizado && serieRealizado.elementos?.length) {
       const categoriaCounts = Array(Object.keys(categorias).length).fill(0);
       serieRealizado.elementos.forEach(({ categoria }) => {
@@ -138,7 +137,14 @@ const updateChartData = () => {
       bottom: '15%',
       show: false,
       inRange: {
-        color: ['#b3d9ff', '#1a75ff'],
+        color: [
+          '#d2dfe9',
+          '#b4cada',
+          '#8fboc8',
+          '#6995b6',
+          '#447ba3',
+          '#1e6091',
+        ],
       },
     },
     xAxis: {
@@ -154,7 +160,7 @@ const updateChartData = () => {
     },
     yAxis: {
       type: 'category',
-      data: Object.values(categorias || { 1: 'Sem dados em elementos' }),
+      data: Object.values(categorias.value || { 1: 'Sem dados em elementos' }),
       boundaryGap: true,
       nameGap: 140,
       axisLabel: {
@@ -209,7 +215,7 @@ const totalCountsPerMonth = computed(() => {
 
 function formatTooltip(param) {
   const [xIndex, yIndex, count] = param.data;
-  const categoria = Object.values(categorias)[yIndex];
+  const categoria = Object.values(categorias.value)[yIndex];
   const monthYear = xAxisDataWithCounts.value[xIndex];
   const totalForMonth = totalCountsPerMonth.value[monthYear] || 1;
   const percentage = ((count / totalForMonth) * 100).toFixed(2);
