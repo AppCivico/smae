@@ -505,13 +505,14 @@ export class ReportsService {
 
         // Campos de array que não utilizam "_id" no final
         // tags e orgaos, são inseridos manualmente.
-        chavesIds.push(...['tags', 'orgaos']);
+        chavesIds.push(...['tags', 'orgaos', 'metas', 'regioes', 'metas_ids']);
 
         for (const chave of chavesIds) {
             const id: number | number[] = parametros[chave];
             if (!id) continue;
 
-            const nomeChave = chave.replace('_id', '');
+            // regex, pois pode ser _id ou _ids
+            const nomeChave = chave.replace(/(_id|_ids)$/, '');
             const nomeChaveNome = nomeChave + '_nome';
 
             const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
@@ -524,17 +525,31 @@ export class ReportsService {
                     parametros[nomeChaveNome] = rowNome[0].nome;
                 }
             } else {
-                for (const idItem of id) {
-                    const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id = ${idItem}`;
-                    const rowNome = await this.prisma.$queryRawUnsafe<Array<{ nome: string }>>(query);
-                    if (rowNome.length > 0) {
-                        if (!parametros[nomeChave]) parametros[nomeChave] = [];
-                        parametros[nomeChave].push({
-                            id: idItem,
-                            nome: rowNome[0].nome,
-                        });
-                    }
+                if (id.length === 0) continue;
+                console.log(id);
+                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id IN (${id.join(',')})`;
+                const rowNome = await this.prisma.$queryRawUnsafe<Array<{ id: Number; nome: string }>>(query);
+
+                if (rowNome.length > 0) {
+                    parametros[`${nomeChave}_processado`] = rowNome.map((r) => {
+                        return {
+                            id: r.id,
+                            nome: r.nome,
+                        };
+                    });
                 }
+
+                //for (const idItem of id) {
+                //    const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id = ${idItem}`;
+                //    const rowNome = await this.prisma.$queryRawUnsafe<Array<{ nome: string }>>(query);
+                //    if (rowNome.length > 0) {
+                //        if (!parametros[nomeChave]) parametros[nomeChave] = [];
+                //        parametros[nomeChave].push({
+                //            id: idItem,
+                //            nome: rowNome[0].nome,
+                //        });
+                //    }
+                //}
             }
         }
 
@@ -642,6 +657,20 @@ export class ReportsService {
                 ret = {
                     tabela: 'orgao',
                     coluna: 'sigla',
+                };
+                break;
+            }
+            case 'regiao': {
+                ret = {
+                    tabela: 'regiao',
+                    coluna: 'descricao',
+                };
+                break;
+            }
+            case 'regioes': {
+                ret = {
+                    tabela: 'regiao',
+                    coluna: 'descricao',
                 };
                 break;
             }
