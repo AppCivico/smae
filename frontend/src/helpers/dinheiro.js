@@ -1,6 +1,11 @@
 import toFloat from './toFloat';
 
 export default (valor, semDecimais = false, compactado = false) => {
+  const numeroConvertido = parseFloat(valor);
+  if (Number.isNaN(numeroConvertido)) {
+    return '';
+  }
+
   const options = semDecimais
     ? { minimumFractionDigits: 0, maximumFractionDigits: 0 }
     : { minimumFractionDigits: 2 };
