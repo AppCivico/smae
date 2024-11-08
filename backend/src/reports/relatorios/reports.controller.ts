@@ -96,4 +96,11 @@ export class ReportsController {
         await this.reportsService.delete(params.id, user);
         return null;
     }
+
+    @Get('sync-parametros')
+    @ApiBearerAuth('access-token')
+    async syncParametros(@CurrentUser() user: PessoaFromJwt) {
+        await this.reportsService.syncRelatoriosParametros();
+        return '';
+    }
 }

@@ -2,7 +2,6 @@ import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorExcep
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TipoRelatorio } from '@prisma/client';
-import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { createWriteStream, WriteStream } from 'fs';
@@ -10,7 +9,6 @@ import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
-import { resolve as resolvePath } from 'path';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
@@ -37,6 +35,7 @@ import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-conta
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import * as XLSX from 'xlsx';
+import { InputJsonValue } from '@prisma/client/runtime/library';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -204,6 +203,7 @@ export class ReportsService {
                 fonte: dto.fonte,
                 tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
+                parametros_processados: await this.buildParametrosProcessados(dto),
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
             },
@@ -386,6 +386,33 @@ export class ReportsService {
         }
     }
 
+    async syncRelatoriosParametros(): Promise<void> {
+        const rows = await this.prisma.relatorio.findMany({
+            where: {
+                removido_em: null,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        for (const row of rows) {
+            try {
+                const parametros = await this.buildParametrosProcessados(undefined, row.id);
+                if (!parametros) continue;
+
+                await this.prisma.relatorio.update({
+                    where: { id: row.id },
+                    data: {
+                        parametros_processados: parametros,
+                    },
+                });
+            } catch (error) {
+                this.logger.error(`Falha ao sincronizar params de relatório ${row.id}: ${error}`);
+            }
+        }
+    }
+
     private async verificaRelatorioProjetos(filtroId?: number | undefined) {
         const pending = await this.prisma.projetoRelatorioFila.findMany({
             where: {
@@ -439,5 +466,186 @@ export class ReportsService {
                 },
             });
         }
+    }
+
+    private async buildParametrosProcessados(
+        dto?: CreateReportDto,
+        reportId?: number
+    ): Promise<InputJsonValue | undefined> {
+        let parametros;
+
+        // Caso esteja passando ID de report, é porque a chamada é de sync.
+        if (reportId) {
+            const report = await this.prisma.relatorio.findUnique({
+                where: {
+                    id: reportId,
+                    removido_em: null,
+                },
+                select: {
+                    parametros: true,
+                    parametros_processados: true,
+                },
+            });
+            if (!report) return undefined;
+
+            if (!report.parametros) return undefined;
+            if (report.parametros_processados && report.parametros_processados.toString().length > 0)
+                return report.parametros_processados;
+
+            parametros = report.parametros;
+        } else {
+            if (!dto) return undefined;
+
+            parametros = dto.parametros;
+        }
+
+        const chaves: string[] = Object.keys(parametros);
+        const chavesIds = chaves.filter((chave) => chave.endsWith('_id') || chave.endsWith('_ids'));
+
+        // Campos de array que não utilizam "_id" no final
+        // tags e orgaos, são inseridos manualmente.
+        chavesIds.push(...['tags', 'orgaos']);
+
+        for (const chave of chavesIds) {
+            const id: number | number[] = parametros[chave];
+            if (!id) continue;
+
+            const nomeChave = chave.replace('_id', '');
+            const nomeChaveNome = nomeChave + '_nome';
+
+            const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
+            if (!nomeTabelaCol) continue;
+
+            if (typeof id === 'number') {
+                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id = ${id}`;
+                const rowNome = await this.prisma.$queryRawUnsafe<Array<{ nome: string }>>(query);
+                if (rowNome.length > 0) {
+                    parametros[nomeChaveNome] = rowNome[0].nome;
+                }
+            } else {
+                for (const idItem of id) {
+                    const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id = ${idItem}`;
+                    const rowNome = await this.prisma.$queryRawUnsafe<Array<{ nome: string }>>(query);
+                    if (rowNome.length > 0) {
+                        if (!parametros[nomeChave]) parametros[nomeChave] = [];
+                        parametros[nomeChave].push({
+                            id: idItem,
+                            nome: rowNome[0].nome,
+                        });
+                    }
+                }
+            }
+        }
+
+        return parametros;
+    }
+
+    private nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: string } | undefined {
+        let ret:
+            | {
+                  tabela: string;
+                  coluna: string;
+              }
+            | undefined = undefined;
+
+        switch (nomeChave) {
+            case 'projeto':
+                ret = {
+                    tabela: 'projeto',
+                    coluna: 'nome',
+                };
+                break;
+            case 'pdm':
+                ret = {
+                    tabela: 'pdm',
+                    coluna: 'nome',
+                };
+                break;
+            case 'tipo':
+                ret = {
+                    tabela: 'transferencia_tipo',
+                    coluna: 'nome',
+                };
+                break;
+            case 'parlamentar': {
+                ret = {
+                    tabela: 'parlamentar',
+                    coluna: 'nome_popular',
+                };
+                break;
+            }
+            case 'meta': {
+                ret = {
+                    tabela: 'meta',
+                    coluna: 'titulo',
+                };
+                break;
+            }
+            case 'metas': {
+                ret = {
+                    tabela: 'meta',
+                    coluna: 'titulo',
+                };
+                break;
+            }
+            case 'atividade': {
+                ret = {
+                    tabela: 'atividade',
+                    coluna: 'titulo',
+                };
+                break;
+            }
+            case 'iniciativa': {
+                ret = {
+                    tabela: 'iniciativa',
+                    coluna: 'titulo',
+                };
+                break;
+            }
+            case 'orgao': {
+                ret = {
+                    tabela: 'orgao',
+                    coluna: 'sigla',
+                };
+                break;
+            }
+            case 'orgaos': {
+                ret = {
+                    tabela: 'orgao',
+                    coluna: 'sigla',
+                };
+                break;
+            }
+            case 'portfolio': {
+                ret = {
+                    tabela: 'portfolio',
+                    coluna: 'titulo',
+                };
+                break;
+            }
+            case 'indicador': {
+                ret = {
+                    tabela: 'indicador',
+                    coluna: 'titulo',
+                };
+                break;
+            }
+            case 'partido': {
+                ret = {
+                    tabela: 'partido',
+                    coluna: 'nome',
+                };
+                break;
+            }
+            case 'orgao_gestor': {
+                ret = {
+                    tabela: 'orgao',
+                    coluna: 'sigla',
+                };
+                break;
+            }
+        }
+
+        return ret;
     }
 }
