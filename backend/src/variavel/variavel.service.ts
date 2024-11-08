@@ -65,6 +65,7 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
+import { SeriesArrayShuffle } from '../common/shuffleArray';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -2596,6 +2597,7 @@ export class VariavelService {
         const variavel = selfItem[0];
 
         const series: Serie[] = [...ORDEM_SERIES_RETORNO];
+        SeriesArrayShuffle(series); // garante que o consumidor não está usando os valores das series cegamente
         if (filters.serie) {
             series.length = 0;
             for (const serie of ORDEM_SERIES_RETORNO) {
