@@ -538,18 +538,6 @@ export class ReportsService {
                         };
                     });
                 }
-
-                //for (const idItem of id) {
-                //    const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id = ${idItem}`;
-                //    const rowNome = await this.prisma.$queryRawUnsafe<Array<{ nome: string }>>(query);
-                //    if (rowNome.length > 0) {
-                //        if (!parametros[nomeChave]) parametros[nomeChave] = [];
-                //        parametros[nomeChave].push({
-                //            id: idItem,
-                //            nome: rowNome[0].nome,
-                //        });
-                //    }
-                //}
             }
         }
 
