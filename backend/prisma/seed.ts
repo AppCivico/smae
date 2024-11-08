@@ -34,8 +34,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroPainelExterno: ['Painéis Externos', 'SMAE'],
     CadastroGrupoPainelExterno: ['Grupos de Painéis Externos', 'SMAE'],
 
-    // migração de PDM
-    CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
+    CadastroUnidadeMedida: ['Unidades de Medida', ['PlanoSetorial', 'PDM']],
 
     CadastroPdm: ['Programa de Metas', 'PDM'],
     CadastroOds: ['Categorias', ['PDM', 'PlanoSetorial']],
