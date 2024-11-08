@@ -296,6 +296,7 @@ export class ReportsService {
                 fonte: true,
                 arquivo_id: true,
                 parametros: true,
+                parametros_processados: true,
                 pdm_id: true,
             },
             orderBy: {
