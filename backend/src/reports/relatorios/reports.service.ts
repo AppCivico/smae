@@ -519,22 +519,28 @@ export class ReportsService {
             if (!nomeTabelaCol) continue;
 
             if (typeof id === 'number') {
-                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id = ${id}`;
-                const rowNome = await this.prisma.$queryRawUnsafe<Array<{ nome: string }>>(query);
+                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${id}`;
+                const rowNome =
+                    await this.prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
                 if (rowNome.length > 0) {
-                    parametros[nomeChaveNome] = rowNome[0].nome;
+                    parametros[nomeChaveNome] = rowNome[0].removido_em
+                        ? '(Removido) ' + rowNome[0].nome
+                        : rowNome[0].nome;
                 }
             } else {
                 if (id.length === 0) continue;
-                console.log(id);
-                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome FROM ${nomeTabelaCol.tabela} WHERE id IN (${id.join(',')})`;
-                const rowNome = await this.prisma.$queryRawUnsafe<Array<{ id: Number; nome: string }>>(query);
+
+                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id IN (${id.join(',')})`;
+                const rowNome =
+                    await this.prisma.$queryRawUnsafe<
+                        Array<{ id: Number; nome: string; removido_em: Date | undefined }>
+                    >(query);
 
                 if (rowNome.length > 0) {
                     parametros[`${nomeChave}_processado`] = rowNome.map((r) => {
                         return {
                             id: r.id,
-                            nome: r.nome,
+                            nome: r.removido_em ? '(Removido) ' + r.nome : r.nome,
                         };
                     });
                 }
