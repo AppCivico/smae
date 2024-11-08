@@ -764,7 +764,7 @@ export class NotaService {
 
         // Caso usuário tenha priv de gestor de distribuição de recurso
         // Não pode editar.
-        if (user.hasSomeRoles(['CasaCivil.gestor_distribuicao_recurso'])) {
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
             write = false;
         }
 
