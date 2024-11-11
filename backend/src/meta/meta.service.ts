@@ -145,7 +145,16 @@ export class MetaService {
                     }
                     if (psPontoFocal) {
                         validatePSEquipes(psPontoFocal.equipes, pdm.PdmPerfil, 'PONTO_FOCAL', pdm.id);
-                        await upsertPSPerfisMetaIniAtv(meta.id, 'meta', psPontoFocal, 'PONTO_FOCAL', [], user, prismaTx, pdm.id);
+                        await upsertPSPerfisMetaIniAtv(
+                            meta.id,
+                            'meta',
+                            psPontoFocal,
+                            'PONTO_FOCAL',
+                            [],
+                            user,
+                            prismaTx,
+                            pdm.id
+                        );
                     }
 
                     const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
@@ -815,7 +824,7 @@ export class MetaService {
 
                         if (cp) {
                             if (cp.length == 0) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
-
+                            await this.checkHasResponsaveisChildren(meta.id, cp);
                             await prismaTx.metaResponsavel.deleteMany({
                                 where: {
                                     meta_id: id,
@@ -1027,22 +1036,25 @@ export class MetaService {
     }
 
     private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]) {
-        const currentCoordenadores = await this.prisma.metaResponsavel.findMany({
+        const currentCoordenadores = await this.prisma.view_meta_pessoa_responsavel.findMany({
             where: { meta_id },
             select: {
                 pessoa_id: true,
             },
         });
-        const deletedPessoas = currentCoordenadores
-            .map((c) => c.pessoa_id)
+
+        const deletedCoordenadores = currentCoordenadores
+            .map((o) => o.pessoa_id)
             .filter((x) => coordenadores_cp.indexOf(x) === -1);
 
-        for (const resp of deletedPessoas) {
+        for (const resp of deletedCoordenadores) {
             const atividadePessoaCount = await this.prisma.atividadeResponsavel.count({
                 where: {
                     pessoa_id: resp,
                     atividade: {
+                        removido_em: null,
                         iniciativa: {
+                            removido_em: null,
                             meta_id: meta_id,
                         },
                     },
@@ -1058,6 +1070,7 @@ export class MetaService {
                 where: {
                     pessoa_id: resp,
                     iniciativa: {
+                        removido_em: null,
                         meta_id: meta_id,
                     },
                 },
