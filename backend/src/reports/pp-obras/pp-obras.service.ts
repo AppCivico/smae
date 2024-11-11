@@ -415,7 +415,7 @@ export class PPObrasService implements ReportableService {
 
         // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
         if (filters.tipo_projeto) {
-            whereConditions.push(`projeto.tipo = $${paramIndex}`);
+            whereConditions.push(`projeto.tipo::varchar = $${paramIndex}::varchar`);
             queryParams.push(filters.tipo_projeto);
             paramIndex++;
         }
@@ -453,7 +453,6 @@ export class PPObrasService implements ReportableService {
         }
 
         whereConditions.push(`projeto.removido_em IS NULL`);
-        whereConditions.push(`projeto.tipo::varchar = 'MDO'`);
         whereConditions.push(`portfolio.modelo_clonagem = false`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
