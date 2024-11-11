@@ -73,6 +73,12 @@ addMethod(string, 'nullableOuVazio', function _() {
     .transform((v) => (v === '' ? null : v));
 });
 
+addMethod(date, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' ? null : v));
+});
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(mixed, 'nullableOuVazio', function _() {
   return this
@@ -2049,31 +2055,30 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Número convênio/pré-convênio')
     .nullable(),
   custeio: number()
-    .label('Valor')
+    .label('Custeio')
     .min(0)
     .required(),
-  percentagem_custeio: number()
-    .label('Porcentagem')
+  custeio_porcentagem: number()
+    .label('Porcentagem do custeio')
+    .min(0),
+  investimento: number()
+    .label('Investimento')
+    .min(0)
+    .required(),
+  percentagem_investimento: number()
+    .label('Porcentagem do Investimento')
     .min(0),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
     .min(new Date(2003, 0, 1))
-    .nullable()
-    .transform((v) => (!v ? null : v)),
+    .nullableOuVazio(),
   dotacao: string()
     .label('Dotacao')
     .nullable(),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
-  investimento: number()
-    .label('Valor')
-    .min(0)
-    .required(),
-  percentagem_investimento: number()
-    .label('Porcentagem')
-    .min(0),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
     .max(250)
@@ -2106,13 +2111,13 @@ export const transferenciaDistribuicaoDeRecursos = object({
       id: number()
         .nullable(),
       nome: string()
-        .label('Nome')
+        .label('Número SEI - Nome')
         .max(1024)
         .min(1)
         .required()
         .transform((v) => (!v ? null : v)),
       processo_sei: string()
-        .label('Processo')
+        .label('Número SEI - Processo')
         .max(40)
         .required(),
     }))
@@ -2136,28 +2141,16 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable()
     .transform((v) => (!v ? null : v)),
   parlamentares: array()
-    .label('Parlamentar')
+    .label('Parlamentares')
     .nullable()
     .of(object({
       id: number()
         .nullable(),
-      parlamentar_id: number()
-        .label('Parlamentar'),
-      cargo: mixed()
-        .label('Cargo')
-        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-        .oneOf([...Object.keys(cargosDeParlamentar), null])
-        .nullable()
-        .transform((v) => (v === '' ? null : v)),
-      partido_id: number()
-        .label('Partido')
-        .nullable(),
-      objeto: string()
-        .label('Objeto/Empreendimento')
-        .max(1000)
+      nome: string()
+        .label('Parlamentar')
         .nullable(),
       valor: number()
-        .label('Valor do Repasse')
+        .label('Valor')
         .nullable(),
     })),
 });

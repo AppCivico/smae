@@ -97,7 +97,7 @@ export default {
           }),
           name: 'TransferenciaDistribuicaoDeRecursosEditarLista',
           path: '',
-          component: TransferenciaDistribuicaoDeRecursosCriarEditarForm, // Dev - teste
+          component: TransferenciaDistribuicaoDeRecursosCriarEditar, // Dev - teste
         },
       ],
     },

@@ -365,106 +365,94 @@ function fecharForm() {
     </button>
   </div>
 
-  <form
-    v-if="mostrarDistribuicaoRegistroForm"
-    @submit.prevent="onSubmit"
-  >
-    <Field
-      v-if="!itemParaEdicao.id"
-      type="hidden"
-      name="transferencia_id"
-      :value="props.transferenciaId"
-    />
+  <form>
+    <fieldset>
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="orgao_gestor_id"
+            :schema="schema"
+          />
 
-    <div class="flex spacebetween center mb1">
-      <h3 class="title">
-        Registro Distribuição de Recursos
-      </h3>
-      <hr class="ml2 f1">
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f1 mb2">
-        <LabelFromYup
-          name="orgao_gestor_id"
-          :schema="schema"
-        />
-        <Field
-          name="orgao_gestor_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.orgao_gestor_id,
-            loading: ÓrgãosStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!órgãosComoLista?.length"
-        >
-          <option :value="0">
-            Selecionar
-          </option>
-          <option
-            v-for="item in órgãosComoLista"
-            :key="item"
-            :value="item.id"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
+          <Field
+            name="orgao_gestor_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{
+              error: errors.orgao_gestor_id,
+              loading: ÓrgãosStore.chamadasPendentes?.lista,
+            }"
+            :disabled="!órgãosComoLista?.length"
           >
-            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="orgao_gestor_id"
-          class="error-msg"
-        />
-      </div>
-    </div>
+            <option :value="0">
+              Selecionar
+            </option>
+            <option
+              v-for="item in órgãosComoLista"
+              :key="item"
+              :value="item.id"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+            </option>
+          </Field>
 
-    <div class="flex g2 mb1">
-      <div class="f1 mb2">
-        <LabelFromYup
-          name="nome"
-          :schema="schema"
-        />
-        <Field
-          name="nome"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.nome,
-          }"
-        />
-        <ErrorMessage
-          name="nome"
-          class="error-msg"
-        />
+          <ErrorMessage
+            name="orgao_gestor_id"
+            class="error-msg"
+          />
+        </div>
       </div>
-    </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="objeto"
-          :schema="schema"
-        />
-        <Field
-          name="objeto"
-          as="textarea"
-          class="inputtext light mb1"
-          rows="5"
-          maxlength="1000"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="objeto"
-        />
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="nome"
+            :schema="schema"
+          />
+          <Field
+            name="nome"
+            class="inputtext light mb1"
+            :class="{
+              error: errors.nome,
+            }"
+          />
+          <ErrorMessage
+            name="nome"
+            class="error-msg"
+          />
+        </div>
       </div>
-    </div>
 
-    <div class="mb2">
-      <fieldset>
-        <div class="halfInput">
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="objeto"
+            :schema="schema"
+          />
+          <Field
+            name="objeto"
+            as="textarea"
+            class="inputtext light mb1"
+            rows="5"
+            maxlength="1000"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="objeto"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb15em">
           <LabelFromYup
             name="valor"
             :schema="schema"
           />
+
           <MaskedFloatInput
             name="valor"
             type="text"
@@ -475,69 +463,62 @@ function fecharForm() {
               atualizarValorTotal('valor', newValue, setFieldValue);
             }"
           />
+
           <ErrorMessage
             class="error-msg mb2"
             name="valor"
           />
         </div>
-      </fieldset>
 
-      <fieldset class="padding-sm mb2 flex">
-        <LabelFromYup as="legend">
-          Custeio
-        </LabelFromYup>
-        <div class="flex f1 g2 center">
-          <div class="fb20em">
-            <LabelFromYup
-              name="percentagem_custeio"
-              :schema="schema"
-            />
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="custeio"
+            :schema="schema"
+          />
+
+          <div class="flex center g1">
             <MaskedFloatInput
-              name="percentagem_custeio"
+              name="custeio_porcentagem"
               type="text"
               class="inputtext light"
-              :value="values.percentagem_custeio"
+              :value="values.custeio_porcentagem"
               :max="100"
               maxlength="6"
               converter-para="string"
               @update:model-value="(newValue) => {
-                atualizarValorTotal('percentagem_custeio', newValue, setFieldValue);
+                atualizarValorTotal('custeio_porcentagem', newValue, setFieldValue);
               }"
             />
-          </div>
-          <small
-            class="addlink mt2 text-center"
-            style="cursor: default;"
-          >OU</small>
-          <div class="fb50em">
-            <LabelFromYup
-              name="custeio"
-              :schema="schema"
-            />
-            <MaskedFloatInput
-              name="custeio"
-              type="text"
-              class="inputtext light"
-              :value="values.custeio"
-              converter-para="string"
-              @update:model-value="(newValue) => {
-                atualizarValorTotal('custeio', newValue, setFieldValue);
-              }"
-            />
+
+            <small
+              class="addlink text-center"
+              style="cursor: default;"
+            >
+              OU
+            </small>
+
+            <div>
+              <MaskedFloatInput
+                name="custeio"
+                type="text"
+                class="inputtext light"
+                :value="values.custeio"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('custeio', newValue, setFieldValue);
+                }"
+              />
+            </div>
           </div>
         </div>
-      </fieldset>
 
-      <fieldset class="padding-sm mb2 flex">
-        <LabelFromYup as="legend">
-          Investimento
-        </LabelFromYup>
-        <div class="flex f1 g2 center">
-          <div class="fb20em">
-            <LabelFromYup
-              name="percentagem_investimento"
-              :schema="schema"
-            />
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="investimento"
+            :schema="schema"
+          />
+
+          <div class="flex center g1">
             <MaskedFloatInput
               name="percentagem_investimento"
               type="text"
@@ -550,16 +531,14 @@ function fecharForm() {
                 atualizarValorTotal('percentagem_investimento', newValue, setFieldValue);
               }"
             />
-          </div>
-          <small
-            class="addlink mt2 text-center"
-            style="cursor: default;"
-          >OU</small>
-          <div class="fb50em">
-            <LabelFromYup
-              name="investimento"
-              :schema="schema"
-            />
+
+            <small
+              class="addlink text-center"
+              style="cursor: default;"
+            >
+              OU
+            </small>
+
             <MaskedFloatInput
               name="investimento"
               type="text"
@@ -572,441 +551,556 @@ function fecharForm() {
             />
           </div>
         </div>
-      </fieldset>
+      </div>
 
-      <div class="halfInput">
-        <LabelFromYup
-          name="valor_contrapartida"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="valor_contrapartida"
-          type="text"
-          class="inputtext light mb2"
-          :value="values.valor_contrapartida || 0"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            atualizarValorTotal('valor_contrapartida', newValue, setFieldValue);
-          }"
-        />
-        <ErrorMessage
-          class="error-msg mb2"
-          name="valor_contrapartida"
-        />
-      </div>
-    </div>
-
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="valor_total"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="valor_total"
-          type="text"
-          class="inputtext light mb1"
-          :value="values.valor_total"
-          converter-para="string"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="valor_total"
-        />
-        <div
-          v-if="!props.transferenciaId || !isSomaCorreta"
-          class="tamarelo"
-        >
-          A soma dos valores não corresponde ao valor total.
-        </div>
-      </div>
-      <div class="f1 fb5em">
-        <LabelFromYup
-          name="empenho"
-          :schema="schema"
-        />
-        <Field
-          name="empenho"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ error: errors.empenho }"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false ">
-            Não
-          </option>
-        </Field>
-        <div class="error-msg">
-          {{ errors.empenho }}
-        </div>
-      </div>
-      <div
-        v-if="values.empenho"
-        class="f1 fb10em mb1"
-      >
-        <LabelFromYup
-          name="data_empenho"
-          :schema="schema"
-        />
-        <Field
-          name="data_empenho"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ error: errors.data_empenho }"
-          maxlength="10"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('data_empenho', null);
-          }"
-        />
-        <ErrorMessage
-          name="conclusao_suspensiva"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="mb1">
-      <div class="f1 mb2">
-        <LabelFromYup
-          name="programa_orcamentario_municipal"
-          :schema="schema"
-        />
-        <Field
-          name="programa_orcamentario_municipal"
-          type="text"
-          class="inputtext light mb1"
-          @change="($event) => {
-            if ($event?.target?.value === '') {
-              setFieldValue('programa_orcamentario_municipal', null);
-            }
-          }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="programa_orcamentario_municipal"
-        />
-      </div>
-      <div class="f1 mb2">
-        <LabelFromYup
-          name="programa_orcamentario_estadual"
-          :schema="schema"
-        />
-        <Field
-          name="programa_orcamentario_estadual"
-          type="text"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="programa_orcamentario_estadual"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="dotacao"
-          :schema="schema"
-        />
-        <Field
-          name="dotacao"
-          type="text"
-          class="inputtext light mb1"
-          placeholder="00.00.00.000.0000.0.000.00000000.00"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="dotacao"
-        />
-      </div>
-    </div>
-
-    <div class="mb2">
-      <LabelFromYup
-        :schema="schema"
-        name="registros_sei"
-        as="legend"
-        class="label mb1"
-      />
-      <FieldArray
-        v-slot="{ fields, push, remove }"
-        name="registros_sei"
-      >
-        <div
-          v-for="(field, idx) in fields"
-          :key="field.key"
-          class="flex flexwrap justifyright g2 mb2"
-        >
-          <Field
-            :name="`registros_sei[${idx}].id`"
-            type="hidden"
-            class="inputtext light"
+      <div class="flex mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="valor_contrapartida"
+            :schema="schema"
           />
-          <div
-            class="f1 fb15em"
-          >
-            <LabelFromYup
-              name="processo_sei"
-              :schema="schema.fields.registros_sei.innerType"
-              class="tc300"
-            />
-            <Field
-              v-maska
-              :name="`registros_sei[${idx}].processo_sei`"
-              type="text"
-              class="inputtext light"
-              maxlength="40"
-              data-maska="####.####/#######-#"
-            />
 
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`registros_sei[${idx}].processo_sei`"
-            />
+          <MaskedFloatInput
+            name="valor_contrapartida"
+            type="text"
+            class="inputtext light mb2"
+            :value="values.valor_contrapartida || 0"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              atualizarValorTotal('valor_contrapartida', newValue, setFieldValue);
+            }"
+          />
+
+          <ErrorMessage
+            class="error-msg mb2"
+            name="valor_contrapartida"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="valor_total"
+            :schema="schema"
+          />
+
+          <MaskedFloatInput
+            name="valor_total"
+            type="text"
+            class="inputtext light mb1"
+            :value="values.valor_total"
+            converter-para="string"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="valor_total"
+          />
+
+          <div
+            v-if="!props.transferenciaId || !isSomaCorreta"
+            class="tamarelo"
+          >
+            A soma dos valores não corresponde ao valor total.
           </div>
+        </div>
+      </div>
 
+      <div class="mb1">
+        <LabelFromYup
+          :schema="schema"
+          name="parlamentares"
+          as="legend"
+          class="label mb1"
+        />
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="parlamentares"
+        >
           <div
-            class="f1 fb15em"
+            v-for="(field, idx) in fields"
+            :key="field.key"
+            class="flex flexwrap justifyright g2"
           >
-            <LabelFromYup
-              name="nome"
-              :schema="schema.fields.registros_sei.innerType"
-              class="tc300"
-            />
             <Field
-              :name="`registros_sei[${idx}].nome`"
-              type="text"
+              :name="`parlamentares[${idx}].id`"
+              type="hidden"
               class="inputtext light"
-              maxlength="1024"
             />
 
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`registros_sei[${idx}].nome`"
-            />
+            <div class="f1 fb15em">
+              <LabelFromYup
+                name="nome"
+                :schema="schema.fields.parlamentares.innerType"
+                class="tc300"
+              />
+              <Field
+                v-maska
+                :name="`parlamentares[${idx}].nome`"
+                type="text"
+                class="inputtext light"
+              />
+
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`parlamentares[${idx}].nome`"
+              />
+            </div>
+
+            <div
+              class="f1 fb15em"
+            >
+              <LabelFromYup
+                name="valor"
+                :schema="schema.fields.parlamentares.innerType"
+                class="tc300"
+              />
+
+              <MaskedFloatInput
+                :name="`parlamentares[${idx}].valor`"
+                type="text"
+                class="inputtext light"
+                :value="values.parlamentares[idx].valor"
+                :max="100"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal(`parlamentares[${idx}].valor`, newValue, setFieldValue);
+                }"
+              />
+
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`parlamentares[${idx}].valor`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink align-start mt2"
+              arial-label="excluir"
+              title="excluir"
+              type="button"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
           </div>
 
           <button
             class="like-a__text addlink mt1"
-            arial-label="excluir"
-            title="excluir"
             type="button"
-            @click="remove(idx)"
+            @click="push({ nome: '', processo_sei: '' })"
           >
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_+" /></svg>Adicionar registro
           </button>
+        </FieldArray>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="empenho"
+            :schema="schema"
+          />
+
+          <Field
+            name="empenho"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.empenho }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option :value="true">
+              Sim
+            </option>
+            <option :value="false ">
+              Não
+            </option>
+          </Field>
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="empenho"
+          />
         </div>
 
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="push({ nome: '', processo_sei: '' })"
+        <div class="f1">
+          <LabelFromYup
+            name="data_empenho"
+            :schema="schema"
+          />
+          <Field
+            name="data_empenho"
+            type="date"
+            :disabled="!values.empenho"
+            class="inputtext light mb1"
+            :class="{ error: errors.data_empenho }"
+            maxlength="10"
+          />
+
+          <ErrorMessage
+            name="data_empenho"
+            class="error-msg"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="programa_orcamentario_municipal"
+            :schema="schema"
+          />
+
+          <Field
+            name="programa_orcamentario_municipal"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="programa_orcamentario_municipal"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="programa_orcamentario_estadual"
+            :schema="schema"
+          />
+
+          <Field
+            name="programa_orcamentario_estadual"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="programa_orcamentario_estadual"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="dotacao"
+            :schema="schema"
+          />
+
+          <Field
+            name="dotacao"
+            type="text"
+            class="inputtext light mb1"
+            placeholder="00.00.00.000.0000.0.000.00000000.00"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="dotacao"
+          />
+        </div>
+      </div>
+
+      <div class="mb1">
+        <LabelFromYup
+          :schema="schema"
+          name="registros_sei"
+          as="legend"
+          class="label mb1"
+        />
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="registros_sei"
         >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar registro
-        </button>
-      </FieldArray>
-    </div>
+          <div
+            v-for="(field, idx) in fields"
+            :key="field.key"
+            class="flex flexwrap justifyright g2 mb1"
+          >
+            <Field
+              :name="`registros_sei[${idx}].id`"
+              type="hidden"
+              class="inputtext light"
+            />
 
-    <div class="flex flexwrap g2">
-      <div class="f1 fb10em mb1">
-        <LabelFromYup
-          name="proposta"
-          :schema="schema"
-        />
-        <Field
-          name="proposta"
-          type="text"
-          class="inputtext light mb1"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('proposta', null);
-          }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="proposta"
-        />
-      </div>
-      <div class="f1 fb10em mb1">
-        <LabelFromYup
-          name="convenio"
-          :schema="schema"
-        />
-        <Field
-          name="convenio"
-          type="text"
-          class="inputtext light mb1"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('convenio', null);
-          }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="convenio"
-        />
-      </div>
-    </div>
+            <div class="f1">
+              <LabelFromYup
+                name="processo_sei"
+                :schema="schema.fields.registros_sei.innerType"
+                class="tc300"
+              />
 
-    <div class="flex flexwrap g2">
-      <div class="f1 fb10em mb1">
-        <LabelFromYup
-          name="contrato"
-          :schema="schema"
-        />
-        <Field
-          name="contrato"
-          type="text"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="contrato"
-        />
-      </div>
-      <div class="f1 fb10em mb1">
-        <LabelFromYup
-          name="assinatura_termo_aceite"
-          :schema="schema"
-        />
-        <Field
-          name="assinatura_termo_aceite"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ error: errors.assinatura_termo_aceite }"
-          maxlength="10"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('assinatura_termo_aceite', $v || null); }"
-        />
-        <ErrorMessage
-          name="assinatura_termo_aceite"
-          class="error-msg"
-        />
-      </div>
-    </div>
+              <Field
+                v-maska
+                :name="`registros_sei[${idx}].processo_sei`"
+                type="text"
+                class="inputtext light"
+                maxlength="40"
+                data-maska="####.####/#######-#"
+              />
 
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="assinatura_estado"
-          :schema="schema"
-        />
-        <Field
-          name="assinatura_estado"
-          type="date"
-          class="inputtext light"
-          :class="{ error: errors.assinatura_estado }"
-          maxlength="10"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('assinatura_estado', $v || null); }"
-        />
-        <ErrorMessage
-          name="assinatura_estado"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="assinatura_municipio"
-          :schema="schema"
-        />
-        <Field
-          name="assinatura_municipio"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ error: errors.assinatura_municipio }"
-          maxlength="10"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('assinatura_municipio', $v || null); }"
-        />
-        <ErrorMessage
-          name="assinatura_municipio"
-          class="error-msg"
-        />
-      </div>
-    </div>
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`registros_sei[${idx}].processo_sei`"
+              />
+            </div>
 
-    <div class="flex flexwrap g2 mb3">
-      <div class="f1 fb10em mb1">
-        <LabelFromYup
-          name="vigencia"
-          :schema="schema"
-        />
-        <Field
-          name="vigencia"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ error: errors.vigencia }"
-          maxlength="10"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('vigencia', $v || null); }"
-        />
-        <ErrorMessage
-          name="vigencia"
-          class="error-msg"
-        />
-      </div>
-      <div
-        v-if="values.justificativa_aditamento
-          || values.justificativa_aditamento === ''"
-        class="f1 fb25em mb1"
-      >
-        <LabelFromYup
-          name="justificativa_aditamento"
-          :schema="schema"
-          :required="true"
-        />
-        <Field
-          name="justificativa_aditamento"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ error: errors.justificativa_aditamento }"
-          maxlength="250"
-        />
-        <ErrorMessage
-          name="justificativa_aditamento"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1 fb10em mb1">
-        <LabelFromYup
-          name="conclusao_suspensiva"
-          :schema="schema"
-        />
-        <Field
-          name="conclusao_suspensiva"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ error: errors.conclusao_suspensiva }"
-          maxlength="10"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('conclusao_suspensiva', $v || null); }"
-        />
-        <ErrorMessage
-          name="conclusao_suspensiva"
-          class="error-msg"
-        />
-      </div>
-    </div>
+            <div class="f1">
+              <LabelFromYup
+                name="nome"
+                :schema="schema.fields.registros_sei.innerType"
+                class="tc300"
+              />
 
-    <div class="flex spacebetween center mb1">
+              <Field
+                :name="`registros_sei[${idx}].nome`"
+                type="text"
+                class="inputtext light"
+                maxlength="1024"
+              />
+
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`registros_sei[${idx}].nome`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink mt1"
+              arial-label="excluir"
+              title="excluir"
+              type="button"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink mb1"
+            type="button"
+            @click="push({ nome: '', processo_sei: '' })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar registro
+          </button>
+        </FieldArray>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="proposta"
+            :schema="schema"
+          />
+
+          <Field
+            name="proposta"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="proposta"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="convenio"
+            :schema="schema"
+          />
+
+          <Field
+            name="convenio"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="convenio"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="contrato"
+            :schema="schema"
+          />
+
+          <Field
+            name="contrato"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="contrato"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="assinatura_termo_aceite"
+            :schema="schema"
+          />
+
+          <Field
+            name="assinatura_termo_aceite"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.assinatura_termo_aceite }"
+            maxlength="10"
+          />
+
+          <ErrorMessage
+            name="assinatura_termo_aceite"
+            class="error-msg"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="assinatura_estado"
+            :schema="schema"
+          />
+
+          <Field
+            name="assinatura_estado"
+            type="date"
+            class="inputtext light"
+            :class="{ error: errors.assinatura_estado }"
+            maxlength="10"
+          />
+
+          <ErrorMessage
+            name="assinatura_estado"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="assinatura_municipio"
+            :schema="schema"
+          />
+
+          <Field
+            name="assinatura_municipio"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.assinatura_municipio }"
+            maxlength="10"
+          />
+
+          <ErrorMessage
+            name="assinatura_municipio"
+            class="error-msg"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="vigencia"
+            :schema="schema"
+          />
+
+          <Field
+            name="vigencia"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.vigencia }"
+            maxlength="10"
+          />
+
+          <ErrorMessage
+            name="vigencia"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="f1 fb40">
+          <LabelFromYup
+            name="justificativa_aditamento"
+            :schema="schema"
+            :required="true"
+          />
+          <Field
+            name="justificativa_aditamento"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ error: errors.justificativa_aditamento }"
+            maxlength="250"
+          />
+          <ErrorMessage
+            name="justificativa_aditamento"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="conclusao_suspensiva"
+            :schema="schema"
+          />
+
+          <Field
+            name="conclusao_suspensiva"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.conclusao_suspensiva }"
+            maxlength="10"
+          />
+
+          <ErrorMessage
+            name="conclusao_suspensiva"
+            class="error-msg"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- <div class="flex spacebetween center mb1">
       <h3 class="title">
         Parlamentares
       </h3>
       <hr class="ml2 f1">
-    </div>
+    </div> -->
 
-    <div class="mb1">
+    <!-- <div class="mb1">
       <div
         v-for="(parlamentar, idx) in transferenciasVoluntariaEmFoco.parlamentares"
         :key="`parlamentares--${parlamentar.id}`"
@@ -1055,11 +1149,11 @@ function fecharForm() {
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <FormErrorsList :errors="errors" />
+    <!-- <FormErrorsList :errors="errors" /> -->
 
-    <div class="flex spacebetween center mb2">
+    <!-- <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
         class="btn big"
@@ -1071,7 +1165,7 @@ function fecharForm() {
         Salvar
       </button>
       <hr class="ml2 f1">
-    </div>
+    </div> -->
   </form>
 
   <span
