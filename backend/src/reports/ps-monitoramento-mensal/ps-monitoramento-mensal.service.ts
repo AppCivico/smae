@@ -206,9 +206,9 @@ export class PSMonitoramentoMensal implements ReportableService {
             { value: 'data_referencia', label: 'Data de Referencia' },
             { value: 'valor_nominal', label: 'Valor Nominal' },
             { value: 'valor_categorica', label: 'Valor Categórica' },
-            { value: 'data_preenchimento', label: 'Data de Preenchimento' },
+            { value: 'data_preenchimento', label: 'Data da Coleta' },
             { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
-            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Aprovador' },
+            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Conferidor' },
             { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
         ];
 
