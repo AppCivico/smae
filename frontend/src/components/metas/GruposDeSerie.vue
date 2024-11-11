@@ -33,6 +33,14 @@ const conteudoDoModal = computed(() => (route.meta.entidadeMãe === 'planoSetori
 
 const temVariavelCategorica = computed(() => !!props.g.variavel?.variavel_categorica_id);
 
+const categorias = {
+  1: 'imundo',
+  2: 'sujo',
+  3: 'limpo',
+  4: 'extremamente limpo',
+  5: 'limpissimo',
+};
+
 function nestLinhas(l) {
   const a = {};
   l.forEach((x) => {
@@ -93,11 +101,46 @@ function handleClick(obj) {
   }
 }
 
+function contarCategorias(elementos, categoriasLocais) {
+  const contagem = {};
+
+  Object.keys(categoriasLocais).forEach((categoria) => {
+    contagem[categoria] = 0;
+  });
+
+  elementos?.forEach((elemento) => {
+    if (contagem[elemento.categoria] !== undefined) {
+      contagem[elemento.categoria] += 1;
+    }
+  });
+
+  return contagem;
+}
+
+function obterTooltipTexto(item, index) {
+  const serieIndex = props.g.ordem_series?.indexOf(index);
+
+  if (serieIndex === -1 || !item.series[serieIndex] || !item.series[serieIndex].elementos?.length) {
+    return '-';
+  }
+
+  const contagem = contarCategorias(item.series[serieIndex].elementos, categorias);
+
+  return Object.entries(categorias)
+    .filter(([chave]) => contagem[chave] > 0)
+    .map(([chave, descricao]) => `- ${contagem[chave]} ${descricao}`)
+    .join('\n');
+}
+
 function obterValorTabela(item, index) {
   const serieIndex = props.g.ordem_series?.indexOf(index);
 
-  if (!item.series[serieIndex] || item.series[serieIndex].elementos?.length) {
+  if (serieIndex === -1 || !item.series[serieIndex]) {
     return '-';
+  }
+
+  if (item.series[serieIndex].elementos?.length > 1) {
+    return obterTooltipTexto(item, index);
   }
 
   const valor = item.series[serieIndex].valor_nominal;
@@ -112,6 +155,7 @@ function obterValorTabela(item, index) {
 
   return valor;
 }
+
 </script>
 <template>
   <SmallModal
@@ -158,7 +202,7 @@ function obterValorTabela(item, index) {
       </tr>
       <tbody>
         <tr
-          v-for="(val,i) in k[1]"
+          v-for="(val, i) in k[1]"
           :key="val.id ? val.id : i"
         >
           <td>
