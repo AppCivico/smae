@@ -2338,6 +2338,75 @@ export const transferenciasVoluntarias = object({
     .nullable(),
 });
 
+export const transferenciaVoluntariaDistribuicaoDeRecursos = object().shape({
+  gestor_municipal: string().label('Gestor Municipal').required(),
+  nome: string().label('Nome').required(),
+  objeto: string().label('Objeto/empreendimento').required(),
+  valor_repasse: number().label('Valor do repasse'),
+  custeio_porcento: number().label('custeio'),
+  custeio_bruto: number().label('custeio'),
+  investimento_porcento: number().label('investimento'),
+  investimento_bruto: number().label('investimento'),
+  valor_contrapartida: number().label('Valor contrapartida'),
+  valor_total: number().label('Valor total'),
+  parlamentar: array()
+    .label('Valor total')
+    .nullable()
+    .of(
+      object().shape({
+        parlamentar_id: number().label('parlamentar').required(),
+        parlamentar_valor: number().label('valor').required(),
+      }),
+    ),
+  empenho: boolean().label('Empenho'),
+  data_empenho: boolean().label('Data do Empenho'),
+  programa_orcamentario_municipal: number().label(
+    'programa orçamentário municipal',
+  ),
+  programa_orcamentario_estadual: number().label(
+    'programa orçamentário estadual',
+  ),
+  dotacao: number().label('Dotação'),
+  numero_sei: array()
+    .label('Número SEI')
+    .nullable()
+    .of(
+      object().shape({
+        numero_sei_processo: number().label('número SEI - Processo').required(),
+        numero_sei_nome: string().label('parlamentar').required(),
+      }),
+    ),
+  proposta: number().label('Proposta'),
+  convenio: number().label('número convênio/pré convênio'),
+  contrato: number().label('número do contrato'),
+  data_assinatura_aceite: date().label('data de assinatura do termo de aceite'),
+  data_assinatura_estado: date().label(
+    'data de assinatura do representante do estado',
+  ),
+  data_assinatura_munucipio: date().label(
+    'data de assinatura do representante do municipio',
+  ),
+  data_vigencia: string().label('data de vigência'),
+  justificativa_atendimento: string().label('justificativa para aditamento'),
+  data_conclusao_suspensiva: string().label('data de conclusão suspensiva'),
+  status: mixed()
+    .label('Status')
+    .oneOf([
+      'Registrado',
+      'Selecionado',
+      'EmPlanejamento',
+      'Planejado',
+      'Validado',
+      'EmAcompanhamento',
+      'Suspenso',
+      'Fechado',
+    ]),
+  data: date().label('Data'),
+  orgao_responsavel: string().label('Órgão Responsável'),
+  responsavel: string().label('Responsável'),
+  motivo: string().label('Motivo'),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
