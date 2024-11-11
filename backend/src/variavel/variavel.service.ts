@@ -818,8 +818,8 @@ export class VariavelService {
 
         // Não deixa vazar do periodo da variavel
         if (preenchimento_fim > maxDias)
-            throw new BadRequestException(`Preenchimento: Duração total excede o ${maxDias} dias`);
-        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração total excede o ${maxDias} dias`);
+            throw new BadRequestException(`Coleta: Duração total excede o ${maxDias} dias`);
+        if (validacao_fim > maxDias) throw new BadRequestException(`Conferencia: Duração total excede o ${maxDias} dias`);
         if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração total excede o ${maxDias} dias`);
 
         return {
