@@ -152,7 +152,7 @@ export class TransfereGovSyncService {
                 }
 
                 await this.syncAllEndpoints();
-                await this.createNotifications();
+                await this.criaNotasComunicados();
             });
         } catch (error) {
             this.logger.error(`Erro no sync TransfereGOV: ${error.message}`);
@@ -171,16 +171,7 @@ export class TransfereGovSyncService {
         return newItems;
     }
 
-    private async createNotifications(): Promise<void> {
-        const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
-        if (!envioAtivo || envioAtivo === 'false') return;
-
-        const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
-        const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
-        const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
-        // TODO? talvez essa regra aqui mude e não seja necessário disparar erro quando não houver configuração.
-        if (!orgaoId) throw new Error('Erro ao buscar configuração de orgão para envio de email');
-
+    private async criaNotasComunicados(): Promise<void> {
         const now = new Date();
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const novosItems = await prismaTx.comunicadoTransfereGov.findMany({
@@ -192,27 +183,8 @@ export class TransfereGovSyncService {
             });
             this.logger.log(`Criando ${novosItems.length} notas`);
 
-            const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, orgaoId);
-
             for (const item of novosItems) {
-                for (const email of recipientes) {
-                    await prismaTx.emaildbQueue.create({
-                        data: {
-                            id: uuidv7(),
-                            to: email,
-                            subject: subject || `SMAE - Novo comunicado Transfere GOV: ${item.titulo}`,
-                            template: 'comunicado-transfere-gov.html',
-                            variables: {
-                                titulo: item.titulo,
-                                data: Date2YMD.dbDateToDMY(item.publicado_em),
-                                descricao: item.descricao,
-                                link: new URL([this.baseUrl, 'comunicados-gerais'].join('/')),
-                                tipo: item.tipo,
-                            },
-                            config_id: 1,
-                        },
-                    });
-                }
+                await this.criaNotificacoesEmailComunicados(prismaTx, item);
 
                 const bloco = await this.blocosService.getTokenFor(
                     { transfere_gov: item.tipo.toString() },
@@ -247,6 +219,7 @@ export class TransfereGovSyncService {
                     prismaTx
                 );
             }
+
             // atualiza a data de atualização para evitar que a mesma nota seja criada novamente
             await prismaTx.comunicadoTransfereGov.updateMany({
                 where: { id: { in: novosItems.map((item) => item.id) } },
@@ -255,10 +228,39 @@ export class TransfereGovSyncService {
         });
     }
 
+    private async criaNotificacoesEmailComunicados(prismaTx: Prisma.TransactionClient, item: ComunicadoTransfereGov) {
+        const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
+        if (!envioAtivo || envioAtivo !== 'true') return;
+
+        const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+        const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
+        const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+        if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+        const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, orgaoId);
+        for (const email of recipientes) {
+            await prismaTx.emaildbQueue.create({
+                data: {
+                    id: uuidv7(),
+                    to: email,
+                    subject: subject || `SMAE - Novo comunicado Transfere GOV: ${item.titulo}`,
+                    template: 'comunicado-transfere-gov.html',
+                    variables: {
+                        titulo: item.titulo,
+                        data: Date2YMD.dbDateToDMY(item.publicado_em),
+                        descricao: item.descricao,
+                        link: new URL([this.baseUrl, 'comunicados-gerais'].join('/')),
+                        tipo: item.tipo,
+                    },
+                    config_id: 1,
+                },
+            });
+        }
+    }
+
     async manualSync(): Promise<ComunicadoTransfereGov[]> {
         this.logger.log('Iniciando sync manual TransfereGOV');
         const newItems = await this.syncAllEndpoints();
-        await this.createNotifications();
+        await this.criaNotasComunicados();
         return newItems;
     }
 
@@ -386,21 +388,22 @@ export class TransfereGovSyncService {
         }
 
         if (novasTransferencias.length > 0) {
-            await this.createNotificationsOportunidades(novasTransferencias);
+            await this.criaNotificacoesOportunidades(novasTransferencias);
         }
 
         return newItems;
     }
 
-    private async createNotificationsOportunidades(novasTransferencias: string[]) {
+    private async criaNotificacoesOportunidades(novasTransferencias: string[]) {
+        const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
+        if (!envioAtivo || envioAtivo !== 'true') return;
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
-            if (!envioAtivo || envioAtivo === 'false') return;
             // Quando forem adicionadas oportunidades novas de transferência
             // Deve ser enviado um email.
-            // "Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”
+            // "Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgao “SERI”
             const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
-            if (!orgaoConfig) throw new Error('Erro ao buscar configuração de orgão para envio de email');
+            if (!orgaoConfig) throw new Error('Erro ao buscar configuração de órgão para envio de email');
 
             const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, parseInt(orgaoConfig, 10));
 
