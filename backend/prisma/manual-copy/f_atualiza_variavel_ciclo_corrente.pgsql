@@ -349,6 +349,8 @@ BEGIN
             );
             UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada=true WHERE variavel_id = p_variavel_id;
 
+            PERFORM f_marca_serie_variavel_conferida(p_variavel_id, v_ultimo_periodo_valido);
+
             PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
             RETURN;
 
