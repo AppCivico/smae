@@ -98,7 +98,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
-
     <TítuloDePágina />
 
     <hr class="f1">
@@ -119,9 +118,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
       <li class="f0">
         <button
+          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn"
-          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
           @click="iniciarFase(idDaPróximaFasePendente)"
         >
           Iniciar fase
@@ -129,7 +128,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
       <li class="f0">
         <button
-          v-if="workflow.pode_passar_para_proxima_etapa && temPermissãoPara('CadastroWorkflows.editar')"
+          v-if="
+            workflow.pode_passar_para_proxima_etapa
+              && temPermissãoPara('CadastroWorkflows.editar')
+          "
           type="button"
           class="btn"
           @click="avançarEtapa"
@@ -215,7 +217,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </span>
             {{ formatarTexto(linha.dados_extra?.faseReaberta?.fase) || ' - ' }}
           </strong> <br>
-          <strong class="tc600">{{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}</strong>
+          <strong class="tc600">
+            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
+          </strong>
           <div class="flex mt1">
             <dl class="mr2">
               <p class="tc500 w700 mb0">
@@ -225,13 +229,15 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 <dt class="w700 mr1">
                   Órgão responsável:
                 </dt>
-                <dd> {{ linha.dados_extra?.faseReaberta?.orgao_responsavel?.sigla || ' - ' }} </dd>
+                <dd>{{ linha.dados_extra?.faseReaberta?.orgao_responsavel?.sigla || ' - ' }}</dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Pessoa responsável:
                 </dt>
-                <dd>{{ linha.dados_extra?.faseReaberta?.pessoa_responsavel?.nome_exibicao || ' - ' }} </dd>
+                <dd>
+                  {{ linha.dados_extra?.faseReaberta?.pessoa_responsavel?.nome_exibicao || ' - ' }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
@@ -243,7 +249,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 <dt class="w700 mr1">
                   Situação:
                 </dt>
-                <dd>{{ formatarTexto(linha.dados_extra?.faseReaberta?.situacao?.tipo_situacao) || ' - ' }} </dd>
+                <dd>
+                  {{ formatarTexto(
+                    linha.dados_extra?.faseReaberta?.situacao?.tipo_situacao
+                  ) || ' - ' }}
+                </dd>
               </div>
             </dl>
             <dl
@@ -257,25 +267,37 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 <dt class="w700 mr1">
                   Órgão responsável:
                 </dt>
-                <dd> {{ linha.dados_extra?.faseIncompleta?.orgao_responsavel?.sigla || ' - ' }} </dd>
+                <dd>
+                  {{ linha.dados_extra?.faseIncompleta?.orgao_responsavel?.sigla || ' - ' }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Pessoa responsável:
                 </dt>
-                <dd> {{ linha.dados_extra?.faseIncompleta?.pessoa_responsavel?.nome_exibicao || ' - ' }} </dd>
+                <dd>
+                  {{
+                    linha.dados_extra?.faseIncompleta?.pessoa_responsavel?.nome_exibicao || ' - '
+                  }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Data de início:
                 </dt>
-                <dd>{{ dateToField(linha.dados_extra?.faseIncompleta?.data_inicio) || ' - ' }} </dd>
+                <dd>
+                  {{ dateToField(linha.dados_extra?.faseIncompleta?.data_inicio) || ' - ' }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Situação:
                 </dt>
-                <dd>{{ formatarTexto(linha.dados_extra?.faseIncompleta?.situacao?.tipo_situacao) || ' - ' }} </dd>
+                <dd>
+                  {{ formatarTexto(
+                    linha.dados_extra?.faseIncompleta?.situacao?.tipo_situacao
+                  ) || ' - ' }}
+                </dd>
               </div>
             </dl>
           </div>
@@ -749,7 +771,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </h3>
     <hr class="f1">
     <SmaeLink
-      :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
+      :to="{ name: 'TransferenciaDistribuicaoDeRecursos.Lista' }"
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"
     >
