@@ -2055,18 +2055,18 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Número convênio/pré-convênio')
     .nullable(),
   custeio: number()
-    .label('Custeio')
+    .label('Custeio (R$)')
     .min(0)
     .required(),
   custeio_porcentagem: number()
-    .label('Porcentagem do custeio')
+    .label('custeio (%)')
     .min(0),
   investimento: number()
-    .label('Investimento')
+    .label('Investimento (R$)')
     .min(0)
     .required(),
-  percentagem_investimento: number()
-    .label('Porcentagem do Investimento')
+  investimento_porcentagem: number()
+    .label('Investimento (%)')
     .min(0),
   data_empenho: date()
     .label('Data do empenho')

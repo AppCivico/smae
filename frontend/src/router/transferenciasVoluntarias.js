@@ -4,6 +4,7 @@ import NotasCriarEditar from '@/components/notas/NotasCriarEditar.vue';
 import NotasLista from '@/components/notas/NotasLista.vue';
 import NotasRaiz from '@/components/notas/NotasRaiz.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import DialogWrapper from '@/views/DialogWrapper.vue';
 import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
@@ -12,8 +13,8 @@ import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
-import TransferenciaDistribuicaoDeRecursosCriarEditarForm from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
-import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
+import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
+import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
 import TransferenciasVoluntariasDetalhes from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue';
 import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDocumentos.vue';
@@ -35,7 +36,7 @@ const rotasParaMenuSecundário = [
     rotas: [
       'TransferenciasVoluntariaEditar',
       'RegistroDeTransferenciaEditar',
-      // 'TransferenciaDistribuicaoDeRecursosEditarLista',
+      'TransferenciaDistribuicaoDeRecursos.Lista',
     ],
   },
 ];
@@ -86,19 +87,53 @@ export default {
           'TransferenciasVoluntariasDetalhes',
         ],
       },
+      props: ({ params }) => ({
+        ...params,
+        ...{
+          transferenciaId:
+        Number.parseInt(params.transferenciaId, 10) || undefined,
+        },
+      }),
       children: [
         {
-          props: ({ params }) => ({
-            ...params,
-            ...{
-              transferenciaId:
-            Number.parseInt(params.transferenciaId, 10) || undefined,
-            },
-          }),
-          name: 'TransferenciaDistribuicaoDeRecursosEditarLista',
+          name: 'TransferenciaDistribuicaoDeRecursos.Lista',
           path: '',
-          component: TransferenciaDistribuicaoDeRecursosCriarEditar, // Dev - teste
+          component: TransferenciaDistribuicaoDeRecursosLista,
         },
+        {
+          name: 'TransferenciaDistribuicaoDeRecursos.Novo',
+          path: 'novo',
+          component: TransferenciaDistribuicaoDeRecursosCriarEditar,
+          meta: {
+            título: 'Novo Recurso',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'TransferenciaDistribuicaoDeRecursos.Lista',
+            ],
+          },
+        },
+        {
+          name: 'TransferenciaDistribuicaoDeRecursos.Editar',
+          path: ':recursoId',
+          component: TransferenciaDistribuicaoDeRecursosCriarEditar,
+          meta: {
+            título: () => {
+              const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
+              if (!distribuicaoRecursosStore.itemParaEdicao) {
+                return 'Editar Recurso';
+              }
+
+              return distribuicaoRecursosStore.itemParaEdicao.nome;
+            },
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'TransferenciaDistribuicaoDeRecursos.Lista',
+            ],
+          },
+        },
+
       ],
     },
     {
