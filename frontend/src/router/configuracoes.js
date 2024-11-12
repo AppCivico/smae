@@ -270,6 +270,9 @@ export default [
             component: PaineisExternosCriarEditar,
             meta: {
               título: 'Novo painel externo',
+              rotasParaMigalhasDePão: [
+                'paineisExternosListar',
+              ],
             },
           },
           {
@@ -283,6 +286,9 @@ export default [
 
             meta: {
               título: 'Editar painel externo',
+              rotasParaMigalhasDePão: [
+                'paineisExternosListar',
+              ],
             },
           },
         ],

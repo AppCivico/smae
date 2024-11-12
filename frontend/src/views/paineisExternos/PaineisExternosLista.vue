@@ -78,6 +78,17 @@ portfolioStore.buscarTudo();
           </a>
         </td>
         <td>
+          <SmaeLink
+            :to="{ name: 'paineisExternosEditar', params: { painelId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </td>
+        <td>
           <button
             class="like-a__text"
             arial-label="excluir"
@@ -89,17 +100,6 @@ portfolioStore.buscarTudo();
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            :to="{ name: 'paineisExternosEditar', params: { painelId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
