@@ -270,6 +270,9 @@ export default [
             component: PaineisExternosCriarEditar,
             meta: {
               título: 'Novo painel externo',
+              rotasParaMigalhasDePão: [
+                'paineisExternosListar',
+              ],
             },
           },
           {
@@ -283,6 +286,9 @@ export default [
 
             meta: {
               título: 'Editar painel externo',
+              rotasParaMigalhasDePão: [
+                'paineisExternosListar',
+              ],
             },
           },
         ],
@@ -787,7 +793,10 @@ export default [
             path: 'novo',
             component: GruposDePaineisExternosCriarEditar,
             meta: {
-              título: 'Novo Grupos de Painéis Externos',
+              título: 'Novo Grupo de Painéis Externos',
+              rotasParaMigalhasDePão: [
+                'grupospaineisExternosListar',
+              ],
             },
           },
           {
@@ -801,9 +810,11 @@ export default [
                   || undefined,
               },
             }),
-
             meta: {
               título: 'Editar grupo de painel externo',
+              rotasParaMigalhasDePão: [
+                'grupospaineisExternosListar',
+              ],
             },
           },
         ],

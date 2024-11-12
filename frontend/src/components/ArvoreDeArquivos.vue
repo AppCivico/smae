@@ -121,6 +121,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           @editar="($params) => $emit('editar', $params)"
         >
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
+            
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
               :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"

@@ -96,11 +96,10 @@ watch(itemParaEdicao, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Grupos de Painéis Externos' }}</h1>
+    <h1>{{ route?.meta?.título || 'Grupo de Painéis Externos' }}</h1>
     <hr class="ml2 f1">
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>
-
   <form
     v-if="!gruposPaineisExternosId || emFoco"
     :disabled="chamadasPendentes.emFoco"
@@ -122,12 +121,10 @@ watch(itemParaEdicao, (novosValores) => {
           name="titulo"
         />
       </div>
-
       <div class="f1 mb1">
         <LabelFromYup
           name="orgao_id"
           :schema="schema"
-          class="tc300"
         />
         <Field
           name="orgao_id"
