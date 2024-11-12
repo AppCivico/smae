@@ -106,7 +106,6 @@ const éPossívelAbrir = (item) => !item.children?.length
               height="20"
             ><use xlink:href="#i_+" /></svg>
           </SmaeLink>
-          </SmaeLink>
         </span>
         <ArvoreDeArquivos
           :key="`diretorio--${item.id || i}__arvore`"
