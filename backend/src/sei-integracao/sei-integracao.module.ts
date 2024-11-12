@@ -4,6 +4,7 @@ import { SeiApiModule } from '../sei-api/sei-api.module';
 import { SeiIntegracaoController } from './sei-integracao.controller';
 import { SeiIntegracaoService } from './sei-integracao.service';
 import { JwtModule } from '@nestjs/jwt';
+import { SmaeConfigModule } from '../common/services/smae-config.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
         }),
+        SmaeConfigModule,
     ],
     controllers: [SeiIntegracaoController],
     providers: [SeiIntegracaoService],
