@@ -125,7 +125,6 @@ watch(itemParaEdicao, (novosValores) => {
         <LabelFromYup
           name="orgao_id"
           :schema="schema"
-          class="tc300"
         />
         <Field
           name="orgao_id"
