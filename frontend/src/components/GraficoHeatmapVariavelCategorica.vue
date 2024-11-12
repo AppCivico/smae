@@ -140,7 +140,7 @@ const updateChartData = () => {
         color: [
           '#d2dfe9',
           '#b4cada',
-          '#8fboc8',
+          '#8fb0c8',
           '#6995b6',
           '#447ba3',
           '#1e6091',

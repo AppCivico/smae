@@ -15,6 +15,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -29,7 +30,8 @@ export class SeiIntegracaoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly sei: SeiApiService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
@@ -607,6 +609,9 @@ export class SeiIntegracaoService {
                 return;
             }
 
+            const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+            const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+
             const gestores = await prismaTx.pessoa.findMany({
                 where: {
                     desativado: false,
@@ -617,6 +622,9 @@ export class SeiIntegracaoService {
                             },
                         },
                     },
+                    pessoa_fisica: orgaoId ? {
+                        orgao_id: orgaoId,
+                    } : undefined,
                 },
                 select: { email: true },
             });

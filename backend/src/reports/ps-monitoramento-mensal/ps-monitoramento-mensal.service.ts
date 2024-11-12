@@ -54,6 +54,8 @@ export class PSMonitoramentoMensal implements ReportableService {
 
         const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
 
+        const conferida = params.conferida !== undefined ? (params.conferida ? 'true' : 'false') : 'true';
+
         const paramMesAno = params.ano + '-' + params.mes + '-01';
         let sql: string = `select
                             i.id as indicador_id,
@@ -144,6 +146,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                     INNER JOIN variavel v ON v.id = vvp.variavel_id :listar_variaveis_regionalizadas
                     LEFT JOIN regiao r ON v.regiao_id = r.id
                     INNER JOIN serie_variavel sv ON sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
+                        AND conferida = ${conferida}::boolean
                     LEFT JOIN variavel_global_ciclo_analise vgcaP ON vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaP.referencia_data = sv.data_valor
                         and vgcaP.fase = 'Preenchimento'

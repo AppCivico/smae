@@ -5310,6 +5310,8 @@ model Parlamentar {
 
     cpf String?
 
+    vetores_busca              Unsupported("tsvector")?           @default(dbgenerated())
+
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
 
