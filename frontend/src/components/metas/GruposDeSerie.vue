@@ -33,14 +33,6 @@ const conteudoDoModal = computed(() => (route.meta.entidadeMãe === 'planoSetori
 
 const temVariavelCategorica = computed(() => !!props.g.variavel?.variavel_categorica_id);
 
-const categorias = {
-  1: 'imundo',
-  2: 'sujo',
-  3: 'limpo',
-  4: 'extremamente limpo',
-  5: 'limpissimo',
-};
-
 function nestLinhas(l) {
   const a = {};
   l.forEach((x) => {
@@ -101,8 +93,10 @@ function handleClick(obj) {
   }
 }
 
-function contarCategorias(elementos, categoriasLocais) {
+function contarCategorias(elementos) {
   const contagem = {};
+
+  const categoriasLocais = props.g.dados_auxiliares?.categoricas || {};
 
   Object.keys(categoriasLocais).forEach((categoria) => {
     contagem[categoria] = 0;
@@ -124,9 +118,9 @@ function obterTooltipTexto(item, index) {
     return '-';
   }
 
-  const contagem = contarCategorias(item.series[serieIndex].elementos, categorias);
+  const contagem = contarCategorias(item.series[serieIndex].elementos);
 
-  return Object.entries(categorias)
+  return Object.entries(props.g.dados_auxiliares?.categoricas || {})
     .filter(([chave]) => contagem[chave] > 0)
     .map(([chave, descricao]) => `- ${contagem[chave]} ${descricao}`)
     .join('\n');
