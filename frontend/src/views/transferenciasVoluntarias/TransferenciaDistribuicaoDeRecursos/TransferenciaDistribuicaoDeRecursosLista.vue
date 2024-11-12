@@ -19,7 +19,7 @@
         tabindex="0"
         class="mb1"
       >
-        <table class="tablemain mb1">
+        <table class="tablemain mb1 mt1">
           <thead>
             <tr>
               <th>Gestor municipal</th>
@@ -30,7 +30,6 @@
                 Data de vigência
               </th>
               <th>Nome</th>
-              <th />
               <th />
             </tr>
           </thead>
@@ -52,23 +51,52 @@
               <td>
                 {{ item.nome || '-' }}
               </td>
-              <td>
-                <button
+              <td class="tc">
+                <SmaeLink
                   class="like-a__text"
                   arial-label="editar"
                   title="editar"
-                  type="button"
-                  @click="editarDistribuicaoRecursos(item.id)"
+                  :to="{
+                    name: 'TransferenciaDistribuicaoDeRecursos.Editar',
+                    params: {
+                      ...$route.params,
+                      recursoId: item.id,
+                    },
+                  }"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                  >
-                    <use xlink:href="#i_edit" />
-                  </svg>
-                </button>
-              </td>
-              <td>
+                  <span class="tipinfo">
+                    <svg
+                      width="20"
+                      height="20"
+                    >
+                      <use xlink:href="#i_edit" />
+                    </svg>
+                    <div>Editar </div>
+                  </span>
+                </SmaeLink>
+
+                <SmaeLink
+                  class="mr1 ml1"
+                  :to="{
+                    name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
+                    params: {
+                      ...$route.params,
+                      recursoId: item.id,
+                    },
+                  }"
+                >
+                  <span class="tipinfo">
+                    <svg
+                      width="20"
+                      height="20"
+                    >
+                      <use xlink:href="#i_check" />
+                    </svg>
+
+                    <div>Histórico de Status</div>
+                  </span>
+                </SmaeLink>
+
                 <button
                   class="like-a__text"
                   arial-label="excluir"
@@ -104,9 +132,11 @@
         </table>
       </div>
 
-      <button
+      <SmaeLink
         class="like-a__text addlink"
-        @click="registrarNovaDistribuicaoRecursos"
+        :to="{
+          name: 'TransferenciaDistribuicaoDeRecursos.Novo',
+        }"
       >
         <svg
           width="20"
@@ -114,7 +144,7 @@
         >
           <use xlink:href="#i_+" />
         </svg> Registrar nova distribuição de recurso
-      </button>
+      </SmaeLink>
     </div>
   </div>
 </template>
@@ -129,6 +159,7 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import SmaeLink from '@/components/SmaeLink.vue';
 
 const router = useRouter();
 const { params } = useRoute();
@@ -151,19 +182,7 @@ async function excluirDistribuição(id) {
 }
 
 function registrarNovaDistribuicaoRecursos() {
-  router.push({
-    name: 'TransferenciaDistribuicaoDeRecursos.Novo',
-  });
-}
-
-function editarDistribuicaoRecursos(itemId) {
-  router.push({
-    name: 'TransferenciaDistribuicaoDeRecursos.Editar',
-    params: {
-      ...params,
-      recursoId: itemId,
-    },
-  });
+  router.push();
 }
 
 function voltarTela() {

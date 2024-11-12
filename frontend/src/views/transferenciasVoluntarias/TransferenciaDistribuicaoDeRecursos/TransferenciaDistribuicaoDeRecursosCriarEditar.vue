@@ -1,5 +1,4 @@
 <script setup>
-
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -19,47 +18,32 @@ import {
   watch,
 } from 'vue';
 
-import { parlamentar, transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePartidosStore } from '@/stores/partidos.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import TransferenciasDistribuicaoStatusCriarEditar from '../TransferenciasDistribuicaoStatusCriarEditar.vue';
 
+const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
-const partidoStore = usePartidosStore();
-const ParlamentaresStore = useParlamentaresStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
-
-const {
-  chamadasPendentes, erro, itemParaEdicao, emFoco: distribuiçãoEmFoco,
-} = storeToRefs(distribuicaoRecursos);
-
-const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
-const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-
-const {
-  lista: parlamentarComoLista,
-  parlamentaresPorId,
-  paginação: paginaçãoDeParlamentares,
-} = storeToRefs(ParlamentaresStore);
-const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const router = useRouter();
 const { params } = useRoute();
 const formularioSujo = useIsFormDirty();
 
-const alertStore = useAlertStore();
+const {
+  chamadasPendentes, erro, itemParaEdicao, emFoco: distribuiçãoEmFoco,
+} = storeToRefs(distribuicaoRecursos);
+
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+
 const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
-const exibirModalStatus = ref(false);
-const statusEmFoco = ref(null);
 
 const itemParaEdicaoFormatado = computed(() => ({
   ...itemParaEdicao.value,
@@ -191,29 +175,9 @@ watch(() => values.vigencia, (novoValor) => {
   }
 });
 
-function abrirModalStatus(statusItem = null) {
-  statusEmFoco.value = statusItem;
-  exibirModalStatus.value = true;
-}
-
-function fecharModalStatus(carregar = false) {
-  statusEmFoco.value = null;
-  exibirModalStatus.value = false;
-
-  if (carregar) {
-    distribuicaoRecursos.buscarItem(distribuiçãoEmFoco.value.id);
-  }
-}
-
 onMounted(async () => {
-  partidoStore.buscarTudo();
   ÓrgãosStore.getAll();
   await TransferenciasVoluntarias.buscarItem(params.transferenciaId);
-  await ParlamentaresStore.buscarTudo();
-
-  if (params.recursoId) {
-    await distribuicaoRecursos.buscarItem(params.recursoId);
-  }
 });
 
 onUnmounted(() => {
@@ -1016,90 +980,4 @@ onUnmounted(() => {
       <hr class="ml2 f1">
     </div>
   </form>
-
-  <details
-    v-if="distribuiçãoEmFoco?.historico_status.length"
-    class="mb1"
-  >
-    <summary
-      class="label mb0"
-      style="line-height: 1.5rem;"
-    >
-      Visualizar histórico de status
-    </summary>
-
-    <table class="tablemain">
-      <thead>
-        <tr>
-          <th>DATA</th>
-          <th>STATUS</th>
-          <th>ÓRGÃO</th>
-          <th>RESPONSÁVEL</th>
-          <th>MOTIVO</th>
-          <th>TOTAL DE DIAS NO STATUS</th>
-          <th />
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr
-          v-for="item in distribuiçãoEmFoco.historico_status"
-          :key="item.id"
-        >
-          <td>
-            {{
-              item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : ''
-            }}
-          </td>
-          <td>{{ item.status_base?.nome || item.status_customizado?.nome }}</td>
-          <td>{{ item.orgao_responsavel?.sigla }}</td>
-          <td>{{ item.nome_responsavel }}</td>
-          <td>{{ item.motivo }}</td>
-          <td>{{ item.dias_no_status }}</td>
-          <td>
-            <button
-              v-if="
-                item.id === distribuiçãoEmFoco.historico_status[distribuiçãoEmFoco.historico_status.length - 1].id
-              "
-              class="like-a__text"
-              arial-label="editar"
-              title="editar"
-              type="button"
-              @click="abrirModalStatus(item)"
-            >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_edit" />
-              </svg>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </details>
-
-  <button
-    v-if="distribuiçãoEmFoco"
-    class="like-a__text addlink"
-    type="button"
-    @click="abrirModalStatus(null)"
-  >
-    <svg
-      width="20"
-      height="20"
-    >
-      <use xlink:href="#i_+" />
-    </svg>Adicionar status
-  </button>
-
-  <TransferenciasDistribuicaoStatusCriarEditar
-    v-if="exibirModalStatus"
-    :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id"
-    :distribuicao-id="distribuiçãoEmFoco?.id"
-    :status-em-foco="statusEmFoco"
-    @fechar-modal="fecharModalStatus"
-    @salvou-status="fecharModalStatus(true)"
-  />
 </template>

@@ -13,14 +13,16 @@ import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
-import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
-import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
 import TransferenciasVoluntariasDetalhes from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue';
 import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDocumentos.vue';
 import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
+import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
+import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
+import TransferenciaDistribuicaoDeRecursosStatus from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosStatus.vue';
+import TransferenciaDistribuicaoDeRecursosEditarRaiz from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosEditarRaiz.vue';
 
 const rotasParaMenuSecundário = [
   {
@@ -71,9 +73,7 @@ export default {
       meta: {
         título: 'Formulário de registro',
         limitarÀsPermissões: 'CadastroTransferencia.editar',
-        rotasParaMigalhasDePão: [
-          'TransferenciasVoluntariasListar',
-        ],
+        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
     {
@@ -91,7 +91,7 @@ export default {
         ...params,
         ...{
           transferenciaId:
-        Number.parseInt(params.transferenciaId, 10) || undefined,
+            Number.parseInt(params.transferenciaId, 10) || undefined,
         },
       }),
       children: [
@@ -114,26 +114,45 @@ export default {
           },
         },
         {
-          name: 'TransferenciaDistribuicaoDeRecursos.Editar',
           path: ':recursoId',
-          component: TransferenciaDistribuicaoDeRecursosCriarEditar,
-          meta: {
-            título: () => {
-              const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
-              if (!distribuicaoRecursosStore.itemParaEdicao) {
-                return 'Editar Recurso';
-              }
+          component: TransferenciaDistribuicaoDeRecursosEditarRaiz,
+          children: [
+            {
+              meta: {
+                título: () => {
+                  const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
+                  if (!distribuicaoRecursosStore.itemParaEdicao?.nome) {
+                    return 'Editar Recurso';
+                  }
 
-              return distribuicaoRecursosStore.itemParaEdicao.nome;
+                  return distribuicaoRecursosStore.itemParaEdicao.nome;
+                },
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                ],
+              },
+              path: '',
+              name: 'TransferenciaDistribuicaoDeRecursos.Editar',
+              component: TransferenciaDistribuicaoDeRecursosCriarEditar,
             },
-            rotasParaMigalhasDePão: [
-              'TransferenciasVoluntariasListar',
-              'TransferenciasVoluntariasDetalhes',
-              'TransferenciaDistribuicaoDeRecursos.Lista',
-            ],
-          },
+            {
+              path: 'status',
+              name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
+              component: TransferenciaDistribuicaoDeRecursosStatus,
+              meta: {
+                título: 'Histórico de Status',
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'TransferenciaDistribuicaoDeRecursos.Editar',
+                ],
+              },
+            },
+          ],
         },
-
       ],
     },
     {
@@ -455,7 +474,8 @@ export default {
               props: ({ params }) => ({
                 ...params,
                 tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
-                transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+                transferenciaId:
+                  Number.parseInt(params.transferenciaId, 10) || undefined,
               }),
               meta: {
                 título: 'Resumo Atividade',

@@ -136,20 +136,16 @@
 </template>
 
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { statusDistribuicao as schema } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-} from 'vee-validate';
-import { computed, watch } from 'vue';
+import SmallModal from '@/components/SmallModal.vue';
 
 const ÓrgãosStore = useOrgansStore();
 const fluxosProjetosStore = useFluxosProjetosStore();
@@ -211,9 +207,16 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       : 'Item adicionado com sucesso!';
 
     if (props.statusEmFoco?.id) {
-      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId, props.statusEmFoco.id);
+      response = await statusDistribuicaoStore.salvarItem(
+        cargaManipulada,
+        props.distribuicaoId,
+        props.statusEmFoco.id,
+      );
     } else {
-      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId);
+      response = await statusDistribuicaoStore.salvarItem(
+        cargaManipulada,
+        props.distribuicaoId,
+      );
     }
     if (response) {
       alertStore.success(msg);
