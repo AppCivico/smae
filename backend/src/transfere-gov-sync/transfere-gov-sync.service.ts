@@ -172,6 +172,9 @@ export class TransfereGovSyncService {
     }
 
     private async createNotifications(): Promise<void> {
+        const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
+        if (!envioAtivo || envioAtivo === 'false') return;
+
         const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
         const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
         const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
@@ -373,9 +376,8 @@ export class TransfereGovSyncService {
                     },
                 });
 
-                newItems.push(result);
-
                 if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
+                    newItems.push(result);
                     novasTransferencias.push(result.nome_programa);
                 }
             } catch (error) {
@@ -384,36 +386,42 @@ export class TransfereGovSyncService {
         }
 
         if (novasTransferencias.length > 0) {
-            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-                // Quando forem adicionadas oportunidades novas de transferência
-                // Deve ser enviado um email.
-                // "Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”"
-                const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
-                if (!orgaoConfig) throw new Error('Erro ao buscar configuração de orgão para envio de email');
-
-                const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, parseInt(orgaoConfig, 10));
-
-                for (const oportunidadePrograma of novasTransferencias) {
-                    for (const recipiente of recipientes) {
-                        await prismaTx.emaildbQueue.create({
-                            data: {
-                                id: uuidv7(),
-                                config_id: 1,
-                                subject: `SMAE - Nova emenda disponível`,
-                                template: 'transferegov-nova-oportunidade.html',
-                                to: recipiente,
-                                variables: {
-                                    programa: oportunidadePrograma,
-                                    link: new URL([this.baseUrl, 'oportunidades'].join('/')),
-                                },
-                            },
-                        });
-                    }
-                }
-            });
+            await this.createNotificationsOportunidades(novasTransferencias);
         }
 
         return newItems;
+    }
+
+    private async createNotificationsOportunidades(novasTransferencias: string[]) {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
+            if (!envioAtivo || envioAtivo === 'false') return;
+            // Quando forem adicionadas oportunidades novas de transferência
+            // Deve ser enviado um email.
+            // "Para: todos os usuários com perfil “Gestor Casa Civil”  e que são do Orgão “SERI”
+            const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+            if (!orgaoConfig) throw new Error('Erro ao buscar configuração de orgão para envio de email');
+
+            const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, parseInt(orgaoConfig, 10));
+
+            for (const oportunidadePrograma of novasTransferencias) {
+                for (const recipiente of recipientes) {
+                    await prismaTx.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `SMAE - Nova emenda disponível`,
+                            template: 'transferegov-nova-oportunidade.html',
+                            to: recipiente,
+                            variables: {
+                                programa: oportunidadePrograma,
+                                link: new URL([this.baseUrl, 'oportunidades'].join('/')),
+                            },
+                        },
+                    });
+                }
+            }
+        });
     }
 
     private async buscarRecipientesEmailCasaCivil(
