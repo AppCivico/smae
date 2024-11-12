@@ -430,16 +430,6 @@ export class TransfereGovSyncService {
                         },
                     },
                 },
-            },
-            select: { email: true },
-        });
-
-        const pessoasCasaCivil = await prismaTx.pessoa.findMany({
-            orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
-            where: {
-                id: { gt: 0 },
-                NOT: { pessoa_fisica_id: null },
-                desativado: false,
                 pessoa_fisica: {
                     orgao_id: orgaoId,
                 },
@@ -447,7 +437,7 @@ export class TransfereGovSyncService {
             select: { email: true },
         });
 
-        const recipientes = [...new Set([...gestoresCasaCivil, ...pessoasCasaCivil].map((item) => item.email))];
+        const recipientes = [...new Set([...gestoresCasaCivil].map((item) => item.email))];
 
         return recipientes;
     }

@@ -544,13 +544,13 @@ export class IndicadorService {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.variavel_categoria_id !== undefined) {
-                    if (!formula || !formula_variaveis)
-                        throw new HttpException(
-                            'Para alterar a categoria da variável é necessário enviar a formula e as variáveis',
-                            400
-                        );
-
                     if (dto.variavel_categoria_id !== null) {
+                        if (formula === undefined || Array.isArray(formula_variaveis) === false)
+                            throw new HttpException(
+                                'Para alterar a categoria da variável é necessário enviar a formula e as variáveis',
+                                400
+                            );
+
                         if (formula_variaveis.length > 1)
                             throw new HttpException('Apenas uma variável é permitida para a categórica', 400);
                         if (formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)

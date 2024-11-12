@@ -2,6 +2,7 @@
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/truncate';
 import { ref } from 'vue';
+import oArquivoEhEditavel from './ArvoreDeArquivos.helpers/oArquivoEhEditavel';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -120,7 +121,6 @@ const éPossívelAbrir = (item) => !item.children?.length
           @editar="($params) => $emit('editar', $params)"
         >
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
-            
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
               :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"
@@ -167,11 +167,14 @@ const éPossívelAbrir = (item) => !item.children?.length
                   ><use xlink:href="#i_edit" /></svg>
                 </SmaeLink>
                 <button
-                  v-if="(arquivo.pode_editar != null && arquivo.pode_editar != undefined && arquivo.pode_editar && !apenasLeitura) || (arquivo.pode_editar == null && arquivo.pode_editar == undefined && !apenasLeitura)"
+                  v-if="oArquivoEhEditavel(apenasLeitura, arquivo.pode_editar)"
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
-                  @click="$emit('apagar', { id: arquivo?.id, nome: arquivo?.arquivo?.nome_original })"
+                  @click="$emit('apagar', {
+                    id: arquivo?.id,
+                    nome: arquivo?.arquivo?.nome_original
+                  })"
                 >
                   <svg
                     width="20"

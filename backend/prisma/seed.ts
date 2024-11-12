@@ -34,8 +34,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroPainelExterno: ['Painéis Externos', 'SMAE'],
     CadastroGrupoPainelExterno: ['Grupos de Painéis Externos', 'SMAE'],
 
-    // migração de PDM
-    CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
+    CadastroUnidadeMedida: ['Unidades de Medida', ['PlanoSetorial', 'PDM']],
 
     CadastroPdm: ['Programa de Metas', 'PDM'],
     CadastroOds: ['Categorias', ['PDM', 'PlanoSetorial']],
@@ -444,7 +443,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
-        ['CasaCivil.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
+        ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
@@ -866,7 +865,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
             // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
-            'CasaCivil.gestor_distribuicao_recurso',
+            'SMAE.gestor_distribuicao_recurso',
 
             'CadastroTransferencia.listar',
             'AndamentoWorkflow.listar',

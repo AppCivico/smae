@@ -5,5 +5,6 @@ export class RelatorioDto {
     fonte: string;
     arquivo: string;
     parametros: any;
+    parametros_processados: any;
     pdm_id: number | null;
 }

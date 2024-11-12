@@ -1448,7 +1448,7 @@ export class TransferenciaService {
             },
         });
 
-        const pode_editar: boolean = user.hasSomeRoles(['CasaCivil.gestor_distribuicao_recurso']) ? false : true;
+        const pode_editar: boolean = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) ? false : true;
 
         const documentosRet: TransferenciaAnexoDto[] = documentosDB.map((d) => {
             const link = this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token;

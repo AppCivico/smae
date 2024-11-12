@@ -4,8 +4,9 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
-import { MathRandom } from '../../common/math-random';
+import { SeriesArrayShuffle } from '../../common/shuffleArray';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelComCategorica, VariavelService } from '../../variavel/variavel.service';
@@ -43,7 +44,6 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -75,13 +75,6 @@ type SerieseTotais = {
     totais: VariavelQtdeDto;
     variaveis: VariavelComSeries[];
 };
-
-function shuffleArray(array: any[]) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(MathRandom() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
 
 export const TEMPO_EXPIRACAO_ARQUIVO = '180 minutes';
 type VariavelDetalhePorID = Record<number, VariavelDetalhe>;
@@ -567,7 +560,7 @@ export class MetasService {
         }
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        if (!process.env.DISABLE_SHUFFLE) shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+        SeriesArrayShuffle(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
 
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
         for (const r of seriesVariavel) {
@@ -1781,7 +1774,7 @@ export class MetasService {
         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+        SeriesArrayShuffle(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
 
         const serieValores = await this.prisma.serieVariavel.findMany({
             where: {

@@ -65,6 +65,7 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
+import { SeriesArrayShuffle } from '../common/shuffleArray';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -818,8 +819,8 @@ export class VariavelService {
 
         // Não deixa vazar do periodo da variavel
         if (preenchimento_fim > maxDias)
-            throw new BadRequestException(`Preenchimento: Duração total excede o ${maxDias} dias`);
-        if (validacao_fim > maxDias) throw new BadRequestException(`Validação: Duração total excede o ${maxDias} dias`);
+            throw new BadRequestException(`Coleta: Duração total excede o ${maxDias} dias`);
+        if (validacao_fim > maxDias) throw new BadRequestException(`Conferencia: Duração total excede o ${maxDias} dias`);
         if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração total excede o ${maxDias} dias`);
 
         return {
@@ -2596,6 +2597,7 @@ export class VariavelService {
         const variavel = selfItem[0];
 
         const series: Serie[] = [...ORDEM_SERIES_RETORNO];
+        SeriesArrayShuffle(series); // garante que o consumidor não está usando os valores das series cegamente
         if (filters.serie) {
             series.length = 0;
             for (const serie of ORDEM_SERIES_RETORNO) {

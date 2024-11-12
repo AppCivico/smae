@@ -385,7 +385,7 @@ export class TarefaService {
 
             // Caso seja Gestor de distribuição de recurso
             // Por mais que tenha o mesmo órgão que a tarefa, não pode editar.
-            if (user.hasSomeRoles(['CasaCivil.gestor_distribuicao_recurso'])) {
+            if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
                 return {
                     pode_editar: false,
                     pode_editar_realizado: false,

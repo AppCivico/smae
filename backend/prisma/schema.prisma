@@ -3408,7 +3408,8 @@ model Relatorio {
 
     pdm_id Int?
 
-    parametros Json @default("{}") @db.Json
+    parametros             Json  @default("{}") @db.Json
+    parametros_processados Json? @db.Json
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int?

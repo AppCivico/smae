@@ -1,28 +1,41 @@
 function filtrar(item, termos = '') {
-  return termos.split(' ').every((termo) => {
-    switch (true) {
-      case termo === '':
-        return true;
+  const termosEmLista = typeof termos === 'string'
+    ? termos.split(' ')
+    : [termos];
 
-      case typeof item === 'number':
-        return String(item).indexOf(termo) > -1;
+  return termosEmLista
+    .every((termo) => {
+      switch (true) {
+        case termo === '':
+          return true;
 
-      case typeof item === 'string':
-        return item.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().indexOf(termo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()) > -1;
+        case typeof termo === 'boolean' && typeof item !== 'object':
+        case typeof termo === 'number' && typeof item !== 'object':
+          return item === termo;
 
-      case Array.isArray(item):
-        return item.some((y) => filtrar(y, termo));
+        case typeof item === 'number':
+          return String(item).indexOf(termo) > -1;
 
-      case item !== null:
-        return Object.values(item).some((z) => filtrar(z, termo));
+        case typeof item === 'string':
+          return item.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().indexOf(termo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()) > -1;
+        case Array.isArray(item):
+          return item.some((y) => filtrar(y, termo));
 
-      default:
-        return false;
-    }
-  });
+        case item !== null:
+          return Object.values(item).some((z) => filtrar(z, termo));
+
+        default:
+          return false;
+      }
+    });
 }
 
-export default ((lista, termo) => (!termo.trim()
-  ? lista
-  : lista.filter((x) => filtrar(x, termo.trim()))
-));
+export default ((lista, termo) => {
+  const termoLimpo = typeof termo === 'string'
+    ? String(termo).trim()
+    : termo;
+
+  return !termoLimpo
+    ? lista
+    : lista.filter((x) => filtrar(x, termoLimpo));
+});
