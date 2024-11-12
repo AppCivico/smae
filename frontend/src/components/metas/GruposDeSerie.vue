@@ -244,7 +244,20 @@ function obterValorTabela(item, index) {
             </span>
           </td>
           <td>
-            {{ obterValorTabela(val, 'Realizado') }}
+            <div
+              v-if="val.series[props.g.ordem_series?.indexOf('Realizado')]?.elementos?.length > 1"
+              class="tipinfo ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>
+                {{ obterValorTabela(val, 'Realizado') }}
+              </div>
+            </div>
+            <span v-else>
+              {{ obterValorTabela(val, 'Realizado') }}
+            </span>
           </td>
           <td>
             <span v-if="!temVariavelAcumulada">
