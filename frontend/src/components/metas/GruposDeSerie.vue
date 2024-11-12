@@ -93,11 +93,48 @@ function handleClick(obj) {
   }
 }
 
+function contarCategorias(elementos) {
+  const contagem = {};
+
+  const categoriasLocais = props.g.dados_auxiliares?.categoricas || {};
+
+  Object.keys(categoriasLocais).forEach((categoria) => {
+    contagem[categoria] = 0;
+  });
+
+  elementos?.forEach((elemento) => {
+    if (contagem[elemento.categoria] !== undefined) {
+      contagem[elemento.categoria] += 1;
+    }
+  });
+
+  return contagem;
+}
+
+function obterTooltipTexto(item, index) {
+  const serieIndex = props.g.ordem_series?.indexOf(index);
+
+  if (serieIndex === -1 || !item.series[serieIndex] || !item.series[serieIndex].elementos?.length) {
+    return '-';
+  }
+
+  const contagem = contarCategorias(item.series[serieIndex].elementos);
+
+  return Object.entries(props.g.dados_auxiliares?.categoricas || {})
+    .filter(([chave]) => contagem[chave] > 0)
+    .map(([chave, descricao]) => `- ${contagem[chave]} ${descricao}`)
+    .join('\n');
+}
+
 function obterValorTabela(item, index) {
   const serieIndex = props.g.ordem_series?.indexOf(index);
 
-  if (!item.series[serieIndex]) {
+  if (serieIndex === -1 || !item.series[serieIndex]) {
     return '-';
+  }
+
+  if (item.series[serieIndex].elementos?.length > 1) {
+    return obterTooltipTexto(item, index);
   }
 
   const valor = item.series[serieIndex].valor_nominal;
@@ -112,6 +149,7 @@ function obterValorTabela(item, index) {
 
   return valor;
 }
+
 </script>
 <template>
   <SmallModal
@@ -158,7 +196,7 @@ function obterValorTabela(item, index) {
       </tr>
       <tbody>
         <tr
-          v-for="(val,i) in k[1]"
+          v-for="(val, i) in k[1]"
           :key="val.id ? val.id : i"
         >
           <td>
@@ -184,10 +222,36 @@ function obterValorTabela(item, index) {
             </div>
           </td>
           <td>
-            {{ obterValorTabela(val, 'Previsto') }}
+            <div
+              v-if="val.series[props.g.ordem_series?.indexOf('Previsto')]?.elementos?.length > 1"
+              class="tipinfo ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>
+                {{ obterValorTabela(val, 'Previsto') }}
+              </div>
+            </div>
+            <span v-else>
+              {{ obterValorTabela(val, 'Previsto') }}
+            </span>
           </td>
           <td>
-            {{ obterValorTabela(val, 'Realizado') }}
+            <div
+              v-if="val.series[props.g.ordem_series?.indexOf('Realizado')]?.elementos?.length > 1"
+              class="tipinfo ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>
+                {{ obterValorTabela(val, 'Realizado') }}
+              </div>
+            </div>
+            <span v-else>
+              {{ obterValorTabela(val, 'Realizado') }}
+            </span>
           </td>
           <td>
             <span v-if="!temVariavelAcumulada">
