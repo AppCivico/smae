@@ -40,8 +40,8 @@ relatoriosStore.getAll({ fonte });
   </header>
 
   <p class="texto--explicativo">
-    SMAE gera um conjunto de 4 planilhas contendo os dados do ciclo mensal de
-    monitoramento físico do mês informado.
+    O SMAE gera um conjunto de 4 planilhas, contendo os dados do ciclo mensal de monitoramento 
+    físico do mês informado, considerando somente as variáveis que estiverem LIBERADAS.
   </p>
 
   <table class="tablemain">

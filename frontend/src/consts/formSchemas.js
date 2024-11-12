@@ -911,11 +911,11 @@ export const indicador = object()
 export const grupoDeObservadores = object({
   participantes: array()
     .label('Participantes')
-    .required(),
+    .nullable(),
   orgao_id: number()
     .label('Órgão responsável')
     .min(1, 'Selecione um órgão responsável')
-    .nullable(),
+    .required(),
   titulo: string()
     .label('Nome')
     .required(),

@@ -787,7 +787,10 @@ export default [
             path: 'novo',
             component: GruposDePaineisExternosCriarEditar,
             meta: {
-              título: 'Novo Grupos de Painéis Externos',
+              título: 'Novo Grupo de Painéis Externos',
+              rotasParaMigalhasDePão: [
+                'grupospaineisExternosListar',
+              ],
             },
           },
           {
@@ -801,9 +804,11 @@ export default [
                   || undefined,
               },
             }),
-
             meta: {
               título: 'Editar grupo de painel externo',
+              rotasParaMigalhasDePão: [
+                'grupospaineisExternosListar',
+              ],
             },
           },
         ],
