@@ -1,29 +1,31 @@
 <template>
-  <output>
-    <slot
-      v-if="itemSelecionado"
-      name="valor-exibido"
-      :item="itemSelecionado"
+  <div class="flex g1">
+    <output class="inputtext light output">
+      <slot
+        v-if="itemSelecionado"
+        name="valor-exibido"
+        :item="itemSelecionado"
+      >
+        {{ valorExibido }}
+      </slot>
+      <span v-else>
+        Escolha uma opção
+      </span>
+    </output>
+    <button
+      class="btn"
+      @click="toggleModal"
     >
-      {{ valorExibido }}
-    </slot>
-    <span v-else>
-      Escolha uma opção
-    </span>
-  </output>
-  <button
-    type="button"
-    @click="toggleModal"
-  >
-    {{ itemSelecionado ? 'Alterar' : 'Selecionar' }}
-  </button>
+      {{ itemSelecionado ? 'Alterar' : 'Selecionar' }}
+    </button>
+  </div>
 
   <SmallModal
     :active="estaAberto"
     @close="toggleModal"
   >
     <form @submit.prevent="onSubmit">
-      <div class="flex center mb2">
+      <div class="flex g1 mb2">
         <input
           id="palavra-chave"
           v-model="valorDaBusca"
@@ -32,7 +34,7 @@
           type="search"
         >
         <button
-          class="btn bgnone outline center"
+          class="btn"
           type="submit"
         >
           Buscar
@@ -65,7 +67,7 @@
             />
             <td>
               <button
-                class="btn"
+                class="btn bgnone outline tcprimary"
                 @click="selecionarItem(item)"
               >
                 Selecionar
@@ -179,3 +181,10 @@ function selecionarItem(item) {
   toggleModal();
 }
 </script>
+<style scoped>
+.output {
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+</style>
