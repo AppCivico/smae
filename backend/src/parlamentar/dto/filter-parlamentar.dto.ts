@@ -24,6 +24,10 @@ export class FilterParlamentarDto {
      */
     token_proxima_pagina?: string;
 
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    palavra_chave?: string;
     /**
      * itens por pagina, padrão 50
      * @example "50"
