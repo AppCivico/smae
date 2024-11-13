@@ -791,7 +791,12 @@ export class OrcamentoRealizadoService {
                     },
                 },
             },
-            orderBy: [{ meta_id: 'asc' }, { iniciativa_id: 'asc' }, { atividade_id: 'asc' }, { id: 'asc' }],
+            orderBy: [
+                { meta: { codigo: 'asc' } },
+                { iniciativa: { codigo: 'asc' } },
+                { atividade: { codigo: 'asc' } },
+                { id: 'asc' },
+            ],
         });
 
         const notaEncontradas: Record<string, boolean> = {};
@@ -924,6 +929,10 @@ export class OrcamentoRealizadoService {
 
         const rows: PPOrcamentoRealizado[] = [];
 
+        const orc_config = await this.prisma.portfolio.findFirst({
+            where: { id: projeto.portfolio_id },
+            select: { orcamento_execucao_disponivel_meses: true },
+        });
         for (const orcaRealizado of queryRows) {
             let smae_soma_valor_empenho: string | null = null;
             let smae_soma_valor_liquidado: string | null = null;
@@ -982,11 +991,6 @@ export class OrcamentoRealizadoService {
             if (orcaRealizado.nota_empenho && orcaRealizado.nota_empenho.includes('/' + orcaRealizado.ano_referencia)) {
                 orcaRealizado.nota_empenho = orcaRealizado.nota_empenho.substring(0, 5);
             }
-
-            const orc_config = await this.prisma.portfolio.findFirst({
-                where: { id: projeto.portfolio_id },
-                select: { orcamento_execucao_disponivel_meses: true },
-            });
 
             rows.push({
                 id: orcaRealizado.id,

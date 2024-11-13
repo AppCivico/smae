@@ -975,7 +975,12 @@ export class OrcamentoRealizadoService {
                     },
                 },
             },
-            orderBy: [{ meta_id: 'asc' }, { iniciativa_id: 'asc' }, { atividade_id: 'asc' }, { id: 'asc' }],
+            orderBy: [
+                { meta: { codigo: 'asc' } },
+                { iniciativa: { codigo: 'asc' } },
+                { atividade: { codigo: 'asc' } },
+                { id: 'asc' },
+            ],
         });
 
         const notaEncontradas: Record<string, boolean> = {};
@@ -1108,6 +1113,11 @@ export class OrcamentoRealizadoService {
 
         const rows: OrcamentoRealizado[] = [];
 
+        const orc_config = await this.prisma.pdmOrcamentoConfig.findFirst({
+            where: { pdm_id: pdm_id, ano_referencia: filters.ano_referencia },
+            select: { execucao_disponivel_meses: true },
+        });
+
         for (const orcaRealizado of queryRows) {
             let smae_soma_valor_empenho: string | null = null;
             let smae_soma_valor_liquidado: string | null = null;
@@ -1163,14 +1173,9 @@ export class OrcamentoRealizadoService {
 
             // só retorna o ano quando for diferente do ano de referencia
             if (orcaRealizado.nota_empenho && orcaRealizado.nota_empenho.includes('/' + orcaRealizado.ano_referencia)) {
-                const tmp  = orcaRealizado.nota_empenho.split('/');
+                const tmp = orcaRealizado.nota_empenho.split('/');
                 orcaRealizado.nota_empenho = tmp[0];
             }
-
-            const orc_config = await this.prisma.pdmOrcamentoConfig.findFirst({
-                where: { pdm_id: pdm_id, ano_referencia: filters.ano_referencia },
-                select: { execucao_disponivel_meses: true },
-            });
 
             rows.push({
                 id: orcaRealizado.id,
