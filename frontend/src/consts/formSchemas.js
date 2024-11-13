@@ -3839,7 +3839,7 @@ export const variavelGlobal = object({
   medicao_orgao_id: number()
     .label('Órgão responsável pela coleta')
     .positive()
-    .nullableOuVazio(),
+    .required(),
   validacao_orgao_id: number()
     .label('Órgão responsável pela conferência')
     .positive()
