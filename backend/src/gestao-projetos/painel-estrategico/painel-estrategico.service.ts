@@ -613,8 +613,10 @@ export class PainelEstrategicoService {
 
     private async buildExecucaoOrcamentariaAno(filtro: PainelEstrategicoFilterDto) {
         let projectIds = '';
+        let hasProjetos = '-1';
         if (filtro.projeto_id.length > 0) {
-            projectIds = filtro.projeto_id.toString();
+            hasProjetos = '0';
+            projectIds = filtro.projeto_id.join(',');
         }
 
         //Cria o filtro de portfolio
@@ -666,10 +668,10 @@ export class PainelEstrategicoService {
                 DATE_PART('YEAR', CURRENT_DATE)::INT + 3
             ) years(yr)
             LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr
-                AND tc.projeto_id = ${projectIds}
-            LEFT JOIN projeto_base p ON p.id = ${projectIds}
+                AND (tc.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1)
+            LEFT JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
             LEFT JOIN orcamento_realizado orcr ON orcr.ano_referencia = years.yr
-                AND orcr.projeto_id = ${projectIds}
+                AND (orcr.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1 )
                 AND orcr.removido_em IS NULL
             GROUP BY years.yr
             ORDER BY years.yr`;
