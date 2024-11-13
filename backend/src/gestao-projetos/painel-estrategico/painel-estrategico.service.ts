@@ -612,78 +612,69 @@ export class PainelEstrategicoService {
     }
 
     private async buildExecucaoOrcamentariaAno(filtro: PainelEstrategicoFilterDto) {
-        //Constroi o filter
-        let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
-        //Cria apenas os projetos e orgãos responsáveis
-        strFilterGeral = '';
+        let projectIds = '';
         if (filtro.projeto_id.length > 0) {
-            strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
+            projectIds = filtro.projeto_id.toString();
         }
-        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
-            strFilterGeral += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
-        }
+
         //Cria o filtro de portfolio
         let strPortfolio = '';
         let strPortfolio2 = '';
         if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
-            strPortfolio += ' and  pr.portfolio_id  in (' + filtro.portfolio_id.toString() + ')';
+            strPortfolio += ' and pr.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
 
-        const sql = `select  sum(custo_planejado_total) as custo_planejado_total,
-                             sum(valor_empenhado_total) as valor_empenhado_total,
-                             sum(valor_liquidado_total) as valor_liquidado_total,
-                             ano_referencia
-                     from (select
-                               sum(coalesce(tc.previsao_custo, 0))::float as custo_planejado_total,
-                               sum(orcr.soma_valor_empenho)::float as valor_empenhado_total ,
-                               sum(orcr.soma_valor_liquidado)::float as valor_liquidado_total,
-                               orcr.ano_referencia
-                           from orcamento_realizado orcr
-                                    inner join
-                                (select
-                                     pr.id,
-                                     pr.orgao_responsavel_id
-                                 from projeto pr
-                                 where   pr.removido_em is null
-                                   and pr.arquivado = false
-                                   and pr.tipo = 'PP'
-                                   ${strPortfolio}
-                                 union
-                                 select
-                                     p.id,
-                                     p.orgao_responsavel_id
-                                 from projeto p,
-                                      portfolio_projeto_compartilhado pp
-                                 where pp.projeto_id = p.id
-                                   and pp.removido_em is null
-                                   and p.removido_em is null
-                                   and p.arquivado = false
-                                   and p.tipo = 'PP'
-                                   ${strPortfolio2}
-                                ) p
-                                on orcr.projeto_id = p.id
-                               full outer join (select
-                               tc.previsao_custo,
-                               date_part('year',tc.previsao_termino) as ano_referencia ,
-                               tc.projeto_id
-                               from tarefa_cronograma tc
-                               where tc.removido_em is null) as tc on tc.projeto_id = p.id
-                               and tc.ano_referencia = orcr.ano_referencia
-                           WHERE orcr.ano_referencia between date_part('year', current_date)-3
-                             and date_part('year', current_date)+3
-                             and orcr.removido_em is null
-                             ${strFilterGeral}
-                           group by orcr.ano_referencia
-                           union
-                           select
-                               0 as custo_planejado_total,
-                               0 as valor_empenhado_total,
-                               0 as valor_liquidado_total,
-                               t.yr as ano_referencia
-                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT + 3) t(yr)) as t
-                     group by ano_referencia`;
-        return (await await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
+        const sql = `
+            WITH projeto_base AS (
+                SELECT pr.id,
+                       pr.orgao_responsavel_id
+                FROM projeto pr
+                WHERE pr.removido_em IS NULL
+                  AND pr.arquivado = FALSE
+                  AND pr.tipo = 'PP'
+                  ${strPortfolio}
+                UNION
+                SELECT p.id,
+                       p.orgao_responsavel_id
+                FROM projeto p,
+                     portfolio_projeto_compartilhado pp
+                WHERE pp.projeto_id = p.id
+                  AND pp.removido_em IS NULL
+                  AND p.removido_em IS NULL
+                  AND p.arquivado = FALSE
+                  AND p.tipo = 'PP'
+                  ${strPortfolio2}
+            ),
+            tarefa_custos AS (
+                SELECT t.custo_estimado AS previsao_custo,
+                       date_part('year', t.termino_planejado) AS ano_referencia,
+                       tc.projeto_id
+                FROM tarefa_cronograma tc
+                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                WHERE tc.removido_em IS NULL
+                  AND t.n_filhos_imediatos = 0
+                  AND t.removido_em IS NULL
+            )
+            SELECT
+                sum(COALESCE(tc.previsao_custo, 0))::float AS custo_planejado_total,
+                sum(COALESCE(orcr.soma_valor_empenho, 0))::float AS valor_empenhado_total,
+                sum(COALESCE(orcr.soma_valor_liquidado, 0))::float AS valor_liquidado_total,
+                years.yr AS ano_referencia
+            FROM generate_series(
+                DATE_PART('YEAR', CURRENT_DATE)::INT - 3,
+                DATE_PART('YEAR', CURRENT_DATE)::INT + 3
+            ) years(yr)
+            LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr
+                AND tc.projeto_id = ${projectIds}
+            LEFT JOIN projeto_base p ON p.id = ${projectIds}
+            LEFT JOIN orcamento_realizado orcr ON orcr.ano_referencia = years.yr
+                AND orcr.projeto_id = ${projectIds}
+                AND orcr.removido_em IS NULL
+            GROUP BY years.yr
+            ORDER BY years.yr`;
+
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
     }
 
     private async encodeNextPageTokenListaExecucaoOrcamentaria(
