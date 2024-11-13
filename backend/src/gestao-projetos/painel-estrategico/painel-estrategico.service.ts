@@ -1,9 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-    PainelEstrategicoFilterDto,
-    PainelEstrategicoListaFilterDto,
-} from './dto/painel-estrategico-filter.dto';
+import { PainelEstrategicoFilterDto, PainelEstrategicoListaFilterDto } from './dto/painel-estrategico-filter.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
     PainelEstrategicoExecucaoOrcamentariaAno,
@@ -34,13 +31,12 @@ export class PainelEstrategicoService {
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
         private readonly jwtService: JwtService,
-        private readonly geolocService: GeoLocService,
-    ) {
-    }
+        private readonly geolocService: GeoLocService
+    ) {}
 
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
         //Já realiza o filtro dos ids dos projetos e adiciona no filtro recebido
-        filtro = await this.addPermissaoProjetos(filtro,user);
+        filtro = await this.addPermissaoProjetos(filtro, user);
         const strFilter = this.applyFilter(filtro);
         const response = new PainelEstrategicoResponseDto();
         response.grandes_numeros = await this.buildGrandeNumeros(strFilter);
@@ -58,11 +54,11 @@ export class PainelEstrategicoService {
         response.execucao_orcamentaria_ano = await this.buildExecucaoOrcamentariaAno(filtro);
         return response;
     }
-    private async addPermissaoProjetos(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt){
+    private async addPermissaoProjetos(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt) {
         if (!filtro.projeto_id) {
             filtro.projeto_id = [];
-            await this.projetoService.findAllIds('PP', user).then(ids => {
-                ids.forEach(n => filtro.projeto_id.push(n.id));
+            await this.projetoService.findAllIds('PP', user).then((ids) => {
+                ids.forEach((n) => filtro.projeto_id.push(n.id));
             });
         }
         return filtro;
@@ -74,10 +70,10 @@ export class PainelEstrategicoService {
         if (filtro.projeto_id.length > 0) {
             strFilter += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
-        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
             strFilter += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
-        if (filtro.portfolio_id && filtro.portfolio_id.length>0) {
+        if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
             strFilter += ' and coalesce(po.portfolio_id,p.portfolio_id) in (+' + filtro.portfolio_id.toString() + ')';
         }
         return strFilter;
@@ -119,7 +115,7 @@ export class PainelEstrategicoService {
                                 ${filtro}
                                 and pm.tipo = 'PDM' ) as total_metas`;
 
-        return (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoGrandesNumeros[])[0];
+        return ((await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoGrandesNumeros[])[0];
     }
 
     private async buildProjetosPorStatus(filtro: string) {
@@ -147,7 +143,7 @@ export class PainelEstrategicoService {
                                     WHEN t.status = 'Outros' THEN 1
                                     ELSE 0
                                     END, quantidade desc`;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetoStatus[];
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
     }
 
     private async buildProjetosPorEtapas(filtro: string) {
@@ -172,7 +168,7 @@ export class PainelEstrategicoService {
                            ${filtro}) as t
                       group by t.etapa, ordem
                       order by ordem desc`;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetoEtapa[];
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
     }
 
     private async buildProjetosConcluidosPorAno(filtro: string) {
@@ -198,7 +194,7 @@ export class PainelEstrategicoService {
                            from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT) t(yr)) t
                      group by ano
                      order by ano`;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
     }
 
     async buildProjetosConcluidosPorMesAno(filtro: string) {
@@ -241,7 +237,7 @@ export class PainelEstrategicoService {
                                                                                             linha,
                                                                                             coluna
                                                                                    order by  ano,mes `;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
     }
 
     private async buildProjetosPlanejadosPorAno(filtro: string) {
@@ -268,7 +264,7 @@ export class PainelEstrategicoService {
                                                 DATE_PART('YEAR', CURRENT_DATE)::INT+3) t(yr)) as t
                      group by ano
                      order by ano desc`;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosAno[];
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
     }
 
     private async buildProjetosPlanejadosPorMesAno(filtro: string) {
@@ -310,7 +306,7 @@ export class PainelEstrategicoService {
                                              '1 month'::interval) t(data_) ) t) t
                      group by ano, mes, coluna
                      order by ano,mes`;
-        return await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoProjetosMesAno[];
+        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
     }
 
     private async buildProjetosOrgaoResponsavel(filtro: string) {
@@ -347,8 +343,9 @@ export class PainelEstrategicoService {
                                    from tmp_dash_org_resp
                                    where orgao_sigla not in (select orgao_sigla from tmp_dash_org_resp limit 10)) t
                              order by indice desc, quantidade desc;`;
-                return await prismaTx.$queryRawUnsafe(sql) as PainelEstrategicoOrgaoResponsavel[];
-            });
+                return (await prismaTx.$queryRawUnsafe(sql)) as PainelEstrategicoOrgaoResponsavel[];
+            }
+        );
     }
 
     buildAnosMapaCalor(anoBase: number, quantidadeAnos: number): number[] {
@@ -360,10 +357,10 @@ export class PainelEstrategicoService {
                 resultado.push(anoBase);
             }
             resultado.sort((a, b) => {
-                if (a > b){
+                if (a > b) {
                     return -1;
                 }
-                if (a < b){
+                if (a < b) {
                     return 1;
                 }
                 return 0;
@@ -376,7 +373,6 @@ export class PainelEstrategicoService {
         }
         return resultado;
     }
-
 
     private async buildQuantidadesProjeto(filtro: string) {
         const sql = `select (select count(distinct p.id)::int as quantidade
@@ -407,11 +403,13 @@ export class PainelEstrategicoService {
                                and date_part('year', tc.realizado_termino) =
                                    date_part('year', CURRENT_DATE)) as quantidade_concluida,
                             date_part('year',current_date)::int as ano`;
-        return (await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoQuantidadesAnoCorrente[])[0];
+        return ((await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoQuantidadesAnoCorrente[])[0];
     }
 
-    async listaProjetosPaginado(filtro: PainelEstrategicoListaFilterDto, user: PessoaFromJwt):
-        Promise<PaginatedWithPagesDto<PainelEstrategicoProjeto>> {
+    async listaProjetosPaginado(
+        filtro: PainelEstrategicoListaFilterDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<PainelEstrategicoProjeto>> {
         let retToken = filtro.token_paginacao;
         const filterToken = filtro.token_paginacao;
         let ipp = filtro.ipp ?? 25;
@@ -425,7 +423,7 @@ export class PainelEstrategicoService {
         delete filtro.pagina;
         delete filtro.token_paginacao;
         let now = new Date(Date.now());
-        filtro = await this.addPermissaoProjetos(filtro,user);
+        filtro = await this.addPermissaoProjetos(filtro, user);
         const whereFilter = this.applyFilter(filtro);
         if (filterToken) {
             const decoded = this.decodeNextPageToken(filterToken, filtro);
@@ -465,7 +463,7 @@ export class PainelEstrategicoService {
                      ${whereFilter}
                      order by etapa
                      limit ${ipp} offset ${offset}`;
-        const linhas = await this.prisma.$queryRawUnsafe(sql) as any[];
+        const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
 
         const retorno: PainelEstrategicoProjeto[] = [];
         linhas.forEach((linha) => {
@@ -507,19 +505,18 @@ export class PainelEstrategicoService {
             linhas: retorno,
             token_ttl: PAGINATION_TOKEN_TTL,
         };
-
     }
 
     private async encodeNextPageTokenListaProjetos(
         whereFilter: string,
         issued_at: Date,
         filter: PainelEstrategicoListaFilterDto,
-        ipp?: number,
+        ipp?: number
     ): Promise<{
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const quantidade_rows = await this.prisma.$queryRawUnsafe(`select count(distinct p.id) ::int
+        const quantidade_rows = (await this.prisma.$queryRawUnsafe(`select count(distinct p.id) ::int
                                                                    FROM projeto p
                                                                    full outer JOIN (SELECT
                                                                                         ppc.projeto_id,
@@ -531,7 +528,7 @@ export class PainelEstrategicoService {
                                                                             left join projeto_etapa pe on pe.id = p.projeto_etapa_id
                                                                             left join orgao org on org.id = p.orgao_responsavel_id
                                                                             left join meta m on m.id = p.meta_id
-                                                                       ${whereFilter} `) as any;
+                                                                       ${whereFilter} `)) as any;
 
         const body = {
             search_hash: Object2Hash(filter),
@@ -545,7 +542,10 @@ export class PainelEstrategicoService {
         };
     }
 
-    private decodeNextPageToken(jwt: string | undefined, filters: PainelEstrategicoListaFilterDto): AnyPageTokenJwtBody {
+    private decodeNextPageToken(
+        jwt: string | undefined,
+        filters: PainelEstrategicoListaFilterDto
+    ): AnyPageTokenJwtBody {
         let tmp: AnyPageTokenJwtBody | null = null;
 
         try {
@@ -557,7 +557,7 @@ export class PainelEstrategicoService {
         if (tmp.search_hash != Object2Hash(filters))
             throw new HttpException(
                 'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
-                400,
+                400
             );
         return tmp;
     }
@@ -565,19 +565,19 @@ export class PainelEstrategicoService {
         //Constroi o filter
         let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
         //Cria apenas os projetos e orgãos responsáveis
-        strFilterGeral = " WHERE 1 = 1 ";
+        strFilterGeral = ' WHERE 1 = 1 ';
         if (filtro.projeto_id.length > 0) {
             strFilterGeral += ' and bp.id in (' + filtro.projeto_id.toString() + ')';
         }
-        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
             strFilterGeral += ' and bp.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
         //Cria o filtro de portfolio
         let strPortfolio = '';
         let strPortfolio2 = '';
-        if (filtro.portfolio_id && filtro.portfolio_id.length>0){
+        if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
             strPortfolio = ' and pr.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
-            strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')'
+            strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
         const sql = `select
                          sum((select previsao_custo total_custo from tarefa_cronograma tc where tc.projeto_id = bp.id and tc.removido_em is null)) custo_planejado_total,
@@ -607,25 +607,25 @@ export class PainelEstrategicoService {
                             and p.arquivado = false
                             and p.tipo = 'PP'
                             ${strPortfolio2}) bp
-                            ${strFilterGeral} `
-        return (await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoResumoOrcamentario[])[0];
+                            ${strFilterGeral} `;
+        return ((await await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoResumoOrcamentario[])[0];
     }
 
     private async buildExecucaoOrcamentariaAno(filtro: PainelEstrategicoFilterDto) {
         //Constroi o filter
         let strFilterGeral = " where p.removido_em is null and p.tipo ='PP' and arquivado = false ";
         //Cria apenas os projetos e orgãos responsáveis
-        strFilterGeral = "";
+        strFilterGeral = '';
         if (filtro.projeto_id.length > 0) {
             strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
-        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
             strFilterGeral += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
         //Cria o filtro de portfolio
         let strPortfolio = '';
         let strPortfolio2 = '';
-        if (filtro.portfolio_id && filtro.portfolio_id.length>0){
+        if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
             strPortfolio += ' and  pr.portfolio_id  in (' + filtro.portfolio_id.toString() + ')';
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
@@ -682,24 +682,22 @@ export class PainelEstrategicoService {
                                0 as valor_liquidado_total,
                                t.yr as ano_referencia
                            from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT + 3) t(yr)) as t
-                     group by ano_referencia`
-        return await await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaAno[];
-
+                     group by ano_referencia`;
+        return (await await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
     }
 
     private async encodeNextPageTokenListaExecucaoOrcamentaria(
         whereFilter: string,
-        portifolio_filter:string,
-        portifolio_filter2:string,
+        portifolio_filter: string,
+        portifolio_filter2: string,
         issued_at: Date,
         filter: PainelEstrategicoListaFilterDto,
-        ipp?: number,
+        ipp?: number
     ): Promise<{
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const quantidade_rows = await this.prisma
-            .$queryRawUnsafe(`select
+        const quantidade_rows = (await this.prisma.$queryRawUnsafe(`select
                                    count(*)::int
                                from
                                    (select
@@ -732,7 +730,7 @@ export class PainelEstrategicoService {
                                                    where p.tipo = 'PP'
                                                      and p.removido_em is null
                                                    group by vp.nome, vp.id) orc on orc.projeto_id = p.id
-                                                   ${whereFilter}`) as any;
+                                                   ${whereFilter}`)) as any;
         const body = {
             search_hash: Object2Hash(filter),
             ipp: ipp!,
@@ -761,19 +759,19 @@ export class PainelEstrategicoService {
         let now = new Date(Date.now());
 
         //Cria apenas os projetos e orgãos responsáveis
-        filtro = await this.addPermissaoProjetos(filtro,user);
-        let strFilterGeral = "";
+        filtro = await this.addPermissaoProjetos(filtro, user);
+        let strFilterGeral = '';
         if (filtro.projeto_id.length > 0) {
             strFilterGeral += ' and p.id in (' + filtro.projeto_id.toString() + ')';
         }
-        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length>0) {
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
             strFilterGeral += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
 
         //Cria o filtro de portfoliio
         let strPortfolio = '';
         let strPortfolio2 = '';
-        if (filtro.portfolio_id && filtro.portfolio_id.length>0){
+        if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
             strPortfolio = ' and pr.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
@@ -838,14 +836,20 @@ export class PainelEstrategicoService {
                                             and orcr.removido_em is null
                                           group by vp.nome, vp.id) orc on orc.projeto_id = p.id
                      where 1 = 1 ${strFilterGeral} ) t order by valor_custo_planejado_total desc
-                     limit ${ipp} offset ${offset}`
-        const linhas = await this.prisma.$queryRawUnsafe(sql) as PainelEstrategicoExecucaoOrcamentariaLista[];
+                     limit ${ipp} offset ${offset}`;
+        const linhas = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaLista[];
         // executar depois da query
         if (filterToken) {
             retToken = filterToken;
         } else {
-            const info = await this.encodeNextPageTokenListaExecucaoOrcamentaria(strFilterGeral
-                ,strPortfolio,strPortfolio2, now, filtro, filtro.ipp);
+            const info = await this.encodeNextPageTokenListaExecucaoOrcamentaria(
+                strFilterGeral,
+                strPortfolio,
+                strPortfolio2,
+                now,
+                filtro,
+                filtro.ipp
+            );
             retToken = info.jwt;
             total_registros = info.body.total_rows;
         }
@@ -856,15 +860,17 @@ export class PainelEstrategicoService {
             pagina_corrente: 1,
             total_registros: total_registros,
             token_paginacao: retToken,
-            paginas:paginas,
+            paginas: paginas,
             linhas: linhas,
             token_ttl: PAGINATION_TOKEN_TTL,
         } satisfies PaginatedWithPagesDto<PainelEstrategicoExecucaoOrcamentariaLista>;
-
     }
-    async buildGeoLocalizacao(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt):Promise<PainelEstrategicoGeoLocalizacaoDto>{
+    async buildGeoLocalizacao(
+        filtro: PainelEstrategicoFilterDto,
+        user: PessoaFromJwt
+    ): Promise<PainelEstrategicoGeoLocalizacaoDto> {
         //Cria apenas os projetos e orgãos responsáveis
-        filtro = await this.addPermissaoProjetos(filtro,user);
+        filtro = await this.addPermissaoProjetos(filtro, user);
         const whereFilter = this.applyFilter(filtro);
         const sql = `select distinct p.nome       as nome_projeto,
                                      p.id         as projeto_id,
@@ -888,8 +894,8 @@ export class PainelEstrategicoService {
                                                     JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                                                     WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
                                                     left join projeto_etapa pe on pe.id = p.projeto_etapa_id
-                    ${whereFilter}`
-        const linhas = await this.prisma.$queryRawUnsafe(sql) as any[];
+                    ${whereFilter}`;
+        const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
 
         const geoDto = new ReferenciasValidasBase();
         geoDto.projeto_id = linhas.map((r) => r.projeto_id);
@@ -899,13 +905,13 @@ export class PainelEstrategicoService {
         retorno.linhas = [];
         linhas.forEach((linha) => {
             retorno.linhas.push({
-                        projeto_nome:linha.nome_projeto,
-                        projeto_id:linha.projeto_id,
-                        projeto_codigo:linha.projeto_codigo,
-                        projeto_etapa:linha.projeto_etapa,
-                        projeto_status:linha.status,
-                        geolocalizacao:geolocalizacao.get(linha.projeto_id)||[]
-                    });
+                projeto_nome: linha.nome_projeto,
+                projeto_id: linha.projeto_id,
+                projeto_codigo: linha.projeto_codigo,
+                projeto_etapa: linha.projeto_etapa,
+                projeto_status: linha.status,
+                geolocalizacao: geolocalizacao.get(linha.projeto_id) || [],
+            });
         });
         return retorno;
     }
