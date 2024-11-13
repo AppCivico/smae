@@ -88,9 +88,12 @@ relatoriosStore.getAll({ fonte });
               :href="`${baseUrl}/download/${item.arquivo}`"
               download
               title="baixar"
-            ><img
-              src="../../../assets/icons/baixar.svg"
-            ></a>
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_baixar" /></svg>
+            </a>
           </td>
 
           <td
