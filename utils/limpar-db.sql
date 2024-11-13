@@ -14,3 +14,4 @@ UPDATE pessoa_fisica set cpf=null, registro_funcionario=null;
 UPDATE emaildb_config
 SET "from"  = '"Teste SMAE" <test.smae@novodomain.com.br>';
 
+delete from smae_config where "key" = 'COMUNICADO_EMAIL_ATIVO';
