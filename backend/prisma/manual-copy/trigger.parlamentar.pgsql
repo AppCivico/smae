@@ -60,3 +60,5 @@ CREATE TRIGGER trigger_parlamentar_mandato_update_parent
     AFTER INSERT OR UPDATE OR DELETE ON parlamentar_mandato
     FOR EACH ROW
     EXECUTE FUNCTION f_parlamentar_mandato_update_parent();
+
+UPDATE parlamentar SET atualizado_em = NOW();
