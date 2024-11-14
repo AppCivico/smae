@@ -4067,7 +4067,7 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
   palavra_chave: string().label('palavra-chave'),
   data_inicio: date()
     .label('Início do período')
-    .nullable()
+    .required()
     .transform((v) => {
       if (v.toString() === 'Invalid Date') {
         return null;
@@ -4104,7 +4104,7 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
     ),
   data_fim: date()
     .label('Fim do período')
-    .nullable()
+    .required()
     .transform((v) => {
       if (v.toString() === 'Invalid Date') {
         return null;
