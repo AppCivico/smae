@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { relatorioMensalPlanoSetorial as schema } from '@/consts/formSchemas';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -25,7 +26,11 @@ const lista = computed(() => relatoriosStore.lista.map((item) => ({
   criado_em: localizarDataHorario(item.criado_em, 'dd/MM/yyyy'),
   criador: item.criador.nome_exibicao,
   referencia: `${item.parametros.mes}/${item.parametros.ano}`,
-  parametros: `Meta: ${planosPorId.value[item.parametros.plano_setorial_id]?.metas?.map((meta) => meta.codigo).join(', ')}`,
+  parametros: `Meta: ${combinadorDeListas(
+    planosPorId.value[item.parametros.plano_setorial_id]?.metas || [],
+    ', ',
+    'codigo',
+  )}`,
   arquivo: item.arquivo,
 })));
 
@@ -53,7 +58,7 @@ relatoriosStore.getAll({ fonte });
   </header>
 
   <p class="texto--explicativo">
-    O SMAE gera um conjunto de 4 planilhas, contendo os dados do ciclo mensal de monitoramento 
+    O SMAE gera um conjunto de 4 planilhas, contendo os dados do ciclo mensal de monitoramento
     físico do mês informado, considerando somente as variáveis que estiverem LIBERADAS.
   </p>
 

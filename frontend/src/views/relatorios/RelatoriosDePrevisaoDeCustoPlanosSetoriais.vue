@@ -114,19 +114,19 @@ iniciar();
       </template>
       <tr v-else-if="relatoriosStore.loading">
         <td
-          :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4"
+          colspan="100%"
           aria-busy="true"
         >
           Carregando
         </td>
       </tr>
       <tr v-else-if="relatoriosStore.error">
-        <td :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4">
+        <td colspan="100%">
           erro: {{ relatoriosStore.error }}
         </td>
       </tr>
       <tr v-else>
-        <td :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4">
+        <td colspan="100%">
           Nenhum resultado encontrado.
         </td>
       </tr>
