@@ -122,45 +122,43 @@ export class PainelEstrategicoService {
     }
 
     private async buildProjetosPorStatus(filtro: string) {
-        const sql = `SELECT * FROM
-            (
-               select
-                   t.status,
-                   count(distinct t.id) ::int as quantidade
-               from (
-                        SELECT
-                            case
-                                when p.status = 'Fechado' then 'Concluído'
-                                when p.status = 'EmAcompanhamento' then 'Em Acompanhamento'
-                                when p.status = 'EmPlanejamento' then 'Em Planejamento'
-                                else 'Outros' end as status,
-                            p.id
-                        FROM projeto p
-                        FULL OUTER JOIN (
-                                SELECT
-            						ppc.projeto_id,
-            						po_1.id as portfolio_id
-            					FROM portfolio_projeto_compartilhado ppc
-            				 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-            				          WHERE ppc.removido_em IS NULL
-                          ) po ON po.projeto_id = p.id
-                        LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
-                        ${filtro}
-                    ) AS t
-               group by t.status
+        const sql = `
+        WITH status_counts AS (
+            SELECT
+                CASE WHEN p.status = 'Fechado' THEN 'Concluído'
+                     WHEN p.status = 'EmAcompanhamento' THEN 'Em Acompanhamento'
+                     WHEN p.status = 'EmPlanejamento' THEN 'Em Planejamento'
+                     ELSE 'Outros'
+                END as status,
+                COUNT(DISTINCT p.id)::int as quantidade
+            FROM projeto p
+            FULL OUTER JOIN (
+                SELECT ppc.projeto_id, po_1.id as portfolio_id
+                FROM portfolio_projeto_compartilhado ppc
+                JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                WHERE ppc.removido_em IS NULL
+            ) po ON po.projeto_id = p.id
+            LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
+            ${filtro}
+            GROUP BY 1
+        ),
+        all_status AS (
+            SELECT status, COALESCE(quantidade, 0) as quantidade
+            FROM (
+                SELECT unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento']) as status
+            ) s
+            LEFT JOIN status_counts sc USING (status)
+        )
+        SELECT status, SUM(quantidade)::int as quantidade
+        FROM all_status
+        GROUP BY status
+        ORDER BY
+            CASE WHEN status = 'Outros' THEN 1 ELSE 0 END,
+            quantidade DESC;`;
 
-               union
-               select
-                     u as status,
-                     0 as quantidade
-               from unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento']) u
-            ) t
-            order by CASE
-            WHEN t.status = 'Outros' THEN 1
-            ELSE 0
-            END, quantidade desc`;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
     }
+
     private async buildProjetosPorEtapas(filtro: string) {
         const sql = `
         WITH projeto_counts AS (
