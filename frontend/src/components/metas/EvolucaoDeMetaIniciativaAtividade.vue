@@ -132,7 +132,7 @@
                 width="20"
                 height="20"
               ><use xlink:href="#i_i" /></svg><div>
-                Indicador calculado pelo média móvel das variáveis
+                Indicador calculado pela média móvel das variáveis
               </div>
             </div>
           </div>

@@ -44,3 +44,9 @@ function formatTooltip(param: TooltipOptions) {
 }
 
 </script>
+
+<style scoped>
+::v-deep .chart {
+  height: 600px !important;
+}
+</style>

@@ -1,9 +1,10 @@
 <script setup>
-import { defineProps } from 'vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import statuses from '@/consts/projectStatuses';
 import dateToDate from '@/helpers/dateToDate';
 import truncate from '@/helpers/truncate';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import { defineProps } from 'vue';
+import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 
 defineProps({
   projetos: {
@@ -33,12 +34,10 @@ const projetoFormatado = (codigo, nome) => {
 </script>
 
 <template>
-  <div
-    role="region"
+  <RolagemHorizontal
     aria-label="Tabela de projetos"
-    tabindex="0"
   >
-    <table class="tabela-projetos mt1">
+    <table class="tabela-projetos mt1 tablemain">
       <colgroup>
         <col>
         <col>
@@ -52,7 +51,7 @@ const projetoFormatado = (codigo, nome) => {
       <thead>
         <tr>
           <th class="tl">
-            Nome do Projeto
+            Nome do Projeto bonito
           </th>
           <th class="tl">
             Secretaria
@@ -140,7 +139,7 @@ const projetoFormatado = (codigo, nome) => {
         Total de projetos: {{ paginacao.totalRegistros }}
       </p>
     </div>
-  </div>
+  </RolagemHorizontal>
 </template>
 <style scoped>
 .tabela-projetos {

@@ -2,11 +2,16 @@ export default function criaOpcoesDoGraficoDeProjetos(categorias, valores) {
   return {
     color: [
       '#1b263b',
-      '#221f43',
-      '#2e4059',
-      '#778da9',
-      '#5c7490',
-      '#acb7c3',
+      '#2d374a',
+      '#3f4858',
+      '#515967',
+      '#636a76',
+      '#757b85',
+      '#868c93',
+      '#989da2',
+      '#aaaeb1',
+      '#bcbfc0',
+      '#ced0ce',
       '#e0e1dd',
     ],
     tooltip: {
@@ -52,7 +57,6 @@ export default function criaOpcoesDoGraficoDeProjetos(categorias, valores) {
             number: {
               fontSize: 30,
               fontWeight: 'bold',
-              color: (params) => params.color,
               align: 'left',
               padding: [0, 0, 0, 40],
               fontFamily: 'Roboto Slab',
