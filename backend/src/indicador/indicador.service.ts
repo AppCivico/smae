@@ -573,29 +573,9 @@ export class IndicadorService {
                     },
                     select: {
                         ...indicadorSelectData,
-                        formula_variaveis: {
-                            select: {
-                                variavel_id: true,
-                                janela: true,
-                                referencia: true,
-                                usar_serie_acumulada: true,
-                                variavel: {
-                                    select: {
-                                        variavel_categorica_id: true,
-                                    },
-                                },
-                            },
-                        },
                     },
                 });
 
-                if (indicador.variavel_categoria_id == null) {
-                    if (indicador.formula_variaveis.some((fv) => fv.variavel.variavel_categorica_id)) {
-                        throw new BadRequestException(
-                            'Não é possível usar uma variável categórica em um indicador calculado.'
-                        );
-                    }
-                }
                 //const newVersion = IndicadorService.getIndicadorHash(indicador);
                 //this.logger.debug({ oldVersion, newVersion });
 
@@ -628,6 +608,29 @@ export class IndicadorService {
                             }),
                         }),
                     ]);
+
+                    if (indicador.variavel_categoria_id == null) {
+                        const indicadorAtualizado = await prismaTx.indicador.findFirstOrThrow({
+                            where: { id: indicador.id },
+                            select: {
+                                formula_variaveis: {
+                                    select: {
+                                        variavel: {
+                                            select: {
+                                                variavel_categorica_id: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        });
+
+                        if (indicadorAtualizado.formula_variaveis.some((fv) => fv.variavel.variavel_categorica_id)) {
+                            throw new BadRequestException(
+                                'Não é possível usar uma variável categórica em um indicador calculado.'
+                            );
+                        }
+                    }
                 }
 
                 // independente de ter ou não formula_variaveis, revalida as regras do PS
