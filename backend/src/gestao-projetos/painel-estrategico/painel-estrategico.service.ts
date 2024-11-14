@@ -161,46 +161,59 @@ export class PainelEstrategicoService {
             END, quantidade desc`;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
     }
-
     private async buildProjetosPorEtapas(filtro: string) {
         const sql = `
-        SELECT *
-        FROM (
+        WITH projeto_counts AS (
             SELECT
-                t.etapa,
-                count(distinct t.id) ::int quantidade,
-                ordem
-              FROM (
-                SELECT case
-                       when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then pe.descricao
-                       when p.projeto_etapa_id IS NULL THEN 'Sem Informação'
-                       else 'Outros' end as etapa,
-                   case
-                       WHEN p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then 1
-                       WHEN p.projeto_etapa_id IS NULL THEN -1
-                       else 0 end as ordem,
-                   p.id
-                FROM projeto p
-                left join projeto_etapa pe on pe.id = p.projeto_etapa_id
-                full outer JOIN (
-                    SELECT
-            			ppc.projeto_id,
-            			po_1.id as portfolio_id
-                    FROM portfolio_projeto_compartilhado ppc
-                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                    WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                   ${filtro}
-                ) as t
-                group by t.etapa, t.ordem
-                UNION
-                select
+                CASE
+                    WHEN p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) THEN pe.descricao
+                    WHEN p.projeto_etapa_id IS NULL THEN 'Sem Informação'
+                    ELSE 'Outros'
+                END as etapa,
+                CASE
+                    WHEN p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) THEN 2
+                    WHEN p.projeto_etapa_id IS NULL THEN 0
+                    ELSE 1
+                END as ordem,
+                COUNT(DISTINCT p.id)::int as quantidade
+            FROM projeto p
+            LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
+            FULL OUTER JOIN (
+                SELECT
+                    ppc.projeto_id,
+                    po_1.id as portfolio_id
+                FROM portfolio_projeto_compartilhado ppc
+                JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                WHERE ppc.removido_em IS NULL
+            ) po ON po.projeto_id = p.id
+            ${filtro}
+            GROUP BY 1, 2
+        ),
+        all_stages AS (
+            SELECT
                 me.descricao as etapa,
-                0 as quantidade,
-                0 as ordem
-                from projeto_etapa me
-                where me.id in (1, 2, 3, 4, 5, 6, 7)
-                ) as t
-            order by case when ordem = 0 then etapa else null end nulls last, ordem, quantidade
+                2 as ordem,
+                0 as quantidade
+            FROM projeto_etapa me
+            WHERE me.id in (1, 2, 3, 4, 5, 6, 7)
+
+            UNION ALL
+
+            SELECT 'Sem Informação', 0, 0
+
+            UNION ALL
+
+            SELECT 'Outros', 1, 0
+        )
+        SELECT
+            COALESCE(pc.etapa, a.etapa) as etapa,
+            COALESCE(pc.quantidade, a.quantidade) as quantidade,
+            COALESCE(pc.ordem, a.ordem) as ordem
+        FROM all_stages a
+        LEFT JOIN projeto_counts pc ON pc.etapa = a.etapa
+        ORDER BY
+            COALESCE(pc.ordem, a.ordem) DESC,
+            COALESCE(pc.etapa, a.etapa);
         `;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
     }
