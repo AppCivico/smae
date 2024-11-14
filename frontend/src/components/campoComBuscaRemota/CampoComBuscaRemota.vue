@@ -211,21 +211,16 @@ const valorExibido = computed(() => (itemSelecionado.value
   ? itemSelecionado.value[props.chaveDeExibição]
   : valorDaBusca.value));
 
-const urlFinal = computed(() => {
-  const params = new URLSearchParams();
-  if (valorDaBusca.value) params.append(props.chaveDeBusca, valorDaBusca.value);
-
-  Object.entries(props.parametrosExtras).forEach(([key, value]) => {
-    params.append(key, value);
-  });
-  return `${baseUrl}/${props.urlRequisicao}?${params.toString()}`;
-});
-
 async function onSubmit() {
   carregando.value = true;
   buscaRealizada.value = true;
   try {
-    const retorno = await requestS.get(urlFinal.value);
+    const parametros = {
+      ...props.parametrosExtras,
+      [props.chaveDeBusca]: valorDaBusca.value,
+    };
+
+    const retorno = await requestS.get(`${baseUrl}/${props.urlRequisicao}`, { params: parametros });
     linhas.value = retorno[props.chaveDeRetorno] || [];
   } catch (error) {
     console.error('Erro na requisição:', error);
@@ -234,10 +229,6 @@ async function onSubmit() {
     carregando.value = false;
   }
 }
-
-watch(itemSelecionado, (novoValor) => {
-  emit('update:modelValue', novoValor?.[props.chaveDeValor]);
-});
 
 function limparSelecao() {
   itemSelecionado.value = null;
@@ -262,6 +253,9 @@ function selecionarItem(item) {
   toggleModal();
 }
 
+watch(itemSelecionado, (novoValor) => {
+  emit('update:modelValue', novoValor?.[props.chaveDeValor]);
+});
 </script>
 <style scoped>
 .output {
