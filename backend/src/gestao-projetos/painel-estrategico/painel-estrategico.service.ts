@@ -122,61 +122,92 @@ export class PainelEstrategicoService {
     }
 
     private async buildProjetosPorStatus(filtro: string) {
-        const sql = `select
-                           t.status,
-                           count(distinct t.id) ::int as quantidade
-                       from (SELECT
-                                    case
-                                        when p.status = 'Fechado' then 'Concluído'
-                                        when p.status = 'EmAcompanhamento' then 'Em Acompanhamento'
-                                        when p.status = 'EmPlanejamento' then 'Em Planejamento'
-                                        else 'Outros' end as status,
-                                    p.id
-                                FROM projeto p
-                                    full outer JOIN (SELECT
-								ppc.projeto_id,
-								po_1.id as portfolio_id
-							FROM portfolio_projeto_compartilhado ppc
-						 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-						          WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                    LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
-                                ${filtro}) as t
-                       group by t.status
-                       order by CASE
-                                    WHEN t.status = 'Outros' THEN 1
-                                    ELSE 0
-                                    END, quantidade desc`;
+        const sql = `SELECT * FROM
+            (
+               select
+                   t.status,
+                   count(distinct t.id) ::int as quantidade
+               from (
+                        SELECT
+                            case
+                                when p.status = 'Fechado' then 'Concluído'
+                                when p.status = 'EmAcompanhamento' then 'Em Acompanhamento'
+                                when p.status = 'EmPlanejamento' then 'Em Planejamento'
+                                else 'Outros' end as status,
+                            p.id
+                        FROM projeto p
+                        FULL OUTER JOIN (
+                                SELECT
+            						ppc.projeto_id,
+            						po_1.id as portfolio_id
+            					FROM portfolio_projeto_compartilhado ppc
+            				 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+            				          WHERE ppc.removido_em IS NULL
+                          ) po ON po.projeto_id = p.id
+                        LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
+                        ${filtro}
+                    ) AS t
+               group by t.status
+
+               union
+               select
+                     u as status,
+                     0 as quantidade
+               from unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento', 'Outros']) u
+            ) t
+            order by CASE
+            WHEN t.status = 'Outros' THEN 1
+            ELSE 0
+            END, quantidade desc`;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
     }
 
     private async buildProjetosPorEtapas(filtro: string) {
-        const sql = ` select t.etapa, count(distinct t.id) ::int quantidade
-                      from (SELECT case
-                                       when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then pe.descricao
-                                       when p.projeto_etapa_id IS NULL THEN 'Sem Informação'
-                                       else 'Outros' end as etapa,
-                                   case
-                                       when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then p.projeto_etapa_id
-                                       WHEN p.projeto_etapa_id IS NULL THEN -1
-                                       else 0 end as ordem,
-                                   p.id
-                            FROM projeto p
-                                     left join projeto_etapa pe on pe.id = p.projeto_etapa_id
-                                full outer JOIN (SELECT
-								ppc.projeto_id,
-								po_1.id as portfolio_id
-							FROM portfolio_projeto_compartilhado ppc
-						 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-						          WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                           ${filtro}) as t
-                      group by t.etapa, ordem
-                      order by ordem desc`;
+        const sql = `
+        SELECT *
+        FROM (
+            SELECT
+                t.etapa,
+                count(distinct t.id) ::int quantidade,
+                ordem
+              FROM (
+                SELECT case
+                       when p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then pe.descricao
+                       when p.projeto_etapa_id IS NULL THEN 'Sem Informação'
+                       else 'Outros' end as etapa,
+                   case
+                       WHEN p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) then 1
+                       WHEN p.projeto_etapa_id IS NULL THEN -1
+                       else 0 end as ordem,
+                   p.id
+                FROM projeto p
+                left join projeto_etapa pe on pe.id = p.projeto_etapa_id
+                full outer JOIN (
+                    SELECT
+            			ppc.projeto_id,
+            			po_1.id as portfolio_id
+                    FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                    WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
+                   ${filtro}
+                ) as t
+                group by t.etapa, t.ordem
+                UNION
+                select
+                me.descricao as etapa,
+                0 as quantidade,
+                0 as ordem
+                from projeto_etapa me
+                where me.id in (1, 2, 3, 4, 5, 6, 7)
+                ) as t
+            order by case when ordem = 0 then etapa else null end nulls last, ordem, quantidade
+        `;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
     }
 
     private async buildProjetosConcluidosPorAno(filtro: string) {
         const sql = `select sum(quantidade)::int quantidade, ano
-                     from (select count(distinct p.id )                                as quantidade,
+                     from (select count(distinct p.id ) as quantidade,
                                   date_part('year', tc.realizado_termino) as ano
                            FROM projeto p
                                full outer JOIN (SELECT
