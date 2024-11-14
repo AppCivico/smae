@@ -153,7 +153,7 @@ export class PainelEstrategicoService {
                select
                      u as status,
                      0 as quantidade
-               from unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento', 'Outros']) u
+               from unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento']) u
             ) t
             order by CASE
             WHEN t.status = 'Outros' THEN 1
