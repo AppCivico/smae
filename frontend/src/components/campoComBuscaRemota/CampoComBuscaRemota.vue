@@ -88,9 +88,9 @@
       v-else-if="buscaRealizada"
       class="tablemain"
     >
-      <thead v-if="linhas.length">
+      <thead v-if="linhas.length && $slots.tableHeader">
         <tr>
-          <slot name="table-header" />
+          <slot name="tableHeader" />
         </tr>
       </thead>
       <tbody>
@@ -100,7 +100,7 @@
             :key="item.id"
           >
             <slot
-              name="table-data"
+              name="tableData"
               v-bind="{ item }"
             />
             <td>
@@ -122,8 +122,8 @@
           </tr>
         </template>
       </tbody>
-      <tfoot>
-        <slot name="table-footer" />
+      <tfoot v-if="$slots.tableFooter">
+        <slot name="tableFooter" />
       </tfoot>
     </table>
   </SmallModal>
