@@ -102,7 +102,7 @@
                   arial-label="excluir"
                   title="excluir"
                   type="button"
-                  @click="excluirDistribuição(item.id)"
+                  @click="excluirDistribuição(item)"
                 >
                   <svg
                     width="20"
@@ -171,18 +171,14 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
 
-async function excluirDistribuição(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+async function excluirDistribuição({ id, nome }) {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${nome}"?`, async () => {
     if (await distribuicaoRecursos.excluirItem(id)) {
       distribuicaoRecursos.$reset();
       distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
       alertStore.success('Distribuição removida.');
     }
   }, 'Remover');
-}
-
-function registrarNovaDistribuicaoRecursos() {
-  router.push();
 }
 
 function voltarTela() {
