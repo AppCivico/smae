@@ -1,15 +1,21 @@
 <template>
-  <div class="flex g1">
-    <label
-      v-if="!itemSelecionado"
-      for="busca"
-      class="inputtext light instruções"
+  <label
+    for="busca"
+    class="label"
+  >
+    {{ props.label }}
+    <span
+      v-if="props.obrigatorio"
+      class="tvermelho"
     >
-      {{ props.textoDeInstruções }}
-    </label>
+      *
+    </span>
+  </label>
+  <div class="flex g1">
     <output
-      v-else
+      for="busca"
       class="inputtext light output"
+      @click="toggleModal"
     >
       <slot
         v-if="itemSelecionado"
@@ -18,13 +24,10 @@
       >
         {{ valorExibido }}
       </slot>
-      <span v-else>
-        Escolha uma opção
-      </span>
     </output>
-
     <button
       v-if="itemSelecionado"
+      type="button"
       class="like-a__text"
       arial-label="excluir"
       title="excluir"
@@ -38,6 +41,7 @@
 
     <button
       id="busca"
+      type="button"
       class="btn"
       @click="toggleModal"
     >
@@ -101,6 +105,7 @@
             />
             <td>
               <button
+                type="button"
                 class="btn bgnone outline tcprimary"
                 @click="selecionarItem(item)"
               >
@@ -111,7 +116,7 @@
         </template>
         <template v-else>
           <tr>
-            <td colspan="100%">
+            <td colspan="999">
               Nenhum resultado encontrado
             </td>
           </tr>
@@ -144,6 +149,14 @@ const props = defineProps({
     default: null,
   },
   label: {
+    type: String,
+    required: true,
+  },
+  obrigatorio: {
+    type: Boolean,
+    default: false,
+  },
+  modalLabel: {
     type: String,
     default: 'Pesquisar',
   },
@@ -249,11 +262,8 @@ function selecionarItem(item) {
 
 </script>
 <style scoped>
-.instruções {
-  margin-bottom: 0;
-}
-
 .output {
+  min-height: 2.8rem;
   text-wrap: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
