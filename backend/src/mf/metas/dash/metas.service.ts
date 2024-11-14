@@ -14,7 +14,7 @@ import {
     MfDashMetaPendenteDto,
 } from './dto/metas.dto';
 
-class Arr {
+export class Arr {
     static mergeUnique(a: number[], b: number[]): number[] {
         const uniqueSet = new Set([...a, ...b]);
         return Array.from(uniqueSet);
