@@ -62,6 +62,8 @@
           v-model="valorDaBusca"
           class="inputtext light"
           :name="chaveDeBusca"
+          :minlength="props.minimoDeCaracteresParaBusca"
+          required
           type="search"
           autocomplete="off"
         >
@@ -144,6 +146,10 @@ const props = defineProps({
   label: {
     type: String,
     default: 'Pesquisar',
+  },
+  minimoDeCaracteresParaBusca: {
+    type: Number,
+    default: 3,
   },
   textoDeInstruções: {
     type: String,
