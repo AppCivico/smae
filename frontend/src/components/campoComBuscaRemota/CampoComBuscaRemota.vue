@@ -74,15 +74,14 @@
         <button
           class="btn"
           type="submit"
+          :aria-disabled="carregando"
         >
           Buscar
         </button>
       </div>
     </form>
 
-    <div v-if="carregando">
-      Carregando...
-    </div>
+    <LoadingComponent v-if="carregando" />
 
     <table
       v-else-if="buscaRealizada"
@@ -133,6 +132,7 @@
 
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import requestS from '@/helpers/requestS';
 import {
   ref,
@@ -212,6 +212,8 @@ const valorExibido = computed(() => (itemSelecionado.value
   : valorDaBusca.value));
 
 async function onSubmit() {
+  if (carregando.value) return;
+
   carregando.value = true;
   buscaRealizada.value = true;
   try {
