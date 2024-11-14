@@ -2058,16 +2058,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Custeio (R$)')
     .min(0)
     .required(),
-  custeio_porcentagem: number()
-    .label('custeio (%)')
-    .min(0),
   investimento: number()
     .label('Investimento (R$)')
     .min(0)
     .required(),
-  investimento_porcentagem: number()
-    .label('Investimento (%)')
-    .min(0),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)

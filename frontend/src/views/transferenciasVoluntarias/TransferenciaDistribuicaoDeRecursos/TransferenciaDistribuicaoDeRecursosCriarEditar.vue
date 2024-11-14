@@ -45,6 +45,11 @@ const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
 
+const porcentagens = ref({
+  custeio: 0,
+  investimento: 0,
+});
+
 const itemParaEdicaoFormatado = computed(() => ({
   ...itemParaEdicao.value,
   parlamentares: itemParaEdicao.value.parlamentares?.map((item) => ({
@@ -156,13 +161,41 @@ function atualizarValorTotal(fieldName, newValue) {
   calcularValorInvestimento(fieldName);
 }
 
-watch(itemParaEdicao, () => {
+function ajusteBruto(campoValorBruto) {
+  const valorPercentual = (100 / values.valor) * values[campoValorBruto];
+
+  if (valorPercentual >= 100) {
+    setFieldValue(campoValorBruto, values.valor);
+    porcentagens.value[campoValorBruto] = 100;
+    return;
+  }
+
+  porcentagens.value[campoValorBruto] = valorPercentual;
+}
+
+function ajustePercentual(campoValorBruto) {
+  const valorBruto = (values.valor / 100) * porcentagens.value[campoValorBruto];
+
+  if (valorBruto >= values.valor) {
+    setFieldValue(campoValorBruto, values.valor);
+    porcentagens.value[campoValorBruto] = 100;
+
+    return;
+  }
+
+  setFieldValue(campoValorBruto, valorBruto);
+}
+
+watch(itemParaEdicao, async () => {
   resetForm({
     values: itemParaEdicaoFormatado.value,
   });
 
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
+
+  ajusteBruto('custeio');
+  ajusteBruto('investimento');
 });
 
 watch(() => values.vigencia, (novoValor) => {
@@ -172,6 +205,12 @@ watch(() => values.vigencia, (novoValor) => {
     && novoValor !== itemParaEdicao.value?.vigencia
   ) {
     setFieldValue('justificativa_aditamento', '');
+  }
+});
+
+watch(() => values.empenho, () => {
+  if (values.empenho === false) {
+    setFieldValue('data_empenho', null);
   }
 });
 
@@ -336,6 +375,7 @@ onUnmounted(() => {
                 @update:model-value="(newValue) => {
                   atualizarValorTotal('custeio', newValue);
                 }"
+                @input="ajusteBruto('custeio')"
               />
             </div>
 
@@ -347,22 +387,26 @@ onUnmounted(() => {
             </small>
 
             <div>
-              <LabelFromYup
-                name="custeio_porcentagem"
-                :schema="schema"
-              />
+              <label
+                class="label"
+                for="custeio_porcentagem"
+              >
+                Custeio (%)
+              </label>
 
               <MaskedFloatInput
-                name="custeio_porcentagem"
+                id="custeio_porcentagem"
+                v-model="porcentagens.custeio"
                 type="text"
                 class="inputtext light"
                 maxlength="6"
                 :max="100"
-                :value="values.custeio_porcentagem"
+                :value="porcentagens.custeio"
                 converter-para="string"
                 @update:model-value="(newValue) => {
                   atualizarValorTotal('custeio_porcentagem', newValue);
                 }"
+                @input="ajustePercentual('custeio')"
               />
             </div>
           </div>
@@ -385,6 +429,7 @@ onUnmounted(() => {
                 @update:model-value="(newValue) => {
                   atualizarValorTotal('investimento', newValue);
                 }"
+                @input="ajusteBruto('investimento')"
               />
             </div>
 
@@ -396,22 +441,26 @@ onUnmounted(() => {
             </small>
 
             <div>
-              <LabelFromYup
-                name="investimento_porcentagem"
-                :schema="schema"
-              />
+              <label
+                class="label"
+                for="investimento_porcentagem"
+              >
+                Investimento (%)
+              </label>
 
               <MaskedFloatInput
-                name="investimento_porcentagem"
+                id="investimento_porcentagem"
+                v-model="porcentagens.investimento"
                 type="text"
                 class="inputtext light"
                 maxlength="6"
                 :max="100"
-                :value="values.investimento_porcentagem"
+                :value="porcentagens.investimento"
                 converter-para="string"
                 @update:model-value="(newValue) => {
                   atualizarValorTotal('investimento_porcentagem', newValue);
                 }"
+                @input="ajustePercentual('investimento')"
               />
             </div>
           </div>
