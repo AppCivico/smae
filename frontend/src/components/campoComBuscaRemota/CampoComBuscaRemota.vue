@@ -102,7 +102,9 @@
             <slot
               name="tableData"
               v-bind="{ item }"
-            />
+            >
+              {{ item[chaveDeExibição] }}
+            </slot>
             <td>
               <button
                 type="button"
