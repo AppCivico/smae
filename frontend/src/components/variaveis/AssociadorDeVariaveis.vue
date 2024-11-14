@@ -95,16 +95,7 @@
             :indeterminate.prop="!!variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length
               && variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length !==
                 filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            :aria-label="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
-              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
-              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
-            :title="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
-              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
-              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
+            v-bind="gerarAtributosDoCampo(mae.id, agrupador)"
             @change="selecionarTodasAsFilhas(mae.id, agrupador)"
           >
         </td>
@@ -281,6 +272,24 @@ function dispararBuscaDeVariaveis(evento: SubmitEvent) {
 
   parametrosDaBuscaCorrente.value = params;
 }
+
+const gerarAtributosDoCampo = (mae, agrupador) => {
+  const filhasSelecionadas = variaveisFilhasSelecionadas.value[mae]?.[agrupador];
+  const variaveisFilhas = filhasPorMaePorNivelDeRegiao.value[mae][agrupador];
+
+  return {
+    checked: filhasSelecionadas?.length
+      === variaveisFilhas.length,
+    'aria-label': filhasSelecionadas?.length
+      === variaveisFilhas.length
+      ? `Desselecionar ${variaveisFilhas.length} itens`
+      : `Selecionar ${variaveisFilhas.length}`,
+    title: filhasSelecionadas?.length
+      === variaveisFilhas.length
+      ? `Desselecionar ${variaveisFilhas.length} itens`
+      : `Selecionar ${variaveisFilhas.length}`,
+  };
+};
 
 async function associar(encerrar = false) {
   if (envioPendente.value) {
