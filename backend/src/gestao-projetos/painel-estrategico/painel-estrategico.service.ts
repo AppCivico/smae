@@ -60,8 +60,9 @@ export class PainelEstrategicoService {
         filtro.projeto_id = filtro.projeto_id ?? [];
 
         const allowed = (await this.projetoService.findAllIds('PP', user)).map((p) => p.id);
+        filtro.projeto_id = filtro.projeto_id.length ? Arr.intersection(filtro.projeto_id, allowed) : allowed;
 
-        filtro.projeto_id = Arr.intersection(filtro.projeto_id, allowed);
+        if (filtro.projeto_id.length == 0) filtro.projeto_id.push(-1);
 
         return filtro;
     }
