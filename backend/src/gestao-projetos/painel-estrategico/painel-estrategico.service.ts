@@ -24,6 +24,7 @@ import { Object2Hash } from '../../common/object2hash';
 import { JwtService } from '@nestjs/jwt';
 import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
+import { Arr } from '../../mf/metas/dash/metas.service';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -54,13 +55,14 @@ export class PainelEstrategicoService {
         response.execucao_orcamentaria_ano = await this.buildExecucaoOrcamentariaAno(filtro);
         return response;
     }
+
     private async addPermissaoProjetos(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt) {
-        if (!filtro.projeto_id) {
-            filtro.projeto_id = [];
-            await this.projetoService.findAllIds('PP', user).then((ids) => {
-                ids.forEach((n) => filtro.projeto_id.push(n.id));
-            });
-        }
+        filtro.projeto_id = filtro.projeto_id ?? [];
+
+        const allowed = (await this.projetoService.findAllIds('PP', user)).map((p) => p.id);
+
+        filtro.projeto_id = Arr.intersection(filtro.projeto_id, allowed);
+
         return filtro;
     }
 
@@ -649,7 +651,7 @@ export class PainelEstrategicoService {
                   ${strPortfolio2}
             ),
             tarefa_custos AS (
-                SELECT t.custo_estimado AS previsao_custo,
+                SELECT sum(t.custo_estimado) AS previsao_custo,
                        date_part('year', t.termino_planejado) AS ano_referencia,
                        tc.projeto_id
                 FROM tarefa_cronograma tc
@@ -657,6 +659,7 @@ export class PainelEstrategicoService {
                 WHERE tc.removido_em IS NULL
                   AND t.n_filhos_imediatos = 0
                   AND t.removido_em IS NULL
+              GROUP BY date_part('year', t.termino_planejado), tc.projeto_id
             )
             SELECT
                 sum(COALESCE(tc.previsao_custo, 0))::float AS custo_planejado_total,
@@ -673,9 +676,9 @@ export class PainelEstrategicoService {
             LEFT JOIN orcamento_realizado orcr ON orcr.ano_referencia = years.yr
                 AND (orcr.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1 )
                 AND orcr.removido_em IS NULL
+
             GROUP BY years.yr
             ORDER BY years.yr`;
-
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
     }
 
