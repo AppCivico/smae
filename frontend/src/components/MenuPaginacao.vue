@@ -1,12 +1,18 @@
 <template>
-  <nav class="menu-de-paginacao">
-    <ul class="menu-de-paginacao__lista">
+  <nav
+    v-if="paginas > 1"
+    class="menu-de-paginacao"
+  >
+    <ul
+      class="menu-de-paginacao__lista"
+      data-test="menu-paginacao"
+    >
       <li
-        v-if="paginas > 1"
         class="menu-de-paginacao__item menu-de-paginacao__item--anterior"
         :class="{
           'menu-de-paginacao__item--desabilitado': paginaCorrente === 1
         }"
+        data-test="item-paginacao-anterior"
       >
         <router-link
           class="menu-de-paginacao__link"
@@ -19,6 +25,7 @@
               [`${prefixo}pagina`]: paginaCorrente -1,
             },
           }"
+          data-test="link-paginacao-anterior"
         >
           <svg
             aria-hidden="true"
@@ -43,7 +50,6 @@
       </li>
 
       <li
-        v-if="paginas > 1"
         class="menu-de-paginacao__item menu-de-paginacao__item--ultima"
       >
         <router-link
@@ -63,8 +69,10 @@
       </li>
 
       <li
-        v-if="paginaCorrente < paginas"
         class="menu-de-paginacao__item menu-de-paginacao__item--seguinte"
+        :class="{
+          'menu-de-paginacao__item--desabilitado': paginaCorrente >= paginas
+        }"
       >
         <router-link
           class="menu-de-paginacao__link"
@@ -76,6 +84,7 @@
               [`${prefixo}pagina`]: paginaCorrente + 1,
             },
           }"
+          data-test="link-paginacao-seguinte"
         >
           <span class="menu-de-paginacao__texto">
             Seguinte
@@ -160,6 +169,7 @@ async function irParaPagina(numero) {
   display: block;
 }
 
+// Manter espaço ocupado para evitar que os links se movam
 .menu-de-paginacao__item--desabilitado {
   visibility: hidden;
 }
