@@ -1,6 +1,16 @@
 <template>
   <div class="flex g1">
-    <output class="inputtext light output">
+    <label
+      v-if="!itemSelecionado"
+      for="busca"
+      class="inputtext light instruções"
+    >
+      {{ props.textoDeInstruções }}
+    </label>
+    <output
+      v-else
+      class="inputtext light output"
+    >
       <slot
         v-if="itemSelecionado"
         name="valor-exibido"
@@ -12,11 +22,26 @@
         Escolha uma opção
       </span>
     </output>
+
     <button
+      v-if="itemSelecionado"
+      class="like-a__text"
+      arial-label="excluir"
+      title="excluir"
+      @click="limparSelecao"
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_remove" /></svg>
+    </button>
+
+    <button
+      id="busca"
       class="btn"
       @click="toggleModal"
     >
-      {{ itemSelecionado ? 'Alterar' : 'Selecionar' }}
+      {{ itemSelecionado ? 'Alterar' : props.textoDoBotão }}
     </button>
   </div>
 
@@ -25,6 +50,12 @@
     @close="toggleModal"
   >
     <form @submit.prevent="onSubmit">
+      <label
+        for="palavra-chave"
+        class="label"
+      >
+        {{ props.label }}
+      </label>
       <div class="flex g1 mb2">
         <input
           id="palavra-chave"
@@ -32,6 +63,7 @@
           class="inputtext light"
           :name="chaveDeBusca"
           type="search"
+          autocomplete="off"
         >
         <button
           class="btn"
@@ -47,10 +79,10 @@
     </div>
 
     <table
-      v-else
+      v-else-if="buscaRealizada"
       class="tablemain"
     >
-      <thead>
+      <thead v-if="linhas.length">
         <tr>
           <slot name="table-header" />
         </tr>
@@ -109,6 +141,18 @@ const props = defineProps({
     type: [String, Number, Object],
     default: null,
   },
+  label: {
+    type: String,
+    default: 'Pesquisar',
+  },
+  textoDeInstruções: {
+    type: String,
+    default: 'Selecione uma opção',
+  },
+  textoDoBotão: {
+    type: String,
+    default: 'Selecionar',
+  },
   urlRequisicao: {
     type: String,
     required: true,
@@ -140,6 +184,7 @@ const linhas = ref([]);
 const valorDaBusca = ref('');
 const itemSelecionado = ref(null);
 const carregando = ref(false);
+const buscaRealizada = ref(false);
 
 const valorExibido = computed(() => (itemSelecionado.value
   ? itemSelecionado.value[props.chaveDeExibição]
@@ -157,6 +202,7 @@ const urlFinal = computed(() => {
 
 async function onSubmit() {
   carregando.value = true;
+  buscaRealizada.value = true;
   try {
     const retorno = await requestS.get(urlFinal.value);
     linhas.value = retorno[props.chaveDeRetorno] || [];
@@ -172,16 +218,35 @@ watch(itemSelecionado, (novoValor) => {
   emit('update:modelValue', novoValor?.[props.chaveDeValor]);
 });
 
+function limparSelecao() {
+  itemSelecionado.value = null;
+  emit('update:modelValue', null);
+}
+
+function limparBusca() {
+  valorDaBusca.value = '';
+  linhas.value = [];
+  buscaRealizada.value = false;
+}
+
 function toggleModal() {
   estaAberto.value = !estaAberto.value;
+  if (!estaAberto.value) {
+    limparBusca();
+  }
 }
 
 function selecionarItem(item) {
   itemSelecionado.value = item;
   toggleModal();
 }
+
 </script>
 <style scoped>
+.instruções {
+  margin-bottom: 0;
+}
+
 .output {
   text-wrap: nowrap;
   text-overflow: ellipsis;
