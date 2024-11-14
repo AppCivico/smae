@@ -145,7 +145,7 @@ export class PainelEstrategicoService {
         all_status AS (
             SELECT status, COALESCE(quantidade, 0) as quantidade
             FROM (
-                SELECT unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento']) as status
+                SELECT unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento', 'Outros']) as status
             ) s
             LEFT JOIN status_counts sc USING (status)
         )
@@ -156,7 +156,8 @@ export class PainelEstrategicoService {
             CASE WHEN status = 'Outros' THEN 1 ELSE 0 END,
             quantidade DESC;`;
 
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
+        const results = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
+        return results.filter((r) => !(r.status === 'Outros' && r.quantidade === 0));
     }
 
     private async buildProjetosPorEtapas(filtro: string) {
@@ -213,7 +214,8 @@ export class PainelEstrategicoService {
             COALESCE(pc.ordem, a.ordem) DESC,
             COALESCE(pc.etapa, a.etapa);
         `;
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
+        const results = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
+        return results.filter((r) => !(r.etapa === 'Outros' && r.quantidade === 0));
     }
 
     private async buildProjetosConcluidosPorAno(filtro: string) {
