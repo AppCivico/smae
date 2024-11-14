@@ -220,7 +220,7 @@ async function onSubmit() {
       [props.chaveDeBusca]: valorDaBusca.value,
     };
 
-    const retorno = await requestS.get(`${baseUrl}/${props.urlRequisicao}`, { params: parametros });
+    const retorno = await requestS.get(`${baseUrl}/${props.urlRequisicao}`, parametros);
     linhas.value = retorno[props.chaveDeRetorno] || [];
   } catch (error) {
     console.error('Erro na requisição:', error);
