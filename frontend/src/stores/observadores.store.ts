@@ -11,14 +11,12 @@ type RouteMeta = {
 
 function caminhoParaApi(rotaMeta:RouteMeta) {
   if (
-    rotaMeta.prefixoParaFilhas === 'projeto'
-    || rotaMeta.entidadeMãe === 'projeto'
+    rotaMeta.entidadeMãe === 'projeto'
   ) {
     return 'grupo-portfolio';
   }
   if (
-    rotaMeta.prefixoParaFilhas === 'mdo'
-    || rotaMeta.entidadeMãe === 'mdo'
+    rotaMeta.entidadeMãe === 'mdo'
   ) {
     return 'grupo-portfolio-mdo';
   }
