@@ -1,12 +1,12 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, defineOptions } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import { etapasProjeto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, defineOptions } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const router = useRouter();
@@ -32,8 +32,7 @@ async function onSubmit(_, { controlledValues }) {
   let redirect;
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapasListar';
-  } else if (route.meta.entidadeMãe === 'mdo'
-  || route.meta.entidadeMãe === 'obras') {
+  } else if (route.meta.entidadeMãe === 'mdo') {
     redirect = 'mdo.etapasListar';
   } else if (route.meta.entidadeMãe === 'projeto') {
     redirect = 'projeto.etapasListar';

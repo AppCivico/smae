@@ -1,12 +1,12 @@
 <script setup>
-import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const authStore = useAuthStore();
