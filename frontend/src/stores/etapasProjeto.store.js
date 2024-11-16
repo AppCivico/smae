@@ -8,11 +8,9 @@ function caminhoParaApi(rotaMeta) {
       || rotaMeta.entidadeMãe === 'TransferenciasVoluntarias':
       return 'workflow-etapa';
 
-    case rotaMeta.prefixoParaFilhas === 'projeto'
-      || rotaMeta.entidadeMãe === 'projeto':
+    case rotaMeta.entidadeMãe === 'projeto':
       return 'projeto-etapa';
 
-    case rotaMeta.prefixoParaFilhas === 'mdo':
     case rotaMeta.entidadeMãe === 'mdo':
     case rotaMeta.entidadeMãe === 'obras':
       return 'projeto-etapa-mdo';

@@ -52,7 +52,7 @@ const listaPreparada = computed(() => {
       nome: x.descricao,
     };
 
-    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.prefixoParaFilhas === 'projeto') {
+    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.entidadeMãe === 'projeto') {
       item.editar = {
         rota: {
           name: 'projeto.etapaEditar',
@@ -114,12 +114,15 @@ const listaPreparada = computed(() => {
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir') || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
+      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir')
+        || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+        || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
       :to="{
         name:
           $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
             ? 'TransferenciasVoluntarias.etapaCriar'
-            : temPermissãoPara('CadastroProjetoEtapaMDO.inserir') && $route.meta.prefixoParaFilhas === 'mdo'
+            : temPermissãoPara('CadastroProjetoEtapaMDO.inserir')
+              && $route.meta.entidadeMãe === 'mdo'
               ? 'mdo.etapaCriar'
               : 'projeto.etapaCriar'
       }"

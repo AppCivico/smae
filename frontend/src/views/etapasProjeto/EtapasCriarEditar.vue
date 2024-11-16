@@ -32,9 +32,9 @@ async function onSubmit(_, { controlledValues }) {
   let redirect;
   if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapasListar';
-  } else if (route.meta.prefixoParaFilhas === 'mdo') {
+  } else if (route.meta.entidadeMãe === 'mdo') {
     redirect = 'mdo.etapasListar';
-  } else if (route.meta.prefixoParaFilhas === 'projeto') {
+  } else if (route.meta.entidadeMãe === 'projeto') {
     redirect = 'projeto.etapasListar';
   }
   try {

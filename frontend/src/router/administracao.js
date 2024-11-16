@@ -459,7 +459,6 @@ export default [
         component: EtapasRaiz,
         meta: {
           título: 'Etapas de obra',
-          prefixoParaFilhas: 'mdo',
           entidadeMãe: 'mdo',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
@@ -507,7 +506,7 @@ export default [
         component: EtapasRaiz,
         meta: {
           título: 'Etapas de projeto',
-          prefixoParaFilhas: 'projeto',
+          entidadeMãe: 'projeto',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapa.',
