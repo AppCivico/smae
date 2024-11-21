@@ -194,7 +194,7 @@ export default {
           v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1) && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
             && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'
-            && $route.meta.prefixoParaFilhas !== 'obras'"
+            && $route.meta.entidadeMãe !== 'obras'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
             name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
@@ -243,7 +243,7 @@ export default {
           class="like-a__text"
           title="Excluir"
           :hidden="linha.n_filhos_imediatos > 0
-            || (!oProjetoÉPrioritário && $route.meta.prefixoParaFilhas === 'projeto')"
+            || (!oProjetoÉPrioritário && $route.meta.entidadeMãe === 'projeto')"
           @click="excluirTarefa(linha.id)"
         >
           <svg

@@ -19,7 +19,7 @@ export default {
 
   meta: {
     títuloParaMenu: 'Tarefas',
-    prefixoParaFilhas: 'projeto',
+    entidadeMãe: 'projeto',
   },
   children: [
     {
