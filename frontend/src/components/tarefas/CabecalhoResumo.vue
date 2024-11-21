@@ -138,7 +138,7 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
         </dd>
       </div>
       <div
-        v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+        v-if="route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">

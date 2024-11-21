@@ -30,9 +30,10 @@ const emFoco = computed(() => etapasPorId.value[props.etapaId] || null);
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
   let redirect;
-  if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapasListar';
-  } else if (route.meta.entidadeMãe === 'mdo') {
+  } else if (route.meta.entidadeMãe === 'mdo'
+  || route.meta.entidadeMãe === 'obras') {
     redirect = 'mdo.etapasListar';
   } else if (route.meta.entidadeMãe === 'projeto') {
     redirect = 'projeto.etapasListar';
@@ -160,7 +161,7 @@ function excluirEtapaDoProjeto(id) {
   <button
     v-else-if="emFoco?.id && (
       temPermissãoPara('CadastroProjetoEtapa.remover'
-        || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+        || route.meta.entidadeMãe === 'TransferenciasVoluntarias'
       )
     )"
     class="btn amarelo big"
