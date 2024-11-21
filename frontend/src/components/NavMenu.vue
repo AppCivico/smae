@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import SmaeLink from './SmaeLink.vue';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
@@ -18,6 +19,7 @@ const filtrarRota = (
   rota,
   considerarPresençaNoMenu = true,
 ) => (rota.meta?.presenteNoMenu || !considerarPresençaNoMenu)
+  && (!rota.meta?.entidadeMãe || rota.meta.entidadeMãe === route.meta?.entidadeMãe)
   && (!rota.meta?.limitarÀsPermissões
     || temPermissãoPara.value(rota.meta?.limitarÀsPermissões));
 
@@ -90,7 +92,7 @@ onBeforeRouteUpdate(() => {
     >
       <ul class="menu__lista">
         <li class="menu__item">
-          <router-link
+          <SmaeLink
             v-if="dadosDoSistemaEscolhido?.rotaInicial"
             :to="dadosDoSistemaEscolhido?.rotaInicial"
             class="menu__link"
@@ -104,7 +106,7 @@ onBeforeRouteUpdate(() => {
             <span class="menu__texto-do-link">
               Página inicial
             </span>
-          </router-link>
+          </SmaeLink>
         </li>
 
         <li
@@ -150,7 +152,7 @@ onBeforeRouteUpdate(() => {
               height="8"
             ><use xlink:href="#i_down" /></svg>
           </button>
-          <router-link
+          <SmaeLink
             v-else
             :to="item.path"
             class="menu__link"
@@ -178,7 +180,7 @@ onBeforeRouteUpdate(() => {
             >
               {{ item.name }}
             </span>
-          </router-link>
+          </SmaeLink>
           <TransitionExpand>
             <ul
               v-if="item.rotasFilhas?.length"
@@ -190,7 +192,7 @@ onBeforeRouteUpdate(() => {
                 :key="j"
                 class="menu__item menu__item--sub"
               >
-                <router-link
+                <SmaeLink
                   class="menu__link menu__link--sub"
                   :to="subitem.path"
                 >
@@ -212,7 +214,7 @@ onBeforeRouteUpdate(() => {
                   >
                     {{ subitem.name }}
                   </span>
-                </router-link>
+                </SmaeLink>
               </li>
             </ul>
           </TransitionExpand>
@@ -220,7 +222,7 @@ onBeforeRouteUpdate(() => {
         <li
           class="menu__item menu__item--módulos"
         >
-          <router-link
+          <SmaeLink
             :to="{ name: 'home' }"
             class="menu__link menu__link--módulos"
           >
@@ -242,7 +244,7 @@ onBeforeRouteUpdate(() => {
             <span class="menu__texto-do-link">
               Meus módulos
             </span>
-          </router-link>
+          </SmaeLink>
         </li>
       </ul>
     </nav>
@@ -390,7 +392,7 @@ onBeforeRouteUpdate(() => {
   border: 0;
 }
 
-.menu__link {
+:deep(.menu__link) {
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -415,7 +417,7 @@ onBeforeRouteUpdate(() => {
   min-height: 0;
 }
 
-.menu__link--módulos {
+:deep(.menu__link--módulos) {
   background-color: @amarelo;
   color: @primary;
 }
@@ -454,8 +456,7 @@ onBeforeRouteUpdate(() => {
   overflow: hidden;
 }
 
-.menu__ícone-de-abertura {
-}
+.menu__ícone-de-abertura {}
 
 .menu__ícone-de-abertura--aberto {
   transform: rotate(-180deg);
