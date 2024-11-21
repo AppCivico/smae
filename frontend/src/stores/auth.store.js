@@ -191,5 +191,27 @@ export const useAuthStore = defineStore({
       // ele tem que bater com o começo de algumas permissões
       ? user.privilegios.some((y) => y.indexOf(x) === 0)
       : user.privilegios.some((y) => x === y))),
+
+    rotaEhPermitida() {
+      const rotasPorNome = this.router.getRoutes().reduce((acc, cur) => {
+        if (cur.name) {
+          acc[cur.name] = cur;
+        }
+        return acc;
+      }, {});
+
+      return (rota) => {
+        const nome = typeof rota === 'string'
+          ? rota
+          : rota.name;
+
+        if (!nome) {
+          throw new Error('Rota sem nome fornecida.');
+        }
+
+        return !rotasPorNome[nome]?.meta?.limitarÀsPermissões
+        || this.temPermissãoPara(rotasPorNome[nome]?.meta?.limitarÀsPermissões);
+      };
+    },
   },
 });
