@@ -1177,19 +1177,21 @@ export class EtapaService {
         await Promise.all(promises);
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, etapa_id: number, user: PessoaFromJwt) {
         const metaRow = await this.prisma.view_etapa_rel_meta.findFirstOrThrow({
-            where: { etapa_id: id },
+            where: { etapa_id: etapa_id },
             select: { meta_id: true },
         });
         await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
-        const etapa_has_children = await this.prisma.etapa.count({ where: { etapa_pai_id: id, removido_em: null } });
+        const etapa_has_children = await this.prisma.etapa.count({
+            where: { etapa_pai_id: etapa_id, removido_em: null },
+        });
         if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.etapa.updateMany({
-                where: { id: id },
+                where: { id: etapa_id },
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),
@@ -1197,10 +1199,11 @@ export class EtapaService {
             });
 
             const cronogramas = await prismaTx.cronogramaEtapa.findMany({
-                where: { etapa_id: id },
+                where: { etapa_id: etapa_id },
                 select: { id: true },
             });
 
+            // que gambiarra, pois isso está fora do transaction, mas se der erro, vai dar rollback em ambos
             for (const cronograma of cronogramas) {
                 await this.cronogramaEtapaService.delete(tipo, cronograma.id, user);
             }

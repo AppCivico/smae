@@ -718,11 +718,9 @@ export class CronogramaEtapaService {
         return { nivel, ordem };
     }
 
-    async delete(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
-        await this.assertMetaForCronograma(tipo, id, user);
-
-        const deleted = await this.prisma.cronogramaEtapa.findUnique({
-            where: { id: id },
+    async delete(tipo: TipoPdm, cronograma_etapa_id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.cronogramaEtapa.findUnique({
+            where: { id: cronograma_etapa_id },
             select: {
                 cronograma_id: true,
                 nivel: true,
@@ -730,20 +728,21 @@ export class CronogramaEtapaService {
             },
         });
 
-        if (!deleted) {
-            throw new NotFoundException(`CronogramaEtapa with id ${id} not found`);
+        if (!self) {
+            throw new NotFoundException(`CronogramaEtapa with id ${cronograma_etapa_id} not found`);
         }
+        await this.assertMetaForCronograma(tipo, self.cronograma_id, user);
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             await prisma.cronogramaEtapa.delete({
-                where: { id: id },
+                where: { id: cronograma_etapa_id },
             });
 
             const rows = await prisma.cronogramaEtapa.findMany({
                 where: {
-                    cronograma_id: deleted.cronograma_id,
-                    nivel: deleted.nivel,
-                    ordem: { gt: deleted.ordem },
+                    cronograma_id: self.cronograma_id,
+                    nivel: self.nivel,
+                    ordem: { gt: self.ordem },
                 },
                 select: {
                     id: true,
@@ -762,7 +761,7 @@ export class CronogramaEtapaService {
             return Promise.all(updates);
         });
 
-        return deleted;
+        return self;
     }
 
     async getDuracao(inicio_real: Date | null, termino_real: Date | null): Promise<string> {
