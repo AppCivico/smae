@@ -97,9 +97,9 @@ export default {
       <router-link
         v-if="!apenasLeitura
           || souResponsável
-          || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+          || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
         :to="{
-          name: $route.meta.prefixoParaFilhas + 'TarefasProgresso',
+          name: $route.meta.entidadeMãe + 'TarefasProgresso',
           params: {
             ...$route.params,
             tarefaId: linha.id,
@@ -193,11 +193,11 @@ export default {
         <SmaeLink
           v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1) && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
-            && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'
+            && $route.meta.entidadeMãe !== 'TransferenciasVoluntarias'
             && $route.meta.entidadeMãe !== 'obras'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
-            name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
+            name: $route.meta.entidadeMãe + 'TarefasCriar',
             params: {
               ...$route.params,
               tarefaId: linha.id,
@@ -220,7 +220,7 @@ export default {
         <SmaeLink
           v-if="linha.pode_editar"
           :to="{
-            name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
+            name: $route.meta.entidadeMãe + 'TarefasEditar',
             params: {
               ...$route.params,
               tarefaId: linha.id,

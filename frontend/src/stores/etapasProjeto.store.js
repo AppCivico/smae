@@ -4,8 +4,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
   switch (true) {
-    case rotaMeta.prefixoParaFilhas === 'TransferenciasVoluntarias'
-      || rotaMeta.entidadeMãe === 'TransferenciasVoluntarias':
+    case rotaMeta.entidadeMãe === 'TransferenciasVoluntarias':
       return 'workflow-etapa';
 
     case rotaMeta.entidadeMãe === 'projeto':

@@ -74,7 +74,7 @@ const listaPreparada = computed(() => {
       };
     }
 
-    if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+    if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
       item.editar = {
         rota: {
           name: 'TransferenciasVoluntarias.etapaEditar',
@@ -85,7 +85,7 @@ const listaPreparada = computed(() => {
       };
     }
 
-    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
+    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.entidadeMãe === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
       item.excluir = {
         ação: () => excluirEtapa(x.id, x.descricao),
       };
@@ -115,11 +115,11 @@ const listaPreparada = computed(() => {
     <hr class="ml2 f1">
     <router-link
       v-if="temPermissãoPara('CadastroProjetoEtapa.inserir')
-        || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+        || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
         || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
       :to="{
         name:
-          $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+          $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
             ? 'TransferenciasVoluntarias.etapaCriar'
             : temPermissãoPara('CadastroProjetoEtapaMDO.inserir')
               && $route.meta.entidadeMãe === 'mdo'
