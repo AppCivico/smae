@@ -3,13 +3,8 @@
     for="busca"
     class="label"
   >
-    {{ props.label }}
-    <span
-      v-if="props.obrigatorio"
-      class="tvermelho"
-    >
-      *
-    </span>
+    <!-- eslint-disable-next-line vue/max-attributes-per-line -->
+    {{ props.label }}&nbsp;<span v-if="props.obrigatorio" class="tvermelho">*</span>
   </label>
   <div class="flex g1">
     <output
