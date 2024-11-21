@@ -8,7 +8,7 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
@@ -263,6 +263,11 @@ function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, lis
 
   return opcoes;
 }
+
+onUnmounted(() => {
+  // limpar por segurança, porque a lista não é "pura"
+  usersStore.$reset();
+});
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
