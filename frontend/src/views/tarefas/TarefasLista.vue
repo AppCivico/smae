@@ -163,7 +163,8 @@ export default {
 
       <SmaeLink
         v-if="route.meta.entidadeMãe === 'projeto'
-          || route.meta.entidadeMãe === 'obras'"
+          || route.meta.entidadeMãe === 'obras'
+          || route.entidadeMãe === 'mdo'"
         :to="{
           name: '.TarefasClonar',
           params: $route.params,
