@@ -691,18 +691,14 @@ export class EtapaService {
             }
 
             let orgao_id: number | null = null;
-
-            for (const r of etapaAtualizada.responsaveis) {
-                const pessoa = await prismaTx.pessoa.findFirstOrThrow({
-                    where: { id: r.pessoa_id },
-                    select: { pessoa_fisica: { select: { orgao_id: true } } },
-                });
-                if (pessoa.pessoa_fisica?.orgao_id) orgao_id = pessoa.pessoa_fisica.orgao_id;
+            try {
+                orgao_id = await this.buscaOrgaoId(tipoPdm, dto, etapaAtualizada.responsaveis, prismaTx);
+            } catch (error) {
+                if (error instanceof BadRequestException)
+                    throw new BadRequestException('Órgão da etapa não foi encontrado: ' + error.message);
+                throw error;
             }
-            if (!orgao_id)
-                throw new BadRequestException(
-                    'Órgão da etapa não foi encontrado, necessário ter pelo menos um responsável com órgão'
-                );
+
             const tipoRelacionamento = etapaAtualizada.cronograma.meta_id
                 ? 'meta'
                 : etapaAtualizada.cronograma.iniciativa_id
@@ -779,6 +775,84 @@ export class EtapaService {
                 },
             });
         }
+    }
+
+    private async buscaOrgaoId(
+        tipoPdm: TipoPdm,
+        dto: UpdateEtapaDto,
+        responsaveis: { pessoa_id: number }[],
+        prismaTx: Prisma.TransactionClient
+    ): Promise<number> {
+        const orgaos = new Set<number>();
+
+        if (tipoPdm === 'PS') {
+            if (!dto.ps_ponto_focal?.equipes.length) {
+                throw new BadRequestException(
+                    'É necessário ter pelo menos uma equipe de ponto focal para gerar a variável.'
+                );
+            }
+            const orgaosEquipes = await this.buscaOrgaoEquipe(prismaTx, dto.ps_ponto_focal.equipes);
+            for (const o of orgaosEquipes) {
+                orgaos.add(o);
+            }
+        } else {
+            if (!responsaveis.length) {
+                throw new BadRequestException('É necessário ter pelo menos um responsável para gerar a variável.');
+            }
+            const responsaveisOrgaos = await this.buscaOrgaoResponsaveis(prismaTx, responsaveis);
+            for (const o of responsaveisOrgaos) {
+                orgaos.add(o);
+            }
+        }
+
+        if (orgaos.size === 0) {
+            throw new BadRequestException(
+                `${tipoPdm === 'PS' ? 'Equipe de Pontos focais' : 'Responsáveis'} não possuem órgão cadastrado, que é necessário para gerar a variável.`
+            );
+        }
+
+        if (orgaos.size > 1) {
+            throw new BadRequestException(
+                `${
+                    tipoPdm === 'PS' ? 'Pontos focais' : 'Responsáveis'
+                } devem pertencer ao mesmo órgão. Foram encontrados ${orgaos.size} órgãos diferentes.\n` +
+                    `Para gerar a variável, apenas um órgão deve ser selecionado.\n` +
+                    `Após a criação da variável, é possível adicionar responsáveis de outros órgãos.`
+            );
+        }
+
+        return Array.from(orgaos)[0];
+    }
+
+    private async buscaOrgaoEquipe(prismaTx: Prisma.TransactionClient, equipeIds: number[]): Promise<Set<number>> {
+        const orgaos = new Set<number>();
+
+        for (const equipeId of equipeIds) {
+            const equipe = await prismaTx.grupoResponsavelEquipe.findFirst({
+                where: { id: equipeId, removido_em: null },
+                select: { orgao_id: true },
+            });
+            if (equipe?.orgao_id) orgaos.add(equipe.orgao_id);
+        }
+
+        return orgaos;
+    }
+
+    private async buscaOrgaoResponsaveis(
+        prismaTx: Prisma.TransactionClient,
+        responsaveis: { pessoa_id: number }[]
+    ): Promise<Set<number>> {
+        const orgaos = new Set<number>();
+
+        for (const r of responsaveis) {
+            const pessoa = await prismaTx.pessoa.findFirstOrThrow({
+                where: { id: r.pessoa_id },
+                select: { pessoa_fisica: { select: { orgao_id: true } } },
+            });
+            if (pessoa.pessoa_fisica?.orgao_id) orgaos.add(pessoa.pessoa_fisica.orgao_id);
+        }
+
+        return orgaos;
     }
 
     private async validaOuAtualizaRegiaoPeloGeoLoc(
