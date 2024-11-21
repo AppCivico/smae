@@ -1,29 +1,29 @@
 <template>
   <td class="cell--nowrap">
-    {{ $props.linha.codigo }}
+    {{ $props.linha?.codigo }}
   </td>
   <th>
-    <code v-scrollLockDebug>{{ $props.linha.id }}</code>
-    {{ $props.linha.titulo }}
+    <code v-scrollLockDebug>{{ $props.linha?.id }}</code>
+    {{ $props.linha?.titulo }}
   </th>
   <td>
-    {{ $props.linha.fonte?.nome || $props.linha.fonte || '-' }}
+    {{ $props.linha?.fonte?.nome || $props.linha?.fonte || '-' }}
   </td>
   <td class="cell--nowrap">
-    {{ $props.linha.periodicidade }}
+    {{ $props.linha?.periodicidade }}
   </td>
   <td class="cell--nowrap">
     <abbr
-      v-if="$props.linha.orgao"
-      :title="$props.linha.orgao.descricao"
+      v-if="$props.linha?.orgao"
+      :title="$props.linha?.orgao.descricao"
     >
-      {{ $props.linha.orgao.sigla || $props.linha.orgao }}
+      {{ $props.linha?.orgao.sigla || $props.linha?.orgao }}
     </abbr>
   </td>
   <td class="contentStyle">
-    <ul v-if="Array.isArray($props.linha.planos) && $props.linha.planos.length">
+    <ul v-if="Array.isArray($props.linha?.planos) && $props.linha?.planos.length">
       <li
-        v-for="plano in $props.linha.planos"
+        v-for="plano in $props.linha?.planos"
         :key="plano.id"
       >
         <component
