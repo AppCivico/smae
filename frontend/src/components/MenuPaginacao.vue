@@ -1,24 +1,26 @@
 <template>
-  <nav class="menu-de-paginacao">
-    <ul class="menu-de-paginacao__lista">
+  <nav
+    v-if="paginas > 1"
+    class="menu-de-paginacao"
+  >
+    <ul
+      class="menu-de-paginacao__lista"
+      data-test="menu-paginacao"
+    >
       <li
-        v-if="paginas > 1"
         class="menu-de-paginacao__item menu-de-paginacao__item--anterior"
         :class="{
           'menu-de-paginacao__item--desabilitado': paginaCorrente === 1
         }"
+        data-test="item-paginacao-anterior"
       >
-        <router-link
+        <component
+          :is="model ? 'button' : 'router-link'"
           class="menu-de-paginacao__link"
-          :to="{
-            query: {
-              ...$route.query,
-              [`${prefixo}token_paginacao`]: paginaCorrente === 2
-                ? undefined
-                : tokenPaginacao || $route.query[`${prefixo}token_paginacao`],
-              [`${prefixo}pagina`]: paginaCorrente -1,
-            },
-          }"
+          :type="model ? 'button' : null"
+          :to="linkDeRetrocesso"
+          data-test="link-paginacao-anterior"
+          @click="(ev) => model ? irParaPagina(paginaCorrente - 1) : null"
         >
           <svg
             aria-hidden="true"
@@ -28,54 +30,49 @@
           <span class="menu-de-paginacao__texto">
             Anterior
           </span>
-        </router-link>
+        </component>
       </li>
 
       <li class="menu-de-paginacao__item menu-de-paginacao__item--corrente">
         <input
-          :aria-busy="navegando"
+          :aria-busy="navegando || $attrs.ariaBusy"
           arial-label="Página corrente"
           :value="paginaCorrente"
           class="like-a__text menu-de-paginacao__campo"
+          data-test="campo-navegacao-pagina"
           @change="(ev) => irParaPagina(ev.target.value)"
           @keyup.enter="(ev) => irParaPagina(ev.target.value)"
         >
       </li>
 
       <li
-        v-if="paginas > 1"
         class="menu-de-paginacao__item menu-de-paginacao__item--ultima"
       >
-        <router-link
+        <component
+          :is="model ? 'button' : 'router-link'"
           class="menu-de-paginacao__link"
-          :to="{
-            query: {
-              ...$route.query,
-              [`${prefixo}token_paginacao`]: tokenPaginacao
-                || $route.query[`${prefixo}token_paginacao`],
-              [`${prefixo}pagina`]: paginas,
-            },
-          }"
+          :type="model ? 'button' : null"
+          :to="linkParaUltimaPagina"
           arial-label="Última página"
+          @click="(ev) => model ? irParaPagina(paginas) : null"
         >
           {{ paginas }}
-        </router-link>
+        </component>
       </li>
 
       <li
-        v-if="paginaCorrente < paginas"
         class="menu-de-paginacao__item menu-de-paginacao__item--seguinte"
+        :class="{
+          'menu-de-paginacao__item--desabilitado': paginaCorrente >= paginas
+        }"
       >
-        <router-link
+        <component
+          :is="model ? 'button' : 'router-link'"
           class="menu-de-paginacao__link"
-          :to="{
-            query: {
-              ...$route.query,
-              [`${prefixo}token_paginacao`]: tokenPaginacao
-                || $route.query[`${prefixo}token_paginacao`],
-              [`${prefixo}pagina`]: paginaCorrente + 1,
-            },
-          }"
+          :type="model ? 'button' : null"
+          :to="linkDeAvanco"
+          data-test="link-paginacao-seguinte"
+          @click="(ev) => model ? irParaPagina(paginaCorrente + 1) : null"
         >
           <span class="menu-de-paginacao__texto">
             Seguinte
@@ -85,7 +82,7 @@
             width="8"
             height="13"
           ><use xlink:href="#i_right" /></svg>
-        </router-link>
+        </component>
       </li>
     </ul>
   </nav>
@@ -94,10 +91,10 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const navegando = ref(false);
-
 const route = useRoute();
 const router = useRouter();
+
+const model = defineModel();
 
 const props = defineProps({
   paginas: {
@@ -122,22 +119,61 @@ const props = defineProps({
   },
 });
 
-const paginaCorrente = computed(() => Number(route.query[`${props.prefixo}pagina`]) || 1);
+const navegando = ref(false);
 
-async function irParaPagina(numero) {
-  navegando.value = true;
+const paginaCorrente = computed(() => (model.value
+  ? model.value
+  : Number(route.query[`${props.prefixo}pagina`]) || 1));
 
-  await router.push({
+const linkDeAvanco = computed(() => (model.value
+  ? null
+  : {
     query: {
       ...route.query,
-      [`${props.prefixo}token_paginacao`]: numero === 1
+      [`${props.prefixo}token_paginacao`]: props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+      [`${props.prefixo}pagina`]: paginaCorrente.value + 1,
+    },
+  }));
+
+const linkDeRetrocesso = computed(() => (model.value
+  ? null
+  : {
+    query: {
+      ...route.query,
+      [`${props.prefixo}token_paginacao`]: paginaCorrente.value === 2
         ? undefined
         : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
-      [`${props.prefixo}pagina`]: numero,
+      [`${props.prefixo}pagina`]: paginaCorrente.value - 1,
     },
-  });
+  }));
 
-  navegando.value = false;
+const linkParaUltimaPagina = computed(() => (model.value
+  ? null
+  : {
+    query: {
+      ...route.query,
+      [`${props.prefixo}token_paginacao`]: props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+      [`${props.prefixo}pagina`]: props.paginas,
+    },
+  }));
+
+async function irParaPagina(numero) {
+  if (model.value) {
+    model.value = Number(numero);
+  } else {
+    navegando.value = true;
+
+    await router.push({
+      query: {
+        ...route.query,
+        [`${props.prefixo}token_paginacao`]: numero === 1
+          ? undefined
+          : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+        [`${props.prefixo}pagina`]: numero,
+      },
+    });
+    navegando.value = false;
+  }
 }
 </script>
 <style lang="less" scoped>
@@ -160,6 +196,7 @@ async function irParaPagina(numero) {
   display: block;
 }
 
+// Manter espaço ocupado para evitar que os links se movam
 .menu-de-paginacao__item--desabilitado {
   visibility: hidden;
 }
@@ -193,6 +230,8 @@ async function irParaPagina(numero) {
   align-items: center;
   gap: 0.25em;
   color: @c600;
+  background-color: transparent;
+  border: 0;
 
   &:hover,
   &:focus,

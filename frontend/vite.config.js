@@ -29,4 +29,7 @@ export default defineConfig({
       '@back': fileURLToPath(new URL('../backend/src', import.meta.url)),
     },
   },
+  test: {
+    environment: 'happy-dom',
+  },
 });

@@ -17,7 +17,9 @@
 
   <LoadingComponent v-if="chamadasPendentes.lista" />
   <p v-else>
-    Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
+    Exibindo do <strong>{{ dadosDaExibicao.primeiro }}º</strong>
+    ao <strong>{{ dadosDaExibicao.ultimo }}º</strong> valores
+    de {{ dadosDaExibicao.total }}.
   </p>
 
   <form
@@ -95,21 +97,18 @@
             :indeterminate.prop="!!variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length
               && variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length !==
                 filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            :aria-label="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
-              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
-              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
-            :title="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
-              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
-              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
+            v-bind="gerarAtributosDoCampo(mae.id, agrupador)"
             @change="selecionarTodasAsFilhas(mae.id, agrupador)"
           >
         </td>
       </template>
     </TabelaDeVariaveisGlobais>
+
+    <MenuPaginacao
+      v-if="paginacao.paginas > 1"
+      v-bind="paginacao"
+      v-model="paginaCorrente"
+    />
 
     <p class="mb1">
       <strong>
@@ -155,7 +154,8 @@
   </form>
 </template>
 <script setup lang="ts">
-import type { Indicador } from '@/../../backend/src/indicador/entities/indicador.entity';
+import type { Indicador } from '@back/indicador/entities/indicador.entity';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
@@ -163,7 +163,7 @@ import requestS from '@/helpers/requestS.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import type { PropType } from 'vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import LoadingComponent from '../LoadingComponent.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -197,6 +197,7 @@ const variaveisSelecionadas = ref<number[]>([]);
 const variaveisFilhasSelecionadas = ref<{ [key: string]: { [key: string]: number[] } }>({});
 
 const parametrosDaBuscaCorrente = ref<Record<string, unknown>>({});
+const paginaCorrente = ref<number>(1);
 
 const envioPendente = ref<boolean>(false);
 const erro = ref<string | null>(null);
@@ -219,6 +220,15 @@ const combinacaoDeVariaveisSelecionadas = computed(() => {
 
   return combinacao;
 });
+
+const dadosDaExibicao = computed(() => ({
+  primeiro: (paginacao.value.paginaCorrente - 1) * valoresIniciais.ipp + 1,
+  ultimo: Math.min(
+    paginacao.value.paginaCorrente * valoresIniciais.ipp,
+    paginacao.value.totalRegistros,
+  ),
+  total: paginacao.value.totalRegistros,
+}));
 
 function selecionarTodasAsFilhas(
   maeId: number,
@@ -282,6 +292,24 @@ function dispararBuscaDeVariaveis(evento: SubmitEvent) {
   parametrosDaBuscaCorrente.value = params;
 }
 
+const gerarAtributosDoCampo = (mae, agrupador) => {
+  const filhasSelecionadas = variaveisFilhasSelecionadas.value[mae]?.[agrupador];
+  const variaveisFilhas = filhasPorMaePorNivelDeRegiao.value[mae][agrupador];
+
+  return {
+    checked: filhasSelecionadas?.length
+      === variaveisFilhas.length,
+    'aria-label': filhasSelecionadas?.length
+      === variaveisFilhas.length
+      ? `Desselecionar ${variaveisFilhas.length} itens`
+      : `Selecionar ${variaveisFilhas.length}`,
+    title: filhasSelecionadas?.length
+      === variaveisFilhas.length
+      ? `Desselecionar ${variaveisFilhas.length} itens`
+      : `Selecionar ${variaveisFilhas.length}`,
+  };
+};
+
 async function associar(encerrar = false) {
   if (envioPendente.value) {
     return;
@@ -308,5 +336,14 @@ async function associar(encerrar = false) {
 variaveisGlobaisStore.buscarTudo({
   ...valoresIniciais,
   not_indicador_id: props.indicador?.id,
+});
+
+watch(paginaCorrente, (novoValor) => {
+  buscarVariaveis({
+    ...valoresIniciais,
+    ...parametrosDaBuscaCorrente.value,
+    token_paginacao: paginacao.value.tokenPaginacao,
+    pagina: novoValor,
+  });
 });
 </script>

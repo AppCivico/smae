@@ -45,7 +45,12 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.test.js', '*.test.ts'],
+      files: [
+        '*.test.js',
+        '*.test.ts',
+        '*.spec.js',
+        '*.spec.ts',
+      ],
       extends: [
         'eslint:recommended',
         'airbnb-base',
