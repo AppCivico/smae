@@ -114,19 +114,19 @@ iniciar();
       </template>
       <tr v-else-if="relatoriosStore.loading">
         <td
-          colspan="100%"
+          colspan="999"
           aria-busy="true"
         >
           Carregando
         </td>
       </tr>
       <tr v-else-if="relatoriosStore.error">
-        <td colspan="100%">
+        <td colspan="999">
           erro: {{ relatoriosStore.error }}
         </td>
       </tr>
       <tr v-else>
-        <td colspan="100%">
+        <td colspan="999">
           Nenhum resultado encontrado.
         </td>
       </tr>
