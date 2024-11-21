@@ -189,7 +189,7 @@ export default {
         <SmaeLink
           v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1) && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
-            && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'
+            && $route.meta.entidadeMãe !== 'TransferenciasVoluntarias'
             && $route.meta.entidadeMãe !== 'obras'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
