@@ -1182,7 +1182,7 @@ export class EtapaService {
             where: { etapa_id: id },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'etapa do cronograma');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
 
         const etapa_has_children = await this.prisma.etapa.count({ where: { etapa_pai_id: id, removido_em: null } });
         if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
