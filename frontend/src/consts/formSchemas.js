@@ -2652,6 +2652,32 @@ export const região = object()
       .nullable(),
   });
 
+export const relatorioPlanoSetorialBase = object()
+  .shape({
+    criado_em: string().label('Gerado em'),
+    criador: string().label('Gerador'),
+    parametros: string().label('Parâmetros principais'),
+  });
+
+export const relatorioMensalPlanoSetorial = relatorioPlanoSetorialBase.shape(
+  {
+    referencia: string().label('Referência'),
+  },
+);
+
+export const relatorioSemestralAnualPlanoSetorial = relatorioPlanoSetorialBase.shape(
+  {
+    periodo: string().label('periodo'),
+  },
+);
+
+export const relatorioOrcamentarioPlanoSetorial = relatorioPlanoSetorialBase.shape(
+  {
+    periodo_inicio: string().label('Período Início'),
+    periodo_fim: string().label('Período Fim'),
+  },
+);
+
 export const relatórioDeAtividadesPendentes = object({
   fonte: string()
     .required(),
