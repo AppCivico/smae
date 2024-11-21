@@ -27,14 +27,12 @@ type RouteMeta = {
 
 function caminhoParaApi(rotaMeta:RouteMeta) {
   if (
-    rotaMeta.prefixoParaFilhas === 'projeto'
-    || rotaMeta.entidadeMãe === 'projeto'
+    rotaMeta.entidadeMãe === 'projeto'
   ) {
     return 'acompanhamento-tipo';
   }
   if (
-    rotaMeta.prefixoParaFilhas === 'obras'
-    || rotaMeta.entidadeMãe === 'obras'
+    rotaMeta.entidadeMãe === 'obras' || rotaMeta.entidadeMãe === 'mdo'
   ) {
     return 'acompanhamento-tipo-mdo';
   }
