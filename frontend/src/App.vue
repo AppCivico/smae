@@ -2,7 +2,12 @@
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { onErrorCaptured, provide, ref } from 'vue';
+import {
+  onErrorCaptured,
+  provide,
+  ref,
+  inject,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 import retornarModuloAPartirDeEntidadeMae from './helpers/retornarModuloAPartirDeEntidadeMae';
