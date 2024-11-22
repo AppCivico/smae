@@ -11,13 +11,13 @@ import { Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 
-import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae';
+import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
+import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
 import configuracoes from './configuracoes';
-import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import envios from './envios';
 import graficos from './graficos';
 import metas from './metas';
@@ -112,7 +112,7 @@ router.beforeEach(async (r, from) => {
   const authStore = useAuthStore();
 
   if (from.meta?.entidadeMãe !== undefined) {
-    authStore.moduloDaRotaAnterior = retornarModuloDeEntidadeMae(from.meta.entidadeMãe);
+    authStore.moduloDaRotaAnterior = retornarModuloAPartirDeEntidadeMae(from.meta.entidadeMãe);
   }
 
   if (authRequired && !authStore.user) {

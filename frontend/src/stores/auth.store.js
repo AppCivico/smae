@@ -1,5 +1,5 @@
 import modulos from '@/consts/modulosDoSistema.ts';
-import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae.ts';
+import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -158,7 +158,7 @@ export const useAuthStore = defineStore({
         return this.sistemaEscolhido;
       }
 
-      return retornarModuloDeEntidadeMae(this.route.meta.entidadeMãe)
+      return retornarModuloAPartirDeEntidadeMae(this.route.meta.entidadeMãe)
         || this.moduloDaRotaAnterior
         || this.sistemaEscolhido;
     },
