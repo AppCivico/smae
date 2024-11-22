@@ -724,6 +724,7 @@ export class PainelEstrategicoService {
 
             GROUP BY years.yr
             ORDER BY years.yr`;
+
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
     }
 
@@ -828,13 +829,13 @@ export class PainelEstrategicoService {
         const sql = `select * from (
                             select (select sum(t.custo_estimado)
                              from tarefa_cronograma tc
-                                      inner join tarefa t on t.tarefa_cronograma_id = tc.id
-                             where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
+                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
+                             where n_filhos_imediatos = 0
                                and tc.projeto_id = p.id
                                and tc.removido_em is null)::float as valor_custo_planejado_total,
                          (select sum(t.custo_estimado)
                             from tarefa_cronograma tc
-                             inner join tarefa t on t.tarefa_cronograma_id = tc.id
+                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
                             where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
                             and tc.projeto_id = p.id
                             and tc.removido_em is null
@@ -878,6 +879,7 @@ export class PainelEstrategicoService {
                                           group by vp.nome, vp.id) orc on orc.projeto_id = p.id
                      where 1 = 1 ${strFilterGeral} ) t order by valor_custo_planejado_total desc
                      limit ${ipp} offset ${offset}`;
+        console.log('the query', sql);
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaLista[];
         // executar depois da query
         if (filterToken) {
