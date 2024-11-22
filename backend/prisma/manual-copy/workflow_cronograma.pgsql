@@ -8,7 +8,7 @@ DECLARE
 BEGIN
     SELECT id FROM orgao WHERE sigla = 'SERI' INTO _orgao_seri_id;
 
-    INSERT INTO tarefa_cronograma (transferencia_id) VALUES (_transferencia_id) RETURNING id INTO _tarefa_cronograma_id;
+    INSERT INTO tarefa_cronograma (transferencia_id, criado_em) VALUES (_transferencia_id, now()) RETURNING id INTO _tarefa_cronograma_id;
 
     UPDATE transferencia SET nivel_maximo_tarefa = 3 WHERE id = _transferencia_id;
 
