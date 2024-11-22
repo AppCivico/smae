@@ -705,7 +705,16 @@ export class PainelEstrategicoService {
                   AND t.n_filhos_imediatos = 0
                   AND t.removido_em IS NULL
               GROUP BY date_part('year', t.termino_planejado), tc.projeto_id
-            )
+            ),
+            orc_realizado as (
+                SELECT sum(orcr.soma_valor_empenho) AS soma_valor_empenho,
+                         sum(orcr.soma_valor_liquidado) AS soma_valor_liquidado,
+                         ano_referencia,
+                         orcr.projeto_id
+                FROM orcamento_realizado orcr
+                WHERE orcr.removido_em IS NULL
+                GROUP BY ano_referencia, orcr.projeto_id
+           )
             SELECT
                 sum(COALESCE(tc.previsao_custo, 0))::float AS custo_planejado_total,
                 sum(COALESCE(orcr.soma_valor_empenho, 0))::float AS valor_empenhado_total,
@@ -718,9 +727,8 @@ export class PainelEstrategicoService {
             LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr
                 AND (tc.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1)
             LEFT JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
-            LEFT JOIN orcamento_realizado orcr ON orcr.ano_referencia = years.yr
+            LEFT JOIN orc_realizado orcr ON orcr.ano_referencia = years.yr
                 AND (orcr.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1 )
-                AND orcr.removido_em IS NULL
 
             GROUP BY years.yr
             ORDER BY years.yr`;
