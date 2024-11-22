@@ -5,38 +5,62 @@
     tabindex="0"
   >
     <div
-      v-if="years.length > 1"
-      class="flex flexwrap"
+      v-if="anosDisponiveis.length > 1"
+      class="flex flexwrap g1"
     >
-      <label
-        class="label tc300"
-        for="grafico-ano"
-      >
-        Ano
-      </label>
-      <select
-        id="grafico-ano"
-        v-model="selectedYear"
-        class="inputtext"
-        @change="updateChartData"
-      >
-        <option
-          v-for="year in years"
-          :key="year"
-          :value="year"
+      <div>
+        <label
+          class="label tc300"
+          for="grafico-ano-inicial"
         >
-          {{ year }}
-        </option>
-      </select>
+          Ano Inicial
+        </label>
+        <select
+          id="grafico-ano-inicial"
+          v-model="anoInicial"
+          class="inputtext"
+          @change="validarAnoInicial"
+        >
+          <option
+            v-for="ano in anosDisponiveis"
+            :key="ano"
+            :value="ano"
+          >
+            {{ ano }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label
+          class="label tc300"
+          for="grafico-ano-final"
+        >
+          Ano Final
+        </label>
+        <select
+          id="grafico-ano-final"
+          v-model="anoFinal"
+          class="inputtext"
+          @change="validarAnoFinal"
+        >
+          <option
+            v-for="ano in anosFinaisValidos"
+            :key="ano"
+            :value="ano"
+          >
+            {{ ano }}
+          </option>
+        </select>
+      </div>
     </div>
     <div
-      v-if="heatmapData.length > 0"
+      v-if="dadosHeatmap.length > 0"
       class="min-width"
       style="--min-width: 55rem;"
     >
       <GraficoDashboard
-        :option="chartOption"
-        :tooltip-template="formatTooltip"
+        :option="configuracaoGrafico"
+        :tooltip-template="formatarTooltip"
       />
     </div>
     <div v-else>
@@ -63,75 +87,92 @@ const props = defineProps({
 });
 
 const categorias = computed(() => props.valores.dados_auxiliares?.categoricas || {});
-const indexRealizado = computed(() => props.valores.ordem_series.indexOf('Realizado'));
-const selectedYear = ref(null);
-const heatmapData = ref([]);
-const chartOption = ref({});
+const indiceRealizado = computed(() => props.valores.ordem_series.indexOf('Realizado'));
+const anoInicial = ref(null);
+const anoFinal = ref(null);
+const dadosHeatmap = ref([]);
+const configuracaoGrafico = ref({});
 
-if (indexRealizado.value === -1) {
+if (indiceRealizado.value === -1) {
   console.error('Série "Realizado" não encontrada na ordem das séries.');
 }
 
-const xAxisDataWithCounts = computed(() => {
-  const dates = [];
+const datasEixoX = computed(() => {
+  const datas = [];
   props.valores.linhas.forEach(({ series }) => {
-    const serieRealizado = series[indexRealizado.value];
+    const serieRealizado = series[indiceRealizado.value];
     if (serieRealizado && serieRealizado.elementos?.length) {
-      const formattedDate = dateToMonthYear(serieRealizado.data_valor);
-      if (!dates.includes(formattedDate)) {
-        dates.push(formattedDate);
+      const dataFormatada = dateToMonthYear(serieRealizado.data_valor);
+      if (!datas.includes(dataFormatada)) {
+        datas.push(dataFormatada);
       }
     }
   });
-  return dates;
+  return datas;
 });
 
-const years = computed(() => [...new Set(xAxisDataWithCounts.value.map((date) => date.split('/')[1]))]);
+const anosDisponiveis = computed(() => [...new Set(datasEixoX.value.map((data) => data.split('/')[1]))]);
 
-const populateHeatmapData = () => {
-  const data = [];
+const calcularIntervaloPadraoAnos = () => {
+  const anos = anosDisponiveis.value;
+  if (anos.length <= 4) {
+    return [anos[0], anos[anos.length - 1]];
+  }
+  return [anos[0], anos[3]];
+};
+
+const anosFinaisValidos = computed(() => anosDisponiveis
+  .value.filter((ano) => ano >= anoInicial.value));
+
+const preencherDadosHeatmap = () => {
+  const dados = [];
   props.valores.linhas.forEach(({ series }) => {
-    const serieRealizado = series[indexRealizado.value];
+    const serieRealizado = series[indiceRealizado.value];
     if (serieRealizado && serieRealizado.elementos?.length) {
-      const categoriaCounts = Array(Object.keys(categorias).length).fill(0);
+      const contagemCategorias = Array(Object.keys(categorias).length).fill(0);
       serieRealizado.elementos.forEach(({ categoria }) => {
-        const categoriaIndex = parseInt(categoria, 10) - 1;
-        if (categoriaIndex >= 0 && categoriaIndex < categoriaCounts.length) {
-          categoriaCounts[categoriaIndex] += 1;
+        const indiceCategoria = parseInt(categoria, 10) - 1;
+        if (indiceCategoria >= 0 && indiceCategoria < contagemCategorias.length) {
+          contagemCategorias[indiceCategoria] += 1;
         }
       });
-      const formattedDate = dateToMonthYear(serieRealizado.data_valor);
-      const xIndex = xAxisDataWithCounts.value.indexOf(formattedDate);
-      if (xIndex !== -1) {
-        categoriaCounts.forEach((count, yIndex) => {
-          data.push([xIndex, yIndex, count]);
+      const dataFormatada = dateToMonthYear(serieRealizado.data_valor);
+      const indiceX = datasEixoX.value.indexOf(dataFormatada);
+      if (indiceX !== -1) {
+        contagemCategorias.forEach((contagem, indiceY) => {
+          dados.push([indiceX, indiceY, contagem]);
         });
       }
     }
   });
-  heatmapData.value = data;
+  dadosHeatmap.value = dados;
 };
 
-const updateChartData = () => {
-  const filteredXAxisData = xAxisDataWithCounts.value
-    .filter((date) => date.endsWith(selectedYear.value));
+const atualizarDadosGrafico = () => {
+  if (!anoInicial.value || !anoFinal.value) return;
 
-  let filteredData = heatmapData.value
-    .filter(([xIndex]) => xAxisDataWithCounts.value[xIndex].endsWith(selectedYear.value));
-
-  // Ajusta o eixo X pra ele ainda ficar dentro do gráfico
-  filteredData = filteredData.map(([xIndex, yIndex, value]) => {
-    const newXIndex = filteredXAxisData.indexOf(xAxisDataWithCounts.value[xIndex]);
-    return [newXIndex, yIndex, value];
+  const eixoXFiltrado = datasEixoX.value.filter((data) => {
+    const ano = data.split('/')[1];
+    return ano >= anoInicial.value && ano <= anoFinal.value;
   });
 
-  chartOption.value = {
+  let dadosFiltrados = dadosHeatmap.value.filter(([indiceX]) => {
+    const ano = datasEixoX.value[indiceX].split('/')[1];
+    return ano >= anoInicial.value && ano <= anoFinal.value;
+  });
+
+  dadosFiltrados = dadosFiltrados.map(([indiceX, indiceY, valor]) => {
+    const novoIndiceX = eixoXFiltrado.indexOf(datasEixoX.value[indiceX]);
+    return [novoIndiceX, indiceY, valor];
+  });
+
+  configuracaoGrafico.value = {
     grid: {
       left: '10%',
     },
     visualMap: {
       min: 0,
-      max: Math.max(...filteredData.map(([, , value]) => value)) || 1, // Não gostei, mas funciona
+      max: Math.max(...dadosFiltrados.map(([, , valor]) => valor)) || 1,
       orient: 'horizontal',
       left: 'center',
       bottom: '15%',
@@ -150,7 +191,7 @@ const updateChartData = () => {
     xAxis: {
       type: 'category',
       boundaryGap: true,
-      data: filteredXAxisData,
+      data: eixoXFiltrado,
       axisTick: {
         show: false,
       },
@@ -164,12 +205,12 @@ const updateChartData = () => {
       boundaryGap: true,
       nameGap: 140,
       axisLabel: {
-        formatter(value) {
-          const maxLength = 20;
-          if (value.length > maxLength) {
-            return `${value.slice(0, maxLength)}...`;
+        formatter(valor) {
+          const tamanhoMaximo = 20;
+          if (valor.length > tamanhoMaximo) {
+            return `${valor.slice(0, tamanhoMaximo)}...`;
           }
-          return value.split(' ').join('\n');
+          return valor.split(' ').join('\n');
         },
         rotate: 45,
       },
@@ -183,7 +224,7 @@ const updateChartData = () => {
     series: [
       {
         type: 'heatmap',
-        data: filteredData.length ? filteredData : [[0, 0, 0]],
+        data: dadosFiltrados.length ? dadosFiltrados : [[0, 0, 0]],
         label: { show: false },
         itemStyle: {
           borderWidth: 3,
@@ -200,42 +241,55 @@ const updateChartData = () => {
   };
 };
 
-const totalCountsPerMonth = computed(() => {
-  const totals = {};
+const totalContagemPorMes = computed(() => {
+  const totais = {};
 
-  heatmapData.value.forEach(([xIndex, yIndex, count]) => {
-    const monthYear = xAxisDataWithCounts.value[xIndex]; // Pegue a data formatada como 'mm/yyyy'
-    if (!totals[monthYear]) {
-      totals[monthYear] = 0;
+  dadosHeatmap.value.forEach(([indiceX, , contagem]) => {
+    const mesAno = datasEixoX.value[indiceX];
+    if (!totais[mesAno]) {
+      totais[mesAno] = 0;
     }
-    totals[monthYear] += count;
+    totais[mesAno] += contagem;
   });
-  return totals;
+  return totais;
 });
 
-function formatTooltip(param) {
-  const [xIndex, yIndex, count] = param.data;
-  const categoria = Object.values(categorias.value)[yIndex];
-  const monthYear = xAxisDataWithCounts.value[xIndex];
-  const totalForMonth = totalCountsPerMonth.value[monthYear] || 1;
-  const percentage = ((count / totalForMonth) * 100).toFixed(2);
+function formatarTooltip(param) {
+  const [indiceX, indiceY, contagem] = param.data;
+  const categoria = Object.values(categorias.value)[indiceY];
+  const mesAno = datasEixoX.value[indiceX];
+  const totalMes = totalContagemPorMes.value[mesAno] || 1;
+  const percentual = ((contagem / totalMes) * 100).toFixed(2);
 
   return `
     <div class="projeto-tooltip" style="color: #333">
       <p class="projeto-tooltip__valor">${categoria}</p>
-      <p class="projeto-tooltip__valor">Contagem: ${count}</p>
-      <p class="projeto-tooltip__valor">Percentual: ${percentage}%</p>
+      <p class="projeto-tooltip__valor">Contagem: ${contagem}</p>
+      <p class="projeto-tooltip__valor">Percentual: ${percentual}%</p>
     </div>
   `;
 }
 
+const validarAnoInicial = () => {
+  if (anoInicial.value > anoFinal.value) {
+    anoFinal.value = anoInicial.value; // Ajusta o ano final
+  }
+};
+
+const validarAnoFinal = () => {
+  if (anoFinal.value < anoInicial.value) {
+    anoInicial.value = anoFinal.value; // Ajusta o ano inicial
+  }
+};
+
 onMounted(() => {
-  const [firstYear] = years.value;
-  selectedYear.value = firstYear;
-  populateHeatmapData();
-  updateChartData();
+  const [anoInicialPadrao, anoFinalPadrao] = calcularIntervaloPadraoAnos();
+  anoInicial.value = anoInicialPadrao;
+  anoFinal.value = anoFinalPadrao;
+  preencherDadosHeatmap();
+  atualizarDadosGrafico();
 });
 
-watch(selectedYear, updateChartData);
+watch([anoInicial, anoFinal], atualizarDadosGrafico);
 
 </script>
