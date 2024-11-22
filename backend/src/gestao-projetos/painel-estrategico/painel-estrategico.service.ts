@@ -705,7 +705,16 @@ export class PainelEstrategicoService {
                   AND t.n_filhos_imediatos = 0
                   AND t.removido_em IS NULL
               GROUP BY date_part('year', t.termino_planejado), tc.projeto_id
-            )
+            ),
+            orc_realizado as (
+                SELECT sum(orcr.soma_valor_empenho) AS soma_valor_empenho,
+                         sum(orcr.soma_valor_liquidado) AS soma_valor_liquidado,
+                         ano_referencia,
+                         orcr.projeto_id
+                FROM orcamento_realizado orcr
+                WHERE orcr.removido_em IS NULL
+                GROUP BY ano_referencia, orcr.projeto_id
+           )
             SELECT
                 sum(COALESCE(tc.previsao_custo, 0))::float AS custo_planejado_total,
                 sum(COALESCE(orcr.soma_valor_empenho, 0))::float AS valor_empenhado_total,
@@ -718,12 +727,12 @@ export class PainelEstrategicoService {
             LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr
                 AND (tc.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1)
             LEFT JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
-            LEFT JOIN orcamento_realizado orcr ON orcr.ano_referencia = years.yr
+            LEFT JOIN orc_realizado orcr ON orcr.ano_referencia = years.yr
                 AND (orcr.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1 )
-                AND orcr.removido_em IS NULL
 
             GROUP BY years.yr
             ORDER BY years.yr`;
+
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
     }
 
@@ -828,13 +837,13 @@ export class PainelEstrategicoService {
         const sql = `select * from (
                             select (select sum(t.custo_estimado)
                              from tarefa_cronograma tc
-                                      inner join tarefa t on t.tarefa_cronograma_id = tc.id
-                             where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
+                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
+                             where n_filhos_imediatos = 0
                                and tc.projeto_id = p.id
                                and tc.removido_em is null)::float as valor_custo_planejado_total,
                          (select sum(t.custo_estimado)
                             from tarefa_cronograma tc
-                             inner join tarefa t on t.tarefa_cronograma_id = tc.id
+                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
                             where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
                             and tc.projeto_id = p.id
                             and tc.removido_em is null
@@ -878,6 +887,7 @@ export class PainelEstrategicoService {
                                           group by vp.nome, vp.id) orc on orc.projeto_id = p.id
                      where 1 = 1 ${strFilterGeral} ) t order by valor_custo_planejado_total desc
                      limit ${ipp} offset ${offset}`;
+        console.log('the query', sql);
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaLista[];
         // executar depois da query
         if (filterToken) {
