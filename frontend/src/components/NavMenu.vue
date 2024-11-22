@@ -1,7 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import SmaeLink from './SmaeLink.vue';
 import TransitionExpand from './TransitionExpand.vue';
@@ -40,6 +40,12 @@ const menuFiltrado = router.options.routes
         .filter((y) => filtrarRota(y, false))
       : [],
   }));
+
+const rotaInicial = computed(() => (Array.isArray(dadosDoSistemaEscolhido.value?.rotaInicial)
+  ? dadosDoSistemaEscolhido.value?.rotaInicial
+    .find((rota) => !rota.meta?.limitarÀsPermissões
+      || temPermissãoPara.value(rota.meta?.limitarÀsPermissões))
+  : dadosDoSistemaEscolhido.value?.rotaInicial));
 
 onBeforeRouteUpdate(() => {
   índiceDoItemAberto.value = -1;
@@ -93,8 +99,8 @@ onBeforeRouteUpdate(() => {
       <ul class="menu__lista">
         <li class="menu__item">
           <SmaeLink
-            v-if="dadosDoSistemaEscolhido?.rotaInicial"
-            :to="dadosDoSistemaEscolhido?.rotaInicial"
+            v-if="rotaInicial"
+            :to="rotaInicial"
             class="menu__link"
           >
             <span class="menu__envelope-svg">
