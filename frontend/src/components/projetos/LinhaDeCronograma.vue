@@ -94,21 +94,17 @@ export default {
           points="0,0 0,12 12,0"
           stroke="none"
         /></svg>
-      <router-link
+      <SmaeLink
         v-if="!apenasLeitura
           || souResponsável
           || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
-        :to="{
-          name: $route.meta.entidadeMãe + 'TarefasProgresso',
-          params: {
-            ...$route.params,
-            tarefaId: linha.id,
-          },
-        }"
-        :title="`Registrar progresso na tarefa ${linha.hierarquia}`"
+        :to="{name: '.TarefasProgresso', params: {
+          ...$route.params,
+          tarefaId: linha.id,
+        },}"
       >
         {{ linha.tarefa }}
-      </router-link>
+      </SmaeLink>
       <template v-else>
         {{ linha.tarefa }}
       </template>

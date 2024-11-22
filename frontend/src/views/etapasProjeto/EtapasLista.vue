@@ -113,23 +113,15 @@ const listaPreparada = computed(() => {
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       v-if="temPermissãoPara('CadastroProjetoEtapa.inserir')
         || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
         || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
-      :to="{
-        name:
-          $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
-            ? 'TransferenciasVoluntarias.etapaCriar'
-            : temPermissãoPara('CadastroProjetoEtapaMDO.inserir')
-              && $route.meta.entidadeMãe === 'mdo'
-              ? 'mdo.etapaCriar'
-              : 'projeto.etapaCriar'
-      }"
+      :to="{name: '.etapaCriar'}"
       class="btn big ml2"
     >
       Nova etapa
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex center mb2 spacebetween">

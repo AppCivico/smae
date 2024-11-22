@@ -135,7 +135,7 @@ export default {
 
         {
           path: 'progresso',
-          name: 'projetoTarefasProgresso',
+          name: 'projeto.TarefasProgresso',
           component: TarefasProgresso,
           props: ({ params }) => ({
             ...params,

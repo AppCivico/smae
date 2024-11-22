@@ -178,7 +178,7 @@ export default {
               children: [
                 {
                   path: '',
-                  name: 'obrasTarefasEditar',
+                  name: 'obras.TarefasEditar',
                   component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
                   props: true,
                   meta: {
@@ -222,7 +222,7 @@ export default {
                       'obrasResumo',
                       'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
                       'obrasTarefasListar',
-                      'obrasTarefasEditar',
+                      'obras.TarefasEditar',
                     ],
                   },
                 },
