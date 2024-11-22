@@ -3,7 +3,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
-import SmaeLink from './SmaeLink.vue';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
@@ -394,6 +393,7 @@ onBeforeRouteUpdate(() => {
   margin-top: auto;
   margin-bottom: 0;
 }
+
 .menu__item--sub {
   border: 0;
 }
@@ -417,7 +417,7 @@ onBeforeRouteUpdate(() => {
   }
 }
 
-.menu__link--sub {
+:deep(.menu__link--sub) {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   min-height: 0;
