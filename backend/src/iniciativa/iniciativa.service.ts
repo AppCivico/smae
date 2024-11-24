@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TipoPdm } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -17,6 +17,17 @@ import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, IniciativaDto, IniciativaOrgao } from './entities/iniciativa.entity';
 import { UniqueNumbers } from '../common/UniqueNumbers';
+
+interface IniciativaResponsavelChanges {
+    added: {
+        pessoa_id: number;
+        coordenador_cp: boolean;
+    }[];
+    removed: {
+        pessoa_id: number;
+        coordenador_cp: boolean;
+    }[];
+}
 
 @Injectable()
 export class IniciativaService {
@@ -165,14 +176,6 @@ export class IniciativaService {
         );
 
         return created;
-    }
-
-    private async loadMetaOrThrow(tipo: TipoPdm, meta_id: number, user: PessoaFromJwt) {
-        const meta = await this.metaService.findAll(tipo, { id: meta_id }, user);
-        if (!meta) {
-            throw new HttpException('meta_id| Meta não encontrada', 400);
-        }
-        return meta;
     }
 
     async buildIniciativaTags(iniciativaId: number, tags: number[]): Promise<Prisma.IniciativaTagCreateManyInput[]> {
@@ -522,10 +525,8 @@ export class IniciativaService {
 
                     if (cp) {
                         if (cp.length == 0) throw new HttpException('coordenadores_cp é obrigatório para PDM', 400);
-                        await prismaTx.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } });
-                        await prismaTx.iniciativaResponsavel.createMany({
-                            data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
-                        });
+
+                        await this.upsertIniciativaResponsaveis(prismaTx, iniciativa.id, op, cp);
                     }
                 }
             } else {
@@ -626,6 +627,262 @@ export class IniciativaService {
         });
 
         return { id };
+    }
+
+    private async upsertIniciativaResponsaveis(
+        prismaTx: Prisma.TransactionClient,
+        iniciativaId: number,
+        orgaosParticipantes: IniciativaOrgaoParticipante[],
+        coordenadoresCP: number[]
+    ): Promise<IniciativaResponsavelChanges> {
+        // atual
+        const currentResponsaveis = await prismaTx.iniciativaResponsavel.findMany({
+            where: { iniciativa_id: iniciativaId },
+            select: {
+                pessoa_id: true,
+                coordenador_responsavel_cp: true,
+            },
+        });
+
+        const newResponsaveis: Prisma.IniciativaResponsavelCreateManyInput[] = [];
+
+        // Adiciona como se fosse todos novos
+        for (const orgao of orgaosParticipantes) {
+            for (const participanteId of orgao.participantes) {
+                newResponsaveis.push({
+                    iniciativa_id: iniciativaId,
+                    pessoa_id: participanteId,
+                    orgao_id: orgao.orgao_id,
+                    coordenador_responsavel_cp: false,
+                });
+            }
+        }
+
+        // Mesma coisa pro cp
+        for (const coordenadorId of coordenadoresCP) {
+            const pessoaFisicaOrgao = await prismaTx.pessoa.findFirst({
+                where: { id: coordenadorId },
+                select: { pessoa_fisica: { select: { orgao_id: true } } },
+            });
+
+            const orgaoId = pessoaFisicaOrgao?.pessoa_fisica?.orgao_id;
+            if (!orgaoId) {
+                throw new BadRequestException(
+                    `Coordenador CP ${coordenadorId} não está associado a uma Pessoa Física com Órgão.`
+                );
+            }
+
+            newResponsaveis.push({
+                iniciativa_id: iniciativaId,
+                pessoa_id: coordenadorId,
+                orgao_id: orgaoId,
+                coordenador_responsavel_cp: true,
+            });
+        }
+
+        // agora busca de fato as mudanças
+        const changes: IniciativaResponsavelChanges = {
+            added: [],
+            removed: [],
+        };
+
+        // quem saiu
+        for (const current of currentResponsaveis) {
+            const stillExists = newResponsaveis.some(
+                (nr) =>
+                    nr.pessoa_id === current.pessoa_id &&
+                    nr.coordenador_responsavel_cp === current.coordenador_responsavel_cp
+            );
+
+            if (!stillExists) {
+                changes.removed.push({
+                    pessoa_id: current.pessoa_id,
+                    coordenador_cp: current.coordenador_responsavel_cp,
+                });
+            }
+        }
+
+        // quem entrou
+        for (const newResp of newResponsaveis) {
+            const exists = currentResponsaveis.some(
+                (cr) =>
+                    cr.pessoa_id === newResp.pessoa_id &&
+                    cr.coordenador_responsavel_cp === newResp.coordenador_responsavel_cp
+            );
+
+            if (!exists) {
+                changes.added.push({
+                    pessoa_id: newResp.pessoa_id,
+                    coordenador_cp: newResp.coordenador_responsavel_cp,
+                });
+            }
+        }
+
+        // quem saiu precisa verificar as responsabilidades
+        await this.verificaRemocaoResponsaveis(prismaTx, iniciativaId, changes.removed);
+
+        // apaga quem saiu
+        if (changes.removed.length > 0) {
+            const removeIds = changes.removed.map((r) => r.pessoa_id);
+            await prismaTx.iniciativaResponsavel.deleteMany({
+                where: {
+                    iniciativa_id: iniciativaId,
+                    pessoa_id: { in: removeIds },
+                },
+            });
+        }
+
+        // salva os novos, se alguem saiu de pf pra cp, vai gerar saida+entrada
+        for (const newResp of newResponsaveis) {
+            const exists = currentResponsaveis.some(
+                (cr) =>
+                    cr.pessoa_id === newResp.pessoa_id &&
+                    cr.coordenador_responsavel_cp === newResp.coordenador_responsavel_cp
+            );
+
+            if (!exists) {
+                await prismaTx.iniciativaResponsavel.create({
+                    data: newResp,
+                });
+            }
+        }
+
+        return changes;
+    }
+
+    private async verificaRemocaoResponsaveis(
+        prismaTx: Prisma.TransactionClient,
+        iniciativaId: number,
+        responsaveisRemovidos: { pessoa_id: number; coordenador_cp: boolean }[]
+    ): Promise<void> {
+        for (const resp of responsaveisRemovidos) {
+            // Check if participant is used in Atividade
+            const atividadeCount = await prismaTx.atividadeResponsavel.count({
+                where: {
+                    pessoa_id: resp.pessoa_id,
+                    coordenador_responsavel_cp: resp.coordenador_cp,
+                    atividade: {
+                        removido_em: null,
+                        iniciativa_id: iniciativaId,
+                    },
+                },
+            });
+
+            if (atividadeCount > 0) {
+                const atividades = await prismaTx.atividadeResponsavel.findMany({
+                    where: {
+                        pessoa_id: resp.pessoa_id,
+                        coordenador_responsavel_cp: resp.coordenador_cp,
+                        atividade: {
+                            removido_em: null,
+                            iniciativa_id: iniciativaId,
+                        },
+                    },
+                    select: {
+                        atividade: {
+                            select: { titulo: true },
+                        },
+                    },
+                });
+                const desc = atividades.map((a) => a.atividade.titulo).join(', ');
+                throw new BadRequestException(
+                    `${resp.coordenador_cp ? 'Coordenador' : 'Participante'} em uso em Atividade: ${desc}, remova-o primeiro no nível de Atividade.`
+                );
+            }
+
+            // Check if participant is used in Variables
+            const variavelCount = await prismaTx.variavelResponsavel.count({
+                where: {
+                    pessoa_id: resp.pessoa_id,
+                    variavel: {
+                        indicador_variavel: {
+                            some: {
+                                indicador: {
+                                    removido_em: null,
+                                    iniciativa_id: iniciativaId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (variavelCount > 0) {
+                const variaveis = await prismaTx.variavelResponsavel.findMany({
+                    where: {
+                        pessoa_id: resp.pessoa_id,
+                        variavel: {
+                            removido_em: null,
+                            indicador_variavel: {
+                                some: {
+                                    indicador_origem: null,
+                                    indicador: {
+                                        removido_em: null,
+                                        iniciativa_id: iniciativaId,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    select: {
+                        variavel: {
+                            select: { titulo: true, codigo: true },
+                        },
+                    },
+                });
+                const desc = variaveis.map((v) => `${v.variavel.titulo} (${v.variavel.codigo})`).join(', ');
+
+                throw new BadRequestException(
+                    `${resp.coordenador_cp ? 'Coordenador' : 'Participante'} em uso em variaveis de indicadores: ${desc}, remova-o primeiro no nível de Variável.`
+                );
+            }
+
+            // Check if participant is used in Cronograma Etapas
+            const cronogramaEtapa = await prismaTx.etapaResponsavel.count({
+                where: {
+                    pessoa_id: resp.pessoa_id,
+                    etapa: {
+                        removido_em: null,
+                        CronogramaEtapa: {
+                            some: {
+                                cronograma: {
+                                    iniciativa_id: iniciativaId,
+                                    removido_em: null,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (cronogramaEtapa > 0) {
+                const etapas = await prismaTx.etapaResponsavel.findMany({
+                    where: {
+                        pessoa_id: resp.pessoa_id,
+                        etapa: {
+                            removido_em: null,
+                            CronogramaEtapa: {
+                                some: {
+                                    cronograma: {
+                                        iniciativa_id: iniciativaId,
+                                        removido_em: null,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    select: {
+                        etapa: {
+                            select: { titulo: true },
+                        },
+                    },
+                });
+                const desc = etapas.map((v) => `${v.etapa.titulo}`).join(', ');
+                throw new BadRequestException(
+                    `${resp.coordenador_cp ? 'Coordenador' : 'Participante'} em uso em etapas de cronograma: ${desc}, remova-o primeiro no nível de Etapa.`
+                );
+            }
+        }
     }
 
     async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
