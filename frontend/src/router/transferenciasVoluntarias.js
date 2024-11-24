@@ -522,7 +522,7 @@ export default {
             /* PROGRESSO DA TAREFA */
             {
               path: 'progresso',
-              name: 'TransferenciasVoluntariasTarefasProgresso',
+              name: 'TransferenciasVoluntarias.TarefasProgresso',
               component: TarefasProgresso,
               props: ({ params }) => ({
                 ...params,
@@ -550,7 +550,7 @@ export default {
                   path: 'disparo-email-tarefa',
                   component: DialogWrapper,
                   meta: {
-                    rotaDeEscape: 'TransferenciasVoluntariasTarefasProgresso',
+                    rotaDeEscape: 'TransferenciasVoluntarias.TarefasProgresso',
                     título: 'Novo disparo de e-mail',
                     títuloParaMenu: 'Novo e-mail',
                     limitarÀsPermissões: 'CadastroTransferencia.editar',
