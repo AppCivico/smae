@@ -130,7 +130,6 @@ export default {
           props: true,
           meta: {
             títuloParaMenu: 'Tarefas',
-            entidadeMãe: 'obras',
             rotasParaMigalhasDePão: [
               'obrasListar',
               'obrasResumo',
