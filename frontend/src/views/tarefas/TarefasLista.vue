@@ -195,7 +195,6 @@ export default {
   <div
     v-if="$route.meta.entidadeMãe === 'projeto'
       || $route.meta.entidadeMãe === 'obras'
-      || $route.entidadeMãe === 'mdo'
       && projetoEmFoco.projeto_etapa"
     class="etapa mb2"
   >
