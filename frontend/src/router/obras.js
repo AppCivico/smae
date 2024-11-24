@@ -208,7 +208,7 @@ export default {
                 },
                 {
                   path: 'progresso',
-                  name: 'obrasTarefasProgresso',
+                  name: 'obras.TarefasProgresso',
                   component: () => import('@/views/tarefas/TarefasProgresso.vue'),
                   props: true,
                   meta: {
