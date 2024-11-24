@@ -153,7 +153,7 @@ export default {
         v-if="(!apenasLeitura)
           || route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
         :to="{
-          name: $route.meta.entidadeMãe + 'TarefasCriar',
+          name: '.TarefasCriar',
           params: $route.params,
         }"
         class="dropbtn"
@@ -166,7 +166,7 @@ export default {
           || route.meta.entidadeMãe === 'obras'
           || route.entidadeMãe === 'mdo'"
         :to="{
-          name: $route.meta.entidadeMãe + 'TarefasClonar',
+          name: '.TarefasClonar',
           params: $route.params,
         }"
         class="dropbtn"

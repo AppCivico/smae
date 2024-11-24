@@ -445,7 +445,7 @@ export default {
         /* FIM DE CRONOGRAMA */
         /* INCLUIR TAREFA */
         {
-          name: 'TransferenciasVoluntariasTarefasCriar',
+          name: 'TransferenciasVoluntarias.TarefasCriar',
           path: 'nova',
           component: TarefasCriarEditar,
           meta: {
@@ -498,7 +498,7 @@ export default {
             /* EDITAR TAREFA */
             {
               path: 'teste',
-              name: 'TransferenciasVoluntariasTarefasEditar',
+              name: 'TransferenciasVoluntarias.TarefasEditar',
               component: TarefasCriarEditar,
               props: ({ params }) => ({
                 ...params,

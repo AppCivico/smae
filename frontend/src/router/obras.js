@@ -149,7 +149,7 @@ export default {
               },
               children: [
                 {
-                  name: 'obrasTarefasClonar',
+                  name: 'obras.TarefasClonar',
                   path: 'clonar',
                   component: () => import('@/views/mdo.tarefas/TarefasClonar.vue'),
                   meta: {
@@ -161,7 +161,7 @@ export default {
               ],
             },
             {
-              name: 'obrasTarefasCriar',
+              name: 'obras.TarefasCriar',
               path: 'nova',
               component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
               props: true,

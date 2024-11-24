@@ -1,6 +1,6 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store.js';
+import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
 import { storeToRefs } from 'pinia';
 
 const tarefasProjetos = useTarefasProjetosStore();
@@ -26,12 +26,14 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'tarefasCriar' }"
+    <SmaeLink
+      :to="{
+        name: '.TarefasCriar',
+      }"
       class="btn big ml2"
     >
       Nova tarefa
-    </router-link>
+    </SmaeLink>
   </div>
   <table class="tablemain">
     <col>
@@ -51,15 +53,18 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
       >
         <td>{{ item.descricao }}</td>
         <td>
-          <router-link
-            :to="{ name: 'tarefasEditar', params: { tarefasId: item.id } }"
+          <SmaeLink
+            :to="{
+              name: '.TarefasEditar',
+              params: { tarefasId: item.id }
+            }"
             class="tprimary"
           >
             <svg
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button

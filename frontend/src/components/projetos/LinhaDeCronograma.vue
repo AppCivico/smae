@@ -193,7 +193,7 @@ export default {
             && $route.meta.entidadeMãe !== 'obras'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
-            name: $route.meta.entidadeMãe + 'TarefasCriar',
+            name: '.TarefasCriar',
             params: {
               ...$route.params,
               tarefaId: linha.id,
@@ -216,7 +216,7 @@ export default {
         <SmaeLink
           v-if="linha.pode_editar"
           :to="{
-            name: $route.meta.entidadeMãe + 'TarefasEditar',
+            name: '.TarefasEditar',
             params: {
               ...$route.params,
               tarefaId: linha.id,
