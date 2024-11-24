@@ -85,7 +85,7 @@ iniciar();
     >
       <SmaeLink
         :to="{
-          name: $route.meta.entidadeMãe + 'TarefasEditar',
+          name: '.TarefasEditar',
           params: {
             projetoId: projetoId,
             tarefaId: tarefaId,

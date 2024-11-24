@@ -663,7 +663,7 @@ export default [
                 },
               },
               {
-                name: 'tarefasCriar',
+                name: 'TransferenciasVoluntarias.tarefasCriar',
                 path: 'nova',
                 component: TarefasCriarEditar,
                 meta: {
@@ -672,7 +672,7 @@ export default [
               },
               {
                 path: ':tarefasId',
-                name: 'tarefasEditar',
+                name: 'TransferenciasVoluntarias.TarefasEditar', // o que eu boto aqui
                 component: TarefasCriarEditar,
                 props: ({ params }) => ({
                   ...params,
