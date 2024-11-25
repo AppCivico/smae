@@ -400,6 +400,22 @@ watch(() => props.group, () => {
             {{ errors.titulo }}
           </div>
         </div>
+        <div class="f2">
+          <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
+          <Field
+            id="indicador_tipo"
+            as="select"
+            name="indicador_tipo"
+            class="inputtext light"
+          >
+            <option value="numerica">
+              Numérica
+            </option>
+            <option value="categorico">
+              Categórica
+            </option>
+          </Field>
+        </div>
       </div>
       <div class="flex g2">
         <div class="f1">
@@ -531,30 +547,26 @@ watch(() => props.group, () => {
             {{ errors.fim_medicao }}
           </div>
         </div>
-        <div class="f1 fb20em">
-          <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
+        <div
+          v-if="values.indicador_tipo === 'categorica'"
+          class="f1 fb20em"
+        >
+          <label class="label">Variavel <span class="tvermelho">*</span></label>
           <Field
             id="variavel_categoria_id"
             as="select"
             name="variavel_categoria_id"
             class="inputtext light"
           >
-            <option value="">
-              Numérica
-            </option>
-            <optgroup
-              v-if="variaveisCategoricasDisponiveis.length"
-              label="Categórica"
+            <option :value="null" />
+            <option
+              v-for="(variavel, index) in variaveisCategoricasDisponiveis"
+              :key="index"
+              :value="variavel.id"
+              :title="variavel.titulo"
             >
-              <option
-                v-for="(variavel, index) in variaveisCategoricasDisponiveis"
-                :key="index"
-                :value="variavel.id"
-                :title="variavel.titulo"
-              >
-                {{ variavel.titulo }}
-              </option>
-            </optgroup>
+              {{ variavel.titulo }}
+            </option>
           </Field>
         </div>
       </div>
