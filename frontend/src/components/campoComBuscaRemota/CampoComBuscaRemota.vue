@@ -1,5 +1,6 @@
 <template>
   <label
+    v-if="props.label"
     for="busca"
     class="label"
   >
@@ -13,11 +14,10 @@
       @click="toggleModal"
     >
       <slot
-        v-if="itemSelecionado"
         name="valor-exibido"
         :item="itemSelecionado"
       >
-        {{ valorExibido }}
+        {{ valorExibido || valorInicial }}
       </slot>
     </output>
     <button
@@ -58,6 +58,7 @@
       <div class="flex g1 mb2">
         <input
           id="palavra-chave"
+          ref="inputBuscaRef"
           v-model="valorDaBusca"
           class="inputtext light"
           :name="chaveDeBusca"
@@ -65,6 +66,7 @@
           required
           type="search"
           autocomplete="off"
+          autofocus
         >
         <button
           class="btn"
@@ -82,9 +84,10 @@
       v-else-if="buscaRealizada"
       class="tablemain"
     >
-      <thead v-if="linhas.length && $slots.tableHeader">
+      <thead v-if="linhas.length && $slots['table-header']">
         <tr>
-          <slot name="tableHeader" />
+          <slot name="table-header" />
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -94,11 +97,14 @@
             :key="item.id"
           >
             <slot
-              name="tableData"
+              name="table-data"
               v-bind="{ item }"
             >
-              {{ item[chaveDeExibição] }}
+              <td>
+                {{ item[chaveDeExibicao] }}
+              </td>
             </slot>
+
             <td>
               <button
                 type="button"
@@ -119,23 +125,24 @@
         </template>
       </tbody>
       <tfoot v-if="$slots.tableFooter">
-        <slot name="tableFooter" />
+        <slot name="table-footer" />
       </tfoot>
     </table>
   </SmallModal>
 </template>
 
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import LoadingComponent from '@/components/LoadingComponent.vue';
-import requestS from '@/helpers/requestS';
 import {
   ref,
   defineProps,
   computed,
   watch,
   defineEmits,
+  onMounted,
 } from 'vue';
+import SmallModal from '@/components/SmallModal.vue';
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import requestS from '@/helpers/requestS';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const emit = defineEmits(['update:modelValue']);
@@ -145,9 +152,13 @@ const props = defineProps({
     type: [String, Number, Object],
     default: null,
   },
+  valorInicial: {
+    type: Object,
+    default: null,
+  },
   label: {
     type: String,
-    required: true,
+    default: null,
   },
   obrigatorio: {
     type: Boolean,
@@ -185,7 +196,7 @@ const props = defineProps({
     type: String,
     default: 'id',
   },
-  chaveDeExibição: {
+  chaveDeExibicao: {
     type: String,
     default: () => 'id',
   },
@@ -195,6 +206,7 @@ const props = defineProps({
   },
 });
 
+const inputBuscaRef = ref(null);
 const estaAberto = ref(false);
 const linhas = ref([]);
 const valorDaBusca = ref('');
@@ -203,7 +215,7 @@ const carregando = ref(false);
 const buscaRealizada = ref(false);
 
 const valorExibido = computed(() => (itemSelecionado.value
-  ? itemSelecionado.value[props.chaveDeExibição]
+  ? itemSelecionado.value[props.chaveDeExibicao]
   : valorDaBusca.value));
 
 async function onSubmit() {
@@ -252,6 +264,16 @@ function selecionarItem(item) {
 
 watch(itemSelecionado, (novoValor) => {
   emit('update:modelValue', novoValor?.[props.chaveDeValor]);
+});
+
+watch(() => estaAberto.value, () => {
+  setTimeout(() => {
+    inputBuscaRef.value?.focus();
+  }, 100);
+});
+
+onMounted(() => {
+  itemSelecionado.value = { ...props.valorInicial };
 });
 </script>
 <style scoped>

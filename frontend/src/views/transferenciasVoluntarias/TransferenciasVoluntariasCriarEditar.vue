@@ -1,10 +1,4 @@
 <script setup>
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field,
@@ -14,6 +8,12 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
 
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
@@ -22,6 +22,7 @@ import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
@@ -452,50 +453,49 @@ watch(itemParaEdicao, (novosValores) => {
               type="hidden"
               class="inputtext light"
             />
+
             <LabelFromYup
               name="parlamentar_id"
               :schema="schema.fields.parlamentares.innerType"
             />
+
             <Field
+              v-slot="{ handleChange, value }"
               :name="`parlamentares[${idx}].parlamentar_id`"
-              as="select"
-              class="inputtext light mb1"
-              :class="{
-                error: errors.parlamentar_id,
-                loading: ParlamentaresStore.chamadasPendentes?.lista,
-              }"
-              :disabled="!parlamentarComoLista?.length"
-              @change="($e) => sugerirCamposDoMandato($e.target.value, idx)"
+              type="text"
+              class="f1 inputtext light"
             >
-              <option value="">
-                Selecionar
-              </option>
-
-              <option
-                v-for="item in parlamentarComoLista"
-                :key="item"
-                :value="item.id"
-                :disabled="!item?.mandatos?.length"
+              <CampoComBuscaRemota
+                :model-value="value"
+                :valor-inicial="field.value.parlamentar"
+                url-requisicao="/parlamentar"
+                chave-de-busca="palavra_chave"
+                chave-de-valor="id"
+                chave-de-exibicao="nome_popular"
+                @update:model-value="handleChange"
               >
-                {{ item.nome_popular }}
-
-                <template v-if="!item?.mandatos?.length">
-                  (sem mandatos cadastrados)
+                <template #table-header>
+                  <th> Nome </th>
+                  <th> Partido </th>
                 </template>
-              </option>
 
-              <option
-                v-if="paginaçãoDeParlamentares.temMais"
-                disabled
-              >
-                &hellip;
-              </option>
+                <template #table-data="{item}">
+                  <td>{{ item.nome_popular }}</td>
+                  <td>{{ item.partido.sigla }}</td>
+                </template>
+
+                <template #valor-exibido="{item}">
+                  {{ item ? item.nome_popular : field.value.parlamentar?.nome_popular }}
+                </template>
+              </CampoComBuscaRemota>
             </Field>
+
             <ErrorMessage
               :name="`parlamentares[${idx}].parlamentar_id`"
               class="error-msg"
             />
           </div>
+
           <div class="f1">
             <LabelFromYup
               name="parlamentares.partido_id"
@@ -528,6 +528,7 @@ watch(itemParaEdicao, (novosValores) => {
               class="error-msg"
             />
           </div>
+
           <div class="f1">
             <LabelFromYup
               name="parlamentares.cargo"
