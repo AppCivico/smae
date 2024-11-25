@@ -53,7 +53,7 @@
         for="palavra-chave"
         class="label"
       >
-        {{ props.label }}
+        {{ props.textoDeInstruções }}
       </label>
       <div class="flex g1 mb2">
         <input
@@ -106,13 +106,15 @@
             </slot>
 
             <td>
-              <button
-                type="button"
-                class="btn bgnone outline tcprimary"
-                @click="selecionarItem(item)"
-              >
-                Selecionar
-              </button>
+              <div class="flex justifyright">
+                <button
+                  type="button"
+                  class="btn bgnone outline tcprimary"
+                  @click="selecionarItem(item)"
+                >
+                  Selecionar
+                </button>
+              </div>
             </td>
           </tr>
         </template>
