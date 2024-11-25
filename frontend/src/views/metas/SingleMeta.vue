@@ -11,7 +11,7 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
+import { nextTick, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -35,7 +35,7 @@ const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
 const EquipesStore = useEquipesStore();
 
-async function iniciar() {
+watchEffect(async () => {
   const promessas = [];
 
   if (meta_id && singleMeta.value.id != meta_id) {
@@ -62,9 +62,20 @@ async function iniciar() {
   nextTick().then(() => {
     rolarTelaPara();
   });
-}
+});
 
-iniciar();
+async function checkDelete(iniciativa) {
+  if (iniciativa) {
+    alertStore.confirmAction(`Deseja mesmo remover a iniciativa "${iniciativa.titulo}"?`, async () => {
+      alertStore.setLoading(true);
+      if (await IniciativasStore.delete(metaId, iniciativa.id)) {
+        alertStore.setLoading(false);
+        IniciativasStore.clear();
+        alertStore.success('Iniciativa removida.');
+      }
+    }, 'Remover');
+  }
+}
 </script>
 <template>
   <div>

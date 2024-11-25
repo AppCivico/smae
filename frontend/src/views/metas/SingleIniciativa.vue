@@ -7,9 +7,10 @@ import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
+import { nextTick, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -38,7 +39,7 @@ const {
 const AtividadesStore = useAtividadesStore();
 const { Atividades } = storeToRefs(AtividadesStore);
 
-async function iniciar() {
+watchEffect(async () => {
   const promessas = [];
 
   // eslint-disable-next-line eqeqeq
@@ -65,9 +66,20 @@ async function iniciar() {
   nextTick().then(() => {
     rolarTelaPara();
   });
-}
+});
 
-iniciar();
+async function checkDelete(iniciativa) {
+  if (iniciativa) {
+    alertStore.confirmAction(`Deseja mesmo remover a iniciativa "${iniciativa.titulo}"?`, async () => {
+      alertStore.setLoading(true);
+      if (await AtividadesStore.delete(metaId, iniciativa.id)) {
+        alertStore.setLoading(false);
+        AtividadesStore.clear();
+        alertStore.success('Iniciativa removida.');
+      }
+    }, 'Remover');
+  }
+}
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />

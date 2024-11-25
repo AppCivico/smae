@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -36,7 +37,7 @@ const {
   relacionadosAtividade,
 } = storeToRefs(AtividadesStore);
 
-async function iniciar() {
+watchEffect(async () => {
   if (singleAtividade.value.id !== atividadeId) {
     await AtividadesStore.getByIdReal(atividadeId);
   }
@@ -45,9 +46,7 @@ async function iniciar() {
       AtividadesStore.getRelacionados({ atividade_id: singleAtividade.value.id });
     }
   }
-}
-
-iniciar();
+});
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
