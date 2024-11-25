@@ -37,12 +37,11 @@ const { params } = useRoute();
 const formularioSujo = useIsFormDirty();
 
 const {
-  chamadasPendentes, erro, itemParaEdicao, emFoco: distribuiçãoEmFoco,
+  chamadasPendentes, erro, itemParaEdicao,
 } = storeToRefs(distribuicaoRecursos);
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
-const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
 
 const porcentagens = ref({
@@ -59,7 +58,7 @@ const itemParaEdicaoFormatado = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+  errors, handleSubmit, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: itemParaEdicaoFormatado,
   validationSchema: schema,
@@ -89,16 +88,11 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     } else {
       r = await distribuicaoRecursos.salvarItem(cargaManipulada);
     }
+
     if (r) {
       alertStore.success(msg);
 
-      mostrarDistribuicaoRegistroForm.value = false;
-
-      if (itemParaEdicao.value.id) {
-        distribuiçãoEmFoco.value = null;
-      }
-
-      distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
+      voltarTela();
     }
   } catch (error) {
     alertStore.error(error);
@@ -252,8 +246,6 @@ onUnmounted(() => {
   </div>
 
   <form @submit="onSubmit">
-    {{ errors }}
-
     <fieldset>
       <div class="flex g2 mb1">
         <div class="f1">
@@ -530,7 +522,7 @@ onUnmounted(() => {
         />
 
         <FieldArray
-          v-slot="{ fields, push, remove }"
+          v-slot="{ fields }"
           name="parlamentares"
         >
           <div
@@ -550,6 +542,7 @@ onUnmounted(() => {
                 :schema="schema.fields.parlamentares.innerType"
                 class="tc300"
               />
+
               <Field
                 v-maska
                 :name="`parlamentares[${idx}].nome`"
@@ -591,33 +584,14 @@ onUnmounted(() => {
 
             <button
               class="like-a__text addlink align-start mt2"
-              arial-label="excluir"
-              title="excluir"
+              arial-label="limpar"
+              title="limpar"
               type="button"
-              @click="remove(idx)"
+              @click="values.parlamentares[idx].valor = '0'"
             >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_remove" />
-              </svg>
+              limpar
             </button>
           </div>
-
-          <button
-            class="like-a__text addlink mt1"
-            type="button"
-            disabled
-            @click="push({ nome: '', processo_sei: '' })"
-          >
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_+" />
-            </svg>Adicionar registro
-          </button>
         </FieldArray>
       </div>
     </fieldset>

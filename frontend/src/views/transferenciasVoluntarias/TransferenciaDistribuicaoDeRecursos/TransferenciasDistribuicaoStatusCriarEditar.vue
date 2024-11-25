@@ -4,6 +4,7 @@
       <h2>Status</h2>
       <hr class="ml2 f1">
       <CheckClose
+        :formulario-sujo="false"
         :apenas-emitir="true"
         @close="emit('fecharModal')"
       />
