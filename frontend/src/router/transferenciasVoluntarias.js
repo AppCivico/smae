@@ -106,6 +106,7 @@ export default {
           component: TransferenciaDistribuicaoDeRecursosCriarEditar,
           meta: {
             título: 'Novo Recurso',
+            rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',
@@ -127,6 +128,7 @@ export default {
 
                   return distribuicaoRecursosStore.itemParaEdicao.nome;
                 },
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',

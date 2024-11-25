@@ -474,17 +474,17 @@ watch(itemParaEdicao, (novosValores) => {
                 chave-de-exibicao="nome_popular"
                 @update:model-value="handleChange"
               >
-                <template #table-header>
+                <template #TableHeader>
                   <th> Nome </th>
                   <th> Partido </th>
                 </template>
 
-                <template #table-data="{item}">
+                <template #TableData="{item}">
                   <td>{{ item.nome_popular }}</td>
                   <td>{{ item.partido.sigla }}</td>
                 </template>
 
-                <template #valor-exibido="{item}">
+                <template #ValorExibido="{item}">
                   {{ item ? item.nome_popular : field.value.parlamentar?.nome_popular }}
                 </template>
               </CampoComBuscaRemota>
