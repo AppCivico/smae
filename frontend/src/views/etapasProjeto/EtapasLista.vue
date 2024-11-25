@@ -114,9 +114,9 @@ const listaPreparada = computed(() => {
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <SmaeLink
-      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir')
+      v-if="temPermissãoPara(['CadastroProjetoEtapa.inserir'])
         || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
-        || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
+        || temPermissãoPara(['CadastroProjetoEtapaMDO.inserir'])"
       :to="{name: '.etapaCriar'}"
       class="btn big ml2"
     >
