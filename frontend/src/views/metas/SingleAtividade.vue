@@ -37,7 +37,7 @@ const {
 
 async function iniciar() {
   if (singleAtividade.value.id !== atividadeId) {
-    await AtividadesStore.getById(iniciativaId, atividadeId);
+    await AtividadesStore.getByIdReal(atividadeId);
   }
   if (route.meta.entidadeMãe === 'pdm') {
     if (singleAtividade.value.id) {

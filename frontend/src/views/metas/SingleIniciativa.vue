@@ -44,7 +44,7 @@ async function iniciar() {
 
   // eslint-disable-next-line eqeqeq
   if (singleIniciativa.value.id != iniciativaId) {
-    promessas.push(IniciativasStore.getById(metaId, iniciativaId));
+    promessas.push(IniciativasStore.getByIdReal(iniciativaId));
     promessas.push(EquipesStore.buscarTudo());
   }
   if (!Atividades.value[iniciativaId]) {
@@ -269,7 +269,7 @@ iniciar();
                 <div class="flex g2 ml2">
                   <div class="mr1 f0">
                     <div class="t12 uc w700 mb05 tc300">
-                      ID
+                      Código
                     </div>
                     <div class="t13">
                       {{ ini.codigo }}
