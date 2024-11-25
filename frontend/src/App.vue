@@ -6,13 +6,8 @@ import {
   onErrorCaptured,
   provide,
   ref,
-  inject,
 } from 'vue';
-import { useRoute } from 'vue-router';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
-import retornarModuloAPartirDeEntidadeMae from './helpers/retornarModuloAPartirDeEntidadeMae';
-
-const route = useRoute();
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -22,24 +17,11 @@ const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
 
 provide('gblLimiteDeSeleçãoSimultânea', gblLimiteDeSeleçãoSimultânea);
 
-const gblHabilitarBeta = inject('gblHabilitarBeta');
-
 const alertStore = useAlertStore();
 
 const authStore = useAuthStore();
 if (authStore.estouAutenticada) {
-  // conferir se a rota tem entidadeMãe
-  // conferir se a entidadeMãe é exclusiva de um módulo
-  const modulo = !route.meta.entidadeMãe
-    ? ''
-    : retornarModuloAPartirDeEntidadeMae(route.meta.entidadeMãe)
-    || '';
-
-  if (modulo && gblHabilitarBeta) {
-    authStore.getDados(null, { headers: { 'smae-sistemas': `SMAE,${modulo}` } });
-  } else {
-    authStore.getDados();
-  }
+  authStore.getDados();
 }
 
 const erro = ref(null);
