@@ -126,12 +126,30 @@ const anosFinaisValidos = computed(() => anosDisponiveis
 
 const preencherDadosHeatmap = () => {
   const dados = [];
+
+  let menorIndiceCategoria = Infinity;
+  props.valores.linhas.forEach(({ series }) => {
+    const serieRealizado = series[indiceRealizado.value];
+    if (serieRealizado && serieRealizado.elementos?.length) {
+      serieRealizado.elementos.forEach(({ categoria }) => {
+        const indice = parseInt(categoria, 10);
+        if (!Number.isNaN(indice)) {
+          menorIndiceCategoria = Math.min(menorIndiceCategoria, indice);
+        }
+      });
+    }
+  });
+
+  if (menorIndiceCategoria === Infinity) {
+    menorIndiceCategoria = 0;
+  }
+
   props.valores.linhas.forEach(({ series }) => {
     const serieRealizado = series[indiceRealizado.value];
     if (serieRealizado && serieRealizado.elementos?.length) {
       const contagemCategorias = Array(Object.keys(categorias).length).fill(0);
       serieRealizado.elementos.forEach(({ categoria }) => {
-        const indiceCategoria = parseInt(categoria, 10) - 1;
+        const indiceCategoria = parseInt(categoria, 10) - menorIndiceCategoria;
         if (indiceCategoria >= 0 && indiceCategoria < contagemCategorias.length) {
           contagemCategorias[indiceCategoria] += 1;
         }
@@ -145,6 +163,7 @@ const preencherDadosHeatmap = () => {
       }
     }
   });
+
   dadosHeatmap.value = dados;
 };
 
