@@ -154,7 +154,7 @@ export const useAuthStore = defineStore({
   },
   getters: {
     sistemaCorrente() {
-      if (!import.meta.env.VITE_HABILITAR_BETA) {
+      if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO !== 'true') {
         return this.sistemaEscolhido;
       }
 

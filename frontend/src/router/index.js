@@ -111,8 +111,10 @@ router.beforeEach(async (r, from) => {
   const authRequired = !publicPages.includes(r.path);
   const authStore = useAuthStore();
 
-  if (from.meta?.entidadeMãe !== undefined) {
-    authStore.moduloDaRotaAnterior = retornarModuloAPartirDeEntidadeMae(from.meta.entidadeMãe);
+  if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO === 'true') {
+    if (from.meta?.entidadeMãe !== undefined) {
+      authStore.moduloDaRotaAnterior = retornarModuloAPartirDeEntidadeMae(from.meta.entidadeMãe);
+    }
   }
 
   if (authRequired && !authStore.user) {

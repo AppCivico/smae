@@ -18,7 +18,11 @@ const filtrarRota = (
   rota,
   considerarPresençaNoMenu = true,
 ) => (rota.meta?.presenteNoMenu || !considerarPresençaNoMenu)
-  && (!rota.meta?.entidadeMãe || rota.meta.entidadeMãe === route.meta?.entidadeMãe)
+  && (
+    import.meta.env.VITE_TROCA_AUTOMATICA_MODULO !== 'true'
+    || !rota.meta?.entidadeMãe
+    || rota.meta.entidadeMãe === route.meta?.entidadeMãe
+  )
   && (!rota.meta?.limitarÀsPermissões
     || temPermissãoPara.value(rota.meta?.limitarÀsPermissões));
 
