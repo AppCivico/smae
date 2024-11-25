@@ -212,7 +212,7 @@ function filterResponsible(orgao_id) {
         {{ title }} {{ activePdm.rotulo_atividade }}
       </TítuloDePágina>
       <div class="t24">
-        {{ activePdm?.rotulo_iniciativa }} {{ singleIniciativa.titulo }}
+        {{ activePdm?.rotulo_iniciativa }}: {{ singleIniciativa.titulo }}
       </div>
     </div>
     <hr class="ml2 f1">
