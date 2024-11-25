@@ -1063,23 +1063,31 @@ export class PdmService {
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
-        if (dto.diretorio_caminho)
-            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
-        const arquivo = await this.prisma.pdmDocumento.create({
-            data: {
-                criado_em: new Date(Date.now()),
-                criado_por: user.id,
-                arquivo_id: arquivoId,
-                descricao: dto.descricao,
-                pdm_id: pdm_id,
-            },
-            select: {
-                id: true,
-            },
-        });
+        const documento = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const r = await this.prisma.pdmDocumento.create({
+                    data: {
+                        criado_em: new Date(Date.now()),
+                        criado_por: user.id,
+                        arquivo_id: arquivoId,
+                        descricao: dto.descricao,
+                        pdm_id: pdm_id,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
 
-        return { id: arquivo.id };
+                // tem que rodar depois, pois se não, ainda não tem o vinculo com o projeto
+                if (dto.diretorio_caminho)
+                    await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token, prismaTx);
+
+                return r;
+            }
+        );
+
+        return { id: documento.id };
     }
 
     async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt): Promise<PdmItemDocumentDto[]> {

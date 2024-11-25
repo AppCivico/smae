@@ -1399,12 +1399,10 @@ export class TransferenciaService {
 
     async append_document(transferenciaId: number, dto: CreateTransferenciaAnexoDto, user: PessoaFromJwt) {
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
-        if (dto.diretorio_caminho)
-            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                return await prismaTx.transferenciaAnexo.create({
+                const r = await prismaTx.transferenciaAnexo.create({
                     data: {
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
@@ -1417,6 +1415,11 @@ export class TransferenciaService {
                         id: true,
                     },
                 });
+
+                if (dto.diretorio_caminho)
+                    await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token, prismaTx);
+
+                return r;
             }
         );
 

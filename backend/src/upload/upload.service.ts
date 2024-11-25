@@ -14,6 +14,7 @@ import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { Prisma } from '@prisma/client';
 
 const AdmZipLib = require('adm-zip');
 
@@ -417,15 +418,20 @@ export class UploadService {
         return arquivo.caminho;
     }
 
-    async updateDir(dto: PatchDiretorioDto, uploadOrDlToken: string): Promise<void> {
-        const arquivo = await this.prisma.arquivo.findFirst({
+    async updateDir(
+        dto: PatchDiretorioDto,
+        uploadOrDlToken: string,
+        prismaTx: Prisma.TransactionClient | null = null
+    ): Promise<void> {
+        const prisma = prismaTx || this.prisma;
+        const arquivo = await prisma.arquivo.findFirst({
             where: { id: this.checkUploadOrDownloadToken(uploadOrDlToken) },
             select: { id: true },
         });
 
         if (!arquivo) throw new HttpException('Arquivo não encontrado', 400);
 
-        await this.prisma.arquivo.update({
+        await prisma.arquivo.update({
             where: { id: arquivo.id },
             data: {
                 diretorio_caminho: this.uploadDiretorio.normalizaCaminho(dto.caminho),
@@ -434,7 +440,7 @@ export class UploadService {
 
         // SRP foi viajar
         // precisa saber se o arquivo é de algum projeto, se não, não tem como colocar no contexto certo
-        const projetoDoc = await this.prisma.projetoDocumento.findFirst({
+        const projetoDoc = await prisma.projetoDocumento.findFirst({
             where: {
                 arquivo_id: arquivo.id,
             },
@@ -447,7 +453,7 @@ export class UploadService {
             });
         }
 
-        const transferenciaDoc = await this.prisma.transferenciaAnexo.findFirst({
+        const transferenciaDoc = await prisma.transferenciaAnexo.findFirst({
             where: { arquivo_id: arquivo.id },
             select: { transferencia_id: true },
         });
@@ -458,7 +464,7 @@ export class UploadService {
             });
         }
 
-        const pdmDoc = await this.prisma.pdmDocumento.findFirst({
+        const pdmDoc = await prisma.pdmDocumento.findFirst({
             where: { arquivo_id: arquivo.id },
             select: { pdm_id: true },
         });
