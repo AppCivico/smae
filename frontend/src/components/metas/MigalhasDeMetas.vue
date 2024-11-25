@@ -8,25 +8,42 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { meta_id } = route.params;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { iniciativa_id } = route.params;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { atividade_id } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
+// mantendo comportamento legado
+// eslint-disable-next-line eqeqeq
 if (meta_id && singleMeta.value.id != meta_id) MetasStore.getById(meta_id);
 if (meta_id && !activePdm.value.id) MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
-if (iniciativa_id && singleIniciativa.value.id != iniciativa_id) {
-  IniciativasStore.getById(meta_id, iniciativa_id);
+if (
+  iniciativa_id
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  && singleIniciativa.value.id != iniciativa_id
+  && !singleIniciativa.value.loading
+) {
+  IniciativasStore.getByIdReal(iniciativa_id);
 }
 
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
-if (atividade_id && singleAtividade.value.id != atividade_id) {
-  AtividadesStore.getById(iniciativa_id, atividade_id);
+if (
+  atividade_id
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  && singleAtividade.value.id != atividade_id
+  && !singleAtividade.value.loading
+) {
+  AtividadesStore.getByIdReal(atividade_id);
 }
 
 const groupBy = localStorage.getItem('groupBy') ?? 'todas';
