@@ -12,7 +12,7 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
+import { nextTick, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -35,7 +35,7 @@ const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
 const EquipesStore = useEquipesStore();
 
-async function iniciar() {
+watchEffect(async () => {
   const promessas = [];
 
   // eslint-disable-next-line eqeqeq
@@ -63,7 +63,7 @@ async function iniciar() {
   nextTick().then(() => {
     rolarTelaPara();
   });
-}
+});
 
 async function checkDelete(iniciativa) {
   if (iniciativa) {
@@ -77,8 +77,6 @@ async function checkDelete(iniciativa) {
     }, 'Remover');
   }
 }
-
-iniciar();
 </script>
 <template>
   <div>
