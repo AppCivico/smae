@@ -33,7 +33,7 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 
 const router = useRouter();
-const { params } = useRoute();
+const { params, meta } = useRoute();
 const formularioSujo = useIsFormDirty();
 
 const {
@@ -66,7 +66,7 @@ const {
 
 function voltarTela() {
   router.push({
-    name: 'TransferenciaDistribuicaoDeRecursos.Lista',
+    name: meta.rotaDeEscape,
     params: {
       ...params,
     },
@@ -224,11 +224,7 @@ onUnmounted(() => {
 
     <hr class="ml2 f1">
 
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-      :apenas-emitir="true"
-      @close="voltarTela"
-    />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <span

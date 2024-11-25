@@ -14,7 +14,7 @@
       @click="toggleModal"
     >
       <slot
-        name="valor-exibido"
+        name="ValorExibido"
         :item="itemSelecionado"
       >
         {{ valorExibido || valorInicial }}
@@ -58,15 +58,14 @@
       <div class="flex g1 mb2">
         <input
           id="palavra-chave"
-          ref="inputBuscaRef"
           v-model="valorDaBusca"
+          v-focus
           class="inputtext light"
           :name="chaveDeBusca"
           :minlength="props.minimoDeCaracteresParaBusca"
           required
           type="search"
           autocomplete="off"
-          autofocus
         >
         <button
           class="btn"
@@ -84,9 +83,9 @@
       v-else-if="buscaRealizada"
       class="tablemain"
     >
-      <thead v-if="linhas.length && $slots['table-header']">
+      <thead v-if="linhas.length && $slots.TableHeader">
         <tr>
-          <slot name="table-header" />
+          <slot name="TableHeader" />
           <th />
         </tr>
       </thead>
@@ -97,7 +96,7 @@
             :key="item.id"
           >
             <slot
-              name="table-data"
+              name="TableData"
               v-bind="{ item }"
             >
               <td>
@@ -126,8 +125,8 @@
           </tr>
         </template>
       </tbody>
-      <tfoot v-if="$slots.tableFooter">
-        <slot name="table-footer" />
+      <tfoot v-if="$slots.TableFooter">
+        <slot name="TableFooter" />
       </tfoot>
     </table>
   </SmallModal>
@@ -140,7 +139,6 @@ import {
   computed,
   watch,
   defineEmits,
-  onMounted,
 } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
@@ -172,7 +170,7 @@ const props = defineProps({
   },
   minimoDeCaracteresParaBusca: {
     type: Number,
-    default: 3,
+    default: 2,
   },
   textoDeInstruções: {
     type: String,
@@ -208,7 +206,6 @@ const props = defineProps({
   },
 });
 
-const inputBuscaRef = ref(null);
 const estaAberto = ref(false);
 const linhas = ref([]);
 const valorDaBusca = ref('');
@@ -268,15 +265,9 @@ watch(itemSelecionado, (novoValor) => {
   emit('update:modelValue', novoValor?.[props.chaveDeValor]);
 });
 
-watch(() => estaAberto.value, () => {
-  setTimeout(() => {
-    inputBuscaRef.value?.focus();
-  }, 100);
-});
-
-onMounted(() => {
+watch(() => props.valorInicial, () => {
   itemSelecionado.value = { ...props.valorInicial };
-});
+}, { immediate: true });
 </script>
 <style scoped>
 .output {

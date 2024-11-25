@@ -4,7 +4,7 @@
       <h2>Status</h2>
       <hr class="ml2 f1">
       <CheckClose
-        :formulario-sujo="false"
+        :formulario-sujo="formularioSujo"
         :apenas-emitir="true"
         @close="emit('fecharModal')"
       />
@@ -139,7 +139,9 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
 import { statusDistribuicao as schema } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -147,6 +149,8 @@ import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import SmallModal from '@/components/SmallModal.vue';
+
+const formularioSujo = useIsFormDirty();
 
 const ÓrgãosStore = useOrgansStore();
 const fluxosProjetosStore = useFluxosProjetosStore();
