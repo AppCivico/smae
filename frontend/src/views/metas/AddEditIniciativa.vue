@@ -233,7 +233,7 @@ function filterResponsible(orgao_id) {
       </TítuloDePágina>
 
       <div class="t24">
-        Meta {{ singleMeta.titulo }}
+        Meta: {{ singleMeta.titulo }}
       </div>
     </div>
     <hr class="ml2 f1">

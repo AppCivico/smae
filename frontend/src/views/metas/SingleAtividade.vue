@@ -37,8 +37,8 @@ const {
 } = storeToRefs(AtividadesStore);
 
 async function iniciar() {
-  if (singleAtividade.value.id !== atividade_id) {
-    await AtividadesStore.getById(iniciativa_id, atividade_id);
+  if (singleAtividade.value.id !== atividadeId) {
+    await AtividadesStore.getByIdReal(atividadeId);
   }
   if (route.meta.entidadeMãe === 'pdm') {
     if (singleAtividade.value.id) {

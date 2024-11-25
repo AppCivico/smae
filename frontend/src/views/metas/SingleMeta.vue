@@ -5,6 +5,7 @@ import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import statusObras from '@/consts/statusObras';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
+import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
@@ -295,7 +296,7 @@ iniciar();
                   <div class="flex g2 ml2">
                     <div class="mr1 f0">
                       <div class="t12 uc w700 mb05 tc300">
-                        ID
+                        Código
                       </div>
                       <div class="t13">
                         {{ ini.codigo }}
