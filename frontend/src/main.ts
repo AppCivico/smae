@@ -6,6 +6,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 import type { Store } from 'pinia';
@@ -39,16 +40,6 @@ app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   || undefined;
 
 const pinia = createPinia();
-
-type ParametrosDeRequisicao = URLSearchParams | Record<string, unknown> | FormData | undefined;
-interface RequestS {
-  get: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
-  post: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  upload: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  put: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  patch: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  delete: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
-}
 
 declare module 'pinia' {
   export interface PiniaCustomProperties {
