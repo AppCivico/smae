@@ -58,7 +58,7 @@ const itemParaEdicaoFormatado = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, resetForm, setFieldValue, values,
+  errors, handleSubmit, resetForm, setFieldValue, values, isSubmitting,
 } = useForm({
   initialValues: itemParaEdicaoFormatado,
   validationSchema: schema,
@@ -171,13 +171,13 @@ function ajustePercentual(campoValorBruto) {
   const valorBruto = (values.valor / 100) * porcentagens.value[campoValorBruto];
 
   if (valorBruto >= values.valor) {
-    setFieldValue(campoValorBruto, values.valor);
+    setFieldValue(campoValorBruto, values.valor.toString());
     porcentagens.value[campoValorBruto] = 100;
 
     return;
   }
 
-  setFieldValue(campoValorBruto, valorBruto);
+  setFieldValue(campoValorBruto, Number(valorBruto).toFixed(2));
 }
 
 watch(itemParaEdicao, async () => {
