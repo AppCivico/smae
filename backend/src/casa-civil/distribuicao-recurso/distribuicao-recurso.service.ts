@@ -787,7 +787,6 @@ export class DistribuicaoRecursoService {
                                 },
                                 cargo: true,
                                 objeto: true,
-                                valor: true,
                             },
                         },
                     },
@@ -874,7 +873,11 @@ export class DistribuicaoRecursoService {
         // Portanto, caso a Distribuição não possua ainda nenhuma row de parlamentar, a API retornará os parlamentares de Transf
         // Mas sem o ID de relacionamento.
         const parlamentares: ParlamentarDistribuicaoDto[] =
-            row.parlamentares.length > 0 ? row.parlamentares : row.transferencia.parlamentar;
+            row.parlamentares.length > 0
+                ? row.parlamentares
+                : row.transferencia.parlamentar.map((p) => {
+                      return { ...p, valor: null };
+                  });
 
         return {
             id: row.id,
