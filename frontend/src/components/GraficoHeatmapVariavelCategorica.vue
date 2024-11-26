@@ -78,6 +78,7 @@ import {
 } from 'vue';
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
 import { dateToMonthYear } from '@/helpers/dateToDate';
+import { sortBy } from 'lodash';
 
 const props = defineProps({
   valores: {
@@ -124,43 +125,63 @@ const calcularIntervaloPadraoAnos = () => {
 const anosFinaisValidos = computed(() => anosDisponiveis
   .value.filter((ano) => ano >= anoInicial.value));
 
-const preencherDadosHeatmap = () => {
-  const dados = [];
+const criarMapaCategorias = () => {
+  // Obter e ordenar as chaves das categorias
+  const chavesCategorias = Object.keys(categorias.value)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
-  let menorIndiceCategoria = Infinity;
-  props.valores.linhas.forEach(({ series }) => {
-    const serieRealizado = series[indiceRealizado.value];
-    if (serieRealizado && serieRealizado.elementos?.length) {
-      serieRealizado.elementos.forEach(({ categoria }) => {
-        const indice = parseInt(categoria, 10);
-        if (!Number.isNaN(indice)) {
-          menorIndiceCategoria = Math.min(menorIndiceCategoria, indice);
-        }
-      });
+  // Criar o mapa de categorias para índices contínuos
+  const mapaCategorias = {};
+  chavesCategorias.forEach((chave, index) => {
+    mapaCategorias[chave] = index;
+  });
+
+  return { mapaCategorias, chavesCategorias };
+};
+
+const calcularContagemCategorias = (serieRealizado, mapaCategorias, totalCategorias) => {
+  const contagemCategorias = Array(totalCategorias).fill(0);
+
+  serieRealizado.elementos.forEach(({ categoria }) => {
+    const indiceCategoria = mapaCategorias[categoria];
+    if (indiceCategoria !== undefined) {
+      contagemCategorias[indiceCategoria] += 1;
+    } else {
+      console.warn(`Categoria "${categoria}" não encontrada no mapa de categorias.`);
     }
   });
 
-  if (menorIndiceCategoria === Infinity) {
-    menorIndiceCategoria = 0;
-  }
+  return contagemCategorias;
+};
+
+const adicionarDadosHeatmap = (dados, contagemCategorias, indiceX) => {
+  contagemCategorias.forEach((contagem, indiceY) => {
+    dados.push([indiceX, indiceY, contagem]);
+  });
+};
+
+const preencherDadosHeatmap = () => {
+  const dados = [];
+
+  const { mapaCategorias, chavesCategorias } = criarMapaCategorias();
 
   props.valores.linhas.forEach(({ series }) => {
     const serieRealizado = series[indiceRealizado.value];
-    if (serieRealizado && serieRealizado.elementos?.length) {
-      const contagemCategorias = Array(Object.keys(categorias).length).fill(0);
-      serieRealizado.elementos.forEach(({ categoria }) => {
-        const indiceCategoria = parseInt(categoria, 10) - menorIndiceCategoria;
-        if (indiceCategoria >= 0 && indiceCategoria < contagemCategorias.length) {
-          contagemCategorias[indiceCategoria] += 1;
-        }
-      });
-      const dataFormatada = dateToMonthYear(serieRealizado.data_valor);
-      const indiceX = datasEixoX.value.indexOf(dataFormatada);
-      if (indiceX !== -1) {
-        contagemCategorias.forEach((contagem, indiceY) => {
-          dados.push([indiceX, indiceY, contagem]);
-        });
-      }
+    if (!serieRealizado || !serieRealizado.elementos?.length) {
+      return;
+    }
+
+    const contagemCategorias = calcularContagemCategorias(
+      serieRealizado,
+      mapaCategorias,
+      chavesCategorias.length,
+    );
+
+    const dataFormatada = dateToMonthYear(serieRealizado.data_valor);
+    const indiceX = datasEixoX.value.indexOf(dataFormatada);
+
+    if (indiceX !== -1) {
+      adicionarDadosHeatmap(dados, contagemCategorias, indiceX);
     }
   });
 
