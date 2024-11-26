@@ -2692,11 +2692,13 @@ export class VariavelService {
         }
 
         if (filters.incluir_auxiliares) {
-            const categorica =
-                result.variavel?.variavel_categorica_id &&
-                result.variavel?.variavel_categorica_id != CONST_CRONO_VAR_CATEGORICA_ID
-                    ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
-                    : null;
+            if (result.variavel?.variavel_categorica_id == CONST_CRONO_VAR_CATEGORICA_ID) {
+                result.variavel.variavel_categorica_id = null;
+            }
+
+            const categorica = result.variavel?.variavel_categorica_id
+                ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
+                : null;
 
             let categoricas: Record<string, string> | null = null;
             if (categorica && categorica[0]) {
