@@ -8,11 +8,11 @@ import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
-import { useAlertStore } from '@/stores/alert.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
-import { nextTick, watchEffect } from 'vue';
+import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const EquipesStore = useEquipesStore();
@@ -39,7 +39,7 @@ const {
 const AtividadesStore = useAtividadesStore();
 const { Atividades } = storeToRefs(AtividadesStore);
 
-watchEffect(async () => {
+async function iniciar() {
   const promessas = [];
 
   // eslint-disable-next-line eqeqeq
@@ -66,7 +66,7 @@ watchEffect(async () => {
   nextTick().then(() => {
     rolarTelaPara();
   });
-});
+}
 
 async function checkDelete(iniciativa) {
   if (iniciativa) {
@@ -80,6 +80,8 @@ async function checkDelete(iniciativa) {
     }, 'Remover');
   }
 }
+
+iniciar();
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
