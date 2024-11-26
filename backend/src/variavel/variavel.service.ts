@@ -1271,6 +1271,7 @@ export class VariavelService {
                 variavel: {
                     select: {
                         supraregional: true,
+                        variavel_categorica_id: true,
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1336,7 +1337,7 @@ export class VariavelService {
                     }
                 }
 
-                if (r.tipo == 'Calculada') {
+                if (r.tipo == 'Calculada' || r.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
                     pode_editar = false;
                     pode_editar_valor = false;
                 }
