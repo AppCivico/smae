@@ -12,7 +12,7 @@
   <FiltroDeDeVariaveis
     :aria-busy="chamadasPendentes.lista"
     :valores-iniciais="valoresIniciais"
-    @submit="($v) => dispararBuscaDeVariaveis($v)"
+    @submit="($v: SubmitEvent) => dispararBuscaDeVariaveis($v)"
   />
 
   <LoadingComponent v-if="chamadasPendentes.lista" />
@@ -158,9 +158,9 @@ import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
-import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
-import requestS from '@/helpers/requestS.ts';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
+import requestS from '@/helpers/requestS';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import { storeToRefs } from 'pinia';
 import type { PropType } from 'vue';
 import { computed, ref, watch } from 'vue';
