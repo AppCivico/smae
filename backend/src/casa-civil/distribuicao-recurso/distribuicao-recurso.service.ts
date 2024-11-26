@@ -616,7 +616,6 @@ export class DistribuicaoRecursoService {
                 conclusao_suspensiva: r.conclusao_suspensiva,
                 pode_registrar_status: pode_registrar_status,
                 pct_valor_transferencia: pct_valor_transferencia,
-                parlamentares: r.parlamentares,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
