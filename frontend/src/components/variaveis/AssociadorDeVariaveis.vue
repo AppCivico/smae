@@ -12,7 +12,7 @@
   <FiltroDeDeVariaveis
     :aria-busy="chamadasPendentes.lista"
     :valores-iniciais="valoresIniciais"
-    @submit="($v: SubmitEvent) => dispararBuscaDeVariaveis($v)"
+    @submit="($v: SubmitEvent) => aplicarFiltro($v)"
   />
 
   <LoadingComponent v-if="chamadasPendentes.lista" />
@@ -108,6 +108,7 @@
       v-if="paginacao.paginas > 1"
       v-bind="paginacao"
       v-model="paginaCorrente"
+      @update:model-value="($v) => passarFolhas($v)"
     />
 
     <p class="mb1">
@@ -154,16 +155,16 @@
   </form>
 </template>
 <script setup lang="ts">
-import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
 import requestS from '@/helpers/requestS';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
+import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import { storeToRefs } from 'pinia';
 import type { PropType } from 'vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import LoadingComponent from '../LoadingComponent.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -284,12 +285,23 @@ function buscarVariaveis(params: Record<string, unknown>) {
   });
 }
 
-function dispararBuscaDeVariaveis(evento: SubmitEvent) {
+function aplicarFiltro(evento: SubmitEvent) {
   const params = EnvioParaObjeto(evento, true);
+
+  paginaCorrente.value = 1;
 
   buscarVariaveis(params);
 
   parametrosDaBuscaCorrente.value = params;
+}
+
+function passarFolhas(numeroDaPagina: number) {
+  buscarVariaveis({
+    ...valoresIniciais,
+    ...parametrosDaBuscaCorrente.value,
+    pagina: numeroDaPagina,
+    token_paginacao: paginacao.value.tokenPaginacao,
+  });
 }
 
 const gerarAtributosDoCampo = (mae, agrupador) => {
@@ -336,14 +348,5 @@ async function associar(encerrar = false) {
 variaveisGlobaisStore.buscarTudo({
   ...valoresIniciais,
   not_indicador_id: props.indicador?.id,
-});
-
-watch(paginaCorrente, (novoValor) => {
-  buscarVariaveis({
-    ...valoresIniciais,
-    ...parametrosDaBuscaCorrente.value,
-    token_paginacao: paginacao.value.tokenPaginacao,
-    pagina: novoValor,
-  });
 });
 </script>
