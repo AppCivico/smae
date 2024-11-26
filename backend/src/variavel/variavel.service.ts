@@ -2692,7 +2692,7 @@ export class VariavelService {
         }
 
         if (filters.incluir_auxiliares) {
-            if (result.variavel?.variavel_categorica_id == CONST_CRONO_VAR_CATEGORICA_ID) {
+            if (result.variavel?.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
                 result.variavel.variavel_categorica_id = null;
             }
 
