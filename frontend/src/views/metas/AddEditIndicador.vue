@@ -208,7 +208,7 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if (indicadorId || values.variavel_categoria_id) {
+    if (indicadorId || values.indicador_tipo === 'categorico') {
       if (values.formula) {
         const er = await validadeFormula(values.formula);
         if (er) {
@@ -400,7 +400,10 @@ watch(() => props.group, () => {
             {{ errors.titulo }}
           </div>
         </div>
-        <div class="f2">
+        <div
+          v-if="indicadorId"
+          class="f2"
+        >
           <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
           <Field
             id="indicador_tipo"
@@ -444,7 +447,7 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-show="!values.variavel_categoria_id"
+          v-show="values.indicador_tipo === 'numerica'"
           class="f1"
         >
           <label class="label">Casas decimais</label>
@@ -548,7 +551,7 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-if="values.indicador_tipo === 'categorica'"
+          v-if="values.indicador_tipo === 'categorico'"
           class="f1 fb20em"
         >
           <label class="label">Variavel <span class="tvermelho">*</span></label>
@@ -706,7 +709,7 @@ watch(() => props.group, () => {
 
       <div
         v-if="indicadorId && !Variaveis[indicadorId]?.loading"
-        v-show="!values.variavel_categoria_id"
+        v-show="values.indicador_tipo === 'numerica'"
       >
         <EditorDeFormula
           v-model="formula"
