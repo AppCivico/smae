@@ -107,9 +107,13 @@ export default {
   },
 
   children: [
-    { path: '', component: ListMetas },
-    { path: 'novo', component: AddEditMetas, props: { type: 'novo', parentPage: 'metas' } },
-    { path: 'editar/:meta_id', component: AddEditMetas, props: { type: 'editar', parentPage: 'metas' } },
+    { path: '', component: ListMetas, name: 'pdm.metas' },
+    {
+      path: 'novo', component: AddEditMetas, props: { type: 'novo', parentPage: 'metas' }, meta: { rotaDeEscape: 'pdm.metas' },
+    },
+    {
+      path: 'editar/:meta_id', component: AddEditMetas, props: { type: 'editar', parentPage: 'meta' }, meta: { rotaDeEscape: 'meta' },
+    },
     { path: 'macrotemas/novo', component: ListMetas, props: { type: 'novo', group: 'macrotemas', parentPage: 'metas' } },
     { path: 'subtemas/novo', component: ListMetas, props: { type: 'novo', group: 'subtemas', parentPage: 'metas' } },
     { path: 'temas/novo', component: ListMetas, props: { type: 'novo', group: 'temas', parentPage: 'metas' } },

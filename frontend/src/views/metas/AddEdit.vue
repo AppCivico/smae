@@ -38,13 +38,16 @@ defineOptions({
 
 const alertStore = useAlertStore();
 const route = useRoute();
+// desabilitando lint para manter comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { meta_id } = route.params;
 const oktogo = ref(0);
 
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.clear();
-
+// desabilitando lint para manter comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const orgaos_participantes = ref([
   {
     orgao_id: null, responsavel: true, participantes: [], busca: '',
@@ -53,6 +56,8 @@ const orgaos_participantes = ref([
     orgao_id: null, responsavel: false, participantes: [], busca: '',
   },
 ]);
+// desabilitando lint para manter comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const coordenadores_cp = ref({ participantes: [], busca: '' });
 
 let title = 'Cadastro de Meta';
@@ -179,7 +184,7 @@ async function onSubmit(_, { controlledValues: values }) {
     if (activePdm.value.possui_macro_tema && !values.macro_tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_macro_tema}.`);
     if (activePdm.value.possui_tema && !values.tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_tema}.`);
     if (activePdm.value.possui_sub_tema && !values.sub_tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_sub_tema}.`);
-
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     if (er.length) throw er.join('<br />');
     let msg;
     let r;
@@ -190,13 +195,15 @@ async function onSubmit(_, { controlledValues: values }) {
       r = await MetasStore.insert(values);
       msg = 'Item adicionado com sucesso!';
     }
+    // desabilitando lint para manter comportamento legado
+    // eslint-disable-next-line eqeqeq
     if (r == true) {
       MetasStore.clear();
 
       if (route.meta.rotaDeEscape) {
         router.push({ name: route.meta.rotaDeEscape });
       } else if (route.meta.entidadeMãe === 'pdm') {
-        await router.push('/metas');
+        await router.push(`/meta/${singleMeta.value.id}`);
       } else {
         throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
       }
@@ -213,12 +220,17 @@ async function checkDelete(id) {
         if (await MetasStore.delete(id)) {
           MetasStore.clear();
 
-          if (route.meta.rotaDeEscape) {
-            router.push({ name: route.meta.rotaDeEscape });
-          } else if (route.meta.entidadeMãe === 'pdm') {
-            await router.push('/metas');
+          if (route.meta.entidadeMãe === 'pdm') {
+            router.push({ name: 'pdm.metas' });
+          } else if (route.meta.entidadeMãe === 'planoSetorial') {
+            router.push({
+              name: 'planoSetorial:listaDeMetas',
+              params: {
+                planoSetorialId: route.params.planoSetorialId,
+              },
+            });
           } else {
-            throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
+            throw new Error(`Falta configurar uma "entidadeMãe" para: "${route.path}"`);
           }
 
           alertStore.success('Meta removida.');
@@ -255,6 +267,8 @@ function removeOrgao(obj, i) {
 
 function filterResponsible(orgao_id) {
   const r = OrgansStore.organResponsibles;
+  // desabilitando lint para manter comportamento legado
+  // eslint-disable-next-line eqeqeq
   const v = r.length ? r.find((x) => x.id == orgao_id) : false;
   return v?.responsible ?? [];
 }
@@ -567,7 +581,8 @@ watch(() => activePdm.value.id, async (novoValor) => {
                 @change="item.participantes = []"
               >
                 <option
-                  v-for="o in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
+                  v-for="o in OrgansStore.organResponsibles.filter(a => a.id == item.orgao_id
+                    || !orgaos_participantes.map(b => b.orgao_id).includes(a.id))"
                   :key="o.id"
                   :value="o.id"
                   :title="o.descricao?.length > 36 ? o.descricao : null"

@@ -120,7 +120,7 @@ export default [
     component: AddEditMetas,
     props: { type: 'editar', parentPage: 'metas' },
     meta: {
-      rotaDeEscape: 'planoSetorial:listaDeMetas',
+      rotaDeEscape: 'planoSetorial:meta',
     },
   },
   { path: 'macrotemas/:id', component: ListMetasGroup, props: { type: 'list', group: 'macro_tema', parentPage: 'metas' } },
