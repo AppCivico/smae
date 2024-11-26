@@ -1210,7 +1210,9 @@ export class VariavelService {
                 polaridade: row.polaridade,
                 orgao: row.orgao,
                 regiao: row.regiao,
-                variavel_categorica_id: row.variavel_categorica_id,
+                variavel_categorica_id:
+                    // na listagem, as categorica de crongrama devem se passar por uma várivel numérica
+                    row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? null : row.variavel_categorica_id,
                 etapa: row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? mapEtapa[row.id] : null,
                 inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
                 fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),
