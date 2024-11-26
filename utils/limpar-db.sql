@@ -2,7 +2,7 @@ delete from pessoa_sessao_ativa;
 
 update pessoa
 set
-    email = 'staging+' || replace(replace(replace(id, 'sp.gov.br', '.spgovbr'), '@', '__em__'), '.com', '') || '@fgv.br'
+    email = 'staging+' || id::text || replace(replace(replace(email, 'sp.gov.br', '.spgovbr'), '@', '__em__'), '.com', '') || '@fgv.br'
 
 where not email like '%fgv.br';
 
