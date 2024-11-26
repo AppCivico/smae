@@ -852,8 +852,11 @@ export class IndicadorService {
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
 
+        if (indicador.variavel_categoria_id === CONST_CRONO_VAR_CATEGORICA_ID) {
+            indicador.variavel_categoria_id = null;
+        }
         // caso seja variável categórica, pega a série de proxy
-        if (indicador.variavel_categoria_id && indicador.variavel_categoria_id != CONST_CRONO_VAR_CATEGORICA_ID) {
+        if (indicador.variavel_categoria_id) {
             const proxy = await this.variavelService.getSeriePrevistoRealizado(
                 tipo == 'PS' ? 'Global' : 'PDM',
                 {
