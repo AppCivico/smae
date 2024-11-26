@@ -110,13 +110,13 @@
 
       <LoadingComponent v-if="haChamadasPendentes" />
       <GraficoHeatmapVariavelCategorica
-        v-else-if="!!variavel.variavel_categorica_id"
+        v-else-if="variavel.variavel_categorica_id > 0"
         :valores="Valores[(variavel.id as keyof {})]"
       />
       <EvolucaoGraph
         v-else
         :dataserie="Valores[(variavel.id as keyof {})]"
-        :tem-categorica="!!variavel.variavel_categorica_id"
+        :tem-categorica="variavel.variavel_categorica_id > 0"
       />
     </header>
 
