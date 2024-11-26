@@ -19,6 +19,7 @@ import {
     DistribuicaoRecursoDetailDto,
     DistribuicaoRecursoDto,
     DistribuicaoRecursoSeiDto,
+    ParlamentarDistribuicaoDto,
     SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
 
@@ -766,6 +767,30 @@ export class DistribuicaoRecursoService {
                 transferencia: {
                     select: {
                         valor: true,
+                        parlamentar: {
+                            orderBy: { id: 'asc' },
+                            where: { removido_em: null },
+                            select: {
+                                parlamentar_id: true,
+                                parlamentar: {
+                                    select: {
+                                        id: true,
+                                        nome: true,
+                                        nome_popular: true,
+                                    },
+                                },
+                                partido_id: true,
+                                partido: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                    },
+                                },
+                                cargo: true,
+                                objeto: true,
+                                valor: true,
+                            },
+                        },
                     },
                 },
 
@@ -845,6 +870,13 @@ export class DistribuicaoRecursoService {
         const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
         const readStatusMap = await this.seiService.verificaStatusLeituraSei(processo_seis, user.id);
 
+        // Os parlamentares, inicialmente, são preenchidos no estágio de "identificação" da Transferência
+        // E não são pre-preenchidos na Distribuição de Recurso, do ponto de vista de banco de dados.
+        // Portanto, caso a Distribuição não possua ainda nenhuma row de parlamentar, a API retornará os parlamentares de Transf
+        // Mas sem o ID de relacionamento.
+        const parlamentares: ParlamentarDistribuicaoDto[] =
+            row.parlamentares.length > 0 ? row.parlamentares : row.transferencia.parlamentar;
+
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
@@ -892,7 +924,7 @@ export class DistribuicaoRecursoService {
                     lido: readStatusMap.get(s.processo_sei) ?? false,
                 } satisfies DistribuicaoRecursoSeiDto;
             }),
-            parlamentares: row.parlamentares,
+            parlamentares: parlamentares,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
