@@ -50,7 +50,7 @@ export const useUsersStore = defineStore({
         if (!r.id) {
           throw new Error('Usuário não encontrado');
         }
-        r.desativado = r.desativado ? '1' : false;
+
         if (r.grupos) r.grupos = r.grupos.map((g) => g.id);
         this.user = r;
       } catch (error) {
