@@ -2633,6 +2633,9 @@ export class VariavelService {
             linhas: [],
             ordem_series: ORDEM_SERIES_RETORNO,
         };
+        if (result.variavel?.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
+            result.variavel.variavel_categorica_id = null;
+        }
 
         const [analisesCiclo, documentoCiclo] = await this.procuraCicloAnaliseDocumento(
             tipo,
@@ -2692,10 +2695,6 @@ export class VariavelService {
         }
 
         if (filters.incluir_auxiliares) {
-            if (result.variavel?.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
-                result.variavel.variavel_categorica_id = null;
-            }
-
             const categorica = result.variavel?.variavel_categorica_id
                 ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
                 : null;
