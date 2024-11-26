@@ -820,7 +820,8 @@ export class VariavelService {
         // Não deixa vazar do periodo da variavel
         if (preenchimento_fim > maxDias)
             throw new BadRequestException(`Coleta: Duração total excede o ${maxDias} dias`);
-        if (validacao_fim > maxDias) throw new BadRequestException(`Conferencia: Duração total excede o ${maxDias} dias`);
+        if (validacao_fim > maxDias)
+            throw new BadRequestException(`Conferencia: Duração total excede o ${maxDias} dias`);
         if (liberacao_fim > maxDias) throw new BadRequestException(`Liberação: Duração total excede o ${maxDias} dias`);
 
         return {
@@ -2691,9 +2692,11 @@ export class VariavelService {
         }
 
         if (filters.incluir_auxiliares) {
-            const categorica = result.variavel?.variavel_categorica_id
-                ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
-                : null;
+            const categorica =
+                result.variavel?.variavel_categorica_id &&
+                result.variavel?.variavel_categorica_id != CONST_CRONO_VAR_CATEGORICA_ID
+                    ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
+                    : null;
 
             let categoricas: Record<string, string> | null = null;
             if (categorica && categorica[0]) {
