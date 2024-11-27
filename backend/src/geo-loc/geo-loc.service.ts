@@ -279,7 +279,9 @@ export class GeoLocService {
         let tmp: GeoTokenJwtBody | null = null;
         try {
             if (jwt) tmp = this.jwtService.verify(jwt) as GeoTokenJwtBody;
-        } catch {}
+        } catch {
+            // ignore
+        }
         if (!tmp) throw new BadRequestException('geo token is invalid');
         return tmp;
     }

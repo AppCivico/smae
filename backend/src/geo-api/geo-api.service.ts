@@ -116,7 +116,7 @@ export class GeoApiService {
 
         dto.busca_endereco = dto.busca_endereco.trim();
         // encaminha para busca por CEP se for um CEP
-        if (dto.busca_endereco.match(/^(\d{8}|\d{5}-\d{3})$/)) {
+        if (dto.busca_endereco.match(/^\d{5}-?\d{3}$/)) {
             return this.buscaCEP({ cep: dto.busca_endereco, camadas: dto.camadas });
         }
 
@@ -134,6 +134,7 @@ export class GeoApiService {
     }
 
     async buscaCEP(input: InputGeolocalizarCEP): Promise<RetornoEndereco[]> {
+        input.cep = input.cep.replace(/\\-+/g, '');
         const dto = plainToClass(InputGeolocalizarCEP, input);
         const errors = await validate(dto, { enableDebugMessages: true });
         if (errors.length) throw new Error(JSON.stringify(errors));
