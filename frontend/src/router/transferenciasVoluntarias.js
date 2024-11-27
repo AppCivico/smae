@@ -101,18 +101,24 @@ export default {
           component: TransferenciaDistribuicaoDeRecursosLista,
         },
         {
-          name: 'TransferenciaDistribuicaoDeRecursos.Novo',
-          path: 'novo',
-          component: TransferenciaDistribuicaoDeRecursosCriarEditar,
-          meta: {
-            título: 'Novo Recurso',
-            rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
-            rotasParaMigalhasDePão: [
-              'TransferenciasVoluntariasListar',
-              'TransferenciasVoluntariasDetalhes',
-              'TransferenciaDistribuicaoDeRecursos.Lista',
-            ],
-          },
+          path: '',
+          component: TransferenciaDistribuicaoDeRecursosEditarRaiz,
+          children: [
+            {
+              name: 'TransferenciaDistribuicaoDeRecursos.Novo',
+              path: 'novo',
+              component: TransferenciaDistribuicaoDeRecursosCriarEditar,
+              meta: {
+                título: 'Novo Recurso',
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                ],
+              },
+            },
+          ],
         },
         {
           path: ':recursoId',

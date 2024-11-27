@@ -37,6 +37,10 @@ const { params, meta } = useRoute();
 const formularioSujo = useIsFormDirty();
 
 const {
+  itemParaEdicao: transferenciaAtual,
+} = storeToRefs(TransferenciasVoluntarias);
+
+const {
   chamadasPendentes, erro, itemParaEdicao,
 } = storeToRefs(distribuicaoRecursos);
 
@@ -49,14 +53,25 @@ const porcentagens = ref({
   investimento: 0,
 });
 
-const itemParaEdicaoFormatado = computed(() => ({
-  valor_contrapartida: Number(0).toFixed(2),
-  ...itemParaEdicao.value,
-  parlamentares: itemParaEdicao.value.parlamentares?.map((item) => ({
-    ...item,
-    nome: item.parlamentar?.nome_popular,
-  })) || [],
-}));
+const itemParaEdicaoFormatado = computed(() => {
+  if (!itemParaEdicao.value.id) {
+    return {
+      valor_contrapartida: Number(0).toFixed(2),
+      parlamentares: transferenciaAtual.value.parlamentares?.map((item) => ({
+        ...item,
+        nome: item.parlamentar?.nome_popular,
+      })),
+    };
+  }
+
+  return {
+    ...itemParaEdicao.value,
+    parlamentares: itemParaEdicao.value.parlamentares?.map((item) => ({
+      ...item,
+      nome: item.parlamentar?.nome_popular,
+    })),
+  };
+});
 
 const {
   errors, handleSubmit, resetForm, setFieldValue, values, isSubmitting,
@@ -211,9 +226,12 @@ watch(() => values.empenho, () => {
   }
 });
 
+watch(() => itemParaEdicaoFormatado.value, () => {
+  resetForm({ values: itemParaEdicaoFormatado.value });
+});
+
 onMounted(async () => {
   ÓrgãosStore.getAll();
-  await TransferenciasVoluntarias.buscarItem(params.transferenciaId);
 });
 
 onUnmounted(() => {
