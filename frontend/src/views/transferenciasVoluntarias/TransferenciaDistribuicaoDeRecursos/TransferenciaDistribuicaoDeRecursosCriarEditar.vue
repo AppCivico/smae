@@ -565,7 +565,6 @@ onUnmounted(() => {
                 type="text"
                 class="inputtext light"
                 :value="values.parlamentares[idx].valor"
-                :max="100"
                 converter-para="string"
                 @update:model-value="(newValue) => {
                   atualizarValorTotal(`parlamentares[${idx}].valor`, newValue);

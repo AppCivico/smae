@@ -2145,7 +2145,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .label('Parlamentar')
         .nullable(),
       valor: number()
-        .label('Valor')
+        .label('Valor do repasse do parlamentar')
         .nullable(),
     })),
 });
