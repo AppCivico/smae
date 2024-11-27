@@ -468,6 +468,7 @@ export class IndicadorService {
                 recalculo_tempo: true,
                 ha_avisos_data_fim: true,
                 variavel_categoria_id: true,
+                indicador_tipo: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -545,6 +546,12 @@ export class IndicadorService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.variavel_categoria_id !== undefined) {
                     if (dto.variavel_categoria_id !== null) {
+                        if (dto.indicador_tipo !== 'Categorica')
+                            throw new HttpException(
+                                'Apenas indicadores do tipo Categorica podem ter uma variável de categoria',
+                                400
+                            );
+
                         if (formula === undefined || Array.isArray(formula_variaveis) === false)
                             throw new HttpException(
                                 'Para alterar a categoria da variável é necessário enviar a formula e as variáveis',
@@ -559,6 +566,11 @@ export class IndicadorService {
                         if (formula.indexOf(referencia) === -1)
                             throw new HttpException('A referência da variável da categoria deve estar na formula', 400);
                     }
+                    if (dto.variavel_categoria_id === null && dto.indicador_tipo == 'Numerico')
+                        throw new HttpException(
+                            'Indicadores do tipo Numérico não podem ter uma variável de categoria',
+                            400
+                        );
                 }
 
                 const indicador = await prismaTx.indicador.update({

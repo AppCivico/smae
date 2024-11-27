@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Periodicidade, Polaridade } from '@prisma/client';
+import { IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     IsArray,
@@ -123,6 +123,13 @@ export class CreateIndicadorDto {
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     @ValidateIf((object, value) => value !== null)
     casas_decimais: number | null;
+
+    @IsOptional()
+    @IsEnum(IndicadorTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(IndicadorTipo).join(', '),
+    })
+    @ApiProperty({ enum: IndicadorTipo, enumName: 'IndicadorTipo' })
+    indicador_tipo?: IndicadorTipo;
 }
 
 export class LinkIndicadorVariavelDto {

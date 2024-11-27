@@ -1,4 +1,4 @@
-import { Periodicidade, Polaridade } from '@prisma/client';
+import { IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 
@@ -27,4 +27,5 @@ export class Indicador {
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
     variavel_categoria_id: number | null;
+    indicador_tipo: IndicadorTipo;
 }

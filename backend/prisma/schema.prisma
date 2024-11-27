@@ -1364,6 +1364,11 @@ enum Periodicidade {
     Secular
 }
 
+enum IndicadorTipo {
+    Numerico
+    Categorica
+}
+
 model Indicador {
     id                    Int           @id @default(autoincrement())
     meta_id               Int?
@@ -1374,6 +1379,7 @@ model Indicador {
     atividade             Atividade?    @relation(fields: [atividade_id], references: [id])
     formula               String?
     formula_compilada     String?
+    indicador_tipo        IndicadorTipo @default(Numerico)
     acumulado_valor_base  Decimal?      @default(0) @db.Decimal(65, 30)
     acumulado_usa_formula Boolean       @default(false)
     codigo                String
