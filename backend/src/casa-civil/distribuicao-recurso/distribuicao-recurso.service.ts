@@ -870,14 +870,25 @@ export class DistribuicaoRecursoService {
 
         // Os parlamentares, inicialmente, são preenchidos no estágio de "identificação" da Transferência
         // E não são pre-preenchidos na Distribuição de Recurso, do ponto de vista de banco de dados.
-        // Portanto, caso a Distribuição não possua ainda nenhuma row de parlamentar, a API retornará os parlamentares de Transf
-        // Mas sem o ID de relacionamento.
-        const parlamentares: ParlamentarDistribuicaoDto[] =
-            row.parlamentares.length > 0
-                ? row.parlamentares
-                : row.transferencia.parlamentar.map((p) => {
-                      return { ...p, valor: null };
-                  });
+        // Portanto, é feito o merge das linhas de transf e de dist.
+        const parlamentares: ParlamentarDistribuicaoDto[] = [
+            ...new Set([
+                ...row.parlamentares,
+                ...row.transferencia.parlamentar
+                    .filter((dp) => !row.parlamentares.find((tp) => tp.parlamentar_id == dp.parlamentar_id))
+                    .map((p) => {
+                        return {
+                            parlamentar_id: p.parlamentar_id,
+                            parlamentar: p.parlamentar,
+                            partido_id: p.partido_id,
+                            partido: p.partido,
+                            cargo: p.cargo,
+                            objeto: p.objeto,
+                            valor: null,
+                        };
+                    }),
+            ]),
+        ];
 
         return {
             id: row.id,
