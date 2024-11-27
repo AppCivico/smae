@@ -208,7 +208,7 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if (indicadorId || values.indicador_tipo === 'categorico') {
+    if (indicadorId || values.indicador_tipo === 'Categorica') {
       if (values.formula) {
         const er = await validadeFormula(values.formula);
         if (er) {
@@ -411,10 +411,10 @@ watch(() => props.group, () => {
             name="indicador_tipo"
             class="inputtext light"
           >
-            <option value="numerica">
+            <option value="Numerico">
               Numérica
             </option>
-            <option value="categorico">
+            <option value="Categorica">
               Categórica
             </option>
           </Field>
@@ -447,7 +447,7 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-show="values.indicador_tipo === 'numerica'"
+          v-show="values.indicador_tipo === 'Numerico'"
           class="f1"
         >
           <label class="label">Casas decimais</label>
@@ -551,10 +551,10 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-if="values.indicador_tipo === 'categorico'"
+          v-if="values.indicador_tipo === 'Categorica'"
           class="f1 fb20em"
         >
-          <label class="label">Variavel <span class="tvermelho">*</span></label>
+          <label class="label">Variavel</label>
           <Field
             id="variavel_categoria_id"
             as="select"
