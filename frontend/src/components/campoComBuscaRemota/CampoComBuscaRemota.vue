@@ -145,7 +145,10 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import requestS from '@/helpers/requestS';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits([
+  'update:modelValue',
+  'itemSelecionado',
+]);
 
 const props = defineProps({
   modelValue: {
@@ -258,6 +261,9 @@ function toggleModal() {
 
 function selecionarItem(item) {
   itemSelecionado.value = item;
+
+  emit('itemSelecionado', item);
+
   toggleModal();
 }
 
