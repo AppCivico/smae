@@ -89,13 +89,7 @@ const rotasParaMenuSecundário = [
       'assuntosListar',
       'modalidadesListar',
       'fontesListar',
-    ],
-  },
-  {
-    título: 'Parlamentares',
-    rotas: [
       'partidosListar',
-      // 'bancadasListar',
     ],
   },
 ];
