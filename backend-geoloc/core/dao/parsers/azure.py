@@ -1,40 +1,25 @@
 from .handlers import attr_not_found
 from core.exceptions import AtributeNotFound
-from core.utils.geo import geojson_envelop
+from core.utils.geo import geojson_envelop, build_bbox_viewport, build_geom_from_points
 
 from typing import List
 
 class AddressParser:
-      
+
     @attr_not_found('address')
     def get_address(self, feature:dict)->dict:
 
-        if 'properties' in feature:
-
-            return feature['properties']['address']
-        
-        #no caso de ser flat o address é um atributo direto
         return feature['address']
 
     @attr_not_found('cidade')
     def get_city(self, address:dict)->str:
 
-        cidade = address.get('city') or address.get('town') or address.get('municipality')
-        if cidade is None:
-            raise AtributeNotFound(f'Atributo não encontrado: cidade: {address}' )
-
-        return cidade
-    
-    def get_bairro(self, address:dict)->str:
-
-        bairro = address.get('city_district') or address.get('suburb')
-        
-        return bairro
+        return address['municipality']
 
     @attr_not_found('state')
     def get_state(self, address:dict)->str:
 
-        return address['state']
+        return address['countrySubdivisionName']
 
     @attr_not_found('country')
     def get_country(self, address:dict)->str:
@@ -44,46 +29,74 @@ class AddressParser:
     @attr_not_found('country_code')
     def get_country_code(self, address:dict)->str:
 
-        return address['country_code']
+        return address['countryCode']
 
     def get_road(self, address:dict)->str:
 
-        rua = address.get('road')
-        return rua
-        
-            
+        return address.get('streetName')
+
     def get_number(self, address:dict)->str:
 
-        return address.get('house_number', None)
-    
-    def build_geometry_from_lon_lat(self, lon:float, lat:float)->dict:
-
-        return {'type' : 'Point', 'coordinates' : [lon, lat]}
+        return address.get('streetNumber', None)
 
     @attr_not_found('geometry')
     def get_geom(self, feature:dict)->dict:
 
+        position = feature['position']
+        if type(position) is str:
+            position_split = position.split(',')
+            position = {'lat' : float(position_split[0]), 'lon' :float(position_split[1])}
+        geom = build_geom_from_points(position)
 
-        geom = feature.get('geometry')
+        return geom
 
-        if geom is None:
-            feature['geometry'] = self.build_geometry_from_lon_lat(1, 2)
+    def build_viewport_from_weird_bbox(self, weird_bbox:dict)->dict:
 
-        return feature['geometry']
-            
         
+        y_max = weird_bbox['northEast'].split(',')[0]
+        y_min = weird_bbox['southWest'].split(',')[0]
+        x_max = weird_bbox['southWest'].split(',')[1]
+        x_min = weird_bbox['northEast'].split(',')[1]
+
+        viewport = {}
+        viewport['topLeftPoint'] = {'lat' : y_max,
+                                    'lon' : x_min}
+        viewport['btmRightPoint'] = {'lat' : y_min,
+                                    'lon' : x_max}
+        
+        return viewport
 
     @attr_not_found('bbox')
     def get_bbox(self, feature:dict)->dict:
+        
+        viewport = feature.get('viewport')
+        if viewport is None:
+            #no caso do reverse geocode vem uma bbox estranha que é um viewport na verdade
+            viewport = self.build_viewport_from_weird_bbox(feature['address']['boundingBox'])
 
-        return feature.get('bbox') or feature.get('boundingbox')
+        return build_bbox_viewport(viewport)
+
 
     @attr_not_found('tipo_endereco')
-    def get_osm_type(self, feature:dict)->dict:
+    def get_osm_type(self, feature:dict)->str:
 
-        #tenta pegar properties, se nao tiver, devolve o feature mesmo
-        prop = feature.get('properties', feature)
-        return prop['osm_type']
+        return feature.get('type') or feature['matchType']
+    
+
+    def get_cep(self, address:dict)->str:
+
+        # a informação do cep não vem sempre no Azure não dá para obrigar
+        # vai restringir muito os resultados
+        cep = address.get('extendedPostalCode')
+
+        return cep
+    
+    def get_bairro(self, address:dict)->str:
+        
+        #bairro não é obrigatório
+        bairro = address.get('neighbourhood', '')
+
+        return bairro
 
     def build_address_string(self, parsed_adress:dict)->str:
 
@@ -99,13 +112,6 @@ class AddressParser:
         
         return f"{parsed_adress['cidade']}, {parsed_adress['pais']}"
 
-
-    def get_cep(self, feature:dict)->dict:
-
-        cep = feature.get('postcode')
-        
-        return cep
-
     def parse_address(self, feature:dict)->dict:
 
         resp_address = self.get_address(feature)
@@ -113,11 +119,11 @@ class AddressParser:
         parsed_addres = {
             'rua' : self.get_road(resp_address),
             'cidade' : self.get_city(resp_address),
-            'bairro' : self.get_bairro(resp_address),
             'estado' : self.get_state(resp_address),
             'pais' : self.get_country(resp_address),
             'codigo_pais' : self.get_country_code(resp_address),
-            'cep' : self.get_cep(resp_address)
+            'cep' : self.get_cep(resp_address),
+            'bairro' : self.get_bairro(resp_address)
         }
 
         numero = self.get_number(resp_address)
@@ -127,13 +133,11 @@ class AddressParser:
         parsed_addres['string_endereco'] = self.build_address_string(parsed_addres)
 
         return parsed_addres
-    
 
     def build_feat_geojson(self, feature:dict)->dict:
 
         resp = {'type' : 'Feature'}
         resp['properties'] = self.parse_address(feature)
-        
         resp['geometry'] = self.get_geom(feature)
         resp['bbox'] = self.get_bbox(feature)
         #adicionando tipo de endereco às propriedades
@@ -144,24 +148,32 @@ class AddressParser:
     @attr_not_found('features')
     def get_features(self, resp:dict)->List[dict]:
 
-        return resp['features']
+        results = resp.get('results')
+        if not results:
+            resp['results'] = resp['addresses']
+
+        return resp['results']
 
 
     def parse_all_features(self, resp:dict)->List[dict]:
 
         features = self.get_features(resp)
 
-        return [self.build_feat_geojson(feat) for feat in features]
+        #a API da Azure devolve municipios inteiros, regioes etc.
+        #entao precisa fazer um filtro, porque é comum vir com outros atributos
+        parsed_results = []
+        for feat in features:
+            try:
+                parsed = self.build_feat_geojson(feat)
+                parsed_results.append(parsed)
+            except AtributeNotFound as e:
+                print(f'Feature fora do padrão: {feat}')
+                print(str(e))
+
+        return parsed_results
 
     def __call__(self, resp:dict)->List[dict]:
 
-        if 'features' not in resp:
-            #envelopa
-            resp['features']=[resp]
-        
         parsed_features = self.parse_all_features(resp)
-
+        print(parsed_features)
         return geojson_envelop(parsed_features, epsg_num=4326)
-
-
-

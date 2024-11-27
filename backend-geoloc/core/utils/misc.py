@@ -1,4 +1,9 @@
 import re
+import urllib.parse
+
+def url_encode(input_string):
+    return urllib.parse.quote(input_string)
+
 
 def check_cep(cep:str)->None:
 

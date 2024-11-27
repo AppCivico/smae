@@ -1,30 +1,22 @@
-from core.integrations import nomimatim_cep_search
-from .parsers.nominatim import AddressParser
-from typing import List
-
+from .geocoder import get_geocoder
 from .geosampa import geosampa_address_query
 from core.utils.geo import geojson_envelop
+
+from typing import List
+
 
 class CepSearch:
 
     def __init__(self):
 
-        self.nominatim = nomimatim_cep_search
-        self.nominatim_parser = AddressParser(street_level=False)
+        self.geocoder = get_geocoder()
         self.geosampa_query = geosampa_address_query
-
-    def nominatim_cep_search(self, cep:str)->List[dict]:
-
-        resp = self.nominatim(cep)
-        geojson_data = self.nominatim_parser(resp)
-
-        return geojson_data
     
     def is_sp(self, address:dict)->bool:
 
         test_city = address['properties']['cidade']=='São Paulo'
         test_state = address['properties']['estado']=='São Paulo'
-        test_country = address['properties']['codigo_pais']=='br'
+        test_country = address['properties']['codigo_pais'].lower()=='br'
 
         return test_city * test_state & test_country
 
@@ -53,10 +45,11 @@ class CepSearch:
 
         return address_data
     
-    def __call__(self, address:str, convert_to_wgs_84:bool=True, **camadas)->List[dict]:
+    def __call__(self, cep:str, convert_to_wgs_84:bool=True, **camadas)->List[dict]:
 
 
-        geoloc_resp = self.nominatim_cep_search(address)
+        geoloc_resp = self.geocoder.geocode_cep(cep)
+        print(geoloc_resp)
         self.filter_address_sp(geoloc_resp)
         nominatim_crs = geoloc_resp['crs']
         data = []

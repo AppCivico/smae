@@ -2,7 +2,7 @@ from core.integrations import geosampa
 from core.utils.geo import point_from_wgs_to_sirgas
 from ..parsers.geosampa_geojson import GeosampaGeoJsonParser
 from ..camadas_search import DetailCamada
-from ..convert_to_wgs_84 import WGS84_conversor
+from ..parsers.convert_to_wgs_84 import WGS84_conversor
 
 from core.schemas.camadas import CamadaParamInternal
 
