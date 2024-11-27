@@ -208,7 +208,7 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if (indicadorId || values.variavel_categoria_id) {
+    if (indicadorId || values.indicador_tipo === 'Categorica') {
       if (values.formula) {
         const er = await validadeFormula(values.formula);
         if (er) {
@@ -400,6 +400,25 @@ watch(() => props.group, () => {
             {{ errors.titulo }}
           </div>
         </div>
+        <div
+          v-if="indicadorId"
+          class="f2"
+        >
+          <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
+          <Field
+            id="indicador_tipo"
+            as="select"
+            name="indicador_tipo"
+            class="inputtext light"
+          >
+            <option value="Numerico">
+              Numérica
+            </option>
+            <option value="Categorica">
+              Categórica
+            </option>
+          </Field>
+        </div>
       </div>
       <div class="flex g2">
         <div class="f1">
@@ -428,7 +447,7 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-show="!values.variavel_categoria_id"
+          v-show="values.indicador_tipo === 'Numerico'"
           class="f1"
         >
           <label class="label">Casas decimais</label>
@@ -531,30 +550,26 @@ watch(() => props.group, () => {
             {{ errors.fim_medicao }}
           </div>
         </div>
-        <div class="f1 fb20em">
-          <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
+        <div
+          v-if="values.indicador_tipo === 'Categorica'"
+          class="f1 fb20em"
+        >
+          <label class="label">Variavel</label>
           <Field
             id="variavel_categoria_id"
             as="select"
             name="variavel_categoria_id"
             class="inputtext light"
           >
-            <option value="">
-              Numérica
-            </option>
-            <optgroup
-              v-if="variaveisCategoricasDisponiveis.length"
-              label="Categórica"
+            <option :value="null" />
+            <option
+              v-for="(variavel, index) in variaveisCategoricasDisponiveis"
+              :key="index"
+              :value="variavel.id"
+              :title="variavel.titulo"
             >
-              <option
-                v-for="(variavel, index) in variaveisCategoricasDisponiveis"
-                :key="index"
-                :value="variavel.id"
-                :title="variavel.titulo"
-              >
-                {{ variavel.titulo }}
-              </option>
-            </optgroup>
+              {{ variavel.titulo }}
+            </option>
           </Field>
         </div>
       </div>
@@ -694,7 +709,7 @@ watch(() => props.group, () => {
 
       <div
         v-if="indicadorId && !Variaveis[indicadorId]?.loading"
-        v-show="!values.variavel_categoria_id"
+        v-show="values.indicador_tipo === 'Numerico'"
       >
         <EditorDeFormula
           v-model="formula"
