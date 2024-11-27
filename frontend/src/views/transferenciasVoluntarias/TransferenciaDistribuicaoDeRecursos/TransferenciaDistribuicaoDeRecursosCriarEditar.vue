@@ -78,6 +78,8 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = nulificadorTotal(controlledValues);
 
   try {
+    cargaManipulada.id_transferencia = params.transferenciaId;
+
     let r;
     const msg = itemParaEdicao.value.id
       ? 'Dados salvos com sucesso!'
