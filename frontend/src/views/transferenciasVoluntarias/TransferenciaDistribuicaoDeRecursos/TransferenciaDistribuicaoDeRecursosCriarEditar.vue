@@ -50,7 +50,7 @@ const porcentagens = ref({
 });
 
 const itemParaEdicaoFormatado = computed(() => ({
-  valor_contrapartida: 0,
+  valor_contrapartida: Number(0).toFixed(2),
   ...itemParaEdicao.value,
   parlamentares: itemParaEdicao.value.parlamentares?.map((item) => ({
     ...item,
@@ -79,7 +79,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = nulificadorTotal(controlledValues);
 
   try {
-    cargaManipulada.id_transferencia = params.transferenciaId;
+    cargaManipulada.transferencia_id = Number(params.transferenciaId);
 
     let r;
     const msg = itemParaEdicao.value.id
