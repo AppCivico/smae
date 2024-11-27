@@ -129,7 +129,7 @@ export default {
                 título: () => {
                   const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
                   if (!distribuicaoRecursosStore.itemParaEdicao?.nome) {
-                    return 'Editar Recurso';
+                    return '';
                   }
 
                   return distribuicaoRecursosStore.itemParaEdicao.nome;

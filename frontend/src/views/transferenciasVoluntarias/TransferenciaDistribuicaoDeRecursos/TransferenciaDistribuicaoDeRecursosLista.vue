@@ -51,7 +51,7 @@
               <td>
                 {{ item.nome || '-' }}
               </td>
-              <td class="tc">
+              <td class="tr">
                 <SmaeLink
                   class="like-a__text"
                   arial-label="editar"
@@ -108,7 +108,7 @@
                     width="20"
                     height="20"
                   >
-                    <use xlink:href="#i_remove" />
+                    <use xlink:href="#i_waste" />
                   </svg>
                 </button>
               </td>
