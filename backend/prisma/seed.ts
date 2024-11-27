@@ -854,6 +854,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroClassificacao.editar',
             'CadastroClassificacao.inserir',
             'CadastroClassificacao.remover',
+            'CadastroClassificacao.listar',
             'TransfereGov.atualizar',
             'TransfereGov.listar',
             'TransfereGov.sincronizar',
