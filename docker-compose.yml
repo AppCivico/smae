@@ -152,6 +152,8 @@ services:
       GEOSAMPA_API_VERSION: "1.0.0"
       DISTANCIA_PADRAO_MTS_GEOSAMPA: "5"
       NAMES_CAMADAS_TTL_SECONDS: "21600"
+      AZURE_KEY: "${AZURE_KEY}"
+      USE_AZURE: "${USE_AZURE}"
     networks:
       #- api_geoloc
       - smae_network
