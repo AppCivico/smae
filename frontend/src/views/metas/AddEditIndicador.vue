@@ -709,7 +709,7 @@ watch(() => props.group, () => {
 
       <div
         v-if="indicadorId && !Variaveis[indicadorId]?.loading"
-        v-show="values.indicador_tipo === 'numerica'"
+        v-show="values.indicador_tipo === 'Numerico'"
       >
         <EditorDeFormula
           v-model="formula"
