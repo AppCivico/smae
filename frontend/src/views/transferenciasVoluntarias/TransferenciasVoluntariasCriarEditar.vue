@@ -134,17 +134,17 @@ function iniciar() {
   partidoStore.buscarTudo();
 }
 
-function sugerirCamposDoMandato(parlamentarId, idx) {
+function sugerirCargoEPartido(idx, parlamentar) {
   const {
     cargo_mais_recente: cargoMaisRecente,
-    partido: { id: partidoId } = {},
-  } = parlamentaresPorId.value[parlamentarId];
+    partido: { id: partidoMaisRecente },
+  } = parlamentar;
 
   if (cargoMaisRecente) {
     setFieldValue(`parlamentares[${idx}].cargo`, cargoMaisRecente);
   }
-  if (partidoId) {
-    setFieldValue(`parlamentares[${idx}].partido_id`, partidoId);
+  if (partidoMaisRecente) {
+    setFieldValue(`parlamentares[${idx}].partido_id`, partidoMaisRecente);
   }
 }
 
@@ -473,6 +473,7 @@ watch(itemParaEdicao, (novosValores) => {
                 chave-de-valor="id"
                 chave-de-exibicao="nome_popular"
                 @update:model-value="handleChange"
+                @item-selecionado="sugerirCargoEPartido(idx, $event)"
               >
                 <template #TableHeader>
                   <th> Nome </th>
@@ -520,7 +521,7 @@ watch(itemParaEdicao, (novosValores) => {
                 :key="item"
                 :value="item.id"
               >
-                {{ item.nome }}
+                {{ item.sigla }}
               </option>
             </Field>
             <ErrorMessage
