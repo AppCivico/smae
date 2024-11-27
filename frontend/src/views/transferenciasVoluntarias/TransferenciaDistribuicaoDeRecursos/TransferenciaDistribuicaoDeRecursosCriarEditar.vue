@@ -50,6 +50,7 @@ const porcentagens = ref({
 });
 
 const itemParaEdicaoFormatado = computed(() => ({
+  valor_contrapartida: 0,
   ...itemParaEdicao.value,
   parlamentares: itemParaEdicao.value.parlamentares?.map((item) => ({
     ...item,
