@@ -49,7 +49,7 @@ export default function useCicloAtualizacao() {
     if (fase.value === 'cadastro') {
       return {
         salvar: salvarLabel,
-        salvarESubmeter: 'Salvar e enviar para Avaliação',
+        salvarESubmeter: 'Salvar e enviar para conferência',
       };
     }
 
