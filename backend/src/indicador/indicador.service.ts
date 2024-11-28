@@ -566,11 +566,6 @@ export class IndicadorService {
                         if (formula.indexOf(referencia) === -1)
                             throw new HttpException('A referência da variável da categoria deve estar na formula', 400);
                     }
-                    if (dto.variavel_categoria_id === null && dto.indicador_tipo == 'Numerico')
-                        throw new HttpException(
-                            'Indicadores do tipo Numérico não podem ter uma variável de categoria',
-                            400
-                        );
                 }
 
                 const indicador = await prismaTx.indicador.update({
