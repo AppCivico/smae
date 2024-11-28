@@ -165,12 +165,12 @@ export class PainelEstrategicoService {
         WITH projeto_counts AS (
             SELECT
                 CASE
-                    WHEN p.ordem_painel IS NOT NULL THEN pe.descricao
+                    WHEN pe.ordem_painel IS NOT NULL THEN pe.descricao
                     WHEN p.projeto_etapa_id IS NULL THEN 'Sem Informação'
                     ELSE 'Outros'
                 END as etapa,
                 CASE
-                    WHEN p.ordem_painel IS NOT NULL THEN 2
+                    WHEN pe.ordem_painel IS NOT NULL THEN 2
                     WHEN p.projeto_etapa_id IS NULL THEN 0
                     ELSE 1
                 END as ordem,
