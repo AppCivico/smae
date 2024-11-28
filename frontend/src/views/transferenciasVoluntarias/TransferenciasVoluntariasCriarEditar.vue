@@ -473,7 +473,7 @@ watch(itemParaEdicao, (novosValores) => {
                 chave-de-valor="id"
                 chave-de-exibicao="nome_popular"
                 texto-do-botao="Selecionar"
-                texto-de-instrucoes="Palavra chave"
+                texto-de-instrucoes="Pesquisar por parlamentar ou partido"
                 @update:model-value="handleChange"
                 @item-selecionado="sugerirCargoEPartido(idx, $event)"
               >
