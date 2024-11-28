@@ -56,7 +56,7 @@ const porcentagens = ref({
 const itemParaEdicaoFormatado = computed(() => {
   if (!itemParaEdicao.value.id) {
     return {
-      valor_contrapartida: Number(0).toFixed(2),
+      valor_contrapartida: Big(0).toFixed(2),
       parlamentares: transferenciaAtual.value.parlamentares?.map((item) => ({
         ...item,
         nome: item.parlamentar?.nome_popular,
