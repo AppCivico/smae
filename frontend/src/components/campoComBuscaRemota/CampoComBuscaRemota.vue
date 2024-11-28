@@ -37,7 +37,7 @@
     <button
       id="busca"
       type="button"
-      class="btn"
+      class="btn bgnone outline tcprimary"
       @click="toggleModal"
     >
       {{ itemSelecionado ? 'Selecionar' : props.textoDoBotao }}
@@ -68,7 +68,7 @@
           autocomplete="off"
         >
         <button
-          class="btn bgnone outline tcprimary"
+          class="btn"
           type="submit"
           :aria-disabled="carregando"
         >
@@ -177,7 +177,7 @@ const props = defineProps({
   },
   textoDeInstrucoes: {
     type: String,
-    default: 'Selecione uma opção',
+    default: 'Pesquisar por',
   },
   textoDoBotao: {
     type: String,
