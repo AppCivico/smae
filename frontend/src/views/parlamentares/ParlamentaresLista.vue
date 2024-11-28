@@ -1,12 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import LocalFilter from '@/components/LocalFilter.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const parlamentarStore = useParlamentaresStore();
 const {
@@ -69,7 +69,7 @@ parlamentarStore.buscarTudo();
     <thead>
       <tr>
         <th>
-          Nome
+          Nome de urna
         </th>
         <th>
           Partido
