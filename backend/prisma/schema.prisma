@@ -1048,6 +1048,8 @@ model ProjetoEtapa {
 
     descricao String
 
+    ordem_painel Int? /// Controla se deve ou não aparecer no painel estratégico e a ordem de exibição
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?

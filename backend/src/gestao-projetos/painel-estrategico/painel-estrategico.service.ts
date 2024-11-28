@@ -165,12 +165,12 @@ export class PainelEstrategicoService {
         WITH projeto_counts AS (
             SELECT
                 CASE
-                    WHEN p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) THEN pe.descricao
+                    WHEN p.ordem_painel IS NOT NULL THEN pe.descricao
                     WHEN p.projeto_etapa_id IS NULL THEN 'Sem Informação'
                     ELSE 'Outros'
                 END as etapa,
                 CASE
-                    WHEN p.projeto_etapa_id in (1, 2, 3, 4, 5, 6, 7) THEN 2
+                    WHEN p.ordem_painel IS NOT NULL THEN 2
                     WHEN p.projeto_etapa_id IS NULL THEN 0
                     ELSE 1
                 END as ordem,
@@ -192,17 +192,12 @@ export class PainelEstrategicoService {
             SELECT
                 me.descricao as etapa,
                 2 as ordem,
-                0 as quantidade
+                0 as quantidade,
+                me.ordem_painel
             FROM projeto_etapa me
-            WHERE me.id in (1, 2, 3, 4, 5, 6, 7)
-
+            WHERE me.ordem_painel IS NOT NULL
             UNION ALL
-
-            SELECT 'Sem Informação', 0, 0
-
-            UNION ALL
-
-            SELECT 'Outros', 1, 0
+            SELECT 'Sem Informação', 0, 0, NULL
         )
         SELECT
             COALESCE(pc.etapa, a.etapa) as etapa,
@@ -210,10 +205,13 @@ export class PainelEstrategicoService {
             COALESCE(pc.ordem, a.ordem) as ordem
         FROM all_stages a
         LEFT JOIN projeto_counts pc ON pc.etapa = a.etapa
+        LEFT JOIN projeto_etapa pe ON pe.descricao = COALESCE(pc.etapa, a.etapa)
         ORDER BY
             COALESCE(pc.ordem, a.ordem) DESC,
+            COALESCE(pe.ordem_painel, 999999),
             COALESCE(pc.etapa, a.etapa);
         `;
+
         const results = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
         return results.filter((r) => !(r.etapa === 'Outros' && r.quantidade === 0));
     }
