@@ -63,7 +63,7 @@ const listaDeAtualizadas = computed(() => {
         <span
           class="block mb1 bgc50 br6 p1 g1 flex center"
         >
-          <template v-if="perfil !== 'ponto_focal'">
+          <template v-if="perfil !== 'ponto_focal' && meta.variáveis.length">
             <span
               v-if="meta.analiseQualitativaEnviada !== null"
               class="f0 tipinfo"
@@ -105,6 +105,7 @@ const listaDeAtualizadas = computed(() => {
             </span>
           </template>
           <router-link
+            v-if="meta.variáveis.length"
             :to="{
               name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
               params: {
@@ -114,6 +115,7 @@ const listaDeAtualizadas = computed(() => {
           >
             {{ meta.código }} - {{ meta.título }}
           </router-link>
+          <span v-else>{{ meta.código }} - {{ meta.título }}</span>
           <small
             v-if="meta.atualizadoEm"
             v-ScrollLockDebug
