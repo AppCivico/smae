@@ -40,7 +40,7 @@
       class="btn"
       @click="toggleModal"
     >
-      {{ itemSelecionado ? 'Alterar' : props.textoDoBotão }}
+      {{ itemSelecionado ? 'Selecionar' : props.textoDoBotao }}
     </button>
   </div>
 
@@ -53,7 +53,7 @@
         for="palavra-chave"
         class="label"
       >
-        {{ props.textoDeInstruções }}
+        {{ props.textoDeInstrucoes }}
       </label>
       <div class="flex g1 mb2">
         <input
@@ -68,7 +68,7 @@
           autocomplete="off"
         >
         <button
-          class="btn"
+          class="btn bgnone outline tcprimary"
           type="submit"
           :aria-disabled="carregando"
         >
@@ -175,11 +175,11 @@ const props = defineProps({
     type: Number,
     default: 2,
   },
-  textoDeInstruções: {
+  textoDeInstrucoes: {
     type: String,
     default: 'Selecione uma opção',
   },
-  textoDoBotão: {
+  textoDoBotao: {
     type: String,
     default: 'Selecionar',
   },

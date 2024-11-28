@@ -1871,7 +1871,7 @@ export const nota = object({
 
 export const parlamentar = object({
   nome_popular: string()
-    .label('Nome')
+    .label('Nome de urna')
     .min(1)
     .max(250)
     .required(),

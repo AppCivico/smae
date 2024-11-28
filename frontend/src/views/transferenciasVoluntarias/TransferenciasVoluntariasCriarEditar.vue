@@ -472,16 +472,20 @@ watch(itemParaEdicao, (novosValores) => {
                 chave-de-busca="palavra_chave"
                 chave-de-valor="id"
                 chave-de-exibicao="nome_popular"
+                texto-do-botao="Selecionar"
+                texto-de-instrucoes="Palavra chave"
                 @update:model-value="handleChange"
                 @item-selecionado="sugerirCargoEPartido(idx, $event)"
               >
                 <template #TableHeader>
+                  <th> Nome de urna </th>
                   <th> Nome </th>
                   <th> Partido </th>
                 </template>
 
                 <template #TableData="{item}">
                   <td>{{ item.nome_popular }}</td>
+                  <td>{{ item.nome }}</td>
                   <td>{{ item.partido.sigla }}</td>
                 </template>
 

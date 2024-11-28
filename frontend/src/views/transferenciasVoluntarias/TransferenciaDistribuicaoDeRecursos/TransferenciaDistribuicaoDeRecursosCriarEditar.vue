@@ -552,6 +552,12 @@ onUnmounted(() => {
               type="hidden"
               class="inputtext light"
             />
+            <Field
+              v-if="itemParaEdicao.id"
+              :name="`parlamentares[${idx}].id`"
+              type="hidden"
+              class="inputtext light"
+            />
 
             <div class="f1 fb15em">
               <LabelFromYup
