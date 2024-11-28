@@ -1353,6 +1353,13 @@ export class DistribuicaoRecursoService {
                                 );
                             }
                         } else {
+                            // Verificando se o parlamentar já está na distribuição
+                            const exists = updated.parlamentares.find(
+                                (e) => e.parlamentar_id == relParlamentar.parlamentar_id
+                            );
+                            if (exists)
+                                throw new HttpException('parlamentar_id| Parlamentar já está na distribuição.', 400);
+
                             operations.push(
                                 prismaTx.distribuicaoParlamentar.create({
                                     data: {
