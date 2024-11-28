@@ -1,9 +1,11 @@
 {
     "dependencies": {
         "@types/node": "^20.14.12",
+        "@types/string-similarity": "^4.0.2",
         "axios": "^1.7.2",
         "decimal.js": "^10.4.3",
-        "duckdb-async": "^1.0.0"
+        "duckdb-async": "^1.0.0",
+        "string-similarity": "^4.0.4"
     },
     "name": "importacao-obras",
     "module": "app.ts",

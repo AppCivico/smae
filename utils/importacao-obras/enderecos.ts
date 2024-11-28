@@ -21,7 +21,8 @@ interface ProcessingState {
     lastProcessedId?: number;
 }
 
-const API_URL = 'https://homol-smae-api.appcivico.com/api/geolocalizar';
+//const API_URL = 'https://homol-smae-api.appcivico.com/api/geolocalizar';
+const API_URL = 'http://localhost:3002/api/geolocalizar';
 const API_TOKEN = process.env.API_TOKEN;
 if (!API_TOKEN) {
     console.error('API_TOKEN environment variable is required');
@@ -53,13 +54,19 @@ async function saveState(state: ProcessingState): Promise<void> {
 }
 
 async function processAddress(record: AddressRecord, state: ProcessingState) {
+    if (
+        state.processed[record.projeto_id] &&
+        Array.isArray(state.processed[record.projeto_id].response) &&
+        state.processed[record.projeto_id].response.length == 0
+    ) {
+        delete state.processed[record.projeto_id];
+    }
     // Skip if already processed
     if (
         state.processed[record.projeto_id] &&
-
-        (state.processed[record.projeto_id].original.endereco == 'RUA JANE VANINE CAPOZI, S/N')
-        //state.processed[record.projeto_id].response &&
-        //!state.processed[record.projeto_id].error
+        //state.processed[record.projeto_id].original.endereco == 'RUA JANE VANINE CAPOZI, S/N'
+        state.processed[record.projeto_id].response &&
+        !state.processed[record.projeto_id].error
     ) {
         return;
     }
@@ -67,6 +74,37 @@ async function processAddress(record: AddressRecord, state: ProcessingState) {
     try {
         let cleanAddress = record.endereco.replace(/\s*\([^)]*\)/g, '');
         cleanAddress = record.endereco.replace(' S/N', '');
+        // if the address has just one ',' we remove it
+        if (cleanAddress.match(/,\s*/g)?.length === 1) {
+            cleanAddress = cleanAddress.replace(/,\s*/, '');
+        }
+
+        if ((cleanAddress.match(/,\s*/g)?.length ?? 0) > 1) {
+            console.log(`Address with more than one comma: ${record.endereco}`);
+            return;
+        }
+
+        if (cleanAddress.length > 100) {
+            console.log(`Address too long: ${record.endereco}`);
+            return;
+        }
+
+        // multiple ocorrences of 'RUA' in the address
+        if ((cleanAddress.match(/RUA/gi)?.length ?? 0) > 1) {
+            console.log(`Address with more than one 'RUA': ${record.endereco}`);
+            return;
+        }
+        // multiple ocorrences of 'AVENIDA' in the address
+        if ((cleanAddress.match(/AVENIDA/gi)?.length ?? 0) > 1) {
+            console.log(`Address with more than one 'AVENIDA': ${record.endereco}`);
+            return;
+        }
+        // "V[aá]rias regi" in the address
+        if (cleanAddress.match(/V[aá]rias regi/gi)) {
+            console.log(`Address with 'VÁRIAS REGIÕES': ${record.endereco}`);
+            return;
+        }
+
         if (cleanAddress !== record.endereco) {
             console.log(`Cleaning address: ${record.endereco} -> ${cleanAddress}`);
         }
