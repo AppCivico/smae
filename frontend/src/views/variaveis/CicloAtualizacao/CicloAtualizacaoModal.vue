@@ -140,7 +140,7 @@ onMounted(async () => {
 const conteudoEscolhido = computed<ConteudoOpcao>(() => {
   let tituloBase = 'Adicionar valor realizado';
   if (fase.value === 'aprovacao') {
-    tituloBase = 'Fase de Aprovação';
+    tituloBase = 'Fase de Conferência';
   } else if (fase.value === 'liberacao') {
     tituloBase = 'Fase de Liberação';
   }

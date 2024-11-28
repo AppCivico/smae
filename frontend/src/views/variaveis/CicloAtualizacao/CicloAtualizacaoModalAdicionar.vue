@@ -69,10 +69,12 @@
           class="mt2 formulario formulario--aprovacao"
         >
           <div class="formulario__item">
-            <LabelFromYup
-              name="analise_qualitativa_aprovador"
-              :schema="schema"
-            />
+            <label
+              class="label"
+              for="analise_qualitativa_aprovador"
+            >
+              Análise qualitativa da conferência
+            </label>
 
             <Field
               class="inputtext light f1"
