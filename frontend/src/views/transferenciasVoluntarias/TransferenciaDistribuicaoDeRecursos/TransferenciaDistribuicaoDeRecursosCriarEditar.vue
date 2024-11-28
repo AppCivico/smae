@@ -166,7 +166,7 @@ function atualizarValorTotal(fieldName, newValue) {
   camposModificados.value = true;
   const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
   const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
-  const total = (valor + valorContraPartida).toFixed(2);
+  const total = Big(valor + valorContraPartida).toFixed(2);
   setFieldValue('valor_total', total);
 
   calcularValorCusteio(fieldName);
