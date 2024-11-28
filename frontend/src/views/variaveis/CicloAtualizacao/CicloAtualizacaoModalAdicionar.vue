@@ -69,13 +69,10 @@
           class="mt2 formulario formulario--aprovacao"
         >
           <div class="formulario__item">
-            <label
-              class="label"
-              for="analise_qualitativa_aprovador"
-            >
-              Análise qualitativa da conferência
-            </label>
-
+            <LabelFromYup
+              name="analise_qualitativa_aprovador"
+              :schema="schema"
+            />
             <Field
               class="inputtext light f1"
               as="textarea"
@@ -254,11 +251,11 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
 
-import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 

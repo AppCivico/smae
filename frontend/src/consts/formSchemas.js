@@ -73,6 +73,7 @@ addMethod(string, 'nullableOuVazio', function _() {
     .transform((v) => (v === '' ? null : v));
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(date, 'nullableOuVazio', function _() {
   return this
     .nullable()
@@ -4168,7 +4169,7 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
 
   if (posicao >= 2) {
     schemaCampos.analise_qualitativa_aprovador = string()
-      .label('análise qualitativa do aprovador')
+      .label('análise qualitativa da conferência')
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
