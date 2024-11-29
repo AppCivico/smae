@@ -91,7 +91,16 @@ const projetoFormatado = (codigo, nome) => {
             :key="index"
           >
             <td class="tl">
-              {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
+              <router-link
+                :to="{
+                  name: 'projetosResumo',
+                  params: {
+                    projetoId: projeto.id
+                  }
+                }"
+              >
+                {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
+              </router-link>
             </td>
             <td class="tl">
               {{ projeto.secretaria?.codigo || ' - ' }}
