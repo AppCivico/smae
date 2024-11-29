@@ -1688,6 +1688,8 @@ export class DistribuicaoRecursoService {
                     numero: true,
                 },
             });
+            if (tarefasExistentes.length == 0)
+                throw new Error('Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.');
 
             let tarefa_pai_id: number | undefined;
             let numero: number = 1;

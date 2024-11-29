@@ -76,6 +76,7 @@ export class TarefaService {
             const create = await this.prisma.tarefaCronograma.create({
                 data: {
                     projeto_id: dto.projeto_id,
+                    criado_em: new Date(Date.now()),
                     criado_por: user.id,
                 },
                 select: { id: true },
@@ -95,6 +96,7 @@ export class TarefaService {
             const create = await this.prisma.tarefaCronograma.create({
                 data: {
                     transferencia_id: dto.transferencia_id,
+                    criado_em: new Date(Date.now()),
                     criado_por: user.id,
                 },
                 select: { id: true },

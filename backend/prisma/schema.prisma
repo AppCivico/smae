@@ -1048,6 +1048,8 @@ model ProjetoEtapa {
 
     descricao String
 
+    ordem_painel Int? /// Controla se deve ou não aparecer no painel estratégico e a ordem de exibição
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -4166,6 +4168,8 @@ model Tarefa {
     // formula: soma (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
     percentual_concluido Float?
 
+    criado_em DateTime? @default(now())
+
     removido_em  DateTime?
     removido_por Int?
 
@@ -5285,6 +5289,8 @@ model Parlamentar {
     uf_nascimento ParlamentarUF?
 
     cpf String?
+
+    vetores_busca Unsupported("tsvector")? @default(dbgenerated())
 
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
