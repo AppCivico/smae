@@ -1,6 +1,4 @@
 <script setup>
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -37,10 +35,6 @@ import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-
-const opcoesFormatacaoCampoData = {
-  format: 'MMM/yyyy',
-};
 
 const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
@@ -715,35 +709,13 @@ onUnmounted(() => {
           />
           <Field
             v-if="!variavelId"
-            v-slot="{ field, value, handleChange }"
             name="inicio_medicao"
-          >
-            <VueDatePicker
-              v-bind="field"
-              :model-value="value"
-              cancel-text="Cancelar"
-              select-text="Selecionar"
-              :text-input="opcoesFormatacaoCampoData"
-              hide-input-icon
-              month-picker
-              auto-apply
-              locale="pt-br"
-              :enable-time-picker="false"
-              :clearable="true"
-              model-type="yyyy-MM-dd"
-              @update:model-value="handleChange"
-            >
-              <template #dp-input="{ value: valor }">
-                <input
-                  type="text"
-                  class="inputtext light mb1"
-                  :class="{ error: errors.inicio_medicao }"
-                  :value="valor"
-                  autocomplete="off"
-                >
-              </template>
-            </VueDatePicker>
-          </Field>
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.inicio_medicao }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('inicio_medicao', $v || null); }"
+          />
 
           <input
             v-else
@@ -765,35 +737,13 @@ onUnmounted(() => {
             :schema="schema"
           />
           <Field
-            v-slot="{ field, value, handleChange }"
             name="fim_medicao"
-          >
-            <VueDatePicker
-              v-bind="field"
-              :model-value="value"
-              cancel-text="Cancelar"
-              select-text="Selecionar"
-              :text-input="opcoesFormatacaoCampoData"
-              hide-input-icon
-              month-picker
-              auto-apply
-              locale="pt-br"
-              :enable-time-picker="false"
-              :clearable="true"
-              model-type="yyyy-MM-dd"
-              @update:model-value="handleChange"
-            >
-              <template #dp-input="{ value: valor }">
-                <input
-                  type="text"
-                  class="inputtext light mb1"
-                  :class="{ error: errors.fim_medicao }"
-                  :value="valor"
-                  autocomplete="off"
-                >
-              </template>
-            </VueDatePicker>
-          </Field>
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.fim_medicao }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('fim_medicao', $v || null); }"
+          />
 
           <ErrorMessage
             class="error-msg"
