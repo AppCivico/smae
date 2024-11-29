@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DiretorioDto, DiretorioItemDto, FilterDiretorioDto } from './dto/diretorio.dto';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 
 type DiretorioFields = {
     projeto_id?: number | null;
@@ -11,7 +12,10 @@ type DiretorioFields = {
 
 @Injectable()
 export class UploadDiretorioService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
 
     private async createOrGetDirectory(
         createdDirectories: Set<string>,
@@ -106,6 +110,11 @@ export class UploadDiretorioService {
     }
 
     async listAll(filters: FilterDiretorioDto): Promise<DiretorioItemDto[]> {
+        const desativado = await this.smaeConfigService.getConfig('DESATIVA_DIRETORIOS_FISICOS');
+        if (desativado) {
+            return [];
+        }
+
         this.verificaMutualidade(filters);
 
         const linhas = await this.prisma.diretorio.findMany({
