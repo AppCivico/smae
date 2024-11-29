@@ -6,17 +6,14 @@ from core.dao import listar_camadas, detalhar_camada
 from core.dao import lat_long_geosampa, nomes_camadas
 from core.schemas.point import PointResponse, PointSearch
 from core.schemas.camadas import CamadaBasico, DetalhesCamada, CamadaParam
-
+from core.utils.misc import check_camada_exists
 from core.exceptions import OutofBounds
 
 
 
 app = APIRouter()
 
-def check_camada_exists(layer_name:str)->None:
 
-    if layer_name not in nomes_camadas:
-        raise HTTPException(status_code=404, detail=f"Camada {layer_name.replace('geoportal:', '')} não encontrada")
 
 @app.get('/camadas_geosampa', tags=['geosampa'])
 async def list_camadas()->List[CamadaBasico]:
@@ -42,7 +39,7 @@ async def integracao_geosampa_point(search_point:PointSearch)->PointResponse:
     if camadas:
         camadas_geosampa = {}
         for camada in camadas:
-            check_camada_exists(camada.layer_name)
+            check_camada_exists(camada.layer_name, nomes_camadas)
             camadas_geosampa[camada.alias] = camada
     try:
         return lat_long_geosampa(x, y, **camadas_geosampa)

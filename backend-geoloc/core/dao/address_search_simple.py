@@ -1,6 +1,6 @@
 from .geocoder import get_geocoder
 from typing import List
-
+from config import MAX_ADDRESSES
 from core.utils.geo import geojson_envelop
 
 class AddresSearchSimple:
@@ -22,13 +22,18 @@ class AddresSearchSimple:
 
         in_city = [add for add in address_geojson['features']
                 if self.is_sp(add)]
-        address_geojson['features'] = in_city    
+        address_geojson['features'] = in_city
+
+    def limit_response(self, address_geojson)->List[dict]:
+
+        address_geojson['features'] = address_geojson['features'][:MAX_ADDRESSES]   
     
     def __call__(self, address:str)->List[dict]:
 
    
         geocode_resp = self.geocoder.geocode(address)
         self.filter_address_sp(geocode_resp)
+        self.limit_response(geocode_resp)
 
         return geocode_resp
             

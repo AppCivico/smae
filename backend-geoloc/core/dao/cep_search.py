@@ -1,7 +1,7 @@
 from .geocoder import get_geocoder
 from .geosampa import geosampa_address_query
 from core.utils.geo import geojson_envelop
-
+from config import MAX_ADDRESSES
 from typing import List
 
 
@@ -54,7 +54,9 @@ class CepSearch:
         nominatim_crs = geoloc_resp['crs']
         data = []
         #arrumar o endereco para ficar geojson
-        for add in geoloc_resp['features']:
+        for i, add in enumerate(geoloc_resp['features']):
+            if i >= MAX_ADDRESSES:
+                    break
             data.append(self.format_address_data(add, nominatim_crs, convert_to_wgs_84, **camadas))
 
         return data

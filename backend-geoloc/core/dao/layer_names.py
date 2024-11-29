@@ -1,6 +1,7 @@
 import time
 from .camadas_search import ListCamadas
 from config import NAMES_CAMADAS_TTL_SECONDS
+from typing import List
 
 class NamesCamadas:
 
@@ -39,3 +40,8 @@ class NamesCamadas:
     def __contains__(self, camada_name:str):
 
         return self.check_camada_name_ttl(camada_name)
+
+    @property
+    def camadas(self)->List[str]:
+
+        return list(self.camada_names)

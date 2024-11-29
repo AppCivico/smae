@@ -4,15 +4,11 @@ from typing import List
 from core.exceptions import AtributeNotFound, OutofBounds
 from core.dao import buscar_endereco, buscar_endereco_simples, buscar_cep, nomes_camadas, gelocalizacao_reversa
 from core.schemas.address import AdressSearch, AdressSearchParameters, CepSearchParameters, GeoJsonEndereco
-
+from core.utils.misc import check_camada_exists
 
 
 app = APIRouter()
 
-def check_camada_exists(layer_name:str)->None:
-
-    if layer_name not in nomes_camadas:
-        raise HTTPException(status_code=404, detail=f"Camada {layer_name.replace('geoportal:', '')} não encontrada")
 
 @app.post('/geolocalizar_endereco', tags=['geolocalizacao'])
 async def geolocalizar_endereco(search_endereco:AdressSearchParameters)->List[AdressSearch]:
@@ -28,7 +24,7 @@ async def geolocalizar_endereco(search_endereco:AdressSearchParameters)->List[Ad
     if camadas:
         camadas_geosampa = {}
         for camada in camadas:
-            check_camada_exists(camada.layer_name)
+            check_camada_exists(camada.layer_name, nomes_camadas)
             camadas_geosampa[camada.alias] = camada
     else:
         camadas_geosampa={}
@@ -53,7 +49,7 @@ async def geolocalizar_endereco(search_cep:CepSearchParameters)->List[AdressSear
     if camadas:
         camadas_geosampa = {}
         for camada in camadas:
-            check_camada_exists(camada.layer_name)
+            check_camada_exists(camada.layer_name, nomes_camadas)
             camadas_geosampa[camada.alias] = camada
     else:
         camadas_geosampa={}

@@ -2,7 +2,7 @@ from requests import Session, Response
 
 from core.decorators.response_parsing import json_decode_error_handling
 from .query_builder import QueryBuilder
-
+from core.utils.misc import url_encode
 
 
 class AzureMapsAdress:

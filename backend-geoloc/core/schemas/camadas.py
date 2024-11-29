@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator, field_validator
 from typing import List, Optional, Union
 from config import GEOM_TYPES
 from config import DISTANCIA_PADRAO_MTS_GEOSAMPA
+from config import GEOSAMPA_LAYER_PREFIX
 
 
 class CamadaBasico(BaseModel):
@@ -24,8 +25,8 @@ class CamadaBasico(BaseModel):
     def remove_geoportal(cls, value):
 
         value = str(value)
-        if value.startswith('geoportal:'):
-            value = value.replace(r'geoportal:', '')
+        if value.startswith(GEOSAMPA_LAYER_PREFIX):
+            value = value.replace(GEOSAMPA_LAYER_PREFIX, '')
         
         return value
     
@@ -61,8 +62,8 @@ class CamadaParam(BaseModel):
     def validar_layer_name(cls, value)->str:
 
         value = str(value)
-        if not value.startswith('geoportal:'):
-            value = f'geoportal:{value}'
+        if not value.startswith(GEOSAMPA_LAYER_PREFIX):
+            value = f'{GEOSAMPA_LAYER_PREFIX}{value}'
         
         return value
 
