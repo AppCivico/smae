@@ -445,7 +445,10 @@ onUnmounted(() => {
             :lista-de-items="listaDeAssuntos"
             :lista-de-agrupadores="listaDeCategorias"
             :logica-mapeamento-de-opcoes="logicaMapeamentoDeOpcoesDeAssunto"
+            :class="{ error: erroDeAssuntos }"
             @update:model-value="onChange"
+            @aria-busy="chamadasPendentesDeAssuntos.lista
+              || chamadasPendentesDeAssuntos.categorias"
           />
         </Field>
       </div>
