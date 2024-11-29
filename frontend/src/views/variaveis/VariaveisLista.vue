@@ -1,7 +1,6 @@
 <script setup>
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
@@ -112,7 +111,7 @@ watchEffect(() => {
 
     <template #finalLinhaVariavel="{ variavel }">
       <td>
-        <smae-link
+        <SmaeLink
           type="button"
           class="tipinfo tprimary like-a__text"
           :to="{ name: `.variaveisResumo`, params: { variavelId: variavel.id } }"
@@ -123,7 +122,7 @@ watchEffect(() => {
             height="20"
           ><use xlink:href="#i_eye" /></svg>
           <div>Resumo da variável</div>
-        </smae-link>
+        </SmaeLink>
       </td>
 
       <td>
