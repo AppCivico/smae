@@ -148,7 +148,7 @@ services:
       STATE: "Sao Paulo"
       COUNTRY_ISO: "BR"
       NOMINATIM_EMAIL: "${NOMINATIM_EMAIL}"
-      GEOSAMPA_WFS_DOMAIN: "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/ows"
+      GEOSAMPA_WFS_DOMAIN: "https://geoserver.slui.dev/geoserver/slui/ows"
       GEOSAMPA_API_VERSION: "1.0.0"
       DISTANCIA_PADRAO_MTS_GEOSAMPA: "5"
       NAMES_CAMADAS_TTL_SECONDS: "21600"
