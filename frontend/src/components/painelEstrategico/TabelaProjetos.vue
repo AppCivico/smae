@@ -51,7 +51,7 @@ const projetoFormatado = (codigo, nome) => {
       <thead>
         <tr>
           <th class="tl">
-            Nome do Projeto bonito
+            Nome do Projeto
           </th>
           <th class="tl">
             Secretaria
