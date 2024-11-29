@@ -990,7 +990,10 @@ export class PessoaService {
         const orgaoAntigo = self.pessoa_fisica.orgao_id;
         const orgaoAntigoStr = `órgão antigo ID ${orgaoAntigo}`;
 
-        const curActivePdm = await prismaTx.pdm.findFirst({ where: { ativo: true }, select: { id: true } });
+        const curActivePdm = await prismaTx.pdm.findFirst({
+            where: { ativo: true, tipo: 'PDM' },
+            select: { id: true },
+        });
         if (curActivePdm) {
             const curResp = await this.pRespMetaService.buscaMetas(self.id, curActivePdm.id, prismaTx);
             if (curResp.length) {
