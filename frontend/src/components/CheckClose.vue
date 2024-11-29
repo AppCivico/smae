@@ -1,4 +1,5 @@
 <script setup>
+import prepararRotaDeEscape from '@/helpers/prepararRotaDeEscape';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useRoute, useRouter } from 'vue-router';
@@ -38,16 +39,10 @@ async function checkClose() {
 
   let caminhoParaSaída = '';
 
-  const rotaDeEscape = props?.rotaDeEscape || route.meta?.rotaDeEscape;
+  const rotaDeEscape = prepararRotaDeEscape(route, props?.rotaDeEscape);
 
   if (rotaDeEscape) {
-    const propriedadesDaRota = {
-      params: route.params,
-      query: route.query,
-      ...(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape),
-    };
-
-    caminhoParaSaída = router.resolve(propriedadesDaRota)?.fullPath
+    caminhoParaSaída = router.resolve(rotaDeEscape)?.fullPath
       || route.matched[parentRoutePosition].path;
   } else {
     // Note: params are ignored if a path is provided, which is not the case for
