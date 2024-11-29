@@ -926,7 +926,7 @@ PerfilAcessoConfig.push(
     {
         nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
         descricao:
-            'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
+            'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador de plano, Coleta, Conferencia, Liberação, Ponto Focal e Técnico)',
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
             'PS.admin_cp', // backcompat. com frontend
