@@ -479,6 +479,7 @@ export class PainelEstrategicoService {
         const offset = (page - 1) * ipp;
         const sql = `select distinct
                             p.nome,
+                            p.id,
                             coalesce(org.sigla,'') as secretaria_sigla,
                             coalesce(org.descricao,'') as secretaria_descricao,
                             org.id as secretaria_id,
@@ -513,6 +514,7 @@ export class PainelEstrategicoService {
         const retorno: PainelEstrategicoProjeto[] = [];
         linhas.forEach((linha) => {
             retorno.push({
+                id: linha.id,
                 etapa_atual: linha.etapa,
                 meta: {
                     nome: linha.meta_titulo,
