@@ -1,19 +1,9 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, onUnmounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
+import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
-
+import { useEscaparDaRota } from '@/composables/escaparDaRota.composable';
 import {
   variavelGlobal as schemaCriacao,
   variavelGlobalParaGeracao as schemaGeracao,
@@ -35,6 +25,17 @@ import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import { useRouter } from 'vue-router';
 
 const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
@@ -99,7 +100,6 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const route = useRoute();
 
 const gerarMultiplasVariaveis = ref(false);
 
@@ -170,11 +170,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     if (resposta) {
       alertStore.success(msg);
 
-      if (route.meta.rotaDeEscape) {
-        router.push({
-          name: route.meta.rotaDeEscape,
-        });
-      }
+      useEscaparDaRota(router);
     }
   } catch (error) {
     alertStore.error(error);
