@@ -36,7 +36,8 @@ export const useOrgansStore = defineStore({
         if (!this.organs.length) {
           await this.getAll();
         }
-        this.tempOrgans = this.organs.find((u) => u.id === id);
+        // eslint-disable-next-line eqeqeq
+        this.tempOrgans = this.organs.find((u) => u.id == id);
         this.tempOrgans.tipo_orgao_id = this.tempOrgans.tipo_orgao.id;
         if (!this.tempOrgans) {
           throw new Error('Orgão não encontrado');
@@ -89,7 +90,8 @@ export const useOrgansStore = defineStore({
         if (!this.organTypes.length) {
           await this.getAllTypes();
         }
-        this.tempOrganTypes = this.organTypes.find((u) => u.id === id);
+        // eslint-disable-next-line eqeqeq
+        this.tempOrganTypes = this.organTypes.find((u) => u.id == id);
         if (!this.tempOrganTypes) {
           throw new Error('Orgão não encontrado');
         }
