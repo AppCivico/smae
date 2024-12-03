@@ -337,11 +337,16 @@ export class ReportsService {
         const keys = Object.keys(parametros).sort();
         if (keys.length === 0) return [];
 
+        const chavesExistentes = new Set<string>();
         ret = [];
         for (const k of keys) {
             const v = parametros[k];
             const str = k.charAt(0).toUpperCase() + k.slice(1);
             str.replace(/_/g, ' ');
+
+            if (chavesExistentes.has(k)) continue;
+            chavesExistentes.add(k);
+            chavesExistentes.add(k + '_nome'); // hack: pula alguns itens que ficaram salvos com o "_nome" já no input
 
             ret.push({
                 filtro: str,
