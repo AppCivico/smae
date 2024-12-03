@@ -558,8 +558,8 @@ export class IndicadorService {
                                 400
                             );
 
-                        if (formula_variaveis.length > 1)
-                            throw new HttpException('Apenas uma variável é permitida para a categórica', 400);
+                        if (formula_variaveis.length !== 1)
+                            throw new HttpException('Exatamente uma variável é necessária para a categórica.', 400);
                         if (formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)
                             throw new HttpException('A variável da categoria deve ser a mesma da formula', 400);
                         const referencia = formula_variaveis[0].referencia;
