@@ -1,6 +1,15 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import {
+    IsEmail,
+    IsNotEmpty,
+    IsNumber,
+    IsObject,
+    IsOptional,
+    IsString,
+    MaxLength,
+    ValidateNested,
+} from 'class-validator';
 
 export class TransporterConfigDto {
     @IsString()
@@ -21,7 +30,23 @@ export class TransporterConfigDto {
 
     @IsOptional()
     @IsString()
-    secure?: string;
+    ssl?: string;
+
+    @IsOptional()
+    @IsObject()
+    ssl_options?: any;
+
+    @IsOptional()
+    @IsNumber()
+    timeout?: number;
+
+    @IsOptional()
+    @IsString()
+    sasl_username?: string;
+
+    @IsOptional()
+    @IsString()
+    sasl_password?: string;
 }
 
 export class TemplateResolverConfigDto {
