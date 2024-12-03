@@ -474,6 +474,7 @@ export class ReportsService {
         reportId?: number
     ): Promise<InputJsonValue | undefined> {
         let parametros;
+        const parametros_processados: Record<string, string | Array<string>> = {};
 
         // Caso esteja passando ID de report, é porque a chamada é de sync.
         if (reportId) {
@@ -500,176 +501,86 @@ export class ReportsService {
             parametros = dto.parametros;
         }
 
-        const chaves: string[] = Object.keys(parametros);
-        const chavesIds = chaves.filter((chave) => chave.endsWith('_id') || chave.endsWith('_ids'));
+        for (const paramKey of Object.keys(parametros)) {
+            const valor = parametros[paramKey];
+            if (!valor) continue;
 
-        // Campos de array que não utilizam "_id" no final
-        // tags e orgaos, são inseridos manualmente.
-        chavesIds.push(...['tags', 'orgaos', 'metas', 'regioes', 'metas_ids']);
+            const nomeChave = paramKey
+                .replace(/(_id|_ids)$/, '') // remove _id ou _ids
+                .replace('plano_setorial_id', 'pdm_id'); // ajuste para pdm_id
 
-        for (const chave of chavesIds) {
-            const id: number | number[] = parametros[chave];
-            if (!id) continue;
-
-            // regex, pois pode ser _id ou _ids
-            const nomeChave = chave.replace(/(_id|_ids)$/, '');
-            const nomeChaveNome = nomeChave + '_nome';
+            parametros_processados[nomeChave] = valor.toString();
 
             const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
             if (!nomeTabelaCol) continue;
 
-            if (typeof id === 'number') {
-                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${id}`;
+            if (typeof valor === 'number') {
+                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
                 const rowNome =
                     await this.prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
                 if (rowNome.length > 0) {
-                    parametros[nomeChaveNome] = rowNome[0].removido_em
+                    parametros_processados[nomeChave] = rowNome[0].removido_em
                         ? '(Removido) ' + rowNome[0].nome
                         : rowNome[0].nome;
                 }
-            } else {
-                if (id.length === 0) continue;
+            } else if (Array.isArray(valor)) {
+                if (valor.length === 0) continue;
 
-                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id IN (${id.join(',')})`;
+                const joinedValues = valor.join(',');
+                // str must match \d,? pattern
+                if (/^\d+(,\d+)*$/.test(joinedValues) === false) continue;
+
+                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em
+                    FROM ${nomeTabelaCol.tabela} WHERE id IN (${joinedValues})`;
                 const rowNome =
                     await this.prisma.$queryRawUnsafe<
                         Array<{ id: Number; nome: string; removido_em: Date | undefined }>
                     >(query);
 
                 if (rowNome.length > 0) {
-                    parametros[`${nomeChave}_processado`] = rowNome.map((r) => {
-                        return {
-                            id: r.id,
-                            nome: r.removido_em ? '(Removido) ' + r.nome : r.nome,
-                        };
-                    });
+                    parametros_processados[nomeChave] = rowNome
+                        .map((r) => {
+                            return r.removido_em ? '(Removido) ' + r.nome : r.nome;
+                        })
+                        .sort();
                 }
             }
         }
 
-        return parametros;
+        return parametros_processados;
     }
 
     private nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: string } | undefined {
-        let ret:
-            | {
-                  tabela: string;
-                  coluna: string;
-              }
-            | undefined = undefined;
+        const tabelaConfig: Record<string, { coluna: string; chaves?: string[] }> = {
+            projeto: { coluna: 'nome' },
+            pdm: { coluna: 'nome', chaves: ['plano_setorial'] },
+            transferencia_tipo: { coluna: 'nome', chaves: ['tipo'] },
+            parlamentar: { coluna: 'nome_popular' },
+            meta: { coluna: 'titulo', chaves: ['metas'] },
+            atividade: { coluna: 'titulo' },
+            iniciativa: { coluna: 'titulo' },
+            orgao: { coluna: 'sigla', chaves: ['orgaos', 'orgao_gestor'] },
+            portfolio: { coluna: 'titulo' },
+            indicador: { coluna: 'titulo' },
+            partido: { coluna: 'nome' },
+            regiao: { coluna: 'descricao', chaves: ['regioes'] },
+        };
 
-        switch (nomeChave) {
-            case 'projeto':
-                ret = {
-                    tabela: 'projeto',
-                    coluna: 'nome',
-                };
-                break;
-            case 'pdm':
-                ret = {
-                    tabela: 'pdm',
-                    coluna: 'nome',
-                };
-                break;
-            case 'tipo':
-                ret = {
-                    tabela: 'transferencia_tipo',
-                    coluna: 'nome',
-                };
-                break;
-            case 'parlamentar': {
-                ret = {
-                    tabela: 'parlamentar',
-                    coluna: 'nome_popular',
-                };
-                break;
-            }
-            case 'meta': {
-                ret = {
-                    tabela: 'meta',
-                    coluna: 'titulo',
-                };
-                break;
-            }
-            case 'metas': {
-                ret = {
-                    tabela: 'meta',
-                    coluna: 'titulo',
-                };
-                break;
-            }
-            case 'atividade': {
-                ret = {
-                    tabela: 'atividade',
-                    coluna: 'titulo',
-                };
-                break;
-            }
-            case 'iniciativa': {
-                ret = {
-                    tabela: 'iniciativa',
-                    coluna: 'titulo',
-                };
-                break;
-            }
-            case 'orgao': {
-                ret = {
-                    tabela: 'orgao',
-                    coluna: 'sigla',
-                };
-                break;
-            }
-            case 'orgaos': {
-                ret = {
-                    tabela: 'orgao',
-                    coluna: 'sigla',
-                };
-                break;
-            }
-            case 'portfolio': {
-                ret = {
-                    tabela: 'portfolio',
-                    coluna: 'titulo',
-                };
-                break;
-            }
-            case 'indicador': {
-                ret = {
-                    tabela: 'indicador',
-                    coluna: 'titulo',
-                };
-                break;
-            }
-            case 'partido': {
-                ret = {
-                    tabela: 'partido',
-                    coluna: 'nome',
-                };
-                break;
-            }
-            case 'orgao_gestor': {
-                ret = {
-                    tabela: 'orgao',
-                    coluna: 'sigla',
-                };
-                break;
-            }
-            case 'regiao': {
-                ret = {
-                    tabela: 'regiao',
-                    coluna: 'descricao',
-                };
-                break;
-            }
-            case 'regioes': {
-                ret = {
-                    tabela: 'regiao',
-                    coluna: 'descricao',
-                };
-                break;
-            }
-        }
+        const mapeamento = Object.entries(tabelaConfig).reduce(
+            (acc, [tabela, config]) => {
+                // Adiciona o próprio da tabela no mapeamento
+                acc[tabela] = { tabela, coluna: config.coluna };
 
-        return ret;
+                if (config.chaves) {
+                    config.chaves.forEach((chave) => {
+                        acc[chave] = { tabela, coluna: config.coluna };
+                    });
+                }
+                return acc;
+            },
+            {} as Record<string, { tabela: string; coluna: string }>
+        );
+
+        return mapeamento[nomeChave];
     }
 }
