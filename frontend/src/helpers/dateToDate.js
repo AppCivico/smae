@@ -2,6 +2,7 @@
  * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options
  */
 function dateToDate(d, options = {}) {
+  if (!d || typeof d === 'boolean') return 'Invalid Date';
   const dd = d ? new Date(d) : false;
   if (!dd) return d;
   const dx = (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone: 'UTC', ...options }) : '';
@@ -23,7 +24,7 @@ export const dateToMonthYear = (date) => {
 export const localizarData = (date) => dateToDate(date, {
   dateStyle: 'short',
   timeStyle: undefined,
-  timeZone: 'UTC',
+  timeZone: 'America/Sao_Paulo',
 });
 
 export const localizarDataHorario = (date) => dateToDate(date, {
