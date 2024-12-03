@@ -1,7 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, Prisma, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { createWriteStream, WriteStream } from 'fs';
@@ -30,12 +30,14 @@ import { TransferenciasService } from '../transferencias/transferencias.service'
 import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { RelatorioDto } from './entities/report.entity';
+import { RelatorioDto, RelatorioParamDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import * as XLSX from 'xlsx';
 import { InputJsonValue } from '@prisma/client/runtime/library';
+
+type RelatorioProcesado = Record<string, string | Array<string>>;
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -316,6 +318,7 @@ export class ReportsService {
             linhas: rows.map((r) => {
                 return {
                     ...r,
+                    parametros_processados: this.bffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
                 };
@@ -324,6 +327,29 @@ export class ReportsService {
             token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
         };
+    }
+
+    bffParamsProcessados(parametros: any, _fonte: FonteRelatorio): RelatorioParamDto[] | null {
+        let ret: RelatorioParamDto[] | null = null;
+
+        if (!parametros || typeof parametros !== 'object') return null;
+
+        const keys = Object.keys(parametros).sort();
+        if (keys.length === 0) return [];
+
+        ret = [];
+        for (const k of keys) {
+            const v = parametros[k];
+            const str = k.charAt(0).toUpperCase() + k.slice(1);
+            str.replace(/_/g, ' ');
+
+            ret.push({
+                filtro: str,
+                valor: Array.isArray(v) ? v.map((r) => r.toString()) : v.toString(),
+            });
+        }
+
+        return ret;
     }
 
     async delete(id: number, user: PessoaFromJwt) {
@@ -474,7 +500,7 @@ export class ReportsService {
         reportId?: number
     ): Promise<InputJsonValue | undefined> {
         let parametros;
-        const parametros_processados: Record<string, string | Array<string>> = {};
+        const parametros_processados: RelatorioProcesado = {};
 
         // Caso esteja passando ID de report, é porque a chamada é de sync.
         if (reportId) {
