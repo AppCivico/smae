@@ -418,6 +418,8 @@ watch(() => props.group, () => {
               if (values.indicador_tipo) {
                 setFieldValue('formula', '')
                 setFieldValue('formula_variaveis', [])
+                formula = ''
+                variaveisFormula = []
               }
             }"
           >
