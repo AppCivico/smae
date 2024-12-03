@@ -217,6 +217,10 @@ async function onSubmit(values) {
         }
       }
 
+      if (values.indicador_tipo === 'Numerico') {
+        values.variavel_categoria_id = null;
+      }
+
       if (singleIndicadores.value.id) {
         r = await IndicadoresStore.update(singleIndicadores.value.id, values);
         MetasStore.clear();
@@ -410,6 +414,12 @@ watch(() => props.group, () => {
             as="select"
             name="indicador_tipo"
             class="inputtext light"
+            @change="() => {
+              if (values.indicador_tipo) {
+                setFieldValue('formula', '')
+                setFieldValue('formula_variaveis', [])
+              }
+            }"
           >
             <option value="Numerico">
               Numérica
