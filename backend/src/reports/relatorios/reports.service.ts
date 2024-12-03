@@ -341,6 +341,7 @@ export class ReportsService {
         ret = [];
         for (const k of keys) {
             const v = parametros[k];
+            if (v === '') continue;
             const str = k.charAt(0).toUpperCase() + k.slice(1);
             str.replace(/_/g, ' ');
 
