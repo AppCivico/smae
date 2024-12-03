@@ -1,5 +1,3 @@
-import { DistribuicaoStatusBase, DistribuicaoStatus } from "@prisma/client";
-
 export class RelTribunalDeContasDto {
     ano: number | null;
     parlamentar: string;
