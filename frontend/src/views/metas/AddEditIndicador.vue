@@ -571,7 +571,6 @@ watch(() => props.group, () => {
           v-if="values.indicador_tipo === 'Categorica'"
           class="f1 fb20em"
         >
-          xxx
           <label class="label">Variavel</label>
           <Field
             id="variavel_categoria_id"
