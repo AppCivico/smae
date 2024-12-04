@@ -39,7 +39,9 @@ async function checkClose() {
 
   let caminhoParaSaída = '';
 
-  const rotaDeEscape = prepararRotaDeEscape(route, props?.rotaDeEscape);
+  const rotaDeEscape = props?.rotaDeEscape
+    ? prepararRotaDeEscape(route, { name: props?.rotaDeEscape })
+    : prepararRotaDeEscape(route);
 
   if (rotaDeEscape) {
     caminhoParaSaída = router.resolve(rotaDeEscape)?.fullPath
