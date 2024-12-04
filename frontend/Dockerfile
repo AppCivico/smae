@@ -2,6 +2,7 @@ FROM node:lts-alpine as build-stage
 WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm install
+COPY backend/src/common/ ../backend/src/common/
 COPY common/ ../common/
 COPY frontend/ .
 ENV VITE_API_URL=/api
