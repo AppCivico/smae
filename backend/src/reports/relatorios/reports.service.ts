@@ -422,7 +422,7 @@ export class ReportsService {
     async syncRelatoriosParametros(): Promise<void> {
         const rows = await this.prisma.$queryRaw<
             Array<{ id: number }>
-            >`SELECT id FROM relatorio WHERE removido_em IS NULL AND parametros_processados IS NULL`;
+        >`SELECT id FROM relatorio WHERE removido_em IS NULL AND parametros_processados IS NULL`;
 
         for (const row of rows) {
             try {
@@ -539,7 +539,6 @@ export class ReportsService {
             parametros_processados[nomeChave] = valor.toString();
 
             const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
-            console.log(nomeChave, nomeTabelaCol, valor);
             if (!nomeTabelaCol) continue;
 
             if (typeof valor === 'number') {
