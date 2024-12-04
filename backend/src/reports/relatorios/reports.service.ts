@@ -420,14 +420,9 @@ export class ReportsService {
     }
 
     async syncRelatoriosParametros(): Promise<void> {
-        const rows = await this.prisma.relatorio.findMany({
-            where: {
-                removido_em: null,
-            },
-            select: {
-                id: true,
-            },
-        });
+        const rows = await this.prisma.$queryRaw<
+            Array<{ id: number }>
+            >`SELECT id FROM relatorio WHERE removido_em IS NULL AND parametros_processados IS NULL`;
 
         for (const row of rows) {
             try {
@@ -544,6 +539,7 @@ export class ReportsService {
             parametros_processados[nomeChave] = valor.toString();
 
             const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
+            console.log(nomeChave, nomeTabelaCol, valor);
             if (!nomeTabelaCol) continue;
 
             if (typeof valor === 'number') {
@@ -588,6 +584,7 @@ export class ReportsService {
             pdm: { coluna: 'nome', chaves: ['plano_setorial'] },
             transferencia_tipo: { coluna: 'nome', chaves: ['tipo'] },
             parlamentar: { coluna: 'nome_popular' },
+            tag: { coluna: 'descricao', chaves: ['tags'] },
             meta: { coluna: 'titulo', chaves: ['metas'] },
             atividade: { coluna: 'titulo' },
             iniciativa: { coluna: 'titulo' },
