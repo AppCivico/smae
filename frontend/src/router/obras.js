@@ -1,7 +1,9 @@
 import obrasAcompanhamentos from './obras.acompanhamentos';
+import obrasContratos from './obras.contratos';
 import obrasOrcamentos from './obras.orcamentos';
 import obrasProcessos from './obras.processos';
-import obrasContratos from './obras.contratos';
+
+const ObraCriarEditar = () => import('@/views/mdo.obras/ObraCriarEditar.vue');
 
 export default {
   path: '/obras',
@@ -39,13 +41,13 @@ export default {
     {
       name: 'obrasCriar',
       path: 'novo',
-      component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
+      component: ObraCriarEditar,
       props: true,
       meta: {
         limitarÀsPermissões: [
           'ProjetoMDO.administrador_no_orgao',
         ],
-        rotaDeEscape: 'obrasListar',
+        rotaDeEscape: 'obrasResumo',
         rotasParaMigalhasDePão: [
           'obrasListar',
         ],
@@ -94,7 +96,7 @@ export default {
         {
           path: '',
           name: 'obrasEditar',
-          component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
+          component: ObraCriarEditar,
           props: ({ params }) => ({
             ...params,
             obraId: Number.parseInt(params.obraId, 10) || undefined,
