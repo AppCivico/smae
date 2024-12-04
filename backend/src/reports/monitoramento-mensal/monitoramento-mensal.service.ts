@@ -32,9 +32,9 @@ export class MonitoramentoMensalService implements ReportableService {
         const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
         const metasArr = metas.map((r) => r.id);
         // um dia aqui é capaz que fiquem muitas metas e o retorno fique muito grande e cause OOM no asJSON
-        if (metasArr.length > 100)
+        if (metasArr.length > 10000)
             throw new Error(
-                'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
+                'Mais de 10000 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
             );
 
         const paineis_ret: RelPainelDetalhe[] = [];

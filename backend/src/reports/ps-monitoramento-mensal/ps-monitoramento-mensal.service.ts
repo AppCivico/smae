@@ -49,8 +49,8 @@ export class PSMonitoramentoMensal implements ReportableService {
             { iniciativas: false, atividades: false }
         );
         const metasArr = metas.map((r) => r.id);
-        if (metasArr.length > 100)
-            throw new BadRequestException('Mais de 100 indicadores encontrados, por favor refine a busca.');
+        if (metasArr.length > 10000)
+            throw new BadRequestException('Mais de 10000 indicadores encontrados, por favor refine a busca.');
 
         const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
 
