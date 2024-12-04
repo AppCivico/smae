@@ -25,7 +25,7 @@ describe('prepararRotaDeEscape', () => {
     const rotaDeEscape = 'bar';
     const expected = { name: 'bar' };
 
-    expect(prepararRotaDeEscape(rota, rotaDeEscape)).toStrictEqual(expected);
+    expect(prepararRotaDeEscape(rota, { name: rotaDeEscape })).toStrictEqual(expected);
   });
 
   it('Aceita a rotaDeEscape configurada no meta', () => {
@@ -40,7 +40,7 @@ describe('prepararRotaDeEscape', () => {
     const rotaDeEscape = 'foo2';
     const expected = { name: 'foo2' };
 
-    expect(prepararRotaDeEscape(rota, rotaDeEscape)).toStrictEqual(expected);
+    expect(prepararRotaDeEscape(rota, { name: rotaDeEscape })).toStrictEqual(expected);
   });
 
   it('Mantém os parâmetros e query da rota corrente', () => {
@@ -78,26 +78,6 @@ describe('prepararRotaDeEscape', () => {
     expect(prepararRotaDeEscape(rota)).toStrictEqual(expected);
   });
 
-  it('Aceita a rotaDeEscape sobrescrita como segundo parâmetro da função, ignorando a fornecida na query string', () => {
-    const rota = {
-      name: 'foo',
-      meta: { rotaDeEscape: 'bar' },
-      query: {
-        parameter: 'value',
-        escape: {
-          name: 'foo2',
-          query: {
-            parameter2: 'value2',
-          },
-        },
-      },
-    };
-    const rotaDeEscape = 'foo3';
-    const expected = { name: 'foo3', query: { parameter: 'value', parameter2: 'value2' } };
-
-    expect(prepararRotaDeEscape(rota, rotaDeEscape)).toStrictEqual(expected);
-  });
-
   it('Combina a query string da rota corrente com a da rota de escape', () => {
     const rota = {
       path: '/variaveis/4908',
@@ -121,5 +101,31 @@ describe('prepararRotaDeEscape', () => {
       },
     };
     expect(prepararRotaDeEscape(rota)).toStrictEqual(expected);
+  });
+
+  it('Combina a rota de escape com os parametros fornecidos', () => {
+    const rota = {
+      path: '/variaveis/4908',
+      name: 'variaveisEditar',
+      params: { variavelId: '4908' },
+      meta: { rotaDeEscape: 'variaveisListar' },
+      query: {
+        escape: {
+          name: 'foo2',
+          query: {
+            ipp: 100, ordem_coluna: 'codigo', ordem_direcao: 'asc', pagina: 1, palavra_chave: 'foobar',
+          },
+        },
+      },
+    };
+
+    const expected = {
+      name: 'variaveisItem',
+      params: { variavelId: 79 },
+      query: {
+        ipp: 100, ordem_coluna: 'codigo', ordem_direcao: 'asc', pagina: 1, palavra_chave: 'foobar', foo: 'bar',
+      },
+    };
+    expect(prepararRotaDeEscape(rota, { name: 'variaveisItem', params: { variavelId: 79 }, query: { foo: 'bar' } })).toStrictEqual(expected);
   });
 });
