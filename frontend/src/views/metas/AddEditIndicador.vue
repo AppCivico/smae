@@ -221,6 +221,11 @@ async function onSubmit(values) {
         values.variavel_categoria_id = null;
       }
 
+      if (values.indicador_tipo === 'Categorica' && !values.variavel_categoria_id) {
+        values.formula = null;
+        values.formula_variaveis = [];
+      }
+
       if (singleIndicadores.value.id) {
         r = await IndicadoresStore.update(singleIndicadores.value.id, values);
         MetasStore.clear();
@@ -566,6 +571,7 @@ watch(() => props.group, () => {
           v-if="values.indicador_tipo === 'Categorica'"
           class="f1 fb20em"
         >
+          xxx
           <label class="label">Variavel</label>
           <Field
             id="variavel_categoria_id"
