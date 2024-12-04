@@ -1461,10 +1461,11 @@ export const órgão = object()
   .shape({
     cnpj: string()
       .label('CNPJ')
-      .matches(regEx.cnpj),
+      .matches(regEx.cnpj)
+      .nullableOuVazio(),
     descricao: string()
       .label('Descrição')
-      .required(),
+      .nullable(),
     email: string()
       .email()
       .label('Email'),
@@ -1475,7 +1476,8 @@ export const órgão = object()
         ? field.required('Esse campo é obrigatório para o nível maior do que 1')
         : field.nullable())),
     secretario_responsavel: string()
-      .label('Secretário'),
+      .label('Secretário')
+      .nullable(),
     sigla: string()
       .label('Sigla')
       .required(),
