@@ -23,6 +23,7 @@ import {
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaHelpers } from '../common/PrismaHelpers';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -128,6 +129,7 @@ export class ParlamentarService {
             };
         }
 
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
@@ -152,6 +154,7 @@ export class ParlamentarService {
 
         const listActive = await this.prisma.parlamentar.findMany({
             where: {
+                id: palavrasChave ? { in: palavrasChave } : undefined,
                 removido_em: null,
                 tem_mandato: filters.possui_mandatos,
                 cpf: filters.cpf,
@@ -935,5 +938,9 @@ export class ParlamentarService {
                 atualizado_em: new Date(Date.now()),
             },
         });
+    }
+
+    async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'parlamentar', input);
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <form
     class="flex flexwrap g2 mb2 fb100"
-    :aria-busy="!pronto"
+    :aria-busy="!!$attrs.ariaBusy || !pronto"
     @submit.prevent="($e) => emit('enviado', $e)"
   >
     <div class="flex flexwrap end g2 fb100">
@@ -21,13 +21,13 @@
         >
           <option
             value=""
-            :selected="!$route.query.assuntos"
+            :selected="!valoresIniciaisConsolidados.assuntos"
           />
           <option
             v-for="assunto in listaDeAssuntos"
             :key="assunto.id"
             :value="assunto.id"
-            :selected="Number($route.query?.assuntos) === assunto.id"
+            :selected="Number(valoresIniciaisConsolidados?.assuntos) === assunto.id"
           >
             {{ assunto.nome }}
           </option>
@@ -41,7 +41,7 @@
         >{{ schema.fields.descricao?.spec.label || 'Campo faltando no schema' }}</label>
         <input
           id="descricao"
-          :value="$route.query.descricao"
+          :value="valoresIniciaisConsolidados.descricao"
           class="inputtext light"
           name="descricao"
           type="text"
@@ -55,7 +55,7 @@
         >{{ schema.fields.titulo.spec.label }}</label>
         <input
           id="titulo"
-          :value="$route.query.titulo"
+          :value="valoresIniciaisConsolidados.titulo"
           class="inputtext light"
           name="titulo"
           type="text"
@@ -77,11 +77,11 @@
         >
           <option
             value=""
-            :selected="!$route.query.variavel_categorica_id"
+            :selected="!valoresIniciaisConsolidados.variavel_categorica_id"
           />
           <option
             :value="-2147483648"
-            :selected="Number($route.query.variavel_categorica_id) === -2147483648"
+            :selected="Number(valoresIniciaisConsolidados.variavel_categorica_id) === -2147483648"
           >
             Numérica
           </option>
@@ -91,7 +91,7 @@
               :key="index"
               :value="variavel.id"
               :title="variavel.descricao ? variavel.descricao : undefined"
-              :selected="Number($route.query.variavel_categorica_id) === variavel.id"
+              :selected="Number(valoresIniciaisConsolidados.variavel_categorica_id) === variavel.id"
             >
               {{ variavel.titulo }}
             </option>
@@ -106,7 +106,7 @@
         >Código</label>
         <input
           id="codigo"
-          :value="$route.query.codigo"
+          :value="valoresIniciaisConsolidados.codigo"
           class="inputtext light"
           name="codigo"
           type="text"
@@ -163,7 +163,7 @@
             v-for="meta in metasDisponiveis"
             :key="meta.id"
             :value="meta.id"
-            :selected="Number($route.query.metas) === meta.id"
+            :selected="Number(valoresIniciaisConsolidados.metas) === meta.id"
             :title="meta.titulo?.length > 36 ? meta.titulo : undefined"
           >
             {{ truncate(meta.titulo, 36) }}
@@ -240,7 +240,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="!Object.keys(periodicidades.variaveis).length"
-            :selected="$route.query?.periodicidade === item.valor"
+            :selected="valoresIniciaisConsolidados?.periodicidade === item.valor"
           >
             {{ item.nome }}
           </option>
@@ -254,11 +254,11 @@
           class="label"
           for="orgao-id"
         >
-          {{ schema.fields.orgao_id?.spec.label || 'Campo faltando no schema' }}
+          {{ schema.fields.medicao_orgao_id?.spec.label || 'Campo faltando no schema' }}
         </label>
         <select
           id="orgao-id"
-          name="orgao_id"
+          name="medicao_orgao_id"
           class="inputtext light"
           :aria-busy="organs.loading"
           :class="{ error: organs.error }"
@@ -268,7 +268,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($route.query?.orgao_id) === orgao.id"
+            :selected="Number(valoresIniciaisConsolidados?.medicao_orgao_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -293,7 +293,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($route.query.orgao_proprietario_id) === orgao.id"
+            :selected="Number(valoresIniciaisConsolidados.orgao_proprietario_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -308,7 +308,7 @@
       >Palavra-chave</label>
       <input
         id="palavra-chave"
-        :value="$route.query.palavra_chave"
+        :value="valoresIniciaisConsolidados.palavra_chave"
         class="inputtext light"
         name="palavra_chave"
         type="search"
@@ -328,7 +328,7 @@
           v-for="coluna in colunasParaOrdenacao"
           :key="coluna.valor"
           :value="coluna.valor"
-          :selected="$route.query.ordem_coluna === coluna.valor"
+          :selected="valoresIniciaisConsolidados.ordem_coluna === coluna.valor"
         >
           {{ coluna.nome }}
         </option>
@@ -349,7 +349,7 @@
             Object.values(direcoesDeOrdenacao)"
           :key="direcao.valor"
           :value="direcao.valor"
-          :selected="$route.query.ordem_direcao === direcao.valor"
+          :selected="valoresIniciaisConsolidados.ordem_direcao === direcao.valor"
         >
           {{ direcao.nome || direcao.valor }}
         </option>
@@ -369,7 +369,7 @@
           v-for="quantidade in itensPorPagina"
           :key="quantidade"
           :value="quantidade"
-          :selected="Number($route.query?.ipp) === quantidade"
+          :selected="Number(valoresIniciaisConsolidados?.ipp) === quantidade"
         >
           {{ quantidade }}
         </option>
@@ -390,34 +390,30 @@ import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import truncate from '@/helpers/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
-import { usePsMetasStore } from '@/stores/metasPs.store.ts';
+import { usePsMetasStore } from '@/stores/metasPs.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
 import {
-  computed, ref
+  computed, ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
 const props = defineProps({
-  ariaBusy: {
-    type: Boolean,
-    default: false,
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
 const emit = defineEmits(['enviado']);
 
 const colunasParaOrdenacao = {
-  id: {
-    valor: 'id',
-    nome: '',
-  },
   titulo: {
     valor: 'titulo',
     nome: schema.fields.titulo?.spec.label,
@@ -425,26 +421,6 @@ const colunasParaOrdenacao = {
   codigo: {
     valor: 'codigo',
     nome: 'Código',
-  },
-  assunto_variavel: {
-    valor: 'assunto_variavel',
-    nome: schema.fields.assuntos?.spec.label || 'campo faltando no schema',
-  },
-  orgao_nome: {
-    valor: 'orgao_nome',
-    nome: schema.fields.orgao_id.spec.label,
-  },
-  orgao_proprietario_nome: {
-    valor: 'orgao_proprietario_nome',
-    nome: schema.fields.orgao_proprietario_id?.spec.label || 'campo faltando no schema',
-  },
-  periodicidade: {
-    valor: 'periodicidade',
-    nome: schema.fields.periodicidade?.spec.label,
-  },
-  regiao: {
-    valor: 'regiao',
-    nome: 'Região',
   },
   criado_em: {
     valor: 'criado_em',
@@ -458,6 +434,28 @@ const itensPorPagina = [
   50,
   100,
 ];
+
+const chavesDeValoresValidos = [
+  'assuntos',
+  'codigo',
+  'descricao',
+  'ipp',
+  'medicao_orgao_id',
+  'metas',
+  'ordem_coluna',
+  'ordem_direcao',
+  'orgao_proprietario_id',
+  'palavra_chave',
+  'periodicidade',
+  'titulo',
+  'variavel_categorica_id',
+];
+
+// Já que a montagem do formulário é estática, não precisamos de reatividade
+const valoresIniciaisConsolidados = chavesDeValoresValidos.reduce((acc, chave) => {
+  acc[chave] = route.query[chave] || props.valoresIniciais[chave] || '';
+  return acc;
+}, {} as Record<string, unknown>);
 
 const assuntosStore = useAssuntosStore();
 const MetasStore = usePsMetasStore();

@@ -34,8 +34,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroPainelExterno: ['Painéis Externos', 'SMAE'],
     CadastroGrupoPainelExterno: ['Grupos de Painéis Externos', 'SMAE'],
 
-    // migração de PDM
-    CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
+    CadastroUnidadeMedida: ['Unidades de Medida', ['PlanoSetorial', 'PDM']],
 
     CadastroPdm: ['Programa de Metas', 'PDM'],
     CadastroOds: ['Categorias', ['PDM', 'PlanoSetorial']],
@@ -444,6 +443,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
+        ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
@@ -865,12 +865,14 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         nome: 'Gestor de Distribuição de Recurso',
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
+            // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
+            'SMAE.gestor_distribuicao_recurso',
+
             'CadastroTransferencia.listar',
             'CadastroClassificacao.listar',
             'AndamentoWorkflow.listar',
             // TODO? Maybe precisa ter permissões para editar e remover, e ai precisaria melhorar
             // o "pode_editar" do crono
-            'CadastroCronogramaTransferencia.inserir',
             'CadastroCronogramaTransferencia.listar',
         ],
     },
@@ -924,7 +926,7 @@ PerfilAcessoConfig.push(
     {
         nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
         descricao:
-            'Pode ser participante de equipes, podendo ter qualquer perfil (Medição, Validação, Liberação, Administrador, Técnico e Ponto Focal)',
+            'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador de plano, Coleta, Conferencia, Liberação, Ponto Focal e Técnico)',
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
             'PS.admin_cp', // backcompat. com frontend

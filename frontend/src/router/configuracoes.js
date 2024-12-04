@@ -134,7 +134,7 @@ export default [
         path: 'portfolios',
         component: PortfoliosRaiz,
         meta: {
-          título: 'Portfolios',
+          título: 'Portfólios',
           entidadeMãe: 'projeto',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
@@ -154,7 +154,8 @@ export default [
             path: '',
             component: PortfoliosLista,
             meta: {
-              título: 'Portfolios',
+              título: 'Configurações de portfólios',
+              títuloParaMenu: 'Portfólios',
             },
           },
           {
@@ -163,6 +164,9 @@ export default [
             component: PortfoliosCriarEditar,
             meta: {
               título: 'Novo portfólio',
+              rotasParaMigalhasDePão: [
+                'portfoliosListar',
+              ],
             },
           },
           {
@@ -176,6 +180,9 @@ export default [
 
             meta: {
               título: 'Editar portfólio',
+              rotasParaMigalhasDePão: [
+                'portfoliosListar',
+              ],
             },
           },
         ],
@@ -263,6 +270,9 @@ export default [
             component: PaineisExternosCriarEditar,
             meta: {
               título: 'Novo painel externo',
+              rotasParaMigalhasDePão: [
+                'paineisExternosListar',
+              ],
             },
           },
           {
@@ -276,6 +286,9 @@ export default [
 
             meta: {
               título: 'Editar painel externo',
+              rotasParaMigalhasDePão: [
+                'paineisExternosListar',
+              ],
             },
           },
         ],
@@ -780,7 +793,10 @@ export default [
             path: 'novo',
             component: GruposDePaineisExternosCriarEditar,
             meta: {
-              título: 'Novo Grupos de Painéis Externos',
+              título: 'Novo Grupo de Painéis Externos',
+              rotasParaMigalhasDePão: [
+                'grupospaineisExternosListar',
+              ],
             },
           },
           {
@@ -794,9 +810,11 @@ export default [
                   || undefined,
               },
             }),
-
             meta: {
               título: 'Editar grupo de painel externo',
+              rotasParaMigalhasDePão: [
+                'grupospaineisExternosListar',
+              ],
             },
           },
         ],

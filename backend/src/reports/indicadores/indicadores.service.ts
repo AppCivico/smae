@@ -77,9 +77,9 @@ export class IndicadoresService implements ReportableService {
     async asJSON(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         const indicadores = await this.filtraIndicadores(dto);
 
-        if (indicadores.length >= 100)
+        if (indicadores.length >= 10000)
             throw new HttpException(
-                `Mais de 100 indicadores encontrados, por favor, refine sua busca ou utilize os endpoints streaming.`,
+                `Mais de 10000 indicadores encontrados, por favor, refine sua busca ou utilize os endpoints streaming.`,
                 400
             );
 

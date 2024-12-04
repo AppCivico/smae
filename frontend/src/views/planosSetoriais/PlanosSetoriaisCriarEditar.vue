@@ -185,7 +185,7 @@ watch(itemParaEdicao, (novoValor) => {
             rows="3"
             class="inputtext light mb1"
             :class="{ 'error': errors.descricao }"
-            maxlength="250"
+            maxlength="2500"
           />
           <ErrorMessage name="descricao" />
         </div>

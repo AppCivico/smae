@@ -29,7 +29,6 @@ export default {
       meta: {
         título: 'Cronograma de projeto',
         títuloParaMenu: 'Cronograma',
-
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',

@@ -1,9 +1,9 @@
+import { defineStore } from 'pinia';
 import type {
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
-} from '@/../../backend/src/variavel/dto/list-variavel.dto';
-import type { VariavelGlobalItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
-
-import { defineStore } from 'pinia';
+} from '@back/variavel/dto/list-variavel.dto';
+import type { VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
+import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -76,12 +76,16 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.erros.emFoco = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`, params);
+        const resposta = await this.requestS.get(
+          `${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`,
+          params,
+        );
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
+      } finally {
+        this.chamadasPendentes.emFoco = false;
       }
-      this.chamadasPendentes.emFoco = false;
     },
 
     async buscarFilhas(variavelId: number, params = {}): Promise<void> {
@@ -133,7 +137,9 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`);
+        await this.requestS.delete(
+          `${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`,
+        );
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -151,7 +157,10 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         let resposta;
 
         if (variavelId) {
-          resposta = await this.requestS.patch(`${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`, params);
+          resposta = await this.requestS.patch(
+            `${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`,
+            params,
+          );
         } else {
           resposta = await this.requestS.post(`${baseUrl}/variavel`, params);
         }
@@ -170,7 +179,12 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/variavel/${variavelId || this.route.params.variavelId}/serie`, params);
+        const resposta = await this.requestS.get(
+          `${baseUrl}/variavel/${
+            variavelId || this.route.params.variavelId
+          }/serie`,
+          params,
+        );
 
         this.seriesAgrupadas = resposta;
       } catch (erro: unknown) {
@@ -183,7 +197,10 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const resposta = await this.requestS.patch(`${baseUrl}/variavel-serie/`, params);
+        const resposta = await this.requestS.patch(
+          `${baseUrl}/variavel-serie/`,
+          params,
+        );
 
         this.chamadasPendentes.emFoco = false;
         this.erros.emFoco = null;
@@ -199,7 +216,10 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/variavel/gerador-regionalizado`, params);
+        const resposta = await this.requestS.post(
+          `${baseUrl}/variavel/gerador-regionalizado`,
+          params,
+        );
 
         this.chamadasPendentes.emFoco = false;
         this.erros.emFoco = null;
@@ -218,6 +238,29 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       assuntos: Array.isArray(emFoco?.assuntos)
         ? emFoco.assuntos.map((assunto) => assunto.id)
         : [],
+      assuntos_mapeados: Array.isArray(emFoco?.assuntos)
+        ? emFoco.assuntos.reduce<ValoresSelecionados>((amount, item) => {
+          if (!item.categoria_assunto_variavel_id) {
+            return amount;
+          }
+
+          const categoriaAdicionadaIndex = amount.findIndex(
+            (itemAdicionado) => itemAdicionado.agrupadorId
+                  === item.categoria_assunto_variavel_id,
+          );
+
+          if (categoriaAdicionadaIndex === -1) {
+            amount.push({
+              agrupadorId: item.categoria_assunto_variavel_id,
+              itemId: [item.id],
+            });
+          } else {
+            amount[categoriaAdicionadaIndex].itemId?.push(item.id);
+          }
+
+          return amount;
+        }, [] as ValoresSelecionados)
+        : [],
       casas_decimais: emFoco?.casas_decimais || 0,
       dado_aberto: emFoco?.dado_aberto || true,
       fim_medicao: emFoco?.fim_medicao || null,
@@ -231,23 +274,22 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         : [],
       mostrar_monitoramento: emFoco?.mostrar_monitoramento || false,
       orgao_id: emFoco?.orgao?.id || null,
-      orgao_proprietario_id: emFoco?.orgao_proprietario?.id
-        || null,
+      orgao_proprietario_id: emFoco?.orgao_proprietario?.id || null,
       periodicidade: emFoco?.periodicidade || '',
-      periodos: typeof emFoco?.periodos === 'object'
-        ? emFoco?.periodos
-        : {
-          preenchimento_inicio: null,
-          preenchimento_fim: null,
-          validacao_inicio: null,
-          validacao_fim: null,
-          liberacao_inicio: null,
-          liberacao_fim: null,
-        },
+      periodos:
+        typeof emFoco?.periodos === 'object'
+          ? emFoco?.periodos
+          : {
+            preenchimento_inicio: null,
+            preenchimento_fim: null,
+            validacao_inicio: null,
+            validacao_fim: null,
+            liberacao_inicio: null,
+            liberacao_fim: null,
+          },
       polaridade: emFoco?.polaridade || null,
       titulo: emFoco?.titulo || '',
-      unidade_medida_id: emFoco?.unidade_medida?.id
-        || null,
+      unidade_medida_id: emFoco?.unidade_medida?.id || null,
       validacao_grupo_ids: Array.isArray(emFoco?.validacao_grupo_ids)
         ? emFoco.validacao_grupo_ids
         : [],
@@ -255,14 +297,13 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       variavel_categorica_id: emFoco?.variavel_categorica_id || null,
     }),
 
-    variaveisPorId: ({ lista }: Estado) => lista
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    variaveisPorId: ({ lista }: Estado) => lista.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-    filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae)
-      .reduce((acc, maeId) => {
-        let nivelMaisFino = 0;
+    filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae).reduce((acc, maeId) => {
+      let nivelMaisFino = 0;
 
-        const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce((acc2, cur) => {
+      const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce(
+        (acc2, cur) => {
           const agrupador = cur.supraregional && !cur.regiao?.nivel
             ? 'supraregional'
             : Number(cur.regiao?.nivel) || 0;
@@ -279,18 +320,21 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
           acc2[agrupador].push(cur);
 
           return acc2;
-        }, {} as { [key: string]: VariavelGlobalItemDto[] });
+        },
+        {} as { [key: string]: VariavelGlobalItemDto[] },
+      );
 
-        if (nivelMaisFino && filhasAgrupadas.supraregional) {
-          filhasAgrupadas[nivelMaisFino] = filhasAgrupadas[nivelMaisFino]
-            .concat(filhasAgrupadas.supraregional);
+      if (nivelMaisFino && filhasAgrupadas.supraregional) {
+        filhasAgrupadas[nivelMaisFino] = filhasAgrupadas[
+          nivelMaisFino
+        ].concat(filhasAgrupadas.supraregional);
 
-          delete filhasAgrupadas.supraregional;
-        }
+        delete filhasAgrupadas.supraregional;
+      }
 
-        acc[maeId] = filhasAgrupadas;
+      acc[maeId] = filhasAgrupadas;
 
-        return acc;
-      }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
+      return acc;
+    }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
   },
 });

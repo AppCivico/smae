@@ -50,9 +50,9 @@ import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 
-import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
-import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
+import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
+import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -85,16 +85,11 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'variaveisCategoricasListar',
+      'categoriaAssuntosListar',
       'assuntosListar',
       'modalidadesListar',
       'fontesListar',
-    ],
-  },
-  {
-    título: 'Parlamentares',
-    rotas: [
       'partidosListar',
-      // 'bancadasListar',
     ],
   },
 ];
@@ -571,6 +566,7 @@ export default [
 
   {
     path: '/usuarios',
+    component: () => import('@/views/users/UsuariosRaiz.vue'),
     meta: {
       limitarÀsPermissões: 'CadastroPessoa.',
       título: 'Gerenciar usuários',
@@ -895,6 +891,52 @@ export default [
           título: 'Editar tipo de variável categórica',
           rotasParaMigalhasDePão: [
             'variaveisCategoricasListar',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/categoria-assunto',
+    component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: 'AssuntoVariavel.',
+      título: 'Categoria de Assuntos',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        name: 'categoriaAssuntosListar',
+        path: '',
+        component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoLista.vue'),
+        meta: {
+          título: 'Categoria de Assuntos',
+        },
+      },
+      {
+        name: 'categoriaAssuntosCriar',
+        path: 'novo',
+        component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
+        meta: {
+          título: 'Novo assunto',
+          rotasParaMigalhasDePão: [
+            'categoriaAssuntosListar',
+          ],
+        },
+      },
+      {
+        name: 'categoriaAssuntosEditar',
+        path: ':categoriaAssuntoId',
+        component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
+        props: ({ params }) => ({
+          ...params,
+          ...{ categoriaAssuntoId: Number.parseInt(params.categoriaAssuntoId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar assunto',
+          rotasParaMigalhasDePão: [
+            'categoriaAssuntosListar',
           ],
         },
       },

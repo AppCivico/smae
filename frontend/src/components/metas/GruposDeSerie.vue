@@ -1,14 +1,25 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
-import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
 import requestS from '@/helpers/requestS.ts';
 import { computed, defineProps, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import CicloFisicoPdM from './CicloFisicoPdM.vue';
+import CicloFisicoPS from './CicloFisicoPS.vue';
+
+const route = useRoute();
 
 const showModal = ref(false);
 const analise = ref(null);
+const periodo = ref('');
 const props = defineProps({
-  g: {},
-  variavel: {},
+  g: {
+    type: Object,
+    default: () => ({}),
+  },
+  variavel: {
+    type: Boolean,
+    default: false,
+  },
   temVariavelAcumulada: {
     type: Boolean,
     default: true,
@@ -16,20 +27,9 @@ const props = defineProps({
 });
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const mappedValues = computed(() => {
-  const mapping = {
-    Previsto: '',
-    Realizado: '',
-    PrevistoAcumulado: '',
-    RealizadoAcumulado: '',
-  };
-
-  analise.value.ordem_series.forEach((item, index) => {
-    mapping[item] = analise.value.series[index]?.valor_nominal || '';
-  });
-
-  return mapping;
-});
+const conteudoDoModal = computed(() => (route.meta.entidadeMãe === 'planoSetorial'
+  ? CicloFisicoPS
+  : CicloFisicoPdM));
 
 const temVariavelCategorica = computed(() => !!props.g.variavel?.variavel_categorica_id);
 
@@ -45,17 +45,30 @@ function toggleAccordeon(t) {
   t.target.closest('.tzaccordeon').classList.toggle('active');
 }
 
+// TO-DO: Usar usar query strings para abrir o diálogo
 function openAnalise() {
   showModal.value = true;
 }
 
 function hasModal(cicloFisico) {
-  return cicloFisico?.analise || cicloFisico?.tem_documentos;
+  return route.meta.entidadeMãe === 'planoSetorial'
+    ? cicloFisico?.contagem_qualitativa
+    : cicloFisico?.analise || cicloFisico?.tem_documentos;
 }
 
+// TO-DO: Mover toda a lógica para o componente correspondente e
 async function buscarAnalise(dataValor, variavelId) {
   try {
-    analise.value = await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, { data_valor: dataValor, variavel_id: variavelId });
+    analise.value = route.meta.entidadeMãe === 'planoSetorial'
+      ? await requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
+        consulta_historica: true,
+        data_referencia: dataValor,
+        variavel_id: variavelId,
+      })
+      : await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, {
+        data_valor: dataValor,
+        variavel_id: variavelId,
+      });
   } catch (erro) {
     console.log(erro);
   }
@@ -63,16 +76,65 @@ async function buscarAnalise(dataValor, variavelId) {
 
 function handleClick(obj) {
   if (hasModal(obj.ciclo_fisico)) {
-    buscarAnalise(obj.series[0].data_valor, props.g?.variavel?.id);
+    periodo.value = obj.periodo;
+
+    if (route.meta.entidadeMãe === 'planoSetorial') {
+      buscarAnalise(
+        `${obj.periodo}-01`,
+        props.g.variavel?.variavel_mae_id || props.g.variavel?.id,
+      );
+    } else {
+      buscarAnalise(
+        obj.series[0].data_valor,
+        props.g.variavel?.id,
+      );
+    }
     openAnalise();
   }
 }
 
-function obterValorTabela(item, index) {
-  const serieIndex = props.g.ordem_series.indexOf(index);
+function contarCategorias(elementos) {
+  const contagem = {};
 
-  if (!item.series[serieIndex]) {
+  const categoriasLocais = props.g.dados_auxiliares?.categoricas || {};
+
+  Object.keys(categoriasLocais).forEach((categoria) => {
+    contagem[categoria] = 0;
+  });
+
+  elementos?.forEach((elemento) => {
+    if (contagem[elemento.categoria] !== undefined) {
+      contagem[elemento.categoria] += 1;
+    }
+  });
+
+  return contagem;
+}
+
+function obterTooltipTexto(item, index) {
+  const serieIndex = props.g.ordem_series?.indexOf(index);
+
+  if (serieIndex === -1 || !item.series[serieIndex] || !item.series[serieIndex].elementos?.length) {
     return '-';
+  }
+
+  const contagem = contarCategorias(item.series[serieIndex].elementos);
+
+  return Object.entries(props.g.dados_auxiliares?.categoricas || {})
+    .filter(([chave]) => contagem[chave] > 0)
+    .map(([chave, descricao]) => `- ${contagem[chave]} ${descricao}`)
+    .join('\n');
+}
+
+function obterValorTabela(item, index) {
+  const serieIndex = props.g.ordem_series?.indexOf(index);
+
+  if (serieIndex === -1 || !item.series[serieIndex]) {
+    return '-';
+  }
+
+  if (item.series[serieIndex].elementos?.length > 1) {
+    return obterTooltipTexto(item, index);
   }
 
   const valor = item.series[serieIndex].valor_nominal;
@@ -82,15 +144,17 @@ function obterValorTabela(item, index) {
   }
 
   if (temVariavelCategorica.value) {
-    return props.g.dados_auxiliares.categoricas[valor] || valor;
+    return props.g.dados_auxiliares?.categoricas?.[valor] || valor;
   }
 
   return valor;
 }
+
 </script>
 <template>
   <SmallModal
     v-if="showModal"
+    class="largura-total"
   >
     <div class="flex spacebetween center mb2">
       <h2>
@@ -103,99 +167,12 @@ function obterValorTabela(item, index) {
         @close="showModal = false"
       />
     </div>
-    <div>
-      <h3>
-        {{ analise?.variavel?.titulo }}
-      </h3>
-
-      <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <thead>
-          <tr>
-            <th> Mês/ano </th>
-            <th> Previsto mensal </th>
-            <th> Realizado mensal </th>
-            <th> Previsto acumulado</th>
-            <th> Realizado acumulado </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="analise?.series?.length">
-            <td>{{ dateToMonthYear(analise?.series[0]?.data_valor) }}</td>
-            <td>{{ mappedValues['Previsto'] }}</td>
-            <td>{{ mappedValues['Realizado'] }}</td>
-            <td>{{ mappedValues['PrevistoAcumulado'] }}</td>
-            <td>{{ mappedValues['RealizadoAcumulado'] }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="mt2 mb2">
-        <h5 class="mb0 tc300">
-          ANÁLISE
-        </h5>
-        <hr class="mt05 mb1">
-        <p>
-          {{ analise?.analises[0]?.analise_qualitativa }}
-        </p>
-        <hr class="mt1 mb1">
-      </div>
-      <div
-        v-if="analise?.arquivos.length"
-        class="mt2 mb2"
-      >
-        <table class="tablemain">
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <thead>
-            <tr>
-              <th>Documento comprobatório</th>
-              <th />
-              <th />
-              <th />
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="arquivo in analise.arquivos"
-              :key="arquivo.id"
-            >
-              <td class="flex center">
-                <svg
-                  width="20"
-                  height="20"
-                  class="mr1"
-                ><use xlink:href="#i_doc" /></svg>
-                {{ arquivo?.arquivo.nome_original }}
-              </td>
-              <td>{{ arquivo.arquivo.descricao }}</td>
-              <td>{{ arquivo.criador.nome_exibicao }}</td>
-              <td>{{ dateToDate(arquivo.criado_em) }}</td>
-              <td>
-                <SmaeLink
-                  v-if="arquivo?.arquivo.download_token"
-                  :to="baseUrl + '/download/' + arquivo?.arquivo.download_token"
-                  download
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    class="mr1"
-                  ><use xlink:href="#i_download" /></svg>
-                </SmaeLink>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <component
+      :is="conteudoDoModal"
+      :analise="analise"
+      :periodo="periodo"
+      :dados-auxiliares="g.dados_auxiliares"
+    />
   </SmallModal>
 
   <template v-if="g?.linhas">
@@ -219,14 +196,16 @@ function obterValorTabela(item, index) {
       </tr>
       <tbody>
         <tr
-          v-for="(val,i) in k[1]"
+          v-for="(val, i) in k[1]"
           :key="val.id ? val.id : i"
         >
           <td>
             <div class="flex center">
-              <div
+              <component
+                :is="hasModal(val.ciclo_fisico) ? 'button' : 'span'"
                 v-if="variavel"
-                class="mr1"
+                :type="hasModal(val.ciclo_fisico) ? 'button' : null"
+                class="mr1 like-a__text"
                 :style="{ color: hasModal(val.ciclo_fisico) ? '#94DA00' : '#B8C0CC' }"
                 @click="handleClick(val)"
               >
@@ -234,7 +213,7 @@ function obterValorTabela(item, index) {
                   width="16"
                   height="20"
                 ><use xlink:href="#i_document" /></svg>
-              </div>
+              </component>
               <div
                 v-else
                 class="farol i1"
@@ -243,10 +222,36 @@ function obterValorTabela(item, index) {
             </div>
           </td>
           <td>
-            {{ obterValorTabela(val, 'Previsto') }}
+            <div
+              v-if="val.series[props.g.ordem_series?.indexOf('Previsto')]?.elementos?.length > 1"
+              class="tipinfo ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>
+                {{ obterValorTabela(val, 'Previsto') }}
+              </div>
+            </div>
+            <span v-else>
+              {{ obterValorTabela(val, 'Previsto') }}
+            </span>
           </td>
           <td>
-            {{ obterValorTabela(val, 'Realizado') }}
+            <div
+              v-if="val.series[props.g.ordem_series?.indexOf('Realizado')]?.elementos?.length > 1"
+              class="tipinfo ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>
+                {{ obterValorTabela(val, 'Realizado') }}
+              </div>
+            </div>
+            <span v-else>
+              {{ obterValorTabela(val, 'Realizado') }}
+            </span>
           </td>
           <td>
             <span v-if="!temVariavelAcumulada">

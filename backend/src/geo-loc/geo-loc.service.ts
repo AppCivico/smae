@@ -19,6 +19,7 @@ import {
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 
 class GeoTokenJwtBody {
     id: number;
@@ -60,13 +61,19 @@ export class GeoLocService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
-        private readonly geoApi: GeoApiService
+        private readonly geoApi: GeoApiService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async geoLoc(input: GeoLocDto): Promise<RetornoGeoLoc> {
         const ret: RetornoGeoLoc = { linhas: [] };
 
-        const camadasConfig = await this.prisma.geoCamadaConfig.findMany();
+        const geoCamadaConfig = await this.smaeConfigService.getConfig('GEO_CAMADA_IDS');
+        const camadaIds = geoCamadaConfig ? geoCamadaConfig.split(',').map((r) => parseInt(r)) : undefined;
+
+        const camadasConfig = await this.prisma.geoCamadaConfig.findMany({
+            where: camadaIds ? { id: { in: camadaIds } } : undefined,
+        });
         const buscaEndereco = await this.geoApi.buscaEndereco({
             busca_endereco: input.busca_endereco,
             camadas: this.apelidosCamadas(camadasConfig),
@@ -279,7 +286,9 @@ export class GeoLocService {
         let tmp: GeoTokenJwtBody | null = null;
         try {
             if (jwt) tmp = this.jwtService.verify(jwt) as GeoTokenJwtBody;
-        } catch {}
+        } catch {
+            // ignore
+        }
         if (!tmp) throw new BadRequestException('geo token is invalid');
         return tmp;
     }

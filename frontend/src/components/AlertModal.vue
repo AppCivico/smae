@@ -3,7 +3,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
-const { alertas } = storeToRefs(alertStore);
+const { alertas, estaCarregando } = storeToRefs(alertStore);
 
 async function callbackFn(i) {
   await alertas.value[i].callback();
@@ -29,6 +29,7 @@ async function callbackFn(i) {
       <div
         class="alert"
         :class="alert.type"
+        :aria-busy="estaCarregando"
       >
         <div
           class="mr2"

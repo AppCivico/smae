@@ -49,10 +49,12 @@ export class PSMonitoramentoMensal implements ReportableService {
             { iniciativas: false, atividades: false }
         );
         const metasArr = metas.map((r) => r.id);
-        if (metasArr.length > 100)
-            throw new BadRequestException('Mais de 100 indicadores encontrados, por favor refine a busca.');
+        if (metasArr.length > 10000)
+            throw new BadRequestException('Mais de 10000 indicadores encontrados, por favor refine a busca.');
 
         const case_when_lib = `case when vgcaL.eh_liberacao_auto then 'Liberado retroativamente por ' || coalesce(vgcal_cp.nome_exibicao, '*') else '' end`;
+
+        const conferida = params.conferida !== undefined ? (params.conferida ? 'true' : 'false') : 'true';
 
         const paramMesAno = params.ano + '-' + params.mes + '-01';
         let sql: string = `select
@@ -144,6 +146,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                     INNER JOIN variavel v ON v.id = vvp.variavel_id :listar_variaveis_regionalizadas
                     LEFT JOIN regiao r ON v.regiao_id = r.id
                     INNER JOIN serie_variavel sv ON sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
+                        AND conferida = ${conferida}::boolean
                     LEFT JOIN variavel_global_ciclo_analise vgcaP ON vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaP.referencia_data = sv.data_valor
                         and vgcaP.fase = 'Preenchimento'
@@ -206,9 +209,9 @@ export class PSMonitoramentoMensal implements ReportableService {
             { value: 'data_referencia', label: 'Data de Referencia' },
             { value: 'valor_nominal', label: 'Valor Nominal' },
             { value: 'valor_categorica', label: 'Valor Categórica' },
-            { value: 'data_preenchimento', label: 'Data de Preenchimento' },
+            { value: 'data_preenchimento', label: 'Data da Coleta' },
             { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
-            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Aprovador' },
+            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Conferidor' },
             { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
         ];
 

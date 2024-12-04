@@ -1044,7 +1044,7 @@ watch(itemParaEdicao, (novoValor) => {
             :class="{
               error: errors.iniciativa_id,
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas?.length"
+            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas).length"
             @change="setFieldValue('atividade_id', null)"
           >
             <option :value="null">
@@ -1079,13 +1079,13 @@ watch(itemParaEdicao, (novoValor) => {
             :class="{
               error: errors.atividade_id,
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades.length"
+            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades).length"
           >
             <option :value="null">
               Selecionar
             </option>
             <option
-              v-for="item in arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades"
+              v-for="item in arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades"
               :key="item.id"
               :value="item.id"
               :title="item.titulo"

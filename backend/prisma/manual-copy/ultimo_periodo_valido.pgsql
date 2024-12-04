@@ -144,4 +144,4 @@ BEGIN
 
     RETURN vUltimoPeriodo;
 END;
-$function$
+$function$;

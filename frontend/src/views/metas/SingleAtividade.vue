@@ -1,6 +1,7 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
+import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -11,14 +12,13 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
-const { atividade_id } = route.params;
+const { meta_id: metaId } = route.params;
+const { iniciativa_id: iniciativaId } = route.params;
+const { atividade_id: atividadeId } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
@@ -27,18 +27,17 @@ MetasStore.getPdM();
 const EquipesStore = useEquipesStore();
 EquipesStore.buscarTudo();
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}${atividadeId ? `/atividades/${atividadeId}` : ''}`;
 
 const AtividadesStore = useAtividadesStore();
 const {
   singleAtividade,
-  órgãosResponsáveisNaAtividadeEmFoco,
   relacionadosAtividade,
 } = storeToRefs(AtividadesStore);
 
 async function iniciar() {
-  if (singleAtividade.value.id !== atividade_id) {
-    await AtividadesStore.getById(iniciativa_id, atividade_id);
+  if (singleAtividade.value.id !== atividadeId) {
+    await AtividadesStore.getByIdReal(atividadeId);
   }
   if (route.meta.entidadeMãe === 'pdm') {
     if (singleAtividade.value.id) {
@@ -73,7 +72,7 @@ iniciar();
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm'
       ])"
-      :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
+      :to="`/metas/${metaId}/iniciativas/${iniciativaId}/atividades/editar/${atividadeId}`"
       class="btn big ml2"
     >
       Editar
@@ -124,34 +123,7 @@ iniciar();
 
       <div v-if="singleAtividade?.tags.length">
         <hr class="mt2 mb2">
-        <h4>Tags</h4>
-        <ul class="flex flexwrap center g2">
-          <li
-            v-for="tag in singleAtividade.tags"
-            :key="tag.id"
-            class="fb10em"
-          >
-            <a
-              v-if="tag.download_token"
-              class="block"
-              :href="baseUrl + '/download/' + tag.download_token"
-              download
-            >
-              <img
-                :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
-                width="140"
-                height="140"
-                class="icone-de-tag"
-              >
-            </a>
-            <strong
-              v-else
-              class="block"
-            >
-              {{ tag.descricao }}
-            </strong>
-          </li>
-        </ul>
+        <TagsDeMetas :lista-de-tags="singleAtividade.tags" />
       </div>
 
       <template v-if="singleAtividade.contexto">
@@ -176,7 +148,7 @@ iniciar();
 
       <SimpleIndicador
         :parentlink="parentlink"
-        :parent_id="atividade_id"
+        :parent_id="atividadeId"
         parent_field="atividade_id"
       />
 

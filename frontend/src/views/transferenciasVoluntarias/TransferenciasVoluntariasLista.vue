@@ -281,6 +281,23 @@ watch([
           {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}
         </td>
         <td>
+          <router-link
+            v-if="temPermissãoPara([
+              'CadastroTransferencia.administrador',
+              'CadastroTransferencia.editar'
+            ])"
+            :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_edit" />
+            </svg>
+          </router-link>
+        </td>
+        <td>
           <button
             v-if="temPermissãoPara([
               'CadastroTransferencia.administrador',
@@ -298,23 +315,6 @@ watch([
               <use xlink:href="#i_remove" />
             </svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            v-if="temPermissãoPara([
-              'CadastroTransferencia.administrador',
-              'CadastroTransferencia.editar'
-            ])"
-            :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_edit" />
-            </svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">

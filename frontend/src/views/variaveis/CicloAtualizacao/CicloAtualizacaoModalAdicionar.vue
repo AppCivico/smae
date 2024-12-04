@@ -18,7 +18,10 @@
       </div>
     </div>
 
-    <article class="variaveis-configuracoes flex g4 mt3 mb1">
+    <article
+      v-if="!temCategorica"
+      class="variaveis-configuracoes flex g4 mt3 mb1"
+    >
       <div
         v-for="(variavelItem, variavelItemIndex) in variaveis"
         :key="`variavel-configuracao-item--${variavelItemIndex}`"
@@ -70,12 +73,11 @@
               name="analise_qualitativa_aprovador"
               :schema="schema"
             />
-
             <Field
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_aprovador"
-              :disabled="!forumlariosAExibir.aprovacao.liberado"
+              :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
             />
 
             <ErrorMessage
@@ -201,7 +203,9 @@
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
-              :disabled="!forumlariosAExibir.cadastro.liberado"
+              :disabled="!forumlariosAExibir.cadastro.liberado
+                || fase === 'aprovacao'
+                || fase === 'liberacao'"
             />
 
             <ErrorMessage
@@ -247,11 +251,11 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
 
-import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 

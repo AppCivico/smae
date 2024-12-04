@@ -5,20 +5,14 @@ from core.utils.geo import geojson_envelop
 from typing import List
 
 class AddressParser:
-
-    def __init__(self, feature_list:bool=True, extract_geom:bool=True, street_level=True)->None:
-
-        #define necessidade de envelopar para casos em que vem o objeto diretamente
-        self.feature_list=feature_list
-        self.extract_geom=extract_geom
-        #street_level faz retorna um endereço com rua, se não, retorna a nivel de cidade
-        self.street_level=street_level
-
+      
     @attr_not_found('address')
     def get_address(self, feature:dict)->dict:
 
-        if self.feature_list:
+        if 'properties' in feature:
+
             return feature['properties']['address']
+        
         #no caso de ser flat o address é um atributo direto
         return feature['address']
 
@@ -31,12 +25,10 @@ class AddressParser:
 
         return cidade
     
-    @attr_not_found('bairro')
     def get_bairro(self, address:dict)->str:
 
         bairro = address.get('city_district') or address.get('suburb')
-        if bairro is None and self.street_level:
-            raise AtributeNotFound(f'Atributo não encontrado: bairro: {address}' )
+        
         return bairro
 
     @attr_not_found('state')
@@ -54,30 +46,32 @@ class AddressParser:
 
         return address['country_code']
 
-    @attr_not_found('road')
     def get_road(self, address:dict)->str:
 
         rua = address.get('road')
-        if rua is None:
-            if self.street_level:
-                raise AtributeNotFound(f'Atributo não encontrado: rua: {address}' )
-            else:
-                rua = ''
         return rua
         
             
     def get_number(self, address:dict)->str:
 
         return address.get('house_number', None)
+    
+    def build_geometry_from_lon_lat(self, lon:float, lat:float)->dict:
+
+        return {'type' : 'Point', 'coordinates' : [lon, lat]}
 
     @attr_not_found('geometry')
     def get_geom(self, feature:dict)->dict:
 
 
-        if self.extract_geom:
-            return feature['geometry']
-        else:
-            return {}
+        geom = feature.get('geometry')
+
+        if geom is None:
+            feature['geometry'] = self.build_geometry_from_lon_lat(1, 2)
+
+        return feature['geometry']
+            
+        
 
     @attr_not_found('bbox')
     def get_bbox(self, feature:dict)->dict:
@@ -93,24 +87,23 @@ class AddressParser:
 
     def build_address_string(self, parsed_adress:dict)->str:
 
-        if parsed_adress.get('numero'):
-            addres= (f"{parsed_adress['rua']}, nº {parsed_adress['numero']}, "
-                    f"{parsed_adress['cidade']}, {parsed_adress['cidade']}, {parsed_adress['pais']}")
-        else:
-            addres= (f"{parsed_adress['rua']}, "
-                    f"{parsed_adress['cidade']}, {parsed_adress['cidade']}, {parsed_adress['pais']}")
+        if parsed_adress.get('numero') and parsed_adress['rua']:
+            return (f"{parsed_adress['rua']}, nº {parsed_adress['numero']}, "
+                    f"{parsed_adress['cidade']}, {parsed_adress['pais']}")
+        if not parsed_adress.get('numero') and parsed_adress['rua']:
+            return (f"{parsed_adress['rua']}, sem número,"
+                    f"{parsed_adress['cidade']}, {parsed_adress['pais']}")
+            
+        if not parsed_adress['rua'] and parsed_adress['bairro']:
+            return f"{parsed_adress['bairro']}, {parsed_adress['cidade']}, {parsed_adress['pais']}"
+        
+        return f"{parsed_adress['cidade']}, {parsed_adress['pais']}"
 
-        return addres
 
-    @attr_not_found('cep')
     def get_cep(self, feature:dict)->dict:
 
         cep = feature.get('postcode')
-        if cep is None:
-            if self.street_level:
-                raise AtributeNotFound(f'Atributo não encontrado: cep: {feature}')
-            else:
-                cep = ''
+        
         return cep
 
     def parse_address(self, feature:dict)->dict:
@@ -134,6 +127,7 @@ class AddressParser:
         parsed_addres['string_endereco'] = self.build_address_string(parsed_addres)
 
         return parsed_addres
+    
 
     def build_feat_geojson(self, feature:dict)->dict:
 
@@ -161,7 +155,7 @@ class AddressParser:
 
     def __call__(self, resp:dict)->List[dict]:
 
-        if not self.feature_list:
+        if 'features' not in resp:
             #envelopa
             resp['features']=[resp]
         

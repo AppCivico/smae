@@ -385,6 +385,15 @@ export class TarefaService {
                 };
             }
 
+            // Caso seja Gestor de distribuição de recurso
+            // Por mais que tenha o mesmo órgão que a tarefa, não pode editar.
+            if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+                return {
+                    pode_editar: false,
+                    pode_editar_realizado: false,
+                };
+            }
+
             // TODO passar o tipo do projeto da cá, pra conseguir liberar o acesso total de editação
             // para quem é do MDO, não há nenhum
 
@@ -1618,7 +1627,6 @@ export class TarefaService {
         dto: CheckDependenciasDto,
         user: PessoaFromJwt
     ): Promise<DependenciasDatasDto | null> {
-
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
         const resp = await this.calcDataDependencias(tarefaCronoId, this.prisma, dto);

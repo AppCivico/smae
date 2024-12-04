@@ -219,6 +219,11 @@ export class PPProjetoService implements ReportableService {
                 termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
                 custo_estimado: e.custo_estimado,
                 duracao_planejado: e.duracao_planejado,
+                inicio_real: Date2YMD.toStringOrNull(e.inicio_real),
+                termino_real: Date2YMD.toStringOrNull(e.termino_real),
+                duracao_real: e.duracao_real,
+                percentual_concluido: e.percentual_concluido,
+                custo_real: e.custo_real,
             };
         });
 

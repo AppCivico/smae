@@ -2,6 +2,7 @@
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/truncate';
 import { ref } from 'vue';
+import oArquivoEhEditavel from './ArvoreDeArquivos.helpers/oArquivoEhEditavel';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -89,7 +90,7 @@ const éPossívelAbrir = (item) => !item.children?.length
             {{ item.id }}
           </strong>
 
-          <router-link
+          <SmaeLink
             v-if="props.rotaDeAdição && !apenasLeitura"
             class="like-a__text arvore-de-arquivos__adicionar"
             :aria-label="`adicionar arquivo em ${item.caminho}`"
@@ -104,9 +105,8 @@ const éPossívelAbrir = (item) => !item.children?.length
               width="20"
               height="20"
             ><use xlink:href="#i_+" /></svg>
-          </router-link>
+          </SmaeLink>
         </span>
-
         <ArvoreDeArquivos
           :key="`diretorio--${item.id || i}__arvore`"
           :aninhado="true"
@@ -121,6 +121,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           @editar="($params) => $emit('editar', $params)"
         >
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
+            
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
               :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"
@@ -150,7 +151,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                   {{ dateToField(arquivo?.data) }}
                 </small>
 
-                <router-link
+                <SmaeLink
                   v-if="props.rotaDeEdição && !apenasLeitura"
                   class="like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
@@ -165,20 +166,23 @@ const éPossívelAbrir = (item) => !item.children?.length
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </router-link>
-
+                </SmaeLink>
                 <button
-                  v-if="!apenasLeitura"
+                  v-if="oArquivoEhEditavel(apenasLeitura, arquivo.pode_editar)"
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
-                  @click="$emit('apagar', { id: arquivo?.id, nome: arquivo?.arquivo?.nome_original })"
+                  @click="$emit('apagar', {
+                    id: arquivo?.id,
+                    nome: arquivo?.arquivo?.nome_original
+                  })"
                 >
                   <svg
                     width="20"
                     height="20"
                   ><use xlink:href="#i_waste" /></svg>
                 </button>
+
               </span>
             </li>
           </template>

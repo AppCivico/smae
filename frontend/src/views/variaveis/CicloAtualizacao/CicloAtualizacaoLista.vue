@@ -43,7 +43,7 @@
       <thead>
         <tr>
           <th scope="col">
-            CÓDIGO/NOME
+            Código/Nome
           </th>
 
           <th scope="col">
@@ -55,11 +55,11 @@
           </th>
 
           <th scope="col">
-            equipes repsonsáveis
+            Equipes responsáveis
           </th>
 
           <th scope="col">
-            prazo
+            Prazo
           </th>
 
           <th scope="col" />
@@ -76,7 +76,6 @@
             scope="row"
             class="flex center g05"
           >
-            <!--  -->
             <div class="listagem-item__icone">
               <svg
                 :width="cicloAtualizacao.icone.tamanho"
@@ -116,8 +115,10 @@
           </td>
 
           <th>
+            <!-- TO-DO: passar a essa conferência para o Backend e usar apenas
+`.pode_editar` -->
             <SmaeLink
-              v-if="cicloAtualizacao.pode_editar"
+              v-if="cicloAtualizacao.pode_editar && cicloAtualizacao.prazo"
               type="button"
               class="tipinfo tprimary like-a__text"
               exibir-desabilitado
@@ -192,6 +193,7 @@ const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
 const $route = useRoute();
 
+// TO-DO: passar para v-slots
 const tabs = {
   coleta: {
     aberta: true,
@@ -200,7 +202,7 @@ const tabs = {
     aba: 'coleta',
   },
   aprovacao: {
-    etiqueta: 'Aprovação',
+    etiqueta: 'Conferência',
     id: 'Validacao',
     aba: 'aprovacao',
   },

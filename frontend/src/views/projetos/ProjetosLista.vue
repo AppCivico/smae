@@ -85,7 +85,7 @@ watch(props, (novoValor) => {
 <template>
   <div class="flex spacebetween center mb2 g2">
     <TítuloDePágina>
-      Projetos
+      Portfólios
     </TítuloDePágina>
 
     <hr class="f1">

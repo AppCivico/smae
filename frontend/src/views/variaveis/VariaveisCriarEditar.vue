@@ -8,12 +8,14 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
+
 import {
   variavelGlobal as schemaCriacao,
   variavelGlobalParaGeracao as schemaGeracao,
@@ -47,6 +49,7 @@ const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
 const {
   lista: listaDeAssuntos,
+  categorias: listaDeCategorias,
   chamadasPendentes: chamadasPendentesDeAssuntos,
   erro: erroDeAssuntos,
 } = storeToRefs(assuntosStore);
@@ -112,11 +115,13 @@ const schema = computed(() => (gerarMultiplasVariaveis.value
 ));
 
 const {
-  errors, handleSubmit, resetForm, resetField, values,
+  errors, handleSubmit, resetForm, resetField, values, validateField, setFieldValue,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema.value,
 });
+
+const agrupadorSelecionado = computed(() => itemParaEdicao.value.assuntos_mapeados);
 
 const estãoTodasAsRegiõesSelecionadas = computed({
   get: () => {
@@ -149,6 +154,8 @@ const estãoTodasAsRegiõesSelecionadas = computed({
 const orgaosDisponiveis = computed(() => (temPermissãoPara.value('CadastroVariavelGlobal.administrador')
   ? órgãosComoLista.value
   : órgãosComoLista.value.filter((orgao) => orgao.id === user.value.orgao_id)));
+
+const ehNumerica = computed(() => values.variavel_categorica_id === '' || !values.variavel_categorica_id);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
@@ -185,6 +192,7 @@ const formularioSujo = useIsFormDirty();
 async function iniciar() {
   ÓrgãosStore.getAll();
   assuntosStore.buscarTudo();
+  assuntosStore.buscarCategorias();
   fontesStore.buscarTudo();
   equipesStore.buscarTudo();
   usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true });
@@ -199,10 +207,8 @@ async function iniciar() {
   }
 }
 
-function redefinirCamposDeGrupos() {
-  resetField('medicao_grupo_ids', { value: [] });
-  resetField('validacao_grupo_ids', { value: [] });
-  resetField('liberacao_grupo_ids', { value: [] });
+function redefinirCamposDeGrupos(campo) {
+  resetField(`${campo}_grupo_ids`, { value: [] });
 }
 
 iniciar();
@@ -220,6 +226,47 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
     resetField('nivel_regionalizacao', { value: null });
     resetField('regioes', { value: null });
   }
+});
+
+function limparCampoReferenteVariavelCategorica({ target }) {
+  if (
+    (target.value !== ''
+    || target.value)
+  ) {
+    const fields = {
+      unidade_medida_id: null,
+      casas_decimais: 0,
+      ano_base: null,
+      valor_base: null,
+      polaridade: null,
+      acumulativa: false,
+    };
+
+    Object.entries(fields).forEach(([key, value]) => {
+      setFieldValue(key, value);
+      validateField(key);
+    });
+  }
+}
+
+function logicaMapeamentoDeOpcoesDeAssunto(selecionados, listaDeAgrupadores, listaDeItems) {
+  const opcoes = selecionados.reduce((amount, linha) => {
+    amount.push({
+      listaDeAgrupadores,
+      listaDeItems: listaDeItems.filter(
+        (item) => item.categoria_assunto_variavel_id === linha.agrupadorId,
+      ),
+    });
+
+    return amount;
+  }, []);
+
+  return opcoes;
+}
+
+onUnmounted(() => {
+  // limpar por segurança, porque a lista não é "pura"
+  usersStore.$reset();
 });
 </script>
 <template>
@@ -386,31 +433,32 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           </div>
         </div>
       </div>
+    </fieldset>
 
+    <fieldset>
       <div class="flex flexwrap g2 mb1">
-        <div class="f1 fb25em">
-          <LabelFromYup
-            name="assuntos"
-            :schema="schema"
+        <Field
+          v-slot="{ field: { onChange } }"
+          name="assuntos"
+        >
+          <AgrupadorDeAutocomplete
+            :valores-iniciais="agrupadorSelecionado"
+            class="f1"
+            titulo="Assunto"
+            name-principal="assuntos"
+            label-campo-item="Assuntos"
+            label-campo-agrupador="Categoria de Assuntos"
+            :lista-de-items="listaDeAssuntos"
+            :lista-de-agrupadores="listaDeCategorias"
+            :logica-mapeamento-de-opcoes="logicaMapeamentoDeOpcoesDeAssunto"
+            @update:model-value="onChange"
           />
-          <AutocompleteField
-            name="assuntos"
-            :controlador="{
-              busca: '',
-              participantes: values.assuntos || []
-            }"
-            :grupo="listaDeAssuntos || []"
-            :aria-busy="chamadasPendentesDeAssuntos.lista"
-            :class="{
-              error: errors.assuntos
-            }"
-            label="nome"
-          />
-          <ErrorMessage
-            class="error-msg"
-            name="assuntos"
-          />
-        </div>
+        </Field>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
         <div class="f1 fb10em">
           <LabelFromYup
             name="variavel_categorica_id"
@@ -424,6 +472,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             :aria-disabled="!listaDeVariaveisCategoricas.length || !!variavelId"
             :aria-busy="chamadasPendentesDeVariaveisCategoricas.lista"
             :class="{ error: errors.variavel_categorica_id }"
+            @change="limparCampoReferenteVariavelCategorica"
           >
             <option value="">
               Numérica
@@ -453,16 +502,17 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="variavel_categorica_id"
           />
         </div>
-      </div>
-    </fieldset>
 
-    <fieldset>
-      <div class="flex flexwrap g2 mb1">
         <div class="f1 fb10em">
           <LabelFromYup
             name="polaridade"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.polaridade.spec.label }}
+            <span
+              class="tvermelho"
+            >*</span>
+          </LabelFromYup>
           <Field
             v-if="!variavelId"
             name="polaridade"
@@ -495,11 +545,17 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="polaridade"
           />
         </div>
-        <div class="f2 fb15em">
+        <div
+          v-if="ehNumerica"
+          class="f2 fb15em"
+        >
           <LabelFromYup
             name="unidade_medida_id"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.unidade_medida_id.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <Field
             v-if="!variavelId"
             name="unidade_medida_id"
@@ -532,11 +588,17 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="unidade_medida_id"
           />
         </div>
-        <div class="f1 fb10em">
+        <div
+          v-if="ehNumerica"
+          class="f1 fb10em"
+        >
           <LabelFromYup
             name="casas_decimais"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.casas_decimais.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <Field
             name="casas_decimais"
             type="number"
@@ -552,11 +614,17 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
       </div>
 
       <div class="flex flexwrap g2 mb1">
-        <div class="f1 fb15em">
+        <div
+          v-if="ehNumerica"
+          class="f1 fb15em"
+        >
           <LabelFromYup
             name="valor_base"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.valor_base.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <MaskedFloatInput
             :value="values.valor_base"
             name="valor_base"
@@ -572,7 +640,10 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="valor_base"
           />
         </div>
-        <div class="f1 fb15em">
+        <div
+          v-if="ehNumerica"
+          class="f1 fb15em"
+        >
           <LabelFromYup
             name="ano_base"
             :schema="schema"
@@ -751,20 +822,20 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
       </div>
     </fieldset>
 
-    <fieldset>
-      <div class="flex flexwrap g2 mb1">
-        <div class="f1 fb15em">
+    <fieldset class="flex flexwrap g2 mb1">
+      <div class="f1 fb25em">
+        <div>
           <LabelFromYup
-            name="orgao_id"
+            name="medicao_orgao_id"
             :schema="schema"
           />
           <Field
-            name="orgao_id"
+            name="medicao_orgao_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ error: errors.orgao_id }"
+            :class="{ error: errors.medicao_orgao_id }"
             :aria-busy="organs.loading"
-            @change="redefinirCamposDeGrupos"
+            @change="redefinirCamposDeGrupos('medicao')"
           >
             <option
               v-for="orgao in órgãosComoLista"
@@ -777,15 +848,11 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
           </Field>
           <ErrorMessage
             class="error-msg"
-            name="orgao_id"
+            name="medicao_orgao_id"
           />
         </div>
-      </div>
-    </fieldset>
 
-    <fieldset>
-      <div class="flex flexwrap g2 mb1">
-        <div class="f1 fb25em">
+        <div>
           <LabelFromYup
             name="medicao_grupo_ids"
             :schema="schema"
@@ -796,7 +863,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.medicao_grupo_ids || []
             }"
-            :grupo="equipesPorOrgaoIdPorPerfil[values.orgao_id]?.Medicao || []"
+            :grupo="equipesPorOrgaoIdPorPerfil[values.medicao_orgao_id]?.Medicao || []"
             :aria-busy="chamadasPendentesDeEquipes.lista"
             :class="{
               error: errors.medicao_grupo_ids
@@ -808,8 +875,37 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="medicao_grupo_ids"
           />
         </div>
+      </div>
 
-        <div class="f1 fb25em">
+      <div class="f1 fb25em">
+        <div>
+          <LabelFromYup
+            name="validacao_orgao_id"
+            :schema="schema"
+          />
+          <Field
+            name="validacao_orgao_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.validacao_orgao_id }"
+            :aria-busy="organs.loading"
+            @change="redefinirCamposDeGrupos('validacao')"
+          >
+            <option
+              v-for="orgao in órgãosComoLista"
+              :key="orgao.id"
+              :value="orgao.id"
+              :title="orgao.descricao?.length > 36 ? orgao.descricao : null"
+            >
+              {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="validacao_orgao_id"
+          />
+        </div>
+        <div>
           <LabelFromYup
             name="validacao_grupo_ids"
             :schema="schema"
@@ -820,7 +916,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.validacao_grupo_ids || []
             }"
-            :grupo="equipesPorOrgaoIdPorPerfil[values.orgao_id]?.Validacao || []"
+            :grupo="equipesPorOrgaoIdPorPerfil[values.validacao_orgao_id]?.Validacao || []"
             :aria-busy="chamadasPendentesDeEquipes.lista"
             :class="{
               error: errors.validacao_grupo_ids
@@ -832,8 +928,38 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
             name="validacao_grupo_ids"
           />
         </div>
+      </div>
 
-        <div class="f1 fb25em">
+      <div class="f1 fb25em">
+        <div>
+          <LabelFromYup
+            name="liberacao_orgao_id"
+            :schema="schema"
+          />
+          <Field
+            name="liberacao_orgao_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.liberacao_orgao_id }"
+            :aria-busy="organs.loading"
+            @change="redefinirCamposDeGrupos('liberacao')"
+          >
+            <option
+              v-for="orgao in órgãosComoLista"
+              :key="orgao.id"
+              :value="orgao.id"
+              :title="orgao.descricao?.length > 36 ? orgao.descricao : null"
+            >
+              {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="liberacao_orgao_id"
+          />
+        </div>
+
+        <div>
           <LabelFromYup
             name="liberacao_grupo_ids"
             :schema="schema"
@@ -844,7 +970,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               busca: '',
               participantes: values.liberacao_grupo_ids || []
             }"
-            :grupo="equipesPorOrgaoIdPorPerfil[values.orgao_id]?.Liberacao || []"
+            :grupo="equipesPorOrgaoIdPorPerfil[values.liberacao_orgao_id]?.Liberacao || []"
             :aria-busy="chamadasPendentesDeEquipes.lista"
             :class="{
               error: errors.liberacao_grupo_ids
@@ -868,6 +994,7 @@ watch(gerarMultiplasVariaveis, (novoValor) => {
               type="checkbox"
               :value="true"
               :unchecked-value="false"
+              :disabled="!ehNumerica"
             />
             <LabelFromYup
               name="acumulativa"

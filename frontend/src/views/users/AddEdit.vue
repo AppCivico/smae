@@ -1,4 +1,8 @@
 <script setup>
+import tipoDePerfil from '@/consts/tipoDePerfil';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '@back/common/consts';
+// Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
@@ -8,6 +12,7 @@ import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
 import { useUsersStore } from '@/stores/users.store';
@@ -25,9 +30,15 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const { id } = route.params;
 
+const equipesStore = useEquipesStore();
+const {
+  equipesPorOrgaoIdPorPerfil,
+  chamadasPendentes: chamadasPendentesDeEquipes,
+  erro: erroDeEquipes,
+} = storeToRefs(equipesStore);
+
 const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
-organsStore.getAll();
 
 const PaineisGruposStore = usePaineisGruposStore();
 const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
@@ -43,7 +54,7 @@ const {
 } = storeToRefs(usersStore);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetForm, resetField, setFieldValue, values,
 } = useForm({
   initialValues: user,
   validationSchema: schema,
@@ -68,9 +79,11 @@ const perfisPorMódulo = computed(() => (Array.isArray(accessProfiles.value)
           etiqueta: módulosDoSistema[módulo]?.nome || módulo,
           nome: módulo,
           perfis: [],
+          totalSelecionado: 0,
         };
       }
 
+      acc[módulo].totalSelecionado += values.perfil_acesso_ids?.includes(cur.id) ? 1 : 0;
       acc[módulo].perfis.push(cur);
     });
 
@@ -89,17 +102,6 @@ const módulosOrdenados = computed(() => Object.values(perfisPorMódulo.value)
         return a.etiqueta.localeCompare(b.etiqueta);
     }
   }));
-
-const dadosExtrasDeAbas = computed(() => Object.keys(perfisPorMódulo.value)
-  .reduce((acc, cur) => {
-    if (perfisPorMódulo.value[cur]?.id) {
-      acc[perfisPorMódulo.value[cur]?.id] = {
-        etiqueta: perfisPorMódulo.value[cur]?.etiqueta || cur,
-        id: perfisPorMódulo.value[cur]?.id || cur,
-      };
-    }
-    return acc;
-  }, {}));
 
 usersStore.getProfiles();
 
@@ -130,7 +132,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       r = await usersStore.register(carga);
       msg = 'Usuário adicionado com sucesso!';
     }
-    if (r == true) {
+    if (r === true) {
       await router.push({ name: 'gerenciarUsuários' });
       alertStore.success(msg);
     }
@@ -221,7 +223,11 @@ watch(accessProfiles, () => {
             <Field
               name="desativado"
               type="checkbox"
-              value="1"
+              :value="true"
+              :unchecked-value="false"
+              @update:model-value="resetField(
+                'desativado_motivo', { value: user.desativado_motivo }
+              )"
             /><span>Inativar usuário</span>
           </label>
         </div>
@@ -312,6 +318,7 @@ watch(accessProfiles, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.orgao_id }"
+            @change="resetField('equipes', { value: [] })"
           >
             <option value="">
               Selecionar
@@ -347,13 +354,25 @@ watch(accessProfiles, () => {
         -->
         <EnvelopeDeAbas
           v-if="módulosOrdenados.length"
-          :meta-dados-por-id="dadosExtrasDeAbas"
           nome-da-chave-de-abas="modulo"
           class="mb2"
         >
           <template
             v-for="(módulo) in módulosOrdenados"
-            #[módulo.id]
+            #[`${módulo.id}__cabecalho`]
+            :key="módulo.id"
+          >
+            {{ módulo.etiqueta }}
+            <sup
+              class="contador-de-perfis"
+            >
+              {{ perfisPorMódulo[módulo.nome]?.totalSelecionado }}
+            </sup>
+          </template>
+
+          <template
+            v-for="módulo in módulosOrdenados"
+            #[módulo.id]="{ abaEstaAberta }"
             :key="módulo.id"
           >
             <ul class="lista-de-perfis t12">
@@ -384,6 +403,53 @@ watch(accessProfiles, () => {
                 <pre v-ScrollLockDebug>pode_editar:{{ perfil.pode_editar }}</pre>
                 <pre v-ScrollLockDebug>modulos_sistemas:{{ perfil.modulos_sistemas }}</pre>
 
+                <TransitionExpand
+                  v-if="perfil.nome === CONST_PERFIL_PARTICIPANTE_EQUIPE"
+                >
+                  <ErrorComponent v-if="erroDeEquipes">
+                    {{ erroDeEquipes }}
+                  </ErrorComponent>
+                  <ul
+                    v-if="values.perfil_acesso_ids?.includes(perfil.id)
+                      && equipesPorOrgaoIdPorPerfil[values.orgao_id]"
+                    :aria-busy="chamadasPendentesDeEquipes"
+                    class="lista-de-perfis"
+                  >
+                    <li
+                      v-for="(perfilDeEquipe, chave) in
+                        equipesPorOrgaoIdPorPerfil[values.orgao_id] "
+                      :key="chave"
+                      class="lista-de-perfis__item"
+                    >
+                      <strong class="block mb1">
+                        {{ tipoDePerfil[chave].nome || chave }}
+                      </strong>
+                      <ul class="lista-de-perfis mb2">
+                        <li
+                          v-for="equipe in perfilDeEquipe"
+                          :key="equipe.id"
+                          class="lista-de-perfis__item"
+                        >
+                          <label
+                            class="block mb1 perfil"
+                            :for="`${módulo.id}__${perfil.id}__${chave}__${equipe.id}`"
+                          >
+                            <Field
+                              :id="`${módulo.id}__${perfil.id}__${chave}__${equipe.id}`"
+                              name="equipes"
+                              type="checkbox"
+                              :class="{ 'error': errors.equipes }"
+                              :disabled="(!perfil.pode_editar) || undefined"
+                              :value="equipe.id"
+                            />
+                            {{ equipe.titulo }}
+                          </label>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </TransitionExpand>
+
                 <button
                   type="button"
                   class="perfil__interruptor-de-privilegios btn bgnone uc tcprimary p0 tc600"
@@ -401,8 +467,7 @@ watch(accessProfiles, () => {
                 </button>
                 <TransitionExpand>
                   <ul
-                    v-show="perfilParaDetalhar === perfil.id
-                      && módulo.id === $route.query.modulo"
+                    v-show="perfilParaDetalhar === perfil.id && abaEstaAberta"
                     :aria-label="`Privilégios de ${perfil.nome}`"
                     class="perfil__lista-de-privilegios card-shadow p2"
                   >
@@ -479,11 +544,22 @@ watch(accessProfiles, () => {
 <style lang="less">
 @coluna: 22.5em;
 
+.contador-de-perfis {
+  border-radius: 999em;
+  background-color: @c600;
+  color: @branco;
+  padding: 0 0.25em;
+}
+
 .lista-de-perfis {
   position: relative;
 
   @media screen and(min-width: @coluna * 2) {
     padding-right: calc(@coluna + 2rem);
+  }
+
+  .lista-de-perfis {
+    padding-right: 0;
   }
 }
 

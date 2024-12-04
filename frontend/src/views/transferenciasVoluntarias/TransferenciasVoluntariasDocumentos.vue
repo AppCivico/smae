@@ -16,11 +16,10 @@ export default {
 };
 </script>
 <template>
-  <MigalhasDePão />
   <div class="flex spacebetween center mb2 mt2">
     <TítuloDePágina> Documentos </TítuloDePágina>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{
         name: 'TransferenciasVoluntariasEnviarArquivo',
         params: {
@@ -30,7 +29,7 @@ export default {
       class="btn ml2"
     >
       Novo arquivo
-    </router-link>
+    </SmaeLink>
   </div>
 
   <DocumentosDaTransferencia />

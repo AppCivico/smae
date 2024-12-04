@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
+import SmaeLink from '@/components/SmaeLink.vue';
 
 const AndamentoDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
@@ -97,8 +98,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
-    <MigalhasDePão />
-
     <TítuloDePágina />
 
     <hr class="f1">
@@ -109,7 +108,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     >
       <li class="f0">
         <button
-          v-if="transferenciaEmFoco?.workflow_id"
+          v-if="transferenciaEmFoco?.workflow_id && temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn bgnone outline tcprimary"
           @click="abrirConfigurarWorkflow"
@@ -119,9 +118,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
       <li class="f0">
         <button
+          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn"
-          :disabled="!inícioDeFasePermitido"
           @click="iniciarFase(idDaPróximaFasePendente)"
         >
           Iniciar fase
@@ -129,10 +128,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
       <li class="f0">
         <button
-          v-if="workflow"
+          v-if="
+            workflow.pode_passar_para_proxima_etapa
+              && temPermissãoPara('CadastroWorkflows.editar')
+          "
           type="button"
           class="btn"
-          :disabled="!workflow.pode_passar_para_proxima_etapa"
           @click="avançarEtapa"
         >
           Avançar etapa
@@ -216,7 +217,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             </span>
             {{ formatarTexto(linha.dados_extra?.faseReaberta?.fase) || ' - ' }}
           </strong> <br>
-          <strong class="tc600">{{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}</strong>
+          <strong class="tc600">
+            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
+          </strong>
           <div class="flex mt1">
             <dl class="mr2">
               <p class="tc500 w700 mb0">
@@ -226,13 +229,15 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 <dt class="w700 mr1">
                   Órgão responsável:
                 </dt>
-                <dd> {{ linha.dados_extra?.faseReaberta?.orgao_responsavel?.sigla || ' - ' }} </dd>
+                <dd>{{ linha.dados_extra?.faseReaberta?.orgao_responsavel?.sigla || ' - ' }}</dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Pessoa responsável:
                 </dt>
-                <dd>{{ linha.dados_extra?.faseReaberta?.pessoa_responsavel?.nome_exibicao || ' - ' }} </dd>
+                <dd>
+                  {{ linha.dados_extra?.faseReaberta?.pessoa_responsavel?.nome_exibicao || ' - ' }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
@@ -244,7 +249,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 <dt class="w700 mr1">
                   Situação:
                 </dt>
-                <dd>{{ formatarTexto(linha.dados_extra?.faseReaberta?.situacao?.tipo_situacao) || ' - ' }} </dd>
+                <dd>
+                  {{ formatarTexto(
+                    linha.dados_extra?.faseReaberta?.situacao?.tipo_situacao
+                  ) || ' - ' }}
+                </dd>
               </div>
             </dl>
             <dl
@@ -258,25 +267,37 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
                 <dt class="w700 mr1">
                   Órgão responsável:
                 </dt>
-                <dd> {{ linha.dados_extra?.faseIncompleta?.orgao_responsavel?.sigla || ' - ' }} </dd>
+                <dd>
+                  {{ linha.dados_extra?.faseIncompleta?.orgao_responsavel?.sigla || ' - ' }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Pessoa responsável:
                 </dt>
-                <dd> {{ linha.dados_extra?.faseIncompleta?.pessoa_responsavel?.nome_exibicao || ' - ' }} </dd>
+                <dd>
+                  {{
+                    linha.dados_extra?.faseIncompleta?.pessoa_responsavel?.nome_exibicao || ' - '
+                  }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Data de início:
                 </dt>
-                <dd>{{ dateToField(linha.dados_extra?.faseIncompleta?.data_inicio) || ' - ' }} </dd>
+                <dd>
+                  {{ dateToField(linha.dados_extra?.faseIncompleta?.data_inicio) || ' - ' }}
+                </dd>
               </div>
               <div class="flex mt05">
                 <dt class="w700 mr1">
                   Situação:
                 </dt>
-                <dd>{{ formatarTexto(linha.dados_extra?.faseIncompleta?.situacao?.tipo_situacao) || ' - ' }} </dd>
+                <dd>
+                  {{ formatarTexto(
+                    linha.dados_extra?.faseIncompleta?.situacao?.tipo_situacao
+                  ) || ' - ' }}
+                </dd>
               </div>
             </dl>
           </div>
@@ -328,7 +349,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       Identificação
     </h3>
     <hr class="f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
       class="btn with-icon bgnone tcprimary p0"
@@ -338,7 +359,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         height="20"
       ><use xlink:href="#i_edit" /></svg>
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex g2 center mt3 mb2">
@@ -624,7 +645,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       Recurso Financeiro
     </h3>
     <hr class="f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
       title="Editar recursos financeiros"
       class="btn with-icon bgnone tcprimary p0"
@@ -634,7 +655,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         height="20"
       ><use xlink:href="#i_edit" /></svg>
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex flexwrap g2 mb3">
@@ -749,8 +770,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       Distribuição de Recursos
     </h3>
     <hr class="f1">
-    <router-link
-      :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
+    <SmaeLink
+      :to="{ name: 'TransferenciaDistribuicaoDeRecursos.Lista' }"
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"
     >
@@ -759,7 +780,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         height="20"
       ><use xlink:href="#i_edit" /></svg>
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <ListaDeDistribuicaoItem

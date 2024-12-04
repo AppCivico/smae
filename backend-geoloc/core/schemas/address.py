@@ -7,7 +7,7 @@ from .camadas import CamadaParam
 
 class EnderecoProperties(BaseModel):
 
-    rua: str
+    rua: Optional[str]=None
     numero: Optional[str]=None
     cidade: str
     bairro: Optional[str]=None
@@ -15,7 +15,7 @@ class EnderecoProperties(BaseModel):
     pais: str
     codigo_pais: str
     string_endereco: str
-    cep: str
+    cep: Optional[str]=None
     osm_type: str
 
 class Endereco(Feature):
@@ -28,7 +28,7 @@ class GeoJsonEndereco(GeoJson):
 
 class AdressSearch(BaseModel):
 
-    endereco: GeoJson
+    endereco: GeoJsonEndereco
     camadas_geosampa: Dict[str, GeoJson]
 
 

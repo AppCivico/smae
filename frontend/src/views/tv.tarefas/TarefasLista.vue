@@ -51,6 +51,17 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
       >
         <td>{{ item.descricao }}</td>
         <td>
+          <router-link
+            :to="{ name: 'tarefasEditar', params: { tarefasId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
+        </td>
+        <td>
           <button
             class="like-a__text"
             arial-label="excluir"
@@ -62,17 +73,6 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            :to="{ name: 'tarefasEditar', params: { tarefasId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">

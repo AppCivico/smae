@@ -19,15 +19,16 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
-import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
+import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
+import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
-import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import {
+  computed,
   ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
@@ -40,25 +41,28 @@ const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
 const {
-  meta_id, iniciativa_id, atividade_id, indicador_id,
+  meta_id: metaId,
+  iniciativa_id: iniciativaId,
+  atividade_id: atividadeId,
+  indicador_id: indicadorId,
 } = route.params;
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}${atividadeId ? `/atividades/${atividadeId}` : ''}`;
 
 const props = defineProps(['group']);
 
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
-MetasStore.getById(meta_id);
+MetasStore.getById(metaId);
 MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
-if (iniciativa_id) IniciativasStore.getById(meta_id, iniciativa_id);
+if (iniciativaId) IniciativasStore.getById(metaId, iniciativaId);
 
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
-if (atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
+if (atividadeId) AtividadesStore.getById(iniciativaId, atividadeId);
 
 const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
@@ -97,6 +101,11 @@ const formula = ref('');
 const variaveisFormula = ref([]);
 const errFormula = ref('');
 const AssociadorDeVariaveisEstaAberto = ref(false);
+
+// eslint-disable-next-line max-len
+const variaveisCategoricasDisponiveis = computed(() => (Array.isArray(Variaveis.value?.[route.params.indicador_id])
+  ? Variaveis.value?.[route.params.indicador_id].filter((v) => v.variavel_categorica_id !== null)
+  : []));
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -137,6 +146,8 @@ function start() {
 }
 
 // Formula
+// desabilitando lint para manter compatibilidade com o código legado
+// eslint-disable-next-line consistent-return
 async function validadeFormula(f) {
   try {
     if (typeof window.formula_parser !== 'undefined') {
@@ -151,9 +162,26 @@ async function onSubmit(values) {
   try {
     let msg;
     let r;
+
+    if (values.variavel_categoria_id) {
+      values.formula_variaveis = [
+        {
+          variavel_id: values.variavel_categoria_id,
+          referencia: '_1',
+          janela: 1,
+          usar_serie_acumulada: false,
+        },
+      ];
+      values.formula = '$_1';
+    } else {
+      values.formula = formula.value.trim();
+      values.formula_variaveis = unref(variaveisFormula);
+    }
+
     values.inicio_medicao = fieldToDate(values.inicio_medicao);
     values.fim_medicao = fieldToDate(values.fim_medicao);
     values.regionalizavel = !!values.regionalizavel;
+    values.variavel_categoria_id = values.variavel_categoria_id === '' ? null : values.variavel_categoria_id;
     values.nivel_regionalizacao = values.regionalizavel
       ? Number(values.nivel_regionalizacao)
       : null;
@@ -172,17 +200,15 @@ async function onSubmit(values) {
     }
 
     // Parent
-    if (atividade_id) {
-      values.atividade_id = Number(atividade_id);
-    } else if (iniciativa_id) {
-      values.iniciativa_id = Number(iniciativa_id);
+    if (atividadeId) {
+      values.atividade_id = Number(atividadeId);
+    } else if (iniciativaId) {
+      values.iniciativa_id = Number(iniciativaId);
     } else {
-      values.meta_id = Number(meta_id);
+      values.meta_id = Number(metaId);
     }
 
-    if (indicador_id) {
-      values.formula = formula.value.trim();
-
+    if (indicadorId || values.indicador_tipo === 'Categorica') {
       if (values.formula) {
         const er = await validadeFormula(values.formula);
         if (er) {
@@ -191,7 +217,14 @@ async function onSubmit(values) {
         }
       }
 
-      values.formula_variaveis = unref(variaveisFormula);
+      if (values.indicador_tipo === 'Numerico') {
+        values.variavel_categoria_id = null;
+      }
+
+      if (values.indicador_tipo === 'Categorica' && !values.variavel_categoria_id) {
+        values.formula = null;
+        values.formula_variaveis = [];
+      }
 
       if (singleIndicadores.value.id) {
         r = await IndicadoresStore.update(singleIndicadores.value.id, values);
@@ -205,7 +238,8 @@ async function onSubmit(values) {
       IndicadoresStore.clear();
       msg = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
+
+    if (r === true) {
       MetasStore.clear();
       alertStore.success(msg);
 
@@ -259,15 +293,15 @@ async function checkClose() {
   });
 }
 
-if (indicador_id) {
+if (indicadorId) {
   const chamadas = [
-    IndicadoresStore.getById(indicador_id),
-    VariaveisStore.getAll(indicador_id),
+    IndicadoresStore.getById(indicadorId),
+    VariaveisStore.getAll(indicadorId),
   ];
 
   if (route.meta.entidadeMãe === 'pdm') {
-    chamadas.push(VariaveisStore.getAllCompound(indicador_id));
-    chamadas.push(VariaveisStore.getAllCompoundInUse(indicador_id));
+    chamadas.push(VariaveisStore.getAllCompound(indicadorId));
+    chamadas.push(VariaveisStore.getAllCompoundInUse(indicadorId));
   }
 
   Promise.all(chamadas).then(() => {
@@ -280,17 +314,17 @@ if (indicador_id) {
       }
     }
   });
-} else if (atividade_id) {
-  IndicadoresStore.getAll(atividade_id, 'atividade_id');
-} else if (iniciativa_id) {
-  IndicadoresStore.getAll(iniciativa_id, 'iniciativa_id');
+} else if (atividadeId) {
+  IndicadoresStore.getAll(atividadeId, 'atividade_id');
+} else if (iniciativaId) {
+  IndicadoresStore.getAll(iniciativaId, 'iniciativa_id');
 } else {
-  IndicadoresStore.getAll(meta_id, 'meta_id');
+  IndicadoresStore.getAll(metaId, 'meta_id');
 }
 
 watch(AssociadorDeVariaveisEstaAberto, (novoValor) => {
   if (!novoValor) {
-    VariaveisStore.getAll(indicador_id);
+    VariaveisStore.getAll(indicadorId);
   }
 });
 
@@ -305,7 +339,7 @@ watch(() => props.group, () => {
     <TítuloDePágina
       :ícone="activePdm?.logo"
     >
-      <template v-if="indicador_id">
+      <template v-if="indicadorId">
         Editar Indicador
       </template>
       <template v-else>
@@ -325,13 +359,13 @@ watch(() => props.group, () => {
     </button>
   </div>
   <div
-    v-if="atividade_id"
+    v-if="atividadeId"
     class="t24 mb2"
   >
     {{ activePdm.rotulo_atividade }} {{ singleAtividade.codigo }} {{ singleAtividade.titulo }}
   </div>
   <div
-    v-else-if="iniciativa_id"
+    v-else-if="iniciativaId"
     class="t24 mb2"
   >
     {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.codigo }} {{ singleIniciativa.titulo }}
@@ -347,7 +381,7 @@ watch(() => props.group, () => {
     <Form
       v-slot="{ errors, isSubmitting, setFieldValue, values }"
       :validation-schema="schema"
-      :initial-values="indicador_id ? singleIndicadores : {}"
+      :initial-values="indicadorId ? singleIndicadores : {}"
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -374,6 +408,33 @@ watch(() => props.group, () => {
           <div class="error-msg">
             {{ errors.titulo }}
           </div>
+        </div>
+        <div
+          v-if="indicadorId"
+          class="f2"
+        >
+          <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
+          <Field
+            id="indicador_tipo"
+            as="select"
+            name="indicador_tipo"
+            class="inputtext light"
+            @change="() => {
+              if (values.indicador_tipo) {
+                setFieldValue('formula', '')
+                setFieldValue('formula_variaveis', [])
+                formula = ''
+                variaveisFormula = []
+              }
+            }"
+          >
+            <option value="Numerico">
+              Numérica
+            </option>
+            <option value="Categorica">
+              Categórica
+            </option>
+          </Field>
         </div>
       </div>
       <div class="flex g2">
@@ -402,7 +463,10 @@ watch(() => props.group, () => {
             {{ errors.polaridade }}
           </div>
         </div>
-        <div class="f1">
+        <div
+          v-show="values.indicador_tipo === 'Numerico'"
+          class="f1"
+        >
           <label class="label">Casas decimais</label>
           <Field
             name="casas_decimais"
@@ -421,7 +485,7 @@ watch(() => props.group, () => {
           <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
 
           <Field
-            v-if="!indicador_id"
+            v-if="!indicadorId"
             name="periodicidade"
             as="select"
             class="inputtext light mb1"
@@ -503,10 +567,31 @@ watch(() => props.group, () => {
             {{ errors.fim_medicao }}
           </div>
         </div>
+        <div
+          v-if="values.indicador_tipo === 'Categorica'"
+          class="f1 fb20em"
+        >
+          <label class="label">Variavel</label>
+          <Field
+            id="variavel_categoria_id"
+            as="select"
+            name="variavel_categoria_id"
+            class="inputtext light"
+          >
+            <option :value="null" />
+            <option
+              v-for="(variavel, index) in variaveisCategoricasDisponiveis"
+              :key="index"
+              :value="variavel.id"
+              :title="variavel.titulo"
+            >
+              {{ variavel.titulo }}
+            </option>
+          </Field>
+        </div>
       </div>
-
       <div
-        v-if="!indicador_id"
+        v-if="!indicadorId"
         class=""
       >
         <div class="mb1">
@@ -639,18 +724,21 @@ watch(() => props.group, () => {
 
       <hr class="mt2 mb2">
 
-      <div v-if="indicador_id && !Variaveis[indicador_id]?.loading">
+      <div
+        v-if="indicadorId && !Variaveis[indicadorId]?.loading"
+        v-show="values.indicador_tipo === 'Numerico'"
+      >
         <EditorDeFormula
           v-model="formula"
           v-model:variaveis-formula="variaveisFormula"
-          :variáveis-do-indicador="Array.isArray(Variaveis[indicador_id])
-            ? Variaveis[indicador_id]
+          :variáveis-do-indicador="Array.isArray(Variaveis[indicadorId])
+            ? Variaveis[indicadorId]
             : []"
           :variáveis-em-uso="Array.isArray(singleIndicadores.formula_variaveis)
             ? singleIndicadores.formula_variaveis
             : []"
-          :variáveis-compostas="Array.isArray(variáveisCompostas[indicador_id])
-            ? variáveisCompostas[indicador_id]
+          :variáveis-compostas="Array.isArray(variáveisCompostas[indicadorId])
+            ? variáveisCompostas[indicadorId]
             : []"
         />
 
@@ -690,7 +778,7 @@ watch(() => props.group, () => {
           </div>
         </div>
       </div>
-      <div v-else-if="Variaveis[indicador_id]?.loading">
+      <div v-else-if="Variaveis[indicadorId]?.loading">
         <span class="spinner">Carregando</span>
       </div>
 
@@ -716,7 +804,7 @@ watch(() => props.group, () => {
       </div>
     </div>
   </template>
-  <template v-if="(!indicador_id && singleIndicadores.length)">
+  <template v-if="(!indicadorId && singleIndicadores.length)">
     <div class="error p1">
       <div class="error-msg">
         Somente um indicador por meta
@@ -733,15 +821,15 @@ watch(() => props.group, () => {
   </template>
 
   <EnvelopeDeAbas
-    v-if="indicador_id"
+    v-if="indicadorId"
     :meta-dados-por-id="dadosExtrasDeAbas"
     class="mt2 mb2"
   >
     <template #TabelaDeVariaveis="{ estáAberta }">
       <TabelaDeVariaveis
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
-        :variáveis="Variaveis[indicador_id]"
+        :variáveis="Variaveis[indicadorId]"
         :parentlink="parentlink"
         :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       >
@@ -771,10 +859,10 @@ watch(() => props.group, () => {
       #TabelaDeVariaveisCompostas="{ estáAberta }"
     >
       <TabelaDeVariaveisCompostas
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
-        :variáveis-compostas="Array.isArray(variáveisCompostas[indicador_id])
-          ? variáveisCompostas[indicador_id]
+        :variáveis-compostas="Array.isArray(variáveisCompostas[indicadorId])
+          ? variáveisCompostas[indicadorId]
           : []"
         :parentlink="parentlink"
       />
@@ -785,22 +873,22 @@ watch(() => props.group, () => {
       #TabelaDeVariaveisCompostasEmUso="{ estáAberta }"
     >
       <TabelaDeVariaveisCompostasEmUso
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
-        :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
+        :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicadorId]"
         :parentlink="parentlink"
       />
     </template>
 
     <template #TabelaDeVariaveisEmUso="{ estáAberta }">
       <TabelaDeVariaveisEmUso
-        v-if="!Variaveis[indicador_id]?.loading && estáAberta"
+        v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :parentlink="parentlink"
         :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
       />
     </template>
   </EnvelopeDeAbas>
 
-  <template v-if="indicador_id && $route.meta.entidadeMãe === 'planoSetorial'">
+  <template v-if="indicadorId && $route.meta.entidadeMãe === 'planoSetorial'">
     <SmallModal
       v-if="AssociadorDeVariaveisEstaAberto"
       class="largura-total"
@@ -813,7 +901,7 @@ watch(() => props.group, () => {
     </SmallModal>
   </template>
 
-  <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
+  <template v-if="indicadorId && singleIndicadores.id && indicadorId == singleIndicadores.id">
     <hr class="mt2 mb2">
     <button
       class="btn amarelo big"

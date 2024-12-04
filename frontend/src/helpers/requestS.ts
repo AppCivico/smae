@@ -6,10 +6,24 @@ import qs from 'qs';
 
 type Method = 'GET' | 'POST' | 'UPLOAD' | 'PUT' | 'PATCH' | 'DELETE';
 
+export type ParametrosDeRequisicao = URLSearchParams
+| Record<string, unknown>
+| FormData
+| undefined;
+
+export type RequestS = {
+  get: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
+  post: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  upload: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  put: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  patch: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
+  delete: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
+};
+
 type Alerta = {
   message: string;
-  callback?: Function;
-  fallback?: Function;
+  callback?: () => void;
+  fallback?: () => void;
   type: 'alert-success' | 'alert-danger' | 'confirm' | 'confirmAction';
   label?: string;
 };
@@ -85,7 +99,7 @@ function userToken(url: RequestInfo | URL): HeadersInit {
 function request(method: Method, upload = false) {
   return (
     url: RequestInfo | URL,
-    params: { [key: string]: unknown } | undefined,
+    params: ParametrosDeRequisicao | undefined,
     opcoes: { AlertarErros?: boolean; headers?: HeadersInit } = { AlertarErros: true },
   ) => {
     let urlFinal = url;
@@ -137,7 +151,7 @@ function request(method: Method, upload = false) {
   };
 }
 
-export default {
+const requestS: RequestS = {
   get: request('GET'),
   post: request('POST'),
   upload: request('POST', true),
@@ -145,3 +159,5 @@ export default {
   patch: request('PATCH'),
   delete: request('DELETE'),
 };
+
+export default requestS;

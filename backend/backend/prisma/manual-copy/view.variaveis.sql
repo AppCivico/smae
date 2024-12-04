@@ -32,17 +32,7 @@ SELECT
     tipo,
     fonte.id AS fonte_id,
     fonte.nome AS fonte_nome,
-    (
-        CASE WHEN (
-            SELECT
-                count(*)
-            FROM
-                variavel AS variaveis_filhas
-            WHERE
-                variaveis_filhas.removido_em IS NULL
-                AND variaveis_filhas.variavel_mae_id = v.id
-        ) > 0 THEN TRUE ELSE FALSE END
-    ) AS possui_variaveis_filhas,
+    v.possui_variaveis_filhas,
     v.variavel_mae_id,
     v.regiao_id
 FROM

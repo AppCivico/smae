@@ -6,10 +6,10 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import type { RequestS } from '@/helpers/requestS';
+import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
-// usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
-// @ts-ignore
-import requestS from '@/helpers/requestS.ts';
+import type { Store } from 'pinia';
 import { createPinia } from 'pinia';
 import {
   createApp, markRaw, nextTick,
@@ -41,31 +41,41 @@ app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
 
 const pinia = createPinia();
 
-interface RequestS {
-  get: (url: RequestInfo | URL, params?: URLSearchParams | {} | undefined) => Promise<any>;
-  post: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  upload: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  put: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  patch: (url: RequestInfo | URL, params: URLSearchParams | {} | undefined) => Promise<any>;
-  delete: (url: RequestInfo | URL, params?: URLSearchParams | {} | undefined) => Promise<any>;
-}
-
 declare module 'pinia' {
   export interface PiniaCustomProperties {
     requestS: RequestS;
     router: Router;
     route: RouteLocationNormalizedLoaded;
+    resetAllStores: () => void;
   }
   export interface PiniaCustomStateProperties {
     route: RouteLocationNormalizedLoaded;
   }
 }
 
+const stores:Store[] = [];
+
 pinia.use(() => ({
   router: markRaw(router),
   route: (markRaw(router).currentRoute) as unknown as RouteLocationNormalizedLoaded,
   requestS: markRaw(requestS),
 }));
+
+// @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
+pinia.use(({ store }) => {
+  stores.push(store);
+
+  return {
+    resetAllStores: () => {
+      stores.forEach((eachStore) => {
+        eachStore.$reset();
+      });
+
+      stores.splice(0);
+    },
+  };
+});
+
 app.directive('ScrollLockDebug', {
   beforeMount: (el, binding) => {
     const primária = 'Control';

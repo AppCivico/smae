@@ -1,6 +1,4 @@
 <script setup>
-import { useSlots } from 'vue';
-
 defineProps({
   erro: {
     type: null,

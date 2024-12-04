@@ -1,3 +1,5 @@
+import { IdNomeDto } from '../../common/dto/IdNome.dto';
+
 export class ProjetosResponsavelDto {
     id: number;
     codigo: string | null;
@@ -13,7 +15,12 @@ export class DetalhePessoaDto {
     email: string;
     nome_exibicao: string;
     nome_completo: string;
-    lotacao?: string;
+    lotacao: string | null;
+    cargo: string | null;
+    registro_funcionario: string | null;
+    cpf: string | null;
+    equipes: number[];
+    grupos: IdNomeDto[];
 
     orgao_id?: number | undefined;
     perfil_acesso_ids: number[];

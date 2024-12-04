@@ -62,7 +62,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       alertStore.success('Dados salvos com sucesso!');
       TransferenciasVoluntarias.buscarItem(props.transferenciaId);
       if (transferenciaEmFoco.value?.pendente_preenchimento_valores) {
-        router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
+        router.push({ name: 'TransferenciaDistribuicaoDeRecursos.Lista' });
       } else {
         router.push({
           name: 'RegistroDeTransferenciaEditar',
@@ -143,7 +143,6 @@ watch(itemParaEdicao, async (novosValores) => {
   <pre v-scrollLockDebug>
     transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
   </pre>
-  <MigalhasDePão />
   <div class="flex spacebetween center mt2">
     <h1>Recursos Financeiros</h1>
     <hr class="ml2 f1">

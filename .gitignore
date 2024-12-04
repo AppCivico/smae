@@ -6,3 +6,5 @@ utils/sync-proxy.sh
 *.env
 openapitools.json
 .DS_Store
+
+.vscode/settings.json

@@ -1,4 +1,4 @@
-import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { Periodicidade, Polaridade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
@@ -53,11 +53,12 @@ export class VariaveisPeriodosDto {
 
 export class CreateVariavelBaseDto {
     /**
-     * ID do órgão
+     * ID do órgão, se for enviado e não for enviado medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id, ira sobrescrevê-los
      */
-    @IsInt({ message: '$property| órgão responsável' })
+    @IsOptional()
+    @IsInt({ message: 'órgão responsável' })
     @Type(() => Number)
-    orgao_id: number;
+    orgao_id?: number;
 
     /**
      * ID da região (opcional)
@@ -207,6 +208,16 @@ export class CreateVariavelBaseDto {
     orgao_proprietario_id?: number | null;
 
     @IsOptional()
+    @IsInt()
+    medicao_orgao_id?: number | null;
+    @IsOptional()
+    @IsInt()
+    validacao_orgao_id?: number | null;
+    @IsOptional()
+    @IsInt()
+    liberacao_orgao_id?: number | null;
+
+    @IsOptional()
     @IsInt({ each: true })
     @IsArray()
     @ArrayMaxSize(1000)
@@ -223,6 +234,11 @@ export class CreateVariavelBaseDto {
     @IsArray()
     @ArrayMaxSize(1000)
     liberacao_grupo_ids?: number[] | null;
+
+    @ApiHideProperty()
+    @IsOptional()
+    @IsBoolean()
+    possui_variaveis_filhas?: boolean;
 }
 
 export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
@@ -254,10 +270,10 @@ export class CreatePeloIndicadorDto extends PickType(CreateVariavelBaseDto, ['ti
 }
 
 export class CreateGeradorVariaveBaselDto extends CreateVariavelBaseDto {
-    @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
-    @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
-    @ArrayMaxSize(1000, { message: '$property| tag(s): precisa ter no máximo 1000 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'Região precisa ser uma array.' })
+    @ArrayMinSize(1, { message: 'Região precisa ter pelo menos um item' })
+    @ArrayMaxSize(1000, { message: 'Região precisa ter no máximo 1000 items' })
+    @IsInt({ each: true, message: 'Região, cada item precisa ser um número inteiro' })
     regioes: number[];
 
     @IsBoolean()

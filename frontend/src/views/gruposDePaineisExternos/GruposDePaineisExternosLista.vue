@@ -4,6 +4,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import SmaeLink from '@/components/SmaeLink.vue';
 
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
@@ -34,7 +35,7 @@ if (!Array.isArray(organs) || !organs.length) {
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina>
-      Grupos de Paineis Externos
+      Grupos de Painéis Externos
     </TítuloDePágina>
 
     <hr class="ml2 f1">
@@ -43,7 +44,7 @@ if (!Array.isArray(organs) || !organs.length) {
       :to="{ name: 'grupospaineisExternosCriar' }"
       class="btn big ml1"
     >
-      Novo Grupos de Painéis Externos
+      Novo Grupo de Painéis Externos
     </router-link>
   </div>
 
@@ -94,6 +95,17 @@ if (!Array.isArray(organs) || !organs.length) {
           </ul>
         </td>
         <td>
+          <SmaeLink
+            :to="{ name: 'gruposPaineisExternosEditar', params: { gruposPaineisExternosId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </td>
+        <td>
           <button
             class="like-a__text"
             arial-label="excluir"
@@ -105,17 +117,6 @@ if (!Array.isArray(organs) || !organs.length) {
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            :to="{ name: 'gruposPaineisExternosEditar', params: { gruposPaineisExternosId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">

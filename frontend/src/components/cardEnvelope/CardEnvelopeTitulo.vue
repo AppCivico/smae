@@ -22,7 +22,7 @@
     </h2>
     <p
       v-if="$slots?.subtitulo || subtitulo"
-      class="card-envelope-titulo__texto__subtitulo t10"
+      class="card-envelope-titulo__texto__subtitulo t14"
     >
       <slot name="subtitulo">
         {{ subtitulo }}

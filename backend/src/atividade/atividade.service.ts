@@ -19,6 +19,17 @@ import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { AtividadeDto, AtividadeOrgao } from './entities/atividade.entity';
 import { UniqueNumbers } from '../common/UniqueNumbers';
 
+interface AtividadeResponsavelChanges {
+    added: {
+        pessoa_id: number;
+        coordenador_cp: boolean;
+    }[];
+    removed: {
+        pessoa_id: number;
+        coordenador_cp: boolean;
+    }[];
+}
+
 @Injectable()
 export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
@@ -576,14 +587,11 @@ export class AtividadeService {
                     );
 
                 await prismaTx.atividadeOrgao.deleteMany({ where: { atividade_id: id } });
-                await prismaTx.atividadeResponsavel.deleteMany({ where: { atividade_id: id } });
-
                 await prismaTx.atividadeOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(atividade.id, op),
                 });
-                await prismaTx.atividadeResponsavel.createMany({
-                    data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
-                });
+
+                await this.upsertAtividadeResponsaveis(prismaTx, atividade.id, op, cp);
             } else {
                 const pdm = await prismaTx.pdm.findFirstOrThrow({
                     where: {
@@ -682,6 +690,228 @@ export class AtividadeService {
         });
 
         return { id };
+    }
+
+    private async upsertAtividadeResponsaveis(
+        prismaTx: Prisma.TransactionClient,
+        atividadeId: number,
+        orgaosParticipantes: AtividadeOrgaoParticipante[],
+        coordenadoresCP: number[]
+    ): Promise<AtividadeResponsavelChanges> {
+        // atual
+        const currentResponsaveis = await prismaTx.atividadeResponsavel.findMany({
+            where: { atividade_id: atividadeId },
+            select: {
+                pessoa_id: true,
+                coordenador_responsavel_cp: true,
+            },
+        });
+
+        const newResponsaveis: Prisma.AtividadeResponsavelCreateManyInput[] = [];
+
+        // Adiciona como se fosse todos novos
+        for (const orgao of orgaosParticipantes) {
+            for (const participanteId of orgao.participantes) {
+                newResponsaveis.push({
+                    atividade_id: atividadeId,
+                    pessoa_id: participanteId,
+                    orgao_id: orgao.orgao_id,
+                    coordenador_responsavel_cp: false,
+                });
+            }
+        }
+
+        // Mesma coisa pro cp
+        for (const coordenadorId of coordenadoresCP) {
+            const pessoaFisicaOrgao = await prismaTx.pessoa.findFirst({
+                where: { id: coordenadorId },
+                select: { pessoa_fisica: { select: { orgao_id: true } } },
+            });
+
+            const orgaoId = pessoaFisicaOrgao?.pessoa_fisica?.orgao_id;
+            if (!orgaoId) {
+                throw new BadRequestException(
+                    `Coordenador CP ${coordenadorId} não está associado a uma Pessoa Física com Órgão.`
+                );
+            }
+
+            newResponsaveis.push({
+                atividade_id: atividadeId,
+                pessoa_id: coordenadorId,
+                orgao_id: orgaoId,
+                coordenador_responsavel_cp: true,
+            });
+        }
+
+        // agora busca de fato as mudanças
+        const changes: AtividadeResponsavelChanges = {
+            added: [],
+            removed: [],
+        };
+
+        // quem saiu
+        for (const current of currentResponsaveis) {
+            const stillExists = newResponsaveis.some(
+                (nr) =>
+                    nr.pessoa_id === current.pessoa_id &&
+                    nr.coordenador_responsavel_cp === current.coordenador_responsavel_cp
+            );
+
+            if (!stillExists) {
+                changes.removed.push({
+                    pessoa_id: current.pessoa_id,
+                    coordenador_cp: current.coordenador_responsavel_cp,
+                });
+            }
+        }
+
+        // quem entrou
+        for (const newResp of newResponsaveis) {
+            const exists = currentResponsaveis.some(
+                (cr) =>
+                    cr.pessoa_id === newResp.pessoa_id &&
+                    cr.coordenador_responsavel_cp === newResp.coordenador_responsavel_cp
+            );
+
+            if (!exists) {
+                changes.added.push({
+                    pessoa_id: newResp.pessoa_id,
+                    coordenador_cp: newResp.coordenador_responsavel_cp,
+                });
+            }
+        }
+
+        // quem saiu precisa verificar as responsabilidades
+        await this.verificaRemocaoResponsaveis(prismaTx, atividadeId, changes.removed);
+
+        // apaga quem saiu
+        if (changes.removed.length > 0) {
+            const removeIds = changes.removed.map((r) => r.pessoa_id);
+            await prismaTx.atividadeResponsavel.deleteMany({
+                where: {
+                    atividade_id: atividadeId,
+                    pessoa_id: { in: removeIds },
+                },
+            });
+        }
+
+        // salva os novos, se alguem saiu de pf pra cp, vai gerar saida+entrada
+        for (const newResp of newResponsaveis) {
+            const exists = currentResponsaveis.some(
+                (cr) =>
+                    cr.pessoa_id === newResp.pessoa_id &&
+                    cr.coordenador_responsavel_cp === newResp.coordenador_responsavel_cp
+            );
+
+            if (!exists) {
+                await prismaTx.atividadeResponsavel.create({
+                    data: newResp,
+                });
+            }
+        }
+
+        return changes;
+    }
+
+    private async verificaRemocaoResponsaveis(
+        prismaTx: Prisma.TransactionClient,
+        atividadeId: number,
+        responsaveisRemovidos: { pessoa_id: number; coordenador_cp: boolean }[]
+    ): Promise<void> {
+        for (const resp of responsaveisRemovidos) {
+            // For Atividade, we only need to check Variables since it's the lowest level
+            const variavelCount = await prismaTx.variavelResponsavel.count({
+                where: {
+                    pessoa_id: resp.pessoa_id,
+                    variavel: {
+                        indicador_variavel: {
+                            some: {
+                                indicador: {
+                                    removido_em: null,
+                                    atividade_id: atividadeId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (variavelCount > 0) {
+                const variaveis = await prismaTx.variavelResponsavel.findMany({
+                    where: {
+                        pessoa_id: resp.pessoa_id,
+                        variavel: {
+                            removido_em: null,
+                            indicador_variavel: {
+                                some: {
+                                    indicador_origem: null,
+                                    indicador: {
+                                        removido_em: null,
+                                        atividade_id: atividadeId,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    select: {
+                        variavel: {
+                            select: { titulo: true, codigo: true },
+                        },
+                    },
+                });
+                const desc = variaveis.map((v) => `${v.variavel.titulo} (${v.variavel.codigo})`).join(', ');
+
+                throw new BadRequestException(
+                    `${resp.coordenador_cp ? 'Coordenador' : 'Participante'} em uso em variaveis de indicadores: ${desc}, remova-o primeiro no nível de Variável.`
+                );
+            }
+
+            // Check if participant is used in Cronograma Etapas
+            const cronogramaEtapa = await prismaTx.etapaResponsavel.count({
+                where: {
+                    pessoa_id: resp.pessoa_id,
+                    etapa: {
+                        removido_em: null,
+                        CronogramaEtapa: {
+                            some: {
+                                cronograma: {
+                                    atividade_id: atividadeId,
+                                    removido_em: null,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (cronogramaEtapa > 0) {
+                const etapas = await prismaTx.etapaResponsavel.findMany({
+                    where: {
+                        pessoa_id: resp.pessoa_id,
+                        etapa: {
+                            removido_em: null,
+                            CronogramaEtapa: {
+                                some: {
+                                    cronograma: {
+                                        atividade_id: atividadeId,
+                                        removido_em: null,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    select: {
+                        etapa: {
+                            select: { titulo: true },
+                        },
+                    },
+                });
+                const desc = etapas.map((v) => `${v.etapa.titulo}`).join(', ');
+                throw new BadRequestException(
+                    `${resp.coordenador_cp ? 'Coordenador' : 'Participante'} em uso em etapas de cronograma: ${desc}, remova-o primeiro no nível de Etapa.`
+                );
+            }
+        }
     }
 
     async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {

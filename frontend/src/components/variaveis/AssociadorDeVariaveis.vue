@@ -12,12 +12,14 @@
   <FiltroDeDeVariaveis
     :aria-busy="chamadasPendentes.lista"
     :valores-iniciais="valoresIniciais"
-    @submit="($v) => dispararBuscaDeVariaveis($v)"
+    @submit="($v: SubmitEvent) => aplicarFiltro($v)"
   />
 
   <LoadingComponent v-if="chamadasPendentes.lista" />
   <p v-else>
-    Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
+    Exibindo do <strong>{{ dadosDaExibicao.primeiro }}º</strong>
+    ao <strong>{{ dadosDaExibicao.ultimo }}º</strong> valores
+    de {{ dadosDaExibicao.total }}.
   </p>
 
   <form
@@ -95,21 +97,19 @@
             :indeterminate.prop="!!variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length
               && variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length !==
                 filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            :aria-label="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
-              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
-              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
-            :title="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length ===
-              filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length
-              ? `Desselecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length} itens`
-              : `Selecionar ${filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length}`"
+            v-bind="gerarAtributosDoCampo(mae.id, agrupador)"
             @change="selecionarTodasAsFilhas(mae.id, agrupador)"
           >
         </td>
       </template>
     </TabelaDeVariaveisGlobais>
+
+    <MenuPaginacao
+      v-if="paginacao.paginas > 1"
+      v-bind="paginacao"
+      v-model="paginaCorrente"
+      @update:model-value="($v) => passarFolhas($v)"
+    />
 
     <p class="mb1">
       <strong>
@@ -155,12 +155,13 @@
   </form>
 </template>
 <script setup lang="ts">
-import type { Indicador } from '@/../../backend/src/indicador/entities/indicador.entity';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
-import EnvioParaObjeto from '@/helpers/EnvioParaObjeto.ts';
-import requestS from '@/helpers/requestS.ts';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
+import requestS from '@/helpers/requestS';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
+import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import { storeToRefs } from 'pinia';
 import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
@@ -197,6 +198,7 @@ const variaveisSelecionadas = ref<number[]>([]);
 const variaveisFilhasSelecionadas = ref<{ [key: string]: { [key: string]: number[] } }>({});
 
 const parametrosDaBuscaCorrente = ref<Record<string, unknown>>({});
+const paginaCorrente = ref<number>(1);
 
 const envioPendente = ref<boolean>(false);
 const erro = ref<string | null>(null);
@@ -219,6 +221,15 @@ const combinacaoDeVariaveisSelecionadas = computed(() => {
 
   return combinacao;
 });
+
+const dadosDaExibicao = computed(() => ({
+  primeiro: (paginacao.value.paginaCorrente - 1) * valoresIniciais.ipp + 1,
+  ultimo: Math.min(
+    paginacao.value.paginaCorrente * valoresIniciais.ipp,
+    paginacao.value.totalRegistros,
+  ),
+  total: paginacao.value.totalRegistros,
+}));
 
 function selecionarTodasAsFilhas(
   maeId: number,
@@ -274,13 +285,42 @@ function buscarVariaveis(params: Record<string, unknown>) {
   });
 }
 
-function dispararBuscaDeVariaveis(evento: SubmitEvent) {
+function aplicarFiltro(evento: SubmitEvent) {
   const params = EnvioParaObjeto(evento, true);
+
+  paginaCorrente.value = 1;
 
   buscarVariaveis(params);
 
   parametrosDaBuscaCorrente.value = params;
 }
+
+function passarFolhas(numeroDaPagina: number) {
+  buscarVariaveis({
+    ...valoresIniciais,
+    ...parametrosDaBuscaCorrente.value,
+    pagina: numeroDaPagina,
+    token_paginacao: paginacao.value.tokenPaginacao,
+  });
+}
+
+const gerarAtributosDoCampo = (mae, agrupador) => {
+  const filhasSelecionadas = variaveisFilhasSelecionadas.value[mae]?.[agrupador];
+  const variaveisFilhas = filhasPorMaePorNivelDeRegiao.value[mae][agrupador];
+
+  return {
+    checked: filhasSelecionadas?.length
+      === variaveisFilhas.length,
+    'aria-label': filhasSelecionadas?.length
+      === variaveisFilhas.length
+      ? `Desselecionar ${variaveisFilhas.length} itens`
+      : `Selecionar ${variaveisFilhas.length}`,
+    title: filhasSelecionadas?.length
+      === variaveisFilhas.length
+      ? `Desselecionar ${variaveisFilhas.length} itens`
+      : `Selecionar ${variaveisFilhas.length}`,
+  };
+};
 
 async function associar(encerrar = false) {
   if (envioPendente.value) {

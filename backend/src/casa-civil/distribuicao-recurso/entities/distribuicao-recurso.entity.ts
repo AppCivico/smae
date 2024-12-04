@@ -35,11 +35,11 @@ export class DistribuicaoRecursoDto {
     pode_registrar_status: boolean;
     historico_status: DistribuicaoHistoricoStatusDto[];
     pct_valor_transferencia: number;
-    parlamentares: ParlamentarDistribuicaoDto[];
+    parlamentares?: ParlamentarDistribuicaoDto[];
 }
 
 export class ParlamentarDistribuicaoDto {
-    id: number;
+    id?: number;
     parlamentar_id: number;
     parlamentar: ParlamnetarIdNomes;
     partido_id: number | null;

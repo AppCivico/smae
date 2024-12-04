@@ -128,6 +128,17 @@ if (!Array.isArray(organs) || !organs.length) {
           </ul>
         </td>
         <td>
+          <router-link
+            :to="{ name: 'gruposDeObservadoresEditar', params: { grupoDeObservadoresId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
+        </td>
+        <td>
           <button
             class="like-a__text"
             arial-label="excluir"
@@ -139,17 +150,6 @@ if (!Array.isArray(organs) || !organs.length) {
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            :to="{ name: 'gruposDeObservadoresEditar', params: { grupoDeObservadoresId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">

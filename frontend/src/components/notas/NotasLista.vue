@@ -6,6 +6,7 @@ import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref, watch } from 'vue';
+import SmaeLink from '../SmaeLink.vue';
 
 const status = {
   Programado: {
@@ -80,16 +81,15 @@ watch(statusSelecionado, (novoValor) => {
 });
 </script>
 <template>
-  <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
     <h1>{{ $route?.meta?.título || "Notas" }}</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'notasCriar' }"
       class="btn big ml1"
     >
       Nova nota
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="mb1">
@@ -153,6 +153,18 @@ watch(statusSelecionado, (novoValor) => {
           }}
         </td>
         <td>
+          <SmaeLink
+            v-if="item?.pode_editar && item?.id_jwt"
+            :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </td>        
+        <td>
           <button
             v-if="item.pode_editar"
             class="like-a__text"
@@ -168,22 +180,11 @@ watch(statusSelecionado, (novoValor) => {
             </svg>
           </button>
         </td>
-        <td>
-          <router-link
-            v-if="item?.pode_editar && item?.id_jwt"
-            :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
+
       </tr>
       <tr>
         <td colspan="6">
-          <router-link
+          <SmaeLink
             v-if="item?.id_jwt"
             :to="{
               name: 'notaDetalhe',
@@ -192,7 +193,7 @@ watch(statusSelecionado, (novoValor) => {
             class="tprimary"
           >
             {{ removerHtml(item?.nota) }}
-          </router-link>
+          </SmaeLink>
         </td>
       </tr>
     </tbody>

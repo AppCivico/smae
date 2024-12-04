@@ -50,7 +50,7 @@ export const useUsersStore = defineStore({
         if (!r.id) {
           throw new Error('Usuário não encontrado');
         }
-        r.desativado = r.desativado ? '1' : false;
+
         if (r.grupos) r.grupos = r.grupos.map((g) => g.id);
         this.user = r;
       } catch (error) {
@@ -72,31 +72,16 @@ export const useUsersStore = defineStore({
       this.erros.user = null;
       this.chamadasPendentes.user = true;
       try {
-        const m = {
-          email: params.email,
-          nome_exibicao: params.nome_exibicao,
-          nome_completo: params.nome_completo,
-          lotacao: params.lotacao,
-          orgao_id: params.orgao_id,
-          perfil_acesso_ids: params.perfil_acesso_ids,
-          grupos: params.grupos,
-        };
-
         const authStore = useAuthStore();
+        // mantendo o comportamento legado
+        // eslint-disable-next-line eqeqeq
         if (id == authStore.user.id && !params.perfil_acesso_ids.length) {
           const alertStore = useAlertStore();
           alertStore.error('Não se pode remover seu próprio perfil.');
           return false;
         }
 
-        if (params.desativado == '1') {
-          m.desativado = true;
-          m.desativado_motivo = params.desativado_motivo;
-        } else {
-          m.desativado = false;
-        }
-
-        await this.requestS.patch(`${baseUrl}/pessoa/${id}`, m);
+        await this.requestS.patch(`${baseUrl}/pessoa/${id}`, params);
         if (id === authStore.user.id) {
           const user = { ...authStore.user, ...params };
           localStorage.setItem('user', JSON.stringify(user));
@@ -129,6 +114,8 @@ export const useUsersStore = defineStore({
         this.temp = f
           ? this.users
             .filter((u) => (f.orgao
+              // mantendo o comportamento legado
+              // eslint-disable-next-line eqeqeq
               ? u.orgao_id == f.orgao
               : 1)
               && (f.nomeemail

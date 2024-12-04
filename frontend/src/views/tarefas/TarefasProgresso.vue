@@ -65,6 +65,7 @@ async function iniciar() {
 iniciar();
 </script>
 <template>
+  <div class="spacebetween">&nbsp</div>
   <div class="flex spacebetween center mb2">
     <div>
       <div class="t12 uc w700 tamarelo">
@@ -80,7 +81,7 @@ iniciar();
       v-if="!emFoco?.projeto?.permissoes?.apenas_leitura || $route.meta.entidaMãe"
       class="ml2"
     >
-      <router-link
+      <SmaeLink
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
           params: {
@@ -93,7 +94,7 @@ iniciar();
         class="btn"
       >
         Editar tarefa
-      </router-link>
+      </SmaeLink>
     </div>
 
     <CheckClose />
@@ -145,7 +146,7 @@ iniciar();
             class="flex g1"
           >
             <span>Sim</span>
-            <router-link
+            <SmaeLink
               :to="{name: 'transferenciaTarefaEmailModal'}"
               title="Editar e-mail"
             >
@@ -153,7 +154,7 @@ iniciar();
                 width="20"
                 height="20"
               ><use xlink:href="#i_edit" /></svg>
-            </router-link>
+            </SmaeLink>
           </div>
           <span v-else>Não</span>
         </dd>
@@ -164,7 +165,7 @@ iniciar();
     v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
     class="flex center mb4"
   >
-    <router-link
+    <SmaeLink
       :to="{ name: 'transferenciaTarefaEmailModal' }"
       class="addlink mb1"
     >
@@ -176,7 +177,7 @@ iniciar();
       </svg>
       <span v-if="emailEmFoco?.linhas?.[0]?.id">Editar envio de e-mail </span>
       <span v-else>Adicionar envio de e-mail</span>
-    </router-link>
+    </SmaeLink>
   </div>
   <Form
     v-if="!tarefaId || emFoco"

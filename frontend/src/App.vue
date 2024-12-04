@@ -2,7 +2,11 @@
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { onErrorCaptured, provide, ref } from 'vue';
+import {
+  onErrorCaptured,
+  provide,
+  ref,
+} from 'vue';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
@@ -47,7 +51,6 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 
   window.document.documentElement.classList.add('dev-environment');
 }
-
 </script>
 <template>
   <component
@@ -55,7 +58,7 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
     v-if="corDaFaixa"
   >
     .dev-environment:root body::after {
-      background-color: {{ corDaFaixa }} !important;
+    background-color: v-bind(corDaFaixa) !important;
     }
   </component>
 

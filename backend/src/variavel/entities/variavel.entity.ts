@@ -1,5 +1,5 @@
-import { ApiProperty, OmitType, PickType, refs } from '@nestjs/swagger';
-import { Periodicidade, Polaridade, Serie, TipoVariavel } from '@prisma/client';
+import { ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
+import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
@@ -61,6 +61,7 @@ export class VariavelItemDto {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_mae_id: number | null;
     // TODO mover fonte pra cá, ou criar novo detail para tipo global
 }
 
@@ -138,6 +139,7 @@ export class SACicloFisicoDto {
     id: number;
     analise: string;
     tem_documentos: boolean;
+    contagem_qualitativa?: number | null;
 }
 
 export class SerieValorNomimal {
@@ -168,6 +170,8 @@ export class SerieValorNomimal {
      * Apenas em variaveis
      **/
     conferida?: boolean;
+
+    elementos?: Prisma.JsonValue | null;
 }
 
 export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>;
@@ -177,6 +181,26 @@ export class SerieValorPorPeriodo {
 }
 
 export class SerieIndicadorValorNominal extends OmitType(SerieValorNomimal, ['referencia'] as const) {}
+
+export class SerieValorCategoricaElemento {
+    @IsString()
+    categoria: string;
+
+    @IsString()
+    variavel_id: number;
+}
+
+export class SerieValorCategoricaComposta extends PickType(SerieValorNomimal, [
+    'data_valor',
+    'conferida',
+    'valor_nominal',
+] as const) {
+    @ApiProperty({
+        type: 'array',
+        items: { $ref: getSchemaPath(SerieValorCategoricaElemento) },
+    })
+    elementos: SerieValorCategoricaElemento[];
+}
 
 export class SeriesAgrupadas {
     /**
@@ -204,16 +228,14 @@ export class SeriesAgrupadas {
 
     @ApiProperty({
         type: 'array',
-        allOf: [
-            {
-                type: 'array',
-                items: {
-                    oneOf: refs(SerieValorNomimal, SerieIndicadorValorNominal),
-                },
-            },
-        ],
+        oneOf: refs(SerieValorNomimal, SerieIndicadorValorNominal, SerieValorCategoricaComposta),
+        description:
+            'Array de series: \n' +
+            '- `SerieIndicadorValorNominal`: valor nominal de uma série de indicador ou variável apenas de leitura\n' +
+            '- `SerieValorNomimal`: valor comum com referencia.\n' +
+            '- `SerieValorCategoricaComposta`: valor com elementos de uma variável categórica\n',
     })
-    series: SerieValorNomimal[] | SerieIndicadorValorNominal[];
+    series: SerieValorNomimal[] | SerieIndicadorValorNominal[] | SerieValorCategoricaComposta[];
 }
 
 export type SerieIndicadorValores = Record<Serie, SerieIndicadorValorNominal | undefined>;
@@ -235,6 +257,7 @@ export class ValorSerieExistente {
      * Apenas em variaveis
      **/
     conferida?: boolean;
+    elementos?: Prisma.JsonValue | null;
 }
 
 export class Iniciativa {

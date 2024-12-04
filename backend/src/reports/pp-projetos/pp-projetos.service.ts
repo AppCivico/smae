@@ -24,7 +24,6 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
-import { RelObrasContratosDto } from '../pp-obras/entities/obras.entity';
 
 const {
     Parser,

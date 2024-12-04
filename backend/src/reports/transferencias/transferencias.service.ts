@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
@@ -89,8 +89,8 @@ class RetornoDbTransferencias {
     distribuicao_recurso_conclusao_suspensiva: Date | null;
     distribuicao_recurso_sei: string | null;
     distribuicao_recurso_orgao_gestor: string;
-    tipo_transferencia :string;
-    classificacao :string | null;
+    tipo_transferencia: string;
+    classificacao: string | null;
 }
 
 @Injectable()
@@ -280,13 +280,13 @@ export class TransferenciasService implements ReportableService {
             paramIndex++;
         }
 
-        if (filters.orgao_gestor_id){
+        if (filters.orgao_gestor_id) {
             whereConditions.push(`dt.orgao_gestor_id = $${paramIndex}`);
             queryParams.push(filters.orgao_gestor_id);
             paramIndex++;
         }
 
-        if (filters.parlamentar_id){
+        if (filters.parlamentar_id) {
             whereConditions.push(`tp.parlamentar_id = $${paramIndex}`);
             queryParams.push(filters.parlamentar_id);
             paramIndex++;
@@ -390,7 +390,7 @@ export class TransferenciasService implements ReportableService {
         }
     }
 
-    async toFileOutput(myInput: any, params: any): Promise<FileOutput[]> {
+    async toFileOutput(params: CreateRelTransferenciasDto, ctx: ReportContext): Promise<FileOutput[]> {
         //const dados = myInput as TransferenciasRelatorioDto;
         const dados = await this.asJSON(params);
 

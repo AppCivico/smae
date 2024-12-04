@@ -119,6 +119,87 @@ export class EquipeRespService {
         return { id: created.id };
     }
 
+    async findIdsPorParticipante(pessoaId: number): Promise<number[]> {
+        const rows = await this.prisma.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                GrupoResponsavelEquipePessoa: {
+                    some: {
+                        removido_em: null,
+                        pessoa_id: pessoaId,
+                    },
+                },
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        return rows.map((r) => r.id);
+    }
+
+    async atualizaEquipe(
+        pessoaId: number,
+        equipes: number[],
+        prismaTx: Prisma.TransactionClient,
+        orgao_id: number
+    ): Promise<void> {
+        const equipesAtuais = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+            where: {
+                pessoa_id: pessoaId,
+                removido_em: null,
+            },
+            select: {
+                grupo_responsavel_equipe_id: true,
+                orgao_id: true,
+            },
+        });
+
+        const currentIds = equipesAtuais.map((t) => t.grupo_responsavel_equipe_id);
+
+        // Encontra as para remover
+        for (const teamId of currentIds) {
+            if (!equipes.includes(teamId)) {
+                await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        grupo_responsavel_equipe_id: teamId,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                    },
+                });
+            }
+        }
+
+        // Encontra as para adicionar
+        for (const teamId of equipes) {
+            if (!currentIds.includes(teamId)) {
+                const team = await prismaTx.grupoResponsavelEquipe.findFirst({
+                    where: {
+                        id: teamId,
+                        removido_em: null,
+                        orgao_id,
+                    },
+                    select: {
+                        orgao_id: true,
+                    },
+                });
+
+                if (!team) throw new BadRequestException(`Equipe ID ${teamId} não encontrada, órgão ${orgao_id}.`);
+
+                await prismaTx.grupoResponsavelEquipeParticipante.create({
+                    data: {
+                        grupo_responsavel_equipe_id: teamId,
+                        pessoa_id: pessoaId,
+                        orgao_id: team.orgao_id,
+                    },
+                });
+            }
+        }
+    }
+
     async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {
         const rows = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {

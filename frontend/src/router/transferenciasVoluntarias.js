@@ -4,6 +4,7 @@ import NotasCriarEditar from '@/components/notas/NotasCriarEditar.vue';
 import NotasLista from '@/components/notas/NotasLista.vue';
 import NotasRaiz from '@/components/notas/NotasRaiz.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import DialogWrapper from '@/views/DialogWrapper.vue';
 import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
@@ -12,13 +13,16 @@ import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
-import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
 import TransferenciasVoluntariasDetalhes from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue';
 import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDocumentos.vue';
 import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
+import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
+import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
+import TransferenciaDistribuicaoDeRecursosStatus from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosStatus.vue';
+import TransferenciaDistribuicaoDeRecursosEditarRaiz from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosEditarRaiz.vue';
 
 const rotasParaMenuSecundário = [
   {
@@ -34,7 +38,7 @@ const rotasParaMenuSecundário = [
     rotas: [
       'TransferenciasVoluntariaEditar',
       'RegistroDeTransferenciaEditar',
-      'TransferenciaDistribuicaoDeRecursosEditar',
+      'TransferenciaDistribuicaoDeRecursos.Lista',
     ],
   },
 ];
@@ -68,12 +72,21 @@ export default {
       component: TransferenciasVoluntariasCriarEditar,
       meta: {
         título: 'Formulário de registro',
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
     {
-      name: 'TransferenciaDistribuicaoDeRecursosEditar',
       path: ':transferenciaId/distribuicao-de-recursos',
-      component: TransferenciaDistribuicaoDeRecursosCriarEditar, // Dev - teste
+      meta: {
+        título: 'Distribuição de recursos',
+        rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes',
+        ],
+      },
       props: ({ params }) => ({
         ...params,
         ...{
@@ -81,11 +94,74 @@ export default {
             Number.parseInt(params.transferenciaId, 10) || undefined,
         },
       }),
-      meta: {
-        título: 'Distribuição de recursos',
-        rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
-      },
+      children: [
+        {
+          name: 'TransferenciaDistribuicaoDeRecursos.Lista',
+          path: '',
+          component: TransferenciaDistribuicaoDeRecursosLista,
+        },
+        {
+          path: '',
+          component: TransferenciaDistribuicaoDeRecursosEditarRaiz,
+          children: [
+            {
+              name: 'TransferenciaDistribuicaoDeRecursos.Novo',
+              path: 'novo',
+              component: TransferenciaDistribuicaoDeRecursosCriarEditar,
+              meta: {
+                título: 'Novo Recurso',
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                ],
+              },
+            },
+          ],
+        },
+        {
+          path: ':recursoId',
+          component: TransferenciaDistribuicaoDeRecursosEditarRaiz,
+          children: [
+            {
+              meta: {
+                título: () => {
+                  const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
+                  if (!distribuicaoRecursosStore.itemParaEdicao?.nome) {
+                    return '';
+                  }
+
+                  return distribuicaoRecursosStore.itemParaEdicao.nome;
+                },
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                ],
+              },
+              path: '',
+              name: 'TransferenciaDistribuicaoDeRecursos.Editar',
+              component: TransferenciaDistribuicaoDeRecursosCriarEditar,
+            },
+            {
+              path: 'status',
+              name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
+              component: TransferenciaDistribuicaoDeRecursosStatus,
+              meta: {
+                título: 'Histórico de Status',
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'TransferenciaDistribuicaoDeRecursos.Editar',
+                ],
+              },
+            },
+          ],
+        },
+      ],
     },
     {
       name: 'RegistroDeTransferenciaEditar',
@@ -102,7 +178,11 @@ export default {
         título: 'Recurso financeiro',
         títuloParaMenu: 'Recurso financeiro',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes',
+        ],
       },
     },
     {
@@ -126,6 +206,7 @@ export default {
         rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
+    /* NOTAS */
     {
       name: 'TransferenciasVoluntariasNotas',
       path: ':transferenciaId/notas',
@@ -143,15 +224,21 @@ export default {
         rotasParaMenuSecundário,
       },
       children: [
+        /* LISTAR NOTAS */
         {
           name: 'notasListar',
           path: '',
           component: NotasLista,
           meta: {
             título: 'Notas',
-            rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+            ],
           },
         },
+        /* FIM DE LISTAR NOTAS */
+        /* DETALHE DA NOTA */
         {
           path: ':notaId/detalhes',
           name: 'notaDetalhe',
@@ -164,10 +251,13 @@ export default {
             título: 'Nota',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
               'notasListar',
             ],
           },
         },
+        /* FIM DE DETALHE DA NOTA */
+        /* INCLUSÃO DE NOTA */
         {
           name: 'notasCriar',
           path: 'nova',
@@ -175,8 +265,16 @@ export default {
           meta: {
             título: 'Nova nota',
             rotaDeEscape: 'notasListar',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'notasListar',
+            ],
           },
         },
+        /* FIM DE INCLUSÃO DE NOTA */
+        /* EDIÇÃO DE NOTA */
         {
           path: ':notaId',
           name: 'notasEditar',
@@ -189,10 +287,19 @@ export default {
           meta: {
             título: 'Editar nota',
             rotaDeEscape: 'notasListar',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'notasListar',
+            ],
           },
         },
+        /* FIM DE EDIÇÃO DE NOTA */
       ],
     },
+    /* FIM DE NOTAS */
+    /* TRANSFERÊNCIA - IDENTIFICAÇÃO */
     {
       path: ':transferenciaId',
       name: 'TransferenciasVoluntariaEditar',
@@ -207,9 +314,15 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes',
+        ],
       },
     },
+    /* FIM DE TRANSFERÊNCIA - IDENTIFICAÇÃO */
+    /* DOCUMENTOS */
     {
       path: ':transferenciaId/documentos',
       component: TransferenciasVoluntariasDocumentos,
@@ -222,9 +335,13 @@ export default {
       meta: {
         título: 'Documentos',
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes',
+        ],
       },
       children: [
+        /* INCLUSÃO DE DOCUMENTO */
         {
           path: 'novo',
           component: DialogWrapper,
@@ -232,6 +349,7 @@ export default {
             rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
             título: 'Novo documento da transferencia voluntária',
             títuloParaMenu: 'Novo documento',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
           },
           children: [
             {
@@ -241,6 +359,8 @@ export default {
             },
           ],
         },
+        /* FIM DE INCLUSÃO DE DOCUMENTO */
+        /* EDIÇÃO DE DOCUMENTO */
         {
           path: ':arquivoId',
           component: DialogWrapper,
@@ -252,6 +372,7 @@ export default {
             rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
             título: 'Editar documento da transferencia',
             títuloParaMenu: 'Editar documento',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
           },
           children: [
             {
@@ -261,8 +382,11 @@ export default {
             },
           ],
         },
+        /* FIM DE EDIÇÃO DE DOCUMENTO */
       ],
     },
+    /* FIM DE DOCUMENTOS */
+    /* TAREFAS E CRONOGRAMA */
     {
       path: ':transferenciaId/tarefas',
       component: TarefasRaiz,
@@ -275,8 +399,11 @@ export default {
 
       meta: {
         títuloParaMenu: 'Tarefas',
+        rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário,
       },
       children: [
+        /* CRONOGRAMA */
         {
           name: 'TransferenciaCronograma',
           path: '',
@@ -285,7 +412,10 @@ export default {
             título: 'Cronograma',
             títuloParaMenu: 'Cronograma',
             rotasParaMenuSecundário,
-            rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+            ],
           },
           props: ({ params }) => ({
             ...params,
@@ -301,6 +431,7 @@ export default {
                 rotaDeEscape: 'TransferenciaCronograma',
                 título: 'Novo disparo de e-mail para cronograma',
                 títuloParaMenu: 'Novo e-mail',
+                limitarÀsPermissões: 'CadastroTransferencia.editar',
               },
               children: [
                 {
@@ -312,7 +443,8 @@ export default {
             },
           ],
         },
-
+        /* FIM DE CRONOGRAMA */
+        /* INCLUIR TAREFA */
         {
           name: 'TransferenciasVoluntariasTarefasCriar',
           path: 'nova',
@@ -321,9 +453,16 @@ export default {
             título: 'Nova tarefa',
             títuloParaMenu: 'Nova tarefa',
             rotaDeEscape: 'TransferenciaCronograma',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+              'TransferenciaCronograma',
+            ],
           },
         },
-
+        /* FIM DE INCLUIR TAREFA */
+        /* AÇÕES COM TAREFAS */
         {
           path: ':tarefaId',
           component: TarefasItem,
@@ -335,6 +474,7 @@ export default {
           }),
 
           children: [
+            /* DETALHE DA TAREFA */
             {
               name: 'TransferenciasVoluntarias.TarefasDetalhes',
               path: 'resumo',
@@ -342,42 +482,45 @@ export default {
               props: ({ params }) => ({
                 ...params,
                 tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
-                transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+                transferenciaId:
+                  Number.parseInt(params.transferenciaId, 10) || undefined,
               }),
               meta: {
                 título: 'Resumo Atividade',
                 rotaDeEscape: 'TransferenciasVoluntariasListar',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaCronograma',
                 ],
               },
             },
+            /* FIM DE DETALHE DA TAREFA */
+            /* EDITAR TAREFA */
             {
-              path: '',
+              path: 'teste',
               name: 'TransferenciasVoluntariasTarefasEditar',
               component: TarefasCriarEditar,
               props: ({ params }) => ({
                 ...params,
                 transferenciaId:
                   Number.parseInt(params.transferenciaId, 10) || undefined,
-                tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+                tarefasId: Number.parseInt(params.tarefaId, 10) || undefined,
               }),
-
               meta: {
                 título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
                 títuloParaMenu: 'Editar tarefa',
-
                 rotaDeEscape: 'TransferenciaCronograma',
-
+                limitarÀsPermissões: 'CadastroTransferencia.editar',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
-                  'TransferenciasVoluntariasTarefasListar',
-                  'tarefasEditar',
+                  'TransferenciaCronograma',
                 ],
               },
             },
-
+            /* FIM DE EDITAR TAREFA */
+            /* PROGRESSO DA TAREFA */
             {
               path: 'progresso',
               name: 'TransferenciasVoluntariasTarefasProgresso',
@@ -395,14 +538,12 @@ export default {
                   }`
                   : 'Registrar progresso'),
                 títuloParaMenu: 'Progresso',
-
                 rotaDeEscape: 'TransferenciaCronograma',
-
+                limitarÀsPermissões: 'CadastroTransferencia.editar',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
-                  'TransferenciasVoluntariasTarefasListar',
-                  'TransferenciasVoluntariasTarefasProgresso',
+                  'TransferenciaCronograma',
                 ],
               },
               children: [
@@ -413,6 +554,7 @@ export default {
                     rotaDeEscape: 'TransferenciasVoluntariasTarefasProgresso',
                     título: 'Novo disparo de e-mail',
                     títuloParaMenu: 'Novo e-mail',
+                    limitarÀsPermissões: 'CadastroTransferencia.editar',
                   },
                   children: [
                     {
@@ -424,9 +566,12 @@ export default {
                 },
               ],
             },
+            /* FIM DE PROGRESSO DA TAREFA */
           ],
         },
+        /* FIM DE AÇÕES COM TAREFAS */
       ],
     },
+    /* FIM DE TAREFAS E CRONOGRAMA */
   ],
 };

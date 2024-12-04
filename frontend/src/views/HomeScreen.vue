@@ -1,22 +1,21 @@
 <script setup lang="ts">
+import type { ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
-import requestS from '@/helpers/requestS.ts';
-import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import requestS from '@/helpers/requestS';
+import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { usePsMetasStore } from '@/stores/metasPs.store.ts';
+import { usePsMetasStore } from '@/stores/metasPs.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useProcessosStore } from '@/stores/processos.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-
-import type { ModulosDoSistema } from '@/consts/modulosDoSistema';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -30,6 +29,7 @@ const sessao = ref(null);
 const {
   dadosDoSistemaEscolhido,
   sistemaEscolhido,
+  rotaEhPermitida,
 } = storeToRefs(authStore);
 
 const módulosDisponíveis = ref([]);
@@ -41,12 +41,24 @@ async function escolher(opção: keyof ModulosDoSistema) {
   sistemaEscolhido.value = opção;
 
   authStore.getDados(null, { headers: { 'smae-sistemas': `SMAE,${opção}` } })
-    .then((user) => {
+    .then(() => {
       // PRA-FAZER: persistir o auth.store no navegador
       localStorage.setItem('sistemaEscolhido', opção);
 
       if (dadosDoSistemaEscolhido.value?.rotaInicial) {
         router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
+        const listaDeRotasPossiveis = !Array.isArray(dadosDoSistemaEscolhido.value?.rotaInicial)
+          ? [dadosDoSistemaEscolhido.value?.rotaInicial]
+          : dadosDoSistemaEscolhido.value?.rotaInicial;
+
+        const rotaFiltrada = listaDeRotasPossiveis
+          .find((rota: RotaInicial) => rotaEhPermitida.value(rota.name));
+
+        if (rotaFiltrada) {
+          router.push(rotaFiltrada);
+        } else {
+          throw new Error('Você não tem permissão para acessar a rota inicial do sistema escolhido.');
+        }
       }
 
       useRegionsStore().$reset();
@@ -171,7 +183,8 @@ iniciar();
       fill="currentColor"
     >
       <path
-        d="M3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v13h1.5a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1H3V2zm1 13h8V2H4v13z"
+        d="M3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v13h1.5a.5.5 0 0 1 0 1h-13a.5.5 0 0 1
+        0-1H3V2zm1 13h8V2H4v13z"
       />
       <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" />
     </svg>

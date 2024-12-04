@@ -118,10 +118,36 @@ def geopandas_to_geojson_dict(gdf:gpd.GeoDataFrame, epsg_num:int=None)->dict:
 
 def within_sao_paulo_bbox(x: float, y: float)->bool:
 
-    xmax = SAO_PAULO_WGS_BOUNDING_BOX[0][0]
-    xmin = SAO_PAULO_WGS_BOUNDING_BOX[1][0]
+    xmax = SAO_PAULO_WGS_BOUNDING_BOX[1][0]
+    xmin = SAO_PAULO_WGS_BOUNDING_BOX[0][0]
 
-    ymax = SAO_PAULO_WGS_BOUNDING_BOX[0][1]
-    ymin = SAO_PAULO_WGS_BOUNDING_BOX[1][1]
+    ymax = SAO_PAULO_WGS_BOUNDING_BOX[1][1]
+    ymin = SAO_PAULO_WGS_BOUNDING_BOX[0][1]
 
     return (x>=xmin and x<=xmax)and(y>=ymin and y<=ymax)
+
+
+def build_bbox_viewport(viewport:dict)->dict:
+
+    lat_min = viewport['btmRightPoint']['lat']
+    lat_max = viewport['topLeftPoint']['lat']
+
+    long_min =  viewport['topLeftPoint']['lon']
+    long_max = viewport['btmRightPoint']['lon']
+
+    return [long_min, lat_min, long_max, lat_max]
+
+def build_geom_from_points(position:dict)->dict:
+
+    lat = position['lat']
+    lon = position['lon']
+
+    geom = {
+        "type": "Point",
+        "coordinates": [
+          lon,
+          lat
+        ]
+      }
+    
+    return geom

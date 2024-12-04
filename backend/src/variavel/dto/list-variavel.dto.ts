@@ -13,7 +13,7 @@ export class ListVariavelDto {
 }
 
 export class VariavelDetailDto extends VariavelItemDto {
-    assuntos: IdNomeDto[];
+    assuntos: VariavelAssuntoDto[];
     periodos: VariaveisPeriodosDto;
     dado_aberto: boolean;
     metodologia: string | null;
@@ -32,6 +32,10 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     medicao_grupo_ids: number[] | null;
     validacao_grupo_ids: number[] | null;
     liberacao_grupo_ids: number[] | null;
+
+    medicao_orgao_id: number | null;
+    validacao_orgao_id: number | null;
+    liberacao_orgao_id: number | null;
 }
 
 export class VariavelResumoInput {
@@ -48,6 +52,13 @@ export class VariavelResumoInput {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_mae_id: number | null;
+}
+
+export class VariavelAssuntoDto {
+    id: number;
+    nome: string;
+    categoria_assunto_variavel_id?: number | null;
 }
 
 export class VariavelResumo {
@@ -80,6 +91,7 @@ export class VariavelResumo {
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
+    variavel_mae_id: number | null;
 }
 
 export class ListSeriesAgrupadas {

@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
@@ -368,7 +368,7 @@ export class IndicadorService {
                         400
                     );
                 }
-            }else{
+            } else {
                 throw new HttpException(
                     `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não pode ser usada em Fórmula Composta (Plano Setorial)`,
                     400
@@ -467,6 +467,8 @@ export class IndicadorService {
                 recalculo_erro: true,
                 recalculo_tempo: true,
                 ha_avisos_data_fim: true,
+                variavel_categoria_id: true,
+                indicador_tipo: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -486,12 +488,18 @@ export class IndicadorService {
             atividade_id: true,
             iniciativa_id: true,
             meta_id: true,
+            variavel_categoria_id: true,
             formula_variaveis: {
                 select: {
                     variavel_id: true,
                     janela: true,
                     referencia: true,
                     usar_serie_acumulada: true,
+                    variavel: {
+                        select: {
+                            variavel_categorica_id: true,
+                        },
+                    },
                 },
             },
         };
@@ -536,6 +544,30 @@ export class IndicadorService {
 
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.variavel_categoria_id !== undefined) {
+                    if (dto.variavel_categoria_id !== null) {
+                        if (dto.indicador_tipo !== 'Categorica')
+                            throw new HttpException(
+                                'Apenas indicadores do tipo Categorica podem ter uma variável de categoria',
+                                400
+                            );
+
+                        if (formula === undefined || Array.isArray(formula_variaveis) === false)
+                            throw new HttpException(
+                                'Para alterar a categoria da variável é necessário enviar a formula e as variáveis',
+                                400
+                            );
+
+                        if (formula_variaveis.length !== 1)
+                            throw new HttpException('Exatamente uma variável é necessária para a categórica.', 400);
+                        if (formula_variaveis[0].variavel_id !== dto.variavel_categoria_id)
+                            throw new HttpException('A variável da categoria deve ser a mesma da formula', 400);
+                        const referencia = formula_variaveis[0].referencia;
+                        if (formula.indexOf(referencia) === -1)
+                            throw new HttpException('A referência da variável da categoria deve estar na formula', 400);
+                    }
+                }
+
                 const indicador = await prismaTx.indicador.update({
                     where: { id: id },
                     data: {
@@ -546,7 +578,9 @@ export class IndicadorService {
                         acumulado_usa_formula:
                             dto.acumulado_usa_formula === null ? undefined : dto.acumulado_usa_formula,
                     },
-                    select: indicadorSelectData,
+                    select: {
+                        ...indicadorSelectData,
+                    },
                 });
 
                 //const newVersion = IndicadorService.getIndicadorHash(indicador);
@@ -581,6 +615,29 @@ export class IndicadorService {
                             }),
                         }),
                     ]);
+
+                    if (indicador.variavel_categoria_id == null) {
+                        const indicadorAtualizado = await prismaTx.indicador.findFirstOrThrow({
+                            where: { id: indicador.id },
+                            select: {
+                                formula_variaveis: {
+                                    select: {
+                                        variavel: {
+                                            select: {
+                                                variavel_categorica_id: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        });
+
+                        if (indicadorAtualizado.formula_variaveis.some((fv) => fv.variavel.variavel_categorica_id)) {
+                            throw new BadRequestException(
+                                'Não é possível usar uma variável categórica em um indicador calculado.'
+                            );
+                        }
+                    }
                 }
 
                 // independente de ter ou não formula_variaveis, revalida as regras do PS
@@ -608,6 +665,21 @@ export class IndicadorService {
                         });
                 }
 
+                //Tratamento para series inválidas
+                if (tipo === 'PDM') {
+                    const variaveis = await prismaTx.indicadorVariavel.findMany({
+                        where: { indicador_id: indicador.id, indicador_origem_id: null },
+                    });
+                    for (const variavel of variaveis) {
+                        await this.variavelService.trataPeriodosSerieVariavel(
+                            prismaTx,
+                            variavel.variavel_id,
+                            indicador.id,
+                            indicador.inicio_medicao,
+                            indicador.fim_medicao
+                        );
+                    }
+                }
                 return indicador;
             },
             {
@@ -777,9 +849,32 @@ export class IndicadorService {
     ): Promise<ListSeriesAgrupadas> {
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: +id },
-            select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true },
+            select: {
+                id: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+                periodicidade: true,
+                variavel_categoria_id: true,
+            },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
+
+        if (indicador.variavel_categoria_id === CONST_CRONO_VAR_CATEGORICA_ID) {
+            indicador.variavel_categoria_id = null;
+        }
+        // caso seja variável categórica, pega a série de proxy
+        if (indicador.variavel_categoria_id) {
+            const proxy = await this.variavelService.getSeriePrevistoRealizado(
+                tipo == 'PS' ? 'Global' : 'PDM',
+                {
+                    uso: 'leitura',
+                    incluir_auxiliares: true,
+                },
+                indicador.variavel_categoria_id,
+                user
+            );
+            return proxy;
+        }
 
         const result: ListSeriesAgrupadas = {
             variavel: undefined,

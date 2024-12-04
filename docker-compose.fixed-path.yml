@@ -95,6 +95,7 @@ services:
       GEO_API_PREFIX: "${GEO_API_PREFIX}" # http://smae_geoloc:80
       SEI_API_PREFIX: "${SEI_API_PREFIX}" # http://smae_sei:80
       TRANSFEREGOV_API_PREFIX: "${TRANSFEREGOV_API_PREFIX}" # http://smae_transferegov:80
+      TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX: "${TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX}" # "http://smae_transferegov_transferencias:80/"
     networks:
       #- postgres
       #- minio
@@ -147,10 +148,13 @@ services:
       STATE: "Sao Paulo"
       COUNTRY_ISO: "BR"
       NOMINATIM_EMAIL: "${NOMINATIM_EMAIL}"
-      GEOSAMPA_WFS_DOMAIN: "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/ows"
+      GEOSAMPA_WFS_DOMAIN: "https://geoserver.slui.dev/geoserver/slui/ows"
       GEOSAMPA_API_VERSION: "1.0.0"
       DISTANCIA_PADRAO_MTS_GEOSAMPA: "5"
       NAMES_CAMADAS_TTL_SECONDS: "21600"
+      AZURE_KEY: "${AZURE_KEY}"
+      USE_AZURE: "${USE_AZURE}"
+      MAX_ADDRESSES: 5
     networks:
       #- api_geoloc
       - smae_network

@@ -380,7 +380,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                 v-model="linhasSelecionadas"
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
-                :permissao="config.previsao_custo_disponivel"
+                :permissao="config.execucao_disponivel"
                 :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                 :parentlink="parentlink"
               />
@@ -420,7 +420,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                   v-model="linhasSelecionadas"
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
-                  :permissao="config.previsao_custo_disponivel"
+                  :permissao="config.execucao_disponivel"
                   :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                   :parentlink="parentlink"
                 />

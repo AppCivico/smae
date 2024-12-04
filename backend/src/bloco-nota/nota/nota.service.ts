@@ -762,6 +762,12 @@ export class NotaService {
             write = nota.orgao_responsavel_id == user.orgao_id;
         }
 
+        // Caso usuário tenha priv de gestor de distribuição de recurso
+        // Não pode editar.
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            write = false;
+        }
+
         return {
             token: this.jwtService.sign(
                 {

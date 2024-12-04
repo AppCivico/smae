@@ -1,8 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, TipoRelatorio } from '@prisma/client';
-import { fork } from 'child_process';
+import { FonteRelatorio, Prisma, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { createWriteStream, WriteStream } from 'fs';
@@ -10,7 +9,6 @@ import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
-import { resolve as resolvePath } from 'path';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
@@ -32,11 +30,14 @@ import { TransferenciasService } from '../transferencias/transferencias.service'
 import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { RelatorioDto } from './entities/report.entity';
+import { RelatorioDto, RelatorioParamDto } from './entities/report.entity';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import * as XLSX from 'xlsx';
+import { InputJsonValue } from '@prisma/client/runtime/library';
+
+type RelatorioProcesado = Record<string, string | Array<string>>;
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -204,6 +205,7 @@ export class ReportsService {
                 fonte: dto.fonte,
                 tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
+                parametros_processados: await this.buildParametrosProcessados(dto),
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
             },
@@ -296,6 +298,7 @@ export class ReportsService {
                 fonte: true,
                 arquivo_id: true,
                 parametros: true,
+                parametros_processados: true,
                 pdm_id: true,
             },
             orderBy: {
@@ -315,6 +318,7 @@ export class ReportsService {
             linhas: rows.map((r) => {
                 return {
                     ...r,
+                    parametros_processados: this.bffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
                 };
@@ -323,6 +327,35 @@ export class ReportsService {
             token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
         };
+    }
+
+    bffParamsProcessados(parametros: any, _fonte: FonteRelatorio): RelatorioParamDto[] | null {
+        let ret: RelatorioParamDto[] | null = null;
+
+        if (!parametros || typeof parametros !== 'object') return null;
+
+        const keys = Object.keys(parametros).sort();
+        if (keys.length === 0) return [];
+
+        const chavesExistentes = new Set<string>();
+        ret = [];
+        for (const k of keys) {
+            const v = parametros[k];
+            if (v === '') continue;
+            const str = k.charAt(0).toUpperCase() + k.slice(1);
+            str.replace(/_/g, ' ');
+
+            if (chavesExistentes.has(k)) continue;
+            chavesExistentes.add(k);
+            chavesExistentes.add(k + '_nome'); // hack: pula alguns itens que ficaram salvos com o "_nome" já no input
+
+            ret.push({
+                filtro: str,
+                valor: Array.isArray(v) ? v.map((r) => r.toString()) : v.toString(),
+            });
+        }
+
+        return ret;
     }
 
     async delete(id: number, user: PessoaFromJwt) {
@@ -386,6 +419,28 @@ export class ReportsService {
         }
     }
 
+    async syncRelatoriosParametros(): Promise<void> {
+        const rows = await this.prisma.$queryRaw<
+            Array<{ id: number }>
+        >`SELECT id FROM relatorio WHERE removido_em IS NULL AND parametros_processados IS NULL`;
+
+        for (const row of rows) {
+            try {
+                const parametros = await this.buildParametrosProcessados(undefined, row.id);
+                if (!parametros) continue;
+
+                await this.prisma.relatorio.update({
+                    where: { id: row.id },
+                    data: {
+                        parametros_processados: parametros,
+                    },
+                });
+            } catch (error) {
+                this.logger.error(`Falha ao sincronizar params de relatório ${row.id}: ${error}`);
+            }
+        }
+    }
+
     private async verificaRelatorioProjetos(filtroId?: number | undefined) {
         const pending = await this.prisma.projetoRelatorioFila.findMany({
             where: {
@@ -439,5 +494,121 @@ export class ReportsService {
                 },
             });
         }
+    }
+
+    private async buildParametrosProcessados(
+        dto?: CreateReportDto,
+        reportId?: number
+    ): Promise<InputJsonValue | undefined> {
+        let parametros;
+        const parametros_processados: RelatorioProcesado = {};
+
+        // Caso esteja passando ID de report, é porque a chamada é de sync.
+        if (reportId) {
+            const report = await this.prisma.relatorio.findUnique({
+                where: {
+                    id: reportId,
+                    removido_em: null,
+                },
+                select: {
+                    parametros: true,
+                    parametros_processados: true,
+                },
+            });
+            if (!report) return undefined;
+
+            if (!report.parametros) return undefined;
+            if (report.parametros_processados && report.parametros_processados.toString().length > 0)
+                return report.parametros_processados;
+
+            parametros = report.parametros;
+        } else {
+            if (!dto) return undefined;
+
+            parametros = dto.parametros;
+        }
+
+        for (const paramKey of Object.keys(parametros)) {
+            const valor = parametros[paramKey];
+            if (!valor) continue;
+
+            const nomeChave = paramKey
+                .replace(/(_id|_ids)$/, '') // remove _id ou _ids
+                .replace('plano_setorial_id', 'pdm_id'); // ajuste para pdm_id
+
+            parametros_processados[nomeChave] = valor.toString();
+
+            const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
+            if (!nomeTabelaCol) continue;
+
+            if (typeof valor === 'number') {
+                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
+                const rowNome =
+                    await this.prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
+                if (rowNome.length > 0) {
+                    parametros_processados[nomeChave] = rowNome[0].removido_em
+                        ? '(Removido) ' + rowNome[0].nome
+                        : rowNome[0].nome;
+                }
+            } else if (Array.isArray(valor)) {
+                if (valor.length === 0) continue;
+
+                const joinedValues = valor.join(',');
+                // str must match \d,? pattern
+                if (/^\d+(,\d+)*$/.test(joinedValues) === false) continue;
+
+                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em
+                    FROM ${nomeTabelaCol.tabela} WHERE id IN (${joinedValues})`;
+                const rowNome =
+                    await this.prisma.$queryRawUnsafe<
+                        Array<{ id: Number; nome: string; removido_em: Date | undefined }>
+                    >(query);
+
+                if (rowNome.length > 0) {
+                    parametros_processados[nomeChave] = rowNome
+                        .map((r) => {
+                            return r.removido_em ? '(Removido) ' + r.nome : r.nome;
+                        })
+                        .sort();
+                }
+            }
+        }
+
+        return parametros_processados;
+    }
+
+    private nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: string } | undefined {
+        const tabelaConfig: Record<string, { coluna: string; chaves?: string[] }> = {
+            projeto: { coluna: 'nome' },
+            pdm: { coluna: 'nome', chaves: ['plano_setorial'] },
+            transferencia_tipo: { coluna: 'nome', chaves: ['tipo'] },
+            parlamentar: { coluna: 'nome_popular' },
+            tag: { coluna: 'descricao', chaves: ['tags'] },
+            meta: { coluna: 'titulo', chaves: ['metas'] },
+            atividade: { coluna: 'titulo' },
+            iniciativa: { coluna: 'titulo' },
+            orgao: { coluna: 'sigla', chaves: ['orgaos', 'orgao_gestor'] },
+            portfolio: { coluna: 'titulo' },
+            indicador: { coluna: 'titulo' },
+            partido: { coluna: 'nome' },
+            regiao: { coluna: 'descricao', chaves: ['regioes'] },
+        };
+
+        const mapeamento = Object.entries(tabelaConfig).reduce(
+            (acc, [tabela, config]) => {
+                // Adiciona o próprio da tabela no mapeamento
+                acc[tabela] = { tabela, coluna: config.coluna };
+
+                if (config.chaves) {
+                    config.chaves.forEach((chave) => {
+                        acc[chave] = { tabela, coluna: config.coluna };
+                    });
+                }
+                return acc;
+            },
+            {} as Record<string, { tabela: string; coluna: string }>
+        );
+
+        return mapeamento[nomeChave];
     }
 }

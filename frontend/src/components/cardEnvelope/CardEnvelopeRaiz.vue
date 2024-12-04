@@ -7,6 +7,7 @@
       :space-between="50"
       :navigation="true"
       :pagination="{ clickable: true }"
+      :no-swiping-class="'chartContainer'"
       :modules="[
         Pagination, Navigation,
       ]"

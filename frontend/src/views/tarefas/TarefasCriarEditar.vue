@@ -182,6 +182,7 @@ watch(itemParaEdicao, (novoValor) => {
 });
 </script>
 <template>
+  <div class="spacebetween">&nbsp</div>
   <div class="flex spacebetween center mb2">
     <h1>
       <div

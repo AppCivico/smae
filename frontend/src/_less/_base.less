@@ -936,6 +936,10 @@ p {
     flex-basis: 33% !important;
   }
 
+  .fb40 {
+    flex-basis: 40% !important;
+  }
+
   .fb50 {
     flex-basis: 50% !important;
   }
@@ -1099,6 +1103,10 @@ p {
     gap: 1em;
     max-width: 100%;
     white-space: pre-wrap;
+  }
+
+  [aria-busy="true"] {
+    animation: none;
   }
 }
 
@@ -1391,6 +1399,15 @@ p {
   position: relative;
   padding: .5rem 0;
 
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1rem;
+    right: -1rem;
+    bottom: -1rem;
+    left: -1rem;
+  }
+
   ul {
     position: absolute;
     top: 100%;
@@ -1429,6 +1446,7 @@ p {
       a {
         .t14;
         .w700;
+        display: block;
         color: @primary;
 
         &:hover {
@@ -1436,7 +1454,7 @@ p {
         }
       }
 
-      +li {
+      + li {
         margin-top: .5em;
       }
     }

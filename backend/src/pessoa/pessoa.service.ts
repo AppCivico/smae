@@ -24,6 +24,8 @@ import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
+import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '../common/consts';
 
 const BCRYPT_ROUNDS = 10;
 const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['CadastroPessoa.administrador', 'CadastroPessoa.administrador.MDO'];
@@ -37,7 +39,8 @@ export class PessoaService {
     #matchEmailRFObrigatorio: string;
     constructor(
         private readonly prisma: PrismaService,
-        private readonly pRespMetaService: PessoaResponsabilidadesMetaService
+        private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
+        private readonly equipeRespService: EquipeRespService
     ) {
         this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3;
         this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
@@ -326,7 +329,7 @@ export class PessoaService {
 
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user);
-
+        const equipes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 id: pessoaId,
@@ -362,7 +365,7 @@ export class PessoaService {
             select: { id: true, codigo: true, nome: true },
         });
 
-        const listFixed = {
+        const listFixed: DetalhePessoaDto = {
             id: pessoa.id,
             nome_completo: pessoa.nome_completo,
             nome_exibicao: pessoa.nome_exibicao,
@@ -371,7 +374,7 @@ export class PessoaService {
             desativado: pessoa.desativado,
             desativado_motivo: pessoa.desativado_motivo,
             email: pessoa.email,
-            lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : undefined,
+            lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : null,
             orgao_id: pessoa.pessoa_fisica?.orgao_id || undefined,
             cargo: pessoa.pessoa_fisica?.cargo || null,
             registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
@@ -381,13 +384,22 @@ export class PessoaService {
             ),
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
+            equipes,
         };
 
         return listFixed;
     }
 
-    async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
-        const logger = LoggerWithLog('Pessoa: Editar');
+    async update(
+        pessoaId: number,
+        updatePessoaDto: UpdatePessoaDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined,
+        loggerCtx?: LoggerWithLog | undefined
+    ) {
+        const prisma = prismaCtx || this.prisma;
+
+        const logger = loggerCtx ?? LoggerWithLog('Pessoa: Editar');
         const sistema = user.assertOneModuloSistema('editar', 'pessoa');
         logger.log(`Editando Pessoa ID=${pessoaId}, pelo sistema ${sistema}`);
 
@@ -396,11 +408,11 @@ export class PessoaService {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user, sistema);
         this.verificaPerfilAcesso(updatePessoaDto, perfisVisiveis);
 
-        await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
+        if (!prismaCtx) await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
         this.verificarCPFObrigatorio(updatePessoaDto);
         this.verificarRFObrigatorio(updatePessoaDto);
 
-        const self = await this.prisma.pessoa.findFirstOrThrow({
+        const self = await prisma.pessoa.findFirstOrThrow({
             where: {
                 id: pessoaId,
                 AND: [{ id: { gt: 0 } }],
@@ -423,6 +435,8 @@ export class PessoaService {
             },
         });
 
+        const equipesAntes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
+
         const targetUserPrivileges = new Set(
             self.PessoaPerfil.flatMap((pp) => pp.perfil_acesso.perfil_privilegio.map((priv) => priv.privilegio.codigo))
         ) as Set<ListaDePrivilegios>;
@@ -440,228 +454,346 @@ export class PessoaService {
 
         const now = new Date(Date.now());
 
-        await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient) => {
-                const emailExists = updatePessoaDto.email
-                    ? await prismaTx.pessoa.count({
-                          where: {
-                              email: updatePessoaDto.email,
-                              NOT: {
-                                  id: pessoaId,
-                              },
+        const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const emailExists = updatePessoaDto.email
+                ? await prismaTx.pessoa.count({
+                      where: {
+                          email: updatePessoaDto.email,
+                          NOT: {
+                              id: pessoaId,
                           },
-                      })
-                    : 0;
-                if (emailExists > 0) {
-                    throw new HttpException('email| E-mail está em uso em outra conta', 400);
-                }
+                      },
+                  })
+                : 0;
+            if (emailExists > 0) {
+                throw new HttpException('email| E-mail está em uso em outra conta', 400);
+            }
 
-                if (updatePessoaDto.registro_funcionario) {
-                    const registroFuncionarioExists = await prismaTx.pessoa.count({
-                        where: {
-                            NOT: { id: pessoaId },
-                            pessoa_fisica: { registro_funcionario: updatePessoaDto.registro_funcionario },
+            if (updatePessoaDto.registro_funcionario) {
+                const registroFuncionarioExists = await prismaTx.pessoa.count({
+                    where: {
+                        NOT: { id: pessoaId },
+                        pessoa_fisica: { registro_funcionario: updatePessoaDto.registro_funcionario },
+                    },
+                });
+                if (registroFuncionarioExists > 0) {
+                    throw new HttpException(
+                        'registro_funcionario| Registro de funcionário já atrelado a outra conta',
+                        400
+                    );
+                }
+            }
+
+            if (updatePessoaDto.cpf) {
+                const registroFuncionarioExists = await prismaTx.pessoa.count({
+                    where: {
+                        NOT: { id: pessoaId },
+                        pessoa_fisica: { cpf: updatePessoaDto.cpf },
+                    },
+                });
+                if (registroFuncionarioExists > 0) {
+                    throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
+                }
+            }
+
+            const grupos_to_assign = [];
+
+            const grupos = updatePessoaDto.grupos;
+            delete updatePessoaDto.grupos;
+            if (grupos) {
+                if (sistema != 'PDM') {
+                    //throw new BadRequestException('Edição de grupos não é suportada fora do sistema do PDM');
+                    logger.warn('Edição de grupos não é suportada fora do sistema do PDM');
+                } else {
+                    for (const grupo of grupos) {
+                        grupos_to_assign.push({ grupo_painel_id: grupo });
+                    }
+
+                    // apaga todos os grupos
+                    await prismaTx.pessoaGrupoPainel.deleteMany({ where: { pessoa_id: pessoaId } });
+                }
+            }
+
+            if (
+                updatePessoaDto.orgao_id &&
+                self.pessoa_fisica &&
+                self.pessoa_fisica.orgao_id &&
+                self.pessoa_fisica.orgao_id != updatePessoaDto.orgao_id
+            ) {
+                await this.trocouDeOrgao(prismaTx, { ...self, pessoa_fisica: self.pessoa_fisica }, now, logger);
+            }
+
+            const updated = await prismaTx.pessoa.update({
+                where: {
+                    id: pessoaId,
+                },
+                data: {
+                    nome_completo: updatePessoaDto.nome_completo,
+                    nome_exibicao: updatePessoaDto.nome_exibicao,
+                    email: updatePessoaDto.email,
+
+                    pessoa_fisica: {
+                        update: {
+                            cargo: updatePessoaDto.cargo,
+                            lotacao: updatePessoaDto.lotacao,
+                            orgao_id: updatePessoaDto.orgao_id,
+                            cpf: updatePessoaDto.cpf,
+                            registro_funcionario: updatePessoaDto.registro_funcionario,
                         },
-                    });
-                    if (registroFuncionarioExists > 0) {
-                        throw new HttpException(
-                            'registro_funcionario| Registro de funcionário já atrelado a outra conta',
-                            400
-                        );
-                    }
-                }
+                    },
+                    GruposDePaineisQueParticipo: grupos ? { createMany: { data: grupos_to_assign } } : undefined,
+                },
+                select: { id: true, pessoa_fisica: { select: { orgao_id: true } } },
+            });
 
-                if (updatePessoaDto.cpf) {
-                    const registroFuncionarioExists = await prismaTx.pessoa.count({
-                        where: {
-                            NOT: { id: pessoaId },
-                            pessoa_fisica: { cpf: updatePessoaDto.cpf },
-                        },
-                    });
-                    if (registroFuncionarioExists > 0) {
-                        throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
-                    }
-                }
-
-                const grupos_to_assign = [];
-
-                const grupos = updatePessoaDto.grupos;
-                delete updatePessoaDto.grupos;
-                if (grupos) {
-                    if (sistema != 'PDM') {
-                        //throw new BadRequestException('Edição de grupos não é suportada fora do sistema do PDM');
-                        logger.warn('Edição de grupos não é suportada fora do sistema do PDM');
-                    } else {
-                        for (const grupo of grupos) {
-                            grupos_to_assign.push({ grupo_painel_id: grupo });
-                        }
-
-                        // apaga todos os grupos
-                        await prismaTx.pessoaGrupoPainel.deleteMany({ where: { pessoa_id: pessoaId } });
-                    }
-                }
-
-                if (
-                    updatePessoaDto.orgao_id &&
-                    self.pessoa_fisica &&
-                    self.pessoa_fisica.orgao_id &&
-                    self.pessoa_fisica.orgao_id != updatePessoaDto.orgao_id
-                ) {
-                    await this.trocouDeOrgao(prismaTx, { ...self, pessoa_fisica: self.pessoa_fisica }, now, logger);
-                }
-
+            if (updatePessoaDto.desativado === true) {
+                logger.verbose(`Desativando usuário...`);
                 await prismaTx.pessoa.update({
                     where: {
                         id: pessoaId,
                     },
                     data: {
-                        nome_completo: updatePessoaDto.nome_completo,
-                        nome_exibicao: updatePessoaDto.nome_exibicao,
-                        email: updatePessoaDto.email,
+                        desativado: true,
+                        desativado_motivo: updatePessoaDto.desativado_motivo,
+                        desativado_por: Number(user.id),
+                        desativado_em: now,
+                    },
+                });
+            } else if (updatePessoaDto.desativado === false) {
+                logger.verbose(`Reativando usuário...`);
+                await prismaTx.pessoa.update({
+                    where: {
+                        id: pessoaId,
+                    },
+                    data: {
+                        desativado: false,
+                        desativado_por: null,
+                        desativado_em: null,
+                        desativado_motivo: null,
+                        atualizado_por: user.id,
+                        atualizado_em: now,
+                    },
+                });
+            } else {
+                await prismaTx.pessoa.update({
+                    where: {
+                        id: pessoaId,
+                    },
+                    data: {
+                        atualizado_por: user.id,
+                        atualizado_em: now,
+                    },
+                });
+            }
 
-                        pessoa_fisica: {
-                            update: {
-                                cargo: updatePessoaDto.cargo,
-                                lotacao: updatePessoaDto.lotacao,
-                                orgao_id: updatePessoaDto.orgao_id,
-                                cpf: updatePessoaDto.cpf,
-                                registro_funcionario: updatePessoaDto.registro_funcionario,
-                            },
+            if (Array.isArray(updatePessoaDto.equipes)) {
+                const novasEquipesSorted = updatePessoaDto.equipes.sort((a, b) => a - b).join(',');
+                const equipesAntesSorted = equipesAntes.sort((a, b) => a - b).join(',');
+
+                if (novasEquipesSorted !== equipesAntesSorted) {
+                    if (!updated.pessoa_fisica?.orgao_id)
+                        throw new BadRequestException(
+                            'Órgão da pessoa não encontrado, necessário para atualizar equipes'
+                        );
+                    updatePessoaDto.perfil_acesso_ids = Array.isArray(updatePessoaDto.perfil_acesso_ids)
+                        ? updatePessoaDto.perfil_acesso_ids
+                        : await this.loadPrivPessoa(pessoaId, prismaTx, perfisVisiveis);
+
+                    const perfilEquipe = await prismaTx.perfilAcesso.findFirstOrThrow({
+                        where: {
+                            nome: CONST_PERFIL_PARTICIPANTE_EQUIPE,
+                            removido_em: null,
                         },
-                        GruposDePaineisQueParticipo: grupos ? { createMany: { data: grupos_to_assign } } : undefined,
+                        select: { id: true },
+                    });
+
+                    logger.log(`Equipes antes: ${equipesAntesSorted}`);
+                    logger.log(`Equipes agora: ${novasEquipesSorted}`);
+
+                    // se a pessoa não está em nenhuma equipe, remove o perfil de acesso
+                    if (updatePessoaDto.equipes.length == 0) {
+                        updatePessoaDto.perfil_acesso_ids = updatePessoaDto.perfil_acesso_ids.filter(
+                            (e) => e != perfilEquipe.id
+                        );
+                    } else if (updatePessoaDto.perfil_acesso_ids.indexOf(perfilEquipe.id) == -1) {
+                        updatePessoaDto.perfil_acesso_ids.push(perfilEquipe.id);
+                    }
+
+                    await this.equipeRespService.atualizaEquipe(
+                        pessoaId,
+                        updatePessoaDto.equipes,
+                        prismaTx,
+                        updated.pessoa_fisica.orgao_id
+                    );
+                }
+            }
+
+            if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
+                logger.verbose(`Perfis de acessos recebidos: ${JSON.stringify(updatePessoaDto.perfil_acesso_ids)}`);
+                const promises = [];
+
+                const perfilDeInteresse: ListaDePrivilegios[] = [
+                    'PDM.coordenador_responsavel_cp',
+                    'SMAE.gestor_de_projeto',
+                    'SMAE.colaborador_de_projeto',
+                    'SMAE.espectador_de_painel_externo',
+                    'SMAE.espectador_de_projeto',
+                    'SMAE.GrupoVariavel.colaborador',
+                    'PDM.tecnico_cp',
+                    'PDM.admin_cp',
+                    'PDM.ponto_focal',
+                ] as const;
+                const privAntesUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
+
+                await prismaTx.pessoaPerfil.deleteMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        // só deve apagar os privilégios que tiverem relação ao modulo que a pessoa estava visualizando na tela
+                        perfil_acesso_id: { in: perfisVisiveis },
                     },
                 });
 
-                if (updatePessoaDto.desativado === true) {
-                    logger.verbose(`Desativando usuário...`);
-                    await prismaTx.pessoa.update({
-                        where: {
-                            id: pessoaId,
-                        },
-                        data: {
-                            desativado: true,
-                            desativado_motivo: updatePessoaDto.desativado_motivo,
-                            desativado_por: Number(user.id),
-                            desativado_em: now,
-                        },
-                    });
-                } else if (updatePessoaDto.desativado === false) {
-                    logger.verbose(`Reativando usuário...`);
-                    await prismaTx.pessoa.update({
-                        where: {
-                            id: pessoaId,
-                        },
-                        data: {
-                            desativado: false,
-                            desativado_por: null,
-                            desativado_em: null,
-                            desativado_motivo: null,
-                            atualizado_por: user.id,
-                            atualizado_em: now,
-                        },
-                    });
-                } else {
-                    await prismaTx.pessoa.update({
-                        where: {
-                            id: pessoaId,
-                        },
-                        data: {
-                            atualizado_por: user.id,
-                            atualizado_em: now,
-                        },
-                    });
-                }
+                const newPrivileges = new Set<string>();
 
-                if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
-                    logger.verbose(`Perfis de acessos recebidos: ${JSON.stringify(updatePessoaDto.perfil_acesso_ids)}`);
-                    const promises = [];
+                for (const perm of updatePessoaDto.perfil_acesso_ids) {
+                    if (perfisVisiveis.includes(perm) == false)
+                        throw new BadRequestException(`Perm ${perm} não é permitida para o seu sistema`);
 
-                    const perfilDeInteresse: ListaDePrivilegios[] = [
-                        'PDM.coordenador_responsavel_cp',
-                        'PS.tecnico_cp',
-                        'SMAE.gestor_de_projeto',
-                        'SMAE.colaborador_de_projeto',
-                        'SMAE.espectador_de_painel_externo',
-                        'SMAE.espectador_de_projeto',
-                        'SMAE.GrupoVariavel.colaborador',
-                    ] as const;
-                    const privAntesUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
-
-                    await prismaTx.pessoaPerfil.deleteMany({
-                        where: {
-                            pessoa_id: pessoaId,
-                            // só deve apagar os privilégios que tiverem relação ao modulo que a pessoa estava visualizando na tela
-                            perfil_acesso_id: { in: perfisVisiveis },
-                        },
-                    });
-
-                    const newPrivileges = new Set<string>();
-
-                    for (const perm of updatePessoaDto.perfil_acesso_ids) {
-                        if (perfisVisiveis.includes(perm) == false)
-                            throw new BadRequestException(`Perm ${perm} não é permitida para o seu sistema`);
-
-                        const perfilAcesso = await prismaTx.perfilAcesso.findUnique({
-                            where: { id: perm },
-                            include: {
-                                perfil_privilegio: {
-                                    include: {
-                                        privilegio: true,
-                                    },
+                    const perfilAcesso = await prismaTx.perfilAcesso.findUnique({
+                        where: { id: perm },
+                        include: {
+                            perfil_privilegio: {
+                                include: {
+                                    privilegio: true,
                                 },
                             },
-                        });
+                        },
+                    });
 
-                        if (!perfilAcesso) throw new BadRequestException(`Perfil de acesso ${perm} não encontrado`);
+                    if (!perfilAcesso) throw new BadRequestException(`Perfil de acesso ${perm} não encontrado`);
 
-                        for (const priv of perfilAcesso.perfil_privilegio) {
-                            if (
-                                !user.hasSomeRoles(['SMAE.superadmin']) &&
-                                !editingUserPrivileges.has(priv.privilegio.codigo as ListaDePrivilegios)
-                            ) {
-                                throw new ForbiddenException(
-                                    `Você não pode adicionar o privilégio ${priv.privilegio.codigo} que você não possui.`
-                                );
-                            }
-                            newPrivileges.add(priv.privilegio.codigo);
+                    for (const priv of perfilAcesso.perfil_privilegio) {
+                        if (
+                            !user.hasSomeRoles(['SMAE.superadmin']) &&
+                            !editingUserPrivileges.has(priv.privilegio.codigo as ListaDePrivilegios)
+                        ) {
+                            throw new ForbiddenException(
+                                `Você não pode adicionar o privilégio ${priv.privilegio.codigo} que você não possui.`
+                            );
                         }
-
-                        promises.push(
-                            prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
-                        );
+                        newPrivileges.add(priv.privilegio.codigo);
                     }
 
-                    if (newPrivileges.size)
-                        logger.log(`Novos privilégios: ${JSON.stringify(Array.from(newPrivileges))}`);
-
-                    await Promise.all(promises);
-
-                    const privDepoisUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
-                    await this.removeAcessoOuAbortaTx(
-                        prismaTx,
-                        perfilDeInteresse,
-                        pessoaId,
-                        privDepoisUpdate,
-                        privAntesUpdate,
-                        logger,
-                        now
+                    promises.push(
+                        prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
                     );
-
-                    logger.log(`Recalculando pessoa_acesso_pdm(${pessoaId})...`);
-                    await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
                 }
 
-                await logger.saveLogs(prismaTx, user.getLogData());
-            },
-            {
-                // verificar o email dentro do contexto Serializable
-                isolationLevel: 'Serializable',
-                maxWait: 5000,
-                timeout: 5000,
+                if (newPrivileges.size) logger.log(`Novos privilégios: ${JSON.stringify(Array.from(newPrivileges))}`);
+
+                await Promise.all(promises);
+
+                const privDepoisUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
+                await this.removeAcessoOuAbortaTx(
+                    prismaTx,
+                    perfilDeInteresse,
+                    pessoaId,
+                    privDepoisUpdate,
+                    privAntesUpdate,
+                    logger,
+                    now
+                );
+
+                logger.log(`Recalculando pessoa_acesso_pdm(${pessoaId})...`);
+                await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
             }
-        );
+
+            if (!loggerCtx) await logger.saveLogs(prismaTx, user.getLogData());
+        };
+
+        if (prismaCtx) {
+            await performUpdate(prismaCtx);
+        } else {
+            await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performUpdate(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
 
         return { id: pessoaId };
+    }
+
+    private async verificaResponsabilidadesMeta(
+        prismaTx: Prisma.TransactionClient,
+        pessoaId: number,
+        removendoPrivilegios: string[]
+    ): Promise<void> {
+        if (removendoPrivilegios.includes('PDM.admin_cp') || removendoPrivilegios.includes('PDM.tecnico_cp')) {
+            const metaResp = await prismaTx.meta.findMany({
+                where: {
+                    removido_em: null,
+                    meta_responsavel: {
+                        some: {
+                            pessoa_id: pessoaId,
+                            coordenador_responsavel_cp: true,
+                        },
+                    },
+                },
+                select: {
+                    codigo: true,
+                    titulo: true,
+                },
+            });
+            if (metaResp.length) {
+                throw new BadRequestException(
+                    `Não é possível remover o privilégio de Técnico CP, pois a pessoa ainda é coordenadora nas metas: ${metaResp.map((r) => `${r.codigo} - ${r.titulo}`).join(', ')}`
+                );
+            }
+        }
+
+        if (removendoPrivilegios.includes('PDM.ponto_focal')) {
+            const metaResp = await prismaTx.meta.findMany({
+                where: {
+                    removido_em: null,
+                    meta_responsavel: {
+                        some: {
+                            pessoa_id: pessoaId,
+                            coordenador_responsavel_cp: false,
+                        },
+                    },
+                },
+                select: {
+                    codigo: true,
+                    titulo: true,
+                },
+            });
+            if (metaResp.length) {
+                throw new BadRequestException(
+                    `Não é possível remover o privilégio de Ponto Focal, pois a pessoa ainda é participante nas metas: ${metaResp.map((r) => `${r.codigo} - ${r.titulo}`).join(', ')}`
+                );
+            }
+        }
+    }
+
+    async loadPrivPessoa(
+        pessoaId: number,
+        prismaTx: Prisma.TransactionClient,
+        perfisVisiveis: number[]
+    ): Promise<number[]> {
+        const rows = await prismaTx.pessoaPerfil
+            .findMany({
+                where: { pessoa_id: pessoaId },
+                select: { perfil_acesso_id: true },
+            })
+            .then((r) => r.map((e) => e.perfil_acesso_id));
+
+        return rows.filter((e) => perfisVisiveis.includes(e));
     }
 
     private async removeAcessoOuAbortaTx(
@@ -673,141 +805,148 @@ export class PessoaService {
         logger: LoggerWithLog,
         now: Date
     ) {
+        // Check which privileges are being removed
+        const removendoPrivilegios = privAntesUpdate
+            .filter((antes) => !privDepoisUpdate.find((depois) => depois.codigo === antes.codigo))
+            .map((priv) => priv.codigo);
+
+        if (removendoPrivilegios.length == 0) return;
+
+        await this.verificaResponsabilidadesMeta(prismaTx, pessoaId, removendoPrivilegios);
+
         const somePessoaCp = { some: { pessoa_id: pessoaId, coordenador_responsavel_cp: true } } as const;
-        for (const priv of perfilDeInteresse) {
-            if (!privDepoisUpdate.find((r) => r.codigo == priv) && privAntesUpdate.find((r) => r.codigo == priv)) {
-                logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
+        for (const priv of removendoPrivilegios) {
+            logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
 
-                if (priv == 'PDM.coordenador_responsavel_cp' || priv == 'PS.tecnico_cp') {
-                    const metaResp = await prismaTx.meta.findMany({
-                        where: {
-                            removido_em: null,
-                            pdm: {
-                                ativo: true,
+            if (priv == 'PDM.coordenador_responsavel_cp') {
+                const metaResp = await prismaTx.meta.findMany({
+                    where: {
+                        removido_em: null,
+                        pdm: {
+                            ativo: true,
+                        },
+                        OR: [
+                            { meta_responsavel: somePessoaCp },
+
+                            // responsavel na iniciativa
+                            {
+                                iniciativa: {
+                                    some: {
+                                        removido_em: null,
+                                        iniciativa_responsavel: somePessoaCp,
+                                    },
+                                },
                             },
-                            OR: [
-                                { meta_responsavel: somePessoaCp },
-
-                                // responsavel na iniciativa
-                                {
-                                    iniciativa: {
-                                        some: {
-                                            removido_em: null,
-                                            iniciativa_responsavel: somePessoaCp,
+                            // responsavel na atividade
+                            {
+                                iniciativa: {
+                                    some: {
+                                        removido_em: null,
+                                        atividade: {
+                                            some: { atividade_responsavel: somePessoaCp },
                                         },
                                     },
                                 },
-                                // responsavel na atividade
-                                {
-                                    iniciativa: {
-                                        some: {
-                                            removido_em: null,
-                                            atividade: {
-                                                some: { atividade_responsavel: somePessoaCp },
-                                            },
-                                        },
-                                    },
-                                },
-                            ],
-                        },
-                        select: {
-                            id: true,
-                            codigo: true,
-                            titulo: true,
-                        },
-                    });
-                    if (metaResp.length) {
-                        throw new BadRequestException(
-                            `Não é possível remover privilégio de coordenador CP, pois ainda é utilizado nas metas: ${metaResp.map(
-                                (r) => {
-                                    return `Meta ${r.codigo} - ${r.titulo}`;
-                                }
-                            )}`
-                        );
-                    }
-                } else if (priv == 'SMAE.gestor_de_projeto') {
-                    const projGestoResp = await prismaTx.projeto.findMany({
-                        where: {
-                            removido_em: null,
-                            responsaveis_no_orgao_gestor: {
-                                has: pessoaId,
                             },
-                        },
-                        select: {
-                            id: true,
-                            nome: true,
-                        },
-                    });
-                    if (projGestoResp.length) {
-                        throw new BadRequestException(
-                            `Não é possível remover privilégio de Gestor de Projeto, pois ainda é utilizado nos projetos: ${projGestoResp.map(
-                                (r) => {
-                                    return `Projeto ${r.nome}`;
-                                }
-                            )}`
-                        );
-                    }
-                } else if (priv == 'SMAE.colaborador_de_projeto') {
-                    const projColab = await prismaTx.projeto.findMany({
-                        where: {
-                            removido_em: null,
-                            responsavel_id: pessoaId,
-                        },
-                        select: {
-                            id: true,
-                            nome: true,
-                        },
-                    });
-                    if (projColab.length) {
-                        throw new BadRequestException(
-                            `Não é possível remover privilégio de Colaborador de Projeto, pois ainda é utilizado nos projetos: ${projColab.map(
-                                (r) => {
-                                    return `Projeto ${r.nome}`;
-                                }
-                            )}`
-                        );
-                    }
-                } else if (priv == 'SMAE.espectador_de_painel_externo') {
-                    const gpp = await prismaTx.grupoPortfolioPessoa.findMany({
-                        where: {
-                            pessoa_id: pessoaId,
-                            removido_em: null,
-                        },
-                        select: {
-                            id: true,
-                            grupo_portfolio: { select: { id: true, titulo: true } },
-                        },
-                    });
-                    logger.verbose(`Removendo dos grupos portfólio: ${JSON.stringify(gpp)}`);
-
-                    await prismaTx.grupoPortfolioPessoa.updateMany({
-                        where: {
-                            id: { in: gpp.map((r) => r.id) },
-                            pessoa_id: pessoaId,
-                        },
-                        data: { removido_em: now },
-                    });
-                } else if (priv == 'SMAE.espectador_de_projeto') {
-                    const gpe = await prismaTx.grupoPainelExternoPessoa.findMany({
-                        where: {
-                            pessoa_id: pessoaId,
-                            removido_em: null,
-                        },
-                        select: {
-                            id: true,
-                            grupo_painel_externo: { select: { id: true, titulo: true } },
-                        },
-                    });
-                    logger.verbose(`Removendo dos grupos de painel externo: ${JSON.stringify(gpe)}`);
-
-                    await prismaTx.grupoPainelExternoPessoa.updateMany({
-                        where: {
-                            id: { in: gpe.map((r) => r.id) },
-                            pessoa_id: pessoaId,
-                        },
-                        data: { removido_em: now },
-                    });
+                        ],
+                    },
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                    },
+                });
+                if (metaResp.length) {
+                    throw new BadRequestException(
+                        `Não é possível remover privilégio de coordenador CP, pois ainda é utilizado nas metas: ${metaResp.map(
+                            (r) => {
+                                return `Meta ${r.codigo} - ${r.titulo}`;
+                            }
+                        )}`
+                    );
                 }
+            } else if (priv == 'SMAE.gestor_de_projeto') {
+                const projGestoResp = await prismaTx.projeto.findMany({
+                    where: {
+                        removido_em: null,
+                        responsaveis_no_orgao_gestor: {
+                            has: pessoaId,
+                        },
+                    },
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                });
+                if (projGestoResp.length) {
+                    throw new BadRequestException(
+                        `Não é possível remover privilégio de Gestor de Projeto, pois ainda é utilizado nos projetos: ${projGestoResp.map(
+                            (r) => {
+                                return `Projeto ${r.nome}`;
+                            }
+                        )}`
+                    );
+                }
+            } else if (priv == 'SMAE.colaborador_de_projeto') {
+                const projColab = await prismaTx.projeto.findMany({
+                    where: {
+                        removido_em: null,
+                        responsavel_id: pessoaId,
+                    },
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                });
+                if (projColab.length) {
+                    throw new BadRequestException(
+                        `Não é possível remover privilégio de Colaborador de Projeto, pois ainda é utilizado nos projetos: ${projColab.map(
+                            (r) => {
+                                return `Projeto ${r.nome}`;
+                            }
+                        )}`
+                    );
+                }
+            } else if (priv == 'SMAE.espectador_de_painel_externo') {
+                const gpp = await prismaTx.grupoPortfolioPessoa.findMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        grupo_portfolio: { select: { id: true, titulo: true } },
+                    },
+                });
+                logger.verbose(`Removendo dos grupos portfólio: ${JSON.stringify(gpp)}`);
+
+                await prismaTx.grupoPortfolioPessoa.updateMany({
+                    where: {
+                        id: { in: gpp.map((r) => r.id) },
+                        pessoa_id: pessoaId,
+                    },
+                    data: { removido_em: now },
+                });
+            } else if (priv == 'SMAE.espectador_de_projeto') {
+                const gpe = await prismaTx.grupoPainelExternoPessoa.findMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        grupo_painel_externo: { select: { id: true, titulo: true } },
+                    },
+                });
+                logger.verbose(`Removendo dos grupos de painel externo: ${JSON.stringify(gpe)}`);
+
+                await prismaTx.grupoPainelExternoPessoa.updateMany({
+                    where: {
+                        id: { in: gpe.map((r) => r.id) },
+                        pessoa_id: pessoaId,
+                    },
+                    data: { removido_em: now },
+                });
             }
         }
     }
@@ -860,12 +999,12 @@ export class PessoaService {
             if (curResp.length) {
                 const getDesc = await prismaTx.meta.findMany({
                     where: { id: { in: curResp.map((r) => r.id) } },
-                    select: { codigo: true, titulo: true, pdm: { select: { nome: true } } },
+                    select: { codigo: true, titulo: true, pdm: { select: { nome: true, tipo: true } } },
                 });
                 throw new BadRequestException(
                     `Mudança de órgão não pode ser efetuada antes de remover todas as responsabilidades, há responsabilidades em: ${getDesc
                         .map((r) => {
-                            return `Meta ${r.codigo} - ${r.titulo} (PDM ${r.pdm.nome})`;
+                            return `Meta ${r.codigo} - ${r.titulo} (${r.pdm.tipo == 'PDM' ? 'PDM' : 'Plano Setorial'} ${r.pdm.nome})`;
                         })
                         .join('\n')}`
                 );
@@ -1013,65 +1152,49 @@ export class PessoaService {
         return rows.map((r) => r.id);
     }
 
-    async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
+    async criarPessoa(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
         const logger = LoggerWithLog('Pessoa: Criar');
 
-        const visiblePriv: number[] = [];
-        if (user) {
-            visiblePriv.push(...(await this.buscaPerfisVisiveis(user)));
-        }
-
-        this.verificaPerfilAcesso(createPessoaDto, visiblePriv);
-
-        if (user) {
-            await this.verificarPrivilegiosCriacao(createPessoaDto, user);
-        }
         this.verificarCPFObrigatorio(createPessoaDto);
         this.verificarRFObrigatorio(createPessoaDto);
+
+        await this.verificarPrivilegiosCriacao(createPessoaDto, user);
 
         logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         const newPass = this.#generateRndPass(10);
         this.logger.verbose(`senha gerada: ${newPass}`);
 
-        createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
-
-        const pessoaData = {
-            nome_completo: createPessoaDto.nome_completo,
-            nome_exibicao: createPessoaDto.nome_exibicao,
-            email: createPessoaDto.email,
-            senha: await bcrypt.hash(newPass, BCRYPT_ROUNDS),
-            senha_bloqueada: true,
-            senha_bloqueada_em: new Date(Date.now()),
-        } as Prisma.PessoaCreateInput;
+        createPessoaDto.email = createPessoaDto.email.toLowerCase();
 
         const pessoa = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Validate unique constraints first
                 const emailExists = await prismaTx.pessoa.count({ where: { email: createPessoaDto.email } });
                 if (emailExists > 0) {
-                    throw new HttpException('email| E-mail já tem conta', 400);
+                    throw new BadRequestException('email| E-mail já tem conta');
                 }
 
                 if (createPessoaDto.registro_funcionario) {
-                    const registroFuncionarioExists = await prismaTx.pessoa.count({
+                    const rfExists = await prismaTx.pessoa.count({
                         where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } },
                     });
-                    if (registroFuncionarioExists > 0) {
-                        throw new HttpException(
-                            'registro_funcionario| Registro de funcionário já atrelado a outra conta',
-                            400
+                    if (rfExists > 0) {
+                        throw new BadRequestException(
+                            'registro_funcionario| Registro de funcionário já atrelado a outra conta'
                         );
                     }
                 }
 
                 if (createPessoaDto.cpf) {
-                    const registroFuncionarioExists = await prismaTx.pessoa.count({
+                    const cpfExists = await prismaTx.pessoa.count({
                         where: { pessoa_fisica: { cpf: createPessoaDto.cpf } },
                     });
-                    if (registroFuncionarioExists > 0) {
-                        throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
+                    if (cpfExists > 0) {
+                        throw new BadRequestException('cpf| CPF já atrelado a outra conta');
                     }
                 }
 
+                // Create basic pessoa record first
                 let pessoaFisica;
                 if (createPessoaDto.orgao_id) {
                     pessoaFisica = await prismaTx.pessoaFisica.create({
@@ -1084,77 +1207,39 @@ export class PessoaService {
                     });
                 }
 
-                const grupos_to_assign = [];
-                if (createPessoaDto.grupos) {
-                    const grupos = createPessoaDto.grupos;
-                    delete createPessoaDto.grupos;
-
-                    for (const grupo of grupos) {
-                        grupos_to_assign.push({ grupo_painel_id: grupo });
-                    }
-                }
-
                 const created = await prismaTx.pessoa.create({
                     data: {
-                        ...pessoaData,
+                        nome_completo: createPessoaDto.nome_completo,
+                        nome_exibicao: createPessoaDto.nome_exibicao,
+                        email: createPessoaDto.email,
+                        senha: await bcrypt.hash(newPass, BCRYPT_ROUNDS),
+                        senha_bloqueada: true,
+                        senha_bloqueada_em: new Date(Date.now()),
                         pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
-
-                        GruposDePaineisQueParticipo: {
-                            createMany: {
-                                data: grupos_to_assign,
-                            },
-                        },
-                    } as Prisma.PessoaCreateInput,
+                    },
                 });
 
-                const promises = [];
-                if (user && !user.hasSomeRoles(['SMAE.superadmin'])) {
-                    const editingUserPrivileges = new Set(user.privilegios);
+                // envia pro update method pra lidar com grupos, permissões, FK's, etc...
+                await this.update(
+                    created.id,
+                    {
+                        ...createPessoaDto,
+                        desativado: false,
+                    },
+                    user,
+                    prismaTx,
+                    logger
+                );
 
-                    for (const permId of createPessoaDto.perfil_acesso_ids) {
-                        const perfilAcesso = await prismaTx.perfilAcesso.findUnique({
-                            where: { id: permId },
-                            include: {
-                                perfil_privilegio: {
-                                    include: {
-                                        privilegio: true,
-                                    },
-                                },
-                            },
-                        });
-
-                        if (!perfilAcesso) throw new BadRequestException(`Perfil de acesso ${permId} não encontrado`);
-
-                        for (const priv of perfilAcesso.perfil_privilegio) {
-                            if (!editingUserPrivileges.has(priv.privilegio.codigo as ListaDePrivilegios)) {
-                                throw new ForbiddenException(
-                                    `Você não pode adicionar o privilégio ${priv.privilegio.codigo} que você não possui.`
-                                );
-                            }
-                        }
-                    }
-                }
-
-                for (const perm of createPessoaDto.perfil_acesso_ids) {
-                    promises.push(
-                        prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } })
-                    );
-                }
-
-                await Promise.all(promises);
-
-                // se a pessoa não está suspensa, envia a senha
+                // Verifica se está suspenso antes de enviar o primeiro e-mail (é uma feature)
                 const estaSuspenso = await this.carregaPrivPessoa(prismaTx, ['SMAE.login_suspenso'], created.id);
                 if (!estaSuspenso.length) await this.enviaPrimeiraSenha(created, newPass, prismaTx);
 
-                this.logger.log(`calculando pessoa_acesso_pdm...`);
-                await prismaTx.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
-
                 if (user) await logger.saveLogs(prismaTx, user.getLogData());
+
                 return created;
             },
             {
-                // verificar o email dentro do contexto Serializable
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 5000,

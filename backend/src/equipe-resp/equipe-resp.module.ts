@@ -8,5 +8,6 @@ import { EquipeRespService } from './equipe-resp.service';
     imports: [PrismaModule, PessoaPrivilegioModule],
     controllers: [EquipeRespController],
     providers: [EquipeRespService],
+    exports: [EquipeRespService],
 })
 export class EquipeRespModule {}

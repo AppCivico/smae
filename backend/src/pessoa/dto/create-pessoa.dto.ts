@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
-    ArrayMinSize,
     IsArray,
     IsEmail,
     IsInt,
@@ -9,7 +8,7 @@ import {
     IsString,
     MaxLength,
     MinLength,
-    ValidateIf,
+    ValidateIf
 } from 'class-validator';
 import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 
@@ -93,9 +92,16 @@ export class CreatePessoaDto {
     @ValidateIf((object, value) => value)
     cpf?: string;
 
+    /**
+     * Lista dos IDs dos grupo de painel, PDM
+     */
     @IsArray()
     @IsOptional()
-    @ArrayMinSize(0, { message: '$property| grupo(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
     grupos?: number[];
+
+    @IsArray()
+    @IsOptional()
+    @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
+    equipes?: number[];
 }

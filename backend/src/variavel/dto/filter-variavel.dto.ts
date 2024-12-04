@@ -76,6 +76,21 @@ export class FilterVariavelDto {
     orgao_id?: number;
 
     @IsOptional()
+    @IsInt({ message: 'Mediação Órgão precisa ser um número inteiro' })
+    @Transform(NumberTransform)
+    medicao_orgao_id?: number;
+
+    @IsOptional()
+    @IsInt({ message: 'Validação Órgão precisa ser um número inteiro' })
+    @Transform(NumberTransform)
+    validacao_orgao_id?: number;
+
+    @IsOptional()
+    @IsInt({ message: 'Liberação Órgão precisa ser um número inteiro' })
+    @Transform(NumberTransform)
+    liberacao_orgao_id?: number;
+
+    @IsOptional()
     @IsInt({ message: 'Órgão proprietário precisa ser um número inteiro' })
     @Transform(NumberTransform)
     orgao_proprietario_id?: number;

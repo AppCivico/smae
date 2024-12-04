@@ -43,7 +43,9 @@ const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE
 const endYear = new Date().getFullYear() + 5;
 const startYear = 2003;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   return this.test('teste', errorMessage, function __(value) {
     const { path, createError } = this;
 
@@ -64,9 +66,38 @@ addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path}
   });
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+addMethod(string, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' ? null : v));
+});
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+addMethod(date, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' ? null : v));
+});
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+addMethod(mixed, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' || v === false ? null : v));
+});
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+addMethod(number, 'nullableOuVazio', function _() {
+  return this
+    .nullable()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v));
+});
+
 /**
  * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não encontrado em ${arrayToCompare}') {
   return this.test({
     message,
@@ -322,12 +353,24 @@ export const arquivoSimples = object()
       .nullable(),
   });
 
+export const categoriaAssunto = object()
+  .shape({
+    nome: string()
+      .max(250)
+      .min(3)
+      .label('Nome')
+      .required(),
+  });
+
 export const assunto = object()
   .shape({
     nome: string()
       .max(250)
       .min(3)
       .label('Nome')
+      .required(),
+    categoria_assunto_variavel_id: number()
+      .label('Categorias de assunto')
       .required(),
   });
 
@@ -875,11 +918,11 @@ export const indicador = object()
 export const grupoDeObservadores = object({
   participantes: array()
     .label('Participantes')
-    .required(),
+    .nullable(),
   orgao_id: number()
     .label('Órgão responsável')
     .min(1, 'Selecione um órgão responsável')
-    .nullable(),
+    .required(),
   titulo: string()
     .label('Nome')
     .required(),
@@ -954,7 +997,7 @@ export const liçãoAprendida = object()
 export const macrotema = object({
   descricao: string()
     .label('Nome')
-    .max(250)
+    .max(500)
     .required(),
 });
 
@@ -1530,7 +1573,7 @@ export const planoSetorial = object({
     .transform((v) => (!v ? null : v)),
   descricao: string()
     .label('Descrição')
-    .max(250)
+    .max(2500)
     .nullable()
     .required(),
   equipe_tecnica: string()
@@ -1828,7 +1871,7 @@ export const nota = object({
 
 export const parlamentar = object({
   nome_popular: string()
-    .label('Nome')
+    .label('Nome de urna')
     .min(1)
     .max(250)
     .required(),
@@ -1933,7 +1976,7 @@ export const statusDistribuicaoWorkflow = object({
 export const subtema = object({
   descricao: string()
     .label('Nome')
-    .max(250)
+    .max(500)
     .required(),
 });
 
@@ -1949,7 +1992,7 @@ export const suplentes = object({
 export const tema = object({
   descricao: string()
     .label('Nome')
-    .max(250)
+    .max(500)
     .required(),
 });
 
@@ -2013,31 +2056,24 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Número convênio/pré-convênio')
     .nullable(),
   custeio: number()
-    .label('Valor')
+    .label('Custeio (R$)')
     .min(0)
     .required(),
-  percentagem_custeio: number()
-    .label('Porcentagem')
-    .min(0),
+  investimento: number()
+    .label('Investimento (R$)')
+    .min(0)
+    .required(),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
     .min(new Date(2003, 0, 1))
-    .nullable()
-    .transform((v) => (!v ? null : v)),
+    .nullableOuVazio(),
   dotacao: string()
     .label('Dotacao')
     .nullable(),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
-  investimento: number()
-    .label('Valor')
-    .min(0)
-    .required(),
-  percentagem_investimento: number()
-    .label('Porcentagem')
-    .min(0),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
     .max(250)
@@ -2070,13 +2106,13 @@ export const transferenciaDistribuicaoDeRecursos = object({
       id: number()
         .nullable(),
       nome: string()
-        .label('Nome')
+        .label('Número SEI - Nome')
         .max(1024)
         .min(1)
         .required()
         .transform((v) => (!v ? null : v)),
       processo_sei: string()
-        .label('Processo')
+        .label('Número SEI - Processo')
         .max(40)
         .required(),
     }))
@@ -2100,28 +2136,16 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable()
     .transform((v) => (!v ? null : v)),
   parlamentares: array()
-    .label('Parlamentar')
+    .label('Parlamentares')
     .nullable()
     .of(object({
       id: number()
         .nullable(),
-      parlamentar_id: number()
-        .label('Parlamentar'),
-      cargo: mixed()
-        .label('Cargo')
-        // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-        .oneOf([...Object.keys(cargosDeParlamentar), null])
-        .nullable()
-        .transform((v) => (v === '' ? null : v)),
-      partido_id: number()
-        .label('Partido')
-        .nullable(),
-      objeto: string()
-        .label('Objeto/Empreendimento')
-        .max(1000)
+      nome: string()
+        .label('Parlamentar')
         .nullable(),
       valor: number()
-        .label('Valor do Repasse')
+        .label('Valor do repasse do parlamentar')
         .nullable(),
     })),
 });
@@ -2628,6 +2652,32 @@ export const região = object()
     upload_shapefile: string()
       .nullable(),
   });
+
+export const relatorioPlanoSetorialBase = object()
+  .shape({
+    criado_em: string().label('Gerado em'),
+    criador: string().label('Gerador'),
+    parametros: string().label('Parâmetros principais'),
+  });
+
+export const relatorioMensalPlanoSetorial = relatorioPlanoSetorialBase.shape(
+  {
+    referencia: string().label('Referência'),
+  },
+);
+
+export const relatorioSemestralAnualPlanoSetorial = relatorioPlanoSetorialBase.shape(
+  {
+    periodo: string().label('periodo'),
+  },
+);
+
+export const relatorioOrcamentarioPlanoSetorial = relatorioPlanoSetorialBase.shape(
+  {
+    periodo_inicio: string().label('Período Início'),
+    periodo_fim: string().label('Período Fim'),
+  },
+);
 
 export const relatórioDeAtividadesPendentes = object({
   fonte: string()
@@ -3254,7 +3304,6 @@ export const representatividade = object()
       .max(1000)
       .required(),
     regiao_id: number()
-      .label('Região')
       .required(),
   });
 
@@ -3726,15 +3775,22 @@ export const variávelComposta = object()
   });
 
 // criação ou geração
+const variavelGlobalEhNumberica = (variavelCategoricaId, field) => {
+  if (variavelCategoricaId === null || variavelCategoricaId === undefined) {
+    return field.required();
+  }
+
+  return field.nullableOuVazio();
+};
 export const variavelGlobal = object({
   acumulativa: boolean()
     .label('Variável acumulativa')
-    .required(),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   ano_base: number()
     .label('Ano base')
     .positive()
     .integer()
-    .nullable(),
+    .nullableOuVazio(),
   assuntos: array()
     .label('Assuntos')
     .nullable()
@@ -3752,7 +3808,7 @@ export const variavelGlobal = object({
     .integer()
     .min(0)
     .max(12)
-    .required(),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   dado_aberto: boolean()
     .label('Disponível como dado aberto')
     .nullable(),
@@ -3773,7 +3829,7 @@ export const variavelGlobal = object({
     .required()
     .min(dataMin),
   liberacao_grupo_ids: array()
-    .label('Grupos de liberação')
+    .label('Equipes de liberação')
     .nullable()
     .of(
       number()
@@ -3781,7 +3837,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   medicao_grupo_ids: array()
-    .label('Grupos de medição')
+    .label('Equipes de coleta')
     .nullable()
     .of(
       number()
@@ -3794,10 +3850,18 @@ export const variavelGlobal = object({
   mostrar_monitoramento: boolean()
     .label('Utilizar esta variável composta no ciclo de monitoramento')
     .required(),
-  orgao_id: number()
-    .label('Órgão responsável')
+  medicao_orgao_id: number()
+    .label('Órgão responsável pela coleta')
     .positive()
     .required(),
+  validacao_orgao_id: number()
+    .label('Órgão responsável pela conferência')
+    .positive()
+    .nullableOuVazio(),
+  liberacao_orgao_id: number()
+    .label('Órgão responsável pela liberação')
+    .positive()
+    .nullableOuVazio(),
   orgao_proprietario_id: number()
     .label('Órgão proprietário')
     .required()
@@ -3808,18 +3872,18 @@ export const variavelGlobal = object({
     .required(),
   periodos: object({
     preenchimento_inicio: number()
-      .label('Dia inicio do preenchimento')
+      .label('Dia inicio da coleta')
       .min(1)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     preenchimento_duracao: number()
-      .label('Duração do preenchimento')
+      .label('Duração da coleta')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
     validacao_duracao: number()
-      .label('Duração da validação')
+      .label('Duração da conferência')
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
@@ -3833,17 +3897,18 @@ export const variavelGlobal = object({
     .required(),
   polaridade: mixed()
     .label('Polaridade')
-    .oneOf(Object.keys(polaridadeDeVariaveis))
-    .required(),
+    .required()
+    .oneOf([...Object.keys(polaridadeDeVariaveis), null])
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   titulo: string()
     .label('Nome')
     .max(256)
     .required(),
   unidade_medida_id: number()
     .label('Unidade de medida')
-    .required(),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   validacao_grupo_ids: array()
-    .label('Grupos de validação')
+    .label('Equipes de conferência')
     .nullable()
     .of(
       number()
@@ -3853,11 +3918,10 @@ export const variavelGlobal = object({
   valor_base: number() // como string
     .label('Valor base')
     .min(0)
-    .required('Preencha o valor base'),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica),
   variavel_categorica_id: number()
     .label('Tipo de variável')
-    .positive()
-    .nullable(),
+    .nullableOuVazio(),
 });
 
 export const variavelGlobalParaGeracao = variavelGlobal.concat(
@@ -4017,7 +4081,7 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
   palavra_chave: string().label('palavra-chave'),
   data_inicio: date()
     .label('Início do período')
-    .nullable()
+    .required()
     .transform((v) => {
       if (v.toString() === 'Invalid Date') {
         return null;
@@ -4054,7 +4118,7 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
     ),
   data_fim: date()
     .label('Fim do período')
-    .nullable()
+    .required()
     .transform((v) => {
       if (v.toString() === 'Invalid Date') {
         return null;
@@ -4105,7 +4169,7 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
 
   if (posicao >= 2) {
     schemaCampos.analise_qualitativa_aprovador = string()
-      .label('análise qualitativa do aprovador')
+      .label('análise qualitativa da conferência')
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 

@@ -123,38 +123,53 @@ export class PainelEstrategicoService {
 
     private async buildProjetosPorStatus(filtro: string) {
         const sql = `
-        WITH status_counts AS (
+            WITH projeto_counts AS (
             SELECT
-                CASE WHEN p.status = 'Fechado' THEN 'Concluído'
-                     WHEN p.status = 'EmAcompanhamento' THEN 'Em Acompanhamento'
-                     WHEN p.status = 'EmPlanejamento' THEN 'Em Planejamento'
-                     ELSE 'Outros'
-                END as status,
+                CASE
+                    WHEN pe.ordem_painel IS NOT NULL THEN pe.descricao
+                    WHEN p.projeto_etapa_id IS NULL THEN 'Sem Informação'
+                    ELSE 'Outros'
+                END as etapa,
+                CASE
+                    WHEN pe.ordem_painel IS NOT NULL THEN pe.ordem_painel
+                    WHEN p.projeto_etapa_id IS NULL THEN 999999999
+                    ELSE 999999998 -- outros
+                END as ordem,
                 COUNT(DISTINCT p.id)::int as quantidade
             FROM projeto p
+            LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
             FULL OUTER JOIN (
-                SELECT ppc.projeto_id, po_1.id as portfolio_id
+                SELECT
+                    ppc.projeto_id,
+                    po_1.id as portfolio_id
                 FROM portfolio_projeto_compartilhado ppc
                 JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                 WHERE ppc.removido_em IS NULL
             ) po ON po.projeto_id = p.id
-            LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
             ${filtro}
-            GROUP BY 1
+            GROUP BY 1, 2
         ),
-        all_status AS (
-            SELECT status, COALESCE(quantidade, 0) as quantidade
-            FROM (
-                SELECT unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento', 'Outros']) as status
-            ) s
-            LEFT JOIN status_counts sc USING (status)
+        all_stages AS (
+            SELECT
+                me.descricao as etapa,
+                me.ordem_painel as ordem,
+                0 as quantidade,
+                me.ordem_painel
+            FROM projeto_etapa me
+            WHERE me.ordem_painel IS NOT NULL
+            UNION ALL
+            SELECT 'Sem Informação', 999999999, 0, NULL
+            UNION ALL
+            SELECT 'Outros', 999999998, 0, NULL
         )
-        SELECT status, SUM(quantidade)::int as quantidade
-        FROM all_status
-        GROUP BY status
-        ORDER BY
-            CASE WHEN status = 'Outros' THEN 1 ELSE 0 END,
-            quantidade DESC;`;
+        SELECT
+            COALESCE(pc.etapa, a.etapa) as etapa,
+            COALESCE(pc.ordem, a.ordem) as ordem,
+            SUM(COALESCE(pc.quantidade, a.quantidade)) as quantidade
+        FROM all_stages a
+        LEFT JOIN projeto_counts pc ON pc.etapa = a.etapa
+        GROUP BY 1,2
+        ORDER BY 2 `;
 
         const results = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoStatus[];
         return results.filter((r) => !(r.status === 'Outros' && r.quantidade === 0));
@@ -479,6 +494,7 @@ export class PainelEstrategicoService {
         const offset = (page - 1) * ipp;
         const sql = `select distinct
                             p.nome,
+                            p.id,
                             coalesce(org.sigla,'') as secretaria_sigla,
                             coalesce(org.descricao,'') as secretaria_descricao,
                             org.id as secretaria_id,
@@ -513,6 +529,7 @@ export class PainelEstrategicoService {
         const retorno: PainelEstrategicoProjeto[] = [];
         linhas.forEach((linha) => {
             retorno.push({
+                id: linha.id,
                 etapa_atual: linha.etapa,
                 meta: {
                     nome: linha.meta_titulo,

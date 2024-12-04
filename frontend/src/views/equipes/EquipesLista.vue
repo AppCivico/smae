@@ -9,7 +9,14 @@
       Nova Equipe
     </router-link>
   </div>
-
+  <div class="flex center mb2 spacebetween">
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
+      class="mr1"
+    />
+    <hr class="ml2 f1">
+  </div>
   <table class="tablemain">
     <col>
     <col>
@@ -29,7 +36,7 @@
     </thead>
     <tbody>
       <tr
-        v-for="item in lista"
+        v-for="item in listaFiltradaPorTermoDeBusca"
         :key="item.id"
       >
         <td>{{ item.titulo }}</td>
@@ -94,18 +101,16 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-import { computed } from 'vue';
+import { ref } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
+import LocalFilter from '@/components/LocalFilter.vue';
 
 import { useEquipesStore } from '@/stores/equipes.store';
 
 import tipoDePerfil from '@/consts/tipoDePerfil';
 
-const route = useRoute();
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
+const listaFiltradaPorTermoDeBusca = ref([]);
+
 const alertStore = useAlertStore();
 const equipesStore = useEquipesStore();
 

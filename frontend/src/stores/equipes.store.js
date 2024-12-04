@@ -1,3 +1,4 @@
+import tipoDePerfil from '@/consts/tipoDePerfil';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/equipe-responsavel`;
@@ -87,17 +88,32 @@ export const useEquipesStore = defineStore('equipesStore', {
 
     equipesPorIds: ({ lista }) => (ids) => lista.filter((equipe) => ids.includes(equipe.id)),
 
-    equipesPorOrgaoIdPorPerfil: ({ lista }) => lista.reduce((acc, grupo) => {
-      if (!acc[grupo.orgao_id]) {
-        acc[grupo.orgao_id] = {};
-      }
+    equipesPorOrgaoIdPorPerfil: ({ lista }) => {
+      const porOrgao = lista.reduce((acc, grupo) => {
+        if (!acc[grupo.orgao_id]) {
+          acc[grupo.orgao_id] = {};
+        }
 
-      if (!acc[grupo.orgao_id][grupo.perfil]) {
-        acc[grupo.orgao_id][grupo.perfil] = [];
-      }
+        if (!acc[grupo.orgao_id][grupo.perfil]) {
+          acc[grupo.orgao_id][grupo.perfil] = [];
+        }
 
-      acc[grupo.orgao_id][grupo.perfil].push(grupo);
-      return acc;
-    }, {}),
+        acc[grupo.orgao_id][grupo.perfil].push(grupo);
+        return acc;
+      }, {});
+
+      Object.keys(porOrgao).forEach((orgaoId) => {
+        porOrgao[orgaoId] = Object.keys(porOrgao[orgaoId])
+          // ordenar por nome do perfil
+          .sort((a, b) => tipoDePerfil[a].nome.localeCompare(tipoDePerfil[b].nome))
+          .reduce((acc, key) => {
+            // ordenar por nome da equipe
+            acc[key] = porOrgao[orgaoId][key].sort((a, b) => a.titulo.localeCompare(b.titulo));
+            return acc;
+          }, {});
+      });
+
+      return porOrgao;
+    },
   },
 });

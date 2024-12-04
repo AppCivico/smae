@@ -2,7 +2,9 @@
 import { Dashboard } from '@/components';
 import LocalFilter from '@/components/LocalFilter.vue';
 import truncate from '@/helpers/truncate';
-import { useAuthStore, useOrgansStore, useUsersStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -19,7 +21,6 @@ usersStore.filterUsers();
 
 const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
-organsStore.getAll();
 
 const orgao = ref(0);
 const perfil = ref(0);
@@ -30,7 +31,7 @@ const usersFiltered = computed(() => listaFiltradaPorTermoDeBusca.value
   .filter((x) => (!perfil.value ? true : x.perfil_acesso_ids.includes(perfil.value))));
 
 function filterOrgan(orgao_id) {
-  return organs.value.length ? organs.value.find((o) => o.id == orgao_id) : '-';
+  return organs.value.length ? organs.value.find((o) => o.id === orgao_id) : '-';
 }
 function filterPerfil(ids) {
   let vs;

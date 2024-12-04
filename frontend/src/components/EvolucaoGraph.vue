@@ -40,7 +40,7 @@ function obterDadosTraduzidos(valor) {
     return valor;
   }
 
-  return dadosAuxiliares.value.categoricas[valor] || valor;
+  return dadosAuxiliares.value.categoricas?.[valor] || valor;
 }
 
 class smaeChart {

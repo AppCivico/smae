@@ -1,6 +1,7 @@
 <script setup>
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
+import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
@@ -11,19 +12,20 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const EquipesStore = useEquipesStore();
+const alertStore = useAlertStore();
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
+const { meta_id: metaId } = route.params;
+const { iniciativa_id: iniciativaId } = route.params;
 
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}`;
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}`;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
@@ -32,7 +34,6 @@ MetasStore.getPdM();
 const IniciativasStore = useIniciativasStore();
 const {
   singleIniciativa,
-  órgãosResponsáveisNaIniciativaEmFoco,
   relacionadosIniciativa,
 } = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
@@ -41,12 +42,13 @@ const { Atividades } = storeToRefs(AtividadesStore);
 async function iniciar() {
   const promessas = [];
 
-  if (singleIniciativa.value.id != iniciativa_id) {
-    promessas.push(IniciativasStore.getById(meta_id, iniciativa_id));
+  // eslint-disable-next-line eqeqeq
+  if (singleIniciativa.value.id != iniciativaId) {
+    promessas.push(IniciativasStore.getByIdReal(iniciativaId));
     promessas.push(EquipesStore.buscarTudo());
   }
-  if (!Atividades.value[iniciativa_id]) {
-    promessas.push(AtividadesStore.getAll(iniciativa_id));
+  if (!Atividades.value[iniciativaId]) {
+    promessas.push(AtividadesStore.getAll(iniciativaId));
   }
 
   if (promessas.length) {
@@ -64,6 +66,19 @@ async function iniciar() {
   nextTick().then(() => {
     rolarTelaPara();
   });
+}
+
+async function checkDelete(iniciativa) {
+  if (iniciativa) {
+    alertStore.confirmAction(`Deseja mesmo remover a iniciativa "${iniciativa.titulo}"?`, async () => {
+      alertStore.setLoading(true);
+      if (await AtividadesStore.delete(metaId, iniciativa.id)) {
+        alertStore.setLoading(false);
+        AtividadesStore.clear();
+        alertStore.success('Iniciativa removida.');
+      }
+    }, 'Remover');
+  }
 }
 
 iniciar();
@@ -92,7 +107,7 @@ iniciar();
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm'
       ])"
-      :to="`/metas/${meta_id}/iniciativas/editar/${iniciativa_id}`"
+      :to="`/metas/${metaId}/iniciativas/editar/${iniciativaId}`"
       class="btn big ml2"
     >
       Editar
@@ -143,35 +158,17 @@ iniciar();
           </div>
         </div>
       </div>
-      <div v-if="singleIniciativa?.tags.length">
+
+      <div
+        v-if="singleIniciativa?.tags.length"
+        class="mb2"
+      >
         <hr class="mt2 mb2">
-        <h4>Tags</h4>
-        <div class="flex">
-          <div
-            v-for="tag in singleIniciativa.tags"
-            :key="tag.id"
-            class="flex center mr1"
-          >
-            <a
-              v-if="tag.download_token"
-              :href="baseUrl + '/download/' + tag.download_token"
-              download
-            >
-              <img
-                :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
-                width="15"
-                class=" mr1"
-                :style="{ maxWidth: '250px' }"
-              >
-            </a>
-            <strong v-else>
-              {{ tag.descricao }}
-            </strong>
-          </div>
-        </div>
+        <TagsDeMetas :lista-de-tags="singleIniciativa.tags" />
       </div>
+
       <template v-if="singleIniciativa.contexto">
-        <hr class="mt2 mb2">
+        <hr class="mb2">
         <div>
           <h4>Contexto</h4>
           <div>{{ singleIniciativa.contexto }}</div>
@@ -192,7 +189,7 @@ iniciar();
 
       <SimpleIndicador
         :parentlink="parentlink"
-        :parent_id="iniciativa_id"
+        :parent_id="iniciativaId"
         parent_field="iniciativa_id"
       />
 
@@ -214,9 +211,9 @@ iniciar();
           </SmaeLink>
         </div>
 
-        <template v-if="Atividades[iniciativa_id].length">
+        <template v-if="Atividades[iniciativaId]?.length">
           <div
-            v-for="ini in Atividades[iniciativa_id]"
+            v-for="ini in Atividades[iniciativaId]"
             :id="`atividade__${ini.id}`"
             :key="ini.id"
             class="board_variavel mb2"
@@ -246,6 +243,7 @@ iniciar();
                 </SmaeLink>
                 <div class="f0">
                   <SmaeLink
+                    title="editar"
                     :to="`${parentlink}/atividades/editar/${ini.id}`"
                     class="tprimary"
                   >
@@ -255,12 +253,23 @@ iniciar();
                     ><use xlink:href="#i_edit" /></svg>
                   </SmaeLink>
                 </div>
+                <button
+                  class="like-a__text"
+                  arial-label="excluir"
+                  title="excluir"
+                  @click="checkDelete(ini)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_waste" /></svg>
+                </button>
               </div>
               <div class="f1 ml2">
                 <div class="flex g2 ml2">
                   <div class="mr1 f0">
                     <div class="t12 uc w700 mb05 tc300">
-                      ID
+                      Código
                     </div>
                     <div class="t13">
                       {{ ini.codigo }}
@@ -289,7 +298,7 @@ iniciar();
         </template>
 
         <div
-          v-if="Atividades[iniciativa_id].loading"
+          v-if="Atividades[iniciativaId]?.loading"
           class="board_vazio"
         >
           <div class="tc">

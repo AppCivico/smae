@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente(p_variavel_id int)
+CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id int, p_recursion_depth int)
     RETURNS void
     AS $$
 DECLARE
@@ -19,8 +19,18 @@ DECLARE
     v_liberacao_enviada BOOLEAN;
     v_eh_liberacao_auto BOOLEAN;
     v_primeiro_registro RECORD;
+    v_ultima_analise RECORD;
+    v_preenchimento_data DATE;
+    v_aprovacao_data DATE;
+    v_recursion_depth INT;
 BEGIN
+
+    IF p_recursion_depth > 10 THEN
+        RAISE EXCEPTION 'recursion loop em f_atualiza_variavel_ciclo_corrente';
+    END IF;
+
     -- Busca o registro da variável com o nome da coluna atualizado
+    BEGIN
     SELECT
         id,
         periodicidade,
@@ -39,18 +49,20 @@ BEGIN
         ((periodo_liberacao[2] - periodo_liberacao[1] + 1) || ' days')::interval as dur_liberacao_interval,
 
         '1 month'::interval * atraso_meses AS intervalo_atraso
-    INTO v_registro
+    INTO STRICT v_registro
     FROM variavel
     WHERE
         id = p_variavel_id
         AND tipo = 'Global'
         AND variavel_mae_id IS NULL
         AND removido_em IS NULL;
-
-    IF v_registro IS NULL THEN
-        --RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
-        RETURN;
-    END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            --RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
+            RETURN;
+        WHEN TOO_MANY_ROWS THEN
+            RAISE EXCEPTION 'apenas uma linha esperada para a variavel: %', p_variavel_id;
+    END;
 
     IF v_registro.inicio_medicao IS NULL THEN
         --RAISE NOTICE 'Variável % sem data de início', p_variavel_id;
@@ -217,6 +229,134 @@ BEGIN
     v_proximo_periodo := v_ultimo_periodo_valido + periodicidade_intervalo(v_registro.periodicidade);
 
 
+    -- busca ultimo registro de preenchimento/aprovação (ou liberação)
+    SELECT
+        a.fase,
+        timezone('America/Sao_Paulo', (a.criado_em::timestamp without time zone))::date as data_analise
+    INTO v_ultima_analise
+    FROM variavel_global_ciclo_analise a
+    WHERE a.variavel_id = p_variavel_id
+        AND a.referencia_data = v_ultimo_periodo_valido
+        AND a.ultima_revisao = true
+        AND a.aprovada = true
+        AND a.removido_em IS NULL
+    ORDER BY a.criado_em DESC
+    LIMIT 1;
+--    raise notice 'v_ultima_analise -> %', v_ultima_analise;
+
+    -- Se esta na fase de Preenchimento
+    IF v_ultima_analise.fase = 'Preenchimento' THEN
+        v_preenchimento_data := v_ultima_analise.data_analise;
+
+        IF v_fase_corrente = 'Validacao' AND
+           v_preenchimento_data + v_registro.dur_validacao_interval <= v_dia_atual AND
+           NOT EXISTS (
+               SELECT 1
+               FROM variavel_global_ciclo_analise
+               WHERE variavel_id = p_variavel_id
+                   AND referencia_data = v_ultimo_periodo_valido
+                   AND fase = 'Validacao'
+                   AND ultima_revisao = true
+                   AND aprovada = true
+                   AND removido_em IS NULL
+           ) THEN
+
+            INSERT INTO variavel_global_ciclo_analise (
+                variavel_id,
+                fase,
+                referencia_data,
+                informacoes_complementares,
+                eh_liberacao_auto,
+                aprovada,
+                criado_por,
+                ultima_revisao,
+                valores
+            ) VALUES (
+                p_variavel_id,
+                'Validacao',
+                v_ultimo_periodo_valido,
+                'Aprovação automática por decurso de prazo',
+                true,
+                true,
+                -1,
+                true,
+                '[]'::jsonb
+            );
+            UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada=true WHERE variavel_id = p_variavel_id;
+
+            PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
+            RETURN;
+
+        END IF;
+    END IF;
+
+--raise notice 'v_ultimo_periodo_valido -> %', v_ultimo_periodo_valido;
+
+    -- Validacao
+    IF v_fase_corrente = 'Liberacao' AND EXISTS (
+        SELECT 1
+        FROM variavel_global_ciclo_analise
+        WHERE variavel_id = p_variavel_id
+            AND referencia_data = v_ultimo_periodo_valido
+            AND fase = 'Validacao'
+            AND ultima_revisao = true
+            AND removido_em IS NULL
+            AND aprovada = true
+    ) THEN
+        SELECT
+            timezone('America/Sao_Paulo', (criado_em::timestamp without time zone))::date INTO v_aprovacao_data
+        FROM variavel_global_ciclo_analise
+        WHERE variavel_id = p_variavel_id
+            AND referencia_data = v_ultimo_periodo_valido
+            AND fase = 'Validacao'
+            AND ultima_revisao = true
+            AND removido_em IS NULL
+            AND aprovada = true
+        ORDER BY criado_em DESC
+        LIMIT 1;
+
+        IF v_aprovacao_data + v_registro.dur_liberacao_interval  <= v_dia_atual AND
+           NOT EXISTS (
+               SELECT 1
+               FROM variavel_global_ciclo_analise
+               WHERE variavel_id = p_variavel_id
+                   AND referencia_data = v_ultimo_periodo_valido
+                   AND fase = 'Liberacao'
+                   AND ultima_revisao = true
+                   AND removido_em IS NULL
+           ) THEN
+
+            INSERT INTO variavel_global_ciclo_analise (
+                variavel_id,
+                fase,
+                referencia_data,
+                informacoes_complementares,
+                eh_liberacao_auto,
+                aprovada,
+                criado_por,
+                ultima_revisao,
+                valores
+            ) VALUES (
+                p_variavel_id,
+                'Liberacao',
+                v_ultimo_periodo_valido,
+                'Liberação automática por decurso de prazo',
+                true,
+                true,
+                -1,
+                true,
+                '[]'::jsonb
+            );
+            UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada=true WHERE variavel_id = p_variavel_id;
+
+            PERFORM f_marca_serie_variavel_conferida(p_variavel_id, v_ultimo_periodo_valido);
+
+            PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
+            RETURN;
+
+        END IF;
+    END IF;
+
     --RAISE NOTICE 'v_registro: %', v_registro;
 
     -- Assume que sempre é corrente
@@ -269,7 +409,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
---select f_atualiza_variavel_ciclo_corrente (6785 ) ;
+--select f_atualiza_variavel_ciclo_corrente (7125 ) ;
 
 --select f_atualiza_variavel_ciclo_corrente(4648);
 
@@ -356,3 +496,11 @@ DROP FUNCTION IF EXISTS f_variavel_periodos_redimensionados(
     p_liberacao_phase INT[],
     p_date DATE
 );
+
+CREATE OR REPLACE FUNCTION f_atualiza_variavel_ciclo_corrente(p_variavel_id int)
+    RETURNS void
+    AS $$
+BEGIN
+    PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, 1);
+END;
+$$ LANGUAGE plpgsql;

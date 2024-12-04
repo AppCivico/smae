@@ -1,12 +1,9 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-
 import { computed } from 'vue';
-
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
@@ -16,14 +13,35 @@ type SessaoDeDetalhe = {
   [key in SessaoDeDetalheOptions]: {
     titulo?: string,
     linhas: SessaoDeDetalheLinhas,
+    quantidadeColunas?: number
   }
 };
 
+type CategororiaComAssunto = {
+  id: number,
+  nome: string,
+  assuntos: {
+    id: number,
+    nome: string,
+  }[]
+};
+
+type CategoriaComAssuntoMapeado = {
+  [key: number]: CategororiaComAssunto
+};
+
+const assuntosStore = useAssuntosStore();
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const {
   emFoco,
 } = storeToRefs(variaveisGlobaisStore);
+
+const {
+  categoriasPorId,
+} = storeToRefs(assuntosStore);
+
+assuntosStore.buscarCategorias();
 
 function simNao(valor: boolean) {
   return valor ? 'Sim' : 'Não';
@@ -49,6 +67,14 @@ const obterTipo = computed<{ nome: string; tipo: string }>(() => {
     tipo: 'Categórica',
     nome: emFoco.value?.variavel_categorica.titulo || '-',
   };
+});
+
+const temVariavelCategorica = computed<boolean>(() => {
+  if (!emFoco.value) {
+    return false;
+  }
+
+  return !!emFoco.value.variavel_categorica_id;
 });
 
 const sessaoPrincipal = computed<SessaoDeDetalheLinhas>(() => {
@@ -82,18 +108,15 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
 
   return {
     propriedades: {
+      quantidadeColunas: 3,
       linhas: [
         [
           { label: 'Polaridade', valor: emFoco.value.polaridade },
-          { label: 'Unidade de medida', valor: `${emFoco.value.unidade_medida.sigla} - ${emFoco.value.unidade_medida.descricao}` },
-          { label: 'Casas decimais', valor: emFoco.value.casas_decimais },
-        ],
-        [
-          { label: 'Valor base', valor: emFoco.value.valor_base },
-          { label: 'Ano base', valor: emFoco.value.ano_base || '-' },
+          { label: 'Unidade de medida', valor: `${emFoco.value.unidade_medida.sigla} - ${emFoco.value.unidade_medida.descricao}`, esconder: temVariavelCategorica.value },
+          { label: 'Casas decimais', valor: emFoco.value.casas_decimais, esconder: temVariavelCategorica.value },
+          { label: 'Valor base', valor: emFoco.value.valor_base, esconder: temVariavelCategorica.value },
+          { label: 'Ano base', valor: emFoco.value.ano_base || '-', esconder: temVariavelCategorica.value },
           { label: 'Início da medição', valor: emFoco.value.inicio_medicao ? dateIgnorarTimezone(emFoco.value.inicio_medicao, 'MM/yyyy') : '-' },
-        ],
-        [
           { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? dateIgnorarTimezone(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
           { label: 'Defasagem da medição', valor: emFoco.value.atraso_meses },
@@ -110,16 +133,16 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     grupos: {
       linhas: [
         [
-          { label: 'Grupos de medição', valor: formatarLista(emFoco.value.medicao_grupo) },
-          { label: 'Grupos de validação', valor: formatarLista(emFoco.value.validacao_grupo) },
-          { label: 'Grupos de liberação', valor: formatarLista(emFoco.value.liberacao_grupo) },
+          { label: 'Equipes de coleta', valor: formatarLista(emFoco.value.medicao_grupo) },
+          { label: 'Equipes de conferência', valor: formatarLista(emFoco.value.validacao_grupo) },
+          { label: 'Equipes de liberação', valor: formatarLista(emFoco.value.liberacao_grupo) },
         ],
       ],
     },
     variavel: {
       linhas: [
         [
-          { label: 'Variável acumulativa?', valor: simNao(emFoco.value.acumulativa) },
+          { label: 'Variável acumulativa', valor: simNao(emFoco.value.acumulativa), esconder: temVariavelCategorica.value },
           { label: 'Disponível como dado aberto', valor: simNao(emFoco.value.dado_aberto) },
         ],
       ],
@@ -128,14 +151,42 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       titulo: 'Intervalos de interação',
       linhas: [
         [
-          { label: 'Início do preenchimento', valor: emFoco.value.periodos.preenchimento_inicio },
-          { label: 'Duração do preenchimento', valor: emFoco.value.periodos.preenchimento_duracao },
-          { label: 'Duração da validação', valor: emFoco.value.periodos.validacao_duracao },
+          { label: 'Início da coleta', valor: emFoco.value.periodos.preenchimento_inicio },
+          { label: 'Duração da coleta', valor: emFoco.value.periodos.preenchimento_duracao },
+          { label: 'Duração da conferência', valor: emFoco.value.periodos.validacao_duracao },
           { label: 'Duração da liberação', valor: emFoco.value.periodos.liberacao_duracao },
         ],
       ],
     },
   };
+});
+
+const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() => {
+  if (!emFoco.value) {
+    return {};
+  }
+
+  return emFoco.value.assuntos.reduce<CategoriaComAssuntoMapeado>((amount, item) => {
+    const categoriaId: number | null | undefined = item.categoria_assunto_variavel_id;
+
+    if (!categoriaId) {
+      return amount;
+    }
+
+    if (!amount[categoriaId]) {
+      const categoria = categoriasPorId.value[categoriaId];
+
+      amount[categoriaId] = {
+        nome: categoria.nome,
+        id: categoriaId,
+        assuntos: [],
+      };
+    }
+
+    amount[categoriaId].assuntos.push(item);
+
+    return amount;
+  }, {} as CategoriaComAssuntoMapeado);
 });
 </script>
 
@@ -148,7 +199,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
 
   <section
     v-if="sessoes"
-    class="variavei-detalhe"
+    class="variavel-detalhe"
   >
     <VariaveisResumoSessao
       :linhas="sessaoPrincipal"
@@ -158,19 +209,31 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     <article class="mt2 sessao sessao--assunto">
       <div class="flex center g4 sessao__divider">
         <h2 class="sessao__divider-titulo">
-          Assunto
+          Assuntos
         </h2>
 
         <hr class="f1">
       </div>
 
-      <ul class="mt3 flex g1">
+      <ul class="mt3 g1 assuntos-categoria">
         <li
-          v-for="assunto in emFoco?.assuntos"
-          :key="`assunto--${assunto.id}`"
-          class="particula"
+          v-for="assuntoComCategoria in assuntosComCategoriasMapeados"
+          :key="`assunto-categoria--${assuntoComCategoria.id}`"
+          class="assuntos-categoria-item"
         >
-          {{ assunto.nome }}
+          <h5 class="uc">
+            {{ assuntoComCategoria.nome }}
+          </h5>
+
+          <ul class="flex column g05">
+            <li
+              v-for="assunto in assuntoComCategoria.assuntos"
+              :key="`assunto-${assuntoComCategoria.id}--${assunto.id}`"
+              class="particula"
+            >
+              {{ assunto.nome }}
+            </li>
+          </ul>
         </li>
       </ul>
     </article>
@@ -180,6 +243,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
       :key="`sessao--${sessaoIndex}`"
       :titulo="sessao.titulo"
       :linhas="sessao.linhas"
+      :quantidade-colunas="sessao.quantidadeColunas"
     />
   </section>
 </template>
@@ -207,5 +271,11 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
   &:first-of-type {
     border-top: .97px solid;
   }
+}
+
+.assuntos-categoria {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 </style>

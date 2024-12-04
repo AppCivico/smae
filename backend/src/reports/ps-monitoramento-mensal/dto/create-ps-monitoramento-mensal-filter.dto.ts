@@ -25,6 +25,11 @@ export class CreatePsMonitoramentoMensalFilterDto {
     ano: number;
 
     @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    conferida?: boolean;
+
+    @IsOptional()
     @IsArray({ message: '$property| meta(s): precisa ser uma array.' })
     @ArrayMinSize(0, { message: '$property| meta(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| meta(s): precisa ter no máximo 100 items' })

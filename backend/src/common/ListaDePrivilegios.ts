@@ -113,6 +113,7 @@ export type ListaDePrivilegios =
     | 'CadastroWorkflows.editar'
     | 'CadastroWorkflows.remover'
     | 'AndamentoWorkflow.listar'
+    | 'SMAE.gestor_distribuicao_recurso'
     | 'CadastroCronogramaTransferencia.inserir'
     | 'CadastroCronogramaTransferencia.listar'
     | 'CadastroCronogramaTransferencia.remover'

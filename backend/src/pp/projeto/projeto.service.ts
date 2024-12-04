@@ -2905,13 +2905,11 @@ export class ProjetoService {
         await this.findOne(tipo, projetoId, user, 'ReadWriteTeam');
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
-        if (dto.diretorio_caminho)
-            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
         const now = new Date(Date.now());
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                return await prismaTx.projetoDocumento.create({
+                const r = await prismaTx.projetoDocumento.create({
                     data: {
                         criado_em: now,
                         criado_por: user.id,
@@ -2924,6 +2922,12 @@ export class ProjetoService {
                         id: true,
                     },
                 });
+
+                // tem que rodar depois, pois se não, ainda não tem o vinculo com o projeto
+                if (dto.diretorio_caminho)
+                    await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token, prismaTx);
+
+                return r;
             }
         );
 

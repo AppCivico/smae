@@ -26,7 +26,6 @@ export class ClassificacaoService {
                 data: {
                     nome: dto.nome,
                     transferencia_tipo_id: dto.transferencia_tipo_id,
-                    //transferencia_tipo_id: 9,
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                 },

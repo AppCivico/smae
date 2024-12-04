@@ -1,0 +1,8 @@
+xmltodict
+pandas
+geopandas
+beautifulsoup4
+uvicorn
+fastapi
+requests
+python-dotenv

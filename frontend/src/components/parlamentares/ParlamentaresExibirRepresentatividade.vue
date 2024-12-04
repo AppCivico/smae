@@ -16,6 +16,10 @@ const props = defineProps({
   },
 });
 
+const temMandato = computed(() => emFoco?.value?.mandatos?.length);
+const temMandatoSP = computed(() => emFoco?.value?.mandatos?.some((mandato) => mandato.uf === 'SP'));
+const habilitarBotaoDeRepresentatividade = computed(() => temMandato.value && temMandatoSP.value);
+
 // eslint-disable-next-line max-len
 const representatividade = computed(() => (Array.isArray(emFoco?.value?.ultimo_mandato?.representatividade)
   ? emFoco.value.ultimo_mandato.representatividade.reduce((acc, cur) => {
@@ -96,21 +100,6 @@ function formatarNumero(numero) {
             <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
             <td>{{ item.pct_participacao }}%</td>
             <td v-if="exibirEdição">
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-
-            <td v-if="exibirEdição">
               <router-link
                 :to="{
                   name: 'parlamentaresEditarRepresentatividade',
@@ -125,15 +114,39 @@ function formatarNumero(numero) {
                 ><use xlink:href="#i_edit" /></svg>
               </router-link>
             </td>
+            <td v-if="exibirEdição">
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                type="button"
+                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
       <p v-else>
-        Sem representatividade cadastrada na Capital
+        <template v-if="!temMandato">
+          É necessário ao menos um mandato para cadastrar representatividade na capital
+        </template>
+        <template v-else-if="!temMandatoSP">
+          É necessário ao menos um mandato em SP para cadastrar representatividade na capital
+        </template>
+        <template v-else>
+          Sem representatividade cadastrada na capital
+        </template>
       </p>
 
-      <router-link
+      <component
+        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'routerLink'"
         v-if="exibirEdição && emFoco?.id"
+        :class="{ disabled: !habilitarBotaoDeRepresentatividade }"
         :to="{
           name: 'parlamentaresEditarRepresentatividade',
           params: { parlamentarId: emFoco.id },
@@ -145,7 +158,7 @@ function formatarNumero(numero) {
           width="20"
           height="20"
         ><use xlink:href="#i_+" /></svg>Registrar representatividade
-      </router-link>
+      </component>
     </div>
 
     <div class="mb4">
@@ -197,20 +210,6 @@ function formatarNumero(numero) {
             <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
             <td>{{ item.pct_participacao }}%</td>
             <td v-if="exibirEdição">
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td v-if="exibirEdição">
               <router-link
                 :to="{
                   name: 'parlamentaresEditarRepresentatividade',
@@ -225,14 +224,38 @@ function formatarNumero(numero) {
                 ><use xlink:href="#i_edit" /></svg>
               </router-link>
             </td>
+            <td v-if="exibirEdição">
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                type="button"
+                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
       <p v-else>
-        Sem representatividade cadastrada no Interior
+        <template v-if="!temMandato">
+          É necessário ao menos um mandato para cadastrar representatividade na capital
+        </template>
+        <template v-else-if="!temMandatoSP">
+          É necessário ao menos um mandato em SP para cadastrar representatividade no interior
+        </template>
+        <template v-else>
+          Sem representatividade cadastrada no Interior
+        </template>
       </p>
-      <router-link
+      <component
+        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'routerLink'"
         v-if="exibirEdição && emFoco?.id"
+        :class="{ disabled: !habilitarBotaoDeRepresentatividade }"
         :to="{
           name: 'parlamentaresEditarRepresentatividade',
           params: { parlamentarId: emFoco.id },
@@ -244,7 +267,7 @@ function formatarNumero(numero) {
           width="20"
           height="20"
         ><use xlink:href="#i_+" /></svg>Registrar representatividade
-      </router-link>
+      </component>
     </div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 import modulos from '@/consts/modulosDoSistema.ts';
-import retornarModuloDeEntidadeMae from '@/helpers/retornarModuloDeEntidadeMae.ts';
+import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -104,7 +104,10 @@ export const useAuthStore = defineStore({
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('permissions');
-      this.$reset();
+
+      // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
+      this.resetAllStores();
+
       this.router.push('/login');
     },
     setPermissions() {
@@ -140,24 +143,22 @@ export const useAuthStore = defineStore({
         'Projeto',
       ];
 
-      for (const c in a) {
-        if (per[a[c]] && !per[a[c]].listar && !per[a[c]].visualizar) {
-          per.algumAdmin = 1;
-          break;
-        }
+      if (a.some((c) => per[c] && !per[c].listar && !per[c].visualizar)) {
+        per.algumAdmin = 1;
       }
 
       localStorage.setItem('permissions', JSON.stringify(per));
-      return this.permissions = per;
+      this.permissions = per;
+      return per;
     },
   },
   getters: {
     sistemaCorrente() {
-      if (!import.meta.env.VITE_HABILITAR_BETA) {
+      if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO !== 'true') {
         return this.sistemaEscolhido;
       }
 
-      return retornarModuloDeEntidadeMae(this.route.meta.entidadeMãe)
+      return retornarModuloAPartirDeEntidadeMae(this.route.meta.entidadeMãe)
         || this.moduloDaRotaAnterior
         || this.sistemaEscolhido;
     },
@@ -190,5 +191,27 @@ export const useAuthStore = defineStore({
       // ele tem que bater com o começo de algumas permissões
       ? user.privilegios.some((y) => y.indexOf(x) === 0)
       : user.privilegios.some((y) => x === y))),
+
+    rotaEhPermitida() {
+      const rotasPorNome = this.router.getRoutes().reduce((acc, cur) => {
+        if (cur.name) {
+          acc[cur.name] = cur;
+        }
+        return acc;
+      }, {});
+
+      return (rota) => {
+        const nome = typeof rota === 'string'
+          ? rota
+          : rota.name;
+
+        if (!nome) {
+          throw new Error('Rota sem nome fornecida.');
+        }
+
+        return !rotasPorNome[nome]?.meta?.limitarÀsPermissões
+        || this.temPermissãoPara(rotasPorNome[nome]?.meta?.limitarÀsPermissões);
+      };
+    },
   },
 });

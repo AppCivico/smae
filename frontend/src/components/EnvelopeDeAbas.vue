@@ -39,6 +39,8 @@ const props = defineProps({
 
 const listaDeAbas = ref(null);
 
+const abas = computed(() => Object.keys(slots).filter((x) => !x.includes('__cabecalho')));
+
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
 // chaves de rota no componente raiz. Ver `App.vue`.
@@ -72,12 +74,16 @@ async function rolarParaAbaCorrente() {
 }
 
 async function iniciar() {
-  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta)
-    || Object.keys(slots)?.[0];
+  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
   const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
 
   const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
-    || dadosDaAbaPadrão?.id;
+    || dadosDaAbaPadrão?.id
+    || abas.value?.[0];
+
+  if (props.metaDadosPorId) {
+    console.warn('O uso de `metaDadosPorId` é obsoleto. Utilize slots com o sufixo `__cabecalho` em seus nomes.');
+  }
 
   if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
@@ -111,7 +117,7 @@ iniciar();
         class="abas__lista flex"
       >
         <li
-          v-for="nomeDaAba in Object.keys(slots)"
+          v-for="nomeDaAba in abas"
           :key="nomeDaAba"
           class="pt1 pb1"
         >
@@ -132,28 +138,29 @@ iniciar();
               ? 'page'
               : undefined"
           >
-            {{ dadosConsolidadosPorId?.[nomeDaAba]?.etiqueta || nomeDaAba }}
+            <slot :name="`${nomeDaAba}__cabecalho`">
+              {{ dadosConsolidadosPorId?.[nomeDaAba]?.etiqueta || nomeDaAba }}
+            </slot>
           </router-link>
         </li>
       </ul>
     </nav>
 
     <Transition
-      v-for="(_slot, nomeDaAba, i) in slots"
+      v-for="nomeDaAba in abas"
       :key="nomeDaAba"
       appear
       name="slide"
     >
       <div
-        v-show="!abaAberta
-          ? i === 0
-          : String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+        v-show="String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
         class="abas__conteudo"
       >
         <slot
           :name="nomeDaAba"
           :está-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+          :aba-esta-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         />
       </div>
     </Transition>
@@ -203,5 +210,7 @@ iniciar();
   display: block;
   min-width: 0;
   overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 </style>

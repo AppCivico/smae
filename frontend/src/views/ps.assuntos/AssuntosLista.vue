@@ -9,7 +9,14 @@
       Novo assunto
     </router-link>
   </div>
-
+  <div class="flex center mb2 spacebetween">
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
+      class="mr1"
+    />
+    <hr class="ml2 f1">
+  </div>
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
@@ -17,16 +24,22 @@
     <thead>
       <tr>
         <th> Nome </th>
+        <th> Categoria </th>
         <th />
         <th />
       </tr>
     </thead>
     <tbody>
       <tr
-        v-for="item in lista"
+        v-for="item in listaFiltradaPorTermoDeBusca"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td style="width: 100%">
+          {{ item.nome }}
+        </td>
+        <td style="width: 100%">
+          {{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}
+        </td>
         <td>
           <router-link
             :to="{ name: 'assuntosEditar', params: { assuntoId: item.id } }"
@@ -62,7 +75,7 @@
           Erro: {{ erro }}
         </td>
       </tr>
-      <tr v-else-if="!lista.length">
+      <tr v-else-if="!listaFiltradaPorTermoDeBusca.length">
         <td colspan="3">
           Nenhum resultado encontrado.
         </td>
@@ -72,16 +85,19 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import LocalFilter from '@/components/LocalFilter.vue';
 
 const route = useRoute();
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(assuntosStore);
+const listaFiltradaPorTermoDeBusca = ref([]);
 
 async function excluirAssunto(id, descricao) {
   alertStore.confirmAction(

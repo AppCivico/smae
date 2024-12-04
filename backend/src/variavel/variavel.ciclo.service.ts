@@ -100,7 +100,8 @@ export class VariavelCicloService {
 
     async getPermissionSet(
         filters: FilterVariavelGlobalCicloDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        consulta_historica: boolean = false
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
         const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
 
@@ -113,7 +114,7 @@ export class VariavelCicloService {
         const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
             {
                 id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
-                equipes_configuradas: true,
+                equipes_configuradas: consulta_historica ? undefined : true,
                 removido_em: null,
             },
         ];
@@ -142,7 +143,7 @@ export class VariavelCicloService {
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
 
-        if (!isRoot) {
+        if (!isRoot && consulta_historica === false) {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
                 where: {
                     removido_em: null,
@@ -663,12 +664,15 @@ export class VariavelCicloService {
             },
         });
         if (!cicloCorrente) throw new BadRequestException('Variável não encontrada no ciclo corrente');
-        if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
+        if (
+            !dto.consulta_historica &&
+            Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia)
+        )
             throw new BadRequestException(
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem.`
             );
 
-        const whereFilter = await this.getPermissionSet({}, user);
+        const whereFilter = await this.getPermissionSet({}, user, true);
 
         const variavel = await this.prisma.variavel.findFirst({
             where: {
@@ -690,6 +694,7 @@ export class VariavelCicloService {
                 recalculando: true,
                 recalculo_erro: true,
                 recalculo_tempo: true,
+                variavel_mae_id: true,
 
                 variaveis_filhas: {
                     where: { removido_em: null, tipo: 'Global' },
@@ -706,6 +711,7 @@ export class VariavelCicloService {
                         recalculando: true,
                         recalculo_erro: true,
                         recalculo_tempo: true,
+                        variavel_mae_id: true,
                         unidade_medida: { select: { id: true, sigla: true, descricao: true } },
                     },
                 },
@@ -731,6 +737,7 @@ export class VariavelCicloService {
                     criado_em: true,
                     pessoaCriador: { select: { nome_exibicao: true } },
                     fase: true,
+                    eh_liberacao_auto: true,
                     ultima_revisao: true,
                 },
             });
@@ -752,6 +759,7 @@ export class VariavelCicloService {
                         criado_em: r.criado_em,
                         criador_nome: r.pessoaCriador.nome_exibicao,
                         fase: r.fase,
+                        eh_liberacao_auto: r.eh_liberacao_auto,
                     }) satisfies AnaliseQualitativaDto
             );
 
@@ -1016,6 +1024,7 @@ export class VariavelCicloService {
                 sigla: variavel.unidade_medida.sigla,
                 descricao: variavel.unidade_medida.descricao,
             },
+            variavel_mae_id: variavel.variavel_mae_id,
             recalculando: variavel.recalculando,
             recalculo_erro: variavel.recalculo_erro,
             recalculo_tempo: variavel.recalculo_tempo,

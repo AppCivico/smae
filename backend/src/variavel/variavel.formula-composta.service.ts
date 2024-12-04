@@ -3,6 +3,7 @@ import { Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from '../indicador/dto/create-indicador.dto';
 import { IndicadorFormulaCompostaService } from '../indicador/indicador.formula-composta.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,9 +17,8 @@ import {
     PeriodoFormulaCompostaDto,
     UpdatePSFormulaCompostaDto,
 } from './dto/variavel.formula-composta.dto';
-import { SerieValorNomimal, VariavelItemDto } from './entities/variavel.entity';
+import { VariavelItemDto } from './entities/variavel.entity';
 import { ORDEM_SERIES_RETORNO, VariavelService } from './variavel.service';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
 
 @Injectable()
 export class VariavelFormulaCompostaService {
@@ -86,7 +86,8 @@ export class VariavelFormulaCompostaService {
 
     async getFormulaCompostaSeries(
         formula_composta_id: number,
-        filter: FilterPeriodoFormulaCompostaDto
+        filter: FilterPeriodoFormulaCompostaDto,
+        user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
         // TODO: Implementar verificação de permissão, não deve ser retornado o token de acesso
         // para os usuários que não possuem permissão de escrita na variável (quem não está na meta e etc)
@@ -118,6 +119,7 @@ export class VariavelFormulaCompostaService {
                 recalculando: true,
                 recalculo_erro: true,
                 recalculo_tempo: true,
+                variavel_mae_id: true,
                 unidade_medida: { select: { id: true, sigla: true, descricao: true } },
             },
         });
@@ -131,12 +133,20 @@ export class VariavelFormulaCompostaService {
                 ORDEM_SERIES_RETORNO,
                 { data_valor: filter.periodo }
             );
-            const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
-            const seriesExistentes: SerieValorNomimal[] = this.variavelService.populaSeriesExistentes(
+            // eu acho que aqui não precisa de escrita, afinal, estamos na tela de formula composta
+            const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(
+                valoresExistentes,
+                variavelId,
+                'leitura',
+                user
+            );
+            const seriesExistentes = this.variavelService.populaSeriesExistentes(
                 porPeriodo,
                 periodoYMD,
                 variavelId,
-                variavel
+                variavel,
+                'leitura',
+                user
             );
 
             result.linhas.push({

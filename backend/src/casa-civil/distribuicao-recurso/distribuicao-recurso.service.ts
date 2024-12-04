@@ -19,6 +19,7 @@ import {
     DistribuicaoRecursoDetailDto,
     DistribuicaoRecursoDto,
     DistribuicaoRecursoSeiDto,
+    ParlamentarDistribuicaoDto,
     SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
 
@@ -449,9 +450,6 @@ export class DistribuicaoRecursoService {
             where: {
                 id: filters.transferencia_id,
             },
-            select: {
-                valor: true,
-            },
         });
 
         const rows = await this.prisma.distribuicaoRecurso.findMany({
@@ -766,6 +764,29 @@ export class DistribuicaoRecursoService {
                 transferencia: {
                     select: {
                         valor: true,
+                        parlamentar: {
+                            orderBy: { id: 'asc' },
+                            where: { removido_em: null },
+                            select: {
+                                parlamentar_id: true,
+                                parlamentar: {
+                                    select: {
+                                        id: true,
+                                        nome: true,
+                                        nome_popular: true,
+                                    },
+                                },
+                                partido_id: true,
+                                partido: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                    },
+                                },
+                                cargo: true,
+                                objeto: true,
+                            },
+                        },
                     },
                 },
 
@@ -845,6 +866,28 @@ export class DistribuicaoRecursoService {
         const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
         const readStatusMap = await this.seiService.verificaStatusLeituraSei(processo_seis, user.id);
 
+        // Os parlamentares, inicialmente, são preenchidos no estágio de "identificação" da Transferência
+        // E não são pre-preenchidos na Distribuição de Recurso, do ponto de vista de banco de dados.
+        // Portanto, é feito o merge das linhas de transf e de dist.
+        const parlamentares: ParlamentarDistribuicaoDto[] = [
+            ...new Set([
+                ...row.parlamentares,
+                ...row.transferencia.parlamentar
+                    .filter((dp) => !row.parlamentares.find((tp) => tp.parlamentar_id == dp.parlamentar_id))
+                    .map((p) => {
+                        return {
+                            parlamentar_id: p.parlamentar_id,
+                            parlamentar: p.parlamentar,
+                            partido_id: p.partido_id,
+                            partido: p.partido,
+                            cargo: p.cargo,
+                            objeto: p.objeto,
+                            valor: null,
+                        };
+                    }),
+            ]),
+        ];
+
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
@@ -892,7 +935,7 @@ export class DistribuicaoRecursoService {
                     lido: readStatusMap.get(s.processo_sei) ?? false,
                 } satisfies DistribuicaoRecursoSeiDto;
             }),
-            parlamentares: row.parlamentares,
+            parlamentares: parlamentares,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
@@ -1310,6 +1353,13 @@ export class DistribuicaoRecursoService {
                                 );
                             }
                         } else {
+                            // Verificando se o parlamentar já está na distribuição
+                            const exists = updated.parlamentares.find(
+                                (e) => e.parlamentar_id == relParlamentar.parlamentar_id
+                            );
+                            if (exists)
+                                throw new HttpException('parlamentar_id| Parlamentar já está na distribuição.', 400);
+
                             operations.push(
                                 prismaTx.distribuicaoParlamentar.create({
                                     data: {

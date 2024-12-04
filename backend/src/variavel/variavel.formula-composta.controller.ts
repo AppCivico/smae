@@ -9,7 +9,7 @@ import {
     Param,
     Patch,
     Post,
-    Query
+    Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -52,9 +52,10 @@ export class VariavelFormulaCompostaController {
     @Roles(MetaController.ReadPerm)
     async getFormulaCompostaSeries(
         @Param() params: FindOneParams,
-        @Query() filter: FilterPeriodoFormulaCompostaDto
+        @Query() filter: FilterPeriodoFormulaCompostaDto,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelFCService.getFormulaCompostaSeries(params.id, filter);
+        return await this.variavelFCService.getFormulaCompostaSeries(params.id, filter, user);
     }
 }
 
@@ -77,9 +78,10 @@ export class VariavelGlobalFCController {
     @Roles(ROLES_ACESSO_VARIAVEL_PS)
     async getFormulaCompostaSeries(
         @Param() params: FindOneParams,
-        @Query() filter: FilterPeriodoFormulaCompostaDto
+        @Query() filter: FilterPeriodoFormulaCompostaDto,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelFCService.getFormulaCompostaSeries(params.id, filter);
+        return await this.variavelFCService.getFormulaCompostaSeries(params.id, filter, user);
     }
 
     @Post('plano-setorial-formula-composta')
