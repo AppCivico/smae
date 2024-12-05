@@ -13,7 +13,7 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 
 const router = useRouter();
-const { meta } = useRoute();
+const route = useRoute();
 const props = defineProps({
   grupoDeObservadoresId: {
     type: Number,
@@ -58,7 +58,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
     if (r) {
       alertStore.success(msg);
       observadoresStore.$reset();
-      router.push({ name: meta.rotaDeEscape });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -91,11 +91,11 @@ watch(itemParaEdicao, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ meta?.título || "Portfólios" }}</h1>
+    <h1>{{ route.meta.título || "Portfólios" }}</h1>
     <hr class="ml2 f1">
     <CheckClose
       :formulario-sujo="formularioSujo"
-      :rota-de-escape="meta.rotaDeEscape"
+      :rota-de-escape="route.meta.rotaDeEscape"
     />
   </div>
 
