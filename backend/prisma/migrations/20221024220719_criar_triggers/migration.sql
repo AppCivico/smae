@@ -184,30 +184,7 @@ CREATE TRIGGER trg_estapa_esticar_datas_do_pai_update AFTER  UPDATE ON etapa
     )
     EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
 
-CREATE OR REPLACE FUNCTION busca_periodos_variavel (pVariavelId int)
-    RETURNS TABLE (
-        periodicidade interval,
-        min date,
-        max date
-    )
-    AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        min(periodicidade_intervalo (v.periodicidade)),
-        coalesce(v.inicio_medicao, min(i.inicio_medicao)),
-        coalesce(v.fim_medicao, max(i.fim_medicao))
-    FROM
-        variavel v
-        JOIN indicador_variavel iv ON IV.variavel_id = v.id
-        JOIN indicador i ON Iv.indicador_id = i.id
-    WHERE
-        v.id = pVariavelId
-    GROUP BY
-        (v.fim_medicao, v.inicio_medicao);
-END;
-$$
-LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$

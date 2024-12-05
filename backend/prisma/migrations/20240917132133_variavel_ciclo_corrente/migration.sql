@@ -207,23 +207,5 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION busca_periodos_variavel (pVariavelId int)
-    RETURNS TABLE (
-        periodicidade interval,
-        min date,
-        max date
-    )
-    AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        periodicidade_intervalo (v.periodicidade),
-        coalesce(v.inicio_medicao),
-        coalesce(v.fim_medicao, CASE WHEN tipo='Global' THEN ultimo_periodo_valido( v.periodicidade::"Periodicidade" , v.atraso_meses, v.inicio_medicao) ELSE NULL END)
-    FROM variavel v
-    WHERE
-        v.id = pVariavelId AND v.inicio_medicao IS NOT NULL;
-END;
-$$
-LANGUAGE plpgsql STABLE;
+
 
