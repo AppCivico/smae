@@ -1,6 +1,6 @@
 <script setup>
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
-import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
@@ -35,6 +35,8 @@ const activePdm = computed(() => {
 
 (async () => {
   if (!tempIndicadores.value.length
+    // Mantendo o comportamento legado
+    // eslint-disable-next-line eqeqeq
     || tempIndicadores.value[0][props.parent_field] != props.parent_id
   ) {
     await IndicadoresStore.filterIndicadores(props.parent_id, props.parent_field);
@@ -97,9 +99,9 @@ const activePdm = computed(() => {
           v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
           :valores="ValoresInd[ind.id]"
         />
-        <EvolucaoGraph
+        <GraficoLinhasEvolucao
           v-else
-          :dataserie="ValoresInd[ind.id]"
+          :valores="ValoresInd[ind.id]"
         />
         <div class="tc">
           <SmaeLink
