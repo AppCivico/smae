@@ -868,7 +868,20 @@ export class PainelEstrategicoService {
                          orc.soma_valor_empenho ::float as valor_empenhado_total,
                          orc.soma_valor_liquidado::float as valor_liquidado_total,
                          p.nome as nome_projeto,
-                         p.codigo as codigo_projeto
+                         p.codigo as codigo_projeto,
+                         p.id as id,
+                        (
+                            exists(
+                                SELECT 1
+                                FROM tarefa_cronograma tc
+                                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                                WHERE tc.removido_em IS NULL
+                                  AND t.n_filhos_imediatos = 0
+                                  AND t.removido_em IS NULL
+                                  AND t.termino_planejado is null
+                                  AND tc.projeto_id = p.id
+                            )
+                        ) as ha_anos_nulos
                      from (select pr.id,
                                   pr.nome,
                                   pr.orgao_responsavel_id,
@@ -906,6 +919,7 @@ export class PainelEstrategicoService {
                      limit ${ipp} offset ${offset}`;
         console.log('the query', sql);
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaLista[];
+        console.log('linhas', linhas);
         // executar depois da query
         if (filterToken) {
             retToken = filterToken;
