@@ -167,6 +167,7 @@ export default [
             meta: {
               título: 'Novo portfólio',
               rotasParaMigalhasDePão: ['projeto.portfolio.listar'],
+              rotaDeEscape: 'projeto.portfolio.listar',
             },
           },
           {
@@ -184,6 +185,7 @@ export default [
             meta: {
               título: 'Editar portfólio',
               rotasParaMigalhasDePão: ['projeto.portfolio.listar'],
+              rotaDeEscape: 'projeto.portfolio.listar',
             },
           },
         ],
@@ -228,6 +230,7 @@ export default [
                 meta: {
                   título: 'Novo portfólio',
                   rotasParaMigalhasDePão: ['mdo.portfolio.listar'],
+                  rotaDeEscape: 'mdo.portfolio.listar',
                 },
               },
               {
@@ -240,6 +243,7 @@ export default [
                     portfolioId:
                       Number.parseInt(params.portfolioId, 10) || undefined,
                   },
+                  rotaDeEscape: 'mdo.portfolio.listar',
                 }),
 
                 meta: {
@@ -281,6 +285,7 @@ export default [
                   rotasParaMigalhasDePão: [
                     'mdo.gruposObservadores.listar',
                   ],
+                  rotaDeEscape: 'mdo.gruposObservadores.listar',
                 },
               },
               {
@@ -301,6 +306,7 @@ export default [
                   rotasParaMigalhasDePão: [
                     'mdo.gruposObservadores.listar',
                   ],
+                  rotaDeEscape: 'mdo.gruposObservadores.listar',
                 },
               },
             ],
@@ -933,6 +939,7 @@ export default [
               rotasParaMigalhasDePão: [
                 'projeto.gruposObservadores.listar',
               ],
+              rotaDeEscape: 'projeto.gruposObservadores.listar',
             },
           },
           {
@@ -953,6 +960,7 @@ export default [
               rotasParaMigalhasDePão: [
                 'projeto.gruposObservadores.listar',
               ],
+              rotaDeEscape: 'projeto.gruposObservadores.listar',
             },
           },
         ],

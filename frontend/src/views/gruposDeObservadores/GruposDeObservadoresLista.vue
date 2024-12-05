@@ -42,12 +42,12 @@ if (!Array.isArray(organs) || !organs.length) {
 
     <hr class="ml2 f1">
 
-    <router-link
-      :to="{ name: `${meta.entidadeMãe}.gruposObservadores.criar` }"
+    <SmaeLink
+      :to="{ name: '.gruposObservadores.criar' }"
       class="btn big ml1"
     >
       Novo grupo de observadores
-    </router-link>
+    </SmaeLink>
   </div>
 
   <table class="tablemain">
@@ -125,9 +125,9 @@ if (!Array.isArray(organs) || !organs.length) {
           </ul>
         </td>
         <td>
-          <router-link
+          <SmaeLink
             :to="{
-              name: `${meta.entidadeMãe}.gruposObservadores.editar`,
+              name: '.gruposObservadores.editar',
               params: { grupoDeObservadoresId: item.id },
             }"
             class="tprimary"
@@ -136,7 +136,7 @@ if (!Array.isArray(organs) || !organs.length) {
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
