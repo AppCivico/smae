@@ -27,6 +27,7 @@
   },
   "include": [
     "vite.config.*s",
+    "vitest.workspace.ts",
     ".eslintrc.cjs",
     "src"
   ],
