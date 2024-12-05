@@ -4,8 +4,8 @@ import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref } from 'vue';
 import { useRoute } from 'vue-router';
 // eslint-disable-next-line import/no-named-default
-import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
@@ -109,22 +109,6 @@ iniciar();
           </SmaeLink>
         </div>
         <div class="relative">
-          <GraficoHeatmapVariavelCategorica
-            v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
-            :valores="ValoresInd[ind.id]"
-          />
-          <EvolucaoGraph
-            v-else
-            :dataserie="ValoresInd[ind.id]"
-          />
-          <div class="tc">
-            <SmaeLink
-              :to="`${parentlink}/evolucao`"
-              class="btn big mt1 mb1"
-            >
-              <span>Acompanhar evolução</span>
-            </SmaeLink>
-          </div>
           <OverlayIndisponivel
             v-if="ind.recalculando"
             :tem-tentar-novamente="true"
@@ -134,6 +118,22 @@ iniciar();
               : ind.recalculo_tempo "
             @recarregar-dados="iniciar(true)"
           />
+          <GraficoHeatmapVariavelCategorica
+            v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
+            :valores="ValoresInd[ind.id]"
+          />
+          <GraficoLinhasEvolucao
+            v-else
+            :valores="ValoresInd[ind.id]"
+          />
+          <div class="tc">
+            <SmaeLink
+              :to="`${parentlink}/evolucao`"
+              class="btn big mt1 mb1"
+            >
+              <span>Acompanhar evolução</span>
+            </SmaeLink>
+          </div>
         </div>
       </div>
     </div>
