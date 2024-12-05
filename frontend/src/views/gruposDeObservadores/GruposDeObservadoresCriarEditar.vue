@@ -4,7 +4,7 @@ import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { ref, watch } from 'vue';
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
@@ -23,7 +23,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
-const observadoresStore = useObservadoresStore();
+const observadoresStore = useObservadoresStore(meta.entidadeMãe);
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
@@ -58,7 +58,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
     if (r) {
       alertStore.success(msg);
       observadoresStore.$reset();
-      router.push({ name: `${meta.entidadeMãe}.gruposObservadores.listar` });
+      router.push({ name: meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -87,17 +87,16 @@ iniciar();
 watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
-
-onBeforeRouteLeave(() => {
-  alertStore.$reset();
-});
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ meta?.título || "Portfólios" }}</h1>
     <hr class="ml2 f1">
-    <CheckClose :formulario-sujo="formularioSujo" />
+    <CheckClose
+      :formulario-sujo="formularioSujo"
+      :rota-de-escape="meta.rotaDeEscape"
+    />
   </div>
 
   <form
