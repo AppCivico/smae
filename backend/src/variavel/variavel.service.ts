@@ -3606,10 +3606,9 @@ export class VariavelService {
         });
         this.logger.debug(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
-            if (row.acumulativa) {
-                this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
-                await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
-            }
+
+            this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
+            await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
 
             for (const vc of row.FormulaCompostaVariavel) {
                 this.logger.verbose(`Invalidando variavel calculada ${vc.formula_composta.variavel_calc_id}...`);
