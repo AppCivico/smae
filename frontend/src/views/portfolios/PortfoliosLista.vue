@@ -1,9 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
@@ -37,7 +37,7 @@ if (!organs.length) {
     <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'portfoliosCriar' }"
+      :to="{ name: 'projeto.portfolio.criar' }"
       class="btn big ml1"
     >
       Novo portfólio
@@ -77,7 +77,7 @@ if (!organs.length) {
         <td>
           <router-link
             v-if="item?.pode_editar"
-            :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
+            :to="{ name: 'projeto.portfolio.editar', params: { portfolioId: item.id } }"
             class="tprimary"
           >
             <svg
