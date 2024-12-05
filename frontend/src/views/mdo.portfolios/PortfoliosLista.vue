@@ -37,12 +37,12 @@ if (!organs.length) {
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || "Portfolios" }}</h1>
     <hr class="ml2 f1">
-    <router-link
+    <SmaeLink
       :to="{ name: 'mdo.portfolio.criar' }"
       class="btn big ml1"
     >
       Novo portfólio
-    </router-link>
+    </SmaeLink>
   </div>
 
   <table class="tablemain">
@@ -73,10 +73,10 @@ if (!organs.length) {
         </td>
         <td>{{ item.modelo_clonagem ? "Sim" : "Não" }}</td>
         <td>
-          <router-link
+          <SmaeLink
             v-if="item?.pode_editar"
             :to="{
-              name: `${$route.meta.entidadeMãe}.portfolio.editar`,
+              name: '.portfolio.editar',
               params: { portfolioId: item.id },
             }"
             class="tprimary"
@@ -85,7 +85,7 @@ if (!organs.length) {
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
