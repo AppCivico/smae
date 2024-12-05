@@ -1,27 +1,31 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 
-const organsStore = useOrgansStore();
-const { organs, órgãosPorId } = storeToRefs(organsStore);
-const observadoresStore = useObservadoresStore();
-const {
-  lista, chamadasPendentes, erro,
-} = storeToRefs(observadoresStore);
-const route = useRoute();
+const { meta } = useRoute();
+
 const alertStore = useAlertStore();
+const organsStore = useOrgansStore();
+const observadoresStore = useObservadoresStore(meta.entidadeMãe);
+
+const { organs, órgãosPorId } = storeToRefs(organsStore);
+const { lista, chamadasPendentes, erro } = storeToRefs(observadoresStore);
 
 async function excluirGrupoDeObservadores(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await observadoresStore.excluirItem(id)) {
-      observadoresStore.$reset();
-      observadoresStore.buscarTudo();
-      alertStore.success('Grupo de observadores removido.');
-    }
-  }, 'Remover');
+  alertStore.confirmAction(
+    'Deseja mesmo remover esse item?',
+    async () => {
+      if (await observadoresStore.excluirItem(id)) {
+        observadoresStore.$reset();
+        observadoresStore.buscarTudo();
+        alertStore.success('Grupo de observadores removido.');
+      }
+    },
+    'Remover',
+  );
 }
 
 observadoresStore.$reset();
@@ -31,16 +35,15 @@ if (!Array.isArray(organs) || !organs.length) {
   organsStore.getAll();
 }
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
-    <TítuloDePágina>
-      Grupos de observadores
-    </TítuloDePágina>
+    <TítuloDePágina> Grupos de observadores </TítuloDePágina>
 
     <hr class="ml2 f1">
 
     <router-link
-      :to="{ name: 'gruposDeObservadoresCriar' }"
+      :to="{ name: `${meta.entidadeMãe}.gruposObservadores.criar` }"
       class="btn big ml1"
     >
       Novo grupo de observadores
@@ -57,12 +60,8 @@ if (!Array.isArray(organs) || !organs.length) {
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>
-          Nome
-        </th>
-        <th>
-          Órgão
-        </th>
+        <th>Nome</th>
+        <th>Órgão</th>
         <th class="cell--number">
           Nº de participantes
         </th>
@@ -80,7 +79,7 @@ if (!Array.isArray(organs) || !organs.length) {
           {{ órgãosPorId[item.orgao_id]?.sigla || item.id }}
         </td>
         <td class="cell--number">
-          {{ item.participantes?.length ?? '-' }}
+          {{ item.participantes?.length ?? "-" }}
         </td>
         <td>
           <ul>
@@ -94,7 +93,7 @@ if (!Array.isArray(organs) || !organs.length) {
               <router-link
                 :to="{
                   name: 'projetosListar',
-                  hash: `#portfolio--${portfolio.id}`
+                  hash: `#portfolio--${portfolio.id}`,
                 }"
               >
                 {{ portfolio.titulo }}
@@ -116,12 +115,10 @@ if (!Array.isArray(organs) || !organs.length) {
                   name: 'projetosResumo',
                   params: {
                     projetoId: projeto.id,
-                  }
+                  },
                 }"
               >
-                <strong v-if="projeto.codigo">
-                  {{ projeto.codigo }} -
-                </strong>
+                <strong v-if="projeto.codigo"> {{ projeto.codigo }} - </strong>
                 {{ projeto.nome }}
               </router-link>
             </li>
@@ -129,7 +126,10 @@ if (!Array.isArray(organs) || !organs.length) {
         </td>
         <td>
           <router-link
-            :to="{ name: 'gruposDeObservadoresEditar', params: { grupoDeObservadoresId: item.id } }"
+            :to="{
+              name: `${meta.entidadeMãe}.gruposObservadores.editar`,
+              params: { grupoDeObservadoresId: item.id },
+            }"
             class="tprimary"
           >
             <svg

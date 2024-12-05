@@ -35,7 +35,9 @@ interface Estado {
   erro: null | unknown;
 }
 
-export const useObservadoresStore = defineStore('observadores', {
+type TiposEntidadeMae = 'obra' | 'projeto';
+
+export const useObservadoresStore = (entidadeMae: TiposEntidadeMae = 'projeto') => defineStore(`${entidadeMae}.observadores`, {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -47,10 +49,13 @@ export const useObservadoresStore = defineStore('observadores', {
     erro: null,
   }),
   actions: {
-    async buscarItem(id:number, params = {}): Promise<void> {
+    async buscarItem(id: number, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/`, { id, ...params });
+        const resposta = await this.requestS.get(
+          `${baseUrl}/${caminhoParaApi(this.route.meta)}/`,
+          { id, ...params },
+        );
         this.emFoco = Array.isArray(resposta.linhas) && resposta.linhas[0]
           ? resposta.linhas[0]
           : {
@@ -65,7 +70,10 @@ export const useObservadoresStore = defineStore('observadores', {
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/`, params);
+        const { linhas } = await this.requestS.get(
+          `${baseUrl}/${caminhoParaApi(this.route.meta)}/`,
+          params,
+        );
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -77,7 +85,9 @@ export const useObservadoresStore = defineStore('observadores', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`);
+        await this.requestS.delete(
+          `${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`,
+        );
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -93,9 +103,15 @@ export const useObservadoresStore = defineStore('observadores', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params);
+          await this.requestS.patch(
+            `${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`,
+            params,
+          );
         } else {
-          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
+          await this.requestS.post(
+            `${baseUrl}/${caminhoParaApi(this.route.meta)}`,
+            params,
+          );
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -111,9 +127,10 @@ export const useObservadoresStore = defineStore('observadores', {
   getters: {
     itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
-      participantes: emFoco?.participantes && Array.isArray(emFoco.participantes)
-        ? emFoco.participantes.map((x) => x.id)
-        : [],
+      participantes:
+          emFoco?.participantes && Array.isArray(emFoco.participantes)
+            ? emFoco.participantes.map((x) => x.id)
+            : [],
     }),
   },
-});
+})();

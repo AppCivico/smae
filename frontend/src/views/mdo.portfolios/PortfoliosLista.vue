@@ -1,27 +1,29 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
 const portfolioStore = usePortfolioObraStore();
-const {
-  lista, chamadasPendentes, erro,
-} = storeToRefs(portfolioStore);
+const { lista, chamadasPendentes, erro } = storeToRefs(portfolioStore);
 const route = useRoute();
 const alertStore = useAlertStore();
 
 async function excluirPortfolio(id, title) {
-  alertStore.confirmAction(`Deseja mesmo remover o portfólio "${title}"?`, async () => {
-    if (await portfolioStore.excluirItem(id)) {
-      portfolioStore.$reset();
-      portfolioStore.buscarTudo({}, false);
-      alertStore.success('Portfólio removido.');
-    }
-  }, 'Remover');
+  alertStore.confirmAction(
+    `Deseja mesmo remover o portfólio "${title}"?`,
+    async () => {
+      if (await portfolioStore.excluirItem(id)) {
+        portfolioStore.$reset();
+        portfolioStore.buscarTudo({}, false);
+        alertStore.success('Portfólio removido.');
+      }
+    },
+    'Remover',
+  );
 }
 
 portfolioStore.$reset();
@@ -30,14 +32,13 @@ portfolioStore.buscarTudo({}, false);
 if (!organs.length) {
   organsStore.getAll();
 }
-
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
+    <h1>{{ route?.meta?.título || "Portfolios" }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'mdoPortfoliosCriar' }"
+      :to="{ name: 'mdo.portfolio.criar' }"
       class="btn big ml1"
     >
       Novo portfólio
@@ -52,15 +53,9 @@ if (!organs.length) {
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>
-          Portfólio
-        </th>
-        <th>
-          Órgãos
-        </th>
-        <th>
-          Modelo de clonagem
-        </th>
+        <th>Portfólio</th>
+        <th>Órgãos</th>
+        <th>Modelo de clonagem</th>
         <th />
         <th />
       </tr>
@@ -72,13 +67,18 @@ if (!organs.length) {
       >
         <td>{{ item.titulo }}</td>
         <td>
-          {{ item.orgaos.map((x) => órgãosPorId[x.id]?.sigla || x.id).join(', ') }}
+          {{
+            item.orgaos.map((x) => órgãosPorId[x.id]?.sigla || x.id).join(", ")
+          }}
         </td>
-        <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
+        <td>{{ item.modelo_clonagem ? "Sim" : "Não" }}</td>
         <td>
           <router-link
             v-if="item?.pode_editar"
-            :to="{ name: 'mdoPortfoliosEditar', params: { portfolioId: item.id } }"
+            :to="{
+              name: `${$route.meta.entidadeMãe}.portfolio.editar`,
+              params: { portfolioId: item.id },
+            }"
             class="tprimary"
           >
             <svg
