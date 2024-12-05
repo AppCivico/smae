@@ -77,7 +77,7 @@ const props = defineProps({
   },
 });
 
-const { meta } = useRoute();
+const route = useRoute();
 const emit = defineEmits(['update:modelValue']);
 
 const ÓrgãosStore = useOrgansStore();
@@ -192,7 +192,7 @@ onMounted(() => {
 });
 
 watchEffect(async () => {
-  const sufixo = meta.entidadeMãe === 'mdo' ? 'mdo_' : '';
+  const sufixo = route.meta.entidadeMãe === 'mdo' ? 'mdo_' : '';
 
   const { linhas } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
     colaborador_de_projeto: props.colaboradorDeProjeto,
