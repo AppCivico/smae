@@ -739,14 +739,16 @@ export class PainelEstrategicoService {
                 DATE_PART('YEAR', CURRENT_DATE)::INT - 3,
                 DATE_PART('YEAR', CURRENT_DATE)::INT + 3
             ) years(yr)
-            LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr
+            JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
+            LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr AND tc.projeto_id = p.id
                 AND (tc.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1)
-            LEFT JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
-            LEFT JOIN orc_realizado orcr ON orcr.ano_referencia = years.yr
+            LEFT JOIN orc_realizado orcr ON orcr.ano_referencia = years.yr AND orcr.projeto_id = p.id
                 AND (orcr.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1 )
 
             GROUP BY years.yr
             ORDER BY years.yr`;
+
+        console.log(sql);
 
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaAno[];
     }
