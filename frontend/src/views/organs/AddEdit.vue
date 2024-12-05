@@ -36,11 +36,16 @@ async function onSubmit(values) {
   try {
     let message = '';
 
+    const valores = {
+      ...values,
+      cnpj: values.cnpj === '' ? null : values.cnpj,
+    };
+
     if (id && tempOrgans.value.id) {
-      await organsStore.update(tempOrgans.value.id, values);
+      await organsStore.update(tempOrgans.value.id, valores);
       message = 'Dados salvos com sucesso!';
     } else {
-      await organsStore.insert(values);
+      await organsStore.insert(valores);
       message = 'Item adicionado com sucesso!';
     }
 
