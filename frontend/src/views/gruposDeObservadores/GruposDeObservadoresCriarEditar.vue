@@ -23,7 +23,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
-const observadoresStore = useObservadoresStore(meta.entidadeMãe);
+const observadoresStore = useObservadoresStore(route.meta.entidadeMãe);
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
@@ -31,7 +31,6 @@ const {
 } = storeToRefs(observadoresStore);
 
 // necessário por causa de 🤬
-const montarCampoEstático = ref(false);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -77,8 +76,6 @@ async function iniciar() {
   });
 
   resetForm();
-
-  montarCampoEstático.value = true;
 }
 
 const formularioSujo = useIsFormDirty();
@@ -168,7 +165,6 @@ watch(itemParaEdicao, (novosValores) => {
           v-model="values.participantes"
           name="participantes"
           espectador-de-projeto
-          :pronto-para-montagem="montarCampoEstático"
         />
         <ErrorMessage
           name="participantes"
