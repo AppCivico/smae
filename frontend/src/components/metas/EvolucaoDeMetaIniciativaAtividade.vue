@@ -114,10 +114,9 @@
         v-else-if="variavel.variavel_categorica_id > 0"
         :valores="Valores[(variavel.id as keyof {})]"
       />
-      <EvolucaoGraph
+      <GraficoLinhasEvolucao
         v-else
-        :dataserie="Valores[(variavel.id as keyof {})]"
-        :tem-categorica="variavel.variavel_categorica_id > 0"
+        :valores="Valores[(variavel.id as keyof {})]"
       />
     </header>
 
@@ -189,7 +188,7 @@ import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
 import { storeToRefs } from 'pinia';
 import { ref, watch, type PropType } from 'vue';
-import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import dateToField from '@/helpers/dateToField';
