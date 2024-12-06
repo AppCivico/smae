@@ -468,7 +468,7 @@ watch(itemParaEdicao, (novosValores) => {
               <CampoComBuscaRemota
                 :model-value="value"
                 :valor-inicial="field.value.parlamentar"
-                url-requisicao="/parlamentar"
+                url-requisicao="parlamentar"
                 chave-de-busca="palavra_chave"
                 chave-de-valor="id"
                 chave-de-exibicao="nome_popular"
