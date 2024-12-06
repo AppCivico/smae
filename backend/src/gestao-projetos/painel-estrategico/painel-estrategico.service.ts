@@ -163,7 +163,7 @@ export class PainelEstrategicoService {
             SELECT 'Outros', 999999998, 0, NULL
         )
         SELECT
-            COALESCE(pc.etapa, a.etapa) as etapa,
+            COALESCE(pc.etapa, a.etapa) as status,
             COALESCE(pc.ordem, a.ordem) as ordem,
             SUM(COALESCE(pc.quantidade, a.quantidade)) as quantidade
         FROM all_stages a
