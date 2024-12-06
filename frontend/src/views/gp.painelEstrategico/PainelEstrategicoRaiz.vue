@@ -271,20 +271,20 @@ watch(
       <CardEnvelope.Slide>
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
-            titulo="Projetos por etapas"
-            icone="box"
-          />
-          <ProjetosPorEtapa
-            :projetos-por-etapas="painelEstrategicoStore.projetoEtapas"
-          />
-        </CardEnvelope.Conteudo>
-        <CardEnvelope.Conteudo>
-          <CardEnvelope.Titulo
             titulo="Projetos por status"
             icone="box"
           />
           <ProjetosPorStatus
             :projetos-por-status="painelEstrategicoStore.projetoStatus"
+          />
+        </CardEnvelope.Conteudo>
+        <CardEnvelope.Conteudo>
+          <CardEnvelope.Titulo
+            titulo="Projetos por etapas"
+            icone="box"
+          />
+          <ProjetosPorEtapa
+            :projetos-por-etapas="painelEstrategicoStore.projetoEtapas"
           />
         </CardEnvelope.Conteudo>
       </CardEnvelope.Slide>
@@ -321,7 +321,15 @@ watch(
           />
           <div style="margin-top: 25px;">
             <hr>
-            <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
+            <p
+              style="
+              color: #A2A6AB;
+              max-width: 25em;
+              margin-top: 0.5rem;
+              font-size: 10px;
+              line-height: 1.4;
+            "
+            >
               Volume de projetos planejados por Ano/Mês.
             </p>
           </div>
@@ -345,7 +353,15 @@ watch(
           />
           <div style="margin-top: 25px;">
             <hr>
-            <p style=" color: #A2A6AB; max-width: 25em; margin-top: 0.5rem; font-size: 10px; line-height: 1.4;">
+            <p
+              style="
+                color: #A2A6AB;
+                max-width: 25em;
+                margin-top: 0.5rem;
+                font-size: 10px;
+                line-height: 1.4;
+              "
+            >
               Volume de projetos concluídos por Ano/Mês.
             </p>
           </div>
@@ -360,7 +376,8 @@ watch(
         <CardEnvelope.Conteudo>
           <CardEnvelope.Titulo
             titulo="Projetos por órgão responsável"
-            subtitulo="Órgãos com os números mais expressivos de projetos. Demais órgãos apresentados em Outros."
+            subtitulo="Órgãos com os números mais
+              expressivos de projetos. Demais órgãos apresentados em Outros."
           />
           <ProjetosPorOrgaoResponsavel
             :projetos-orgao-responsavel="painelEstrategicoStore.projetoOrgaoResponsavel"
@@ -388,7 +405,8 @@ watch(
       <CardEnvelope.Conteudo class="mt2">
         <CardEnvelope.Titulo
           titulo="Execução Orçamentária"
-          subtitulo="Gráfico de análise orçamentária anual e planilha orçamentária detalhada por projeto."
+          subtitulo="Gráfico de análise orçamentária
+            anual e planilha orçamentária detalhada por projeto."
           icone="moneyChart"
           cor="#D86B2C"
         />
