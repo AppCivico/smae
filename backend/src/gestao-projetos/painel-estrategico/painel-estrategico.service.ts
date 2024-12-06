@@ -213,6 +213,8 @@ export class PainelEstrategicoService {
             WHERE me.ordem_painel IS NOT NULL
             UNION ALL
             SELECT 'Sem Informação', 0, 0, NULL
+            UNION ALL
+            SELECT 'Outros', 0, 0, NULL
         )
         SELECT
             COALESCE(pc.etapa, a.etapa) as etapa,
