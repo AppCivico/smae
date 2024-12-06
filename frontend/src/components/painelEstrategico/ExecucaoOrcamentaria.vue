@@ -59,6 +59,19 @@
               {{ orcamento.valor_custo_planejado_hoje !== undefined
                 && orcamento.valor_custo_planejado_hoje !== null
                 ? dinheiro(orcamento.valor_custo_planejado_hoje) : ' - ' }}
+
+              <span
+                v-if="orcamento.ha_anos_nulos"
+                class="tipinfo tabela-orcamentos__info"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                >
+                  <use xlink:href="#i_i" />
+                </svg>
+                <div>Existem custos planejados sem data</div>
+              </span>
             </td>
             <td class="tr">
               {{ orcamento.valor_empenhado_total !== undefined
@@ -74,19 +87,27 @@
               <div class="grafico">
                 <div
                   class="grafico__liquidado"
-                  :style="{ width: calcularPorcentagem(orcamento.valor_liquidado_total, calcularMaiorValor(orcamento)) + '%' }"
+                  :style="{
+                    width: obterValorTamanho(orcamento,orcamento.valor_liquidado_total)
+                  }"
                 />
                 <div
                   class="grafico__empenho"
-                  :style="{ width: calcularPorcentagem(orcamento.valor_empenhado_total, calcularMaiorValor(orcamento)) + '%' }"
+                  :style="{
+                    width: obterValorTamanho(orcamento, orcamento.valor_empenhado_total)
+                  }"
                 />
                 <div
                   class="grafico__planejado-total"
-                  :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_total, calcularMaiorValor(orcamento)) + '%' }"
+                  :style="{
+                    width: obterValorTamanho(orcamento, orcamento.valor_custo_planejado_total)
+                  }"
                 />
                 <div
                   class="grafico__planejado"
-                  :style="{ width: calcularPorcentagem(orcamento.valor_custo_planejado_hoje, calcularMaiorValor(orcamento)) + '%' }"
+                  :style="{
+                    width: obterValorTamanho(orcamento,orcamento.valor_custo_planejado_hoje)
+                  }"
                 />
               </div>
             </td>
@@ -194,6 +215,15 @@ const projetoFormatado = (codigo, nome) => {
   }
   return codigo || nome || ' - ';
 };
+
+function obterValorTamanho(orcamento, valor) {
+  const tamanho = calcularPorcentagem(
+    valor,
+    calcularMaiorValor(orcamento),
+  );
+
+  return `${tamanho}%`;
+}
 </script>
 
 <style scoped lang="less">
@@ -215,6 +245,10 @@ const projetoFormatado = (codigo, nome) => {
 
 .tabela-orcamentos th {
   font-weight: bold;
+}
+
+.tabela-orcamentos__info {
+  color: #3976C2;
 }
 
 .grafico {
