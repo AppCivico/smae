@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma } from '@prisma/client';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
@@ -467,5 +467,53 @@ export class WorkflowService {
         });
         if (transferenciaEmAndamento)
             throw new HttpException('id| Workflow não pode ser editado, pois há uma Transferência que o utiliza.', 400);
+    }
+
+    async configValida(id: number, prismaTxn?: Prisma.TransactionClient): Promise<boolean> {
+        /*
+            Esta função verifica se o workflow possui etapas e fases.
+            E retorna um boolean para fazer controle de fluxo em outros services (back-end).
+
+            Ela é necessária pois existem operações que dependem de um workflow com etapas e fases configuradas. (por ex: cronograma de workflow)
+            e ao mesmo tempo, o workflow não é obrigatório.
+        */
+        const verifica = async (prismaTxn: Prisma.TransactionClient): Promise<boolean> => {
+            const row = await prismaTxn.workflow.findFirst({
+                where: {
+                    id,
+                    removido_em: null,
+                },
+                select: {
+                    etapasFluxo: {
+                        where: { removido_em: null },
+                        select: {
+                            fases: {
+                                where: { removido_em: null },
+                                select: {
+                                    tarefas: {
+                                        where: { removido_em: null },
+                                        select: { id: true },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            if (!row) throw new InternalServerErrorException('Workflow não encontrado em function configCompleta');
+
+            const etapas = row.etapasFluxo;
+            const fases = etapas.map((e) => e.fases);
+
+            if (!fases.length) return false;
+
+            return true;
+        };
+
+        if (prismaTxn) {
+            return verifica(prismaTxn);
+        } else {
+            return this.prisma.$transaction(verifica);
+        }
     }
 }

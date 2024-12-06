@@ -22,6 +22,7 @@ import {
     ParlamentarDistribuicaoDto,
     SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
+import { WorkflowService } from '../workflow/configuracao/workflow.service';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -38,7 +39,8 @@ export class DistribuicaoRecursoService {
         private readonly avisoEmailService: AvisoEmailService,
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
-        private readonly seiService: SeiIntegracaoService
+        private readonly seiService: SeiIntegracaoService,
+        private readonly workflowService: WorkflowService
     ) {}
 
     async create(
@@ -425,8 +427,14 @@ export class DistribuicaoRecursoService {
                 // Sprint 13: Quando uma distribuição é criada.
                 // Devem ser criadas tarefas no cronograma
                 // Para cada linha de tarefa do workflow que é de responsabilidade de outro órgão.
-                if (distribuicao_automatica != true) {
-                    await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
+                if (distribuicao_automatica != true && distribuicaoRecurso.transferencia.workflow_id) {
+                    const workflowConfigValida = await this.workflowService.configValida(
+                        distribuicaoRecurso.transferencia.workflow_id,
+                        prismaTx
+                    );
+
+                    if (workflowConfigValida)
+                        await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
                 }
 
                 return { id: distribuicaoRecurso.id };
@@ -1181,19 +1189,31 @@ export class DistribuicaoRecursoService {
                                 objeto: true,
                             },
                         },
+                        transferencia: {
+                            select: {
+                                workflow_id: true,
+                            },
+                        },
                     },
                 });
 
-                if (self.orgao_gestor.id != dto.orgao_gestor_id) {
-                    if (updated.tarefas.length > 0) {
-                        await prismaTx.$executeRaw`
-                        UPDATE tarefa SET
-                            tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.nome}),
-                            orgao_id = ${updated.orgao_gestor.id}
-                        WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
-                    `;
-                    } else {
-                        await this._createTarefasOutroOrgao(prismaTx, id, user);
+                if (self.orgao_gestor.id != dto.orgao_gestor_id && updated.transferencia.workflow_id) {
+                    const workflowConfigValida = await this.workflowService.configValida(
+                        updated.transferencia.workflow_id,
+                        prismaTx
+                    );
+
+                    if (workflowConfigValida) {
+                        if (updated.tarefas.length > 0) {
+                            await prismaTx.$executeRaw`
+                            UPDATE tarefa SET
+                                tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.nome}),
+                                orgao_id = ${updated.orgao_gestor.id}
+                            WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
+                        `;
+                        } else {
+                            await this._createTarefasOutroOrgao(prismaTx, id, user);
+                        }
                     }
                 }
 

@@ -7,10 +7,14 @@ import { CreateDistribuicaoRecursoStatusDto } from './dto/create-distribuicao-re
 import { UpdateDistribuicaoRecursoStatusDto } from './dto/update-distribuicao-recurso-status.dto';
 import { DateTime } from 'luxon';
 import { DistribuicaoHistoricoStatusDto } from './entities/distribuicao-recurso.entity';
+import { WorkflowService } from '../workflow/configuracao/workflow.service';
 
 @Injectable()
 export class DistribuicaoRecursoStatusService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly workflowService: WorkflowService
+    ) {}
 
     async findAll(distribuicao_id: number, user: PessoaFromJwt): Promise<DistribuicaoHistoricoStatusDto[]> {
         const rows = await this.prisma.distribuicaoRecursoStatus.findMany({
@@ -130,6 +134,11 @@ export class DistribuicaoRecursoStatusService {
                         distribuicao: {
                             select: {
                                 transferencia_id: true,
+                                transferencia: {
+                                    select: {
+                                        workflow_id: true,
+                                    },
+                                },
                                 tarefas: {
                                     select: {
                                         id: true,
@@ -142,37 +151,46 @@ export class DistribuicaoRecursoStatusService {
 
                 // Caso o status seja do tipo "ConcluidoComSucesso"
                 // Então é necessário atualizar a tarefa no cronograma.
-                let statusNovo;
-                if (dto.status_id) {
-                    statusNovo = await prismaTx.distribuicaoStatus.findFirstOrThrow({
-                        where: { id: dto.status_id },
-                        select: { tipo: true },
-                    });
-                } else {
-                    statusNovo = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
-                        where: { id: dto.status_base_id },
-                        select: { tipo: true },
-                    });
-                }
+                if (distribuicaoRecursoStatus.distribuicao.transferencia.workflow_id) {
+                    const workflowValido = await this.workflowService.configValida(
+                        distribuicaoRecursoStatus.distribuicao.transferencia.workflow_id,
+                        prismaTx
+                    );
 
-                if (statusNovo.tipo == DistribuicaoStatusTipo.ConcluidoComSucesso) {
-                    await prismaTx.tarefa.updateMany({
-                        where: { distribuicao_recurso_id: distribuicao_id },
-                        data: {
-                            termino_real: new Date(Date.now()),
-                            atualizado_em: new Date(Date.now()),
-                        },
-                    });
-                }
+                    if (workflowValido) {
+                        let statusNovo;
+                        if (dto.status_id) {
+                            statusNovo = await prismaTx.distribuicaoStatus.findFirstOrThrow({
+                                where: { id: dto.status_id },
+                                select: { tipo: true },
+                            });
+                        } else {
+                            statusNovo = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
+                                where: { id: dto.status_base_id },
+                                select: { tipo: true },
+                            });
+                        }
 
-                if (statusNovo.tipo == DistribuicaoStatusTipo.Terminal) {
-                    await prismaTx.tarefa.updateMany({
-                        where: { distribuicao_recurso_id: distribuicao_id },
-                        data: {
-                            removido_em: new Date(Date.now()),
-                            removido_por: user.id,
-                        },
-                    });
+                        if (statusNovo.tipo == DistribuicaoStatusTipo.ConcluidoComSucesso) {
+                            await prismaTx.tarefa.updateMany({
+                                where: { distribuicao_recurso_id: distribuicao_id },
+                                data: {
+                                    termino_real: new Date(Date.now()),
+                                    atualizado_em: new Date(Date.now()),
+                                },
+                            });
+                        }
+
+                        if (statusNovo.tipo == DistribuicaoStatusTipo.Terminal) {
+                            await prismaTx.tarefa.updateMany({
+                                where: { distribuicao_recurso_id: distribuicao_id },
+                                data: {
+                                    removido_em: new Date(Date.now()),
+                                    removido_por: user.id,
+                                },
+                            });
+                        }
+                    }
                 }
 
                 return { id: distribuicaoRecursoStatus.id };

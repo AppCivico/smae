@@ -9,6 +9,7 @@ import { DistribuicaoRecursoStatusService } from './distribuicao-recurso-status.
 import { DistribuicaoRecursoStatusController } from './distribuicao-recurso-status.controller';
 import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
 import { SeiIntegracaoModule } from '../../sei-integracao/sei-integracao.module';
+import { WorkflowModule } from '../workflow/configuracao/workflow.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { SeiIntegracaoModule } from '../../sei-integracao/sei-integracao.module'
         AvisoEmailModule,
         forwardRef(() => TarefaModule),
         SeiIntegracaoModule,
+        WorkflowModule,
     ],
     controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController],
     providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],
