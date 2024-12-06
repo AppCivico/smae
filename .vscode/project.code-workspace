@@ -17,6 +17,10 @@
     "files.exclude": {
       "node_modules/": true,
     },
+    "jest.autoEnable": false,
+    "jest.disabledWorkspaceFolders": [
+      "ROOT"
+    ]
   },
   "extensions": {
     "recommendations": [
