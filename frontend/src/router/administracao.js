@@ -917,7 +917,7 @@ export default [
         path: 'novo',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
-          título: 'Novo assunto',
+          título: 'Nova categoria de assunto',
           rotasParaMigalhasDePão: [
             'categoriaAssuntosListar',
           ],
@@ -933,7 +933,7 @@ export default [
         }),
 
         meta: {
-          título: 'Editar assunto',
+          título: 'Editar categoria de assunto',
           rotasParaMigalhasDePão: [
             'categoriaAssuntosListar',
           ],

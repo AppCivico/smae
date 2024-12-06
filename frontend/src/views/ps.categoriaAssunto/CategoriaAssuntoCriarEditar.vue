@@ -1,14 +1,10 @@
 <template>
   <MigalhasDePão class="mb1" />
-  <div class="flex spacebetween center mb2">
-    <h1>
-      <template v-if="!categoriaAssuntoId">
-        Novo
-      </template> Assunto
-    </h1>
+  <header class="flex spacebetween center mb2">
+    <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose />
-  </div>
+  </header>
 
   <Form
     v-slot="{ errors, isSubmitting }"
@@ -70,12 +66,12 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import { categoriaAssunto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
