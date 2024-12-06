@@ -4,11 +4,9 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore', {
   state: () => ({
-    lista: [],
     emFoco: null,
 
     chamadasPendentes: {
-      lista: false,
       emFoco: false,
     },
     erro: null,
@@ -32,8 +30,5 @@ export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore',
         return false;
       }
     },
-  },
-  getters: {
-
   },
 });
