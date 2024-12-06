@@ -332,7 +332,7 @@ export class TarefaService {
     ): Promise<ListTarefaGenericoDto> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
-        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId, user);
+        const linhas = tarefaCronoId !== 0 ? (await this.buscaLinhasRecalcProjecao(tarefaCronoId, user)).linhas : [];
 
         // sempre carregando o projeto depois, pois as triggers tbm só vão carregar os dados após o update da projeção
         // antes os dados eram atualizados no banco e tbm diretamente na referencia que seria retornada
@@ -347,7 +347,7 @@ export class TarefaService {
             : null;
 
         return {
-            linhas: ret.linhas,
+            linhas: linhas,
             projeto: projeto,
             cabecalho: cabecalhoTransferencia,
         };
