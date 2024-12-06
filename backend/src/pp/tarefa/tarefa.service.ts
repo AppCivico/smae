@@ -120,6 +120,8 @@ export class TarefaService {
                     select: { id: true },
                 });
                 return create.id;
+            } else {
+                return 0;
             }
         }
 
