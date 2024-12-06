@@ -1,4 +1,3 @@
-begin;
 
 update pdm me set ativo = coalesce( (SELECT id from pdm where ativo order by atualizado_por desc limit 1 ) = me.id, false);
 
@@ -20,4 +19,3 @@ create unique index ix_ciclo_fisico_uniq_ativo on ciclo_fisico(ativo) where ativ
 create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true;
 
 
-commit;

@@ -4,15 +4,12 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
   switch (true) {
-    case rotaMeta.prefixoParaFilhas === 'TransferenciasVoluntarias'
-      || rotaMeta.entidadeMãe === 'TransferenciasVoluntarias':
+    case rotaMeta.entidadeMãe === 'TransferenciasVoluntarias':
       return 'workflow-etapa';
 
-    case rotaMeta.prefixoParaFilhas === 'projeto'
-      || rotaMeta.entidadeMãe === 'projeto':
+    case rotaMeta.entidadeMãe === 'projeto':
       return 'projeto-etapa';
 
-    case rotaMeta.prefixoParaFilhas === 'mdo':
     case rotaMeta.entidadeMãe === 'mdo':
     case rotaMeta.entidadeMãe === 'obras':
       return 'projeto-etapa-mdo';

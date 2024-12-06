@@ -459,7 +459,6 @@ export default [
         component: EtapasRaiz,
         meta: {
           título: 'Etapas de obra',
-          prefixoParaFilhas: 'mdo',
           entidadeMãe: 'mdo',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
@@ -507,7 +506,7 @@ export default [
         component: EtapasRaiz,
         meta: {
           título: 'Etapas de projeto',
-          prefixoParaFilhas: 'projeto',
+          entidadeMãe: 'projeto',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapa.',
@@ -918,7 +917,7 @@ export default [
         path: 'novo',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
-          título: 'Novo assunto',
+          título: 'Nova categoria de assunto',
           rotasParaMigalhasDePão: [
             'categoriaAssuntosListar',
           ],
@@ -934,7 +933,7 @@ export default [
         }),
 
         meta: {
-          título: 'Editar assunto',
+          título: 'Editar categoria de assunto',
           rotasParaMigalhasDePão: [
             'categoriaAssuntosListar',
           ],

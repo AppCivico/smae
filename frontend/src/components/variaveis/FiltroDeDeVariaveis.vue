@@ -451,12 +451,6 @@ const chavesDeValoresValidos = [
   'variavel_categorica_id',
 ];
 
-// Já que a montagem do formulário é estática, não precisamos de reatividade
-const valoresIniciaisConsolidados = chavesDeValoresValidos.reduce((acc, chave) => {
-  acc[chave] = route.query[chave] || props.valoresIniciais[chave] || '';
-  return acc;
-}, {} as Record<string, unknown>);
-
 const assuntosStore = useAssuntosStore();
 const MetasStore = usePsMetasStore();
 const ÓrgãosStore = useOrgansStore();
@@ -502,6 +496,11 @@ const pronto = ref(false);
 const nivelRegionalizacao: Ref<null | number> = ref(null);
 const planoSetorialId: Ref<null | number> = ref(null);
 const regiaoId: Ref<null | number> = ref(null);
+
+const valoresIniciaisConsolidados = computed(() => chavesDeValoresValidos.reduce((acc, chave) => {
+  acc[chave] = route.query[chave] ?? props.valoresIniciais[chave] ?? '';
+  return acc;
+}, {} as Record<string, unknown>));
 
 const metasDisponiveis = computed(() => (!planoSetorialId.value
   ? listaDeMetas.value

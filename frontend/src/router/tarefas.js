@@ -19,7 +19,7 @@ export default {
 
   meta: {
     títuloParaMenu: 'Tarefas',
-    prefixoParaFilhas: 'projeto',
+    entidadeMãe: 'projeto',
   },
   children: [
     {
@@ -55,7 +55,7 @@ export default {
         },
 
         {
-          name: 'projetoTarefasClonar',
+          name: 'projeto.TarefasClonar',
           path: 'clonar',
           component: () => import('@/views/tarefas/TarefasClonar.vue'),
           meta: {
@@ -68,7 +68,7 @@ export default {
     },
 
     {
-      name: 'projetoTarefasCriar',
+      name: 'projeto.TarefasCriar',
       path: 'nova',
       component: TarefasCriarEditar,
       meta: {
@@ -111,7 +111,7 @@ export default {
 
         {
           path: '',
-          name: 'projetoTarefasEditar',
+          name: 'projeto.TarefasEditar',
           component: TarefasCriarEditar,
           props: ({ params }) => ({
             ...params,
@@ -135,7 +135,7 @@ export default {
 
         {
           path: 'progresso',
-          name: 'projetoTarefasProgresso',
+          name: 'projeto.TarefasProgresso',
           component: TarefasProgresso,
           props: ({ params }) => ({
             ...params,

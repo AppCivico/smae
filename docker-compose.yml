@@ -154,6 +154,7 @@ services:
       NAMES_CAMADAS_TTL_SECONDS: "21600"
       AZURE_KEY: "${AZURE_KEY}"
       USE_AZURE: "${USE_AZURE}"
+      GEOSAMPA_LAYER_PREFIX: "slui:"
       MAX_ADDRESSES: 5
     networks:
       #- api_geoloc

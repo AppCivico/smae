@@ -77,7 +77,12 @@ module.exports = {
       },
     },
     {
-      files: ['*.store.js', '*.store.ts'],
+      files: [
+        '*.store.js',
+        '*.store.ts',
+        '*.composable.js',
+        '*.composable.ts',
+      ],
       rules: {
         'import/prefer-default-export': 'off',
         'import/extensions': [

@@ -1,9 +1,8 @@
 <template>
-  <!-- schema: <pre>{{ schema }}</pre> -->
   <form
     class="mb2 fb100"
+    :aria-busy="!!$attrs.ariaBusy || !pronto"
     @submit.prevent="tratandoSubmit"
-    @change="(ev) => emit('campoMudou', ev)"
   >
     <div class="flex g2 mb2 fb100 flexwrap">
       <div class="f1 fb15em">
@@ -25,7 +24,7 @@
             v-for="portfolio in listaDePortfolios"
             :key="portfolio.id"
             :value="portfolio.id"
-            :selected="Number($route.query.portfolio_id) === portfolio.id"
+            :selected="Number(valoresIniciaisConsolidados.portfolio_id) === portfolio.id"
           >
             {{ portfolio.titulo }}
           </option>
@@ -50,7 +49,7 @@
             v-for="orgao in órgãosComoLista"
             :key="orgao.id"
             :value="orgao.id"
-            :selected="Number($route.query.orgao_origem_id) === orgao.id"
+            :selected="Number(valoresIniciaisConsolidados.orgao_origem_id) === orgao.id"
           >
             {{ orgao.sigla }}
           </option>
@@ -74,7 +73,7 @@
             v-for="regiao in regiõesPorNível[3]"
             :key="regiao.id"
             :value="regiao.id"
-            :selected="Number($route.query.regioes) === regiao.id"
+            :selected="Number(valoresIniciaisConsolidados.regioes) === regiao.id"
           >
             {{ regiao.descricao }}
           </option>
@@ -99,7 +98,7 @@
             :key="item.valor"
             :value="item.valor"
             :disabled="!Object.keys(statusObras).length"
-            :selected="$route.query.status === item.valor"
+            :selected="valoresIniciaisConsolidados.status === item.valor"
           >
             {{ item.nome }}
           </option>
@@ -145,7 +144,7 @@
             v-for="grupoTematico in listaDeGruposTemáticos"
             :key="grupoTematico.id"
             :value="grupoTematico.id"
-            :selected="Number($route.query.grupo_tematico_id) === grupoTematico.id"
+            :selected="Number(valoresIniciaisConsolidados.grupo_tematico_id) === grupoTematico.id"
           >
             {{ grupoTematico.nome }}
           </option>
@@ -171,7 +170,7 @@
             v-for="tipo in listaDeTiposDeIntervenção"
             :key="tipo.id"
             :value="tipo.id"
-            :selected="Number($route.query.tipo_intervencao_id) === tipo.id"
+            :selected="Number(valoresIniciaisConsolidados.tipo_intervencao_id) === tipo.id"
           >
             {{ tipo.nome }}
           </option>
@@ -197,7 +196,7 @@
             v-for="equipamento in listaDeEquipamentos"
             :key="equipamento.id"
             :value="equipamento.id"
-            :selected="Number($route.query.equipamento_id) === equipamento.id"
+            :selected="Number(valoresIniciaisConsolidados.equipamento_id) === equipamento.id"
           >
             {{ equipamento.nome }}
           </option>
@@ -213,7 +212,7 @@
           class="inputtext light"
           name="registros_sei"
           type="search"
-          :value="$route.query.registros_sei"
+          :value="valoresIniciaisConsolidados.registros_sei"
         >
       </div>
     </div>
@@ -228,7 +227,7 @@
         class="inputtext light"
         name="palavra_chave"
         type="search"
-        :value="$route.query.palavra_chave"
+        :value="valoresIniciaisConsolidados.palavra_chave"
       >
     </div>
     <div class="flex g2 center flexwrap">
@@ -247,7 +246,7 @@
               v-for="coluna in colunasParaOrdenacao"
               :key="coluna.valor"
               :value="coluna.valor"
-              :selected="$route.query.ordem_coluna === coluna.valor"
+              :selected="valoresIniciaisConsolidados.ordem_coluna === coluna.valor"
             >
               {{ coluna.nome }}
             </option>
@@ -269,7 +268,7 @@
                 Object.values(direcoesDeOrdenacao)"
               :key="direcao.valor"
               :value="direcao.valor"
-              :selected="$route.query.ordem_direcao === direcao.valor"
+              :selected="valoresIniciaisConsolidados.ordem_direcao === direcao.valor"
             >
               {{ direcao.nome || direcao.valor }}
             </option>
@@ -289,7 +288,7 @@
               v-for="quantidade in itensPorPagina"
               :key="quantidade"
               :value="quantidade"
-              :selected="Number($route.query.ipp) === quantidade"
+              :selected="Number(valoresIniciaisConsolidados.ipp) === quantidade"
             >
               {{ quantidade }}
             </option>
@@ -316,16 +315,23 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
-defineProps({
+const route = useRoute();
+
+const props = defineProps({
   ariaBusy: {
     type: Boolean,
     default: false,
   },
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
-const emit = defineEmits(['enviado', 'campoMudou']);
+const emit = defineEmits(['enviado']);
 
 const colunasParaOrdenacao = {
   id: {
@@ -373,6 +379,22 @@ const colunasParaOrdenacao = {
     nome: 'Data de registro',
   },
 };
+
+const chavesDeValoresValidos = [
+  'equipamento_id',
+  'grupo_tematico_id',
+  'ipp',
+  'ordem_coluna',
+  'ordem_direcao',
+  'orgao_origem_id',
+  'palavra_chave',
+  'portfolio_id',
+  'regioes',
+  'registros_sei',
+  'revisado',
+  'status',
+  'tipo_intervencao_id',
+];
 
 function tratandoSubmit(evento) {
   evento.target.registros_sei.value = evento.target.registros_sei.value.replace(/\D/g, '');
@@ -428,6 +450,11 @@ const {
 
 const pronto = ref(false);
 
+const valoresIniciaisConsolidados = computed(() => chavesDeValoresValidos.reduce((acc, chave) => {
+  acc[chave] = route.query[chave] ?? props.valoresIniciais[chave] ?? '';
+  return acc;
+}, {}));
+
 function iniciar() {
   const promessas = [];
 
@@ -443,7 +470,9 @@ function iniciar() {
     promessas.push(gruposTematicosStore.buscarTudo());
   }
 
-  if (!listaDeTiposDeIntervenção.value.length && !chamadasPendentesDeTiposDeIntervenção.value.lista) {
+  if (!listaDeTiposDeIntervenção.value.length
+    && !chamadasPendentesDeTiposDeIntervenção.value.lista
+  ) {
     promessas.push(tiposDeIntervencaoStore.buscarTudo());
   }
 

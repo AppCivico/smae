@@ -486,7 +486,10 @@ export default [
             component: () => import('@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
-              ...{ programaHabitacionalId: Number.parseInt(params.programaHabitacionalId, 10) || undefined },
+              ...{
+                programaHabitacionalId: Number.parseInt(params.programaHabitacionalId, 10)
+                || undefined,
+              },
             }),
 
             meta: {
@@ -507,7 +510,6 @@ export default [
         component: WorkflowRaiz,
         meta: {
           título: 'Workflow',
-          prefixoParaFilhas: 'TransferenciasVoluntarias',
           entidadeMãe: 'TransferenciasVoluntarias',
           limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
@@ -661,7 +663,7 @@ export default [
                 },
               },
               {
-                name: 'tarefasCriar',
+                name: 'TransferenciasVoluntarias.tarefasCriar',
                 path: 'nova',
                 component: TarefasCriarEditar,
                 meta: {
@@ -670,7 +672,7 @@ export default [
               },
               {
                 path: ':tarefasId',
-                name: 'tarefasEditar',
+                name: 'TransferenciasVoluntarias.TarefasEditar', // o que eu boto aqui
                 component: TarefasCriarEditar,
                 props: ({ params }) => ({
                   ...params,

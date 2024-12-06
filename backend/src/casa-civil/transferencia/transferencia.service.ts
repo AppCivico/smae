@@ -47,6 +47,8 @@ export class TransferenciaService {
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        let workflowCriado: boolean = false;
+
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const tipoExiste = await prismaTxn.transferenciaTipo.count({
@@ -158,132 +160,143 @@ export class TransferenciaService {
                     select: { id: true },
                 });
 
-                if (workflow_id) await this.startWorkflow(transferencia.id, workflow_id, prismaTxn, user);
+                if (workflow_id) {
+                    await this.startWorkflow(transferencia.id, workflow_id, prismaTxn, user);
+                    workflowCriado = true;
+                }
 
                 return transferencia;
             }
         );
 
         // Disparando update para validar topologia.
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            const tarefas = await prismaTxn.tarefa.findMany({
-                where: {
-                    tarefa_cronograma: {
-                        transferencia_id: created.id,
-                    },
-                },
-                select: {
-                    id: true,
-                    dependencias: {
-                        select: {
-                            id: true,
-                            tarefa_id: true,
-                            dependencia_tarefa_id: true,
-                            tipo: true,
-                            latencia: true,
+        if (workflowCriado) {
+            await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+                const tarefas = await prismaTxn.tarefa.findMany({
+                    where: {
+                        tarefa_cronograma: {
+                            transferencia_id: created.id,
                         },
                     },
-                },
-            });
-
-            for (const tarefa of tarefas) {
-                let dto: UpdateTarefaDto = {};
-
-                if (tarefa.dependencias.length) {
-                    dto = {
-                        dependencias: tarefa.dependencias.map((e) => {
-                            return {
-                                dependencia_tarefa_id: e.dependencia_tarefa_id,
-                                tipo: e.tipo,
-                                latencia: e.latencia,
-                            };
-                        }),
-                    };
-
-                    await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user, prismaTxn);
-                }
-            }
-
-            // Atualizando previsão de término para tarefas de fase de etapa e tarefas de acompanhamento da etapa.
-            const tarefaEtapasAcompanhamentos = await prismaTxn.tarefa.findMany({
-                where: {
-                    tarefa_cronograma: {
-                        transferencia_id: created.id,
-                    },
-                    termino_planejado: null,
-                    db_projecao_termino: null,
-                },
-                select: {
-                    id: true,
-                    tarefa_pai_id: true,
-                    nivel: true,
-                    numero: true,
-                    tarefa: true,
-                },
-            });
-
-            const updates = [];
-            for (const row of tarefaEtapasAcompanhamentos) {
-                console.log(row);
-                if (row.nivel == 1 && row.tarefa_pai_id == null) {
-                    // Tarefa referente à própia etapa.
-
-                    // Buscando tarefa filha de maior número.
-                    const tarefaFilha = await prismaTxn.tarefa.findFirst({
-                        where: {
-                            tarefa_pai_id: row.id,
-                            removido_em: null,
-                        },
-                        orderBy: { numero: 'desc' },
-                        select: {
-                            termino_planejado: true,
-                            db_projecao_termino: true,
-                        },
-                    });
-
-                    if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
-
-                    updates.push(
-                        prismaTxn.tarefa.update({
-                            where: { id: row.id },
-                            data: {
-                                termino_planejado: tarefaFilha.termino_planejado,
-                                db_projecao_termino: tarefaFilha.db_projecao_termino,
+                    select: {
+                        id: true,
+                        dependencias: {
+                            select: {
+                                id: true,
+                                tarefa_id: true,
+                                dependencia_tarefa_id: true,
+                                tipo: true,
+                                latencia: true,
                             },
-                        })
-                    );
-                } else if (row.nivel == 2 && row.tarefa_pai_id != null) {
-                    // Buscando tarefa irmã de maior número.
-
-                    const tarefaIrma = await prismaTxn.tarefa.findFirst({
-                        where: {
-                            tarefa_pai_id: row.tarefa_pai_id,
-
-                            removido_em: null,
                         },
-                        orderBy: { numero: 'desc' },
-                        select: {
-                            termino_planejado: true,
-                            db_projecao_termino: true,
-                        },
-                    });
-                    if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                    },
+                });
 
-                    updates.push(
-                        prismaTxn.tarefa.update({
-                            where: { id: row.id },
-                            data: {
-                                termino_planejado: tarefaIrma.termino_planejado,
-                                db_projecao_termino: tarefaIrma.db_projecao_termino,
-                            },
-                        })
-                    );
-                } else {
-                    // Nada, pois não deveria cair aqui se tudo ocorreu ok.
+                for (const tarefa of tarefas) {
+                    let dto: UpdateTarefaDto = {};
+
+                    if (tarefa.dependencias.length) {
+                        dto = {
+                            dependencias: tarefa.dependencias.map((e) => {
+                                return {
+                                    dependencia_tarefa_id: e.dependencia_tarefa_id,
+                                    tipo: e.tipo,
+                                    latencia: e.latencia,
+                                };
+                            }),
+                        };
+
+                        await this.tarefaService.update(
+                            { transferencia_id: created.id },
+                            tarefa.id,
+                            dto,
+                            user,
+                            prismaTxn
+                        );
+                    }
                 }
-            }
-            await Promise.all(updates);
-        });
+
+                // Atualizando previsão de término para tarefas de fase de etapa e tarefas de acompanhamento da etapa.
+                const tarefaEtapasAcompanhamentos = await prismaTxn.tarefa.findMany({
+                    where: {
+                        tarefa_cronograma: {
+                            transferencia_id: created.id,
+                        },
+                        termino_planejado: null,
+                        db_projecao_termino: null,
+                    },
+                    select: {
+                        id: true,
+                        tarefa_pai_id: true,
+                        nivel: true,
+                        numero: true,
+                        tarefa: true,
+                    },
+                });
+
+                const updates = [];
+                for (const row of tarefaEtapasAcompanhamentos) {
+                    console.log(row);
+                    if (row.nivel == 1 && row.tarefa_pai_id == null) {
+                        // Tarefa referente à própia etapa.
+
+                        // Buscando tarefa filha de maior número.
+                        const tarefaFilha = await prismaTxn.tarefa.findFirst({
+                            where: {
+                                tarefa_pai_id: row.id,
+                                removido_em: null,
+                            },
+                            orderBy: { numero: 'desc' },
+                            select: {
+                                termino_planejado: true,
+                                db_projecao_termino: true,
+                            },
+                        });
+
+                        if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+
+                        updates.push(
+                            prismaTxn.tarefa.update({
+                                where: { id: row.id },
+                                data: {
+                                    termino_planejado: tarefaFilha.termino_planejado,
+                                    db_projecao_termino: tarefaFilha.db_projecao_termino,
+                                },
+                            })
+                        );
+                    } else if (row.nivel == 2 && row.tarefa_pai_id != null) {
+                        // Buscando tarefa irmã de maior número.
+
+                        const tarefaIrma = await prismaTxn.tarefa.findFirst({
+                            where: {
+                                tarefa_pai_id: row.tarefa_pai_id,
+
+                                removido_em: null,
+                            },
+                            orderBy: { numero: 'desc' },
+                            select: {
+                                termino_planejado: true,
+                                db_projecao_termino: true,
+                            },
+                        });
+                        if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+
+                        updates.push(
+                            prismaTxn.tarefa.update({
+                                where: { id: row.id },
+                                data: {
+                                    termino_planejado: tarefaIrma.termino_planejado,
+                                    db_projecao_termino: tarefaIrma.db_projecao_termino,
+                                },
+                            })
+                        );
+                    } else {
+                        // Nada, pois não deveria cair aqui se tudo ocorreu ok.
+                    }
+                }
+                await Promise.all(updates);
+            });
+        }
 
         return created;
     }

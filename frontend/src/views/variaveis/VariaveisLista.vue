@@ -1,7 +1,6 @@
 <script setup>
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
@@ -112,10 +111,14 @@ watchEffect(() => {
 
     <template #finalLinhaVariavel="{ variavel }">
       <td>
-        <smae-link
+        <SmaeLink
           type="button"
           class="tipinfo tprimary like-a__text"
-          :to="{ name: `.variaveisResumo`, params: { variavelId: variavel.id } }"
+          :to="{
+            name: `.variaveisResumo`,
+            params: { variavelId: variavel.id },
+            query: $route.query,
+          }"
           exibir-desabilitado
         >
           <svg
@@ -123,7 +126,7 @@ watchEffect(() => {
             height="20"
           ><use xlink:href="#i_eye" /></svg>
           <div>Resumo da variável</div>
-        </smae-link>
+        </SmaeLink>
       </td>
 
       <td>
@@ -164,16 +167,20 @@ watchEffect(() => {
       </td>
 
       <td>
-        <router-link
+        <SmaeLink
           v-if="variavel?.pode_editar_valor && variavel?.pode_editar"
-          :to="{ name: 'variaveisEditar', params: { variavelId: variavel.id } }"
+          :to="{
+            name: 'variaveisEditar',
+            params: { variavelId: variavel.id },
+            query: { escape: { query: $route.query } }
+          }"
           class="tprimary"
         >
           <svg
             width="20"
             height="20"
           ><use xlink:href="#i_edit" /></svg>
-        </router-link>
+        </SmaeLink>
       </td>
       <td>
         <button

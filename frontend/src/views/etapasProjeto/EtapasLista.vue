@@ -1,12 +1,12 @@
 <script setup>
-import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -52,7 +52,7 @@ const listaPreparada = computed(() => {
       nome: x.descricao,
     };
 
-    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.prefixoParaFilhas === 'projeto') {
+    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.entidadeMãe === 'projeto') {
       item.editar = {
         rota: {
           name: 'projeto.etapaEditar',
@@ -74,7 +74,7 @@ const listaPreparada = computed(() => {
       };
     }
 
-    if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+    if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
       item.editar = {
         rota: {
           name: 'TransferenciasVoluntarias.etapaEditar',
@@ -85,7 +85,7 @@ const listaPreparada = computed(() => {
       };
     }
 
-    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
+    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.entidadeMãe === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
       item.excluir = {
         ação: () => excluirEtapa(x.id, x.descricao),
       };
@@ -113,20 +113,15 @@ const listaPreparada = computed(() => {
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
-    <router-link
-      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir') || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.inserir')"
-      :to="{
-        name:
-          $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
-            ? 'TransferenciasVoluntarias.etapaCriar'
-            : temPermissãoPara('CadastroProjetoEtapaMDO.inserir') && $route.meta.prefixoParaFilhas === 'mdo'
-              ? 'mdo.etapaCriar'
-              : 'projeto.etapaCriar'
-      }"
+    <SmaeLink
+      v-if="temPermissãoPara(['CadastroProjetoEtapa.inserir'])
+        || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
+        || temPermissãoPara(['CadastroProjetoEtapaMDO.inserir'])"
+      :to="{name: '.etapaCriar'}"
       class="btn big ml2"
     >
       Nova etapa
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex center mb2 spacebetween">

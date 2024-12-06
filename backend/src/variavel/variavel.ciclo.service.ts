@@ -409,7 +409,10 @@ export class VariavelCicloService {
                 }
             }
 
-            if (conferida)
+            // apenas atualiza quando for conferida, antes deixa em branco
+            // na serie_variavel, como na volta de pedido de complementação caso já tenha sido aprovado alguma vez
+            // vai manter o ultimo valor aprovado
+            if (conferida) {
                 await this.updateSerieVariavelConferida(
                     cicloCorrente.variavel.id,
                     dto.data_referencia,
@@ -417,30 +420,31 @@ export class VariavelCicloService {
                     prismaTxn
                 );
 
-            const variaveisIds: number[] = [dto.variavel_id];
-            for (const valor of dto.valores) {
-                if (valor.variavel_id) variaveisIds.push(valor.variavel_id);
+                const variaveisIds: number[] = [dto.variavel_id];
+                for (const valor of dto.valores) {
+                    if (valor.variavel_id) variaveisIds.push(valor.variavel_id);
 
-                const variavelInfo = await this.variavelService.loadVariavelComCategorica(
-                    'Global',
-                    prismaTxn,
-                    valor.variavel_id ?? dto.variavel_id
-                );
+                    const variavelInfo = await this.variavelService.loadVariavelComCategorica(
+                        'Global',
+                        prismaTxn,
+                        valor.variavel_id ?? dto.variavel_id
+                    );
 
-                await this.atualizaSerieVariavel(
-                    variavelInfo,
-                    valor,
-                    prismaTxn,
-                    now,
-                    user,
-                    dto.data_referencia,
-                    conferida
-                );
-            }
+                    await this.atualizaSerieVariavel(
+                        variavelInfo,
+                        valor,
+                        prismaTxn,
+                        now,
+                        user,
+                        dto.data_referencia,
+                        conferida
+                    );
+                }
 
-            if (variaveisIds.length) {
-                await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
-                await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
+                if (variaveisIds.length) {
+                    await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
+                    await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
+                }
             }
         });
     }

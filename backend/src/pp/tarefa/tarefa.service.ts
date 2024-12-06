@@ -1,4 +1,12 @@
-import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+    forwardRef,
+} from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
 import { Transform, Type, plainToInstance } from 'class-transformer';
@@ -85,23 +93,36 @@ export class TarefaService {
         }
 
         if (dto.transferencia_id) {
-            const exists = await this.prisma.tarefaCronograma.findFirst({
-                where: {
-                    transferencia_id: dto.transferencia_id,
-                    removido_em: null,
-                },
-                select: { id: true },
+            // Cronograma só deve ser criado caso a transf. tenha workflow.
+            const transferencia = await this.prisma.transferencia.findFirst({
+                where: { id: dto.transferencia_id, removido_em: null },
+                select: { workflow_id: true },
             });
-            if (exists) return exists.id;
-            const create = await this.prisma.tarefaCronograma.create({
-                data: {
-                    transferencia_id: dto.transferencia_id,
-                    criado_em: new Date(Date.now()),
-                    criado_por: user.id,
-                },
-                select: { id: true },
-            });
-            return create.id;
+            if (!transferencia)
+                throw new InternalServerErrorException('Erro ao buscar transf em func loadOrCreateByInput.');
+
+            if (transferencia.workflow_id) {
+                const exists = await this.prisma.tarefaCronograma.findFirst({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        removido_em: null,
+                    },
+                    select: { id: true },
+                });
+                if (exists) return exists.id;
+
+                const create = await this.prisma.tarefaCronograma.create({
+                    data: {
+                        transferencia_id: dto.transferencia_id,
+                        criado_em: new Date(Date.now()),
+                        criado_por: user.id,
+                    },
+                    select: { id: true },
+                });
+                return create.id;
+            } else {
+                return 0;
+            }
         }
 
         throw new BadRequestException(
@@ -311,7 +332,7 @@ export class TarefaService {
     ): Promise<ListTarefaGenericoDto> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
-        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId, user);
+        const linhas = tarefaCronoId !== 0 ? (await this.buscaLinhasRecalcProjecao(tarefaCronoId, user)).linhas : [];
 
         // sempre carregando o projeto depois, pois as triggers tbm só vão carregar os dados após o update da projeção
         // antes os dados eram atualizados no banco e tbm diretamente na referencia que seria retornada
@@ -326,7 +347,7 @@ export class TarefaService {
             : null;
 
         return {
-            linhas: ret.linhas,
+            linhas: linhas,
             projeto: projeto,
             cabecalho: cabecalhoTransferencia,
         };

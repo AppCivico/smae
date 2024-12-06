@@ -94,21 +94,17 @@ export default {
           points="0,0 0,12 12,0"
           stroke="none"
         /></svg>
-      <router-link
+      <SmaeLink
         v-if="!apenasLeitura
           || souResponsável
-          || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
-        :to="{
-          name: $route.meta.prefixoParaFilhas + 'TarefasProgresso',
-          params: {
-            ...$route.params,
-            tarefaId: linha.id,
-          },
-        }"
-        :title="`Registrar progresso na tarefa ${linha.hierarquia}`"
+          || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+        :to="{name: '.TarefasProgresso', params: {
+          ...$route.params,
+          tarefaId: linha.id,
+        },}"
       >
         {{ linha.tarefa }}
-      </router-link>
+      </SmaeLink>
       <template v-else>
         {{ linha.tarefa }}
       </template>
@@ -193,11 +189,11 @@ export default {
         <SmaeLink
           v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1) && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
-            && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'
-            && $route.meta.prefixoParaFilhas !== 'obras'"
+            && $route.meta.entidadeMãe !== 'TransferenciasVoluntarias'
+            && $route.meta.entidadeMãe !== 'obras'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
-            name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
+            name: '.TarefasCriar',
             params: {
               ...$route.params,
               tarefaId: linha.id,
@@ -220,7 +216,7 @@ export default {
         <SmaeLink
           v-if="linha.pode_editar"
           :to="{
-            name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
+            name: '.TarefasEditar',
             params: {
               ...$route.params,
               tarefaId: linha.id,
@@ -243,7 +239,7 @@ export default {
           class="like-a__text"
           title="Excluir"
           :hidden="linha.n_filhos_imediatos > 0
-            || (!oProjetoÉPrioritário && $route.meta.prefixoParaFilhas === 'projeto')"
+            || (!oProjetoÉPrioritário && $route.meta.entidadeMãe === 'projeto')"
           @click="excluirTarefa(linha.id)"
         >
           <svg

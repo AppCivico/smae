@@ -65,7 +65,9 @@ async function iniciar() {
 iniciar();
 </script>
 <template>
-  <div class="spacebetween">&nbsp</div>
+  <div class="spacebetween">
+&nbsp;
+  </div>
   <div class="flex spacebetween center mb2">
     <div>
       <div class="t12 uc w700 tamarelo">
@@ -83,7 +85,7 @@ iniciar();
     >
       <SmaeLink
         :to="{
-          name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
+          name: '.TarefasEditar',
           params: {
             projetoId: projetoId,
             tarefaId: tarefaId,
@@ -134,7 +136,7 @@ iniciar();
         </dd>
       </div>
       <div
-        v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+        v-if="route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -162,7 +164,7 @@ iniciar();
     </dl>
   </div>
   <div
-    v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+    v-if="route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
     class="flex center mb4"
   >
     <SmaeLink
@@ -327,7 +329,8 @@ iniciar();
           class="inputtext light mb1"
           :disabled="emFoco.n_filhos_imediatos > 0"
           :class="{ 'error': errors.percentual_concluido }"
-          @update:model-value="values.percentual_concluido = Number(values.percentual_concluido) ?? null"
+          @update:model-value="values.percentual_concluido = Number(values.percentual_concluido)
+            ?? null"
         />
         <ErrorMessage
           class="error-msg mb1"

@@ -1,21 +1,9 @@
 <script setup>
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, onUnmounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
+import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
-
+import { useEscaparDaRota } from '@/composables/escaparDaRota.composable';
 import {
   variavelGlobal as schemaCriacao,
   variavelGlobalParaGeracao as schemaGeracao,
@@ -37,10 +25,17 @@ import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-
-const opcoesFormatacaoCampoData = {
-  format: 'MMM/yyyy',
-};
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import { useRouter } from 'vue-router';
 
 const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
@@ -105,7 +100,6 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const route = useRoute();
 
 const gerarMultiplasVariaveis = ref(false);
 
@@ -176,11 +170,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     if (resposta) {
       alertStore.success(msg);
 
-      if (route.meta.rotaDeEscape) {
-        router.push({
-          name: route.meta.rotaDeEscape,
-        });
-      }
+      useEscaparDaRota(router);
     }
   } catch (error) {
     alertStore.error(error);
@@ -451,7 +441,10 @@ onUnmounted(() => {
             :lista-de-items="listaDeAssuntos"
             :lista-de-agrupadores="listaDeCategorias"
             :logica-mapeamento-de-opcoes="logicaMapeamentoDeOpcoesDeAssunto"
+            :class="{ error: erroDeAssuntos }"
             @update:model-value="onChange"
+            @aria-busy="chamadasPendentesDeAssuntos.lista
+              || chamadasPendentesDeAssuntos.categorias"
           />
         </Field>
       </div>
@@ -715,35 +708,13 @@ onUnmounted(() => {
           />
           <Field
             v-if="!variavelId"
-            v-slot="{ field, value, handleChange }"
             name="inicio_medicao"
-          >
-            <VueDatePicker
-              v-bind="field"
-              :model-value="value"
-              cancel-text="Cancelar"
-              select-text="Selecionar"
-              :text-input="opcoesFormatacaoCampoData"
-              hide-input-icon
-              month-picker
-              auto-apply
-              locale="pt-br"
-              :enable-time-picker="false"
-              :clearable="true"
-              model-type="yyyy-MM-dd"
-              @update:model-value="handleChange"
-            >
-              <template #dp-input="{ value: valor }">
-                <input
-                  type="text"
-                  class="inputtext light mb1"
-                  :class="{ error: errors.inicio_medicao }"
-                  :value="valor"
-                  autocomplete="off"
-                >
-              </template>
-            </VueDatePicker>
-          </Field>
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.inicio_medicao }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('inicio_medicao', $v || null); }"
+          />
 
           <input
             v-else
@@ -765,35 +736,13 @@ onUnmounted(() => {
             :schema="schema"
           />
           <Field
-            v-slot="{ field, value, handleChange }"
             name="fim_medicao"
-          >
-            <VueDatePicker
-              v-bind="field"
-              :model-value="value"
-              cancel-text="Cancelar"
-              select-text="Selecionar"
-              :text-input="opcoesFormatacaoCampoData"
-              hide-input-icon
-              month-picker
-              auto-apply
-              locale="pt-br"
-              :enable-time-picker="false"
-              :clearable="true"
-              model-type="yyyy-MM-dd"
-              @update:model-value="handleChange"
-            >
-              <template #dp-input="{ value: valor }">
-                <input
-                  type="text"
-                  class="inputtext light mb1"
-                  :class="{ error: errors.fim_medicao }"
-                  :value="valor"
-                  autocomplete="off"
-                >
-              </template>
-            </VueDatePicker>
-          </Field>
+            type="date"
+            class="inputtext light mb1"
+            :class="{ error: errors.fim_medicao }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('fim_medicao', $v || null); }"
+          />
 
           <ErrorMessage
             class="error-msg"

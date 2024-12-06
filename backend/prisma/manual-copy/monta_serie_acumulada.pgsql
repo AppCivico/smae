@@ -9,9 +9,10 @@ DECLARE
     vVariavelNumeroCasas integer;
     vInicio date;
     vFim date;
+    vAcumulativa boolean;
 BEGIN
     EXECUTE pg_advisory_xact_lock(pVariavelId::bigint);
-    --
+
     WITH indicador_info AS (
         SELECT iv.variavel_id, iv.indicador_id
         FROM indicador_variavel iv
@@ -22,6 +23,7 @@ BEGIN
     periodo_data AS (
         SELECT
             v.id AS variavel_id,
+            v.acumulativa,
             v.tipo,
             CASE
                 WHEN v.tipo = 'Global' THEN
@@ -57,71 +59,83 @@ BEGIN
         pd.periodicidade,
         pd.inicio_medicao,
         pd.fim_medicao,
-        v.casas_decimais
+        v.casas_decimais,
+        pd.acumulativa
     INTO
         vTipoSerie,
         vVariavelBase,
         vPeriodicidade,
         vInicio,
         vFim,
-        vVariavelNumeroCasas
+        vVariavelNumeroCasas,
+        vAcumulativa
     FROM
         variavel v
     JOIN periodo_data pd ON v.id = pd.variavel_id
     WHERE v.id = pVariavelId;
 
-    -- double check
-    -- se a pessoa ligou, o sistema fez a conta, e entao remover a opção, os valores já calculados vão ficar
+    -- Validation check
     IF vInicio IS NULL THEN
         RETURN 'Variavel não encontrada';
     END IF;
+
+    -- Process each series type (Realizado/Previsto)
     FOR serieRecord IN WITH series AS (
-        -- series 'base' para o calculo da Acumulada
         SELECT
             'Realizado'::"Serie" AS serie
         UNION ALL
         SELECT
             'Previsto'::"Serie"
     )
-    SELECT
-        s.serie
-    FROM
-        series s
-    WHERE
-        -- filtra apenas as series do tipo escolhido para recalcular, ou todas se for null
-        ((vTipoSerie IS NULL)
-            OR (s.serie::text LIKE vTipoSerie::text || '%'))
-            LOOP
-                -- apaga o periodo escolhido
-                DELETE FROM serie_variavel
-                WHERE variavel_id = pVariavelId
-                    AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
+    SELECT s.serie
+    FROM series s
+    -- Filtra apenas as series do tipo escolhido [parâmetro] para recalcular, ou todas se for null
+    WHERE ((vTipoSerie IS NULL) OR (s.serie::text LIKE vTipoSerie::text || '%'))
+    LOOP
+        -- Sempre deleta a serie acumulada antes de inserir
+        DELETE FROM serie_variavel
+        WHERE variavel_id = pVariavelId
+            AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
 
-                RAISE NOTICE '==> acumulado serie_variavel (variavel=%', pVariavelId::text || ', serie=' || serieRecord.serie::text;
-                INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
-                WITH theData AS (
-                    SELECT
-                        pVariavelId,
-                        (serieRecord.serie::text || 'Acumulado')::"Serie",
-                        gs.gs AS data_serie,
-                        round( vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), 0), vVariavelNumeroCasas) AS valor_acc
-                    FROM
-                        generate_series(vInicio, vFim, vPeriodicidade) gs
-                    LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
-                        AND data_valor = gs.gs::date
-                        AND sv.serie = serieRecord.serie
-)
+        -- Apenas recalcular a serie acumulada se a variavel for acumulativa
+        IF vAcumulativa THEN
+            RAISE NOTICE '==> acumulado serie_variavel (variavel=%', pVariavelId::text || ', serie=' || serieRecord.serie::text;
+
+            INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
+            WITH theData AS (
                 SELECT
-                    *
+                    pVariavelId,
+                    (serieRecord.serie::text || 'Acumulado')::"Serie",
+                    gs.gs AS data_serie,
+                    round(
+                        vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), 0),
+                        vVariavelNumeroCasas
+                    ) AS valor_acc
                 FROM
-                    theData
-            WHERE
-                theData.valor_acc IS NOT NULL;
-            END LOOP;
-    -- loop resultados das series
-    --
+                    generate_series(vInicio, vFim, vPeriodicidade) gs
+                LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
+                    AND data_valor = gs.gs::date
+                    AND sv.serie = serieRecord.serie
+            )
+            SELECT *
+            FROM theData
+            WHERE theData.valor_acc IS NOT NULL;
+        ELSE
+            -- Reinserir a serie usando os valores originais, sem acumular
+            -- se não vamos gerar um bug... isso é bem ineficiente, mas é o que temos pra agora
+            INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
+            SELECT
+                pVariavelId,
+                (serieRecord.serie::text || 'Acumulado')::"Serie",
+                sv.data_valor,
+                sv.valor_nominal
+            FROM serie_variavel sv
+            WHERE sv.variavel_id = pVariavelId
+                AND sv.serie = serieRecord.serie;
+        END IF;
+    END LOOP;
+
     RETURN '';
 END
 $$
 LANGUAGE plpgsql;
-

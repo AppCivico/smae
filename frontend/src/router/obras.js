@@ -1,7 +1,9 @@
 import obrasAcompanhamentos from './obras.acompanhamentos';
+import obrasContratos from './obras.contratos';
 import obrasOrcamentos from './obras.orcamentos';
 import obrasProcessos from './obras.processos';
-import obrasContratos from './obras.contratos';
+
+const ObraCriarEditar = () => import('@/views/mdo.obras/ObraCriarEditar.vue');
 
 export default {
   path: '/obras',
@@ -39,13 +41,13 @@ export default {
     {
       name: 'obrasCriar',
       path: 'novo',
-      component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
+      component: ObraCriarEditar,
       props: true,
       meta: {
         limitarÀsPermissões: [
           'ProjetoMDO.administrador_no_orgao',
         ],
-        rotaDeEscape: 'obrasListar',
+        rotaDeEscape: 'obrasResumo',
         rotasParaMigalhasDePão: [
           'obrasListar',
         ],
@@ -94,7 +96,7 @@ export default {
         {
           path: '',
           name: 'obrasEditar',
-          component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
+          component: ObraCriarEditar,
           props: ({ params }) => ({
             ...params,
             obraId: Number.parseInt(params.obraId, 10) || undefined,
@@ -130,7 +132,6 @@ export default {
           props: true,
           meta: {
             títuloParaMenu: 'Tarefas',
-            prefixoParaFilhas: 'obras',
             rotasParaMigalhasDePão: [
               'obrasListar',
               'obrasResumo',
@@ -149,7 +150,7 @@ export default {
               },
               children: [
                 {
-                  name: 'obrasTarefasClonar',
+                  name: 'obras.TarefasClonar',
                   path: 'clonar',
                   component: () => import('@/views/mdo.tarefas/TarefasClonar.vue'),
                   meta: {
@@ -161,7 +162,7 @@ export default {
               ],
             },
             {
-              name: 'obrasTarefasCriar',
+              name: 'obras.TarefasCriar',
               path: 'nova',
               component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
               props: true,
@@ -178,7 +179,7 @@ export default {
               children: [
                 {
                   path: '',
-                  name: 'obrasTarefasEditar',
+                  name: 'obras.TarefasEditar',
                   component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
                   props: true,
                   meta: {
@@ -208,7 +209,7 @@ export default {
                 },
                 {
                   path: 'progresso',
-                  name: 'obrasTarefasProgresso',
+                  name: 'obras.TarefasProgresso',
                   component: () => import('@/views/tarefas/TarefasProgresso.vue'),
                   props: true,
                   meta: {
@@ -222,7 +223,7 @@ export default {
                       'obrasResumo',
                       'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
                       'obrasTarefasListar',
-                      'obrasTarefasEditar',
+                      'obras.TarefasEditar',
                     ],
                   },
                 },

@@ -1,12 +1,12 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, defineOptions } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import { etapasProjeto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, defineOptions } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const router = useRouter();
@@ -30,11 +30,12 @@ const emFoco = computed(() => etapasPorId.value[props.etapaId] || null);
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
   let redirect;
-  if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapasListar';
-  } else if (route.meta.prefixoParaFilhas === 'mdo') {
+  } else if (route.meta.entidadeMãe === 'mdo'
+  || route.meta.entidadeMãe === 'obras') {
     redirect = 'mdo.etapasListar';
-  } else if (route.meta.prefixoParaFilhas === 'projeto') {
+  } else if (route.meta.entidadeMãe === 'projeto') {
     redirect = 'projeto.etapasListar';
   }
   try {
@@ -160,7 +161,7 @@ function excluirEtapaDoProjeto(id) {
   <button
     v-else-if="emFoco?.id && (
       temPermissãoPara('CadastroProjetoEtapa.remover'
-        || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+        || route.meta.entidadeMãe === 'TransferenciasVoluntarias'
       )
     )"
     class="btn amarelo big"

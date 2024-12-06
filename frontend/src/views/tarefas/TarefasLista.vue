@@ -151,9 +151,9 @@ export default {
 
       <SmaeLink
         v-if="(!apenasLeitura)
-          || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+          || route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
         :to="{
-          name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
+          name: '.TarefasCriar',
           params: $route.params,
         }"
         class="dropbtn"
@@ -165,7 +165,7 @@ export default {
         v-if="route.meta.entidadeMãe === 'projeto'
           || route.meta.entidadeMãe === 'obras'"
         :to="{
-          name: $route.meta.prefixoParaFilhas + 'TarefasClonar',
+          name: '.TarefasClonar',
           params: $route.params,
         }"
         class="dropbtn"
@@ -193,7 +193,9 @@ export default {
     Salvando
   </LoadingComponent>
   <div
-    v-if="$route.meta.entidadeMãe === 'projeto' || $route.meta.entidadeMãe === 'obras' && projetoEmFoco.projeto_etapa"
+    v-if="$route.meta.entidadeMãe === 'projeto'
+      || $route.meta.entidadeMãe === 'obras'
+      && projetoEmFoco.projeto_etapa"
     class="etapa mb2"
   >
     <span>
@@ -207,7 +209,7 @@ export default {
   />
 
   <div
-    v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+    v-if="route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
     class="flex center mb4"
   >
     <SmaeLink

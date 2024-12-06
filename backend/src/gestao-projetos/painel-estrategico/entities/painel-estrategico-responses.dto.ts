@@ -83,6 +83,8 @@ export class PainelEstrategicoExecucaoOrcamentariaLista{
     valor_empenhado_total:number;
     valor_liquidado_total:number;
     codigo_projeto:string;
+    id:number;
+    ha_anos_nulos:boolean;
 }
 export class PainelEstrategicoGeoLocalizacao{
     projeto_nome:string;
