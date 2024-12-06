@@ -118,9 +118,9 @@ const titulo = typeof route?.meta?.título === 'function'
   : route?.meta?.título;
 
 const alertStore = useAlertStore();
-const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
+const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(statusDistribuicaoStore);
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(statusDistribuicaoWorflowStore);
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
 const tiposDisponíveis = computed(() => (tipoTransferenciaComoLista.value));
@@ -150,16 +150,16 @@ async function onSubmit(values) {
     const dataToSend = { ...values };
 
     if (route.params?.statusDistribuicaoId) {
-      response = await statusDistribuicaoStore.salvarItem(
+      response = await statusDistribuicaoWorflowStore.salvarItem(
         dataToSend,
         route.params?.statusDistribuicaoId,
       );
     } else {
-      response = await statusDistribuicaoStore.salvarItem(dataToSend);
+      response = await statusDistribuicaoWorflowStore.salvarItem(dataToSend);
     }
     if (response) {
       alertStore.success(msg);
-      statusDistribuicaoStore.$reset();
+      statusDistribuicaoWorflowStore.$reset();
       router.push({ name: 'statusDistribuicaoListar' });
     }
   } catch (error) {
@@ -167,10 +167,10 @@ async function onSubmit(values) {
   }
 }
 
-statusDistribuicaoStore.$reset();
+statusDistribuicaoWorflowStore.$reset();
 // não foi usada a prop.statusDistribuicaoId pois estava vazando do edit na hora de criar uma nova
 if (route.params?.statusDistribuicaoId) {
-  statusDistribuicaoStore.buscarItem(route.params?.statusDistribuicaoId);
+  statusDistribuicaoWorflowStore.buscarItem(route.params?.statusDistribuicaoId);
 }
 </script>
 

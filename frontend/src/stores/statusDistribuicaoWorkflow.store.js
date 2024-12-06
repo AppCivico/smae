@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicaoStore', {
+export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicaoWorflowStore', {
   state: () => ({
     lista: [],
     emFoco: null,
