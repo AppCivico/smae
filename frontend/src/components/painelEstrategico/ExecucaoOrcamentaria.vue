@@ -72,7 +72,6 @@
                 </svg>
                 <div>Existem custos planejados sem data</div>
               </span>
-              {{ }}
             </td>
             <td class="tr">
               {{ orcamento.valor_empenhado_total !== undefined
