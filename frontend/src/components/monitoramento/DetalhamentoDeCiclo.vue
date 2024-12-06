@@ -30,7 +30,7 @@
 
         <ErrorComponent
           v-else-if="erros.risco"
-          :error="erros.risco"
+          :erro="erros.risco"
         />
 
         <dl v-else>
@@ -92,7 +92,7 @@
         </LoadingComponent>
         <ErrorComponent
           v-else-if="erros.analise"
-          :error="erros.analise"
+          :erro="erros.analise"
         />
         <dl v-else>
           <div
@@ -195,7 +195,7 @@
         </LoadingComponent>
         <ErrorComponent
           v-else-if="erros.fechamento"
-          :error="erros.fechamento"
+          :erro="erros.fechamento"
         />
         <dl v-else>
           <div
