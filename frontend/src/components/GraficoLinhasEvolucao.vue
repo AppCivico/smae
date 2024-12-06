@@ -35,67 +35,86 @@ const props = defineProps({
   },
 });
 
-const posicaoAtual = computed(() => {
+const extrairValor = (linha, idx) => {
+  try {
+    const valor = linha.series[idx]?.valor_nominal;
+    return new Big(valor);
+  } catch {
+    return null;
+  }
+};
+
+const indicesSeries = computed(() => {
   const ordemSeries = props.valores?.ordem_series || [];
-  const idxRealizadoAcumulado = ordemSeries.indexOf('RealizadoAcumulado');
+  return {
+    idxPrevisto: ordemSeries.indexOf('Previsto'),
+    idxPrevistoAcumulado: ordemSeries.indexOf('PrevistoAcumulado'),
+    idxRealizado: ordemSeries.indexOf('Realizado'),
+    idxRealizadoAcumulado: ordemSeries.indexOf('RealizadoAcumulado'),
+  };
+});
+
+const dadosProcessados = computed(() => {
+  const {
+    idxPrevisto, idxPrevistoAcumulado, idxRealizado, idxRealizadoAcumulado,
+  } = indicesSeries.value;
   const data = props.valores?.linhas || [];
-  const serieRealizadoAcumulado = data.map((linha) => (
-    linha.series[idxRealizadoAcumulado]?.valor_nominal
-      ? new Big(linha.series[idxRealizadoAcumulado].valor_nominal).toNumber()
-      : 0));
+
+  const mapearSerie = (indice) => data.map((linha) => {
+    const valor = extrairValor(linha, indice);
+    return valor !== null ? valor.toNumber() : null;
+  });
+
+  const meta = data.length > 0
+    ? mapearSerie(idxPrevistoAcumulado).at(-1)
+    : null;
+
+  const categorias = data.map((linha) => dateToMonthYear(linha.periodo));
+
+  const calcularAnos = (listaCategorias) => {
+    const anos = [];
+    listaCategorias.forEach((categoria, index) => {
+      const anoAtual = categoria.split('/')[1];
+      const anoAnterior = index > 0 ? listaCategorias[index - 1].split('/')[1] : null;
+      if (anoAtual !== anoAnterior) {
+        anos.push({ index, ano: anoAtual });
+      }
+    });
+    return anos;
+  };
+
+  const anos = calcularAnos(categorias);
+
+  return {
+    categorias,
+    seriePrevisto: mapearSerie(idxPrevisto),
+    seriePrevistoAcumulado: mapearSerie(idxPrevistoAcumulado),
+    serieRealizado: mapearSerie(idxRealizado),
+    serieRealizadoAcumulado: mapearSerie(idxRealizadoAcumulado),
+    serieMeta: categorias.map(() => meta),
+    anos,
+  };
+});
+
+const posicaoAtual = computed(() => {
+  const { serieRealizadoAcumulado } = dadosProcessados.value;
   return serieRealizadoAcumulado[serieRealizadoAcumulado.length - 1];
 });
 
 const configuracaoGrafico = computed(() => {
+  const {
+    categorias,
+    seriePrevisto,
+    seriePrevistoAcumulado,
+    serieRealizado,
+    serieRealizadoAcumulado,
+    serieMeta,
+    anos,
+  } = dadosProcessados.value;
+
   if (!props.valores?.linhas?.length || !props.valores?.ordem_series?.length) {
     return {};
   }
-
-  const ordemSeries = props.valores.ordem_series;
-  const data = props.valores.linhas;
-
-  const idxPrevisto = ordemSeries.indexOf('Previsto');
-  const idxPrevistoAcumulado = ordemSeries.indexOf('PrevistoAcumulado');
-  const idxRealizado = ordemSeries.indexOf('Realizado');
-
-  const extrairValor = (linha, idx) => (
-    linha.series[idx]?.valor_nominal
-      ? new Big(linha.series[idx].valor_nominal)
-      : new Big(0)
-  );
-
-  const seriePrevisto = data
-    .map((linha) => extrairValor(linha, idxPrevisto).toNumber());
-
-  const serieRealizado = data
-    .map((linha) => extrairValor(linha, idxRealizado).toNumber());
-
-  const seriePrevistoAcumulado = [];
-  data.reduce((acumulado, linha) => {
-    const valorAtual = extrairValor(linha, idxPrevisto).toNumber();
-    const novoAcumulado = acumulado.plus(valorAtual);
-    seriePrevistoAcumulado.push(novoAcumulado.toNumber());
-    return novoAcumulado;
-  }, new Big(0));
-
-  const serieRealizadoAcumulado = [];
-  data.reduce((acumulado, linha) => {
-    const valorAtual = extrairValor(linha, idxRealizado).toNumber();
-    const novoAcumulado = acumulado.plus(valorAtual);
-    serieRealizadoAcumulado.push(novoAcumulado.toNumber());
-    return novoAcumulado;
-  }, new Big(0));
-
-  const categorias = data.map((linha) => dateToMonthYear(linha.periodo));
-
-  const anos = [];
-  categorias.forEach((categoria, index) => {
-    const anoAtual = categoria.split('/')[1];
-    const anoAnterior = index > 0 ? categorias[index - 1].split('/')[1] : null;
-    if (anoAtual !== anoAnterior) {
-      anos.push({ index, ano: anoAtual });
-    }
-  });
 
   const linhasAnos = anos.map(({ index }) => ({
     xAxis: categorias[index],
@@ -108,11 +127,6 @@ const configuracaoGrafico = computed(() => {
       show: false,
     },
   }));
-
-  const meta = extrairValor(data[data.length - 1], idxPrevistoAcumulado)
-    .toNumber();
-
-  const serieMeta = new Array(categorias.length).fill(meta);
 
   return {
     tooltip: {
@@ -143,10 +157,10 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#8EAFC8',
+          color: '#8eafc8',
         },
         lineStyle: {
-          color: '#8EAFC8',
+          color: '#8eafc8',
         },
         label: {
           show: false,
@@ -159,10 +173,10 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#B5E48C',
+          color: '#b5e48c',
         },
         lineStyle: {
-          color: '#B5E48C',
+          color: '#b5e48c',
         },
         label: {
           show: false,
@@ -175,10 +189,10 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#437AA3',
+          color: '#437aa3',
         },
         lineStyle: {
-          color: '#437AA3',
+          color: '#437aa3',
         },
         label: {
           show: false,
@@ -191,13 +205,36 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#4F8562',
+          color: '#4f8562',
         },
         lineStyle: {
-          color: '#4F8562',
+          color: '#4f8562',
         },
         label: {
           show: false,
+        },
+        markPoint: {
+          data: [
+            {
+              name: 'Posição Atual',
+              coord: [categorias[categorias.length - 1], posicaoAtual.value],
+              symbol: 'circle',
+              symbolSize: 15,
+              itemStyle: {
+                color: '#4f8562',
+                borderColor: '#4f8562',
+                borderWidth: 2,
+              },
+              label: {
+                show: true,
+                formatter: () => `Posição atual \n ${posicaoAtual.value}`,
+                position: 'top',
+                fontSize: 12,
+                color: '#4f8562',
+                fontWeight: 'bold',
+              },
+            },
+          ],
         },
         markLine: {
           data: linhasAnos,
