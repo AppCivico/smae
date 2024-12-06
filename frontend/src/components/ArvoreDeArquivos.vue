@@ -121,7 +121,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           @editar="($params) => $emit('editar', $params)"
         >
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
-            
+
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
               :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"
@@ -136,11 +136,11 @@ const éPossívelAbrir = (item) => !item.children?.length
                   download
                   class="arvore-de-arquivos__descricao"
                 >
+                  <span v-if="arquivo?.descricao">
+                    {{ truncate(arquivo?.descricao, 300) }} --
+                  </span>
                   <span>
                     {{ truncate((arquivo?.arquivo?.nome_original), 16) }}
-                  </span>
-                  <span v-if="arquivo?.descricao">
-                    -- {{ truncate(arquivo?.descricao, 300) }}
                   </span>
                 </component>
 
