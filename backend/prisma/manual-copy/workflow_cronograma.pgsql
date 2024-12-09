@@ -11,7 +11,7 @@ BEGIN
 
     -- Verificando se já existe row de tarefa_cronogrma, caso exista, ela é utilizada.
     -- Caso não exista, é criado.
-    SELECT id INTO _tarefa_cronograma_id FROM tarefa_cronograma WHERE transferencia_id = _transferencia_id;
+    SELECT id INTO _tarefa_cronograma_id FROM tarefa_cronograma WHERE transferencia_id = _transferencia_id AND removido_em IS NULL;
     IF _tarefa_cronograma_id IS NULL THEN
         INSERT INTO tarefa_cronograma (transferencia_id, criado_em) VALUES (_transferencia_id, now()) RETURNING id INTO _tarefa_cronograma_id;
     END IF;
