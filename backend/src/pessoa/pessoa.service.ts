@@ -695,15 +695,7 @@ export class PessoaService {
                 await Promise.all(promises);
 
                 const privDepoisUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
-                await this.removeAcessoOuAbortaTx(
-                    prismaTx,
-                    perfilDeInteresse,
-                    pessoaId,
-                    privDepoisUpdate,
-                    privAntesUpdate,
-                    logger,
-                    now
-                );
+                await this.removeAcessoOuAbortaTx(prismaTx, pessoaId, privDepoisUpdate, privAntesUpdate, logger);
 
                 logger.log(`Recalculando pessoa_acesso_pdm(${pessoaId})...`);
                 await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
@@ -796,17 +788,13 @@ export class PessoaService {
 
         return rows.filter((e) => perfisVisiveis.includes(e));
     }
-
     private async removeAcessoOuAbortaTx(
         prismaTx: Prisma.TransactionClient,
-        perfilDeInteresse: ListaDePrivilegios[],
         pessoaId: number,
         privDepoisUpdate: { codigo: string }[],
         privAntesUpdate: { codigo: string }[],
-        logger: LoggerWithLog,
-        now: Date
+        logger: LoggerWithLog
     ) {
-        // Check which privileges are being removed
         const removendoPrivilegios = privAntesUpdate
             .filter((antes) => !privDepoisUpdate.find((depois) => depois.codigo === antes.codigo))
             .map((priv) => priv.codigo);
@@ -816,20 +804,17 @@ export class PessoaService {
         await this.verificaResponsabilidadesMeta(prismaTx, pessoaId, removendoPrivilegios);
 
         const somePessoaCp = { some: { pessoa_id: pessoaId, coordenador_responsavel_cp: true } } as const;
+
         for (const priv of removendoPrivilegios) {
-            logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
+            logger.log(`Privilégio ${priv} foi removido, verificando dependências...`);
 
             if (priv == 'PDM.coordenador_responsavel_cp') {
                 const metaResp = await prismaTx.meta.findMany({
                     where: {
                         removido_em: null,
-                        pdm: {
-                            ativo: true,
-                        },
+                        pdm: { ativo: true },
                         OR: [
                             { meta_responsavel: somePessoaCp },
-
-                            // responsavel na iniciativa
                             {
                                 iniciativa: {
                                     some: {
@@ -838,7 +823,6 @@ export class PessoaService {
                                     },
                                 },
                             },
-                            // responsavel na atividade
                             {
                                 iniciativa: {
                                     some: {
@@ -851,18 +835,12 @@ export class PessoaService {
                             },
                         ],
                     },
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                    },
+                    select: { id: true, codigo: true, titulo: true },
                 });
                 if (metaResp.length) {
                     throw new BadRequestException(
                         `Não é possível remover privilégio de coordenador CP, pois ainda é utilizado nas metas: ${metaResp.map(
-                            (r) => {
-                                return `Meta ${r.codigo} - ${r.titulo}`;
-                            }
+                            (r) => `Meta ${r.codigo} - ${r.titulo}`
                         )}`
                     );
                 }
@@ -870,21 +848,14 @@ export class PessoaService {
                 const projGestoResp = await prismaTx.projeto.findMany({
                     where: {
                         removido_em: null,
-                        responsaveis_no_orgao_gestor: {
-                            has: pessoaId,
-                        },
+                        responsaveis_no_orgao_gestor: { has: pessoaId },
                     },
-                    select: {
-                        id: true,
-                        nome: true,
-                    },
+                    select: { id: true, nome: true },
                 });
                 if (projGestoResp.length) {
                     throw new BadRequestException(
                         `Não é possível remover privilégio de Gestor de Projeto, pois ainda é utilizado nos projetos: ${projGestoResp.map(
-                            (r) => {
-                                return `Projeto ${r.nome}`;
-                            }
+                            (r) => `Projeto ${r.nome}`
                         )}`
                     );
                 }
@@ -894,17 +865,12 @@ export class PessoaService {
                         removido_em: null,
                         responsavel_id: pessoaId,
                     },
-                    select: {
-                        id: true,
-                        nome: true,
-                    },
+                    select: { id: true, nome: true },
                 });
                 if (projColab.length) {
                     throw new BadRequestException(
                         `Não é possível remover privilégio de Colaborador de Projeto, pois ainda é utilizado nos projetos: ${projColab.map(
-                            (r) => {
-                                return `Projeto ${r.nome}`;
-                            }
+                            (r) => `Projeto ${r.nome}`
                         )}`
                     );
                 }
@@ -922,15 +888,13 @@ export class PessoaService {
                         grupo_portfolio: { select: { id: true, titulo: true } },
                     },
                 });
-                logger.verbose(`Removendo dos grupos portfólio: ${JSON.stringify(gpp)}`);
-
-                await prismaTx.grupoPortfolioPessoa.updateMany({
-                    where: {
-                        id: { in: gpp.map((r) => r.id) },
-                        pessoa_id: pessoaId,
-                    },
-                    data: { removido_em: now },
-                });
+                if (gpp.length) {
+                    throw new BadRequestException(
+                        `Não é possível remover privilégio de Espectador de Projeto, pois ainda está associado aos grupos: ${gpp.map(
+                            (r) => `${r.grupo_portfolio.titulo}`
+                        )}`
+                    );
+                }
             } else if (priv == 'SMAE.espectador_de_painel_externo') {
                 const gpe = await prismaTx.grupoPainelExternoPessoa.findMany({
                     where: {
@@ -942,15 +906,13 @@ export class PessoaService {
                         grupo_painel_externo: { select: { id: true, titulo: true } },
                     },
                 });
-                logger.verbose(`Removendo dos grupos de painel externo: ${JSON.stringify(gpe)}`);
-
-                await prismaTx.grupoPainelExternoPessoa.updateMany({
-                    where: {
-                        id: { in: gpe.map((r) => r.id) },
-                        pessoa_id: pessoaId,
-                    },
-                    data: { removido_em: now },
-                });
+                if (gpe.length) {
+                    throw new BadRequestException(
+                        `Não é possível remover privilégio de Espectador de Painel Externo, pois ainda está associado aos grupos: ${gpe.map(
+                            (r) => `${r.grupo_painel_externo.titulo}`
+                        )}`
+                    );
+                }
             }
         }
     }
