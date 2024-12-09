@@ -1659,16 +1659,6 @@ export class TransferenciaService {
             }
         }
 
-        // O workflow deve virar também um cronograma.
-        // E para isto verifico se já existe uma row em tarefa_cronograma
-        // Caso exista, estoura um erro.
-        const jaExisteCronograma = await prismaTxn.tarefaCronograma.count({
-            where: {
-                transferencia_id: transferencia_id,
-                removido_em: null,
-            },
-        });
-        if (jaExisteCronograma) throw new Error('PROCEDURE create_workflow_cronograma: Cronograma já existe.');
         await prismaTxn.$queryRaw`CALL create_workflow_cronograma(${transferencia_id}::int, ${workflow_id}::int);`;
 
         // Atualizando data de início de primeiro nível.
