@@ -7291,3 +7291,97 @@ model SerieVariavelHistorico {
 
     @@map("serie_variavel_historico")
 }
+
+view ViewPainelEstrategicoProjeto {
+    projeto_id           Int
+    meta_id              Int?
+    orgao_responsavel_id Int?
+    portfolio_id         Int?
+    projeto_etapa_id     Int?
+
+    @@unique(projeto_id)
+    @@map("view_painel_estrategico_projeto")
+}
+
+view ViewPainelEstrategicoGrandesNumeros {
+    id             Int @id
+    total_projetos Int
+    total_orgaos   Int
+    total_metas    Int
+
+    @@map("view_painel_estrategico_grandes_numeros")
+}
+
+view ViewPainelEstrategicoStatus {
+    status     String
+    quantidade Int
+
+    @@unique([status])
+    @@map("view_painel_estrategico_status")
+}
+
+view ViewPainelEstrategicoProjetoEtapa {
+    etapa      String
+    quantidade Int
+    ordem      Int
+
+    @@unique([ordem])
+    @@map("view_painel_estrategico_projeto_etapa")
+}
+
+view ViewPainelEstrategicoProjetoConcluidoAno {
+    ano        Int
+    quantidade Int
+
+    @@unique(ano)
+    @@map("view_painel_estrategico_projeto_concluido_ano")
+}
+
+view ViewPainelEstrategicoProjetoConcluidoMesAno {
+    ano        Int
+    mes        Int
+    quantidade Int
+    linha      Int
+    coluna     Int
+
+    @@unique([ano, mes, linha, coluna])
+    @@map("view_painel_estrategico_projeto_concluido_mes_ano")
+}
+
+view ViewPainelEstrategicoProjetoPlanejadoAno {
+    ano        Int
+    quantidade Int
+
+    @@unique([ano])
+    @@map("view_painel_estrategico_projeto_planejado_ano")
+}
+
+view ViewPainelEstrategicoProjetoPlanejadoMesAno {
+    ano        Int
+    mes        Int
+    quantidade Int
+    linha      Int
+    coluna     Int
+
+    @@unique([ano, mes, linha, coluna])
+    @@map("view_painel_estrategico_projeto_planejado_mes_ano")
+}
+
+view ViewPainelEstrategicoProjetoOrgaoResponsavel {
+    orgao_sigla     String
+    orgao_descricao String
+    quantidade      Int
+    peso            Int
+
+    @@unique([orgao_sigla])
+    @@map("view_painel_estrategico_projeto_orgao_responsavel")
+}
+
+view ViewPainelEstrategicoProjetoQuantidade {
+    quantidade_planejada Int
+    quantidade_concluida Int
+    ano                  Int
+
+    @@unique([ano])
+    @@map("view_painel_estrategico_projeto_quantidade")
+}

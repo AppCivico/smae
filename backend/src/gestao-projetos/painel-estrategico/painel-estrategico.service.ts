@@ -17,7 +17,6 @@ import {
     PainelEstrategicoResponseDto,
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
-import { Prisma } from '@prisma/client';
 import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';
@@ -40,7 +39,8 @@ export class PainelEstrategicoService {
         filtro = await this.addPermissaoProjetos(filtro, user);
         const strFilter = this.applyFilter(filtro);
         const response = new PainelEstrategicoResponseDto();
-        response.grandes_numeros = await this.buildGrandeNumeros(strFilter);
+
+        response.grandes_numeros = await this.buildGrandesNumeros(strFilter);
         response.projeto_status = await this.buildProjetosPorStatus(strFilter);
         response.projeto_etapas = await this.buildProjetosPorEtapas(strFilter);
         response.projetos_concluidos_ano = await this.buildProjetosConcluidosPorAno(strFilter);
@@ -69,19 +69,20 @@ export class PainelEstrategicoService {
 
     private applyFilter(filtro: PainelEstrategicoFilterDto): string {
         let strFilter = '';
-        strFilter = " WHERE p.removido_em is null and p.tipo ='PP' and arquivado = false ";
+
         if (filtro.projeto_id.length > 0) {
-            strFilter += ' and p.id in (' + filtro.projeto_id.toString() + ')';
+            strFilter += ' and p.projeto_id in (' + filtro.projeto_id.toString() + ')';
         }
         if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
             strFilter += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
         if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
-            strFilter += ' and coalesce(po.portfolio_id,p.portfolio_id) in (+' + filtro.portfolio_id.toString() + ')';
+            strFilter += ' and p.portfolio_id in (+' + filtro.portfolio_id.toString() + ')';
         }
         return strFilter;
     }
 
+<<<<<<< Updated upstream
     private async buildGrandeNumeros(filtro: string): Promise<PainelEstrategicoGrandesNumeros> {
         const sql = `  select
                            (SELECT
@@ -178,18 +179,116 @@ export class PainelEstrategicoService {
             FROM projeto p
             LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
             FULL OUTER JOIN (
+=======
+    private async buildGrandesNumeros(filtros: string): Promise<PainelEstrategicoGrandesNumeros> {
+        if (filtros.length > 0) {
+            let query = `
+>>>>>>> Stashed changes
                 SELECT
-                    ppc.projeto_id,
-                    po_1.id as portfolio_id
-                FROM portfolio_projeto_compartilhado ppc
-                JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                WHERE ppc.removido_em IS NULL
-            ) po ON po.projeto_id = p.id
-            ${filtro}
-            GROUP BY 1, 2
-        ),
-        all_stages AS (
+                COUNT(DISTINCT projeto_id) AS total_projetos,
+                COUNT(DISTINCT orgao_responsavel_id) AS total_orgaos,
+                COUNT(DISTINCT meta_id) AS total_metas
+                FROM view_painel_estrategico_projeto
+            `;
+
+            query += filtros;
+            return ((await this.prisma.$queryRawUnsafe(query)) as PainelEstrategicoGrandesNumeros[])[0];
+        } else {
+            const row = (await this.prisma.viewPainelEstrategicoGrandesNumeros.findFirst({
+                select: {
+                    total_projetos: true,
+                    total_orgaos: true,
+                    total_metas: true,
+                },
+            })) as PainelEstrategicoGrandesNumeros;
+            if (!row) throw new Error('Erro ao consultar view materializada de grandes números.');
+
+            return row;
+        }
+    }
+
+    private async buildProjetosPorStatus(filtro: string): Promise<PainelEstrategicoProjetoStatus[]> {
+        if (filtro.length > 0) {
+            const sql = `
+            WITH status_counts AS (
+                SELECT
+                    CASE
+                        WHEN p.status = 'Fechado' THEN 'Concluído'
+                        WHEN p.status = 'EmAcompanhamento' THEN 'Em Acompanhamento'
+                        WHEN p.status = 'EmPlanejamento' THEN 'Em Planejamento'
+                        ELSE 'Outros'
+                    END AS status,
+                    COUNT(DISTINCT p.projeto_id)::int AS quantidade
+                FROM view_painel_estrategico_status p
+                ${filtro}
+                GROUP BY 1
+            ),
+            all_status AS (
+                SELECT status, COALESCE(quantidade, 0) AS quantidade
+                FROM (
+                    SELECT unnest(ARRAY['Concluído', 'Em Acompanhamento', 'Em Planejamento', 'Outros']) AS status
+                ) s
+                LEFT JOIN status_counts sc USING (status)
+            )
+            SELECT status, SUM(quantidade)::int AS quantidade
+            FROM all_status
+            GROUP BY status
+            ORDER BY
+                CASE WHEN status = 'Outros' THEN 1 ELSE 0 END,
+                quantidade DESC;
+            `;
+
+            const results = await this.prisma.$queryRawUnsafe<PainelEstrategicoProjetoStatus[]>(sql);
+            return results.filter((r) => !(r.status === 'Outros' && r.quantidade === 0));
+        } else {
+            const rows = (await this.prisma.viewPainelEstrategicoStatus.findMany()) as PainelEstrategicoProjetoStatus[];
+
+            return rows;
+        }
+    }
+
+    private async buildProjetosPorEtapas(filtro: string): Promise<PainelEstrategicoProjetoEtapa[]> {
+        if (filtro.length > 0) {
+            const sql = `
+            WITH projeto_counts AS (
+                SELECT
+                    CASE
+                        WHEN pe.ordem_painel IS NOT NULL THEN pe.descricao
+                        WHEN p.projeto_etapa_id IS NULL THEN 'Sem Informação'
+                        ELSE 'Outros'
+                    END as etapa,
+                    CASE
+                        WHEN pe.ordem_painel IS NOT NULL THEN 2
+                        WHEN p.projeto_etapa_id IS NULL THEN 0
+                        ELSE 1
+                    END as ordem,
+                    COUNT(DISTINCT p.id)::int as quantidade
+                FROM projeto p
+                LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
+                FULL OUTER JOIN (
+                    SELECT
+                        ppc.projeto_id,
+                        po_1.id as portfolio_id
+                    FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                    WHERE ppc.removido_em IS NULL
+                ) po ON po.projeto_id = p.id
+                ${filtro}
+                GROUP BY 1, 2
+            ),
+            all_stages AS (
+                SELECT
+                    me.descricao as etapa,
+                    2 as ordem,
+                    0 as quantidade,
+                    me.ordem_painel
+                FROM projeto_etapa me
+                WHERE me.ordem_painel IS NOT NULL
+                UNION ALL
+                SELECT 'Sem Informação', 0, 0, NULL
+            )
             SELECT
+<<<<<<< Updated upstream
                 me.descricao as etapa,
                 me.ordem_painel as ordem,
                 0 as quantidade,
@@ -210,186 +309,280 @@ export class PainelEstrategicoService {
         GROUP BY 1,2
         ORDER BY 2
         `;
+=======
+                COALESCE(pc.etapa, a.etapa) as etapa,
+                COALESCE(pc.quantidade, a.quantidade) as quantidade,
+                COALESCE(pc.ordem, a.ordem) as ordem
+            FROM all_stages a
+            LEFT JOIN projeto_counts pc ON pc.etapa = a.etapa
+            LEFT JOIN projeto_etapa pe ON pe.descricao = COALESCE(pc.etapa, a.etapa)
+            ORDER BY
+                COALESCE(pc.ordem, a.ordem) DESC,
+                COALESCE(pe.ordem_painel, 999999),
+                COALESCE(pc.etapa, a.etapa);
+            `;
 
-        const results = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
-        return results.filter((r) => !(r.etapa === 'Outros' && r.quantidade === 0));
+            const results = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetoEtapa[];
+            return results.filter((r) => !(r.etapa === 'Outros' && r.quantidade === 0));
+        } else {
+            const rows = (await this.prisma.viewPainelEstrategicoProjetoEtapa.findMany({
+                orderBy: { ordem: 'asc' },
+            })) as PainelEstrategicoProjetoEtapa[];
+
+            return rows;
+        }
     }
 
-    private async buildProjetosConcluidosPorAno(filtro: string) {
-        const sql = `select sum(quantidade)::int quantidade, ano
-                     from (select count(distinct p.id ) as quantidade,
-                                  date_part('year', tc.realizado_termino) as ano
-                           FROM projeto p
-                               full outer JOIN (SELECT
-									ppc.projeto_id,
-									po_1.id as portfolio_id
-								FROM portfolio_projeto_compartilhado ppc
-							 	JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-							          WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                               INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.id
-                               ${filtro}
-                             and tc.realizado_termino is not null
-                             and tc.removido_em is null
-                             and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
-                             and date_part('year', tc.realizado_termino) >= date_part('YEAR', current_date) -3
-                           group by date_part('year', tc.realizado_termino)
-                           union
-                           select 0 as quantidade, t.yr as ano_
-                           from generate_series(DATE_PART('YEAR', CURRENT_DATE):: INT -3, DATE_PART('YEAR', CURRENT_DATE):: INT) t(yr)) t
-                     group by ano
-                     order by ano`;
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
+    private async buildProjetosConcluidosPorAno(filtro: string): Promise<PainelEstrategicoProjetosAno[]> {
+        if (filtro.length > 0) {
+            const sql = `WITH projeto_counts AS (
+                SELECT
+                    COUNT(DISTINCT p.projeto_id) AS quantidade,
+                    DATE_PART('year', tc.realizado_termino) AS ano
+                FROM view_painel_estrategico_projeto p
+                FULL OUTER JOIN (
+                    SELECT ppc.projeto_id, po_1.id AS portfolio_id
+                    FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                    WHERE ppc.removido_em IS NULL
+                ) po ON po.projeto_id = p.projeto_id
+                INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.projeto_id
+                WHERE ${filtro}
+                AND tc.realizado_termino IS NOT NULL
+                AND tc.removido_em IS NULL
+                AND DATE_PART('year', tc.realizado_termino) <= DATE_PART('YEAR', CURRENT_DATE)
+                AND DATE_PART('year', tc.realizado_termino) >= DATE_PART('YEAR', CURRENT_DATE) - 3
+                GROUP BY DATE_PART('year', tc.realizado_termino)
+            ),
+            year_range AS (
+                SELECT * FROM generate_series(DATE_PART('YEAR', CURRENT_DATE)::INT - 3, DATE_PART('YEAR', CURRENT_DATE)::INT) AS yr
+            )
+            SELECT
+                COALESCE(pc.ano, yr.yr) AS ano,
+                COALESCE(pc.quantidade, 0) AS quantidade
+            FROM year_range yr
+            LEFT JOIN projeto_counts pc ON pc.ano = yr.yr
+            ORDER BY ano`;
+
+            return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
+        } else {
+            const rows = (await this.prisma.viewPainelEstrategicoProjetoConcluidoAno.findMany({
+                orderBy: { ano: 'asc' },
+            })) as PainelEstrategicoProjetosAno[];
+
+            return rows;
+        }
     }
 
-    async buildProjetosConcluidosPorMesAno(filtro: string) {
-        const sql = ` select sum(quantidade)::int as quantidade,
-                             ano,
-                             mes,
-                             linha,
-                             coluna from (
-                        select count(distinct p.id)::int as quantidade,
-                                date_part('year', tc.realizado_termino) as ano,
-                                date_part('month', tc.realizado_termino)                                  as mes,
-                                date_part('YEAR', current_date) - date_part('year', tc.realizado_termino) as linha,
-                                date_part('month', tc.realizado_termino) - 1                              as coluna
-                         FROM projeto p
-                             full outer JOIN (SELECT
-                                                ppc.projeto_id,
-                                                po_1.id as portfolio_id
-                                            FROM portfolio_projeto_compartilhado ppc
-                                            JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                  WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                             inner join tarefa_cronograma tc on tc.projeto_id = p.id
-                             ${filtro}
-                           and tc.realizado_termino is not null
-                           and tc.removido_em is null
-                           and date_part('year', tc.realizado_termino) <= date_part('YEAR', current_date)
-                           and date_part('year', tc.realizado_termino) >= date_part('YEAR', current_date) -3
-                         group by date_part('month', tc.realizado_termino),
-                             date_part('year', tc.realizado_termino)
-                         union
-                            select
-                                   0                                                            as quantidade,
-                                   date_part('year', t.data_::date)                             as ano,
-                                   date_part('month', t.data_::date)                            as mes,
-                                   date_part('year', current_date) - date_part('YEAR', t.data_) as linha,
-                                   date_part('month', t.data_) - 1                              as coluna
-                            from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
-                                                 TO_DATE(DATE_PART('YEAR', current_date)  || '12' || '01', 'YYYYMMDD')::timestamp,
-                                                 '1 month'::interval) t(data_) ) t group by ano,
-                                                                                            mes,
-                                                                                            linha,
-                                                                                            coluna
-                                                                                   order by  ano,mes `;
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
+    async buildProjetosConcluidosPorMesAno(filtro: string): Promise<PainelEstrategicoProjetosMesAno[]> {
+        if (filtro.length > 0) {
+            const sql = `WITH projeto_counts AS (
+                SELECT
+                    COUNT(DISTINCT p.projeto_id) AS quantidade,
+                    DATE_PART('year', tc.realizado_termino) AS ano,
+                    DATE_PART('month', tc.realizado_termino) AS mes,
+                    DATE_PART('YEAR', current_date) - DATE_PART('year', tc.realizado_termino) AS linha,
+                    DATE_PART('month', tc.realizado_termino) - 1 AS coluna
+                FROM view_painel_estrategico_projeto p
+                FULL OUTER JOIN (
+                    SELECT ppc.projeto_id, po_1.id AS portfolio_id
+                    FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                    WHERE ppc.removido_em IS NULL
+                ) po ON po.projeto_id = p.projeto_id
+                INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.projeto_id
+                WHERE ${filtro}
+                tc.realizado_termino IS NOT NULL
+                AND tc.removido_em IS NULL
+                AND DATE_PART('year', tc.realizado_termino) <= DATE_PART('YEAR', CURRENT_DATE)
+                AND DATE_PART('year', tc.realizado_termino) >= DATE_PART('YEAR', CURRENT_DATE) - 3
+                GROUP BY DATE_PART('month', tc.realizado_termino), DATE_PART('year', tc.realizado_termino)
+            ),
+            year_month_range AS (
+                SELECT * FROM generate_series(
+                    TO_DATE(DATE_PART('YEAR', CURRENT_DATE) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
+                    TO_DATE(DATE_PART('YEAR', CURRENT_DATE) || '12' || '01', 'YYYYMMDD')::timestamp,
+                    '1 month'::interval
+                ) AS data_
+            )
+            SELECT
+                COALESCE(pc.ano, DATE_PART('year', data_)) AS ano,
+                COALESCE(pc.mes, DATE_PART('month', data_)) AS mes,
+                COALESCE(pc.quantidade, 0) AS quantidade,
+                COALESCE(pc.linha, DATE_PART('year', current_date) - DATE_PART('year', data_)) AS linha,
+                COALESCE(pc.coluna, DATE_PART('month', data_) - 1) AS coluna
+            FROM year_month_range data_
+            LEFT JOIN projeto_counts pc
+                ON pc.ano = DATE_PART('year', data_)
+                AND pc.mes = DATE_PART('month', data_)
+            ORDER BY ano, mes`;
+
+            return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
+        } else {
+            const rows = (await this.prisma.viewPainelEstrategicoProjetoConcluidoMesAno.findMany({
+                orderBy: [{ ano: 'asc' }, { mes: 'asc' }],
+            })) as PainelEstrategicoProjetosMesAno[];
+
+            return rows;
+        }
     }
 
-    private async buildProjetosPlanejadosPorAno(filtro: string) {
-        const sql = `select sum(quantidade)::int as quantidade, ano
-                     from (select count(distinct p.id )                               as quantidade,
-                                  date_part('year', tc.previsao_termino) as ano
-                           FROM projeto p full outer JOIN (SELECT
-                                                            ppc.projeto_id,
-                                                            po_1.id as portfolio_id
-                                                            FROM portfolio_projeto_compartilhado ppc
-                                                             JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                            WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                    inner join tarefa_cronograma tc on tc.projeto_id = p.id
-                               ${filtro}
-                             and tc.realizado_termino is null
-                             and tc.previsao_termino is not null
-                             and tc.removido_em is null
-                             and date_part('year', tc.previsao_termino) >= date_part('YEAR', current_date)
-                             and date_part('year', tc.previsao_termino) <= date_part('YEAR', current_date) + 3
-                           group by date_part('year', tc.previsao_termino)
-                           union
-                           select 0 as quantidade, t.yr as ano_
-                           from generate_series(DATE_PART('YEAR', CURRENT_DATE)::INT,
-                                                DATE_PART('YEAR', CURRENT_DATE)::INT+3) t(yr)) as t
-                     group by ano
-                     order by ano desc`;
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
+    private async buildProjetosPlanejadosPorAno(filtro: string): Promise<PainelEstrategicoProjetosAno[]> {
+        if (filtro.length > 0) {
+            const sql = `WITH projeto_counts AS (
+                SELECT
+                    COUNT(DISTINCT p.projeto_id) AS quantidade,
+                    DATE_PART('year', tc.previsao_termino) AS ano
+                FROM view_painel_estrategico_projeto p
+                FULL OUTER JOIN (
+                    SELECT ppc.projeto_id, po_1.id AS portfolio_id
+                    FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                    WHERE ppc.removido_em IS NULL
+                ) po ON po.projeto_id = p.projeto_id
+                INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.projeto_id
+                WHERE ${filtro}
+                tc.realizado_termino IS NULL
+                AND tc.previsao_termino IS NOT NULL
+                AND tc.removido_em IS NULL
+                AND DATE_PART('year', tc.previsao_termino) >= DATE_PART('YEAR', CURRENT_DATE)
+                AND DATE_PART('year', tc.previsao_termino) <= DATE_PART('YEAR', CURRENT_DATE) + 3
+                GROUP BY DATE_PART('year', tc.previsao_termino)
+            ),
+            year_range AS (
+                SELECT * FROM generate_series(
+                    DATE_PART('YEAR', CURRENT_DATE)::INT,
+                    DATE_PART('YEAR', CURRENT_DATE)::INT + 3
+                ) AS ano
+            )
+            SELECT
+                COALESCE(pc.ano, y.ano) AS ano,
+                COALESCE(pc.quantidade, 0) AS quantidade
+            FROM year_range y
+            LEFT JOIN projeto_counts pc ON pc.ano = y.ano
+            ORDER BY ano DESC`;
+
+            return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
+        } else {
+            const rows = (await this.prisma.viewPainelEstrategicoProjetoPlanejadoAno.findMany({
+                orderBy: { ano: 'desc' },
+            })) as PainelEstrategicoProjetosAno[];
+
+            return rows;
+        }
     }
 
-    private async buildProjetosPlanejadosPorMesAno(filtro: string) {
-        const sql = `select sum(quantidade)::int as quantidade, ano,mes,
-                            case
-                                when ano < date_part('YEAR', current_date) then -1
-                                when ano = date_part('YEAR', current_date) then 3
-                                when ano = date_part('YEAR', current_date) + 1 then 2
-                                when ano = date_part('YEAR', current_date) + 2 then 1
-                                when ano = date_part('YEAR', current_date) + 3 then 0
-                                end as linha,coluna from (
-                        select * from (select date_part('year', tc.previsao_termino)      as ano,
-                            date_part('month', tc.previsao_termino)     as mes,
-                            count(distinct p.id)::int  as quantidade,
-                            date_part('month', tc.previsao_termino) - 1 as coluna
-                     FROM projeto p full outer JOIN (SELECT
-                                                            ppc.projeto_id,
-                                                            po_1.id as portfolio_id
-                                                            FROM portfolio_projeto_compartilhado ppc
-                                                             JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                            WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                              inner join tarefa_cronograma tc on tc.projeto_id = p.id
-                      ${filtro}
-                       and tc.realizado_termino is null
-                       and tc.previsao_termino is not null
-                       and tc.removido_em is null
-                       and date_part('year', tc.previsao_termino) >= date_part('YEAR', current_date) - 3
-                       and date_part('year', tc.previsao_termino) <= date_part('YEAR', current_date) + 3
-                     group by date_part('year', tc.previsao_termino),
-                              date_part('month', tc.previsao_termino)
-                     union
-                        select
-                            date_part('year', t.data_::date)                             as ano,
-                            date_part('month', t.data_::date)                            as mes,
-                            0                                                            as quantidade,
-                            date_part('month', t.data_) - 1                              as coluna
-                        from generate_series(TO_DATE(DATE_PART('YEAR', current_date) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
-                                             TO_DATE(DATE_PART('YEAR', current_date) + 3 || '12' || '01', 'YYYYMMDD')::timestamp,
-                                             '1 month'::interval) t(data_) ) t) t
-                     group by ano, mes, coluna
-                     order by ano,mes`;
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
+    private async buildProjetosPlanejadosPorMesAno(filtro: string): Promise<PainelEstrategicoProjetosMesAno[]> {
+        if (filtro.length > 0) {
+            const sql = `WITH projeto_counts AS (
+                SELECT
+                    DATE_PART('year', tc.previsao_termino) AS ano,
+                    DATE_PART('month', tc.previsao_termino) AS mes,
+                    COUNT(DISTINCT p.projeto_id) AS quantidade,
+                    DATE_PART('month', tc.previsao_termino) - 1 AS coluna
+                FROM view_painel_estrategico_projeto p
+                FULL OUTER JOIN (
+                    SELECT ppc.projeto_id, po_1.id AS portfolio_id
+                    FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                    WHERE ppc.removido_em IS NULL
+                ) po ON po.projeto_id = p.projeto_id
+                INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.projeto_id
+                WHERE ${filtro}
+                AND tc.realizado_termino IS NULL
+                AND tc.previsao_termino IS NOT NULL
+                AND tc.removido_em IS NULL
+                AND DATE_PART('year', tc.previsao_termino) BETWEEN DATE_PART('YEAR', CURRENT_DATE) - 3 AND DATE_PART('YEAR', CURRENT_DATE) + 3
+                GROUP BY DATE_PART('year', tc.previsao_termino), DATE_PART('month', tc.previsao_termino)
+            ),
+            month_series AS (
+                SELECT
+                    DATE_PART('year', t.data_::date) AS ano,
+                    DATE_PART('month', t.data_::date) AS mes,
+                    0 AS quantidade,
+                    DATE_PART('month', t.data_) - 1 AS coluna
+                FROM generate_series(
+                    TO_DATE(DATE_PART('YEAR', CURRENT_DATE) - 3 || '01' || '01', 'YYYYMMDD')::timestamp,
+                    TO_DATE(DATE_PART('YEAR', CURRENT_DATE) + 3 || '12' || '01', 'YYYYMMDD')::timestamp,
+                    '1 month'::interval
+                ) t(data_)
+            )
+            SELECT 
+                COALESCE(pc.ano, ms.ano) AS ano,
+                COALESCE(pc.mes, ms.mes) AS mes,
+                COALESCE(pc.quantidade, ms.quantidade) AS quantidade,
+                CASE
+                    WHEN COALESCE(pc.ano, ms.ano) < DATE_PART('YEAR', CURRENT_DATE) THEN -1
+                    WHEN COALESCE(pc.ano, ms.ano) = DATE_PART('YEAR', CURRENT_DATE) THEN 3
+                    WHEN COALESCE(pc.ano, ms.ano) = DATE_PART('YEAR', CURRENT_DATE) + 1 THEN 2
+                    WHEN COALESCE(pc.ano, ms.ano) = DATE_PART('YEAR', CURRENT_DATE) + 2 THEN 1
+                    WHEN COALESCE(pc.ano, ms.ano) = DATE_PART('YEAR', CURRENT_DATE) + 3 THEN 0
+                END AS linha,
+                COALESCE(pc.coluna, ms.coluna) AS coluna
+            FROM month_series ms
+            LEFT JOIN projeto_counts pc ON pc.ano = ms.ano AND pc.mes = ms.mes
+            ORDER BY ano, mes`;
+
+            return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
+        } else {
+            const rows = (await this.prisma.viewPainelEstrategicoProjetoConcluidoMesAno.findMany({
+                orderBy: [{ ano: 'asc' }, { mes: 'asc' }],
+            })) as PainelEstrategicoProjetosMesAno[];
+
+            return rows;
+        }
     }
 
-    private async buildProjetosOrgaoResponsavel(filtro: string) {
-        return this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<PainelEstrategicoOrgaoResponsavel[]> => {
-                await prismaTx.$executeRawUnsafe(`drop table if exists tmp_dash_org_resp`);
-                await prismaTx.$executeRawUnsafe(`create temporary table tmp_dash_org_resp as
-                select *
-                from (select count(distinct p.id)::int as quantidade, org.sigla as orgao_sigla,
-                             org.descricao as orgao_descricao
-                      FROM projeto p full outer JOIN (SELECT
-                                                            ppc.projeto_id,
-                                                            po_1.id as portfolio_id
-                                                        FROM portfolio_projeto_compartilhado ppc
-                                                        JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                        WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                          LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
-                               inner join orgao org on p.orgao_responsavel_id = org.id
-                          ${filtro}
-                      group by org.sigla, org.descricao) as t
-                order by quantidade desc`);
+    private async buildProjetosOrgaoResponsavel(filtro: string): Promise<PainelEstrategicoOrgaoResponsavel[]> {
+        if (filtro.length > 0) {
+            const sql = `WITH orgao_quantities AS (
+                SELECT
+                    org.sigla AS orgao_sigla,
+                    org.descricao AS orgao_descricao,
+                    COUNT(DISTINCT p.projeto_id) AS quantidade
+                FROM view_painel_estrategico_projeto p
+                INNER JOIN orgao org ON p.orgao_responsavel_id = org.id
+                WHERE ${filtro}
+                GROUP BY org.sigla, org.descricao
+            ),
+            ranked_orgaos AS (
+                SELECT
+                    orgao_sigla,
+                    orgao_descricao,
+                    quantidade,
+                    ROW_NUMBER() OVER (ORDER BY quantidade DESC) AS rank
+                FROM orgao_quantities
+            ),
+            top_9 AS (
+                SELECT
+                    orgao_sigla,
+                    orgao_descricao,
+                    quantidade,
+                    0 peso
+                FROM ranked_orgaos
+                WHERE rank <= 9
+            ),
+            outros AS (
+                SELECT
+                    'OUTROS' AS orgao_sigla,
+                    'Outros' AS orgao_descricao,
+                    SUM(quantidade) AS quantidade,
+                    1 peso
+                FROM ranked_orgaos
+                WHERE rank > 9
+            )
+            SELECT * FROM top_9
+            UNION ALL
+            SELECT * FROM outros
+            ORDER BY peso ASC, quantidade DESC`;
+>>>>>>> Stashed changes
 
-                const sql = `select quantidade, orgao_descricao, orgao_sigla
-                             from (select *
-                                   from (select quantidade ::int, orgao_sigla,
-                                                orgao_descricao,
-                                                1 as indice
-                                         from tmp_dash_org_resp
-                                         limit 10) t
-                                   union
-                                   select sum(quantidade)::int as quantidade, 'OUTROS' as orgao_sigla,
-                                          'Outros' as orgao_descricao,
-                                          0        as indice
-                                   from tmp_dash_org_resp
-                                   where orgao_sigla not in (select orgao_sigla from tmp_dash_org_resp limit 10)) t
-                             order by indice desc, quantidade desc;`;
-                return (await prismaTx.$queryRawUnsafe(sql)) as PainelEstrategicoOrgaoResponsavel[];
-            }
-        );
+            return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoOrgaoResponsavel[];
+        } else {
+            const rows =
+                (await this.prisma.viewPainelEstrategicoProjetoOrgaoResponsavel.findMany()) as PainelEstrategicoOrgaoResponsavel[];
+            return rows;
+        }
     }
 
     buildAnosMapaCalor(anoBase: number, quantidadeAnos: number): number[] {
@@ -418,36 +611,34 @@ export class PainelEstrategicoService {
         return resultado;
     }
 
-    private async buildQuantidadesProjeto(filtro: string) {
-        const sql = `select (select count(distinct p.id)::int as quantidade
-                             FROM projeto p full outer JOIN (SELECT
-                                                            ppc.projeto_id,
-                                                            po_1.id as portfolio_id
-                                                            FROM portfolio_projeto_compartilhado ppc
-                                                             JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                                      WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                            inner join tarefa_cronograma tc on tc.projeto_id = p.id
-                             ${filtro}
-                               and tc.realizado_termino is null
-                               and tc.previsao_termino is not null
-                               and tc.removido_em is null
-                               and date_part('year', tc.previsao_termino) =
-                                   date_part('YEAR', current_date)) as quantidade_planejada,
-                            (select count(distinct p.id)::int as quantidade
-                             from  projeto p full outer JOIN (SELECT
-                                                            ppc.projeto_id,
-                                                            po_1.id as portfolio_id
-                                                            FROM portfolio_projeto_compartilhado ppc
-                                                             JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                                                                      WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
-                                      inner join tarefa_cronograma tc on tc.projeto_id = p.id
-                             ${filtro}
-                               and tc.realizado_termino is not null
-                               and tc.removido_em is null
-                               and date_part('year', tc.realizado_termino) =
-                                   date_part('year', CURRENT_DATE)) as quantidade_concluida,
-                            date_part('year',current_date)::int as ano`;
-        return ((await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoQuantidadesAnoCorrente[])[0];
+    private async buildQuantidadesProjeto(filtro: string): Promise<PainelEstrategicoQuantidadesAnoCorrente> {
+        if (filtro.length > 0) {
+            const sql = `SELECT 
+                COUNT(DISTINCT CASE WHEN tc.realizado_termino IS NULL AND tc.previsao_termino IS NOT NULL THEN p.projeto_id END) AS quantidade_planejada,
+                COUNT(DISTINCT CASE WHEN tc.realizado_termino IS NOT NULL THEN p.projeto_id END) AS quantidade_concluida,
+                DATE_PART('year', CURRENT_DATE)::int AS ano
+            FROM view_painel_estrategico_projeto p
+            FULL OUTER JOIN (
+                SELECT
+                    ppc.projeto_id,
+                    po_1.id AS portfolio_id
+                FROM portfolio_projeto_compartilhado ppc
+                JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                WHERE ppc.removido_em IS NULL
+            ) po ON po.projeto_id = p.projeto_id
+            INNER JOIN tarefa_cronograma tc ON tc.projeto_id = p.projeto_id
+            WHERE ${filtro}
+            AND tc.removido_em IS NULL
+            AND (
+                (tc.realizado_termino IS NULL AND tc.previsao_termino IS NOT NULL) OR
+                (tc.realizado_termino IS NOT NULL)
+            )`;
+            return ((await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoQuantidadesAnoCorrente[])[0];
+        } else {
+            const row =
+                (await this.prisma.viewPainelEstrategicoProjetoQuantidade.findFirst()) as PainelEstrategicoQuantidadesAnoCorrente;
+            return row;
+        }
     }
 
     async listaProjetosPaginado(
