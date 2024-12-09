@@ -638,6 +638,7 @@ export class PessoaService {
                     'SMAE.colaborador_de_projeto',
                     'SMAE.espectador_de_painel_externo',
                     'SMAE.espectador_de_projeto',
+                    'MDO.espectador_de_projeto',
                     'SMAE.GrupoVariavel.colaborador',
                     'PDM.tecnico_cp',
                     'PDM.admin_cp',
@@ -907,9 +908,12 @@ export class PessoaService {
                         )}`
                     );
                 }
-            } else if (priv == 'SMAE.espectador_de_painel_externo') {
+            } else if (priv == 'SMAE.espectador_de_projeto' || priv == 'MDO.espectador_de_projeto') {
                 const gpp = await prismaTx.grupoPortfolioPessoa.findMany({
                     where: {
+                        grupo_portfolio: {
+                            tipo_projeto: priv == 'SMAE.espectador_de_projeto' ? 'PP' : 'MDO',
+                        },
                         pessoa_id: pessoaId,
                         removido_em: null,
                     },
@@ -927,7 +931,7 @@ export class PessoaService {
                     },
                     data: { removido_em: now },
                 });
-            } else if (priv == 'SMAE.espectador_de_projeto') {
+            } else if (priv == 'SMAE.espectador_de_painel_externo') {
                 const gpe = await prismaTx.grupoPainelExternoPessoa.findMany({
                     where: {
                         pessoa_id: pessoaId,
