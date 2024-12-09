@@ -4,13 +4,16 @@
       <NumeroComLegenda
         v-if="posicaoAtual"
         como-item
-        :numero="posicaoAtual"
         cor="#221F43"
-        legenda="Posição atual"
+        legenda="Posição atual / Meta"
         cor-de-fundo="#e8e8e866"
         :tamanho-do-numero="34"
         :tamanho-da-legenda="12"
-      />
+      >
+        <template #numero>
+          {{ formatarNumero(posicaoAtual) }}/<small>{{ formatarNumero(meta) }}</small>
+        </template>
+      </NumeroComLegenda>
     </div>
     <GraficoDashboard :option="configuracaoGrafico" />
   </div>
@@ -34,6 +37,13 @@ const props = defineProps({
     }),
   },
 });
+
+const formatarNumero = (numero) => {
+  if (numero === null || numero === undefined) return '-';
+  return new Intl.NumberFormat('pt-BR', {
+    maximumFractionDigits: 2,
+  }).format(numero);
+};
 
 const extrairValor = (linha, idx) => {
   try {
@@ -71,6 +81,10 @@ const dadosProcessados = computed(() => {
 
   const categorias = data.map((linha) => dateToMonthYear(linha.periodo));
 
+  const serieRealizado = mapearSerie(idxRealizado);
+
+  const ultimoMesPreenchidoIndex = serieRealizado.findLastIndex((serie) => serie !== null);
+
   const calcularAnos = (listaCategorias) => {
     const anos = [];
     listaCategorias.forEach((categoria, index) => {
@@ -89,16 +103,22 @@ const dadosProcessados = computed(() => {
     categorias,
     seriePrevisto: mapearSerie(idxPrevisto),
     seriePrevistoAcumulado: mapearSerie(idxPrevistoAcumulado),
-    serieRealizado: mapearSerie(idxRealizado),
+    serieRealizado,
     serieRealizadoAcumulado: mapearSerie(idxRealizadoAcumulado),
     serieMeta: categorias.map(() => meta),
     anos,
+    ultimoMesPreenchidoIndex,
   };
 });
 
 const posicaoAtual = computed(() => {
   const { serieRealizadoAcumulado } = dadosProcessados.value;
   return serieRealizadoAcumulado[serieRealizadoAcumulado.length - 1];
+});
+
+const meta = computed(() => {
+  const { serieMeta } = dadosProcessados.value;
+  return serieMeta[0];
 });
 
 const configuracaoGrafico = computed(() => {
@@ -110,6 +130,7 @@ const configuracaoGrafico = computed(() => {
     serieRealizadoAcumulado,
     serieMeta,
     anos,
+    ultimoMesPreenchidoIndex,
   } = dadosProcessados.value;
 
   if (!props.valores?.linhas?.length || !props.valores?.ordem_series?.length) {
@@ -127,6 +148,22 @@ const configuracaoGrafico = computed(() => {
       show: false,
     },
   }));
+
+  const criarMarkPoint = (serie, cor) => ({
+    data: [
+      {
+        name: 'Último Mês Preenchido',
+        coord: [categorias[ultimoMesPreenchidoIndex], serie[ultimoMesPreenchidoIndex]],
+        symbol: 'circle',
+        symbolSize: 12,
+        itemStyle: {
+          color: cor,
+          borderColor: cor,
+          borderWidth: 2,
+        },
+      },
+    ],
+  });
 
   return {
     tooltip: {
@@ -165,6 +202,7 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
+        markPoint: criarMarkPoint(seriePrevisto, '#8EAFC8'),
       },
       {
         name: 'Previsto Acumulado',
@@ -181,6 +219,7 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
+        markPoint: criarMarkPoint(seriePrevistoAcumulado, '#B5E48C'),
       },
       {
         name: 'Realizado',
@@ -197,6 +236,7 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
+        markPoint: criarMarkPoint(serieRealizado, '#437AA3'),
       },
       {
         name: 'Realizado Acumulado',
@@ -213,33 +253,11 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
-        markPoint: {
-          data: [
-            {
-              name: 'Posição Atual',
-              coord: [categorias[categorias.length - 1], posicaoAtual.value],
-              symbol: 'circle',
-              symbolSize: 15,
-              itemStyle: {
-                color: '#4f8562',
-                borderColor: '#4f8562',
-                borderWidth: 2,
-              },
-              label: {
-                show: true,
-                formatter: () => `Posição atual \n ${posicaoAtual.value}`,
-                position: 'top',
-                fontSize: 12,
-                color: '#4f8562',
-                fontWeight: 'bold',
-              },
-            },
-          ],
-        },
         markLine: {
           data: linhasAnos,
           symbol: 'none',
         },
+        markPoint: criarMarkPoint(serieRealizadoAcumulado, '#4F8562'),
       },
       {
         name: 'Meta',
@@ -259,3 +277,10 @@ const configuracaoGrafico = computed(() => {
   };
 });
 </script>
+
+<style scoped>
+  small {
+    font-size: 70%;
+    opacity: 0.65;
+  }
+</style>
