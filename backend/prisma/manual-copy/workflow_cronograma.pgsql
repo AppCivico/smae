@@ -5,10 +5,19 @@ AS $$
 DECLARE
     _tarefa_cronograma_id INT;
     _orgao_seri_id INT;
+    _numero_base INT;
 BEGIN
     SELECT id FROM orgao WHERE sigla = 'SERI' INTO _orgao_seri_id;
 
-    INSERT INTO tarefa_cronograma (transferencia_id, criado_em) VALUES (_transferencia_id, now()) RETURNING id INTO _tarefa_cronograma_id;
+    -- Verificando se já existe row de tarefa_cronogrma, caso exista, ela é utilizada.
+    -- Caso não exista, é criado.
+    SELECT id INTO _tarefa_cronograma_id FROM tarefa_cronograma WHERE transferencia_id = _transferencia_id;
+    IF _tarefa_cronograma_id IS NULL THEN
+        INSERT INTO tarefa_cronograma (transferencia_id, criado_em) VALUES (_transferencia_id, now()) RETURNING id INTO _tarefa_cronograma_id;
+    END IF;
+
+    -- Verificando se já existem tarefas, caso existam, é necessário manter o nível e o número e o cronograma do workflow, será appendado.
+    SELECT COALESCE(MAX(numero), 0) INTO _numero_base FROM tarefa WHERE tarefa_cronograma_id = _tarefa_cronograma_id;
 
     UPDATE transferencia SET nivel_maximo_tarefa = 3 WHERE id = _transferencia_id;
 
@@ -29,7 +38,7 @@ BEGIN
             _tarefa_cronograma_id,
             etapa_de,
             etapa_de,
-            numero,
+            _numero_base + numero,
             1,
             _orgao_seri_id,
             'SERI'
