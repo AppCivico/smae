@@ -57,7 +57,7 @@ async function escolher(opção: keyof ModulosDoSistema) {
         if (rotaFiltrada) {
           router.push(rotaFiltrada);
         } else {
-          throw new Error('Você não tem permissão para acessar a rota inicial do sistema escolhido.');
+          router.push({ name: 'cadastrosBasicos' });
         }
       }
 
