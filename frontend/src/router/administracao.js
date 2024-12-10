@@ -1,5 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
+import { useOrgansStore } from '@/stores';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
 import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
@@ -621,11 +623,25 @@ export default [
       },
       {
         path: 'novo',
+        meta: {
+          título: 'Cadastrar Orgão',
+          rotasParaMigalhasDePão: [
+            'gerenciarÓrgãos',
+          ],
+          rotaDeEscape: 'gerenciarÓrgãos',
+        },
         component: AddEditOrgans,
       },
       {
         name: 'ÓrgãosItem',
         path: 'editar/:id',
+        meta: {
+          título: () => useOrgansStore().tempOrgans.descricao,
+          rotasParaMigalhasDePão: [
+            'gerenciarÓrgãos',
+          ],
+          rotaDeEscape: 'gerenciarÓrgãos',
+        },
         component: AddEditOrgans,
       },
       {
