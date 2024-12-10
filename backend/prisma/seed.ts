@@ -94,11 +94,11 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
-    ModalidadeContratacao: ['Modalidade de Contratação', ['MDO', 'Projetos']],
+    ModalidadeContratacao: ['Modalidade de Contratação', ['SMAE']],
+    TipoAditivo: ['Tipo Aditivo', ['SMAE']],
 
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
-    TipoAditivo: ['Tipo Aditivo', ['MDO', 'Projetos']],
     CadastroVariavelGlobal: ['Variáveis Globais', 'PlanoSetorial'], // depois vai ter o PDM
     CadastroGrupoVariavel: ['Grupos de Variáveis', ['PlanoSetorial']], // depois vai ter o PDM
     CadastroEquipamentoMDO: ['Equipamentos', 'MDO'],

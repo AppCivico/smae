@@ -1562,10 +1562,10 @@ export class PessoaService {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
-        //if (filterModulos.length == 2) {
-        //const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
-        //this.filtraPrivilegiosSMAE(sistema, ret);
-        //}
+        if (filterModulos.length == 2) {
+            const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
+            this.filtraPrivilegiosSMAE(sistema, ret);
+        }
         if (!ret.modulos.includes('SMAE')) ret.modulos.push('SMAE');
 
         if (ret.privilegios.includes('SMAE.login_suspenso'))
@@ -1619,22 +1619,22 @@ export class PessoaService {
             removePrivilegios('ModalidadeContratacao.');
         }
 
-        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
-            removePrivilegios('CadastroGrupoVariavel.');
-            removePrivilegios('CadastroUnidadeMedida.');
-            removePrivilegios('CadastroVariavelCategorica.');
-        }
-
-        if (!(sistema == 'PlanoSetorial')) {
-            removePrivilegios('FonteVariavel.');
-            removePrivilegios('AssuntoVariavel.');
-        }
-
-        if (sistema == 'CasaCivil') {
-            removePrivilegios('CadastroPainelExterno.');
-            removePrivilegios('CadastroGrupoPainelExterno.');
-            removePrivilegios('SMAE.espectador_de_painel_externo');
-        }
+        //        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
+        //            removePrivilegios('CadastroGrupoVariavel.');
+        //            removePrivilegios('CadastroUnidadeMedida.');
+        //            removePrivilegios('CadastroVariavelCategorica.');
+        //        }
+        //
+        //        if (!(sistema == 'PlanoSetorial')) {
+        //            removePrivilegios('FonteVariavel.');
+        //            removePrivilegios('AssuntoVariavel.');
+        //        }
+        //
+        //        if (sistema == 'CasaCivil') {
+        //            removePrivilegios('CadastroPainelExterno.');
+        //            removePrivilegios('CadastroGrupoPainelExterno.');
+        //            removePrivilegios('SMAE.espectador_de_painel_externo');
+        //        }
     }
 
     async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {
