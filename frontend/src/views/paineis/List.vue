@@ -74,7 +74,10 @@ iniciar();
           <th style="width: 15%">
             Periodicidade
           </th>
-          <th style="width: 15%">
+          <th
+            style="width: 15%"
+            class="tr"
+          >
             Metas monitoradas
           </th>
           <th style="width: 10%" />
@@ -89,7 +92,9 @@ iniciar();
             <td>{{ p.nome }}</td>
             <td>{{ p.ativo?"Ativo":"Inativo" }}</td>
             <td>{{ p.periodicidade }}</td>
-            <td>{{ p.painel_conteudo.length }} de {{ Metas.length }}</td>
+            <td class="tr">
+              {{ p.painel_conteudo.length }} de {{ Metas.length }}
+            </td>
             <td style="white-space: nowrap; text-align: right">
               <router-link
                 v-if="perm?.CadastroPainel?.editar"
