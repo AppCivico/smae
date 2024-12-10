@@ -3,7 +3,9 @@ import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import { useAuthStore, useOrgansStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
 
+const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
@@ -21,7 +23,20 @@ const itemsFiltered = ref(tempOrgans);
 function filterItems() {
   organsStore.filterOrgans(filters);
 }
+
+async function apagarOrgao({ id, descricao }) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover o item "${descricao}"?`,
+    async () => {
+      await organsStore.delete(id).then(() => {
+        filterItems();
+      }).catch();
+    },
+    'Remover',
+  );
+}
 </script>
+
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
@@ -42,6 +57,7 @@ function filterItems() {
         Novo orgão
       </router-link>
     </div>
+
     <div class="flex center mb2">
       <div class="f2 search">
         <input
@@ -69,6 +85,7 @@ function filterItems() {
           <th style="width: 10%" />
         </tr>
       </thead>
+
       <tbody>
         <template v-if="itemsFiltered.length">
           <tr
@@ -78,7 +95,7 @@ function filterItems() {
             <td>{{ item.descricao }}</td>
             <td>{{ item.tipo_orgao.descricao }}</td>
             <td>{{ item.sigla ?? '-' }}</td>
-            <td style="white-space: nowrap; text-align: right;">
+            <td>
               <template v-if="perm?.CadastroOrgao?.editar">
                 <router-link
                   :to="`/orgaos/editar/${item.id}`"
@@ -89,6 +106,18 @@ function filterItems() {
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
                 </router-link>
+
+                <button
+                  type="button"
+                  class="ml1 like-a__text"
+                  aria-label="apagar"
+                  @click="apagarOrgao(item)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_waste" /></svg>
+                </button>
               </template>
             </td>
           </tr>

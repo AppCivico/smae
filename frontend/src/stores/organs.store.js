@@ -1,5 +1,5 @@
-import { useUsersStore } from '@/stores/users.store';
 import { defineStore } from 'pinia';
+import { useUsersStore } from '@/stores/users.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -36,6 +36,7 @@ export const useOrgansStore = defineStore({
         if (!this.organs.length) {
           await this.getAll();
         }
+        // eslint-disable-next-line eqeqeq
         this.tempOrgans = this.organs.find((u) => u.id == id);
         this.tempOrgans.tipo_orgao_id = this.tempOrgans.tipo_orgao.id;
         if (!this.tempOrgans) {
@@ -50,13 +51,7 @@ export const useOrgansStore = defineStore({
       return false;
     },
     async update(id, params) {
-      const m = {
-        sigla: params.sigla,
-        descricao: params.descricao,
-        tipo_orgao_id: params.tipo_orgao_id,
-      };
-      if (await this.requestS.patch(`${baseUrl}/orgao/${id}`, m)) return true;
-      return false;
+      await this.requestS.patch(`${baseUrl}/orgao/${id}`, params);
     },
     async delete(id) {
       if (await this.requestS.delete(`${baseUrl}/orgao/${id}`)) return true;
@@ -95,6 +90,7 @@ export const useOrgansStore = defineStore({
         if (!this.organTypes.length) {
           await this.getAllTypes();
         }
+        // eslint-disable-next-line eqeqeq
         this.tempOrganTypes = this.organTypes.find((u) => u.id == id);
         if (!this.tempOrganTypes) {
           throw new Error('Orgão não encontrado');
