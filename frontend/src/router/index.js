@@ -54,6 +54,12 @@ export const router = createRouter({
       props: { submenu: false },
       meta: {
         entidadeMãe: 'pdm',
+
+        limitarÀsPermissões: [
+          'PDM.admin_cp',
+          'PDM.tecnico_cp',
+          'PDM.ponto_focal',
+        ],
       },
     },
 

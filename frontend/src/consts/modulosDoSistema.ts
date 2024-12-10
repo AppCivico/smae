@@ -30,6 +30,9 @@ const modulos: ModulosDoSistema = {
       {
         name: 'panorama',
       },
+      {
+        name: 'pdm.metas',
+      },
     ],
   },
   Projetos: {
