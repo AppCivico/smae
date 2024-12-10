@@ -2282,8 +2282,8 @@ export class VariavelService {
 
     async processVariaveisSuspensas(prismaTx: Prisma.TransactionClient): Promise<number[]> {
         await prismaTx.$queryRaw`
-            CREATE TEMP TABLE lookup_valores AS
-            WITH jobs AS (
+            CREATE TEMP TABLE _jobs ON COMMIT DROP AS
+            SELECT * FROM (
                 SELECT
                     v.id as variavel_id,
                     v.atraso_meses * '-1 month'::interval as atraso_meses,
@@ -2319,8 +2319,12 @@ export class VariavelService {
                 WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
                 AND vsc.id IS NULL
                 ORDER BY cf.id
-            ),
-            lookup_valores AS (
+            ) me
+        `;
+
+        await prismaTx.$queryRaw`
+            CREATE TEMP TABLE _lookup_valores ON COMMIT DROP AS
+            SELECT * FROM (
                 SELECT
                     j.variavel_id,
                     j.atraso_meses,
@@ -2335,18 +2339,31 @@ export class VariavelService {
                         -- não faz muito sentido não ter valor acumulado, mas se estiver faltando, é pq alguem apagou do banco na mão
                         CASE WHEN sv.valor_nominal IS NULL AND j.serie = 'RealizadoAcumulado' THEN 0 ELSE sv.valor_nominal END
                     END AS valor
-                FROM jobs j
+                FROM _jobs j
                 JOIN ciclo_fisico cf ON cf.pdm_id = j.pdm_id AND cf.data_ciclo = date_trunc('month', j.suspendida_em)
                 LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id
                     AND sv.data_valor = date_trunc('month', j.suspendida_em) + j.atraso_meses
                     AND sv.serie = j.serie
                 ORDER BY j.cf_corrente_data_ciclo
-            )
-            SELECT * FROM lookup_valores;
+            ) me;
+        `;
+
+        await prismaTx.$queryRaw`
+        CREATE TEMP TABLE _lookup_existentes ON COMMIT DROP AS
+        SELECT
+            j.cf_corrente_id,
+            j.variavel_id,
+            j.serie,
+            sv.valor_nominal,
+            sv.id as sv_id
+        FROM _jobs j
+        LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id
+            AND sv.data_valor = j.cf_corrente_data_ciclo + j.atraso_meses
+            AND sv.serie = j.serie;
         `;
 
         await prismaTx.$executeRaw`
-            DELETE FROM serie_variavel WHERE id IN (SELECT sv_id FROM lookup_existentes WHERE sv_id IS NOT NULL)
+            DELETE FROM serie_variavel WHERE id IN (SELECT sv_id FROM _lookup_existentes WHERE sv_id IS NOT NULL)
         `;
 
         const suspensas: { variaveis: number[] | null }[] = await prismaTx.$queryRaw`
@@ -2372,18 +2389,17 @@ export class VariavelService {
                     le.valor_nominal,
                     lv.valor,
                     now()
-                FROM lookup_valores lv
-                LEFT JOIN lookup_existentes le ON le.variavel_id = lv.variavel_id AND lv.serie = le.serie AND lv.cf_corrente_id = le.cf_corrente_id
+                FROM _lookup_valores lv
+                LEFT JOIN _lookup_existentes le ON le.variavel_id = lv.variavel_id AND lv.serie = le.serie AND lv.cf_corrente_id = le.cf_corrente_id
                 RETURNING variavel_id
             ),
             must_update_indicators AS (
-                SELECT
-                    coalesce(i.variavel_id, c.variavel_id) as variavel_id
-                FROM insert_values i, insert_control c
-                GROUP BY 1
+                SELECT variavel_id FROM insert_values
+                UNION
+                SELECT variavel_id FROM insert_control
             )
             SELECT
-                array_agg(variavel_id) as variaveis
+                array_agg(DISTINCT variavel_id) as variaveis
             FROM must_update_indicators
         `;
 
