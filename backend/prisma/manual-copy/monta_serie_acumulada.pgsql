@@ -91,7 +91,6 @@ BEGIN
         RETURN 'Variavel não encontrada';
     END IF;
 
-
     -- Process each series type (Realizado/Previsto)
     FOR serieRecord IN WITH series AS (
         SELECT
@@ -118,13 +117,12 @@ BEGIN
             vFim := GREATEST(vUltimoRealizado, (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date);
         END IF;
 
-        -- Sempre deleta a serie acumulada antes de inserir
-        DELETE FROM serie_variavel
-        WHERE variavel_id = pVariavelId
-            AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
-
         -- Apenas recalcular a serie acumulada se a variavel for acumulativa
         IF vAcumulativa THEN
+            -- Sempre deleta a serie acumulada antes de inserir
+            DELETE FROM serie_variavel
+            WHERE variavel_id = pVariavelId
+                AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
 --            RAISE NOTICE '==> acumulado serie_variavel (variavel=%, serie=%, feature_flag=%, data_fim=%)',
 --                pVariavelId::text,
 --                serieRecord.serie::text,
@@ -151,8 +149,8 @@ BEGIN
             FROM theData
             WHERE theData.valor_acc IS NOT NULL;
         ELSE
-            -- Reinserir a serie usando os valores originais, sem acumular
-            -- se não vamos gerar um bug... isso é bem ineficiente, mas é o que temos pra agora
+            -- Para casos não acumulativos, usamos INSERT ON CONFLICT para atualizar os valores
+            -- só se forem diferentes
             INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
             SELECT
                 pVariavelId,
@@ -161,7 +159,11 @@ BEGIN
                 sv.valor_nominal
             FROM serie_variavel sv
             WHERE sv.variavel_id = pVariavelId
-                AND sv.serie = serieRecord.serie;
+                AND sv.serie = serieRecord.serie
+            ON CONFLICT (variavel_id, serie, data_valor)
+            DO UPDATE SET
+                valor_nominal = EXCLUDED.valor_nominal
+            WHERE serie_variavel.valor_nominal IS DISTINCT FROM EXCLUDED.valor_nominal;
         END IF;
     END LOOP;
 
