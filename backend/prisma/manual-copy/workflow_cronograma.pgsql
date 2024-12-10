@@ -76,7 +76,9 @@ BEGIN
             fluxo_fase.marco,
             fluxo_fase.duracao,
             ta.id AS transferencia_andamento_id,
-            ta.data_inicio
+            ta.data_inicio,
+            e.etapa_de_id,
+            fluxo_fase.fluxo_id
         FROM fluxo_fase
         JOIN etapas e ON fluxo_fase.fluxo_id = e.id
         JOIN workflow_fase f ON fluxo_fase.fase_id = f.id
@@ -117,13 +119,16 @@ BEGIN
             fluxo_tarefa.ordem,
             fluxo_tarefa.marco,
             fluxo_tarefa.duracao,
-            taf.id AS transferencia_tarefa_id
+            taf.id AS transferencia_tarefa_id,
+            f.id flux_fase_id,
+            f.fluxo_id,
+            f.etapa_de_id
         FROM fluxo_tarefa
         JOIN fases f ON fluxo_tarefa.fluxo_fase_id = f.id
         JOIN workflow_tarefa t ON fluxo_tarefa.workflow_tarefa_id = t.id
         JOIN transferencia_andamento_tarefa taf ON taf.workflow_tarefa_fluxo_id = t.id AND taf.removido_em IS NULL
         JOIN transferencia_andamento ta ON ta.id = taf.transferencia_andamento_id
-            AND ta.transferencia_id = _transferencia_id AND ta.workflow_fase_id = f.fase_id
+            AND ta.transferencia_id = 289 AND ta.workflow_fase_id = f.fase_id
             AND ta.removido_em IS NULL
         WHERE fluxo_tarefa.removido_em IS NULL
         ORDER BY f.id ASC, fluxo_tarefa.ordem ASC
@@ -142,7 +147,9 @@ BEGIN
             tarefas.duracao,
             _orgao_seri_id
         FROM tarefas
-        JOIN tarefas_fases tf ON tf.tarefa = tarefas.tarefa_pai;
+        JOIN tarefas_fases tf ON tf.tarefa = tarefas.tarefa_pai
+        JOIN transferencia_andamento taf ON taf.id = tf.transferencia_fase_id
+        JOIN fluxo f ON f.id = tarefas.fluxo_id AND taf.workflow_etapa_id = f.fluxo_etapa_de_id;
 
     -- Dependências de nível de fase.
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)

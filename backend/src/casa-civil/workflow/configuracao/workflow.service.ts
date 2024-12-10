@@ -169,7 +169,10 @@ export class WorkflowService {
                     }
 
                     if (!etapas.every((e) => e.fases.length)) {
-                        throw new HttpException('ativo| Workflow não possui fases configuradas.', 400);
+                        throw new HttpException(
+                            'ativo| Workflow possui etapa(s), que não possui(em) fase(s) configurada(s).',
+                            400
+                        );
                     }
 
                     // Verificando se já não existe workflow ativo.
