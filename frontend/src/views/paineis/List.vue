@@ -16,8 +16,15 @@ PaineisStore.clear();
 PaineisStore.filterPaineis();
 
 const MetasStore = useMetasStore();
-const { Metas } = storeToRefs(MetasStore);
-MetasStore.getAll();
+const { activePdm, Metas } = storeToRefs(MetasStore);
+
+async function iniciar() {
+  if (!activePdm.value.id) {
+    await MetasStore.getPdM();
+  }
+
+  MetasStore.getAll();
+}
 
 const filters = ref({
   textualSearch: '',
@@ -27,6 +34,8 @@ const itemsFiltered = ref(tempPaineis);
 function filterItems() {
   PaineisStore.filterPaineis(filters.value);
 }
+
+iniciar();
 </script>
 <template>
   <Dashboard>
