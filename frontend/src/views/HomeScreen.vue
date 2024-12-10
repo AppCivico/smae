@@ -208,6 +208,8 @@ iniciar();
 
   p {
     line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
