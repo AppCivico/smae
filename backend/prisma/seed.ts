@@ -101,6 +101,10 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     TipoAditivo: ['Tipo Aditivo', ['MDO', 'Projetos']],
     CadastroVariavelGlobal: ['Variáveis Globais', 'PlanoSetorial'], // depois vai ter o PDM
     CadastroGrupoVariavel: ['Grupos de Variáveis', ['PlanoSetorial']], // depois vai ter o PDM
+    CadastroEquipamentoMDO: ['Equipamentos', 'MDO'],
+    CadastroEmpreendimentoMDO: ['Empreendimentos', 'MDO'],
+    TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
+    GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -265,6 +269,28 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMacroTemaPS.editar', 'Editar Macro Tema'],
         ['CadastroMacroTemaPS.remover', 'Remover Macro Tema'],
     ],
+    CadastroEquipamentoMDO: [
+        ['CadastroEquipamentoMDO.inserir', 'Inserir Equipamento'],
+        ['CadastroEquipamentoMDO.editar', 'Editar Equipamento'],
+        ['CadastroEquipamentoMDO.remover', 'Remover Equipamento'],
+    ],
+    CadastroEmpreendimentoMDO: [
+        ['CadastroEmpreendimentoMDO.inserir', 'Inserir Empreendimento'],
+        ['CadastroEmpreendimentoMDO.editar', 'Editar Empreendimento'],
+        ['CadastroEmpreendimentoMDO.remover', 'Remover Empreendimento'],
+    ],
+    TipoIntervecaoMDO: [
+        ['TipoIntervecaoMDO.inserir', 'Inserir Tipo de Intervenção'],
+        ['TipoIntervecaoMDO.editar', 'Editar Tipo de Intervenção'],
+        ['TipoIntervecaoMDO.remover', 'Remover Tipo de Intervenção'],
+    ],
+
+    GrupoTematicoMDO: [
+        ['GrupoTematicoMDO.inserir', 'Inserir Grupo Temático'],
+        ['GrupoTematicoMDO.editar', 'Editar Grupo Temático'],
+        ['GrupoTematicoMDO.remover', 'Remover Grupo Temático'],
+    ],
+
     CadastroTema: [
         ['CadastroTema.inserir', 'Inserir Tema'],
         ['CadastroTema.editar', 'Editar Tema'],
@@ -587,6 +613,46 @@ type PerfilConfigArray = {
     privilegios: ListaDePrivilegios[] | false;
 }[];
 
+const MDOCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroProjetoEtapaMDO.inserir',
+    'CadastroProjetoEtapaMDO.editar',
+    'CadastroProjetoEtapaMDO.remover',
+
+    // tag é etiquetas
+    'ProjetoTagMDO.inserir',
+    'ProjetoTagMDO.editar',
+    'ProjetoTagMDO.remover',
+
+    'ModalidadeContratacao.inserir',
+    'ModalidadeContratacao.editar',
+    'ModalidadeContratacao.remover',
+
+    'TipoAditivo.inserir',
+    'TipoAditivo.editar',
+    'TipoAditivo.remover',
+
+    'TipoIntervecaoMDO.inserir',
+    'TipoIntervecaoMDO.editar',
+    'TipoIntervecaoMDO.remover',
+
+    'GrupoTematicoMDO.inserir',
+    'GrupoTematicoMDO.editar',
+    'GrupoTematicoMDO.remover',
+
+    'CadastroEquipamentoMDO.inserir',
+    'CadastroEquipamentoMDO.editar',
+    'CadastroEquipamentoMDO.remover',
+
+    'CadastroEmpreendimentoMDO.inserir',
+    'CadastroEmpreendimentoMDO.editar',
+    'CadastroEmpreendimentoMDO.remover',
+
+    // programa habitacional
+    'ProjetoProgramaMDO.inserir',
+    'ProjetoProgramaMDO.editar',
+    'ProjetoProgramaMDO.remover',
+] as const;
+
 const PerfilAcessoConfig: PerfilConfigArray = [
     // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
     // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
@@ -687,7 +753,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         nome: 'Gestor de Projetos no Órgão',
         descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
         privilegios: [
-            'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'Projeto.administrador_no_orgao',
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
@@ -696,9 +762,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 
     {
-        nome: 'Gestor de Cadastros Básicos de Projetos e Obras',
+        nome: atualizarNomePerfil('Gestor de Cadastros Básicos de Projetos', [
+            'Gestor de Cadastros Básicos de Projetos e Obras',
+        ]),
         descricao:
-            'Responsável por gerenciar os cadastros básicos de projetos e obras, incluindo a criação, edição e remoção de etapas, modalidades de contratação e tipos de aditivo. Este perfil garante a consistência e organização das informações essenciais para o gerenciamento de projetos e obras.',
+            'Responsável por gerenciar os cadastros básicos de projetos, incluindo a criação, edição e remoção de etapas, modalidades de contratação, e tipos de aditivo. ',
         privilegios: [
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
@@ -713,10 +781,18 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'TipoAditivo.remover',
         ],
     },
+
+    {
+        nome: 'Gestor de Cadastros Básicos de Obras',
+        descricao:
+            'Responsável por gerenciar os cadastros básicos de projetos e obras, incluindo a criação, edição e remoção de etapas, modalidades de contratação, etiquetas, equipamentos, empreendimentos, programas habitacionais, tipos de intervenção e grupos temáticos.',
+        privilegios: [...MDOCadastroBasico],
+    },
+
     {
         nome: 'Administrador do Módulo de Obras',
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
-        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador.MDO'],
+        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador.MDO', ...MDOCadastroBasico],
     },
     {
         nome: 'Gestor de Obras no Órgão',
@@ -725,29 +801,21 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'ProjetoTagMDO.inserir',
             'ProjetoTagMDO.editar',
             'ProjetoTagMDO.remover',
-            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'ProjetoMDO.administrador_no_orgao',
             'Reports.dashboard_mdo',
             'ProjetoMDO.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolioMDO.administrador_no_orgao',
-
-            // not really, isso aqui ta mais pra ADMINISTRADOR, que ainda não colocamos esse perfil
-            'CadastroProjetoEtapaMDO.inserir',
-            'CadastroProjetoEtapaMDO.editar',
-            'CadastroProjetoEtapaMDO.remover',
-
-            'ProjetoProgramaMDO.inserir',
-            'ProjetoProgramaMDO.editar',
-            'ProjetoProgramaMDO.remover',
-
             'MDO.revisar_obra',
+
+            ...MDOCadastroBasico,
         ],
     },
     {
         nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
         descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
         privilegios: [
-            'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
         ],
@@ -760,7 +828,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'ProjetoTagMDO.editar',
             'MDO.revisar_obra',
             'ProjetoTagMDO.remover',
-            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'MDO.gestor_de_projeto',
             'Reports.dashboard_mdo',
             'CadastroProjetoEtapaMDO.inserir',
@@ -773,7 +841,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao:
             'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
-            'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
         ],
@@ -783,7 +851,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao:
             'Pode ser escolhido como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
-            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'MDO.colaborador_de_projeto',
             'MDO.revisar_obra',
             'Reports.dashboard_mdo',
