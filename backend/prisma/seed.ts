@@ -653,6 +653,20 @@ const MDOCadastroBasico: ListaDePrivilegios[] = [
     'ProjetoProgramaMDO.remover',
 ] as const;
 
+const PPCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroProjetoEtapa.inserir',
+    'CadastroProjetoEtapa.editar',
+    'CadastroProjetoEtapa.remover',
+
+    'ModalidadeContratacao.inserir',
+    'ModalidadeContratacao.editar',
+    'ModalidadeContratacao.remover',
+
+    'TipoAditivo.inserir',
+    'TipoAditivo.editar',
+    'TipoAditivo.remover',
+] as const;
+
 const PerfilAcessoConfig: PerfilConfigArray = [
     // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
     // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
@@ -729,16 +743,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 
     {
-        nome: 'Orçamento - Projetos',
-        descricao: 'Pode criar orçamento para os projetos que tem acesso.',
-        privilegios: ['Projeto.orcamento'],
-    },
-    {
-        nome: 'Orçamento - MdO',
-        descricao: 'Pode criar orçamento para as obras que tem acesso.',
-        privilegios: ['ProjetoMDO.orcamento'],
-    },
-    {
         nome: 'Administrador de Portfólio',
         descricao: 'Gerenciar os Portfólios',
         privilegios: ['Projeto.administrar_portfolios', 'CadastroGrupoPortfolio.administrador'],
@@ -758,6 +762,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
+            'Projeto.orcamento',
+            ...PPCadastroBasico,
         ],
     },
 
@@ -767,19 +773,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ]),
         descricao:
             'Responsável por gerenciar os cadastros básicos de projetos, incluindo a criação, edição e remoção de etapas, modalidades de contratação, e tipos de aditivo. ',
-        privilegios: [
-            'CadastroProjetoEtapa.inserir',
-            'CadastroProjetoEtapa.editar',
-            'CadastroProjetoEtapa.remover',
-
-            'ModalidadeContratacao.inserir',
-            'ModalidadeContratacao.editar',
-            'ModalidadeContratacao.remover',
-
-            'TipoAditivo.inserir',
-            'TipoAditivo.editar',
-            'TipoAditivo.remover',
-        ],
+        privilegios: [...PPCadastroBasico],
     },
 
     {
@@ -807,6 +801,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'ProjetoMDO.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolioMDO.administrador_no_orgao',
             'MDO.revisar_obra',
+            'ProjetoMDO.orcamento',
 
             ...MDOCadastroBasico,
         ],
@@ -818,6 +813,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
+            'Projeto.orcamento',
         ],
     },
     {
@@ -831,6 +827,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'MDO.gestor_de_projeto',
             'Reports.dashboard_mdo',
+            'ProjetoMDO.orcamento',
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
@@ -844,6 +841,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
+            'Projeto.orcamento',
         ],
     },
     {
@@ -858,11 +856,12 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
+            'ProjetoMDO.orcamento',
         ],
     },
     {
         nome: 'Analista de dados',
-        descricao: 'Entra diretamente para as análises e tem acesso total para metas e projetos',
+        descricao: 'Tem acesso aos dashboards e painéis externos de metas e projetos',
         privilegios: [
             //'SMAE.loga_direto_na_analise', não é mais necessário no SMAE de 2024/10
             'SMAE.acesso_bi',
@@ -1014,6 +1013,8 @@ PerfilAcessoConfig.push(
 
 // Remover os perfis que não são mais utilizados
 PerfilAcessoConfig.push(
+    removerNomePerfil('Orçamento - Projetos'),
+    removerNomePerfil('Orçamento - MdO'),
     removerNomePerfil('Administrador Coordenadoria de Planejamento Setorial'),
     removerNomePerfil('Ponto Focal Setorial'),
     removerNomePerfil('Técnico CP'),
