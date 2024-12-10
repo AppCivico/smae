@@ -26,7 +26,7 @@ import { JwtModule } from '@nestjs/jwt';
         GeoLocModule,
         forwardRef(() => MetaModule),
         UploadModule,
-        PortfolioModule,
+        forwardRef(() => PortfolioModule),
         BlocoNotaModule,
         forwardRef(() => TarefaModule),
         EquipamentoModule,

@@ -1,4 +1,12 @@
-import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+} from '@nestjs/common';
 import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -6,11 +14,16 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
+import { ProjetoService } from '../projeto/projeto.service';
 
 @Injectable()
 export class PortfolioService {
     private readonly logger = new Logger(PortfolioService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => ProjetoService))
+        private readonly projetoService: ProjetoService
+    ) {}
 
     async create(tipoProjeto: TipoProjeto, dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
@@ -142,6 +155,8 @@ export class PortfolioService {
             'ProjetoMDO.administrar_portfolios_no_orgao',
         ]);
 
+        let andIds: number[] | undefined = undefined;
+
         if (listaParaProjetosOuObras) {
             if (
                 // TODO conferir isso para o MDO
@@ -157,6 +172,17 @@ export class PortfolioService {
                 this.logger.debug(
                     `Filtro Projeto.administrador_no_orgao/ProjetoMDO.administrador_no_orgao: orgao_id=${orgao_id}`
                 );
+            } else {
+                // ...
+                const projetoRows = await this.prisma.projeto.groupBy({
+                    by: ['portfolio_id'],
+                    where: {
+                        tipo: tipoProjeto,
+                        removido_em: null,
+                        AND: this.projetoService.getProjetoWhereSet(tipoProjeto, user, false),
+                    },
+                });
+                andIds = projetoRows.map((r) => r.portfolio_id);
             }
         } else if (!isFullAdmin) {
             // else do listaParaProjetos = listando para edição
@@ -182,6 +208,7 @@ export class PortfolioService {
                 id: filterId,
                 removido_em: null,
                 orgaos: orgao_id ? { some: { orgao_id: orgao_id } } : undefined,
+                AND: andIds ? { id: { in: andIds } } : undefined,
             },
             select: {
                 id: true,

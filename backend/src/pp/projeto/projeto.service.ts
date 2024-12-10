@@ -122,6 +122,7 @@ export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => PortfolioService))
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService,
         private readonly geolocService: GeoLocService,
@@ -986,7 +987,7 @@ export class ProjetoService {
         };
     }
 
-    private getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {
+    getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 tipo: tipo,
