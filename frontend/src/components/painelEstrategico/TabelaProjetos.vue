@@ -24,15 +24,7 @@ defineProps({
     default: null,
   },
 });
-
-const projetoFormatado = (codigo, nome) => {
-  if (codigo && nome) {
-    return `${codigo} - ${truncate(nome, 40)}`;
-  }
-  return codigo || nome || ' - ';
-};
 </script>
-
 <template>
   <RolagemHorizontal
     aria-label="Tabela de projetos"
@@ -99,7 +91,7 @@ const projetoFormatado = (codigo, nome) => {
                   }
                 }"
               >
-                {{ projetoFormatado(projeto.projeto_codigo, projeto.nome_projeto) }}
+                {{ truncate(projeto.nome_projeto, 40) }}
               </router-link>
             </td>
             <td class="tl">

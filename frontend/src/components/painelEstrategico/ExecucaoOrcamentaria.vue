@@ -48,7 +48,16 @@
             :key="index"
           >
             <td class="tl">
-              {{ projetoFormatado(orcamento.codigo_projeto, orcamento.nome_projeto) }}
+              <router-link
+                :to="{
+                  name: 'projetosResumo',
+                  params: {
+                    projetoId: orcamento.id
+                  }
+                }"
+              >
+                {{ truncate(orcamento.nome_projeto, 40) }}
+              </router-link>
             </td>
             <td class="tr">
               {{ orcamento.valor_custo_planejado_total !== undefined &&
@@ -167,10 +176,10 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/truncate';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import { defineProps } from 'vue';
 
 defineProps({
   orcamentos: {
@@ -208,13 +217,6 @@ function calcularPorcentagem(valor, maiorValor) {
   }
   return (valor / maiorValor) * 100;
 }
-
-const projetoFormatado = (codigo, nome) => {
-  if (codigo && nome) {
-    return `${codigo} - ${truncate(nome, 40)}`;
-  }
-  return codigo || nome || ' - ';
-};
 
 function obterValorTamanho(orcamento, valor) {
   const tamanho = calcularPorcentagem(
