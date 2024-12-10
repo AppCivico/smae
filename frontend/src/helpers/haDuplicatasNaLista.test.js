@@ -90,6 +90,27 @@ describe('haDuplicatasNaLista', () => {
     });
   });
 
+  describe('Considera a ordem de valores em cada item numa listas de objetos', () => {
+    test.each([
+      {
+        array: [
+          { id: 3, name: 'Charlie', surname: 'Smith' },
+          { id: 3, surname: 'Smith', name: 'Charlie' },
+        ],
+        expected: false,
+      },
+      {
+        array: [
+          [3, 'Charlie', 'Smith'],
+          [3, 'Smith', 'Charlie'],
+        ],
+        expected: false,
+      },
+    ])('haDuplicatasNaLista($array) -> $expected', ({ array, expected }) => {
+      expect(haDuplicatasNaLista(array)).toBe(expected);
+    });
+  });
+
   describe('Considera o tipo de cada item ao avaliar as duplicatas', () => {
     test.each([
       {
