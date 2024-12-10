@@ -105,6 +105,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroEmpreendimentoMDO: ['Empreendimentos', 'MDO'],
     TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
     GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
+    CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -140,6 +141,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroIndicadorPS: false,
     CadastroCronograma: false,
     CadastroCronogramaPS: false,
+
+    CadastroTransferenciaTipo: [
+        ['CadastroTransferenciaTipo.inserir', 'Inserir Transferência Tipo'],
+        ['CadastroTransferenciaTipo.editar', 'Editar Transferência Tipo'],
+        ['CadastroTransferenciaTipo.remover', 'Remover Transferência Tipo'],
+    ],
 
     ModalidadeContratacao: [
         ['ModalidadeContratacao.inserir', 'Inserir Modalidade de Contratação'],
@@ -576,6 +583,36 @@ const PDMCadastroBasico: ListaDePrivilegios[] = [
     'CadastroPainelExterno.remover',
 ] as const;
 
+const TVCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroOrgao.inserir',
+    'CadastroOrgao.editar',
+    'CadastroOrgao.remover',
+
+    'CadastroPartido.editar',
+    'CadastroPartido.inserir',
+    'CadastroPartido.remover',
+
+    'CadastroOrgao.inserir',
+    'CadastroOrgao.editar',
+    'CadastroOrgao.remover',
+
+    'CadastroPainelExterno.inserir',
+    'CadastroPainelExterno.editar',
+    'CadastroPainelExterno.remover',
+
+    'CadastroClassificacao.editar',
+    'CadastroClassificacao.inserir',
+    'CadastroClassificacao.remover',
+    'CadastroClassificacao.listar',
+
+    'CadastroTransferenciaTipo.inserir',
+    'CadastroTransferenciaTipo.editar',
+    'CadastroTransferenciaTipo.remover',
+
+    // Tipo de Transferência
+    // Classificação
+] as const;
+
 const PrivRespNaCp: ListaDePrivilegios[] = [
     'PDM.coordenador_responsavel_cp',
     'PDM.tecnico_cp',
@@ -915,20 +952,19 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         privilegios: ['SMAE.espectador_de_painel_externo'],
     },
     {
-        nome: atualizarNomePerfil('Administrador Casa Civil', []),
+        nome: atualizarNomePerfil('Administrador Transferências Voluntárias', ['Administrador Casa Civil']),
         descricao: 'Visualizar o telefone de parlamentares',
         privilegios: ['SMAE.acesso_telefone'],
     },
     {
-        nome: 'Gestor Casa Civil',
+        nome: atualizarNomePerfil('Gestor Transferências Voluntárias', ['Gestor Casa Civil']),
         descricao: 'Pode gerir entidades em Casa Civil',
         privilegios: [
-            'CadastroBancada.editar',
-            'CadastroBancada.inserir',
-            'CadastroBancada.remover',
-            'CadastroPartido.editar',
-            'CadastroPartido.inserir',
-            'CadastroPartido.remover',
+            //            'CadastroBancada.editar',
+            //            'CadastroBancada.inserir',
+            //            'CadastroBancada.remover',
+            //            'CadastroPartido.editar',
+            ...TVCadastroBasico,
             'CadastroParlamentar.editar',
             'CadastroParlamentar.inserir',
             'CadastroParlamentar.remover',
@@ -947,10 +983,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroCronogramaTransferencia.listar',
             'CadastroCronogramaTransferencia.remover',
             'AndamentoWorkflow.listar',
-            'CadastroClassificacao.editar',
-            'CadastroClassificacao.inserir',
-            'CadastroClassificacao.remover',
-            'CadastroClassificacao.listar',
             'TransfereGov.atualizar',
             'TransfereGov.listar',
             'TransfereGov.sincronizar',

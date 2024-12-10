@@ -1,13 +1,13 @@
-import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
-import { FindOneParams } from 'src/common/decorators/find-params';
 import { ListTransferenciaTipoDto } from './entities/transferencia-tipo.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
 import { TransferenciaTipoService } from './transferencia-tipo.service';
 
 @ApiTags('Transferência')
@@ -17,13 +17,12 @@ export class TransferenciaTipoController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.inserir'])
+    @Roles(['CadastroTransferenciaTipo.inserir'])
     async create(@Body() dto: CreateTransferenciaTipoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.transferenciaTipoService.createTransferenciaTipo(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
     @Get()
     async findAll(): Promise<ListTransferenciaTipoDto> {
         return { linhas: await this.transferenciaTipoService.findAllTransferenciaTipo() };
@@ -31,7 +30,7 @@ export class TransferenciaTipoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferenciaTipo.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateTransferenciaTipoDto,
@@ -42,7 +41,7 @@ export class TransferenciaTipoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.remover'])
+    @Roles(['CadastroTransferenciaTipo.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
