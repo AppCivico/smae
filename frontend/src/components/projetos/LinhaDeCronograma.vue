@@ -98,10 +98,14 @@ export default {
         v-if="!apenasLeitura
           || souResponsável
           || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
-        :to="{name: '.TarefasProgresso', params: {
-          ...$route.params,
-          tarefaId: linha.id,
-        },}"
+        exibir-desabilitado
+        :to="{
+          name: '.TarefasProgresso',
+          params: {
+            ...$route.params,
+            tarefaId: linha.id,
+          },
+        }"
       >
         {{ linha.tarefa }}
       </SmaeLink>
