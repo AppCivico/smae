@@ -803,7 +803,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'ProjetoTagMDO.remover',
             'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'ProjetoMDO.administrador_no_orgao',
-            'Reports.dashboard_mdo',
+            // 'Reports.dashboard_mdo',
             'ProjetoMDO.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolioMDO.administrador_no_orgao',
             'MDO.revisar_obra',
