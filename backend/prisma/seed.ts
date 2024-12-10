@@ -570,6 +570,10 @@ const PDMCadastroBasico: ListaDePrivilegios[] = [
     'CadastroPainel.editar',
     'CadastroPainel.remover',
     'CadastroPainel.visualizar',
+
+    'CadastroPainelExterno.inserir',
+    'CadastroPainelExterno.editar',
+    'CadastroPainelExterno.remover',
 ] as const;
 
 const PrivRespNaCp: ListaDePrivilegios[] = [
