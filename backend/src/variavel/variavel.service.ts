@@ -2375,7 +2375,7 @@ export class VariavelService {
                     lv.cf_corrente_data_ciclo + lv.atraso_meses,
                     lv.valor,
                     lv.cf_corrente_id
-                FROM lookup_valores lv
+                FROM _lookup_valores lv
                 WHERE lv.valor IS NOT NULL
                 RETURNING variavel_id
             ),
