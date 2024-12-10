@@ -546,15 +546,38 @@ for (const codModulo in PrivConfig) {
 }
 console.log(todosPrivilegios);
 
+const PDMCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroUnidadeMedida.inserir',
+    'CadastroUnidadeMedida.editar',
+    'CadastroUnidadeMedida.remover',
+
+    'CadastroOrgao.inserir',
+    'CadastroOrgao.editar',
+    'CadastroOrgao.remover',
+
+    'CadastroTipoDocumento.editar',
+    'CadastroTipoDocumento.inserir',
+    'CadastroTipoDocumento.remover',
+    'CadastroRegiao.inserir',
+    'CadastroRegiao.editar',
+    'CadastroRegiao.remover',
+    // ODS são as categorias no PDM
+    'CadastroOds.inserir',
+    'CadastroOds.editar',
+    'CadastroOds.remover',
+
+    'CadastroPainel.inserir',
+    'CadastroPainel.editar',
+    'CadastroPainel.remover',
+    'CadastroPainel.visualizar',
+] as const;
+
 const PrivRespNaCp: ListaDePrivilegios[] = [
     'PDM.coordenador_responsavel_cp',
     'PDM.tecnico_cp',
     'CadastroMeta.listar',
     'CadastroMeta.administrador_no_pdm',
-    'CadastroPainel.inserir',
-    'CadastroPainel.editar',
-    'CadastroPainel.remover',
-    'CadastroPainel.visualizar',
+    ...PDMCadastroBasico,
 ];
 
 const PSCadastroBasico: ListaDePrivilegios[] = [
@@ -693,6 +716,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         privilegios: [
             'PDM.admin_cp',
             'CadastroMeta.administrador_orcamento',
+
+            ...PDMCadastroBasico,
+
             'CadastroPdm.editar',
             'CadastroMacroTema.inserir',
             'CadastroMacroTema.editar',
