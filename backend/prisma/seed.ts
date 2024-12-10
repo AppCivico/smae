@@ -692,7 +692,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
         privilegios: [
             'PDM.admin_cp',
-            'CadastroVariavelCategorica.administrador',
             'CadastroMeta.administrador_orcamento',
             'CadastroPdm.editar',
             'CadastroMacroTema.inserir',
@@ -967,6 +966,7 @@ PerfilAcessoConfig.push(
         privilegios: [
             'CadastroPS.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
             'CadastroVariavelGlobal.administrador',
+            'CadastroVariavelCategorica.administrador',
             ...PSCadastroBasico, // Tema, Tags, etc...
             ...PSMetasReportsEAdmin, // Metas, Reports, Painel
         ],
