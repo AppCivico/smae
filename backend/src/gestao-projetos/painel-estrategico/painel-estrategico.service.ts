@@ -836,19 +836,21 @@ export class PainelEstrategicoService {
         const offset = (page - 1) * ipp;
         //ordernar pelo custo planejado total decrescente
         const sql = `select * from (
-                            select (select sum(t.custo_estimado)
+                        select (
+                             select tc.previsao_custo
                              from tarefa_cronograma tc
-                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
-                             where n_filhos_imediatos = 0
-                               and tc.projeto_id = p.id
-                               and tc.removido_em is null)::float as valor_custo_planejado_total,
-                         (select sum(t.custo_estimado)
+                             where tc.projeto_id = p.id
+                               and tc.removido_em is null
+                         )::float AS valor_custo_planejado_total,
+                         (
+                            select sum(t.custo_estimado)
                             from tarefa_cronograma tc
                              inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
                             where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
                             and tc.projeto_id = p.id
                             and tc.removido_em is null
-                            and t.termino_planejado <= current_date)::float as valor_custo_planejado_hoje,
+                            and t.termino_planejado <= current_date
+                         )::float AS valor_custo_planejado_hoje,
                          orc.soma_valor_empenho ::float as valor_empenhado_total,
                          orc.soma_valor_liquidado::float as valor_liquidado_total,
                          p.nome as nome_projeto,
@@ -864,8 +866,9 @@ export class PainelEstrategicoService {
                                   AND t.removido_em IS NULL
                                   AND t.termino_planejado is null
                                   AND tc.projeto_id = p.id
+                                  AND t.custo_estimado IS NOT NULL
                             )
-                        ) as ha_anos_nulos
+                        ) AS ha_anos_nulos
                      from (select pr.id,
                                   pr.nome,
                                   pr.orgao_responsavel_id,
