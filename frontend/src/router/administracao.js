@@ -426,7 +426,9 @@ export default [
           título: 'Tipo de Transferência',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: 'CadastroTransferencia.listar',
+          limitarÀsPermissões: [
+            'CadastroTransferenciaTipo.',
+          ],
         },
         children: [
           {
