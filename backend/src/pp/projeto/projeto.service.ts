@@ -1303,6 +1303,11 @@ export class ProjetoService {
                 ProjetoGrupoPortfolio: {
                     where: { removido_em: null },
                     select: {
+                        GrupoPortfolio: {
+                            select: {
+                                titulo: true,
+                            },
+                        },
                         grupo_portfolio_id: true,
                     },
                 },
@@ -1643,7 +1648,9 @@ export class ProjetoService {
             },
 
             tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
-            grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
+            grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => {
+                return { id: r.grupo_portfolio_id, titulo: r.GrupoPortfolio.titulo };
+            }),
 
             orgao_origem: projeto.orgao_origem,
 
