@@ -107,17 +107,20 @@ export default [
     component: ConfiguracoesRaiz,
     meta: {
       limitarÀsPermissões: [
-        'CadastroPessoa.',
-        'CadastroOrgao.',
-        'CadastroUnidadeMedida.',
-        'CadastroTipoDocumento.',
+        'CadastroEmpreendimentoMDO.',
         'CadastroOds.',
-        'CadastroPdm.',
-        'CadastroRegiao.',
-        'Projeto.administrar_portfolios',
-        'Projeto.administrar_portfolios_no_orgao',
+        'CadastroOrgao.',
         'CadastroPainelExterno.',
+        'CadastroPdm.',
+        'CadastroPessoa.',
+        'CadastroRegiao.',
+        'CadastroTipoDocumento.',
+        'CadastroUnidadeMedida.',
         'CadastroWorkflows.',
+        'Projeto.administrar_portfolios_no_orgao',
+        'Projeto.administrar_portfolios',
+        'ProjetoProgramaMDO.',
+        'ProjetoTagMDO.',
       ],
       presenteNoMenu: true,
       pesoNoMenu: 5,
@@ -262,6 +265,9 @@ export default [
             component: PaineisExternosLista,
             meta: {
               título: 'Painéis externos',
+              limitarÀsPermissões: [
+                'CadastroPainelExterno.',
+              ],
             },
           },
           {
@@ -269,6 +275,9 @@ export default [
             path: 'novo',
             component: PaineisExternosCriarEditar,
             meta: {
+              limitarÀsPermissões: [
+                'CadastroPainelExterno.inserir',
+              ],
               título: 'Novo painel externo',
               rotasParaMigalhasDePão: [
                 'paineisExternosListar',
@@ -285,6 +294,9 @@ export default [
             }),
 
             meta: {
+              limitarÀsPermissões: [
+                'CadastroPainelExterno.editar',
+              ],
               título: 'Editar painel externo',
               rotasParaMigalhasDePão: [
                 'paineisExternosListar',
@@ -404,7 +416,7 @@ export default [
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'CadastroEmpreendimentoMDO.',
           ],
           rotasParaMenuSecundário: [
             'mdoEmpreendimentosListar',

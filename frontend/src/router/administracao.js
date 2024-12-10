@@ -100,16 +100,22 @@ export default [
     component: Administracao,
     meta: {
       limitarÀsPermissões: [
-        'CadastroPessoa.',
-        'CadastroOrgao.',
-        'CadastroUnidadeMedida.',
-        'CadastroTipoDocumento.',
+        'CadastroEquipamentoMDO.',
+        'CadastroProjetoEtapaMDO.',
+        'GrupoTematicoMDO.',
+        'ModalidadeContratacao.',
+        'TipoAditivo.',
+        'TipoIntervecaoMDO.',
         'CadastroOds.',
-        'CadastroPdm.',
-        'CadastroRegiao.',
-        'Projeto.administrar_portfolios',
+        'CadastroOrgao.',
         'CadastroPainelExterno.',
+        'CadastroPdm.',
+        'CadastroPessoa.',
         'CadastroProjetoEtapa.',
+        'CadastroRegiao.',
+        'CadastroTipoDocumento.',
+        'CadastroUnidadeMedida.',
+        'Projeto.administrar_portfolios',
       ],
       presenteNoMenu: true,
       pesoNoMenu: Infinity,
@@ -174,7 +180,7 @@ export default [
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'GrupoTematicoMDO.',
           ],
         },
         children: [
@@ -227,7 +233,7 @@ export default [
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'TipoIntervecaoMDO.',
           ],
         },
         children: [
@@ -280,7 +286,7 @@ export default [
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'CadastroEquipamentoMDO.',
           ],
         },
         children: [
