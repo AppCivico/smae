@@ -745,7 +745,9 @@ export class PessoaService {
             });
             if (metaResp.length) {
                 throw new BadRequestException(
-                    `Não é possível remover o privilégio de Técnico CP, pois a pessoa ainda é coordenadora nas metas: ${metaResp.map((r) => `${r.codigo} - ${r.titulo}`).join(', ')}`
+                    `Não é possível remover o privilégio de ${
+                        removendoPrivilegios.includes('PDM.admin_cp') ? 'Administrador CP' : 'Técnico CP'
+                    }, pois a pessoa ainda é coordenadora nas metas: ${metaResp.map((r) => `${r.codigo} - ${r.titulo}`).join(', ')}`
                 );
             }
         }
