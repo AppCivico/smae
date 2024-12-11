@@ -1,8 +1,8 @@
+import { defineStore } from 'pinia';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem.ts';
-import { defineStore } from 'pinia';
-import mapIniciativas from './helpers/mapIniciativas.ts';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
+import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -292,6 +292,7 @@ export const useObrasStore = defineStore('obrasStore', {
         equipamento_id: emFoco?.equipamento?.id || null,
         geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
         grupo_tematico_id: emFoco?.grupo_tematico?.id || null,
+        grupo_portfolio: emFoco?.grupo_portfolio.map(({ id }) => id),
         mdo_previsao_inauguracao: dateTimeToDate(emFoco?.mdo_previsao_inauguracao) || null,
         orgao_executor_id: emFoco?.orgao_executor?.id || null,
         orgao_gestor_id: emFoco?.orgao_gestor?.id || null,

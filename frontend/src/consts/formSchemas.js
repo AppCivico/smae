@@ -1417,6 +1417,13 @@ export const obras = object({
     .min(0)
     .max(100)
     .nullable(),
+  grupo_portfolio: array()
+    .label('Grupos de observadores')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
 });
 
 export const oportunidadeFiltros = object({
