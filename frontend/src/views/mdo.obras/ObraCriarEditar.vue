@@ -1,4 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -24,16 +34,6 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -43,7 +43,7 @@ const ÓrgãosStore = useOrgansStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
 const DotaçãoStore = useDotaçãoStore();
 const alertStore = useAlertStore();
-const observadoresStore = useObservadoresStore();
+const observadoresStore = useObservadoresStore('obra');
 const portfolioMdoStore = usePortfolioObraStore();
 const programaHabitacionalStore = useProgramaHabitacionalStore();
 const obrasStore = useObrasStore();
@@ -86,6 +86,12 @@ const {
   chamadasPendentes: chamadasPendentesDeTiposDeIntervenção,
   erro: erroDeTiposDeIntervenção,
 } = storeToRefs(tiposDeIntervencaoStore);
+
+const {
+  lista: gruposDeObservadores,
+  chamadasPendentes: gruposDeObservadoresPendentes,
+  erro: erroNosDadosDeObservadores,
+} = storeToRefs(observadoresStore);
 
 const {
   chamadasPendentes,
@@ -303,9 +309,8 @@ function iniciar() {
   programaHabitacionalStore.buscarTudo();
   tiposDeIntervencaoStore.buscarTudo();
 
-  if (emFoco.value?.portfolio_id) {
-    observadoresStore.buscarTudo();
-  }
+  observadoresStore.buscarTudo();
+
   // Aqui por causa de alguma falha de reatividade apenas nesse store
   ÓrgãosStore.$reset();
 
@@ -373,17 +378,22 @@ watch(itemParaEdicao, (novoValor) => {
       class="f1"
       readonly
       rows="10"
-    >emFoco:{{ emFoco }}</textarea>
+      :value="`emFoco: ${emFoco}`"
+    />
+
     <textarea
       class="f1"
       readonly
       rows="10"
-    >values:{{ values }}</textarea>
+      :value="`values: ${values}`"
+    />
+
     <textarea
       class="f1"
       readonly
       rows="10"
-    >controlledValues:{{ controlledValues }}</textarea>
+      :value="`controlledValues: ${controlledValues}`"
+    />
   </div>
 
   <form
@@ -1044,7 +1054,10 @@ watch(itemParaEdicao, (novoValor) => {
             :class="{
               error: errors.iniciativa_id,
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas).length"
+            :disabled="
+              !arvoreDeMetas?.[values.meta_id]?.iniciativas
+                || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas).length
+            "
             @change="setFieldValue('atividade_id', null)"
           >
             <option :value="null">
@@ -1079,7 +1092,10 @@ watch(itemParaEdicao, (novoValor) => {
             :class="{
               error: errors.atividade_id,
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades).length"
+            :disabled="
+              !arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades
+                || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades).length
+            "
           >
             <option :value="null">
               Selecionar
@@ -1614,6 +1630,34 @@ watch(itemParaEdicao, (novoValor) => {
           ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
         </button>
       </FieldArray>
+    </div>
+
+    <div class="f1 mb1">
+      <LabelFromYup
+        name="grupo_portfolio"
+        :schema="schema"
+        class="tc300"
+      />
+
+      <AutocompleteField
+        :disabled="gruposDeObservadoresPendentes.lista"
+        name="grupo_portfolio"
+        :controlador="{
+          busca: '',
+          participantes: values.grupo_portfolio || []
+        }"
+        :class="{
+          error: erroNosDadosDeObservadores,
+          loading: gruposDeObservadoresPendentes.lista
+        }"
+        :grupo="gruposDeObservadores"
+        label="titulo"
+      />
+
+      <ErrorMessage
+        name="grupo_portfolio"
+        class="error-msg"
+      />
     </div>
 
     <FormErrorsList :errors="errors" />

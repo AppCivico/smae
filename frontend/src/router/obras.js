@@ -52,6 +52,7 @@ export default {
           'obrasListar',
         ],
         título: 'Cadastro de Obras',
+        entidadeMãe: 'mdo',
       },
     },
     {
@@ -111,6 +112,7 @@ export default {
             ],
             rotaDeEscape: 'obrasResumo',
             título: 'Editar Obra',
+            entidadeMãe: 'mdo',
           },
         },
         {
