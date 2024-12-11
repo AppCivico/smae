@@ -1,4 +1,6 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import ListaAninhada from '@/components/ListaAninhada.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
@@ -10,8 +12,6 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
@@ -141,9 +141,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </div>
 
     <hr class="mb1 f1">
-    <dl
-      class="flex g2 flexwrap"
-    >
+    <dl class="flex g2 flexwrap">
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.grupo_tematico.spec.label }}
@@ -324,9 +322,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div v-if="exibeBlocoHabitacional">
       <hr class="mb1 f1">
-      <dl
-        class="flex g2 flexwrap"
-      >
+      <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.mdo_n_familias_beneficiadas.spec.label }}
@@ -359,9 +355,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.programa_id.spec.label }}
           </dt>
-          <dd
-            class="t13"
-          >
+          <dd class="t13">
             {{ emFoco?.programa?.nome || emFoco?.programa || '-' }}
           </dd>
         </div>
@@ -553,7 +547,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ schema.fields.mdo_previsao_inauguracao.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.mdo_previsao_inauguracao ? dateToField(emFoco.mdo_previsao_inauguracao) : '-' }}
+          {{
+            emFoco?.mdo_previsao_inauguracao ?
+              dateToField(emFoco.mdo_previsao_inauguracao) : '-'
+          }}
         </dd>
       </dl>
       <dl class="f1 mb1">
@@ -577,7 +574,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           Custo total planejado
         </dt>
         <dd class="t13">
-          {{ emFoco?.tarefa_cronograma?.previsao_custo ? `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}` : '-' }}
+          {{
+            emFoco?.tarefa_cronograma?.previsao_custo ?
+              `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}` : '-'
+          }}
         </dd>
       </dl>
     </div>
@@ -692,6 +692,18 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           </template>
         </dd>
       </dl>
+
+      <h2>{{ schema.fields.grupo_portfolio.spec.label }}</h2>
+
+      <ul class="lista-com-ponto">
+        <li
+          v-for="grupoPorfolio in emFoco?.grupo_portfolio"
+          :key="grupoPorfolio.id"
+          class="mb1"
+        >
+          <span class="t13">{{ grupoPorfolio.titulo }}</span>
+        </li>
+      </ul>
     </div>
 
     <hr
