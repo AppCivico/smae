@@ -737,6 +737,7 @@ export class PessoaService {
                             coordenador_responsavel_cp: true,
                         },
                     },
+                    pdm: { ativo: true },
                 },
                 select: {
                     codigo: true,
@@ -762,6 +763,7 @@ export class PessoaService {
                             coordenador_responsavel_cp: false,
                         },
                     },
+                    pdm: { ativo: true },
                 },
                 select: {
                     codigo: true,
