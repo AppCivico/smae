@@ -25,7 +25,6 @@ import Big from 'big.js';
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
 import NumeroComLegenda
   from '@/components/painelEstrategico/NumeroComLegenda.vue';
-
 import { dateToMonthYear } from '@/helpers/dateToDate';
 
 const props = defineProps({
