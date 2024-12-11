@@ -53,7 +53,7 @@ export class EmpreendimentoService {
             where: {
                 removido_em: null,
             },
-            orderBy: [{ nome: 'asc' }],
+            orderBy: [{ identificador: 'asc' }],
             select: {
                 id: true,
                 nome: true,
