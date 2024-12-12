@@ -31,7 +31,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     Config: ['Configurações', 'SMAE'],
     Reports: ['Relatórios', 'SMAE'],
     PerfilAcesso: ['Gerenciar Perfil de Acesso', 'SMAE'],
-    CadastroPainelExterno: ['Painéis Externos', 'SMAE'],
+    CadastroPainelExterno: ['Painéis Externos', ['SMAE', 'PDM', 'PlanoSetorial', 'Projetos', 'MDO']],
     CadastroGrupoPainelExterno: ['Grupos de Painéis Externos', 'SMAE'],
 
     CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
@@ -655,10 +655,10 @@ const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
     'CadastroMetaPS.administrador_orcamento',
     'CadastroMetaPS.listar',
 
-//    'CadastroPainelPS.inserir',
-//    'CadastroPainelPS.editar',
-//    'CadastroPainelPS.remover',
-//    'CadastroPainelPS.visualizar',
+    //    'CadastroPainelPS.inserir',
+    //    'CadastroPainelPS.editar',
+    //    'CadastroPainelPS.remover',
+    //    'CadastroPainelPS.visualizar',
 
     'Reports.executar.PlanoSetorial',
     'Reports.remover.PlanoSetorial',
