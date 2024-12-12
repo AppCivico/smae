@@ -31,7 +31,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     Config: ['Configurações', 'SMAE'],
     Reports: ['Relatórios', 'SMAE'],
     PerfilAcesso: ['Gerenciar Perfil de Acesso', 'SMAE'],
-    CadastroPainelExterno: ['Painéis Externos', ['SMAE', 'PDM', 'PlanoSetorial', 'Projetos', 'MDO']],
+    CadastroPainelExternoRegra: ['Escolha do painel externo', ['SMAE', 'PDM', 'PlanoSetorial', 'Projetos', 'MDO']],
+    CadastroPainelExterno: ['Painéis Externos', 'SMAE'],
     CadastroGrupoPainelExterno: ['Grupos de Painéis Externos', 'SMAE'],
 
     CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
@@ -467,6 +468,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
+    CadastroPainelExternoRegra: [
+        ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
+    ],
     Config: [
         ['SMAE.sysadmin', 'SMAE.sysadmin'],
         ['SMAE.login_suspenso', 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável'],
@@ -474,7 +478,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
-        ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
     ],
