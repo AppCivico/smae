@@ -1,13 +1,4 @@
 <script setup>
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import SmallModal from '@/components/SmallModal.vue';
-import { aditivoDeContrato as schema } from '@/consts/formSchemas';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dinheiro from '@/helpers/dinheiro';
-import { useAlertStore } from '@/stores/alert.store';
-import { useContratosStore } from '@/stores/contratos.store.ts';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -21,6 +12,15 @@ import {
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { aditivoDeContrato as schema } from '@/consts/formSchemas';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
+import { useAlertStore } from '@/stores/alert.store';
+import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
 const emit = defineEmits(['salvo', 'excluido']);
 
@@ -124,6 +124,21 @@ watch(exibirDialogo, (novoValor) => {
     }
   }
 }, { once: true });
+
+function limparCamposRelacionados(tipo_aditivo_id) {
+  const tipoDeAditivo = listaDeTiposDeAditivos.value.find(
+    (item) => item.id === tipo_aditivo_id,
+  ) || {};
+
+  if (!tipoDeAditivo.habilita_valor) {
+    setFieldValue('percentual_medido', null);
+    setFieldValue('valor', null);
+  }
+
+  if (!tipoDeAditivo.habilita_valor_data_termino) {
+    setFieldValue('data_termino_atualizada', null);
+  }
+}
 </script>
 <template>
   <LoadingComponent v-if="chamadasPendentes.aditivo">
@@ -295,6 +310,7 @@ watch(exibirDialogo, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :aria-busy="chamadasPendentesDeTiposDeAditivos.lista"
+            @change="ev => limparCamposRelacionados(Number(ev.target.value))"
           >
             <option value>
               Selecionar
@@ -356,7 +372,7 @@ watch(exibirDialogo, (novoValor) => {
             }"
           />
           <ErrorMessage
-            name="valor"
+            name="percentual_medido"
             class="error-msg"
           />
         </div>
