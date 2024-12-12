@@ -28,7 +28,7 @@ import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '../common/consts';
 
 const BCRYPT_ROUNDS = 10;
-const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['CadastroPessoa.administrador', 'CadastroPessoa.administrador.MDO'];
+const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['SMAE.superadmin'];
 @Injectable()
 export class PessoaService {
     private readonly logger = new Logger(PessoaService.name);
@@ -1633,11 +1633,12 @@ export class PessoaService {
         //            removePrivilegios('AssuntoVariavel.');
         //        }
         //
-        //        if (sistema == 'CasaCivil') {
-        //            removePrivilegios('CadastroPainelExterno.');
-        //            removePrivilegios('CadastroGrupoPainelExterno.');
-        //            removePrivilegios('SMAE.espectador_de_painel_externo');
-        //        }
+
+        if (sistema == 'CasaCivil') {
+            removePrivilegios('CadastroPainelExterno.');
+            removePrivilegios('CadastroGrupoPainelExterno.');
+            removePrivilegios('SMAE.espectador_de_painel_externo');
+        }
     }
 
     async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {
