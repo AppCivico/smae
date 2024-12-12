@@ -17,15 +17,15 @@ export class PrivController {
     @ApiResponse({
         type: PerfilDeAcessoLinhaDto,
         description: `Retorna todos os perfis de acesso do sistema (pelo header) exceto se sobre-escrito pelo parâmetro.
-            Para cada modulo, se o usuário não tiver \`CadastroPessoa.administrador\`, só será carregado os módulos que são SMAE como se fossem apenas daquele sistema.
-            Usuários com Privilégio \`CadastroPessoa.administrador\` sempre retornam tudo, no caso de não enviar o paramento, para conseguir editar os usuários em qualquer sistema.`,
+            Para cada modulo, se o usuário não tiver \`SMAE.superadmin\`, só será carregado os módulos que são SMAE como se fossem apenas daquele sistema.
+            Usuários com Privilégio \`SMAE.superadmin\` sempre retornam tudo, no caso de não enviar o paramento, para conseguir editar os usuários em qualquer sistema.`,
     })
     async perfilDeAcesso(
         @Query() filter: FilterPrivDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PerfilDeAcessoLinhaDto> {
         return {
-            linhas: await this.authService.listaPerfilAcesso(filter, user),
+            linhas: await this.authService.listaPerfilAcesso(user),
         };
     }
 

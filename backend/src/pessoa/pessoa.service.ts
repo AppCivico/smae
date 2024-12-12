@@ -3,7 +3,6 @@ import { ModuloSistema, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { FilterPrivDto } from '../auth/models/Privilegios.dto';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -1476,28 +1475,18 @@ export class PessoaService {
         return password;
     }
 
-    async listaPerfilAcessoParaPessoas(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
+    async listaPerfilAcessoParaPessoas(user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
         const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
-        if (filter.sistemas && !ehAdmin)
-            throw new BadRequestException(
-                'Você não tem permissão para filtrar por sistemas, apenas administradores podem fazer isso.'
-            );
+        const buscaPerfisVisiveis = await this.buscaPerfisVisiveis(user);
 
-        console.log(filter.sistemas);
         const dados = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
                 nome: { not: 'SYSADMIN' },
-                modulos_sistemas: filter.sistemas
-                    ? {
-                          hasSome: filter.sistemas,
-                      }
-                    : ehAdmin
-                      ? undefined
-                      : {
-                            hasSome: ['SMAE', ...user.modulo_sistema],
-                        },
+                id: {
+                    in: buscaPerfisVisiveis,
+                },
             },
             orderBy: { nome: 'asc' },
             select: {

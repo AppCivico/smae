@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios.dto';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { FilterPrivDto, RetornoListaPrivDto } from './models/Privilegios.dto';
 import { PessoaFromJwt } from './models/PessoaFromJwt';
+import { FilterPrivDto, RetornoListaPrivDto } from './models/Privilegios.dto';
 
 @Injectable()
 export class PrivService {
@@ -12,8 +12,8 @@ export class PrivService {
         private readonly pessoaService: PessoaService
     ) {}
 
-    async listaPerfilAcesso(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
-        return await this.pessoaService.listaPerfilAcessoParaPessoas(filter, user);
+    async listaPerfilAcesso(user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
+        return await this.pessoaService.listaPerfilAcessoParaPessoas(user);
     }
 
     async listaPrivilegios(filter: FilterPrivDto): Promise<RetornoListaPrivDto> {
