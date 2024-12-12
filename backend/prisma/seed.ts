@@ -468,9 +468,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
-    CadastroPainelExternoRegra: [
-        ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
-    ],
+    CadastroPainelExternoRegra: [['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo']],
     Config: [
         ['SMAE.sysadmin', 'SMAE.sysadmin'],
         ['SMAE.login_suspenso', 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável'],
@@ -1111,7 +1109,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Responsável por meta na CP'),
     removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial'),
     removerNomePerfil('Administrador de Plano Setorial'),
-    removerNomePerfil('Administrador de equipes')
+    removerNomePerfil('Administrador de equipes'),
+    removerNomePerfil('Administrador de Grupo de Variáveis no Órgão')
 );
 
 async function main() {

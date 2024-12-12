@@ -329,6 +329,8 @@ export class PessoaService {
 
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user);
+
+        console.log('perfisVisiveis', perfisVisiveis);
         const equipes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
@@ -1113,9 +1115,18 @@ export class PessoaService {
         const rows = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
-                modulos_sistemas: {
-                    hasSome: ['SMAE', mod],
-                },
+                OR: [
+                    {
+                        modulos_sistemas: {
+                            equals: [ModuloSistema.SMAE],
+                        },
+                    },
+                    {
+                        modulos_sistemas: {
+                            hasSome: [mod],
+                        },
+                    },
+                ],
             },
             select: { id: true },
         });
@@ -1233,6 +1244,7 @@ export class PessoaService {
     private async buscaPerfisVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
         const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
+        console.log('ehAdmin', ehAdmin);
         if (ehAdmin) {
             return await this.listaPerfilAcessoIds();
         }
