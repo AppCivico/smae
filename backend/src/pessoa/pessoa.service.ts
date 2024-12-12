@@ -1623,11 +1623,10 @@ export class PessoaService {
             removePrivilegios('ModalidadeContratacao.');
         }
 
-        //        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
-        //            removePrivilegios('CadastroGrupoVariavel.');
-        //            removePrivilegios('CadastroUnidadeMedida.');
-        //            removePrivilegios('CadastroVariavelCategorica.');
-        //        }
+        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
+            removePrivilegios('CadastroOds.');
+            removePrivilegios('CadastroUnidadeMedida.');
+        }
         //
         //        if (!(sistema == 'PlanoSetorial')) {
         //            removePrivilegios('FonteVariavel.');

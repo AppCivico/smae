@@ -34,10 +34,10 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroPainelExterno: ['Painéis Externos', 'SMAE'],
     CadastroGrupoPainelExterno: ['Grupos de Painéis Externos', 'SMAE'],
 
-    CadastroUnidadeMedida: ['Unidades de Medida', ['PlanoSetorial', 'PDM']],
+    CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
 
     CadastroPdm: ['Programa de Metas', 'PDM'],
-    CadastroOds: ['Categorias', ['PDM', 'PlanoSetorial']],
+    CadastroOds: ['Categorias', 'SMAE'],
     CadastroTag: ['Tags', 'PDM'],
     CadastroMacroTema: ['Macro Temas', 'PDM'],
     CadastroSubTema: ['Sub Temas', 'PDM'],
