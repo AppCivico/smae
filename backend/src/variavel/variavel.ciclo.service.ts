@@ -143,7 +143,18 @@ export class VariavelCicloService {
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
 
-        if (!isRoot && consulta_historica === false) {
+        if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+            const orgao_id = user.orgao_id;
+            if (!orgao_id) throw new BadRequestException('Usuário sem órgão associado');
+
+            whereConditions.push({
+                OR: [
+                    { medicao_orgao_id: orgao_id },
+                    { validacao_orgao_id: orgao_id },
+                    { liberacao_orgao_id: orgao_id },
+                ],
+            });
+        } else if (!isRoot && consulta_historica === false) {
             const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
                 where: {
                     removido_em: null,
