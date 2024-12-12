@@ -231,8 +231,7 @@ export class PdmService {
                                 removido_em: null,
                                 tipo: 'ADMIN',
                                 orgao_id: orgaoId,
-                                // colocachoo a equipe? pelo nome da perm seria
-                                equipe_id: { in: collab },
+                                // não entra a equipe
                             },
                         },
                     });
