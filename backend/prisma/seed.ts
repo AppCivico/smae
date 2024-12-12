@@ -655,10 +655,10 @@ const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
     'CadastroMetaPS.administrador_orcamento',
     'CadastroMetaPS.listar',
 
-    'CadastroPainelPS.inserir',
-    'CadastroPainelPS.editar',
-    'CadastroPainelPS.remover',
-    'CadastroPainelPS.visualizar',
+//    'CadastroPainelPS.inserir',
+//    'CadastroPainelPS.editar',
+//    'CadastroPainelPS.remover',
+//    'CadastroPainelPS.visualizar',
 
     'Reports.executar.PlanoSetorial',
     'Reports.remover.PlanoSetorial',
