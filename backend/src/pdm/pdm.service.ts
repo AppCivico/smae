@@ -430,7 +430,7 @@ export class PdmService {
             }
             if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado, necessário para PS', 400);
 
-            // será que é pra ficar assim mesmo, ou mudar pro teste da equipe?
+            // é pra ficar assim mesmo, não adicionar a equipe
             if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao']) && pdm.orgao_admin_id) {
                 this.logger.log('Usuário com permissão total em PS no órgão');
                 return user.orgao_id == pdm.orgao_admin_id;
