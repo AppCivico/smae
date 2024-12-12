@@ -171,7 +171,7 @@ export class ContratoAditivoService {
                         valor: dto.valor,
                         percentual_medido: dto.percentual_medido,
                         numero: dto.numero,
-
+                        tipo_aditivo_id: dto.tipo_aditivo_id,
                         atualizado_em: now,
                         atualizado_por: user.id,
                     },
