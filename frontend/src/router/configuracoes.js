@@ -87,6 +87,7 @@ const rotasParaMenuSecundário = [
   },
 ];
 
+// Precisamos mover as rotas para dentro do children
 const rotasParaMenuPrincipal = [
   'gerenciarPdm',
   'portfoliosListar',
@@ -108,6 +109,7 @@ export default [
     meta: {
       limitarÀsPermissões: [
         'CadastroEmpreendimentoMDO.',
+        'CadastroGrupoVariavel.',
         'CadastroOds.',
         'CadastroOrgao.',
         'CadastroPainelExterno.',
