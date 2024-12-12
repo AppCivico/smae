@@ -165,9 +165,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
 
     AssuntoVariavel: [
-        ['AssuntoVariavel.inserir', 'Inserir Assunto de Variável'],
-        ['AssuntoVariavel.editar', 'Editar Assunto de Variável'],
-        ['AssuntoVariavel.remover', 'Remover Assunto de Variável'],
+        ['AssuntoVariavel.inserir', 'Inserir Assunto de Variável e Categoria de Assunto'],
+        ['AssuntoVariavel.editar', 'Editar Assunto de Variável e Categoria de Assunto'],
+        ['AssuntoVariavel.remover', 'Remover Assunto de Variável e Categoria de Assunto'],
     ],
     FonteVariavel: [
         ['FonteVariavel.inserir', 'Inserir Fonte de Variável'],
@@ -553,11 +553,7 @@ for (const codModulo in PrivConfig) {
 }
 console.log(todosPrivilegios);
 
-const PDMCadastroBasico: ListaDePrivilegios[] = [
-    'CadastroUnidadeMedida.inserir',
-    'CadastroUnidadeMedida.editar',
-    'CadastroUnidadeMedida.remover',
-
+const SMAECadastroBasico: ListaDePrivilegios[] = [
     'CadastroOrgao.inserir',
     'CadastroOrgao.editar',
     'CadastroOrgao.remover',
@@ -565,9 +561,21 @@ const PDMCadastroBasico: ListaDePrivilegios[] = [
     'CadastroTipoDocumento.editar',
     'CadastroTipoDocumento.inserir',
     'CadastroTipoDocumento.remover',
+
+    'CadastroPainelExterno.inserir',
+    'CadastroPainelExterno.editar',
+    'CadastroPainelExterno.remover',
+
+    'CadastroUnidadeMedida.inserir',
+    'CadastroUnidadeMedida.editar',
+    'CadastroUnidadeMedida.remover',
+
     'CadastroRegiao.inserir',
     'CadastroRegiao.editar',
     'CadastroRegiao.remover',
+];
+
+const PDMCadastroBasico: ListaDePrivilegios[] = [
     // ODS são as categorias no PDM
     'CadastroOds.inserir',
     'CadastroOds.editar',
@@ -578,23 +586,13 @@ const PDMCadastroBasico: ListaDePrivilegios[] = [
     'CadastroPainel.remover',
     'CadastroPainel.visualizar',
 
-    'CadastroPainelExterno.inserir',
-    'CadastroPainelExterno.editar',
-    'CadastroPainelExterno.remover',
+    ...SMAECadastroBasico,
 ] as const;
 
 const TVCadastroBasico: ListaDePrivilegios[] = [
-    'CadastroOrgao.inserir',
-    'CadastroOrgao.editar',
-    'CadastroOrgao.remover',
-
     'CadastroPartido.editar',
     'CadastroPartido.inserir',
     'CadastroPartido.remover',
-
-    'CadastroOrgao.inserir',
-    'CadastroOrgao.editar',
-    'CadastroOrgao.remover',
 
     'CadastroPainelExterno.inserir',
     'CadastroPainelExterno.editar',
@@ -609,6 +607,7 @@ const TVCadastroBasico: ListaDePrivilegios[] = [
     'CadastroTransferenciaTipo.editar',
     'CadastroTransferenciaTipo.remover',
 
+    ...SMAECadastroBasico,
     // Tipo de Transferência
     // Classificação
 ] as const;
@@ -634,6 +633,21 @@ const PSCadastroBasico: ListaDePrivilegios[] = [
     'CadastroTagPS.inserir',
     'CadastroTagPS.editar',
     'CadastroTagPS.remover',
+
+    // ODS é Categoria
+    'CadastroOds.inserir',
+    'CadastroOds.editar',
+    'CadastroOds.remover',
+
+    'FonteVariavel.inserir',
+    'FonteVariavel.editar',
+    'FonteVariavel.remover',
+
+    'AssuntoVariavel.inserir',
+    'AssuntoVariavel.editar',
+    'AssuntoVariavel.remover',
+
+    ...SMAECadastroBasico,
 ];
 
 const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
@@ -1020,9 +1034,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
 // Perfis de Plano Setoriais
 PerfilAcessoConfig.push(
     {
-        nome: atualizarNomePerfil('Administrador Geral de Plano Setorial', [
+        nome: atualizarNomePerfil('Administrador Geral dos Planos Setoriais', [
             'Administrador Geral do Plano Setorial',
             'Administrador **Geral** do Plano Setorial',
+            'Administrador Geral de Plano Setorial',
         ]),
         descricao: 'Acesso irrestrito aos Planos Setoriais e Banco de Variáveis.',
         privilegios: [
@@ -1041,6 +1056,8 @@ PerfilAcessoConfig.push(
             'PS.admin_cp',
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',
+
+            // faltando equipe , painel externo
             ...PSCadastroBasico, // Tema, Tags, etc...
             ...PSMetasReportsEAdmin, // Metas, Reports, Painel
         ],
