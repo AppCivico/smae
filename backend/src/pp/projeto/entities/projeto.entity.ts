@@ -241,7 +241,7 @@ export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
     coordenador_ue: string | null;
 
     equipe: ProjetoEquipeItemDto[];
-    grupo_portfolio: number[];
+    grupo_portfolio: IdTituloDto[];
     meta: ProjetoMetaDetailDto | null;
     iniciativa: IdCodTituloDto | null;
     atividade: IdCodTituloDto | null;

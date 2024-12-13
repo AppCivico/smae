@@ -88,7 +88,7 @@
 
     <TransferenciasDistribuicaoStatusCriarEditar
       v-if="exibirModalStatus"
-      :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id"
+      :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id || 0"
       :distribuicao-id="distribuiçãoEmFoco?.id"
       :status-em-foco="statusEmFoco"
       @fechar-modal="fecharModalStatus"

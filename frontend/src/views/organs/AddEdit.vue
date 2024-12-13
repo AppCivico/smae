@@ -1,31 +1,32 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { órgão as schema } from '@/consts/formSchemas';
-import { router } from '@/router';
-import { useAlertStore, useOrgansStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
   Form,
+  useIsFormDirty,
 } from 'vee-validate';
-import { vMaska } from "maska"
+import { vMaska } from 'maska';
 import { useRoute } from 'vue-router';
+import { Dashboard } from '@/components';
+import { órgão as schema } from '@/consts/formSchemas';
+import { router } from '@/router';
+import { useAlertStore, useOrgansStore } from '@/stores';
 
-const alertStore = useAlertStore();
 const route = useRoute();
+const alertStore = useAlertStore();
+const formularioSujo = useIsFormDirty();
+const organsStore = useOrgansStore();
+
 const { id } = route.params;
 
-const organsStore = useOrgansStore();
 const {
   tempOrgans, organTypes, nívelDoÓrgãoMaisProfundo, órgãosPorNível,
 } = storeToRefs(organsStore);
 organsStore.clear();
 organsStore.getAllTypes();
 
-let title = 'Cadastro de orgão';
 if (id) {
-  title = 'Editar orgão';
   organsStore.getById(id);
 } else {
   organsStore.getAll();
@@ -33,45 +34,39 @@ if (id) {
 
 async function onSubmit(values) {
   try {
-    let msg;
-    let r;
+    let message = '';
+
+    const valores = {
+      ...values,
+      cnpj: values.cnpj === '' ? null : values.cnpj,
+    };
+
     if (id && tempOrgans.value.id) {
-      r = await organsStore.update(tempOrgans.value.id, values);
-      msg = 'Dados salvos com sucesso!';
+      await organsStore.update(tempOrgans.value.id, valores);
+      message = 'Dados salvos com sucesso!';
     } else {
-      r = await organsStore.insert(values);
-      msg = 'Item adicionado com sucesso!';
+      await organsStore.insert(valores);
+      message = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
-      await router.push('/orgaos');
-      alertStore.success(msg);
-    }
+
+    alertStore.success(message);
+    router.push({ name: 'gerenciarÓrgãos' });
   } catch (error) {
     alertStore.error(error);
   }
 }
-
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/orgaos');
-}
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await organsStore.delete(id)) router.push('/orgaos'); }, 'Remover');
-}
 </script>
+
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
+    <MigalhasDePão />
+
+    <div class="flex spacebetween center mt2 mb2">
+      <TítuloDePágina />
+
       <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
+
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
     <template v-if="!(tempOrgans?.loading || tempOrgans?.error)">
       <Form
@@ -169,11 +164,11 @@ async function checkDelete(id) {
           <div class="f1">
             <label class="label">CNPJ</label>
             <Field
+              v-maska
               name="cnpj"
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.cnpj }"
-              v-maska
               data-maska="##.###.###/####-##"
             />
             <ErrorMessage
@@ -192,9 +187,9 @@ async function checkDelete(id) {
               :max="nívelDoÓrgãoMaisProfundo + 1"
               min="1"
               @change="($event) => {
-        setFieldValue('nivel', Number($event.target.value));
-        setFieldValue('parente_id', null);
-      }"
+                setFieldValue('nivel', Number($event.target.value));
+                setFieldValue('parente_id', null);
+              }"
             />
             <ErrorMessage
               class="error-msg"
@@ -220,7 +215,7 @@ async function checkDelete(id) {
                 Selecionar
               </option>
               <option
-                v-for="órgão in (órgãosPorNível[values.nivel - 1] || [])  "
+                v-for="órgão in (órgãosPorNível[values.nivel - 1] || []) "
                 :key="órgão.id"
                 :value="órgão.id"
                 :title="órgão.descricao?.length > 36 ? órgão.descricao : null"
@@ -249,17 +244,11 @@ async function checkDelete(id) {
         </div>
       </Form>
     </template>
-    <template v-if="tempOrgans.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempOrgans.id)"
-      >
-        Remover item
-      </button>
-    </template>
+
     <template v-if="tempOrgans?.loading">
       <span class="spinner">Carregando</span>
     </template>
+
     <template v-if="tempOrgans?.error">
       <div class="error p1">
         <div class="error-msg">

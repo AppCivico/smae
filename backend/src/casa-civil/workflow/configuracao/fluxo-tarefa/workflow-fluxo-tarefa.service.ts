@@ -37,6 +37,7 @@ export class WorkflowFluxoTarefaService {
                 const emUso = await prismaTxn.transferencia.count({
                     where: {
                         workflow_id: fluxoFase.fluxo.workflow_id,
+                        removido_em: null,
                     },
                 });
                 if (emUso) throw new HttpException('Tarefa não pode ser criada, pois workflow já está em uso', 400);

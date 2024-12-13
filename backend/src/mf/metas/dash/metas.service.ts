@@ -129,7 +129,7 @@ export class MfDashMetasService {
             ? !params.filtro_ponto_focal_variavel && !params.filtro_ponto_focal_cronograma
             : true;
 
-        if (params.retornar_pendentes) {
+        if (params.retornar_pendentes) {//false
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
                     ciclo_fisico_id: cicloFisicoId,
@@ -165,7 +165,7 @@ export class MfDashMetasService {
             if (retornar_detalhes) await this.populaDetalhes(ret.pendentes);
         }
 
-        if (params.retornar_atualizadas) {
+        if (params.retornar_atualizadas) {//true
             const atualizadas = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
                     ciclo_fisico_id: cicloFisicoId,
@@ -195,6 +195,23 @@ export class MfDashMetasService {
                 },
                 orderBy: [{ meta: { codigo: 'asc' } }],
             });
+            console.log([
+                { pendente_cp: usar_pendente_cp ? false : undefined },
+                {
+                    pendente_cp_cronograma:
+                        retornar_detalhes && params.filtro_ponto_focal_cronograma ? false : undefined,
+                },
+                {
+                    pendente_cp_variavel:
+                        retornar_detalhes && params.filtro_ponto_focal_variavel ? false : undefined,
+                },
+
+                // again, no detalhe, n importa o status do orçamento
+
+                { orcamento_pendente: retornar_detalhes ? undefined : false },
+            ])
+            console.log(atualizadas);
+
             ret.atualizadas = atualizadas.map(renderStatus);
             if (retornar_detalhes) await this.populaDetalhes(ret.atualizadas);
         }

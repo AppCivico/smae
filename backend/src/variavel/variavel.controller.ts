@@ -261,4 +261,11 @@ export class VariavelGlobalController {
     ): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
     }
+
+    @Post('processa-variaveis-suspensas')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm])
+    async processaVariaveisSuspensas(): Promise<number[]> {
+        return await this.variavelService.processVariaveisSuspensasController();
+    }
 }

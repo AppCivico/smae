@@ -22,13 +22,16 @@ export type ModulosDoSistema = {
   PlanoSetorial: Modulo;
 };
 
-export default {
+const modulos: ModulosDoSistema = {
   PDM: {
     nome: 'Programa de metas',
     ícone: programaDeMetas,
     rotaInicial: [
       {
         name: 'panorama',
+      },
+      {
+        name: 'pdm.metas',
       },
     ],
   },
@@ -69,3 +72,5 @@ export default {
     ],
   },
 };
+
+export default modulos;

@@ -82,7 +82,7 @@ export class ProjetoController {
     // só o administrador do órgão pode iniciar novos projetos
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['Projeto.administrador_no_orgao'])
+    @Roles(['Projeto.administrador', 'Projeto.administrador_no_orgao'])
     async create(
         @Body() createProjetoDto: CreateProjetoDto,
         @CurrentUser() user: PessoaFromJwt

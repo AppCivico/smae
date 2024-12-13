@@ -25,13 +25,13 @@ const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxosFasesProjetos = useFluxosFasesProjetosStore();
 const fluxosTarefasProjetos = useFluxosTarefasProjetosStore();
-const statusesDistribuicaoStore = useStatusDistribuicaoWorflowStore();
+const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
 const alertStore = useAlertStore();
 const router = useRouter();
 const route = useRoute();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
-const { lista: statusesDistribuicaoComoLista } = storeToRefs(statusesDistribuicaoStore);
+const { lista: statusesDistribuicaoComoLista } = storeToRefs(statusDistribuicaoWorflowStore);
 const {
   chamadasPendentes, erro, itemParaEdicao, emFoco,
 } = storeToRefs(fluxosProjetoStore);
@@ -176,7 +176,7 @@ onUnmounted(() => {
 watch(itemParaEdicao, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
     tipoTransferenciaSelecionado.value = novoValor.transferencia_tipo.id;
-    statusesDistribuicaoStore.buscarTudo();
+    statusDistribuicaoWorflowStore.buscarTudo();
     esferaSelecionada.value = tipoTransferenciaComoLista.value
       .find((x) => x.id === novoValor.transferencia_tipo.id)?.esfera || '';
   }

@@ -46,6 +46,7 @@
 
   <SmallModal
     :active="estaAberto"
+    :has-close-button="true"
     @close="toggleModal"
   >
     <form @submit.prevent="onSubmit">

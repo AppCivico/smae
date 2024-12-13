@@ -632,7 +632,13 @@ export class IndicadorService {
                             },
                         });
 
-                        if (indicadorAtualizado.formula_variaveis.some((fv) => fv.variavel.variavel_categorica_id)) {
+                        if (
+                            indicadorAtualizado.formula_variaveis.some(
+                                (fv) =>
+                                    fv.variavel.variavel_categorica_id &&
+                                    fv.variavel.variavel_categorica_id !== CONST_CRONO_VAR_CATEGORICA_ID
+                            )
+                        ) {
                             throw new BadRequestException(
                                 'Não é possível usar uma variável categórica em um indicador calculado.'
                             );

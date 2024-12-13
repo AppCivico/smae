@@ -1,5 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
+import { useOrgansStore } from '@/stores';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
 import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
@@ -100,16 +102,22 @@ export default [
     component: Administracao,
     meta: {
       limitarÀsPermissões: [
-        'CadastroPessoa.',
-        'CadastroOrgao.',
-        'CadastroUnidadeMedida.',
-        'CadastroTipoDocumento.',
+        'CadastroEquipamentoMDO.',
+        'CadastroProjetoEtapaMDO.',
+        'GrupoTematicoMDO.',
+        'ModalidadeContratacao.',
+        'TipoAditivo.',
+        'TipoIntervecaoMDO.',
         'CadastroOds.',
-        'CadastroPdm.',
-        'CadastroRegiao.',
-        'Projeto.administrar_portfolios',
+        'CadastroOrgao.',
         'CadastroPainelExterno.',
+        'CadastroPdm.',
+        'CadastroPessoa.',
         'CadastroProjetoEtapa.',
+        'CadastroRegiao.',
+        'CadastroTipoDocumento.',
+        'CadastroUnidadeMedida.',
+        'Projeto.administrar_portfolios',
       ],
       presenteNoMenu: true,
       pesoNoMenu: Infinity,
@@ -174,7 +182,7 @@ export default [
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'GrupoTematicoMDO.',
           ],
         },
         children: [
@@ -227,7 +235,7 @@ export default [
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'TipoIntervecaoMDO.',
           ],
         },
         children: [
@@ -280,7 +288,7 @@ export default [
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
-            'ProjetoMDO.administrador',
+            'CadastroEquipamentoMDO.',
           ],
         },
         children: [
@@ -420,7 +428,9 @@ export default [
           título: 'Tipo de Transferência',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: 'CadastroTransferencia.listar',
+          limitarÀsPermissões: [
+            'CadastroTransferenciaTipo.',
+          ],
         },
         children: [
           {
@@ -613,11 +623,25 @@ export default [
       },
       {
         path: 'novo',
+        meta: {
+          título: 'Cadastrar Orgão',
+          rotasParaMigalhasDePão: [
+            'gerenciarÓrgãos',
+          ],
+          rotaDeEscape: 'gerenciarÓrgãos',
+        },
         component: AddEditOrgans,
       },
       {
         name: 'ÓrgãosItem',
         path: 'editar/:id',
+        meta: {
+          título: () => useOrgansStore().tempOrgans.descricao,
+          rotasParaMigalhasDePão: [
+            'gerenciarÓrgãos',
+          ],
+          rotaDeEscape: 'gerenciarÓrgãos',
+        },
         component: AddEditOrgans,
       },
       {

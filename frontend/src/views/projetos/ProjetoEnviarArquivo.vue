@@ -33,12 +33,12 @@ const {
 
 const curfile = reactive({});
 
-const arquivo = computed(() => arquivosPorId.value?.[route.params?.arquivoId]?.arquivo);
+const arquivo = computed(() => arquivosPorId.value?.[route.params?.arquivoId]);
 const éEdição = !!route.params?.arquivoId;
 const schema = computed(() => schemaDoFormulário(éEdição));
 const arquivoParaEdição = computed(() => ({
   arquivo_id: arquivo.value?.id,
-  upload_token: arquivo.value?.download_token,
+  upload_token: arquivo.value?.arquivo?.download_token,
   descricao: arquivo.value?.descricao || '',
   data: dateTimeToDate(arquivo.value?.data) || null,
   diretorio_caminho: arquivo.value?.diretorio_caminho || route.query?.diretorio_caminho,

@@ -905,6 +905,105 @@ export class IniciativaService {
         await this.metaService.assertMetaWriteOrThrow(tipo, self.meta_id, user, 'iniciativa');
         if (!self.meta.ativo) throw new HttpException('Meta desativada, ative a meta para remover iniciativas', 400);
 
+        const projetosAtivos = await this.prisma.projeto.count({
+            where: {
+                iniciativa_id: id,
+                removido_em: null,
+            },
+        });
+        if (projetosAtivos > 0) {
+            const projetos = await this.prisma.projeto.findMany({
+                where: {
+                    iniciativa_id: id,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    codigo: true,
+                },
+            });
+
+            throw new BadRequestException(
+                `Não é possível remover a iniciativa pois existem projetos ativos associados: ${projetos
+                    .map((p) => `Projeto ${p.codigo}`)
+                    .join(', ')}`
+            );
+        }
+
+        const projetoOrigensAtivas = await this.prisma.compromissoOrigem.count({
+            where: {
+                removido_em: null,
+                OR: [
+                    {
+                        // como fonte source
+                        iniciativa_id: id,
+                        removido_em: null,
+                    },
+                    {
+                        rel_iniciativa_id: id,
+                        removido_em: null,
+                    },
+                ],
+            },
+        });
+        if (projetoOrigensAtivas > 0) {
+            const origens = await this.prisma.compromissoOrigem.findMany({
+                where: {
+                    OR: [
+                        {
+                            iniciativa_id: id,
+                            removido_em: null,
+                        },
+                        {
+                            rel_iniciativa_id: id,
+                            removido_em: null,
+                        },
+                    ],
+                },
+                select: {
+                    projeto: { select: { id: true, codigo: true } },
+                    atividade: { select: { id: true, codigo: true } },
+                    iniciativa: { select: { id: true, codigo: true } },
+                    meta: { select: { id: true, codigo: true } },
+                },
+            });
+
+            throw new BadRequestException(
+                'Não é possível remover a iniciativa pois existem relacionamentos ativos com projetos: ' +
+                    origens
+                        .map((o) => {
+                            if (o.projeto) return `Projeto ${o.projeto.codigo}`;
+                            if (o.atividade) return `Atividade ${o.atividade.codigo}`;
+                            if (o.iniciativa) return `Iniciativa ${o.iniciativa.codigo}`;
+                            if (o.meta) return `Meta ${o.meta.codigo}`;
+                            return 'Desconhecido';
+                        })
+                        .join(', ')
+            );
+        }
+
+        const indicadoresAtivos = await this.prisma.indicador.count({
+            where: {
+                iniciativa_id: id,
+                removido_em: null,
+            },
+        });
+        if (indicadoresAtivos > 0)
+            throw new BadRequestException(
+                'Não é possível remover a iniciativa pois existem indicadores ativos associados. Apague os indicadores antes de remover a meta.'
+            );
+
+        const cronogramasAtivos = await this.prisma.cronograma.count({
+            where: {
+                iniciativa_id: id,
+                removido_em: null,
+            },
+        });
+        if (cronogramasAtivos > 0)
+            throw new BadRequestException(
+                'Não é possível remover a iniciativa pois existem cronogramas ativos associados. Apague os cronogramas antes de remover a meta.'
+            );
+
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {

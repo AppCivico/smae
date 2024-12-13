@@ -11,6 +11,7 @@
     </div>
 
     <form
+      :aria-busy="chamadasPendentes.emFoco"
       @submit.prevent="onSubmit"
     >
       <div>
@@ -26,12 +27,13 @@
               class="inputtext light mb1"
               :class="{ error: errors.status_id }"
               :disabled="itemParaEdicao.id"
+              :aria-busy="fluxoPendente.lista || statusPendente.lista"
             >
               <option value="">
                 Selecionar
               </option>
               <option
-                v-for="status in fluxoProjetoEmFoco?.statuses_distribuicao "
+                v-for="status in statusesDisponiveis"
                 :key="status.id"
                 :value="status.id"
               >
@@ -118,7 +120,11 @@
           />
         </div>
       </div>
+
+      <ErrorComponent :erro="erro" />
+
       <div class="flex spacebetween center mb2">
+        <FormErrorsList :errors="errors" />
         <hr class="mr2 f1">
         <button
           class="btn big"
@@ -130,37 +136,45 @@
           Salvar
         </button>
         <hr class="mr2 f1">
-        <FormErrorsList :errors="errors" />
       </div>
     </form>
   </SmallModal>
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
+import SmallModal from '@/components/SmallModal.vue';
 import { statusDistribuicao as schema } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
-import SmallModal from '@/components/SmallModal.vue';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { computed, watch } from 'vue';
 
 const formularioSujo = useIsFormDirty();
 
 const ÓrgãosStore = useOrgansStore();
 const fluxosProjetosStore = useFluxosProjetosStore();
 const statusDistribuicaoStore = useStatusDistribuicaoStore();
+const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
 
 const {
   chamadasPendentes, erro,
 } = storeToRefs(statusDistribuicaoStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { emFoco: fluxoProjetoEmFoco } = storeToRefs(fluxosProjetosStore);
+const {
+  emFoco: fluxoProjetoEmFoco,
+  chamadasPendentes: fluxoPendente,
+} = storeToRefs(fluxosProjetosStore);
+const {
+  listaBase: statusBase,
+  chamadasPendentes: statusPendente,
+} = storeToRefs(statusDistribuicaoWorflowStore);
 
 const props = defineProps({
   transferenciaWorkflowId: {
@@ -189,6 +203,10 @@ const itemParaEdicao = computed(() => ({
   data_troca: dateTimeToDate(props.statusEmFoco?.data_troca) || null,
   orgao_responsavel_id: props.statusEmFoco?.orgao_responsavel.id,
 }));
+
+const statusesDisponiveis = computed(() => (props.transferenciaWorkflowId
+  ? fluxoProjetoEmFoco.value?.statuses_distribuicao
+  : statusBase.value));
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
@@ -237,9 +255,11 @@ watch(props.statusEmFoco, (novosValores) => {
   resetForm({ values: novosValores });
 });
 
-fluxosProjetosStore.buscarItem(props.transferenciaWorkflowId);
+if (!props.transferenciaWorkflowId) {
+  if (!statusBase.value.length) {
+    statusDistribuicaoWorflowStore.buscarTudo();
+  }
+} else if (fluxoProjetoEmFoco.value?.id !== props.transferenciaWorkflowId) {
+  fluxosProjetosStore.buscarItem(props.transferenciaWorkflowId);
+}
 </script>
-
-<style>
-
-</style>

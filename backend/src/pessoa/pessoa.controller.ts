@@ -25,7 +25,7 @@ export class PessoaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPessoa.inserir'])
+    @Roles(['CadastroPessoa.inserir', 'CadastroPessoa.administrador.MDO'])
     create(@Body() createPessoaDto: CreatePessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return this.pessoaService.criarPessoa(createPessoaDto, user);
     }
@@ -52,6 +52,7 @@ export class PessoaController {
         'PS.admin_cp', // mantendo por enquanto para apresentação
         'PS.tecnico_cp',
         'PS.ponto_focal',
+        'CadastroPessoa.administrador.MDO',
     ])
     async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters, user) };
@@ -84,6 +85,7 @@ export class PessoaController {
         'PS.admin_cp', // mantendo por enquanto para apresentação
         'PS.tecnico_cp',
         'PS.ponto_focal',
+        'CadastroPessoa.administrador.MDO',
         ...PROJETO_READONLY_ROLES,
         ...PROJETO_READONLY_ROLES_MDO,
     ])
@@ -106,7 +108,7 @@ export class PessoaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPessoa.editar'])
+    @Roles(['CadastroPessoa.editar', 'CadastroPessoa.administrador.MDO'])
     async update(
         @Param() params: FindOneParams,
         @Body() updatePessoaDto: UpdatePessoaDto,
@@ -117,7 +119,7 @@ export class PessoaController {
 
     @Get('responsabilidades')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPessoa.editar_responsabilidade'])
+    @Roles(['CadastroPessoa.editar_responsabilidade', 'CadastroPessoa.administrador.MDO'])
     async getResponsabilidades(
         @Query() dto: BuscaResponsabilidades,
         @CurrentUser() user: PessoaFromJwt
@@ -127,7 +129,7 @@ export class PessoaController {
 
     @Post('responsabilidades')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPessoa.editar_responsabilidade'])
+    @Roles(['CadastroPessoa.editar_responsabilidade', 'CadastroPessoa.administrador.MDO'])
     async executaTransferenciaResponsabilidades(
         @Body() dto: ExecutaTransferenciaResponsabilidades,
         @CurrentUser() user: PessoaFromJwt
@@ -143,6 +145,7 @@ export class PessoaController {
         'CadastroPessoa.editar',
         'CadastroPessoa.inativar',
         'CadastroPessoa.editar_responsabilidade',
+        'CadastroPessoa.administrador.MDO',
     ])
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         return await this.pessoaService.getDetail(+params.id, user);

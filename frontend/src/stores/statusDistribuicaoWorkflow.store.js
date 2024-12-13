@@ -2,9 +2,10 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicaoStore', {
+export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicaoWorflowStore', {
   state: () => ({
-    lista: [],
+    listaBase: [],
+    listaCustomizadas: [],
     emFoco: null,
 
     chamadasPendentes: {
@@ -33,8 +34,9 @@ export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicao
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas_base, linhas_customizadas } = await this.requestS.get(`${baseUrl}/distribuicao-status`, params);
-        this.lista = linhas_base.concat(linhas_customizadas);
+        const { linhas_base: linhasBase, linhas_customizadas: linhasCustomizadas } = await this.requestS.get(`${baseUrl}/distribuicao-status`, params);
+        this.listaBase = linhasBase;
+        this.listaCustomizadas = linhasCustomizadas;
       } catch (erro) {
         this.erro = erro;
       }
@@ -78,6 +80,8 @@ export const useStatusDistribuicaoWorflowStore = defineStore('statusDistribuicao
   },
 
   getters: {
+    lista: ({ listaBase, listaCustomizadas }) => listaBase.concat(listaCustomizadas),
+
     itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,

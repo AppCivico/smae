@@ -5,10 +5,19 @@ AS $$
 DECLARE
     _tarefa_cronograma_id INT;
     _orgao_seri_id INT;
+    _numero_base INT;
 BEGIN
     SELECT id FROM orgao WHERE sigla = 'SERI' INTO _orgao_seri_id;
 
-    INSERT INTO tarefa_cronograma (transferencia_id, criado_em) VALUES (_transferencia_id, now()) RETURNING id INTO _tarefa_cronograma_id;
+    -- Verificando se já existe row de tarefa_cronogrma, caso exista, ela é utilizada.
+    -- Caso não exista, é criado.
+    SELECT id INTO _tarefa_cronograma_id FROM tarefa_cronograma WHERE transferencia_id = _transferencia_id AND removido_em IS NULL;
+    IF _tarefa_cronograma_id IS NULL THEN
+        INSERT INTO tarefa_cronograma (transferencia_id, criado_em) VALUES (_transferencia_id, now()) RETURNING id INTO _tarefa_cronograma_id;
+    END IF;
+
+    -- Verificando se já existem tarefas, caso existam, é necessário manter o nível e o número e o cronograma do workflow, será appendado.
+    SELECT COALESCE(MAX(numero), 0) INTO _numero_base FROM tarefa WHERE tarefa_cronograma_id = _tarefa_cronograma_id;
 
     UPDATE transferencia SET nivel_maximo_tarefa = 3 WHERE id = _transferencia_id;
 
@@ -29,7 +38,7 @@ BEGIN
             _tarefa_cronograma_id,
             etapa_de,
             etapa_de,
-            numero,
+            _numero_base + numero,
             1,
             _orgao_seri_id,
             'SERI'
@@ -67,7 +76,9 @@ BEGIN
             fluxo_fase.marco,
             fluxo_fase.duracao,
             ta.id AS transferencia_andamento_id,
-            ta.data_inicio
+            ta.data_inicio,
+            e.etapa_de_id,
+            fluxo_fase.fluxo_id
         FROM fluxo_fase
         JOIN etapas e ON fluxo_fase.fluxo_id = e.id
         JOIN workflow_fase f ON fluxo_fase.fase_id = f.id
@@ -108,13 +119,16 @@ BEGIN
             fluxo_tarefa.ordem,
             fluxo_tarefa.marco,
             fluxo_tarefa.duracao,
-            taf.id AS transferencia_tarefa_id
+            taf.id AS transferencia_tarefa_id,
+            f.id flux_fase_id,
+            f.fluxo_id,
+            f.etapa_de_id
         FROM fluxo_tarefa
         JOIN fases f ON fluxo_tarefa.fluxo_fase_id = f.id
         JOIN workflow_tarefa t ON fluxo_tarefa.workflow_tarefa_id = t.id
         JOIN transferencia_andamento_tarefa taf ON taf.workflow_tarefa_fluxo_id = t.id AND taf.removido_em IS NULL
         JOIN transferencia_andamento ta ON ta.id = taf.transferencia_andamento_id
-            AND ta.transferencia_id = _transferencia_id AND ta.workflow_fase_id = f.fase_id
+            AND ta.transferencia_id = 289 AND ta.workflow_fase_id = f.fase_id
             AND ta.removido_em IS NULL
         WHERE fluxo_tarefa.removido_em IS NULL
         ORDER BY f.id ASC, fluxo_tarefa.ordem ASC
@@ -133,7 +147,9 @@ BEGIN
             tarefas.duracao,
             _orgao_seri_id
         FROM tarefas
-        JOIN tarefas_fases tf ON tf.tarefa = tarefas.tarefa_pai;
+        JOIN tarefas_fases tf ON tf.tarefa = tarefas.tarefa_pai
+        JOIN transferencia_andamento taf ON taf.id = tf.transferencia_fase_id
+        JOIN fluxo f ON f.id = tarefas.fluxo_id AND taf.workflow_etapa_id = f.fluxo_etapa_de_id;
 
     -- Dependências de nível de fase.
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)

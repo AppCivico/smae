@@ -2275,9 +2275,16 @@ export class VariavelService {
         return variavelCategorica;
     }
 
+    async processVariaveisSuspensasController() {
+        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
+            return await this.processVariaveisSuspensas(prismaTx);
+        });
+    }
+
     async processVariaveisSuspensas(prismaTx: Prisma.TransactionClient): Promise<number[]> {
-        const suspensas: { variaveis: number[] | null }[] = await prismaTx.$queryRaw`
-            WITH jobs AS (
+        await prismaTx.$queryRaw`
+            CREATE TEMP TABLE _jobs ON COMMIT DROP AS
+            SELECT * FROM (
                 SELECT
                     v.id as variavel_id,
                     v.atraso_meses * '-1 month'::interval as atraso_meses,
@@ -2313,8 +2320,12 @@ export class VariavelService {
                 WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
                 AND vsc.id IS NULL
                 ORDER BY cf.id
-            ),
-            lookup_valores AS (
+            ) me
+        `;
+
+        await prismaTx.$queryRaw`
+            CREATE TEMP TABLE _lookup_valores ON COMMIT DROP AS
+            SELECT * FROM (
                 SELECT
                     j.variavel_id,
                     j.atraso_meses,
@@ -2329,31 +2340,35 @@ export class VariavelService {
                         -- não faz muito sentido não ter valor acumulado, mas se estiver faltando, é pq alguem apagou do banco na mão
                         CASE WHEN sv.valor_nominal IS NULL AND j.serie = 'RealizadoAcumulado' THEN 0 ELSE sv.valor_nominal END
                     END AS valor
-                FROM jobs j
+                FROM _jobs j
                 JOIN ciclo_fisico cf ON cf.pdm_id = j.pdm_id AND cf.data_ciclo = date_trunc('month', j.suspendida_em)
                 LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id
                     AND sv.data_valor = date_trunc('month', j.suspendida_em) + j.atraso_meses
                     AND sv.serie = j.serie
                 ORDER BY j.cf_corrente_data_ciclo
-            ),
-            lookup_existentes AS (
-                SELECT
-                    j.cf_corrente_id,
-                    j.variavel_id,
-                    j.serie,
-                    sv.valor_nominal,
-                    sv.id as sv_id
-                FROM jobs j
+            ) me;
+        `;
 
-                LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id
-                    AND sv.data_valor = j.cf_corrente_data_ciclo + j.atraso_meses
-                    AND sv.serie = j.serie
+        await prismaTx.$queryRaw`
+        CREATE TEMP TABLE _lookup_existentes ON COMMIT DROP AS
+        SELECT
+            j.cf_corrente_id,
+            j.variavel_id,
+            j.serie,
+            sv.valor_nominal,
+            sv.id as sv_id
+        FROM _jobs j
+        LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id
+            AND sv.data_valor = j.cf_corrente_data_ciclo + j.atraso_meses
+            AND sv.serie = j.serie;
+        `;
 
-            ),
-            delete_values AS (
-                DELETE FROM serie_variavel WHERE id IN (SELECT sv_id FROM lookup_existentes)
-            ),
-            insert_values AS (
+        await prismaTx.$executeRaw`
+            DELETE FROM serie_variavel WHERE id IN (SELECT sv_id FROM _lookup_existentes WHERE sv_id IS NOT NULL)
+        `;
+
+        const suspensas: { variaveis: number[] | null }[] = await prismaTx.$queryRaw`
+            WITH insert_values AS (
                 INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal, ciclo_fisico_id)
                 SELECT
                     lv.variavel_id,
@@ -2361,8 +2376,9 @@ export class VariavelService {
                     lv.cf_corrente_data_ciclo + lv.atraso_meses,
                     lv.valor,
                     lv.cf_corrente_id
-                FROM lookup_valores lv
+                FROM _lookup_valores lv
                 WHERE lv.valor IS NOT NULL
+                RETURNING variavel_id
             ),
             insert_control AS (
                 INSERT INTO variavel_suspensa_controle (variavel_id, serie, ciclo_fisico_base_id, ciclo_fisico_corrente_id, valor_antigo, valor_novo, processado_em)
@@ -2374,23 +2390,31 @@ export class VariavelService {
                     le.valor_nominal,
                     lv.valor,
                     now()
-                FROM lookup_valores lv
-                LEFT JOIN lookup_existentes le ON le.variavel_id = lv.variavel_id AND lv.serie = le.serie AND lv.cf_corrente_id = le.cf_corrente_id
+                FROM _lookup_valores lv
+                LEFT JOIN _lookup_existentes le ON le.variavel_id = lv.variavel_id AND lv.serie = le.serie AND lv.cf_corrente_id = le.cf_corrente_id
+                RETURNING variavel_id
             ),
             must_update_indicators AS (
-                SELECT
-                    lv.variavel_id
-                FROM lookup_valores lv
-                GROUP BY 1
+                SELECT variavel_id FROM insert_values
+                UNION
+                SELECT variavel_id FROM insert_control
             )
             SELECT
-                array_agg(variavel_id) as variaveis
+                array_agg(DISTINCT variavel_id) as variaveis
             FROM must_update_indicators
         `;
 
-        console.log('must_update_indicators: suspensas=', suspensas);
         if (suspensas[0] && Array.isArray(suspensas[0].variaveis)) {
-            return suspensas[0].variaveis;
+            const varsSuspensas = suspensas[0].variaveis;
+            if (varsSuspensas.length) {
+                console.log('variáveis suspensas recalc:', varsSuspensas);
+                await this.recalc_series_dependentes(varsSuspensas, prismaTx);
+                await this.recalc_indicador_usando_variaveis(varsSuspensas, prismaTx);
+            } else {
+                console.log('não há variáveis suspensas');
+            }
+
+            return varsSuspensas;
         }
         return [];
     }
@@ -3607,7 +3631,6 @@ export class VariavelService {
         });
         this.logger.debug(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
-
             this.logger.verbose(`Recalculando serie acumulada variavel ${row.id}...`);
             await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
 

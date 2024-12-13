@@ -59,6 +59,7 @@ export class WorkflowfluxoFaseService {
                 const emUso = await prismaTxn.transferencia.count({
                     where: {
                         workflow_id: fluxo.workflow_id,
+                        removido_em: null,
                     },
                 });
                 if (emUso) throw new HttpException('Fase não pode ser criada, pois workflow já está em uso', 400);

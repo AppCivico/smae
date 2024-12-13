@@ -74,7 +74,7 @@ export class ProjetoTagController {
     }
 }
 
-@ApiTags('Projeto Tag de Obras')
+@ApiTags('Projeto Tag de Obras (Etiquetas)')
 @Controller('projeto-tag-mdo')
 export class ProjetoTagMDOController {
     private tipo: TipoProjeto = 'MDO';

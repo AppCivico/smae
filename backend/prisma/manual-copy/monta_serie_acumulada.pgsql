@@ -10,8 +10,20 @@ DECLARE
     vInicio date;
     vFim date;
     vAcumulativa boolean;
+    vFeatureFlagAtivo boolean;
+    vUltimoRealizado date;
 BEGIN
     EXECUTE pg_advisory_xact_lock(pVariavelId::bigint);
+
+   -- Verifica se o feature flag está ativo
+    SELECT value::boolean
+    INTO vFeatureFlagAtivo
+    FROM smae_config
+    WHERE key = 'ACUMULADO_REALIZADO_APENAS_PASSADO'
+    LIMIT 1;
+
+    -- se não existir o registro, assume como false
+    vFeatureFlagAtivo := COALESCE(vFeatureFlagAtivo, false);
 
     WITH indicador_info AS (
         SELECT iv.variavel_id, iv.indicador_id
@@ -92,14 +104,30 @@ BEGIN
     -- Filtra apenas as series do tipo escolhido [parâmetro] para recalcular, ou todas se for null
     WHERE ((vTipoSerie IS NULL) OR (s.serie::text LIKE vTipoSerie::text || '%'))
     LOOP
-        -- Sempre deleta a serie acumulada antes de inserir
-        DELETE FROM serie_variavel
-        WHERE variavel_id = pVariavelId
-            AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
+        -- Se for RealizadoAcumulado e o feature flag estiver ativo, ajusta a data fim
+        IF vFeatureFlagAtivo AND serieRecord.serie = 'Realizado'::"Serie" THEN
+            -- Procura a última data com valor realizado
+            SELECT COALESCE(max(data_valor), now()::date)
+            INTO vUltimoRealizado
+            FROM serie_variavel
+            WHERE variavel_id = pVariavelId
+                AND serie = 'Realizado'::"Serie";
+
+            -- Ajusta vFim para ser o maior entre hoje e o último valor realizado
+            vFim := GREATEST(vUltimoRealizado, (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date);
+        END IF;
 
         -- Apenas recalcular a serie acumulada se a variavel for acumulativa
         IF vAcumulativa THEN
-            RAISE NOTICE '==> acumulado serie_variavel (variavel=%', pVariavelId::text || ', serie=' || serieRecord.serie::text;
+            -- Sempre deleta a serie acumulada antes de inserir
+            DELETE FROM serie_variavel
+            WHERE variavel_id = pVariavelId
+                AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
+--            RAISE NOTICE '==> acumulado serie_variavel (variavel=%, serie=%, feature_flag=%, data_fim=%)',
+--                pVariavelId::text,
+--                serieRecord.serie::text,
+--                vFeatureFlagAtivo,
+--                vFim::text;
 
             INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
             WITH theData AS (
@@ -121,8 +149,8 @@ BEGIN
             FROM theData
             WHERE theData.valor_acc IS NOT NULL;
         ELSE
-            -- Reinserir a serie usando os valores originais, sem acumular
-            -- se não vamos gerar um bug... isso é bem ineficiente, mas é o que temos pra agora
+            -- Para casos não acumulativos, usamos INSERT ON CONFLICT para atualizar os valores
+            -- só se forem diferentes
             INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
             SELECT
                 pVariavelId,
@@ -131,7 +159,11 @@ BEGIN
                 sv.valor_nominal
             FROM serie_variavel sv
             WHERE sv.variavel_id = pVariavelId
-                AND sv.serie = serieRecord.serie;
+                AND sv.serie = serieRecord.serie
+            ON CONFLICT (variavel_id, serie, data_valor)
+            DO UPDATE SET
+                valor_nominal = EXCLUDED.valor_nominal
+            WHERE serie_variavel.valor_nominal IS DISTINCT FROM EXCLUDED.valor_nominal;
         END IF;
     END LOOP;
 

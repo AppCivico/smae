@@ -92,16 +92,16 @@ const titulo = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
   : route?.meta?.título;
 const alertStore = useAlertStore();
-const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(statusDistribuicaoStore);
+const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(statusDistribuicaoWorflowStore);
 
 async function excluirStatusDistribuicao(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
-      if (await statusDistribuicaoStore.excluirItem(id)) {
-        statusDistribuicaoStore.$reset();
-        statusDistribuicaoStore.buscarTudo();
+      if (await statusDistribuicaoWorflowStore.excluirItem(id)) {
+        statusDistribuicaoWorflowStore.$reset();
+        statusDistribuicaoWorflowStore.buscarTudo();
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -109,8 +109,8 @@ async function excluirStatusDistribuicao(id, descricao) {
   );
 }
 
-statusDistribuicaoStore.$reset();
-statusDistribuicaoStore.buscarTudo({});
+statusDistribuicaoWorflowStore.$reset();
+statusDistribuicaoWorflowStore.buscarTudo({});
 </script>
 
   <style></style>

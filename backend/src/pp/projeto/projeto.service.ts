@@ -122,6 +122,7 @@ export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => PortfolioService))
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService,
         private readonly geolocService: GeoLocService,
@@ -986,7 +987,7 @@ export class ProjetoService {
         };
     }
 
-    private getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {
+    getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 tipo: tipo,
@@ -1303,6 +1304,11 @@ export class ProjetoService {
                 ProjetoGrupoPortfolio: {
                     where: { removido_em: null },
                     select: {
+                        GrupoPortfolio: {
+                            select: {
+                                titulo: true,
+                            },
+                        },
                         grupo_portfolio_id: true,
                     },
                 },
@@ -1643,7 +1649,9 @@ export class ProjetoService {
             },
 
             tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
-            grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
+            grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => {
+                return { id: r.grupo_portfolio_id, titulo: r.GrupoPortfolio.titulo };
+            }),
 
             orgao_origem: projeto.orgao_origem,
 
@@ -2496,8 +2504,11 @@ export class ProjetoService {
                 },
                 select: { id: true, orgao_id: true },
             });
-            if (!user.hasSomeRoles(['Projeto.administrador'])) {
-                if (!user.hasSomeRoles(['Projeto.administrador_no_orgao']) || user.orgao_id != gp.orgao_id)
+            if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
+                if (
+                    !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao']) ||
+                    user.orgao_id != gp.orgao_id
+                )
                     throw new BadRequestException('Sem permissão para adicionar grupo de portfólio no projeto.');
             }
 
@@ -2514,9 +2525,9 @@ export class ProjetoService {
         for (const prevPortRow of prevVersions) {
             // pula as que continuam na lista
             if (dto.grupo_portfolio.filter((r) => r == prevPortRow.grupo_portfolio_id)[0]) continue;
-            if (!user.hasSomeRoles(['Projeto.administrador'])) {
+            if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
                 if (
-                    !user.hasSomeRoles(['Projeto.administrador_no_orgao']) ||
+                    !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao']) ||
                     user.orgao_id != prevPortRow.GrupoPortfolio.orgao_id
                 )
                     throw new BadRequestException('Sem permissão para remover grupo de portfólio no projeto.');

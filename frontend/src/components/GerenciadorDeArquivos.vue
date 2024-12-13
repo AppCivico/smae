@@ -171,7 +171,7 @@ watchEffect(async () => {
     />
 
     <SmaeLink
-      v-if="props.rotaDeAdição"
+      v-if="props.rotaDeAdição && !$props.apenasLeitura"
       :to="props.rotaDeAdição"
       class="addlink mt1"
     >

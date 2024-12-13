@@ -34,7 +34,7 @@ export const useAuthStore = defineStore({
           throw new Error('Token não recebido.');
         }
 
-        await this.getDados();
+        await this.getDados(null, { headers: { 'smae-sistemas': '' } });
 
         this.router.push(this.returnUrl || '/');
       } catch (error) {
@@ -104,6 +104,7 @@ export const useAuthStore = defineStore({
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('permissions');
+      localStorage.removeItem('sistemaEscolhido');
 
       // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
       this.resetAllStores();

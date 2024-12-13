@@ -25,6 +25,13 @@ export default {
       name: 'planosSetoriaisListar',
       path: '',
       component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
+      meta: {
+        // não entendi o motivo dessa rota não herdar a propriedade `meta` da mãe
+        limitarÀsPermissões: [
+          'CadastroPS.',
+          'CadastroMetaPS.listar',
+        ],
+      },
     },
     {
       name: 'planosSetoriaisCriar',
