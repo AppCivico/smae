@@ -1,24 +1,65 @@
+type IdPropertyName = string;
+type ParentPropertyName = string;
+type ChildrenPropertyName = string;
+type Options = {
+  parentPropertyName?: ParentPropertyName;
+  childrenPropertyName?: ChildrenPropertyName;
+  idPropertyName?: IdPropertyName;
+};
+
+type DataSetItem = Record<string, unknown> & {
+  [key: IdPropertyName | ParentPropertyName]: string | number;
+};
+
+export type DataTreeItem = DataSetItem & {
+  [key: ChildrenPropertyName]: DataTreeItem[];
+};
+
+type HashTable = {
+  [key: string | number]: DataTreeItem;
+};
+
+export type DataSet = DataSetItem[];
+export type DataTree = DataTreeItem[];
+
 /**
  * Build tree array from flat array in javascript
  *
- * @param {*} dataset
- * @param {string} [parentPropertyName='parentId']
- * @param {string} [childrenPropertyName='children']
- * @return {*}
  * @link https://stackoverflow.com/a/40732240/15425845
  */
-export default (dataset: any[], parentPropertyName = 'parentId', childrenPropertyName = 'children') => {
-  const hashTable = Object.create(null);
-  dataset.forEach((aData: { id: string | number }) => {
-    hashTable[aData.id] = { ...aData, [childrenPropertyName]: [] };
+export default (dataset: DataSet, {
+  parentPropertyName = 'parentId',
+  childrenPropertyName = 'children',
+  idPropertyName = 'id',
+}:Options = {}) => {
+  const hashTable:HashTable = Object.create({});
+
+  if (!dataset.length) {
+    return [];
+  }
+
+  dataset.forEach((dataItem: DataSetItem) => {
+    if (dataItem[idPropertyName] !== undefined) {
+      hashTable[dataItem[idPropertyName]] = {
+        ...dataItem,
+        [childrenPropertyName]: [],
+      } as DataTreeItem;
+    }
   });
 
-  const dataTree: any[] = [];
-  dataset.forEach((aData: { [x: string]: any; id: string | number }) => {
-    if (aData[parentPropertyName] && hashTable[aData[parentPropertyName]]) {
-      hashTable[aData[parentPropertyName]][childrenPropertyName].push(hashTable[aData.id]);
+  const dataTree: DataTree = [];
+  dataset.forEach((dataItem: DataSetItem) => {
+    if (
+      dataItem[parentPropertyName] !== undefined
+      && hashTable[dataItem[parentPropertyName]]
+      && dataItem[idPropertyName] !== undefined
+    ) {
+      hashTable[dataItem[parentPropertyName]][childrenPropertyName]
+        .push(hashTable[dataItem[idPropertyName]]);
+    } else if (hashTable[dataItem[idPropertyName]]) {
+      dataTree.push(hashTable[dataItem[idPropertyName]]);
     } else {
-      dataTree.push(hashTable[aData.id]);
+      dataTree.push({ ...dataItem, [childrenPropertyName]: [] } as DataTreeItem);
     }
   });
   return dataTree;

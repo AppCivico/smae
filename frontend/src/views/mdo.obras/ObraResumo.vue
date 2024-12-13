@@ -380,7 +380,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           <ListaAninhada
             v-if="emFoco?.regioes?.length"
             v-slot="{ item, nivel }"
-            :lista="createDataTree(emFoco?.regioes, 'parente_id', 'filhas')"
+            :lista="createDataTree(emFoco?.regioes, {
+              parentPropertyName: 'parente_id',
+              childrenPropertyName: 'filhas'
+            })"
             nome-das-filhas="filhas"
             nome-do-texto="descricao"
           >

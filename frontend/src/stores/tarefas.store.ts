@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
-
+import type { DataSet, DataTreeItem } from '@/helpers/createDataTree';
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import flatten from '@/helpers/flatDataTree';
@@ -15,6 +15,8 @@ type Lista = ListApenasTarefaListDto['linhas'];
 interface TarefaComHierarquia extends TarefaItemDto {
   hierarquia: string;
 }
+
+type TarefaEmArvore = DataTreeItem & TarefaComHierarquia;
 
 interface TarefaComMãe extends TarefaComHierarquia {
   parentId: number;
@@ -211,8 +213,8 @@ export const useTarefasStore = defineStore('tarefas', {
 
   },
   getters: {
-    árvoreDeTarefas(): TarefaComHierarquia[] {
-      return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
+    árvoreDeTarefas(): TarefaEmArvore[] {
+      return createDataTree(this.tarefasComHierarquia as unknown as DataSet, { parentPropertyName: 'tarefa_pai_id' }) as TarefaEmArvore[] || [];
     },
 
     estruturaAnalíticaDoProjeto(): (TarefaComMãe | ProjetoParaÁrvore)[] {

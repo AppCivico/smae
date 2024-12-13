@@ -55,7 +55,7 @@ export const useRegionsStore = defineStore({
         const r = await this.requestS.get(`${baseUrl}/regiao`);
         this.listregions = r.linhas;
         if (Array.isArray(r.linhas)) {
-          this.regions = createDataTree(r.linhas, 'parente_id');
+          this.regions = createDataTree(r.linhas, { parentPropertyName: 'parente_id' });
         } else {
           this.regions = r.linhas;
         }
