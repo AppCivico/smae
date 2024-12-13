@@ -133,6 +133,11 @@ export default {
       meta: {
         título: 'Novo projeto',
         títuloParaMenu: 'Novo projeto',
+
+        limitarÀsPermissões: [
+          'Projeto.administrador_no_orgao',
+          'Projeto.administrador',
+        ],
       },
     },
 

@@ -90,13 +90,12 @@ watch(props, (novoValor) => {
 
     <hr class="f1">
 
-    <router-link
-      v-if="temPermissãoPara('Projeto.administrador_no_orgao')"
+    <SmaeLink
       :to="{ name: 'projetosCriar' }"
       class="btn big"
     >
       Novo projeto
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex center mb2 spacebetween g2">
@@ -205,7 +204,7 @@ watch(props, (novoValor) => {
             :erro="erro"
           />
 
-          <router-link
+          <SmaeLink
             :to="{ name: 'projetosCriar', query: { portfolio_id: listasAgrupadas[item].id } }"
             class="addlink mt1"
           >
@@ -214,7 +213,7 @@ watch(props, (novoValor) => {
               height="20"
             ><use xlink:href="#i_+" /></svg>
             <span>Adicionar projeto a esse portfólio</span>
-          </router-link>
+          </SmaeLink>
         </details>
       </div>
     </template>
