@@ -32,11 +32,11 @@ export default (dataset: DataSet, {
   childrenPropertyName = 'children',
   idPropertyName = 'id',
 }:Options = {}) => {
-  const hashTable:HashTable = Object.create({});
-
   if (!dataset.length) {
     return [];
   }
+
+  const hashTable:HashTable = Object.create({});
 
   dataset.forEach((dataItem: DataSetItem) => {
     if (dataItem[idPropertyName] !== undefined) {
@@ -47,8 +47,7 @@ export default (dataset: DataSet, {
     }
   });
 
-  const dataTree: DataTree = [];
-  dataset.forEach((dataItem: DataSetItem) => {
+  return dataset.reduce((dataTree, dataItem: DataSetItem) => {
     if (
       dataItem[parentPropertyName] !== undefined
       && hashTable[dataItem[parentPropertyName]]
@@ -61,6 +60,7 @@ export default (dataset: DataSet, {
     } else {
       dataTree.push({ ...dataItem, [childrenPropertyName]: [] } as DataTreeItem);
     }
-  });
-  return dataTree;
+
+    return dataTree;
+  }, [] as DataTree);
 };
