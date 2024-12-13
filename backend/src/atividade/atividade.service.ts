@@ -949,6 +949,105 @@ export class AtividadeService {
         if (!self.iniciativa.meta.ativo)
             throw new BadRequestException('Meta está desativada, ative-a antes de remover a Atividade');
 
+        const projetosAtivos = await this.prisma.projeto.count({
+            where: {
+                atividade_id: id,
+                removido_em: null,
+            },
+        });
+        if (projetosAtivos > 0) {
+            const projetos = await this.prisma.projeto.findMany({
+                where: {
+                    atividade_id: id,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    codigo: true,
+                },
+            });
+
+            throw new BadRequestException(
+                `Não é possível remover a atividade pois existem projetos ativos associados: ${projetos
+                    .map((p) => `Projeto ${p.codigo}`)
+                    .join(', ')}`
+            );
+        }
+
+        const projetoOrigensAtivas = await this.prisma.compromissoOrigem.count({
+            where: {
+                removido_em: null,
+                OR: [
+                    {
+                        // como fonte source
+                        atividade_id: id,
+                        removido_em: null,
+                    },
+                    {
+                        rel_atividade_id: id,
+                        removido_em: null,
+                    },
+                ],
+            },
+        });
+        if (projetoOrigensAtivas > 0) {
+            const origens = await this.prisma.compromissoOrigem.findMany({
+                where: {
+                    OR: [
+                        {
+                            atividade_id: id,
+                            removido_em: null,
+                        },
+                        {
+                            rel_atividade_id: id,
+                            removido_em: null,
+                        },
+                    ],
+                },
+                select: {
+                    projeto: { select: { id: true, codigo: true } },
+                    atividade: { select: { id: true, codigo: true } },
+                    iniciativa: { select: { id: true, codigo: true } },
+                    meta: { select: { id: true, codigo: true } },
+                },
+            });
+
+            throw new BadRequestException(
+                'Não é possível remover a atividade pois existem relacionamentos ativos com projetos: ' +
+                    origens
+                        .map((o) => {
+                            if (o.projeto) return `Projeto ${o.projeto.codigo}`;
+                            if (o.atividade) return `Atividade ${o.atividade.codigo}`;
+                            if (o.iniciativa) return `Iniciativa ${o.iniciativa.codigo}`;
+                            if (o.meta) return `Meta ${o.meta.codigo}`;
+                            return 'Desconhecido';
+                        })
+                        .join(', ')
+            );
+        }
+
+        const indicadoresAtivos = await this.prisma.indicador.count({
+            where: {
+                atividade_id: id,
+                removido_em: null,
+            },
+        });
+        if (indicadoresAtivos > 0)
+            throw new BadRequestException(
+                'Não é possível remover a atividade pois existem indicadores ativos associados. Apague os indicadores antes de remover a meta.'
+            );
+
+        const cronogramasAtivos = await this.prisma.cronograma.count({
+            where: {
+                atividade_id: id,
+                removido_em: null,
+            },
+        });
+        if (cronogramasAtivos > 0)
+            throw new BadRequestException(
+                'Não é possível remover a atividade pois existem cronogramas ativos associados. Apague os cronogramas antes de remover a meta.'
+            );
+
         // Antes de remover a Atividade, deve ser verificada a Iniciativa para garantir de que não há variaveis em uso
         if (self.compoe_indicador_iniciativa) {
             let has_vars_in_use = false;
