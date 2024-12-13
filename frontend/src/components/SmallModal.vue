@@ -4,6 +4,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  hasCloseButton: {
+    type: Boolean,
+    default: false,
+  },
 });
 defineEmits(['close']);
 </script>
@@ -27,6 +31,19 @@ export default {
         class="editModal"
         v-bind="$attrs"
       >
+        <button
+          v-if="props.hasCloseButton"
+          type="button"
+          class="btn round edit-modal__close"
+          @click="$emit('close')"
+        >
+          <svg
+            width="12"
+            height="12"
+          >
+            <use xlink:href="#i_x" />
+          </svg>
+        </button>
         <slot />
       </div>
     </div>
@@ -38,5 +55,11 @@ export default {
     width: 100% !important;
     max-width: none !important;
   }
+}
+.edit-modal__close {
+  position: absolute;
+  right: -15px;
+  top: -15px;
+  aspect-ratio: 1;
 }
 </style>
