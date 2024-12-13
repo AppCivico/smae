@@ -4,38 +4,38 @@ import createDataTree from './createDataTree.ts';
 describe('createDataTree', () => {
   it('should create a tree structure from flat data', () => {
     const flatData = [
-      { id: 1, parentId: null },
-      { id: 2, parentId: 1 },
+      { id: 0, parentId: null },
+      { id: 1, parentId: 0 },
+      { id: 2, parentId: 0 },
       { id: 3, parentId: 1 },
-      { id: 4, parentId: 2 },
-      { id: 5, parentId: 2 },
-      { id: 6, parentId: null },
-      { id: 7, parentId: 6 },
-      { id: 8, parentId: 6 },
+      { id: 4, parentId: 1 },
+      { id: 5, parentId: null },
+      { id: 6, parentId: 5 },
+      { id: 7, parentId: 5 },
     ];
 
     const expectedTree = [
       {
-        id: 1,
+        id: 0,
         parentId: null,
         children: [
           {
-            id: 2,
-            parentId: 1,
+            id: 1,
+            parentId: 0,
             children: [
-              { id: 4, parentId: 2, children: [] },
-              { id: 5, parentId: 2, children: [] },
+              { id: 3, parentId: 1, children: [] },
+              { id: 4, parentId: 1, children: [] },
             ],
           },
-          { id: 3, parentId: 1, children: [] },
+          { id: 2, parentId: 0, children: [] },
         ],
       },
       {
-        id: 6,
+        id: 5,
         parentId: null,
         children: [
-          { id: 7, parentId: 6, children: [] },
-          { id: 8, parentId: 6, children: [] },
+          { id: 6, parentId: 5, children: [] },
+          { id: 7, parentId: 5, children: [] },
         ],
       },
     ];
