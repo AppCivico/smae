@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
-import { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
+import type { ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
+import type { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
 import type { DataSet, DataTreeItem } from '@/helpers/createDataTree';
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -49,9 +49,9 @@ interface Estado {
 }
 
 type MãeComId = {
-  projetoId?: Number;
-  transferenciaId?: Number;
-  obraId?: Number;
+  projetoId?: number;
+  transferenciaId?: number;
+  obraId?: number;
 } | undefined;
 
 // eslint-disable-next-line max-len
@@ -238,7 +238,7 @@ export const useTarefasStore = defineStore('tarefas', {
       return [];
     },
 
-    itemParaEdicao(): {} {
+    itemParaEdicao(): Record<string, unknown> {
       const { emFoco, route, tarefasAgrupadasPorMãe } = this;
       const idDaTarefaMãe = emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null;
       const posiçõesEmUso = tarefasAgrupadasPorMãe[idDaTarefaMãe || 0]?.length || 0;
