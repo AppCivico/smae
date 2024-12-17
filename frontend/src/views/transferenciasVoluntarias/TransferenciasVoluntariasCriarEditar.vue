@@ -447,7 +447,7 @@ watch(itemParaEdicao, (novosValores) => {
           :key="field.key"
           class="flex flexwrap center g2 mb2"
         >
-          <div class="f1">
+          <div class="f1 fb33">
             <Field
               :name="`parlamentares[${idx}].id`"
               type="hidden"
@@ -463,16 +463,16 @@ watch(itemParaEdicao, (novosValores) => {
               v-slot="{ handleChange, value }"
               :name="`parlamentares[${idx}].parlamentar_id`"
               type="text"
-              class="f1 inputtext light"
             >
               <CampoComBuscaRemota
+                class="light mb1"
                 :model-value="value"
                 :valor-inicial="field.value.parlamentar"
+                :pode-remover="false"
                 url-requisicao="parlamentar"
                 chave-de-busca="palavra_chave"
                 chave-de-valor="id"
                 chave-de-exibicao="nome_popular"
-                texto-do-botao="Selecionar"
                 texto-de-instrucoes="Pesquisar por parlamentar ou partido"
                 @update:model-value="handleChange"
                 @item-selecionado="sugerirCargoEPartido(idx, $event)"
@@ -490,7 +490,7 @@ watch(itemParaEdicao, (novosValores) => {
                 </template>
 
                 <template #ValorExibido="{item}">
-                  {{ item ? item.nome_popular : field.value.parlamentar?.nome_popular }}
+                  {{ item.nome_popular }}
                 </template>
               </CampoComBuscaRemota>
             </Field>
@@ -528,6 +528,7 @@ watch(itemParaEdicao, (novosValores) => {
                 {{ item.sigla }}
               </option>
             </Field>
+
             <ErrorMessage
               :name="`parlamentares[${idx}].partido_id`"
               class="error-msg"
