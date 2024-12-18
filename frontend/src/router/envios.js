@@ -100,7 +100,7 @@ export default {
       ],
     },
     {
-      path: '',
+      path: 'orcamentos/projetos',
       component: EnviosProjetos,
       meta: {
         título: 'Envio de orçamento para projetos',
