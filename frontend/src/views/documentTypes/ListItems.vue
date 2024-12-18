@@ -1,10 +1,11 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { useAuthStore, useDocumentTypesStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
+import { Dashboard } from '@/components';
+import { useAlertStore, useAuthStore, useDocumentTypesStore } from '@/stores';
 
 const authStore = useAuthStore();
+const alertStore = useAlertStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
@@ -20,6 +21,16 @@ const itemsFiltered = ref(tempDocumentTypes);
 
 function filterItems() {
   documentTypesStore.filterDocumentTypes(filters);
+}
+
+async function checkDelete({ id, titulo }) {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${titulo}"?`, async () => {
+    if (await documentTypesStore.delete(id)) {
+      documentTypesStore.clear();
+      documentTypesStore.filterDocumentTypes();
+      alertStore.success(`${titulo} removido!`);
+    }
+  }, 'Remover');
 }
 </script>
 <template>
@@ -86,6 +97,18 @@ function filterItems() {
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
                 </router-link>
+              </template>
+
+              <template v-if="perm?.CadastroTipoDocumento?.remover">
+                <button
+                  class="ml1 like-a__text"
+                  @click="checkDelete(item)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_waste" /></svg>
+                </button>
               </template>
             </td>
           </tr>

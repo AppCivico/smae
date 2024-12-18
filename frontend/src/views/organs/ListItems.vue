@@ -42,13 +42,7 @@ async function apagarOrgao({ id, descricao }) {
     <div class="flex spacebetween center mb2">
       <h1>Orgãos</h1>
       <hr class="ml2 f1">
-      <router-link
-        v-if="perm?.CadastroTipoOrgao"
-        to="/orgaos/tipos"
-        class="btn big amarelo ml2"
-      >
-        Gerenciar Tipos de Orgão
-      </router-link>
+
       <router-link
         v-if="perm?.CadastroOrgao?.inserir"
         to="/orgaos/novo"
