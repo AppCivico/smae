@@ -377,10 +377,9 @@ export class DistribuicaoRecursoService {
                                               return {
                                                   processo_sei: r.processo_sei.replace(/\D/g, ''),
                                                   nome: r.nome,
-                                                  registro_sei_info: '{}',
                                                   criado_em: agora,
                                                   criado_por: user.id,
-                                              };
+                                              } satisfies Prisma.DistribuicaoRecursoSeiWhereInput;
                                           })
                                         : [],
                             },
@@ -395,7 +394,7 @@ export class DistribuicaoRecursoService {
                                         partido_id: e.partido_id,
                                         criado_em: agora,
                                         criado_por: user.id,
-                                    };
+                                    } satisfies Prisma.DistribuicaoParlamentarWhereInput;
                                 }),
                             },
                         },
@@ -406,7 +405,7 @@ export class DistribuicaoRecursoService {
                                 nome_responsavel: '',
                                 motivo: '',
                                 criado_por: user.id,
-                            },
+                            } satisfies Prisma.DistribuicaoRecursoStatusWhereInput,
                         },
                     },
                     select: {
