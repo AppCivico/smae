@@ -30,6 +30,7 @@
                 Data de vigência
               </th>
               <th>Nome</th>
+              <th>Último Status</th>
               <th />
             </tr>
           </thead>
@@ -50,6 +51,9 @@
               </td>
               <td>
                 {{ item.nome || '-' }}
+              </td>
+              <td>
+                {{ obterUltimoStatus(item.historico_status) }}
               </td>
               <td class="tr">
                 <SmaeLink
@@ -192,6 +196,16 @@ function voltarTela() {
 
 async function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
+}
+
+function obterUltimoStatus(historico = []) {
+  const ultimoStatus = historico.at(-1);
+
+  if (!ultimoStatus) {
+    return '-';
+  }
+
+  return ultimoStatus.status_base.nome;
 }
 
 iniciar();
