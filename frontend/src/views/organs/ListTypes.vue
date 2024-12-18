@@ -28,13 +28,6 @@ function filterItems() {
       <h1>Tipos de Orgão</h1>
       <hr class="ml2 f1">
       <router-link
-        v-if="perm?.CadastroOrgao"
-        to="/orgaos"
-        class="btn big amarelo ml2"
-      >
-        Gerenciar Orgãos
-      </router-link>
-      <router-link
         v-if="perm?.CadastroTipoOrgao?.inserir"
         to="/orgaos/tipos/novo"
         class="btn big ml1"

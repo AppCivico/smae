@@ -1,12 +1,13 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { router } from '@/router';
-import { useAlertStore } from '@/stores/alert.store';
-import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
+import { Dashboard } from '@/components';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import { router } from '@/router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -40,7 +41,7 @@ async function onSubmit(values) {
       r = await documentTypesStore.insert(values);
       msg = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
+    if (r === true) {
       await router.push('/tipo-documento');
       alertStore.success(msg);
     }
@@ -52,15 +53,15 @@ async function onSubmit(values) {
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', '/tipo-documento');
 }
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await documentTypesStore.delete(id)) router.push('/tipo-documento'); }, 'Remover');
-}
+
 function removeChars(x) {
   x.target.value = x.target.value.replace(/[^a-zA-Z0-9,]/g, '');
 }
 </script>
 <template>
   <Dashboard>
+    <MigalhasDePao class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <h1>{{ title }}</h1>
       <hr class="ml2 f1">
@@ -150,14 +151,7 @@ function removeChars(x) {
         </div>
       </Form>
     </template>
-    <template v-if="tempDocumentTypes.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempDocumentTypes.id)"
-      >
-        Remover item
-      </button>
-    </template>
+
     <template v-if="tempDocumentTypes?.loading">
       <span class="spinner">Carregando</span>
     </template>
