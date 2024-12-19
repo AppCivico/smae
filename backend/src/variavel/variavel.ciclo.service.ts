@@ -144,7 +144,7 @@ export class VariavelCicloService {
             AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
         });
 
-        if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+        if (!isRoot && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
             const orgao_id = user.orgao_id;
             if (!orgao_id) throw new BadRequestException('Usuário sem órgão associado');
 
