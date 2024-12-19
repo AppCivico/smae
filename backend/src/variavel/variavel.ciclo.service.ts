@@ -63,6 +63,7 @@ interface UploadArquivoInterface {
 
 interface IUltimaAnaliseValor {
     variavel_id: number;
+    valor_realizado: string | null;
     analise_qualitativa: string | null;
 }
 
@@ -694,7 +695,6 @@ export class VariavelCicloService {
                 id: variavel_id,
                 AND: whereFilter,
             },
-
             select: {
                 id: true,
                 suspendida_em: true,
@@ -734,6 +734,29 @@ export class VariavelCicloService {
         });
         if (!variavel) throw new BadRequestException('Variável não encontrada, ou não tem permissão para acessar');
 
+        // Carrega os valores da série para todas as variáveis (mãe e filhas)
+        const valoresSerieVariavel = await this.prisma.serieVariavel.findMany({
+            where: {
+                OR: [
+                    variavel.variaveis_filhas.length > 0 ? {} : { variavel_id: variavel_id },
+                    {
+                        variavel: {
+                            id: {
+                                in: variavel.variaveis_filhas.map((v) => v.id),
+                            },
+                        },
+                    },
+                ],
+                data_valor: data_referencia,
+                serie: { in: ['Realizado', 'RealizadoAcumulado'] },
+            },
+            select: {
+                variavel_id: true,
+                serie: true,
+                valor_nominal: true,
+            },
+        });
+
         // carrega a ultima linha de cada uma das analises
         const fases: VariavelFase[] = ['Liberacao', 'Preenchimento', 'Validacao'];
         const pQueries = fases.map(async (fase) => {
@@ -758,6 +781,8 @@ export class VariavelCicloService {
             });
         });
         const analisesDb = await Promise.all(pQueries);
+
+        // Encontra a última análise com revisão e ordena por fase
         const ultimaAnalise =
             analisesDb
                 .filter((a) => a?.ultima_revisao && a.fase)
@@ -765,6 +790,7 @@ export class VariavelCicloService {
                     const faseOrder = { Liberacao: 1, Validacao: 2, Preenchimento: 3 };
                     return faseOrder[a!.fase] - faseOrder[b!.fase];
                 })[0] || undefined;
+
         const analises = analisesDb
             .filter((result): result is NonNullable<typeof result> => result !== null)
             .map(
@@ -778,29 +804,6 @@ export class VariavelCicloService {
                     }) satisfies AnaliseQualitativaDto
             );
 
-        // Buscar valores da variável e suas filhas
-        const valores = await this.prisma.serieVariavel.findMany({
-            where: {
-                OR: [
-                    variavel.variaveis_filhas.length > 0 ? {} : { variavel_id: variavel_id },
-                    {
-                        variavel: {
-                            id: {
-                                in: variavel.variaveis_filhas.map((v) => v.id),
-                            },
-                        },
-                    },
-                ],
-                data_valor: data_referencia,
-                serie: { in: ['Realizado', 'RealizadoAcumulado'] },
-            },
-            select: {
-                variavel_id: true,
-                serie: true,
-                valor_nominal: true,
-            },
-        });
-
         // Buscar uploads associados
         const uploads = await this.prisma.variavelGlobalCicloDocumento.findMany({
             where: {
@@ -812,11 +815,15 @@ export class VariavelCicloService {
         });
 
         // Processar e formatar os resultados
+        // Se estiver na fase de Preenchimento sem análise prévia, usa os valores da série
+        // Para outras fases ou quando houver análise, prioriza os valores do formulário
+        const useSerieVariavel = cicloCorrente.fase === 'Preenchimento' && !ultimaAnalise; // ultimaAnalise=Form Enviado
         const valoresFormatados = this.formatarValores(
             variavel,
-            valores,
+            useSerieVariavel ? valoresSerieVariavel : [],
             ultimaAnalise?.valores as any as IUltimaAnaliseValor[]
         );
+
         const uploadsFormatados = this.formatarUploads(uploads);
 
         const pedidoCompDb = await this.prisma.variavelGlobalPedidoComplementacao.findFirst({
@@ -859,13 +866,14 @@ export class VariavelCicloService {
     private formatarValores(
         variavel: VariavelResumoInput & { variaveis_filhas: VariavelResumoInput[] },
         valores: ValorSerieInterface[],
-        ultimaAnaliseValores?: IUltimaAnaliseValor[]
+        formValues?: IUltimaAnaliseValor[]
     ): VariavelValorDto[] {
         const valoresMap = new Map<number, VariavelValorDto>();
 
         const todasVariaveis = [...variavel.variaveis_filhas];
         if (todasVariaveis.length === 0) todasVariaveis.push(variavel); // Se não tem filhas, adiciona a mãe
 
+        // Initialize map with empty values for all variables
         for (const v of todasVariaveis) {
             valoresMap.set(v.id, {
                 variavel: this.formatarVariavelResumo(v),
@@ -875,25 +883,28 @@ export class VariavelCicloService {
             });
         }
 
-        // Preenche os serieVariavel
+        // Primeiro tenta preencher os valores com os valores do formulário
+        if (formValues && Array.isArray(formValues)) {
+            for (const formValue of formValues) {
+                const valorDto = valoresMap.get(formValue.variavel_id);
+                if (valorDto) {
+                    valorDto.valor_realizado = formValue.valor_realizado || null;
+                    valorDto.analise_qualitativa = formValue.analise_qualitativa || null;
+                }
+            }
+        }
+
+        // Primeiro, preenche os valores com os valores do formulário
+        // Isso vai ou preencher os valores do formulário
+        // ou preencher os buracos onde os valores do form não existem
         for (const valor of valores) {
             const valorDto = valoresMap.get(valor.variavel_id);
             if (!valorDto) continue;
 
-            if (valor.serie === 'Realizado') {
+            if (valor.serie === 'Realizado' && !valorDto.valor_realizado) {
                 valorDto.valor_realizado = valor.valor_nominal.toString();
             } else if (valor.serie === 'RealizadoAcumulado') {
                 valorDto.valor_realizado_acumulado = valor.valor_nominal.toString();
-            }
-        }
-
-        // Preenche as analises
-        if (ultimaAnaliseValores && Array.isArray(ultimaAnaliseValores)) {
-            for (const analiseValor of ultimaAnaliseValores) {
-                const valorDto = valoresMap.get(analiseValor.variavel_id);
-                if (valorDto) {
-                    valorDto.analise_qualitativa = analiseValor.analise_qualitativa || null;
-                }
             }
         }
 
