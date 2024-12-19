@@ -661,7 +661,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             {{ schema.fields.colaboradores_no_orgao.spec.label }}
           </dt>
           <dd class="t13">
-            <ul class="listaComoTexto">
+            <ul class="lista-com-ponto">
               <li v-if="!emFoco?.colaboradores_no_orgao?.length">
                 {{ '-' }}
               </li>
