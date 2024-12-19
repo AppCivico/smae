@@ -873,7 +873,11 @@ export class VariavelCicloService {
         const todasVariaveis = [...variavel.variaveis_filhas];
         if (todasVariaveis.length === 0) todasVariaveis.push(variavel); // Se não tem filhas, adiciona a mãe
 
-        // Initialize map with empty values for all variables
+        // caso a variável não tenha filhas, mas o formValues tenha, adiciona a variável mãe
+        if (variavel.variaveis_filhas.length === 0 && Array.isArray(formValues) && formValues.length === 1) {
+            formValues[0].variavel_id = variavel.id;
+        }
+
         for (const v of todasVariaveis) {
             valoresMap.set(v.id, {
                 variavel: this.formatarVariavelResumo(v),
