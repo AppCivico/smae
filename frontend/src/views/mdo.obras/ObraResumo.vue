@@ -1,4 +1,6 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import ListaAninhada from '@/components/ListaAninhada.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
@@ -10,8 +12,6 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
@@ -556,7 +556,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ schema.fields.mdo_previsao_inauguracao.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.mdo_previsao_inauguracao ? dateToField(emFoco.mdo_previsao_inauguracao) : '-' }}
+          {{ emFoco?.mdo_previsao_inauguracao ?
+            dateToField(emFoco.mdo_previsao_inauguracao)
+            : '-'
+          }}
         </dd>
       </dl>
       <dl class="f1 mb1">
@@ -580,7 +583,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           Custo total planejado
         </dt>
         <dd class="t13">
-          {{ emFoco?.tarefa_cronograma?.previsao_custo ? `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}` : '-' }}
+          {{
+            emFoco?.tarefa_cronograma?.previsao_custo ?
+              `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}`
+              : '-'
+          }}
         </dd>
       </dl>
     </div>
@@ -661,7 +668,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             {{ schema.fields.colaboradores_no_orgao.spec.label }}
           </dt>
           <dd class="t13">
-            <ul class="listaComoTexto">
+            <ul class="lista-com-ponto">
               <li v-if="!emFoco?.colaboradores_no_orgao?.length">
                 {{ '-' }}
               </li>
