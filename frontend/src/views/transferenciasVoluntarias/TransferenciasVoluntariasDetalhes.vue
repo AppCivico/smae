@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
@@ -43,6 +43,14 @@ const {
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const ConfigurarWorkflow = ref(false);
+
+const recursoFinanceiroValores = computed(() => [
+  { label: 'Valor', valor: dinheiro(transferenciaEmFoco.value.valor) },
+  { label: 'Valor contrapartida', valor: dinheiro(transferenciaEmFoco.value.valor_contrapartida) },
+  { label: 'Custeio', valor: dinheiro(transferenciaEmFoco.value.custeio) },
+  { label: 'Investimento', valor: dinheiro(transferenciaEmFoco.value.investimento) },
+  { label: 'Valor total', valor: dinheiro(transferenciaEmFoco.value.valor_total) },
+]);
 
 function deletarWorkflow() {
   alertStore.confirmAction('Tem certeza?', async () => {
@@ -357,7 +365,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <svg
         width="20"
         height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      >
+        <use xlink:href="#i_edit" />
+      </svg>
       Editar
     </SmaeLink>
   </div>
@@ -640,62 +650,93 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex g2 center mt3 mb2">
-    <h3 class="w700 tc600 t20 mb0">
-      Recurso Financeiro
-    </h3>
-    <hr class="f1">
-    <SmaeLink
-      :to="{ name: 'RegistroDeTransferenciaEditar' }"
-      title="Editar recursos financeiros"
-      class="btn with-icon bgnone tcprimary p0"
-    >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
-      Editar
-    </SmaeLink>
-  </div>
+  <section class="recurso-financeiro">
+    <div class="flex g2 center mt3 mb2">
+      <h3 class="w700 tc600 t20 mb0">
+        Recurso Financeiro
+      </h3>
 
-  <div class="flex flexwrap g2 mb3">
-    <div class="f1">
-      <dl class="mb2">
-        <dt class="t16 w700 mb05 tamarelo">
-          Empenho
-        </dt>
-        <dd>
-          {{ transferenciaEmFoco?.empenho ? 'Sim' : 'Não' }}
-        </dd>
-      </dl>
-      <dl class="mb2">
-        <dt class="t16 w700 mb05 tamarelo">
-          Ordenador de despesas
-        </dt>
-        <dd>
-          {{ transferenciaEmFoco?.ordenador_despesa || '-' }}
-        </dd>
-      </dl>
-      <dl class="mb2">
-        <dt class="t16 w700 mb05 tamarelo">
-          Gestor municipal do contrato
-        </dt>
-        <dd>
-          {{ transferenciaEmFoco?.gestor_contrato || '-' }}
-        </dd>
-      </dl>
+      <hr class="f1">
+
+      <SmaeLink
+        :to="{ name: 'RegistroDeTransferenciaEditar' }"
+        title="Editar recursos financeiros"
+        class="btn with-icon bgnone tcprimary p0"
+      >
+        <svg
+          width="20"
+          height="20"
+        >
+          <use xlink:href="#i_edit" />
+        </svg>
+        Editar
+      </SmaeLink>
     </div>
-    <div class="grid f1">
-      <dl class="mb1">
-        <dt class="t16 w700 mb05 tamarelo">
-          Dotação
-        </dt>
-        <dd>
-          {{ transferenciaEmFoco?.dotacao || '-' }}
-        </dd>
-      </dl>
+
+    <div class="flex flexwrap g4 mb3">
+      <div class="f1">
+        <div class="recurso-financeiro-valores">
+          <div
+            v-for="(valorItem, valorItemIndex) in recursoFinanceiroValores"
+            :key="`recurso-financeiro-valores--${valorItemIndex}`"
+            class="recurso-financeiro-valores__item flex f1 spacebetween center p1"
+          >
+            <div class="t16 w700 tamarelo">
+              {{ valorItem.label }}
+            </div>
+
+            <div>
+              {{ valorItem.valor }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex column g4 p1 f1">
+        <div>
+          <div class="t16 w700 mb05 tamarelo">
+            Empenho
+          </div>
+
+          <div>
+            {{ transferenciaEmFoco?.empenho ? 'Sim' : 'Não' }}
+          </div>
+        </div>
+
+        <div>
+          <div class="t16 w700 mb05 tamarelo">
+            Ordenador de despesas
+          </div>
+
+          <div>
+            {{ transferenciaEmFoco?.ordenador_despesa ?? '-' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex column g4 p1 f1">
+        <div>
+          <div class="t16 w700 mb05 tamarelo">
+            Dotação
+          </div>
+
+          <div>
+            {{ transferenciaEmFoco?.dotacao ?? '-' }}
+          </div>
+        </div>
+
+        <div>
+          <div class="t16 w700 mb05 tamarelo">
+            Gestor municipal do contrato
+          </div>
+
+          <div>
+            {{ transferenciaEmFoco?.gestor_contrato ?? '-' }}
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
   <div class="flex g2 center mt3 mb2">
     <h3 class="w700 tc600 t20 mb0">
@@ -778,7 +819,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <svg
         width="20"
         height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      >
+        <use xlink:href="#i_edit" />
+      </svg>
       Editar
     </SmaeLink>
   </div>
@@ -790,6 +833,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     class="mb2 card-shadow p2"
   />
 </template>
+
 <style scoped lang="less">
 .parlamentares{
   padding: 20px;
@@ -840,5 +884,9 @@ section + section {
 
 .transferencia-sei-body__item--lido {
   width: 55px;
+}
+
+.recurso-financeiro-valores__item {
+  border-bottom: 1px solid #E3E5E8;
 }
 </style>
