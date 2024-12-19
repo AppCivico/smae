@@ -126,10 +126,7 @@ export default [
   <path fill-rule="evenodd" clip-rule="evenodd" d="M18 12V11.2V8.8V8.001H3.6L2 8V12H18ZM18 6V5.2V2.8V2.001H3.6L2 2V6H18ZM2 0H17.99C19.33 0 20 0.668 20 2V17.92C20 19.307 19.333 20 18 20H2C0.667 20 0 19.307 0 17.92V2C0 0.667 0.667 0 2 0ZM3.6 14H2V18H18V17.2V14.8V14.001H3.6V14ZM4 5C3.73478 5 3.48043 4.89464 3.29289 4.70711C3.10536 4.51957 3 4.26522 3 4C3 3.73478 3.10536 3.48043 3.29289 3.29289C3.48043 3.10536 3.73478 3 4 3C4.26522 3 4.51957 3.10536 4.70711 3.29289C4.89464 3.48043 5 3.73478 5 4C5 4.26522 4.89464 4.51957 4.70711 4.70711C4.51957 4.89464 4.26522 5 4 5ZM4 11C3.73478 11 3.48043 10.8946 3.29289 10.7071C3.10536 10.5196 3 10.2652 3 10C3 9.73478 3.10536 9.48043 3.29289 9.29289C3.48043 9.10536 3.73478 9 4 9C4.26522 9 4.51957 9.10536 4.70711 9.29289C4.89464 9.48043 5 9.73478 5 10C5 10.2652 4.89464 10.5196 4.70711 10.7071C4.51957 10.8946 4.26522 11 4 11ZM4 17C3.73478 17 3.48043 16.8946 3.29289 16.7071C3.10536 16.5196 3 16.2652 3 16C3 15.7348 3.10536 15.4804 3.29289 15.2929C3.48043 15.1054 3.73478 15 4 15C4.26522 15 4.51957 15.1054 4.70711 15.2929C4.89464 15.4804 5 15.7348 5 16C5 16.2652 4.89464 16.5196 4.70711 16.7071C4.51957 16.8946 4.26522 17 4 17Z" />
 </svg>`,
       rotasParaMenuSecundário,
-      rotasParaMenuPrincipal: [
-        'gerenciarUsuários',
-        'cadastrosBasicos',
-      ],
+      rotasParaMenuPrincipal: ['gerenciarUsuários', 'cadastrosBasicos'],
     },
 
     children: [
@@ -165,7 +162,9 @@ export default [
             component: PartidosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ partidoId: Number.parseInt(params.partidoId, 10) || undefined },
+              ...{
+                partidoId: Number.parseInt(params.partidoId, 10) || undefined,
+              },
             }),
 
             meta: {
@@ -181,9 +180,7 @@ export default [
           título: 'Grupos temáticos',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: [
-            'GrupoTematicoMDO.',
-          ],
+          limitarÀsPermissões: ['GrupoTematicoMDO.'],
         },
         children: [
           {
@@ -192,9 +189,7 @@ export default [
             component: GruposTematicosLista,
             meta: {
               título: 'Grupos temáticos',
-              rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
-              ],
+              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -215,7 +210,10 @@ export default [
             component: GruposTematicosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
+              ...{
+                grupoTematicoId:
+                  Number.parseInt(params.grupoTematicoId, 10) || undefined,
+              },
             }),
             meta: {
               título: 'Editar',
@@ -234,9 +232,7 @@ export default [
           título: 'Tipos de intervenção',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: [
-            'TipoIntervecaoMDO.',
-          ],
+          limitarÀsPermissões: ['TipoIntervecaoMDO.'],
         },
         children: [
           {
@@ -245,9 +241,7 @@ export default [
             component: TiposDeIntervencaoLista,
             meta: {
               título: 'Tipos de intervenção',
-              rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
-              ],
+              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -268,7 +262,10 @@ export default [
             component: TiposDeIntervencaoCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ intervencaoId: Number.parseInt(params.intervencaoId, 10) || undefined },
+              ...{
+                intervencaoId:
+                  Number.parseInt(params.intervencaoId, 10) || undefined,
+              },
             }),
             meta: {
               título: 'Editar',
@@ -287,9 +284,7 @@ export default [
           título: 'Equipamentos',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: [
-            'CadastroEquipamentoMDO.',
-          ],
+          limitarÀsPermissões: ['CadastroEquipamentoMDO.'],
         },
         children: [
           {
@@ -298,9 +293,7 @@ export default [
             component: EquipamentosLista,
             meta: {
               título: 'Equipamentos',
-              rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
-              ],
+              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -309,10 +302,7 @@ export default [
             component: EquipamentosCriarEditar,
             meta: {
               título: 'Novo equipamento',
-              rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
-                'equipamentosLista',
-              ],
+              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
             },
           },
           {
@@ -321,14 +311,14 @@ export default [
             component: EquipamentosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ equipamentoId: Number.parseInt(params.equipamentoId, 10) || undefined },
+              ...{
+                equipamentoId:
+                  Number.parseInt(params.equipamentoId, 10) || undefined,
+              },
             }),
             meta: {
               título: 'Editar equipamento',
-              rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
-                'equipamentosLista',
-              ],
+              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
             },
           },
         ],
@@ -364,7 +354,9 @@ export default [
             component: BancadasCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ bancadaId: Number.parseInt(params.bancadaId, 10) || undefined },
+              ...{
+                bancadaId: Number.parseInt(params.bancadaId, 10) || undefined,
+              },
             }),
 
             meta: {
@@ -410,7 +402,8 @@ export default [
             props: ({ params }) => ({
               ...params,
               ...{
-                tipoDeAtendimentoId: Number.parseInt(params.tipoDeAtendimentoId, 10) || undefined,
+                tipoDeAtendimentoId:
+                  Number.parseInt(params.tipoDeAtendimentoId, 10) || undefined,
               },
             }),
 
@@ -428,9 +421,7 @@ export default [
           título: 'Tipo de Transferência',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: [
-            'CadastroTransferenciaTipo.',
-          ],
+          limitarÀsPermissões: ['CadastroTransferenciaTipo.'],
         },
         children: [
           {
@@ -559,7 +550,6 @@ export default [
           },
         ],
       },
-
     ],
   },
 
@@ -625,9 +615,7 @@ export default [
         path: 'novo',
         meta: {
           título: 'Cadastrar Orgão',
-          rotasParaMigalhasDePão: [
-            'gerenciarÓrgãos',
-          ],
+          rotasParaMigalhasDePão: ['gerenciarÓrgãos'],
           rotaDeEscape: 'gerenciarÓrgãos',
         },
         component: AddEditOrgans,
@@ -637,9 +625,7 @@ export default [
         path: 'editar/:id',
         meta: {
           título: () => useOrgansStore().tempOrgans.descricao,
-          rotasParaMigalhasDePão: [
-            'gerenciarÓrgãos',
-          ],
+          rotasParaMigalhasDePão: ['gerenciarÓrgãos'],
           rotaDeEscape: 'gerenciarÓrgãos',
         },
         component: AddEditOrgans,
@@ -697,10 +683,18 @@ export default [
       {
         path: 'novo',
         component: AddEditDocumentTypes,
+        meta: {
+          título: 'Novo tipo de documento',
+          rotasParaMigalhasDePão: ['gerenciarTiposDeDocumento'],
+        },
       },
       {
         path: 'editar/:id',
         component: AddEditDocumentTypes,
+        meta: {
+          título: 'Editar tipo de documento',
+          rotasParaMigalhasDePão: ['gerenciarTiposDeDocumento'],
+        },
       },
     ],
   },
@@ -855,9 +849,7 @@ export default [
         name: 'tipoDeAditivosCriar',
         meta: {
           título: 'Novo tipo de aditivo',
-          rotasParaMigalhasDePão: [
-            'tipoDeAditivosListar',
-          ],
+          rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
         },
       },
       {
@@ -866,9 +858,7 @@ export default [
         name: 'tipoDeAditivosEditar',
         meta: {
           título: 'Editar tipo de aditivo',
-          rotasParaMigalhasDePão: [
-            'tipoDeAditivosListar',
-          ],
+          rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
         },
       },
     ],
@@ -893,28 +883,30 @@ export default [
       {
         name: 'variaveisCategoricasCriar',
         path: 'novo',
-        component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'),
+        component: () => import(
+          '@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'
+        ),
         meta: {
           título: 'Novo tipo de variável categórica',
-          rotasParaMigalhasDePão: [
-            'variaveisCategoricasListar',
-          ],
+          rotasParaMigalhasDePão: ['variaveisCategoricasListar'],
         },
       },
       {
         path: ':variavelId',
         name: 'variaveisCategoricasEditar',
-        component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'),
+        component: () => import(
+          '@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'
+        ),
         props: ({ params }) => ({
           ...params,
-          ...{ variavelId: Number.parseInt(params.variavelId, 10) || undefined },
+          ...{
+            variavelId: Number.parseInt(params.variavelId, 10) || undefined,
+          },
         }),
 
         meta: {
           título: 'Editar tipo de variável categórica',
-          rotasParaMigalhasDePão: [
-            'variaveisCategoricasListar',
-          ],
+          rotasParaMigalhasDePão: ['variaveisCategoricasListar'],
         },
       },
     ],
@@ -942,9 +934,7 @@ export default [
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
           título: 'Nova categoria de assunto',
-          rotasParaMigalhasDePão: [
-            'categoriaAssuntosListar',
-          ],
+          rotasParaMigalhasDePão: ['categoriaAssuntosListar'],
         },
       },
       {
@@ -953,14 +943,15 @@ export default [
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         props: ({ params }) => ({
           ...params,
-          ...{ categoriaAssuntoId: Number.parseInt(params.categoriaAssuntoId, 10) || undefined },
+          ...{
+            categoriaAssuntoId:
+              Number.parseInt(params.categoriaAssuntoId, 10) || undefined,
+          },
         }),
 
         meta: {
           título: 'Editar categoria de assunto',
-          rotasParaMigalhasDePão: [
-            'categoriaAssuntosListar',
-          ],
+          rotasParaMigalhasDePão: ['categoriaAssuntosListar'],
         },
       },
     ],
@@ -988,9 +979,7 @@ export default [
         component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
         meta: {
           título: 'Novo assunto',
-          rotasParaMigalhasDePão: [
-            'assuntosListar',
-          ],
+          rotasParaMigalhasDePão: ['assuntosListar'],
         },
       },
       {
@@ -1004,9 +993,7 @@ export default [
 
         meta: {
           título: 'Editar assunto',
-          rotasParaMigalhasDePão: [
-            'assuntosListar',
-          ],
+          rotasParaMigalhasDePão: ['assuntosListar'],
         },
       },
     ],
@@ -1034,9 +1021,7 @@ export default [
         component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
         meta: {
           título: 'Nova fonte',
-          rotasParaMigalhasDePão: [
-            'fontesListar',
-          ],
+          rotasParaMigalhasDePão: ['fontesListar'],
         },
       },
       {
@@ -1050,9 +1035,7 @@ export default [
 
         meta: {
           título: 'Editar fonte',
-          rotasParaMigalhasDePão: [
-            'fontesListar',
-          ],
+          rotasParaMigalhasDePão: ['fontesListar'],
         },
       },
     ],
@@ -1080,9 +1063,7 @@ export default [
         component: () => import('@/views/modalidadeDeContratacao/ModalidadesCriarEditar.vue'),
         meta: {
           título: 'Nova modalidade de contratação',
-          rotasParaMigalhasDePão: [
-            'modalidadesListar',
-          ],
+          rotasParaMigalhasDePão: ['modalidadesListar'],
         },
       },
       {
@@ -1091,14 +1072,14 @@ export default [
         component: () => import('@/views/modalidadeDeContratacao/ModalidadesCriarEditar.vue'),
         props: ({ params }) => ({
           ...params,
-          ...{ modalidadeId: Number.parseInt(params.modalidadeId, 10) || undefined },
+          ...{
+            modalidadeId: Number.parseInt(params.modalidadeId, 10) || undefined,
+          },
         }),
 
         meta: {
           título: 'Editar modalidade',
-          rotasParaMigalhasDePão: [
-            'modalidadesListar',
-          ],
+          rotasParaMigalhasDePão: ['modalidadesListar'],
         },
       },
     ],
