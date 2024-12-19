@@ -1,20 +1,16 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useUsersStore } from '@/stores/users.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -26,19 +22,15 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
+const observadoresStore = useObservadoresStore(route.meta.entidadeMãe);
 
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
   chamadasPendentes, emFoco, erro, itemParaEdicao,
 } = storeToRefs(observadoresStore);
-const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 // necessário por causa de 🤬
-const montarCampoEstático = ref(false);
-
-const UserStore = useUsersStore();
-const { pessoasSimplificadas } = storeToRefs(UserStore);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -55,14 +47,17 @@ const onSubmit = handleSubmit.withControlled(async () => {
       : 'Item adicionado com sucesso!';
 
     if (props.grupoDeObservadoresId) {
-      r = await observadoresStore.salvarItem(values, props.grupoDeObservadoresId);
+      r = await observadoresStore.salvarItem(
+        values,
+        props.grupoDeObservadoresId,
+      );
     } else {
       r = await observadoresStore.salvarItem(values);
     }
     if (r) {
       alertStore.success(msg);
       observadoresStore.$reset();
-      router.push({ name: 'gruposDeObservadoresListar' });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -71,7 +66,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function iniciar() {
   observadoresStore.$reset();
-  UserStore.buscarPessoasSimplificadas({ espectador_de_projeto: true });
 
   if (props.grupoDeObservadoresId) {
     await observadoresStore.buscarItem(props.grupoDeObservadoresId);
@@ -82,8 +76,6 @@ async function iniciar() {
   });
 
   resetForm();
-
-  montarCampoEstático.value = true;
 }
 
 const formularioSujo = useIsFormDirty();
@@ -96,9 +88,12 @@ watch(itemParaEdicao, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Portfólios' }}</h1>
+    <h1>{{ route.meta.título || "Portfólios" }}</h1>
     <hr class="ml2 f1">
-    <CheckClose :formulario-sujo="formularioSujo" />
+    <CheckClose
+      :formulario-sujo="formularioSujo"
+      :rota-de-escape="route.meta.rotaDeEscape"
+    />
   </div>
 
   <form
@@ -159,9 +154,7 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </div>
 
-    <div
-      class="flex g2"
-    >
+    <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
           name="participantes"
@@ -171,8 +164,7 @@ watch(itemParaEdicao, (novosValores) => {
         <CampoDePessoasComBuscaPorOrgao
           v-model="values.participantes"
           name="participantes"
-          :pessoas="Array.isArray(pessoasSimplificadas) ? pessoasSimplificadas : []"
-          :pronto-para-montagem="montarCampoEstático"
+          espectador-de-projeto
         />
         <ErrorMessage
           name="participantes"
@@ -190,9 +182,11 @@ watch(itemParaEdicao, (novosValores) => {
       <button
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
+        :title="
+          Object.keys(errors)?.length
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null
+        "
       >
         Salvar
       </button>
