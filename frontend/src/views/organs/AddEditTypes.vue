@@ -1,11 +1,12 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { router } from '@/router';
+import { Dashboard } from '@/components';
 import { useAlertStore, useOrgansStore } from '@/stores';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -36,7 +37,7 @@ async function onSubmit(values) {
       r = await organsStore.insertType(values);
       msg = 'Orgão adicionado com sucesso!';
     }
-    if (r == true) {
+    if (r === true) {
       await router.push('/orgaos/tipos');
       alertStore.success(msg);
     }
@@ -48,12 +49,12 @@ async function onSubmit(values) {
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', '/orgaos/tipos');
 }
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await organsStore.deleteType(id)) router.push('/orgaos/tipos'); }, 'Remover');
-}
 </script>
+
 <template>
   <Dashboard>
+    <MigalhasDePao class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <h1>{{ title }}</h1>
       <hr class="ml2 f1">
@@ -100,17 +101,11 @@ async function checkDelete(id) {
         </div>
       </Form>
     </template>
-    <template v-if="tempOrganTypes.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempOrganTypes.id)"
-      >
-        Remover item
-      </button>
-    </template>
+
     <template v-if="tempOrganTypes?.loading">
       <span class="spinner">Carregando</span>
     </template>
+
     <template v-if="tempOrganTypes?.error || error">
       <div class="error p1">
         <div class="error-msg">
