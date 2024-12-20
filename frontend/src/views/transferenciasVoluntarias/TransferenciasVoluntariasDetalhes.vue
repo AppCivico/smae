@@ -44,13 +44,25 @@ const { temPermissãoPara } = storeToRefs(authStore);
 
 const ConfigurarWorkflow = ref(false);
 
-const recursoFinanceiroValores = computed(() => [
-  { label: 'Valor', valor: dinheiro(transferenciaEmFoco.value.valor) },
-  { label: 'Valor contrapartida', valor: dinheiro(transferenciaEmFoco.value.valor_contrapartida) },
-  { label: 'Custeio', valor: dinheiro(transferenciaEmFoco.value.custeio) },
-  { label: 'Investimento', valor: dinheiro(transferenciaEmFoco.value.investimento) },
-  { label: 'Valor total', valor: dinheiro(transferenciaEmFoco.value.valor_total) },
-]);
+const recursoFinanceiroValores = computed(() => {
+  if (!transferenciaEmFoco.value) {
+    return [
+      { label: 'Valor', valor: '-' },
+      { label: 'Valor contrapartida', valor: '-' },
+      { label: 'Custeio', valor: '-' },
+      { label: 'Investimento', valor: '-' },
+      { label: 'Valor total', valor: '-' },
+    ];
+  }
+
+  return [
+    { label: 'Valor', valor: dinheiro(transferenciaEmFoco.value.valor) },
+    { label: 'Valor contrapartida', valor: dinheiro(transferenciaEmFoco.value.valor_contrapartida) },
+    { label: 'Custeio', valor: dinheiro(transferenciaEmFoco.value.custeio) },
+    { label: 'Investimento', valor: dinheiro(transferenciaEmFoco.value.investimento) },
+    { label: 'Valor total', valor: dinheiro(transferenciaEmFoco.value.valor_total) },
+  ];
+});
 
 function deletarWorkflow() {
   alertStore.confirmAction('Tem certeza?', async () => {
