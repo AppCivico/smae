@@ -74,6 +74,7 @@ const rotasParaMenuSecundário = [
     rotas: [
       'tipoDeAcompanhamentoListar',
       'gerenciarÓrgãos',
+      'orgaos.tipos',
       'gerenciarUnidadesDeMedida',
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
@@ -632,15 +633,38 @@ export default [
       },
       {
         path: 'tipos',
-        component: ListOrganTypes,
-      },
-      {
-        path: 'tipos/novo',
-        component: AddEditOrganTypes,
-      },
-      {
-        path: 'tipos/editar/:id',
-        component: AddEditOrganTypes,
+        meta: {
+          título: 'Tipos de Orgão',
+        },
+        children: [
+          {
+            path: '',
+            name: 'orgaos.tipos',
+            component: ListOrganTypes,
+          },
+          {
+            path: 'novo',
+            component: AddEditOrganTypes,
+            name: 'orgaos.tipos.novo',
+            meta: {
+              título: 'Novo Tipo de Orgão',
+              rotasParaMigalhasDePão: [
+                'orgaos.tipos',
+              ],
+            },
+          },
+          {
+            path: 'editar/:id',
+            component: AddEditOrganTypes,
+            name: 'orgaos.tipos.editar',
+            meta: {
+              título: 'Editar tipo de Orgão',
+              rotasParaMigalhasDePão: [
+                'orgaos.tipos',
+              ],
+            },
+          },
+        ],
       },
     ],
   },
