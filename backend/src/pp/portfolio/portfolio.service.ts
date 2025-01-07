@@ -172,7 +172,7 @@ export class PortfolioService {
                 this.logger.debug(
                     `Filtro Projeto.administrador_no_orgao/ProjetoMDO.administrador_no_orgao: orgao_id=${orgao_id}`
                 );
-            } else {
+            } else if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
                 // ...
                 const projetoRows = await this.prisma.projeto.groupBy({
                     by: ['portfolio_id'],
