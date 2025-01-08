@@ -251,7 +251,6 @@ export class EtapaService {
         if (!prismaCtx) await this.lockCronograma(basicSelf.cronograma_id);
 
         this.logger.log(`atualizando etapa id=${id}: ${JSON.stringify(dto)}`);
-        const responsaveis = dto.responsaveis === null ? [] : dto.responsaveis;
         const geolocalizacao = dto.geolocalizacao;
         delete dto.geolocalizacao;
 
@@ -438,6 +437,8 @@ export class EtapaService {
                         relacionamentoId
                     );
                 }
+                // não há responsáveis para PS no sistema legado, então limpa tudo
+                await this.updateResponsaveis([], self, prismaTx);
             } else {
                 await this.updateResponsaveis(dto.responsaveis, self, prismaTx);
             }
@@ -519,8 +520,6 @@ export class EtapaService {
                     this.logger.debug(`Não foi necessário validar a região da etapa ${id} com base na geolocalização`);
                 }
             }
-
-            await this.updateResponsaveis(responsaveis, self, prismaTx);
 
             // apaga tudo por enquanto, não só as que têm algum crono dessa meta
             // isso aqui pq tem q cruzar com atv->ini-> chegar na meta
