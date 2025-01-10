@@ -1,6 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import {
+  useODSStore,
   useOrgansStore,
   useResourcesStore,
   useDocumentTypesStore,
@@ -81,7 +82,7 @@ const rotasParaMenuSecundário = [
       'orgaos.tipos',
       'tipo-documento.listar',
       'unidade-medida.lista',
-      'gerenciarCategorias',
+      'categorias.lista',
       'classificacao',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
@@ -766,16 +767,32 @@ export default [
     children: [
       {
         path: '',
-        name: 'gerenciarCategorias',
+        name: 'categorias.lista',
         component: ListODS,
       },
       {
         path: 'nova',
+        name: 'categorias.novo',
         component: AddEditODS,
+        meta: {
+          título: 'Nova Categoria',
+          rotaDeEscape: 'categorias.lista',
+          rotasParaMigalhasDePão: [
+            'categorias.lista',
+          ],
+        },
       },
       {
         path: 'editar/:id',
+        name: 'categorias.editar',
         component: AddEditODS,
+        meta: {
+          título: () => useODSStore().tempODS.titulo,
+          rotaDeEscape: 'categorias.lista',
+          rotasParaMigalhasDePão: [
+            'categorias.lista',
+          ],
+        },
       },
     ],
   },
