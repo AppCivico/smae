@@ -77,7 +77,7 @@ const rotasParaMenuSecundário = [
   {
     rotas: [
       'tipoDeAcompanhamentoListar',
-      'gerenciarÓrgãos',
+      'orgaos.listar',
       'orgaos.tipos',
       'tipo-documento.listar',
       'unidade-medida.lista',
@@ -612,28 +612,31 @@ export default [
     },
     children: [
       {
-        name: 'gerenciarÓrgãos',
+        name: 'orgaos.listar',
         path: '',
         component: ListOrgans,
       },
       {
         path: 'novo',
+        name: 'orgaos.novo',
         meta: {
           título: 'Novo Órgão',
           rotasParaMigalhasDePão: [
-            'gerenciarÓrgãos',
+            'orgaos.listar',
           ],
-          rotaDeEscape: 'gerenciarÓrgãos',
+          rotaDeEscape: 'orgaos.listar',
         },
         component: AddEditOrgans,
       },
       {
-        name: 'ÓrgãosItem',
         path: 'editar/:id',
+        name: 'orgaos.editar',
         meta: {
           título: () => useOrgansStore().tempOrgans.descricao,
-          rotasParaMigalhasDePão: ['gerenciarÓrgãos'],
-          rotaDeEscape: 'gerenciarÓrgãos',
+          rotasParaMigalhasDePão: [
+            'orgaos.listar',
+          ],
+          rotaDeEscape: 'orgaos.listar',
         },
         component: AddEditOrgans,
       },
