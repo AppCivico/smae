@@ -1,6 +1,6 @@
 import { defineAsyncComponent } from 'vue';
 
-import { useOrgansStore } from '@/stores';
+import { useDocumentTypesStore, useOrgansStore } from '@/stores';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
@@ -76,7 +76,7 @@ const rotasParaMenuSecundário = [
       'gerenciarÓrgãos',
       'orgaos.tipos',
       'gerenciarUnidadesDeMedida',
-      'gerenciarTiposDeDocumento',
+      'tipo-documento.listar',
       'gerenciarCategorias',
       'classificacao',
       'gerenciarRegiões',
@@ -695,29 +695,37 @@ export default [
     path: '/tipo-documento',
     meta: {
       limitarÀsPermissões: 'CadastroTipoDocumento.',
-      título: 'Tipos de documento',
+      título: 'Tipos de Documento',
       rotasParaMenuSecundário,
     },
     children: [
       {
-        name: 'gerenciarTiposDeDocumento',
         path: '',
+        name: 'tipo-documento.listar',
         component: ListDocumentTypes,
       },
       {
         path: 'novo',
+        name: 'tipo-documento.novo',
         component: AddEditDocumentTypes,
         meta: {
-          título: 'Novo tipo de documento',
-          rotasParaMigalhasDePão: ['gerenciarTiposDeDocumento'],
+          título: 'Novo Tipo de Documento',
+          rotasParaMigalhasDePão: [
+            'tipo-documento.listar',
+          ],
+          rotaDeEscape: 'tipo-documento.listar',
         },
       },
       {
         path: 'editar/:id',
+        name: 'tipo-documento.editar',
         component: AddEditDocumentTypes,
         meta: {
-          título: 'Editar tipo de documento',
-          rotasParaMigalhasDePão: ['gerenciarTiposDeDocumento'],
+          título: () => useDocumentTypesStore().tempDocumentTypes.descricao,
+          rotasParaMigalhasDePão: [
+            'tipo-documento.listar',
+          ],
+          rotaDeEscape: 'tipo-documento.listar',
         },
       },
     ],
