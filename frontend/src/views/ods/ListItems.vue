@@ -1,17 +1,22 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { useAuthStore, useODSStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
 
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+import { Dashboard } from '@/components';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+
+import { useAlertStore, useAuthStore, useODSStore } from '@/stores';
 
 const ODSStore = useODSStore();
+const authStore = useAuthStore();
+const alertStore = useAlertStore();
+
 const { tempODS } = storeToRefs(ODSStore);
+const { permissions } = storeToRefs(authStore);
+
 ODSStore.clear();
 ODSStore.filterODS();
+const perm = permissions.value;
 
 const filters = reactive({
   textualSearch: '',
@@ -21,20 +26,33 @@ const itemsFiltered = ref(tempODS);
 function filterItems() {
   ODSStore.filterODS(filters);
 }
+
+async function checkDelete({ id, titulo }) {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${titulo}"?`, async () => {
+    ODSStore.delete(id).then(() => {
+      ODSStore.clear();
+      ODSStore.filterODS(filters);
+    }).catch(() => { });
+  }, 'Remover');
+}
 </script>
+
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>Categorias</h1>
+      <TituloDaPagina />
+
       <hr class="ml2 f1">
+
       <router-link
         v-if="perm?.CadastroOds?.inserir"
-        to="/categorias/nova"
+        :to="{ name: 'categorias.novo'}"
         class="btn big ml2"
       >
         Nova categoria
       </router-link>
     </div>
+
     <div class="flex center mb2">
       <div class="f2 search">
         <input
@@ -71,21 +89,42 @@ function filterItems() {
             <td>{{ item.numero }}</td>
             <td>{{ item.titulo }}</td>
             <td>{{ item.descricao }}</td>
-            <td style="white-space: nowrap; text-align: right;">
-              <template v-if="perm?.CadastroOds?.editar">
-                <router-link
-                  :to="`/categorias/editar/${item.id}`"
-                  class="tprimary"
+            <td class="tr">
+              <router-link
+                v-if="perm?.CadastroOds?.editar"
+                :to="{
+                  name: 'categorias.editar',
+                  params: {
+                    id: item.id
+                  }
+                }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_edit" /></svg>
-                </router-link>
-              </template>
+                  <use xlink:href="#i_edit" />
+                </svg>
+              </router-link>
+
+              <button
+                v-if="perm?.CadastroUnidadeMedida.remover"
+                class="ml1 like-a__text"
+                @click="checkDelete(item)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  class="blue"
+                >
+                  <use xlink:href="#i_waste" />
+                </svg>
+              </button>
             </td>
           </tr>
         </template>
+
         <tr v-else-if="itemsFiltered.loading">
           <td colspan="54">
             Carregando
