@@ -51,9 +51,10 @@ async function apagarOrgao({ id, descricao }) {
       >
         Gerenciar Tipos de Orgão
       </router-link>
+
       <router-link
         v-if="perm?.CadastroOrgao?.inserir"
-        to="/orgaos/novo"
+        :to="{ name: 'orgaos.novo'}"
         class="btn big ml1"
       >
         Novo orgão
@@ -100,7 +101,12 @@ async function apagarOrgao({ id, descricao }) {
             <td class="tr">
               <template v-if="perm?.CadastroOrgao?.editar">
                 <router-link
-                  :to="`/orgaos/editar/${item.id}`"
+                  :to="{
+                    name: 'orgaos.editar',
+                    params: {
+                      id: item.id
+                    }
+                  }"
                   class="tprimary"
                 >
                   <svg
