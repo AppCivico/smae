@@ -619,8 +619,10 @@ export default [
       {
         path: 'novo',
         meta: {
-          título: 'Cadastrar Orgão',
-          rotasParaMigalhasDePão: ['gerenciarÓrgãos'],
+          título: 'Novo Órgão',
+          rotasParaMigalhasDePão: [
+            'gerenciarÓrgãos',
+          ],
           rotaDeEscape: 'gerenciarÓrgãos',
         },
         component: AddEditOrgans,
