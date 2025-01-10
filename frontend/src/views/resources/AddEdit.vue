@@ -1,16 +1,17 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { router } from '@/router';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useResourcesStore } from '@/stores/resources.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { router } from '@/router';
 
-const authStore = useAuthStore();
-const { permissions: perm } = storeToRefs(authStore);
+import { Dashboard } from '@/components';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useResourcesStore } from '@/stores/resources.store';
+
+const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -20,9 +21,7 @@ const resourcesStore = useResourcesStore();
 const { tempResources } = storeToRefs(resourcesStore);
 resourcesStore.clear();
 
-let title = 'Cadastro de unidade de medida';
 if (id) {
-  title = 'Editar unidade de medida';
   resourcesStore.getById(id);
 }
 
@@ -42,37 +41,29 @@ async function onSubmit(values) {
       r = await resourcesStore.insertType(values);
       msg = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
-      await router.push('/unidade-medida');
+
+    if (r) {
+      await router.push({ name: route.meta.rotaDeEscape });
       alertStore.success(msg);
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
-
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/unidade-medida');
-}
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await resourcesStore.deleteType(id)) router.push('/unidade-medida'); }, 'Remover');
-}
 </script>
+
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
+    <MigalhasDePão />
+
+    <div class="flex spacebetween center mb2 mt2">
+      <TituloDaPagina />
+
       <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
+
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
+
     <template v-if="!(tempResources?.loading || tempResources?.error)">
       <Form
         v-slot="{ errors, isSubmitting }"
@@ -121,14 +112,6 @@ async function checkDelete(id) {
       </Form>
     </template>
 
-    <template v-if="tempResources.id && perm?.CadastroUnidadeMedida?.remover">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempResources.id)"
-      >
-        Remover item
-      </button>
-    </template>
     <template v-if="tempResources?.loading">
       <span class="spinner">Carregando</span>
     </template>
