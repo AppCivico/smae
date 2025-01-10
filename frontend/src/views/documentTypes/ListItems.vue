@@ -39,16 +39,6 @@ async function checkDelete({ id, descricao }) {
 function filterItems() {
   documentTypesStore.filterDocumentTypes(filters);
 }
-
-async function checkDelete({ id, titulo }) {
-  alertStore.confirmAction(`Deseja mesmo remover o item "${titulo}"?`, async () => {
-    if (await documentTypesStore.delete(id)) {
-      documentTypesStore.clear();
-      documentTypesStore.filterDocumentTypes();
-      alertStore.success(`${titulo} removido!`);
-    }
-  }, 'Remover');
-}
 </script>
 
 <template>
