@@ -28,7 +28,7 @@ const filters = reactive({
 const itemsFiltered = ref(tempDocumentTypes);
 
 async function checkDelete({ id, descricao }) {
-  alertStore.confirmAction(`Deseja mesmo remover esse o item "${descricao}"?`, async () => {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${descricao}"?`, async () => {
     documentTypesStore.delete(id).then(() => {
       documentTypesStore.clear();
       documentTypesStore.filterDocumentTypes(filters);
