@@ -24,7 +24,7 @@ function filterItems() {
 }
 
 async function checkDelete({ id, descricao }) {
-  alertStore.confirmAction(`Deseja mesmo remover esse o item "${descricao}"?`, async (a) => {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${descricao}"?`, async (a) => {
     resourcesStore.deleteType(id).then(() => {
       resourcesStore.clear();
       resourcesStore.filterResources();
@@ -42,7 +42,7 @@ async function checkDelete({ id, descricao }) {
 
       <router-link
         v-if="perm?.CadastroUnidadeMedida?.inserir"
-        :to="{ name: 'unidade-medida.novo'}"
+        :to="{ name: 'unidade-medida.novo' }"
         class="btn big ml2"
       >
         Nova unidade de Medida
