@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import { useAlertStore, useAuthStore, useResourcesStore } from '@/stores';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const authStore = useAuthStore();
 const alertStore = useAlertStore();
@@ -36,7 +37,7 @@ async function checkDelete({ id, descricao }) {
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>Unidades de medida</h1>
+      <TituloDaPagina />
 
       <hr class="ml2 f1">
 

@@ -676,7 +676,7 @@ export default [
     path: '/unidade-medida',
     meta: {
       limitarÀsPermissões: 'CadastroUnidadeMedida.',
-      título: 'Unidade de Medida',
+      título: 'Unidades de Medida',
       rotasParaMenuSecundário,
     },
     children: [
