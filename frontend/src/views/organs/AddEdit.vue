@@ -50,7 +50,7 @@ async function onSubmit(values) {
     }
 
     alertStore.success(message);
-    router.push({ name: 'gerenciarÓrgãos' });
+    router.push({ name: route.meta.rotaDeEscape });
   } catch (error) {
     alertStore.error(error);
   }
@@ -68,6 +68,7 @@ async function onSubmit(values) {
 
       <CheckClose :formulario-sujo="formularioSujo" />
     </div>
+
     <template v-if="!(tempOrgans?.loading || tempOrgans?.error)">
       <Form
         v-slot="{ setFieldValue, errors, isSubmitting, values }"
