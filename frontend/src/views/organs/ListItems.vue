@@ -57,7 +57,7 @@ async function apagarOrgao({ id, descricao }) {
         :to="{ name: 'orgaos.novo'}"
         class="btn big ml1"
       >
-        Novo orgão
+        Novo Órgão
       </router-link>
     </div>
 
