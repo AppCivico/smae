@@ -24,7 +24,7 @@ function filterItems() {
 }
 
 async function checkDelete({ id, descricao }) {
-  alertStore.confirmAction(`Deseja mesmo remover o item "${descricao}"?`, async (a) => {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${descricao}"?`, async () => {
     resourcesStore.deleteType(id).then(() => {
       resourcesStore.clear();
       resourcesStore.filterResources();
