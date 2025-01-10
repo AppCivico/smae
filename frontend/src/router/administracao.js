@@ -1,6 +1,10 @@
 import { defineAsyncComponent } from 'vue';
 
-import { useDocumentTypesStore, useOrgansStore } from '@/stores';
+import {
+  useOrgansStore,
+  useResourcesStore,
+  useDocumentTypesStore,
+} from '@/stores';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
@@ -75,8 +79,8 @@ const rotasParaMenuSecundário = [
       'tipoDeAcompanhamentoListar',
       'gerenciarÓrgãos',
       'orgaos.tipos',
-      'gerenciarUnidadesDeMedida',
       'tipo-documento.listar',
+      'unidade-medida.lista',
       'gerenciarCategorias',
       'classificacao',
       'gerenciarRegiões',
@@ -672,22 +676,38 @@ export default [
     path: '/unidade-medida',
     meta: {
       limitarÀsPermissões: 'CadastroUnidadeMedida.',
-      título: 'Unidades de medida',
+      título: 'Unidade de Medida',
       rotasParaMenuSecundário,
     },
     children: [
       {
-        name: 'gerenciarUnidadesDeMedida',
         path: '',
+        name: 'unidade-medida.lista',
         component: ListResources,
       },
       {
         path: 'novo',
+        name: 'unidade-medida.novo',
         component: AddEditResources,
+        meta: {
+          título: 'Nova Unidade de Medida',
+          rotaDeEscape: 'unidade-medida.lista',
+          rotasParaMigalhasDePão: [
+            'unidade-medida.lista',
+          ],
+        },
       },
       {
         path: 'editar/:id',
+        name: 'unidade-medida.editar',
         component: AddEditResources,
+        meta: {
+          título: () => useResourcesStore().tempResources.descricao,
+          rotaDeEscape: 'unidade-medida.lista',
+          rotasParaMigalhasDePão: [
+            'unidade-medida.lista',
+          ],
+        },
       },
     ],
   },
