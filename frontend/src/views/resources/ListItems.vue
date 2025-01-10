@@ -81,9 +81,12 @@ async function checkDelete({ id, descricao }) {
             <td>{{ item.descricao }}</td>
             <td>{{ item.sigla }}</td>
             <td class="tr">
-              <template v-if="perm?.CadastroUnidadeMedida?.editar">
                 <router-link
-                  :to="`/unidade-medida/editar/${item.id}`"
+                  v-if="perm?.CadastroUnidadeMedida?.editar"
+                  :to="{
+                    name: 'unidade-medida.editar',
+                    params: { id: item.id }
+                  }"
                   class="tprimary"
                 >
                   <svg
@@ -103,7 +106,6 @@ async function checkDelete({ id, descricao }) {
                     class="blue"
                   ><use xlink:href="#i_waste" /></svg>
                 </button>
-              </template>
             </td>
           </tr>
         </template>
