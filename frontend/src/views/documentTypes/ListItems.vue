@@ -110,7 +110,10 @@ async function checkDelete({ id, titulo }) {
             <td class="tr">
               <router-link
                 v-if="perm?.CadastroTipoDocumento?.editar"
-                :to="`/tipo-documento/editar/${item.id}`"
+                :to="{
+                  name: 'tipo-documento.editar',
+                  params: { id: item.id }
+                }"
                 class="tprimary"
               >
                 <svg
