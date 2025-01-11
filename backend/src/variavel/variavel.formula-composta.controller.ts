@@ -81,7 +81,9 @@ export class VariavelGlobalFCController {
         @Query() filter: FilterPeriodoFormulaCompostaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelFCService.getFormulaCompostaSeries(params.id, filter, user);
+        // Plano setorial é apenas leitura para que seja usado o banco de variáveis globais
+        // ou pensar melhor na validação de acesso das variáveis globais
+        return await this.variavelFCService.getFormulaCompostaSeries(params.id, filter, user, 'leitura');
     }
 
     @Post('plano-setorial-formula-composta')

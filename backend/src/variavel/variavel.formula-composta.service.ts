@@ -17,7 +17,7 @@ import {
     PeriodoFormulaCompostaDto,
     UpdatePSFormulaCompostaDto,
 } from './dto/variavel.formula-composta.dto';
-import { VariavelItemDto } from './entities/variavel.entity';
+import { TipoUso, VariavelItemDto } from './entities/variavel.entity';
 import { ORDEM_SERIES_RETORNO, VariavelService } from './variavel.service';
 
 @Injectable()
@@ -87,7 +87,8 @@ export class VariavelFormulaCompostaService {
     async getFormulaCompostaSeries(
         formula_composta_id: number,
         filter: FilterPeriodoFormulaCompostaDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        uso: TipoUso = 'escrita'
     ): Promise<ListSeriesAgrupadas> {
         // TODO: Implementar verificação de permissão, não deve ser retornado o token de acesso
         // para os usuários que não possuem permissão de escrita na variável (quem não está na meta e etc)
@@ -133,11 +134,11 @@ export class VariavelFormulaCompostaService {
                 ORDEM_SERIES_RETORNO,
                 { data_valor: filter.periodo }
             );
-            // eu acho que aqui não precisa de escrita, afinal, estamos na tela de formula composta
+
             const porPeriodo = this.variavelService.getValorSerieExistentePorPeriodo(
                 valoresExistentes,
                 variavelId,
-                'leitura',
+                uso,
                 user
             );
             const seriesExistentes = this.variavelService.populaSeriesExistentes(
@@ -145,7 +146,7 @@ export class VariavelFormulaCompostaService {
                 periodoYMD,
                 variavelId,
                 variavel,
-                'leitura',
+                uso,
                 user
             );
 
