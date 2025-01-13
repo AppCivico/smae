@@ -113,10 +113,9 @@
         v-else-if="variavel.variavel_categorica_id > 0"
         :valores="Valores[(variavel.id as keyof {})]"
       />
-      <EvolucaoGraph
+      <GraficoLinhasEvolucao
         v-else
-        :dataserie="Valores[(variavel.id as keyof {})]"
-        :tem-categorica="variavel.variavel_categorica_id > 0"
+        :valores="Valores[(variavel.id as keyof {})]"
       />
     </header>
 
@@ -184,7 +183,7 @@
   </article>
 </template>
 <script lang="ts" setup>
-import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import dateToField from '@/helpers/dateToField';
