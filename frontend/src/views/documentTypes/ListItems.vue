@@ -1,13 +1,14 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
-import { Dashboard } from '@/components';
+
 import {
   useAlertStore,
   useAuthStore,
   useDocumentTypesStore,
 } from '@/stores';
 
+import Dashboard from '@/components/DashboardLayout.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const authStore = useAuthStore();
