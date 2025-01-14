@@ -205,7 +205,7 @@ function obterUltimoStatus(historico = []) {
     return '-';
   }
 
-  return ultimoStatus.status_base.nome;
+  return ultimoStatus.status_base?.nome || '-';
 }
 
 iniciar();
