@@ -1,9 +1,12 @@
 <template>
   <MigalhasDePão class="mb1" />
+
   <header class="flex spacebetween center mb2">
     <TítuloDePágina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <Form
@@ -53,7 +56,9 @@
   <span
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
-  >Carregando</span>
+  >
+    Carregando
+  </span>
 
   <div
     v-if="erro"
@@ -66,12 +71,14 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 import { categoriaAssunto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -81,6 +88,8 @@ const props = defineProps({
     default: 0,
   },
 });
+
+const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
@@ -108,7 +117,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       assuntosStore.$reset();
-      router.push({ name: 'categoriaAssuntosListar' });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
