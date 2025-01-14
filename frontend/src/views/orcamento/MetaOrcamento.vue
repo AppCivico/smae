@@ -1,14 +1,14 @@
 <script setup>
-import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import ConcluirPorOrgao from '@/components/orcamento/ConcluirPorOrgao.vue';
-import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
-import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
-import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 import { storeToRefs } from 'pinia';
 import {
   computed, defineOptions, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import ConcluirPorOrgao from '@/components/orcamento/ConcluirPorOrgao.vue';
+import SimpleOrcamentoCusteio from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
+import SimpleOrcamentoPlanejado from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
+import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -19,24 +19,26 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-const editModalStore = useEditModalStore();
 
-const props = defineProps(['area', 'title']);
+const props = defineProps({
+  area: {
+    type: String,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+});
 
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
-const { atividade_id } = route.params;
+const { meta_id: metaId } = route.params;
+const { iniciativa_id: iniciativaId } = route.params;
+const { atividade_id: atividadeId } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
-const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
-const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
-const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
+const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}${atividadeId ? `/atividades/${atividadeId}` : ''}`;
 
 const conclusãoPendente = ref(false);
 const campoPlanoConcluído = ref(null);
@@ -54,6 +56,18 @@ const {
 
 OrcamentosStore.clear();
 
+const parentLabel = computed(() => {
+  if (atividadeId || iniciativaId) {
+    return '-';
+  }
+
+  if (metaId) {
+    return 'Meta';
+  }
+
+  return false;
+});
+
 const SimpleOrcamento = computed(() => {
   switch (props.area) {
     case 'Realizado':
@@ -69,16 +83,27 @@ const SimpleOrcamento = computed(() => {
 
 const orçamentosEmOrdemDecrescente = computed(() => (Array.isArray(activePdm.value.orcamento_config)
   ? activePdm.value.orcamento_config
-    // adicionando `_` à chave para porque números causam sua reordenação
+  // adicionando `_` à chave para porque números causam sua reordenação
     .map((x) => ({ ...x, chave: `_${x.ano_referencia}` }))
     .sort((a, b) => b.ano_referencia - a.ano_referencia)
   : []));
 const anoCorrente = new Date().getUTCFullYear();
+
+let anoPaginaAberta = orçamentosEmOrdemDecrescente.value.at(0).ano_referencia;
+const anoCorrenteEstaNoPlano = orçamentosEmOrdemDecrescente.value.find(
+  (item) => item.ano_referencia === anoCorrente,
+);
+
+if (anoCorrenteEstaNoPlano) {
+  anoPaginaAberta = anoCorrenteEstaNoPlano.ano_referencia;
+}
+
 const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.reduce((acc, cur) => {
   acc[`_${cur.ano_referencia}`] = {
     etiqueta: cur.ano_referencia,
   };
-  if (Number(anoCorrente) === Number(cur.ano_referencia)) {
+
+  if (Number(anoPaginaAberta) === Number(cur.ano_referencia)) {
     acc[`_${cur.ano_referencia}`].aberta = true;
   }
   return acc;
@@ -86,25 +111,36 @@ const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.red
 
 async function start() {
   await MetasStore.getPdM();
-  if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
-  else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+  if (atividadeId) parentLabel.value = activePdm.value.rotulo_atividade;
+  else if (iniciativaId) parentLabel.value = activePdm.value.rotulo_iniciativa;
 }
 
 function buscarDadosParaAno(ano) {
   switch (props.area) {
     case 'Realizado':
-      if (!Array.isArray(OrcamentoRealizado.value?.[ano]) || !OrcamentoRealizado.value?.[ano].length) {
-        OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+      if (
+        !Array.isArray(OrcamentoRealizado.value?.[ano])
+        || !OrcamentoRealizado.value?.[ano].length
+      ) {
+        OrcamentosStore.getOrcamentoRealizadoById(metaId, ano);
       }
       break;
+
     case 'Planejado':
-      if (!Array.isArray(OrcamentoPlanejado.value?.[ano]) || !OrcamentoPlanejado.value?.[ano].length) {
-        OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+      if (
+        !Array.isArray(OrcamentoPlanejado.value?.[ano])
+        || !OrcamentoPlanejado.value?.[ano].length
+      ) {
+        OrcamentosStore.getOrcamentoPlanejadoById(metaId, ano);
       }
       break;
+
     case 'Custo':
-      if (!Array.isArray(OrcamentoCusteio.value?.[ano]) || !OrcamentoCusteio.value?.[ano].length) {
-        OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+      if (
+        !Array.isArray(OrcamentoCusteio.value?.[ano])
+        || !OrcamentoCusteio.value?.[ano].length
+      ) {
+        OrcamentosStore.getOrcamentoCusteioById(metaId, ano);
       }
       break;
     default:
@@ -182,7 +218,7 @@ export default {
     >
       <component
         :is="SimpleOrcamento"
-        :meta_id="meta_id"
+        :meta_id="metaId"
         :config="orc"
         :parentlink="parentlink"
         @apagar="start"
@@ -221,7 +257,7 @@ export default {
           <ConcluirPorOrgao
             v-if="anoDoDiálogoDeConclusãoAberto === ano"
             :ano="ano"
-            :meta="meta_id"
+            :meta="metaId"
             @close="() => { anoDoDiálogoDeConclusãoAberto = 0; }"
           />
           <button

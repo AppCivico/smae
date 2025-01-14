@@ -1,15 +1,25 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { useAuthStore, useDocumentTypesStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
 
+import {
+  useAlertStore,
+  useAuthStore,
+  useDocumentTypesStore,
+} from '@/stores';
+
+import Dashboard from '@/components/DashboardLayout.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+
 const authStore = useAuthStore();
+const alertStore = useAlertStore();
+const documentTypesStore = useDocumentTypesStore();
+
 const { permissions } = storeToRefs(authStore);
+const { tempDocumentTypes } = storeToRefs(documentTypesStore);
+
 const perm = permissions.value;
 
-const documentTypesStore = useDocumentTypesStore();
-const { tempDocumentTypes } = storeToRefs(documentTypesStore);
 documentTypesStore.clear();
 documentTypesStore.filterDocumentTypes();
 
@@ -18,23 +28,36 @@ const filters = reactive({
 });
 const itemsFiltered = ref(tempDocumentTypes);
 
+async function checkDelete({ id, descricao }) {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${descricao}"?`, async () => {
+    documentTypesStore.delete(id).then(() => {
+      documentTypesStore.clear();
+      documentTypesStore.filterDocumentTypes(filters);
+    }).catch(() => { });
+  }, 'Remover');
+}
+
 function filterItems() {
   documentTypesStore.filterDocumentTypes(filters);
 }
 </script>
+
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>Tipos de Documento</h1>
+      <TituloDaPagina />
+
       <hr class="ml2 f1">
+
       <router-link
         v-if="perm?.CadastroTipoDocumento?.inserir"
-        to="/tipo-documento/novo"
+        :to="{ name: 'tipo-documento.novo' }"
         class="btn big ml2"
       >
-        Novo tipo
+        Novo Tipo de Documento
       </router-link>
     </div>
+
     <div class="flex center mb2">
       <div class="f2 search">
         <input
@@ -75,18 +98,36 @@ function filterItems() {
             <td>{{ item.titulo }}</td>
             <td>{{ item.descricao }}</td>
             <td>{{ item.extensoes.split(',').join(', ') }}</td>
-            <td style="white-space: nowrap; text-align: right;">
-              <template v-if="perm?.CadastroTipoDocumento?.editar">
-                <router-link
-                  :to="`/tipo-documento/editar/${item.id}`"
-                  class="tprimary"
+            <td class="tr">
+              <router-link
+                v-if="perm?.CadastroTipoDocumento?.editar"
+                :to="{
+                  name: 'tipo-documento.editar',
+                  params: { id: item.id }
+                }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_edit" /></svg>
-                </router-link>
-              </template>
+                  <use xlink:href="#i_edit" />
+                </svg>
+              </router-link>
+
+              <button
+                v-if="perm?.CadastroUnidadeMedida.remover"
+                class="ml1 like-a__text"
+                @click="checkDelete(item)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  class="blue"
+                >
+                  <use xlink:href="#i_waste" />
+                </svg>
+              </button>
             </td>
           </tr>
         </template>

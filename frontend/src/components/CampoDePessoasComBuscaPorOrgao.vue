@@ -1,14 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useField } from 'vee-validate';
+import {
+  computed, onMounted, ref, watch, watchEffect,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
-import { storeToRefs } from 'pinia';
-import { useField } from 'vee-validate';
-import {
-  computed, onMounted, ref, watch,
-  watchEffect,
-} from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -77,6 +77,7 @@ const props = defineProps({
   },
 });
 
+const route = useRoute();
 const emit = defineEmits(['update:modelValue']);
 
 const ÓrgãosStore = useOrgansStore();
@@ -104,17 +105,22 @@ const { handleChange } = useField(props.name, undefined, {
 const órgãosDisponíveis = computed(() => {
   const órgãos = Array.isArray(organs.value) ? organs.value : [];
 
-  return (props.órgãosPermitidos.length && órgãos
-    ? órgãos.filter((x) => props.órgãosPermitidos.indexOf(x.id) !== -1)
-    : órgãos).filter((x) => !!pessoasPorÓrgão.value[x.id]?.length);
+  return (
+    props.órgãosPermitidos.length && órgãos
+      ? órgãos.filter((x) => props.órgãosPermitidos.indexOf(x.id) !== -1)
+      : órgãos
+  ).filter((x) => !!pessoasPorÓrgão.value[x.id]?.length);
 });
 
 // usar lista para manter a ordem
 const listaDeÓrgãos = ref([]);
 
 // usar mapa para simplificar a conferência de órgãos já em uso
-const mapaDeÓrgãos = computed(() => listaDeÓrgãos.value
-  .reduce((acc, cur) => ({ ...acc, [cur.id]: true }), {}));
+const mapaDeÓrgãos = computed(
+  () => listaDeÓrgãos.value.reduce((acc, cur) => (
+    { ...acc, [cur.id]: true }
+  ), {}),
+);
 
 const órgãosEPessoas = computed(() => props.modelValue.reduce((acc, cur) => {
   const chave = pessoasPorId.value[cur]?.orgao_id;
@@ -132,10 +138,12 @@ const órgãosEPessoas = computed(() => props.modelValue.reduce((acc, cur) => {
 }, {}));
 
 function removerLinha(índice) {
-  const novoValor = Object.keys(órgãosEPessoas.value)
-    .reduce((acc, cur) => (listaDeÓrgãos.value[índice].id === órgãosEPessoas.value[cur].órgão
+  const novoValor = Object.keys(órgãosEPessoas.value).reduce(
+    (acc, cur) => (listaDeÓrgãos.value[índice].id === órgãosEPessoas.value[cur].órgão
       ? acc
-      : acc.concat(órgãosEPessoas.value[cur].pessoas)), []);
+      : acc.concat(órgãosEPessoas.value[cur].pessoas)),
+    [],
+  );
 
   listaDeÓrgãos.value.splice(índice, 1);
   handleChange(novoValor);
@@ -147,12 +155,13 @@ function adicionarLinha() {
 }
 
 function adicionarPessoas(pessoas, índice) {
-  const novoValor = listaDeÓrgãos.value
-    .reduce((acc, cur) => (listaDeÓrgãos.value[índice].id === órgãosEPessoas.value[cur.id]?.órgão
+  const novoValor = listaDeÓrgãos.value.reduce(
+    (acc, cur) => (listaDeÓrgãos.value[índice].id === órgãosEPessoas.value[cur.id]?.órgão
       || !órgãosEPessoas.value[cur.id]
       ? acc.concat(pessoas)
-      : acc.concat(órgãosEPessoas.value[cur.id].pessoas)
-    ), []);
+      : acc.concat(órgãosEPessoas.value[cur.id].pessoas)),
+    [],
+  );
 
   handleChange(novoValor);
   emit('update:modelValue', novoValor);
@@ -164,14 +173,16 @@ async function montar() {
       await ÓrgãosStore.getAll();
     }
 
-    listaDeÓrgãos.value = Object.values(props.modelValue.reduce((acc, cur) => {
-      // usando reduce e um mapa para evitar o trabalho de remover duplicatas
-      const chaveDoÓrgão = `_${pessoasPorId.value[cur]?.orgao_id}`;
-      if (!acc[chaveDoÓrgão]) {
-        acc[chaveDoÓrgão] = { id: pessoasPorId.value[cur]?.orgao_id };
-      }
-      return acc;
-    }, {}));
+    listaDeÓrgãos.value = Object.values(
+      props.modelValue.reduce((acc, cur) => {
+        // usando reduce e um mapa para evitar o trabalho de remover duplicatas
+        const chaveDoÓrgão = `_${pessoasPorId.value[cur]?.orgao_id}`;
+        if (!acc[chaveDoÓrgão]) {
+          acc[chaveDoÓrgão] = { id: pessoasPorId.value[cur]?.orgao_id };
+        }
+        return acc;
+      }, {}),
+    );
   }
 }
 
@@ -181,12 +192,14 @@ onMounted(() => {
 });
 
 watchEffect(async () => {
+  const sufixo = route.meta.entidadeMãe === 'mdo' ? 'mdo_' : '';
+
   const { linhas } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
     colaborador_de_projeto: props.colaboradorDeProjeto,
     coordenador_responsavel_cp: props.coordenadorResponsavelCp,
     email: props.email,
     espectador_de_painel_externo: props.espectadorDePainelExterno,
-    espectador_de_projeto: props.espectadorDeProjeto,
+    [`${sufixo}espectador_de_projeto`]: props.espectadorDeProjeto,
     gestor_de_projeto: props.gestorDeProjeto,
     orgao_id: props.orgaoId,
     ps_admin_cp: props.psAdminCp,
@@ -202,9 +215,13 @@ watchEffect(async () => {
   }
 });
 
-watch(() => props.prontoParaMontagem, () => {
-  montar();
-}, { immediate: true });
+watch(
+  () => props.prontoParaMontagem,
+  () => {
+    montar();
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <div class="campo-de-pessoas">
@@ -218,7 +235,7 @@ watch(() => props.prontoParaMontagem, () => {
           :for="`${$props.name}__orgao--${idx}`"
           class="label"
         >
-          {{ props.orgaoLabel ? props.orgaoLabel : 'Órgão' }}
+          {{ props.orgaoLabel ? props.orgaoLabel : "Órgão" }}
         </label>
         <select
           :id="`${$props.name}__orgao--${idx}`"
@@ -232,9 +249,12 @@ watch(() => props.prontoParaMontagem, () => {
             :key="`${item.órgão}__órgão--${órgão.id}`"
             :value="órgão.id"
             :title="órgão.descricao?.length > 36 ? órgão.descricao : undefined"
-            :disabled="mapaDeÓrgãos[órgão.id] && listaDeÓrgãos[idx].id !== órgão.id"
+            :disabled="
+              mapaDeÓrgãos[órgão.id] && listaDeÓrgãos[idx].id !== órgão.id
+            "
           >
-            {{ órgão.id }} - {{ órgão.sigla }} - {{ truncate(órgão.descricao, 36) }}
+            {{ órgão.id }} - {{ órgão.sigla }} -
+            {{ truncate(órgão.descricao, 36) }}
           </option>
         </select>
       </div>
@@ -248,12 +268,16 @@ watch(() => props.prontoParaMontagem, () => {
           :id="`${$props.name}__pessoas--${idx}`"
           :controlador="{
             busca: '',
-            participantes: órgãosEPessoas[item.id]?.pessoas || []
+            participantes: órgãosEPessoas[item.id]?.pessoas || [],
           }"
           :model-value="órgãosEPessoas[item.id]?.pessoas"
           :grupo="pessoasPorÓrgão[listaDeÓrgãos[idx].id] || []"
           label="nome_exibicao"
-          @change="($newValue) => { adicionarPessoas($newValue, idx); }"
+          @change="
+            ($newValue) => {
+              adicionarPessoas($newValue, idx);
+            }
+          "
         />
       </div>
 
@@ -273,8 +297,10 @@ watch(() => props.prontoParaMontagem, () => {
     <button
       class="like-a__text addlink"
       type="button"
-      :disabled="!órgãosDisponíveis.length
-        || órgãosDisponíveis.length === listaDeÓrgãos.length"
+      :disabled="
+        !órgãosDisponíveis.length ||
+          órgãosDisponíveis.length === listaDeÓrgãos.length
+      "
       @click="adicionarLinha"
     >
       <svg

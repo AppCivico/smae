@@ -2,7 +2,7 @@ import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
-import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
+import { IdNomeExibicaoDto, IdNomeExibicaoOrgaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdNomeIdentificadorDto } from 'src/common/dto/IdNomeIdentificador.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
@@ -268,7 +268,7 @@ export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
 
     secretario_colaborador: string | null;
     orgao_colaborador: IdSiglaDescricao | null;
-    colaboradores_no_orgao: IdNomeExibicaoDto[];
+    colaboradores_no_orgao: IdNomeExibicaoOrgaoDto[];
 
     orgao_origem: IdSiglaDescricao | null;
 

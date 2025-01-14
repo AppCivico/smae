@@ -232,21 +232,11 @@ export const aditivoDeContrato = object({
   data: date()
     .label('Data')
     .required(),
-  data_termino_atualizada: date()
-    .label('Data de término atualizada')
-    .nullable()
-    .transform((v) => (!v ? null : v)),
   numero: string()
     .label('Número do aditivo')
     .min(1)
     .max(500)
     .required(),
-  percentual_medido: number()
-    .label('Percentual medido')
-    .min(0)
-    .max(100)
-    .nullable()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   tipo_aditivo_id: number()
     .label('Tipo')
     .integer()
@@ -254,8 +244,15 @@ export const aditivoDeContrato = object({
     .required(),
   valor: number()
     .label('Valor')
-    .nullable()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    .nullableOuVazio(),
+  percentual_medido: number()
+    .label('Percentual medido')
+    .min(0)
+    .max(100)
+    .nullableOuVazio(),
+  data_termino_atualizada: date()
+    .label('Data de término atualizada')
+    .nullableOuVazio(),
 });
 
 export const andamentoDaFase = (órgãoRequerido = false, pessoaRequerida = false) => object({
@@ -1416,6 +1413,13 @@ export const obras = object({
     .label('Percentual de tolerância com atraso')
     .min(0)
     .max(100)
+    .nullable(),
+  grupo_portfolio: array()
+    .label('Grupos de observadores')
+    .of(
+      number()
+        .min(1),
+    )
     .nullable(),
 });
 

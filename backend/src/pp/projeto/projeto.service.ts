@@ -1567,6 +1567,7 @@ export class ProjetoService {
                 select: {
                     id: true,
                     nome_exibicao: true,
+                    pessoa_fisica: { select: { orgao: { select: { id: true, sigla: true } } } },
                 },
             }),
             this.prisma.projetoTag.findMany({
@@ -1668,7 +1669,13 @@ export class ProjetoService {
             tolerancia_atraso: tarefaCrono?.tolerancia_atraso ?? 0,
             percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
             status_cronograma: tarefaCrono?.status_cronograma ?? null,
-            colaboradores_no_orgao: colaboradores_no_orgao,
+            colaboradores_no_orgao: colaboradores_no_orgao.map((r) => {
+                return {
+                    id: r.id,
+                    nome_exibicao: r.nome_exibicao,
+                    orgao: r.pessoa_fisica?.orgao || { id: 0, sigla: '' },
+                };
+            }),
             regioes: projeto.ProjetoRegiao.map((r) => r.regiao),
             meta: meta,
             iniciativa: iniciativa,

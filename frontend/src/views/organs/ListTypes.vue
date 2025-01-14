@@ -2,12 +2,13 @@
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
-import { useAuthStore, useOrgansStore } from '@/stores';
+import { useAlertStore, useAuthStore, useOrgansStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
+const alertStore = useAlertStore();
 const organsStore = useOrgansStore();
 const { tempOrganTypes } = storeToRefs(organsStore);
 organsStore.clear();
@@ -21,19 +22,21 @@ const itemsFiltered = ref(tempOrganTypes);
 function filterItems() {
   organsStore.filterOrganTypes(filters);
 }
+
+async function checkDelete({ id, descricao }) {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${descricao}"?`, () => {
+    organsStore.deleteType(id).then(async () => {
+      await organsStore.clear();
+      await organsStore.filterOrganTypes();
+    });
+  }, 'Remover');
+}
 </script>
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
       <h1>Tipos de Orgão</h1>
       <hr class="ml2 f1">
-      <router-link
-        v-if="perm?.CadastroOrgao"
-        to="/orgaos"
-        class="btn big amarelo ml2"
-      >
-        Gerenciar Orgãos
-      </router-link>
       <router-link
         v-if="perm?.CadastroTipoOrgao?.inserir"
         to="/orgaos/tipos/novo"
@@ -81,6 +84,18 @@ function filterItems() {
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
                 </router-link>
+
+                <template v-if="perm?.CadastroTipoOrgao?.remover">
+                  <button
+                    class="like-a__text ml1"
+                    @click="checkDelete(item)"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_waste" /></svg>
+                  </button>
+                </template>
               </template>
             </td>
           </tr>

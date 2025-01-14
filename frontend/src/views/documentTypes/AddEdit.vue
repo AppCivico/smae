@@ -1,24 +1,29 @@
 <script setup>
+import * as Yup from 'yup';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+
 import { Dashboard } from '@/components';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import CheckClose from '@/components/CheckClose.vue';
+
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
-const alertStore = useAlertStore();
 const route = useRoute();
+const alertStore = useAlertStore();
+const formularioSujo = useIsFormDirty();
+const documentTypesStore = useDocumentTypesStore();
+
 const { id } = route.params;
 
-const documentTypesStore = useDocumentTypesStore();
 const { tempDocumentTypes } = storeToRefs(documentTypesStore);
 documentTypesStore.clear();
 
-let title = 'Cadastro de tipo de documento';
 if (id) {
-  title = 'Editar tipo de documento';
   documentTypesStore.getById(id);
 }
 
@@ -40,40 +45,33 @@ async function onSubmit(values) {
       r = await documentTypesStore.insert(values);
       msg = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
-      await router.push('/tipo-documento');
+
+    if (r === true) {
       alertStore.success(msg);
+      await router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
 
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/tipo-documento');
-}
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await documentTypesStore.delete(id)) router.push('/tipo-documento'); }, 'Remover');
-}
 function removeChars(x) {
   x.target.value = x.target.value.replace(/[^a-zA-Z0-9,]/g, '');
 }
 </script>
+
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
+    <MigalhasDePao />
+
+    <div class="flex spacebetween center mb2 mt2">
+      <TituloDaPagina />
+
       <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
+
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
+
     <template v-if="!(tempDocumentTypes?.loading || tempDocumentTypes?.error)">
       <Form
         v-slot="{ errors, isSubmitting }"
@@ -150,14 +148,7 @@ function removeChars(x) {
         </div>
       </Form>
     </template>
-    <template v-if="tempDocumentTypes.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempDocumentTypes.id)"
-      >
-        Remover item
-      </button>
-    </template>
+
     <template v-if="tempDocumentTypes?.loading">
       <span class="spinner">Carregando</span>
     </template>

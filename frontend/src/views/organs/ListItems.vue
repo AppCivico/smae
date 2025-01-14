@@ -40,21 +40,16 @@ async function apagarOrgao({ id, descricao }) {
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>Orgãos</h1>
+      <TítuloDePágina />
+
       <hr class="ml2 f1">
-      <router-link
-        v-if="perm?.CadastroTipoOrgao"
-        to="/orgaos/tipos"
-        class="btn big amarelo ml2"
-      >
-        Gerenciar Tipos de Orgão
-      </router-link>
+
       <router-link
         v-if="perm?.CadastroOrgao?.inserir"
-        to="/orgaos/novo"
+        :to="{ name: 'orgaos.novo'}"
         class="btn big ml1"
       >
-        Novo orgão
+        Novo Órgão
       </router-link>
     </div>
 
@@ -82,7 +77,7 @@ async function apagarOrgao({ id, descricao }) {
           <th style="width: 20%">
             Sigla
           </th>
-          <th style="width: 10%" />
+          <th />
         </tr>
       </thead>
 
@@ -95,10 +90,15 @@ async function apagarOrgao({ id, descricao }) {
             <td>{{ item.descricao }}</td>
             <td>{{ item.tipo_orgao.descricao }}</td>
             <td>{{ item.sigla ?? '-' }}</td>
-            <td>
+            <td class="tr">
               <template v-if="perm?.CadastroOrgao?.editar">
                 <router-link
-                  :to="`/orgaos/editar/${item.id}`"
+                  :to="{
+                    name: 'orgaos.editar',
+                    params: {
+                      id: item.id
+                    }
+                  }"
                   class="tprimary"
                 >
                   <svg

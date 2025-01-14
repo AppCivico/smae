@@ -1,24 +1,27 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { router } from '@/router';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
 
+import { router } from '@/router';
 import { useAlertStore, useODSStore } from '@/stores';
 
-const alertStore = useAlertStore();
+import { Dashboard } from '@/components';
+import CheckClose from '@/components/CheckClose.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+
 const route = useRoute();
-const { id } = route.params;
-
 const ODSStore = useODSStore();
-const { tempODS } = storeToRefs(ODSStore);
-ODSStore.clear();
+const alertStore = useAlertStore();
+const formularioSujo = useIsFormDirty();
 
-let title = 'Cadastro de categoria';
+const { id } = route.params;
+const { tempODS } = storeToRefs(ODSStore);
+
+ODSStore.clear();
 if (id) {
-  title = 'Editar categoria';
   ODSStore.getById(id);
 }
 
@@ -39,37 +42,29 @@ async function onSubmit(values) {
       r = await ODSStore.insert(values);
       msg = 'Item adicionado com sucesso!';
     }
-    if (r == true) {
-      await router.push('/categorias');
+
+    if (r === true) {
+      await router.push({ name: route.meta.rotaDeEscape });
       alertStore.success(msg);
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
-
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/categorias');
-}
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await ODSStore.delete(id)) router.push('/categorias'); }, 'Remover');
-}
 </script>
+
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
+    <MigalhasDePao />
+
+    <div class="flex spacebetween center mb2 mt2">
+      <TituloDaPagina />
+
       <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
+
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
+
     <template v-if="!(tempODS?.loading || tempODS?.error)">
       <Form
         v-slot="{ errors, isSubmitting }"
@@ -129,14 +124,7 @@ async function checkDelete(id) {
         </div>
       </Form>
     </template>
-    <template v-if="tempODS.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempODS.id)"
-      >
-        Remover item
-      </button>
-    </template>
+
     <template v-if="tempODS?.loading">
       <span class="spinner">Carregando</span>
     </template>

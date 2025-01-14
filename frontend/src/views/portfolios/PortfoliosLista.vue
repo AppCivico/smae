@@ -1,9 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
@@ -36,12 +36,12 @@ if (!organs.length) {
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
     <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'portfoliosCriar' }"
+    <SmaeLink
+      :to="{ name: '.portfolio.criar' }"
       class="btn big ml1"
     >
       Novo portfólio
-    </router-link>
+    </SmaeLink>
   </div>
 
   <table class="tablemain">
@@ -75,16 +75,16 @@ if (!organs.length) {
         </td>
         <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
         <td>
-          <router-link
+          <SmaeLink
             v-if="item?.pode_editar"
-            :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
+            :to="{ name: '.portfolio.editar', params: { portfolioId: item.id } }"
             class="tprimary"
           >
             <svg
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
