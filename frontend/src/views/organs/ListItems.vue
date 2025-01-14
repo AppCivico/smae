@@ -45,14 +45,6 @@ async function apagarOrgao({ id, descricao }) {
       <hr class="ml2 f1">
 
       <router-link
-        v-if="perm?.CadastroTipoOrgao"
-        to="/orgaos/tipos"
-        class="btn big amarelo ml2"
-      >
-        Gerenciar Tipos de Orgão
-      </router-link>
-
-      <router-link
         v-if="perm?.CadastroOrgao?.inserir"
         :to="{ name: 'orgaos.novo'}"
         class="btn big ml1"
