@@ -3,7 +3,7 @@ import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { useEscaparDaRota } from '@/composables/escaparDaRota.composable';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import {
   variavelGlobal as schemaCriacao,
   variavelGlobalParaGeracao as schemaGeracao,
@@ -170,7 +170,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     if (resposta) {
       alertStore.success(msg);
 
-      useEscaparDaRota(router);
+      escaparDaRota(router);
     }
   } catch (error) {
     alertStore.error(error);
