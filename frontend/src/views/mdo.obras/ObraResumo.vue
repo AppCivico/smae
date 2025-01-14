@@ -57,6 +57,25 @@ const exibeBlocoHabitacional = computed(() => {
       || foco?.programa;
 });
 
+const colaboradoresPorGrupo = computed(() => {
+  const grupos = emFoco.value?.colaboradores_no_orgao.reduce((amount, item) => {
+    const { orgao, ...colaborador } = item;
+
+    if (!amount[item.orgao.sigla]) {
+      amount[item.orgao.sigla] = {
+        ...item.orgao,
+        colaboradores: [],
+      };
+    }
+
+    amount[item.orgao.sigla].colaboradores.push(colaborador);
+
+    return amount;
+  }, {});
+
+  return grupos;
+});
+
 defineProps({
   obraId: {
     type: Number,
@@ -698,13 +717,22 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
       <h2>{{ schema.fields.grupo_portfolio.spec.label }}</h2>
 
-      <ul class="lista-com-ponto">
+      <ul>
         <li
-          v-for="grupoPorfolio in emFoco?.grupo_portfolio"
-          :key="grupoPorfolio.id"
-          class="mb1"
+          v-for="grupoPortfolio in colaboradoresPorGrupo"
+          :key="grupoPortfolio.id"
+          class="mb2"
         >
-          <span class="t13">{{ grupoPorfolio.titulo }}</span>
+          <div>{{ grupoPortfolio.sigla }}</div>
+          <ul
+            v-for="colaborador in grupoPortfolio.colaboradores"
+            :key="`g${grupoPortfolio.id}-c${colaborador.id}`"
+            class="lista-com-ponto"
+          >
+            <li class="mb05">
+              {{ colaborador.nome_exibicao }}
+            </li>
+          </ul>
         </li>
       </ul>
     </div>
