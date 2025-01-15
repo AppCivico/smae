@@ -51,6 +51,8 @@ class AdminCpDbItem {
     equipe_id: number;
 }
 
+export type ModoPdm = 'PS' | 'PDM' | 'PDM_AS_PS';
+
 @Injectable()
 export class PdmService {
     private readonly logger = new Logger(PdmService.name);
@@ -188,13 +190,18 @@ export class PdmService {
         delete dto.pdm_anteriores;
     }
 
-    private async getPermissionSet(tipo: TipoPdm, user: PessoaFromJwt) {
+    private convertePdmModoParaTipo(tipo: ModoPdm): TipoPdm {
+        if (tipo == 'PDM_AS_PS') return 'PDM';
+        return tipo == 'PDM' ? 'PDM' : 'PS';
+    }
+
+    private async getPermissionSet(tipo: ModoPdm, user: PessoaFromJwt) {
         const orList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
         const andList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
         if (
-            tipo == 'PS' &&
+            (tipo == 'PS' || tipo == 'PDM_AS_PS') &&
             user.hasSomeRoles([
                 'CadastroMetaPS.listar',
                 'CadastroPS.administrador',
@@ -202,8 +209,9 @@ export class PdmService {
                 'SMAE.GrupoVariavel.participante',
             ])
         ) {
+            const tipoPdm = this.convertePdmModoParaTipo(tipo);
             andList.push({
-                tipo: 'PS',
+                tipo: tipoPdm,
             });
 
             if (user.hasSomeRoles(['CadastroPS.administrador'])) {
@@ -225,7 +233,7 @@ export class PdmService {
                     if (!orgaoId) throw new HttpException('Usuário sem órgão associado', 400);
 
                     orList.push({
-                        tipo: 'PS',
+                        tipo: tipoPdm,
                         PdmPerfil: {
                             some: {
                                 removido_em: null,
@@ -241,7 +249,7 @@ export class PdmService {
                     this.logger.log('Usuário com permissão total em PS no CP');
 
                     orList.push({
-                        tipo: 'PS',
+                        tipo: tipoPdm,
                         PdmPerfil: {
                             some: {
                                 removido_em: null,
@@ -256,7 +264,7 @@ export class PdmService {
                     this.logger.log('Usuário com permissão total em PS no CP');
 
                     orList.push({
-                        tipo: 'PS',
+                        tipo: tipoPdm,
                         PdmPerfil: {
                             some: {
                                 removido_em: null,
@@ -277,6 +285,8 @@ export class PdmService {
             });
         } else if (tipo == 'PS') {
             throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
+        } else if (tipo == 'PDM_AS_PS') {
+            throw new HttpException('Usuário sem permissão para acessar Programa de Metas (Módulo 3).', 403);
         }
 
         // talvez tenha que liberar pra mais pessoas, mas na teoria seria isso
@@ -297,10 +307,8 @@ export class PdmService {
                 tipo: 'PDM',
             });
         } else if (tipo == 'PDM') {
-            throw new HttpException('Usuário sem permissão para acessar Plano de Metas.', 403);
+            throw new HttpException('Usuário sem permissão para acessar Programa de Metas (Módulo 1).', 403);
         }
-
-        console.log(andList);
 
         const ret: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
         ret.push({
@@ -310,14 +318,14 @@ export class PdmService {
         return ret;
     }
 
-    async findAllIds(tipo: TipoPdm, user: PessoaFromJwt): Promise<number[]> {
+    async findAllIds(tipo: ModoPdm, user: PessoaFromJwt): Promise<number[]> {
         const active = true;
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
                 ativo: active,
-                tipo: tipo,
+                tipo: this.convertePdmModoParaTipo(tipo),
                 AND: await this.getPermissionSet(tipo, user),
             },
             select: {
@@ -328,14 +336,14 @@ export class PdmService {
         return listActive.map((pdm) => pdm.id);
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
+    async findAll(tipo: ModoPdm, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
         const active = filters.ativo;
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
                 ativo: active,
-                tipo: tipo,
+                tipo: this.convertePdmModoParaTipo(tipo),
                 id: filters.id,
                 AND: await this.getPermissionSet(tipo, user),
             },
@@ -1201,7 +1209,6 @@ export class PdmService {
 
                 await this.variavelService.processVariaveisSuspensas(prismaTx);
 
-
                 this.logger.debug(`Atualizando metas consolidadas`);
                 await prismaTx.$queryRaw`
                     SELECT f_add_refresh_meta_task(meta_id)::text
@@ -1473,7 +1480,7 @@ export class PdmService {
     }
 
     async getOrcamentoConfig(
-        tipo: TipoPdm,
+        tipo: ModoPdm,
         pdm_id: number,
         deleteExtraYears = false,
         prismaCtx?: Prisma.TransactionClient
@@ -1481,7 +1488,7 @@ export class PdmService {
         this.logger.log(`getOrcamentoConfig(${tipo}, ${pdm_id}) with prismaCtx=${!!prismaCtx}`);
         const prismaTx = prismaCtx || this.prisma;
         const pdm = await prismaTx.pdm.findFirstOrThrow({
-            where: { id: pdm_id, tipo },
+            where: { id: pdm_id, tipo: this.convertePdmModoParaTipo(tipo) },
             select: {
                 data_inicio: true,
                 data_fim: true,
@@ -1511,7 +1518,7 @@ export class PdmService {
             },
         };
 
-        const pdmConfig = defaultConfig[tipo];
+        const pdmConfig = defaultConfig[this.convertePdmModoParaTipo(tipo)];
 
         const rows: {
             ano_referencia: number;

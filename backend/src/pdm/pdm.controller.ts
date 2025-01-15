@@ -34,6 +34,7 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
 import { PdmService } from './pdm.service';
+import { Request } from 'express';
 
 @ApiTags('PDM')
 @Controller('pdm')
@@ -206,12 +207,19 @@ export class PlanoSetorialController {
     @ApiBearerAuth('access-token')
     @Get()
     @Roles([...PermsPS])
-    async findAll(@Query() filters: FilterPdmDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDto> {
-        const linhas = await this.pdmService.findAll('PS', filters, user);
+    async findAll(
+        @Query() filters: FilterPdmDto,
+        @CurrentUser() user: PessoaFromJwt,
+        req: Request
+    ): Promise<ListPdmDto> {
+        const planoSetorial = req.path.startsWith('/plano-setorial');
+        const tipo = planoSetorial ? 'PS' : 'PDM_AS_PS';
+
+        const linhas = await this.pdmService.findAll(tipo, filters, user);
         let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
 
         if (linhas[0] && linhas[0].id && filters.id !== undefined) {
-            orcamento_config = await this.pdmService.getOrcamentoConfig('PS', linhas[0].id);
+            orcamento_config = await this.pdmService.getOrcamentoConfig(tipo, linhas[0].id);
         }
 
         return {
