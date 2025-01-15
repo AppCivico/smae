@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'assuntosCriar' }"
+      :to="{ name: 'assunto.novo' }"
       class="btn big ml1"
     >
       Novo assunto
@@ -42,7 +42,7 @@
         </td>
         <td>
           <router-link
-            :to="{ name: 'assuntosEditar', params: { assuntoId: item.id } }"
+            :to="{ name: 'assunto.editar', params: { assuntoId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -61,7 +61,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>
