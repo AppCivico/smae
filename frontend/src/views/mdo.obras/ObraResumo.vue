@@ -723,7 +723,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           :key="grupoPortfolio.id"
           class="mb2"
         >
-          <div>{{ grupoPortfolio.sigla }}</div>
+          <h4>{{ grupoPortfolio.sigla }}</h4>
           <ul
             v-for="colaborador in grupoPortfolio.colaboradores"
             :key="`g${grupoPortfolio.id}-c${colaborador.id}`"
