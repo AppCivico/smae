@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <SmaeLink
-      :to="{ name: 'categoriaAssuntosCriar' }"
+      :to="{ name: 'categoriaAssunto.novo' }"
       class="btn big ml1"
     >
       Nova categoria de assunto
@@ -37,7 +37,7 @@
         <td>
           <router-link
             :to="{
-              name: 'categoriaAssuntosEditar',
+              name: 'categoriaAssunto.editar',
               params: { categoriaAssuntoId: item.id }
             }"
             class="tprimary"
@@ -58,7 +58,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>

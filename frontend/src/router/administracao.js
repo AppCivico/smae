@@ -6,6 +6,7 @@ import {
   useResourcesStore,
   useDocumentTypesStore,
 } from '@/stores';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
@@ -93,7 +94,7 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'variaveisCategoricasListar',
-      'categoriaAssuntosListar',
+      'categoriaAssunto.listar',
       'assuntosListar',
       'modalidadesListar',
       'fontesListar',
@@ -990,12 +991,11 @@ export default [
     component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoRaiz.vue'),
     meta: {
       limitarÀsPermissões: 'AssuntoVariavel.',
-      título: 'Categoria de Assuntos',
       rotasParaMenuSecundário,
     },
     children: [
       {
-        name: 'categoriaAssuntosListar',
+        name: 'categoriaAssunto.listar',
         path: '',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoLista.vue'),
         meta: {
@@ -1003,16 +1003,17 @@ export default [
         },
       },
       {
-        name: 'categoriaAssuntosCriar',
+        name: 'categoriaAssunto.novo',
         path: 'novo',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
           título: 'Nova categoria de assunto',
-          rotasParaMigalhasDePão: ['categoriaAssuntosListar'],
+          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
+          rotaDeEscape: 'categoriaAssunto.listar',
         },
       },
       {
-        name: 'categoriaAssuntosEditar',
+        name: 'categoriaAssunto.editar',
         path: ':categoriaAssuntoId',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         props: ({ params }) => ({
@@ -1022,10 +1023,10 @@ export default [
               Number.parseInt(params.categoriaAssuntoId, 10) || undefined,
           },
         }),
-
         meta: {
-          título: 'Editar categoria de assunto',
-          rotasParaMigalhasDePão: ['categoriaAssuntosListar'],
+          título: () => useAssuntosStore().categoriaParaEdicao.nome,
+          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
+          rotaDeEscape: 'categoriaAssunto.listar',
         },
       },
     ],
