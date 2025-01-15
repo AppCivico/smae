@@ -58,6 +58,10 @@ const exibeBlocoHabitacional = computed(() => {
 });
 
 const colaboradoresPorGrupo = computed(() => {
+  if (emFoco.value?.colaboradores_no_orgao.length === 0) {
+    return null;
+  }
+
   const grupos = emFoco.value?.colaboradores_no_orgao.reduce((amount, item) => {
     const { orgao, ...colaborador } = item;
 
@@ -669,30 +673,38 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_colaborador_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_colaborador?.sigla }} - {{ emFoco?.orgao_colaborador?.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.colaboradores_no_orgao.spec.label }}
           </dt>
           <dd class="t13">
-            <ul class="lista-com-ponto">
-              <li v-if="!emFoco?.colaboradores_no_orgao?.length">
-                {{ '-' }}
-              </li>
+            <ul v-if="colaboradoresPorGrupo">
               <li
-                v-for="item in emFoco?.colaboradores_no_orgao"
-                :key="item.id"
+                v-for="grupoPortfolio in colaboradoresPorGrupo"
+                :key="grupoPortfolio.id"
+                class="mb1"
               >
-                {{ item.nome_exibicao }}
+                <span>{{ grupoPortfolio.sigla }}</span>
+                <ul
+                  v-for="colaborador in grupoPortfolio.colaboradores"
+                  :key="`g${grupoPortfolio.id}-c${colaborador.id}`"
+                  class="lista-com-ponto"
+                >
+                  <li class="mb05">
+                    {{ colaborador.nome_exibicao }}
+                  </li>
+                </ul>
               </li>
             </ul>
+
+            <span v-else>
+              -
+            </span>
           </dd>
         </div>
+
+        <div class="f1 mb1">
+          <!-- aqui só pra ajustar o layout -->
+        </div>
+
         <div class="f1 mb1">
           <!-- aqui só pra ajustar o layout -->
         </div>
@@ -717,24 +729,25 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
       <h2>{{ schema.fields.grupo_portfolio.spec.label }}</h2>
 
-      <ul>
+      <ul
+        v-if="emFoco?.grupo_portfolio.length !== 0"
+        class="lista-com-ponto"
+      >
         <li
-          v-for="grupoPortfolio in colaboradoresPorGrupo"
-          :key="grupoPortfolio.id"
-          class="mb2"
+          v-for="grupoPorfolio in emFoco?.grupo_portfolio"
+          :key="grupoPorfolio.id"
+          class="mb1"
         >
-          <h4>{{ grupoPortfolio.sigla }}</h4>
-          <ul
-            v-for="colaborador in grupoPortfolio.colaboradores"
-            :key="`g${grupoPortfolio.id}-c${colaborador.id}`"
-            class="lista-com-ponto"
-          >
-            <li class="mb05">
-              {{ colaborador.nome_exibicao }}
-            </li>
-          </ul>
+          <span class="t13">{{ grupoPorfolio.titulo }}</span>
         </li>
       </ul>
+
+      <span
+        v-else
+        class="t13"
+      >
+        Sem items para exibir
+      </span>
     </div>
 
     <hr
@@ -777,7 +790,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </div>
     </div>
 
-    <hr class="mb1 f1">
+    <hr class="mt1 mb1 f1">
   </div>
 
   <template v-if="emFoco?.status === 'Fechado'">

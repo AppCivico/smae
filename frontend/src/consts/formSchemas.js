@@ -1157,7 +1157,7 @@ export const obras = object({
   atividade_id: number()
     .nullable(),
   colaboradores_no_orgao: array()
-    .label('Ponto focal colaborador')
+    .label('Órgãos Colaboradores')
     .of(
       number()
         .min(1),
@@ -1330,7 +1330,7 @@ export const obras = object({
         }),
     ),
   ponto_focal_colaborador: string()
-    .label('Ponto focal colaborador')
+    .label('Ponto focal colaborador2')
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
