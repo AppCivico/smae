@@ -1729,12 +1729,7 @@ async function populateDistribuicaoStatusBase() {
                 valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
                 permite_novos_registros: row.permite_novos_registros,
             },
-            update: {
-                nome: row.nome,
-                tipo: row.tipo,
-                valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
-                permite_novos_registros: row.permite_novos_registros,
-            },
+            update: {},
         });
     }
 }
