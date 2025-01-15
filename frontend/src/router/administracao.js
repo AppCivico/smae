@@ -6,6 +6,7 @@ import {
   useResourcesStore,
   useDocumentTypesStore,
 } from '@/stores';
+import { useFontesStore } from '@/stores/fontesPs.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
@@ -97,7 +98,7 @@ const rotasParaMenuSecundário = [
       'categoria-assunto.listar',
       'assunto.listar',
       'modalidadesListar',
-      'fontesListar',
+      'fonte.listar',
       'partidosListar',
     ],
   },
@@ -1067,7 +1068,7 @@ export default [
     },
     children: [
       {
-        name: 'fontesListar',
+        name: 'fonte.listar',
         path: '',
         component: () => import('@/views/ps.fontes/FontesLista.vue'),
         meta: {
@@ -1075,26 +1076,27 @@ export default [
         },
       },
       {
-        name: 'fontesCriar',
+        name: 'fonte.novo',
         path: 'novo',
         component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
         meta: {
           título: 'Nova fonte',
-          rotasParaMigalhasDePão: ['fontesListar'],
+          rotasParaMigalhasDePão: ['fonte.listar'],
+          rotaDeEscape: 'fonte.listar',
         },
       },
       {
         path: ':fonteId',
-        name: 'fontesEditar',
+        name: 'fonte.editar',
         component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
         props: ({ params }) => ({
           ...params,
           ...{ fonteId: Number.parseInt(params.fonteId, 10) || undefined },
         }),
-
         meta: {
-          título: 'Editar fonte',
-          rotasParaMigalhasDePão: ['fontesListar'],
+          título: () => useFontesStore().itemParaEdicao.nome,
+          rotasParaMigalhasDePão: ['fonte.listar'],
+          rotaDeEscape: 'fonte.listar',
         },
       },
     ],

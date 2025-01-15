@@ -1,10 +1,13 @@
 <template>
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!fonteId">Nova</span> Fonte</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
@@ -66,13 +69,18 @@
 </template>
 
 <script setup>
-import { fonte as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useFontesStore } from '@/stores/fontesPs.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
 import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+import {
+  ErrorMessage, Field, Form, useIsFormDirty,
+} from 'vee-validate';
+
+import { fonte as schema } from '@/consts/formSchemas';
+
+import { useFontesStore } from '@/stores/fontesPs.store';
+import { useAlertStore } from '@/stores/alert.store';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -82,6 +90,8 @@ const props = defineProps({
     default: 0,
   },
 });
+
+const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
 const fontesStore = useFontesStore();
@@ -107,7 +117,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       fontesStore.$reset();
-      router.push({ name: 'fontesListar' });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -120,5 +130,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style></style>
