@@ -51,7 +51,7 @@ export class OdsController {
 }
 
 @ApiTags('ODS')
-@Controller('plano-setorial-ods')
+@Controller(['plano-setorial-ods', 'programa-de-metas-ods'])
 export class OdsPSController {
     constructor(private readonly odsService: OdsService) {}
 

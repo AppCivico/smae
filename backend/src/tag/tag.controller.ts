@@ -75,7 +75,7 @@ export class TagController {
 }
 
 @ApiTags('Tag Plano Setorial')
-@Controller('plano-setorial-tag')
+@Controller(['plano-setorial-tag', 'programa-de-metas-tag'])
 export class TagPSController {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly tagService: TagService) {}

@@ -1,3 +1,4 @@
+import { TipoPdm } from '@prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 
@@ -30,6 +31,7 @@ export class PdmDto {
     nivel_orcamento: string;
     id: number;
     pode_editar: boolean;
+    tipo: TipoPdm;
 }
 
 export class PlanoSetorialAnteriorDto {

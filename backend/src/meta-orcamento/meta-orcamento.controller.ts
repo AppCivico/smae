@@ -75,7 +75,7 @@ export class MetaOrcamentoController {
     }
 }
 
-@Controller('plano-setorial-orcamento-previsto')
+@Controller(['plano-setorial-orcamento-previsto', 'programa-de-metas-orcamento-previsto'])
 @ApiTags('Orçamento - Meta (Custeio e Investimento)')
 export class MetaPSOrcamentoController {
     // TODO fechar pra só ver o que realmente é PS

@@ -86,7 +86,7 @@ const PermsPS: ListaDePrivilegios[] = [
 ];
 
 @ApiTags('SubTema para Plano Setorial')
-@Controller('plano-setorial-subtema')
+@Controller(['plano-setorial-subtema', 'programa-de-metas-subtema'])
 export class PlanoSetorialSubTemaController {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly subTemaService: SubTemaService) {}

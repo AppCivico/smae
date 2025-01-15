@@ -39,7 +39,7 @@ export class EtapaController {
 }
 
 @ApiTags(API_TAGS_CRONOGRAMA)
-@Controller('plano-setorial-etapa')
+@Controller(['plano-setorial-etapa', 'programa-de-metas-etapa'])
 export class EtapaPSController {
     private tipo: TipoPdm = 'PS';
     constructor(private readonly etapaService: EtapaService) {}

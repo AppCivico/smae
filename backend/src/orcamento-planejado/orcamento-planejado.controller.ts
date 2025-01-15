@@ -63,7 +63,7 @@ export class OrcamentoPlanejadoController {
 }
 
 @ApiTags('Orçamento - Planejado')
-@Controller('plano-setorial-orcamento-planejado')
+@Controller(['plano-setorial-orcamento-planejado', 'programa-de-metas-orcamento-planejado'])
 export class OrcamentoPlanejadoPSController {
     constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) {}
 

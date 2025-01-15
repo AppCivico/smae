@@ -82,7 +82,7 @@ export class AtividadeController {
 }
 
 @ApiTags('Atividade')
-@Controller('plano-setorial-atividade')
+@Controller(['plano-setorial-atividade', 'programa-de-metas-atividade'])
 export class AtividadeSetorialController {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly atividadeService: AtividadeService) {}

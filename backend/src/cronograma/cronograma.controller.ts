@@ -80,7 +80,7 @@ export class CronogramaController {
 }
 
 @ApiTags(API_TAGS_CRONOGRAMA)
-@Controller('plano-setorial-cronograma')
+@Controller(['plano-setorial-cronograma', 'programa-de-metas-cronograma'])
 export class CronogramaPSController {
     private tipo: TipoPdm = 'PS';
     constructor(

@@ -402,6 +402,7 @@ export class PdmService {
                     possui_iniciativa: pdm.possui_iniciativa,
                     possui_atividade: pdm.possui_atividade,
                     nivel_orcamento: pdm.nivel_orcamento,
+                    tipo: pdm.tipo,
 
                     pode_editar: await this.calcPodeEditar(pdm, user),
                     logo: logo,
@@ -499,6 +500,7 @@ export class PdmService {
             possui_iniciativa: pdm.possui_iniciativa,
             possui_atividade: pdm.possui_atividade,
             nivel_orcamento: pdm.nivel_orcamento,
+            tipo: pdm.tipo,
 
             pode_editar: await this.calcPodeEditar(pdm, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),

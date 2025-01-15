@@ -188,7 +188,7 @@ const PermsPS: ListaDePrivilegios[] = [
 ];
 
 @ApiTags('Plano Setorial')
-@Controller('plano-setorial')
+@Controller(['plano-setorial', 'programa-de-metas'])
 export class PlanoSetorialController {
     static readonly WritePerms: ListaDePrivilegios[] = PermsPS;
 
