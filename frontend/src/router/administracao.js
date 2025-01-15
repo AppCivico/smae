@@ -94,7 +94,7 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'variaveisCategoricasListar',
-      'categoriaAssunto.listar',
+      'categoria-assunto.listar',
       'assunto.listar',
       'modalidadesListar',
       'fontesListar',
@@ -976,7 +976,7 @@ export default [
     },
     children: [
       {
-        name: 'categoriaAssunto.listar',
+        name: 'categoria-assunto.listar',
         path: '',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoLista.vue'),
         meta: {
@@ -984,17 +984,17 @@ export default [
         },
       },
       {
-        name: 'categoriaAssunto.novo',
+        name: 'categoria-assunto.novo',
         path: 'novo',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
           título: 'Nova categoria de assunto',
-          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
-          rotaDeEscape: 'categoriaAssunto.listar',
+          rotasParaMigalhasDePão: ['categoria-assunto.listar'],
+          rotaDeEscape: 'categoria-assunto.listar',
         },
       },
       {
-        name: 'categoriaAssunto.editar',
+        name: 'categoria-assunto.editar',
         path: ':categoriaAssuntoId',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         props: ({ params }) => ({
@@ -1006,8 +1006,8 @@ export default [
         }),
         meta: {
           título: () => useAssuntosStore().categoriaParaEdicao.nome,
-          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
-          rotaDeEscape: 'categoriaAssunto.listar',
+          rotasParaMigalhasDePão: ['categoria-assunto.listar'],
+          rotaDeEscape: 'categoria-assunto.listar',
         },
       },
     ],
