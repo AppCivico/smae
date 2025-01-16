@@ -10,6 +10,7 @@ import createDataTree from '@/helpers/createDataTree';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 
@@ -690,9 +691,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           >
             <td>{{ grupoPortfolio.sigla }}</td>
             <td>
-              {{ grupoPortfolio.colaboradores.map(
-                item => item.nome_exibicao
-              ).join(", ") }}
+              {{ combinadorDeListas(grupoPortfolio.colaboradores, ', ', 'nome_exibicao') }}
             </td>
           </tr>
         </tbody>
