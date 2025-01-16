@@ -670,35 +670,33 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
       </dl>
 
-      <dl class="flex g2 flexwrap mb1">
-        <table class="orgaos-participantes-grupo">
-          <thead>
-            <tr>
-              <th class="t12 uc w700 mb05 tamarelo tl">
-                {{ schema.fields.orgaos_participantes.spec.label }}
-              </th>
+      <table class="orgaos-participantes-grupo mb1">
+        <thead>
+          <tr>
+            <th class="t12 uc w700 mb05 tamarelo tl">
+              {{ schema.fields.orgaos_participantes.spec.label }}
+            </th>
 
-              <th class="t12 uc w700 tamarelo tl">
-                {{ schema.fields.ponto_focal_colaborador.spec.label }}
-              </th>
-            </tr>
-          </thead>
+            <th class="t12 uc w700 tamarelo tl">
+              {{ schema.fields.ponto_focal_colaborador.spec.label }}
+            </th>
+          </tr>
+        </thead>
 
-          <tbody>
-            <tr
-              v-for="grupoPortfolio in colaboradoresPorGrupo"
-              :key="grupoPortfolio.id"
-            >
-              <td>{{ grupoPortfolio.sigla }}</td>
-              <td>
-                {{ grupoPortfolio.colaboradores.map(
-                  item => item.nome_exibicao
-                ).join(", ") }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </dl>
+        <tbody>
+          <tr
+            v-for="grupoPortfolio in colaboradoresPorGrupo"
+            :key="grupoPortfolio.id"
+          >
+            <td>{{ grupoPortfolio.sigla }}</td>
+            <td>
+              {{ grupoPortfolio.colaboradores.map(
+                item => item.nome_exibicao
+              ).join(", ") }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
       <dl
         v-if="emFoco?.orgaos_participantes?.length"
@@ -723,9 +721,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
 
         <dd>
-          <ul
-            v-if="emFoco?.grupo_portfolio.length !== 0"
-          >
+          <ul v-if="emFoco?.grupo_portfolio.length !== 0">
             <li
               v-for="grupoPorfolio in emFoco?.grupo_portfolio"
               :key="grupoPorfolio.id"
