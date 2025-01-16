@@ -75,7 +75,7 @@ export class MacroTemaController {
 }
 
 @ApiTags('Macro Tema para Plano Setorial (Antigo Eixo)')
-@Controller(['plano-setorial-macrotema', 'programa-de-metas-macrotema'])
+@Controller('plano-setorial-macrotema')
 export class PlanoSetorialMacroTemaController {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly eixoService: MacroTemaService) {}

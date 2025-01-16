@@ -110,7 +110,7 @@ export class MetaController {
 }
 
 @ApiTags('Meta Para Plano Setorial')
-@Controller(['plano-setorial-meta', 'programa-de-metas-meta'])
+@Controller('plano-setorial-meta')
 export class MetaSetorialController {
     public static WritePerm: ListaDePrivilegios[] = [
         'CadastroMetaPS.administrador_no_pdm', // sṍ pode editar de acordo com o perfil

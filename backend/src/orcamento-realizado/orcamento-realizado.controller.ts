@@ -111,7 +111,7 @@ export class OrcamentoRealizadoController {
 }
 
 @ApiTags('Orçamento - Realizado')
-@Controller(['plano-setorial-orcamento-realizado', 'programa-de-metas-orcamento-realizado'])
+@Controller('plano-setorial-orcamento-realizado')
 export class OrcamentoRealizadoPSController {
     // TODO fechar pra só ver o que realmente é PS
     constructor(private readonly orcamentoRealizadoService: OrcamentoRealizadoService) {}

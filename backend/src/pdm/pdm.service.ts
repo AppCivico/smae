@@ -30,6 +30,7 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
+import { PdmModoParaTipo } from '../common/decorators/current-tipo-pdm';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -51,7 +52,7 @@ class AdminCpDbItem {
     equipe_id: number;
 }
 
-export type ModoPdm = 'PS' | 'PDM' | 'PDM_AS_PS';
+export type TipoPdmType = 'PS' | 'PDM' | 'PDM_AS_PS';
 
 @Injectable()
 export class PdmService {
@@ -66,7 +67,7 @@ export class PdmService {
         private readonly pessoaPrivService: PessoaPrivilegioService
     ) {}
 
-    async create(tipo: TipoPdm, dto: CreatePdmDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, dto: CreatePdmDto, user: PessoaFromJwt) {
         if (tipo == 'PDM') {
             if (!user.hasSomeRoles(['CadastroPdm.inserir'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano de Metas');
@@ -74,7 +75,7 @@ export class PdmService {
 
             if (!dto.nivel_orcamento) throw new BadRequestException('Nível de Orçamento é obrigatório');
             this.removeCamposPlanoSetorial(dto);
-        } else if (tipo == 'PS') {
+        } else if (tipo == 'PS' || tipo == 'PDM_AS_PS') {
             if (!user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano Setorial');
             }
@@ -98,7 +99,7 @@ export class PdmService {
 
         const similarExists = await this.prisma.pdm.count({
             where: {
-                tipo: tipo,
+                tipo: PdmModoParaTipo(tipo),
                 descricao: { equals: dto.nome, mode: 'insensitive' },
             },
         });
@@ -151,7 +152,7 @@ export class PdmService {
                     orgao_admin_id: dto.orgao_admin_id,
                     monitoramento_orcamento: dto.monitoramento_orcamento,
                     pdm_anteriores: dto.pdm_anteriores,
-                    tipo: tipo,
+                    tipo: PdmModoParaTipo(tipo),
                     ativo: false,
                 },
                 select: { id: true },
@@ -190,12 +191,7 @@ export class PdmService {
         delete dto.pdm_anteriores;
     }
 
-    private convertePdmModoParaTipo(tipo: ModoPdm): TipoPdm {
-        if (tipo == 'PDM_AS_PS') return 'PDM';
-        return tipo == 'PDM' ? 'PDM' : 'PS';
-    }
-
-    private async getPermissionSet(tipo: ModoPdm, user: PessoaFromJwt) {
+    private async getPermissionSet(tipo: TipoPdmType, user: PessoaFromJwt) {
         const orList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
         const andList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
@@ -209,7 +205,7 @@ export class PdmService {
                 'SMAE.GrupoVariavel.participante',
             ])
         ) {
-            const tipoPdm = this.convertePdmModoParaTipo(tipo);
+            const tipoPdm = PdmModoParaTipo(tipo);
             andList.push({
                 tipo: tipoPdm,
             });
@@ -318,14 +314,14 @@ export class PdmService {
         return ret;
     }
 
-    async findAllIds(tipo: ModoPdm, user: PessoaFromJwt): Promise<number[]> {
+    async findAllIds(tipo: TipoPdmType, user: PessoaFromJwt): Promise<number[]> {
         const active = true;
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
                 ativo: active,
-                tipo: this.convertePdmModoParaTipo(tipo),
+                tipo: PdmModoParaTipo(tipo),
                 AND: await this.getPermissionSet(tipo, user),
             },
             select: {
@@ -336,14 +332,14 @@ export class PdmService {
         return listActive.map((pdm) => pdm.id);
     }
 
-    async findAll(tipo: ModoPdm, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
+    async findAll(tipo: TipoPdmType, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
         const active = filters.ativo;
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
                 ativo: active,
-                tipo: this.convertePdmModoParaTipo(tipo),
+                tipo: PdmModoParaTipo(tipo),
                 id: filters.id,
                 AND: await this.getPermissionSet(tipo, user),
             },
@@ -473,7 +469,7 @@ export class PdmService {
     }
 
     async getDetail(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         id: number,
         user: PessoaFromJwt,
         readonly: ReadOnlyBooleanType,
@@ -519,7 +515,7 @@ export class PdmService {
         };
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
-        if (tipo == 'PS') {
+        if (tipo == 'PS' || tipo == 'PDM_AS_PS') {
             if (!pdm.monitoramento_orcamento) pdmInfo.nivel_orcamento = '';
 
             const pdmPerfis = await this.prisma.pdmPerfil.findMany({
@@ -578,7 +574,7 @@ export class PdmService {
     }
 
     private async loadPdm(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         id: number,
         user: PessoaFromJwt,
         readonly: ReadOnlyBooleanType,
@@ -588,7 +584,7 @@ export class PdmService {
         const pdm = await prismaTx.pdm.findFirst({
             where: {
                 id: id,
-                tipo,
+                tipo: PdmModoParaTipo(tipo),
                 removido_em: null,
             },
             include: {
@@ -641,7 +637,7 @@ export class PdmService {
             );
     }
 
-    async delete(tipo: TipoPdm, id: number, user: PessoaFromJwt): Promise<void> {
+    async delete(tipo: TipoPdmType, id: number, user: PessoaFromJwt): Promise<void> {
         const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite');
 
         await this.verificarPrivilegiosEdicao({}, user, pdm);
@@ -681,7 +677,7 @@ export class PdmService {
     }
 
     async update(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         id: number,
         dto: UpdatePdmDto,
         user: PessoaFromJwt,
@@ -1067,8 +1063,8 @@ export class PdmService {
         });
     }
 
-    async append_document(tipo: TipoPdm, pdm_id: number, dto: CreatePdmDocumentDto, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
+    async append_document(tipo: TipoPdmType, pdm_id: number, dto: CreatePdmDocumentDto, user: PessoaFromJwt) {
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
@@ -1099,8 +1095,8 @@ export class PdmService {
         return { id: documento.id };
     }
 
-    async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt): Promise<PdmItemDocumentDto[]> {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
+    async list_document(tipo: TipoPdmType, pdm_id: number, user: PessoaFromJwt): Promise<PdmItemDocumentDto[]> {
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const documentosDB = await this.prisma.pdmDocumento.findMany({
@@ -1137,7 +1133,7 @@ export class PdmService {
         return documentosRet;
     }
     async updateDocumento(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         pdm_id: number,
         documentoId: number,
         dto: UpdatePdmDocumentDto,
@@ -1152,7 +1148,7 @@ export class PdmService {
                 return await prismaTx.pdmDocumento.update({
                     where: {
                         id: documentoId,
-                        pdm: { tipo, id: pdm_id },
+                        pdm: { tipo: PdmModoParaTipo(tipo), id: pdm_id },
                         pdm_id: pdm_id,
                     },
                     data: {
@@ -1168,8 +1164,8 @@ export class PdmService {
         return { id: documento.id };
     }
 
-    async remove_document(tipo: TipoPdm, pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
+    async remove_document(tipo: TipoPdmType, pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         await this.prisma.pdmDocumento.updateMany({
@@ -1480,7 +1476,7 @@ export class PdmService {
     }
 
     async getOrcamentoConfig(
-        tipo: ModoPdm,
+        tipo: TipoPdmType,
         pdm_id: number,
         deleteExtraYears = false,
         prismaCtx?: Prisma.TransactionClient
@@ -1488,7 +1484,7 @@ export class PdmService {
         this.logger.log(`getOrcamentoConfig(${tipo}, ${pdm_id}) with prismaCtx=${!!prismaCtx}`);
         const prismaTx = prismaCtx || this.prisma;
         const pdm = await prismaTx.pdm.findFirstOrThrow({
-            where: { id: pdm_id, tipo: this.convertePdmModoParaTipo(tipo) },
+            where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) },
             select: {
                 data_inicio: true,
                 data_fim: true,
@@ -1518,7 +1514,7 @@ export class PdmService {
             },
         };
 
-        const pdmConfig = defaultConfig[this.convertePdmModoParaTipo(tipo)];
+        const pdmConfig = defaultConfig[PdmModoParaTipo(tipo)];
 
         const rows: {
             ano_referencia: number;
@@ -1597,7 +1593,7 @@ export class PdmService {
     }
 
     async updatePdmOrcamentoConfig(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         pdm_id: number,
         updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
         user: PessoaFromJwt

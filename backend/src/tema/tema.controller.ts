@@ -78,7 +78,7 @@ export class TemaController {
 }
 
 @ApiTags('Tema para Plano Setorial (Antigo Objetivo Estratégico)')
-@Controller(['plano-setorial-tema', 'programa-de-metas-tema'])
+@Controller('plano-setorial-tema')
 export class TemaControllerPS {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly objetivoEstrategicoService: TemaService) {}
