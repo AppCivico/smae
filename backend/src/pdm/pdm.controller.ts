@@ -10,6 +10,7 @@ import {
     Patch,
     Post,
     Query,
+    Req,
     forwardRef,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiResponse, ApiTags, refs } from '@nestjs/swagger';
@@ -210,7 +211,7 @@ export class PlanoSetorialController {
     async findAll(
         @Query() filters: FilterPdmDto,
         @CurrentUser() user: PessoaFromJwt,
-        req: Request
+        @Req() req: Request
     ): Promise<ListPdmDto> {
         const planoSetorial = req.path.startsWith('/plano-setorial');
         const tipo = planoSetorial ? 'PS' : 'PDM_AS_PS';
