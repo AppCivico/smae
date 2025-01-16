@@ -43,7 +43,7 @@ async function checkDelete({ id, descricao }) {
 
       <router-link
         v-if="perm?.CadastroUnidadeMedida?.inserir"
-        :to="{ name: 'unidade-medida.novo' }"
+        :to="{ name: 'unidadeMedida.novo' }"
         class="btn big ml2"
       >
         Nova unidade de Medida
@@ -85,7 +85,7 @@ async function checkDelete({ id, descricao }) {
                 <router-link
                   v-if="perm?.CadastroUnidadeMedida?.editar"
                   :to="{
-                    name: 'unidade-medida.editar',
+                    name: 'unidadeMedida.editar',
                     params: { id: item.id }
                   }"
                   class="tprimary"

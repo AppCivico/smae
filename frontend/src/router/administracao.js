@@ -82,8 +82,8 @@ const rotasParaMenuSecundário = [
       'tipoDeAcompanhamentoListar',
       'orgaos.listar',
       'orgaos.tipos',
-      'tipo-documento.listar',
-      'unidade-medida.lista',
+      'tipoDocumento.listar',
+      'unidadeMedida.lista',
       'categorias.lista',
       'classificacao',
       'gerenciarRegiões',
@@ -95,7 +95,7 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'variaveisCategoricasListar',
-      'categoria-assunto.listar',
+      'categoriaAssunto.listar',
       'assunto.listar',
       'modalidadesListar',
       'fonte.listar',
@@ -682,27 +682,27 @@ export default [
     children: [
       {
         path: '',
-        name: 'unidade-medida.lista',
+        name: 'unidadeMedida.lista',
         component: ListResources,
       },
       {
         path: 'novo',
-        name: 'unidade-medida.novo',
+        name: 'unidadeMedida.novo',
         component: AddEditResources,
         meta: {
           título: 'Nova Unidade de Medida',
-          rotaDeEscape: 'unidade-medida.lista',
-          rotasParaMigalhasDePão: ['unidade-medida.lista'],
+          rotaDeEscape: 'unidadeMedida.lista',
+          rotasParaMigalhasDePão: ['unidadeMedida.lista'],
         },
       },
       {
         path: 'editar/:id',
-        name: 'unidade-medida.editar',
+        name: 'unidadeMedida.editar',
         component: AddEditResources,
         meta: {
           título: () => useResourcesStore().tempResources.descricao,
-          rotaDeEscape: 'unidade-medida.lista',
-          rotasParaMigalhasDePão: ['unidade-medida.lista'],
+          rotaDeEscape: 'unidadeMedida.lista',
+          rotasParaMigalhasDePão: ['unidadeMedida.lista'],
         },
       },
     ],
@@ -717,27 +717,27 @@ export default [
     children: [
       {
         path: '',
-        name: 'tipo-documento.listar',
+        name: 'tipoDocumento.listar',
         component: ListDocumentTypes,
       },
       {
         path: 'novo',
-        name: 'tipo-documento.novo',
+        name: 'tipoDocumento.novo',
         component: AddEditDocumentTypes,
         meta: {
           título: 'Novo Tipo de Documento',
-          rotasParaMigalhasDePão: ['tipo-documento.listar'],
-          rotaDeEscape: 'tipo-documento.listar',
+          rotasParaMigalhasDePão: ['tipoDocumento.listar'],
+          rotaDeEscape: 'tipoDocumento.listar',
         },
       },
       {
         path: 'editar/:id',
-        name: 'tipo-documento.editar',
+        name: 'tipoDocumento.editar',
         component: AddEditDocumentTypes,
         meta: {
           título: () => useDocumentTypesStore().tempDocumentTypes.descricao,
-          rotasParaMigalhasDePão: ['tipo-documento.listar'],
-          rotaDeEscape: 'tipo-documento.listar',
+          rotasParaMigalhasDePão: ['tipoDocumento.listar'],
+          rotaDeEscape: 'tipoDocumento.listar',
         },
       },
     ],
@@ -977,7 +977,7 @@ export default [
     },
     children: [
       {
-        name: 'categoria-assunto.listar',
+        name: 'categoriaAssunto.listar',
         path: '',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoLista.vue'),
         meta: {
@@ -985,17 +985,17 @@ export default [
         },
       },
       {
-        name: 'categoria-assunto.novo',
+        name: 'categoriaAssunto.novo',
         path: 'novo',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
           título: 'Nova categoria de assunto',
-          rotasParaMigalhasDePão: ['categoria-assunto.listar'],
-          rotaDeEscape: 'categoria-assunto.listar',
+          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
+          rotaDeEscape: 'categoriaAssunto.listar',
         },
       },
       {
-        name: 'categoria-assunto.editar',
+        name: 'categoriaAssunto.editar',
         path: ':categoriaAssuntoId',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         props: ({ params }) => ({
@@ -1007,8 +1007,8 @@ export default [
         }),
         meta: {
           título: () => useAssuntosStore().categoriaParaEdicao.nome,
-          rotasParaMigalhasDePão: ['categoria-assunto.listar'],
-          rotaDeEscape: 'categoria-assunto.listar',
+          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
+          rotaDeEscape: 'categoriaAssunto.listar',
         },
       },
     ],
