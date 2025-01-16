@@ -670,49 +670,39 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
       </dl>
 
-      <dl class="flex g2 flexwrap">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.colaboradores_no_orgao.spec.label }}
-          </dt>
-          <dd class="t13">
-            <ul v-if="colaboradoresPorGrupo">
-              <li
-                v-for="grupoPortfolio in colaboradoresPorGrupo"
-                :key="grupoPortfolio.id"
-                class="mb1"
-              >
-                <span>{{ grupoPortfolio.sigla }}</span>
-                <ul
-                  v-for="colaborador in grupoPortfolio.colaboradores"
-                  :key="`g${grupoPortfolio.id}-c${colaborador.id}`"
-                  class="lista-com-ponto"
-                >
-                  <li class="mb05">
-                    {{ colaborador.nome_exibicao }}
-                  </li>
-                </ul>
-              </li>
-            </ul>
+      <dl class="flex g2 flexwrap mb1">
+        <table class="orgaos-participantes-grupo">
+          <thead>
+            <tr>
+              <th class="t12 uc w700 mb05 tamarelo tl">
+                {{ schema.fields.orgaos_participantes.spec.label }}
+              </th>
 
-            <span v-else>
-              -
-            </span>
-          </dd>
-        </div>
+              <th class="t12 uc w700 tamarelo tl">
+                {{ schema.fields.ponto_focal_colaborador.spec.label }}
+              </th>
+            </tr>
+          </thead>
 
-        <div class="f1 mb1">
-          <!-- aqui só pra ajustar o layout -->
-        </div>
-
-        <div class="f1 mb1">
-          <!-- aqui só pra ajustar o layout -->
-        </div>
+          <tbody>
+            <tr
+              v-for="grupoPortfolio in colaboradoresPorGrupo"
+              :key="grupoPortfolio.id"
+            >
+              <td>{{ grupoPortfolio.sigla }}</td>
+              <td>
+                {{ grupoPortfolio.colaboradores.map(
+                  item => item.nome_exibicao
+                ).join(", ") }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </dl>
 
       <dl
         v-if="emFoco?.orgaos_participantes?.length"
-        class="f1 mb1 fb100"
+        class="f1 mb1 fb100 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.orgaos_participantes.spec.label }}
@@ -727,27 +717,32 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dd>
       </dl>
 
-      <h2>{{ schema.fields.grupo_portfolio.spec.label }}</h2>
+      <dl class="mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.grupo_portfolio.spec.label }}
+        </dt>
 
-      <ul
-        v-if="emFoco?.grupo_portfolio.length !== 0"
-        class="lista-com-ponto"
-      >
-        <li
-          v-for="grupoPorfolio in emFoco?.grupo_portfolio"
-          :key="grupoPorfolio.id"
-          class="mb1"
-        >
-          <span class="t13">{{ grupoPorfolio.titulo }}</span>
-        </li>
-      </ul>
+        <dd>
+          <ul
+            v-if="emFoco?.grupo_portfolio.length !== 0"
+          >
+            <li
+              v-for="grupoPorfolio in emFoco?.grupo_portfolio"
+              :key="grupoPorfolio.id"
+              class="mb025"
+            >
+              <span class="t13">{{ grupoPorfolio.titulo }}</span>
+            </li>
+          </ul>
 
-      <span
-        v-else
-        class="t13"
-      >
-        Sem items para exibir
-      </span>
+          <span
+            v-else
+            class="t13"
+          >
+            Sem items para exibir
+          </span>
+        </dd>
+      </dl>
     </div>
 
     <hr
@@ -909,3 +904,23 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </div>
   </div>
 </template>
+
+<style lang="less" scoped>
+.orgaos-participantes-grupo {
+  tr {
+    th, td {
+      &:not(:first-of-type) {
+        padding-left: 1rem;
+      }
+    }
+  }
+
+  tr {
+    border-bottom: 0.25rem solid transparent;
+  }
+
+  thead tr {
+    border-bottom: 0.5rem solid transparent;
+  }
+}
+</style>
