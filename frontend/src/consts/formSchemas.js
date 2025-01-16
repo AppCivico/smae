@@ -1330,7 +1330,7 @@ export const obras = object({
         }),
     ),
   ponto_focal_colaborador: string()
-    .label('Ponto focal colaborador2')
+    .label('Ponto focal colaborador')
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
