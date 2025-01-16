@@ -9,7 +9,8 @@ class Dao:
 
     def __get_mdata(self, resp:dict)->None:
 
-        print(resp)
+        #printa aqui se quiser ver a resposta original
+        #print(resp)
         mdata = resp.get('metadados') or resp.get('metaDados')
         if mdata is None:
             raise HTTPError(f'Erro na resposta: metadados not found')
