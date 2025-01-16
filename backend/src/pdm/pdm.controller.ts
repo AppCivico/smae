@@ -213,7 +213,7 @@ export class PlanoSetorialController {
         @CurrentUser() user: PessoaFromJwt,
         @Req() req: Request
     ): Promise<ListPdmDto> {
-        const planoSetorial = req.path.startsWith('/plano-setorial');
+        const planoSetorial = req.path.startsWith('/api/plano-setorial');
         const tipo = planoSetorial ? 'PS' : 'PDM_AS_PS';
 
         const linhas = await this.pdmService.findAll(tipo, filters, user);
