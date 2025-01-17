@@ -99,7 +99,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const subtemasStore = useSubtemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(subtemasStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirSubtema(id, descricao) {
