@@ -1,17 +1,19 @@
 <script setup>
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import CheckClose from '@/components/CheckClose.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
+import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useTagsStore } from '@/stores/tags.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
+import { useTagsStore } from '@/stores/tags.store.ts';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
@@ -21,7 +23,7 @@ const router = useRouter();
 const projetosStore = useProjetosStore();
 const TagsStore = useTagsStore();
 const { filtradasPorPdM } = storeToRefs(TagsStore);
-const { current, loading } = storeToRefs(relatoriosStore);
+const { loading } = storeToRefs(relatoriosStore);
 
 const {
   chamadasPendentes,
@@ -29,11 +31,13 @@ const {
   metaSimplificada,
 } = storeToRefs(projetosStore);
 
+const formularioSujo = useIsFormDirty();
+
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
   : {}));
 
-  const currentYear = new Date().getFullYear();
+const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
   fonte: 'PSPrevisaoCusto',
@@ -114,10 +118,14 @@ iniciar();
 </script>
 
 <template>
+  <MigalhasDePao class="mb1" />
+
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
@@ -275,8 +283,6 @@ iniciar();
     <div
       class="flex g2 mb2"
     >
-
-
       <div class="f1">
         <LabelFromYup
           name="tags"
@@ -302,17 +308,16 @@ iniciar();
       </div>
       <div class="f1">
         <LabelFromYup
-            name="ano"
-            :schema="schema.fields.parametros"
-          />
+          name="ano"
+          :schema="schema.fields.parametros"
+        />
         <Field
           name="parametros.ano"
           type="text"
           class="inputtext light mb2"
           maxlength="4"
           :class="{ 'error': errors['parametros.ano'] }"
-        >
-        </Field>
+        />
         <div
           v-if="errors['parametros.ano']"
           class="error-msg"

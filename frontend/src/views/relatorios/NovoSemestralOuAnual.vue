@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
@@ -9,6 +9,8 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
@@ -19,6 +21,8 @@ const router = useRouter();
 const { current } = storeToRefs(relatoriosStore);
 
 const { loading } = storeToRefs(relatoriosStore);
+
+const formularioSujo = useIsFormDirty();
 
 const listaDeSemestres = ['Primeiro', 'Segundo'];
 const listaDePeríodos = ['Semestral', 'Anual'];
@@ -84,10 +88,14 @@ onMounted(async () => {
 </script>
 
 <template>
+  <MigalhasDePao class="mb1" />
+
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <Form
