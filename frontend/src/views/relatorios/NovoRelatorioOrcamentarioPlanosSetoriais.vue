@@ -9,7 +9,6 @@ import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const PlanosSetoriaisStore = usePlanosSetoriaisStore();
