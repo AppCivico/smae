@@ -1,10 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
+import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
@@ -22,8 +25,6 @@ import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { ListIndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 import { IndicadorService } from './indicador.service';
-import { MetaController, MetaSetorialController } from '../meta/meta.controller';
-import { TipoPdm } from '@prisma/client';
 
 @ApiTags('Indicador')
 @Controller('')
@@ -171,7 +172,6 @@ export class IndicadorController {
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorPSController {
-    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly indicadorService: IndicadorService) {}
 
     @Post('plano-setorial-indicador')
@@ -179,16 +179,21 @@ export class IndicadorPSController {
     @Roles(MetaSetorialController.WritePerm)
     async create(
         @Body() createIndicadorDto: CreateIndicadorDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.indicadorService.create(this.tipoPdm, createIndicadorDto, user);
+        return await this.indicadorService.create(tipo, createIndicadorDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('plano-setorial-indicador')
     @Roles(MetaSetorialController.ReadPerm)
-    async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
-        return { linhas: await this.indicadorService.findAll(this.tipoPdm, filters, user) };
+    async findAll(
+        @Query() filters: FilterIndicadorDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<ListIndicadorDto> {
+        return { linhas: await this.indicadorService.findAll(tipo, filters, user) };
     }
 
     @Patch('plano-setorial-indicador/:id/associar-variavel')
@@ -197,7 +202,7 @@ export class IndicadorPSController {
     async link_var(
         @Param() params: FindOneParams,
         @Body() dto: LinkIndicadorVariavelDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
     ) {
         return await this.indicadorService.linkVariavel(+params.id, dto, user);
     }
@@ -208,7 +213,7 @@ export class IndicadorPSController {
     async unlink_var(
         @Param() params: FindOneParams,
         @Body() dto: UnlinkIndicadorVariavelDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
     ) {
         return await this.indicadorService.unlinkVariavel(+params.id, dto, user);
     }
@@ -219,9 +224,10 @@ export class IndicadorPSController {
     async update(
         @Param() params: FindOneParams,
         @Body() updateIndicadorDto: UpdateIndicadorDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.indicadorService.update(this.tipoPdm, +params.id, updateIndicadorDto, user);
+        return await this.indicadorService.update(tipo, +params.id, updateIndicadorDto, user);
     }
 
     @Delete('plano-setorial-indicador/:id')
@@ -229,8 +235,8 @@ export class IndicadorPSController {
     @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.indicadorService.remove(this.tipoPdm, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.indicadorService.remove(tipo, +params.id, user);
         return '';
     }
 
@@ -247,8 +253,9 @@ export class IndicadorPSController {
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt,
-        @Query() filters: FilterIndicadorSerieDto
+        @Query() filters: FilterIndicadorSerieDto,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<ListSeriesAgrupadas> {
-        return await this.indicadorService.getSeriesIndicador(this.tipoPdm, params.id, user, filters || {});
+        return await this.indicadorService.getSeriesIndicador(tipo, params.id, user, filters || {});
     }
 }

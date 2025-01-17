@@ -18,6 +18,7 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -34,7 +35,7 @@ export class IndicadorService {
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(tipo: TipoPdm, createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
             throw new HttpException(
                 'Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade',
@@ -397,7 +398,7 @@ export class IndicadorService {
         return list.length ? list[0] : null;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<Indicador[]> {
+    async findAll(tipo: TipoPdmType, filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<Indicador[]> {
         if (filters.id) {
             const indicadorFound = await this.prisma.indicador.findFirst({
                 where: {
@@ -476,7 +477,8 @@ export class IndicadorService {
         return listActive;
     }
 
-    async update(tipo: TipoPdm, id: number, dto: UpdateIndicadorDto, user: PessoaFromJwt) {
+    async update(tipoParam: TipoPdmType, id: number, dto: UpdateIndicadorDto, user: PessoaFromJwt) {
+        const tipo = PdmModoParaTipo(tipoParam);
         const indicadorSelectData: Prisma.IndicadorSelect = {
             id: true,
             formula_compilada: true,
@@ -517,9 +519,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
-
-        console.log('updateIndicadorDto', dto);
+        await this.metaService.assertMetaWriteOrThrow(tipoParam, metaRow.meta_id, user, 'indicador');
 
         const formula_variaveis = dto.formula_variaveis;
         delete dto.formula_variaveis;
@@ -703,7 +703,7 @@ export class IndicadorService {
         await prismaTx.$queryRaw`select refresh_serie_indicador(${indicador_id}::int, null)`;
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const indicador = await this.prisma.indicador.findFirstOrThrow({
             where: { id: id, removido_em: null },
             select: { meta_id: true, atividade_id: true, iniciativa_id: true },
@@ -848,11 +848,12 @@ export class IndicadorService {
     }
 
     async getSeriesIndicador(
-        tipo: TipoPdm,
+        tipoParam: TipoPdmType,
         id: number,
         user: PessoaFromJwt,
         filters: FilterIndicadorSerieDto
     ): Promise<ListSeriesAgrupadas> {
+        const tipo = PdmModoParaTipo(tipoParam);
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: +id },
             select: {
