@@ -25,8 +25,6 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
-import { GeoLocService } from 'src/geo-loc/geo-loc.service';
-import { ReferenciasValidasBase } from 'src/geo-loc/entities/geo-loc.entity';
 
 const {
     Parser,
@@ -245,14 +243,18 @@ class RetornoDbOrigens {
     atividade_titulo: string | null;
 }
 
+class RetornoDbLoc {
+    projeto_id: number;
+    endereco: string;
+}
+
 @Injectable()
 export class PPProjetosService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
-        @Inject(forwardRef(() => GeoLocService)) private readonly geolocService: GeoLocService
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
     async asJSON(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -266,6 +268,7 @@ export class PPProjetosService implements ReportableService {
         const out_contratos: RelProjetosContratosDto[] = [];
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetosOrigemDto[] = [];
+        const out_enderecos: RelProjetosGeolocDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
 
@@ -279,8 +282,7 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataContratos(whereCond, out_contratos);
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
-
-        const out_enderecos: RelProjetosGeolocDto[] = await this.getDataProjetosGeoloc(dto.portfolio_id);
+        await this.queryDataProjetosGeoloc(whereCond, out_enderecos);
 
         return {
             linhas: out_projetos,
@@ -1237,23 +1239,27 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async getDataProjetosGeoloc(portfolio_id: number): Promise<RelProjetosGeolocDto[]> {
-        const rows = await this.projetoService.findAllIds('MDO', undefined, portfolio_id, true);
+    private async queryDataProjetosGeoloc(whereCond: WhereCond, out: RelProjetosGeolocDto[]) {
+        const sql = `
+            SELECT
+                projeto.id AS projeto_id,
+                geo.endereco_exibicao AS endereco
+            FROM projeto
+            LEFT JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+            LEFT JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            ${whereCond.whereString}
+        `;
 
-        const geoDto = new ReferenciasValidasBase();
-        geoDto.projeto_id = rows.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
-        return rows.map((r) => {
-            const geo = geolocalizacao.get(r.id) || [];
+        out.push(...this.convertRowsLoc(data));
+    }
 
+    private convertRowsLoc(input: RetornoDbLoc[]): RelProjetosGeolocDto[] {
+        return input.map((db) => {
             return {
-                projeto_id: r.id,
-                endereco: geo
-                    .map((g) => {
-                        return g.endereco_exibicao;
-                    })
-                    .join('|'),
+                projeto_id: db.projeto_id,
+                endereco: db.endereco,
             };
         });
     }

@@ -28,8 +28,6 @@ import {
     RelObrasSeiDto,
 } from './entities/obras.entity';
 import { formataSEI } from 'src/common/formata-sei';
-import { ReferenciasValidasBase } from 'src/geo-loc/entities/geo-loc.entity';
-import { GeoLocService } from 'src/geo-loc/geo-loc.service';
 
 const {
     Parser,
@@ -233,14 +231,18 @@ class RetornoDbObrasSEI {
     observacoes: string | null;
 }
 
+class RetornoDbLoc {
+    projeto_id: number;
+    endereco: string;
+}
+
 @Injectable()
 export class PPObrasService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
-        @Inject(forwardRef(() => GeoLocService)) private readonly geolocService: GeoLocService
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
     async asJSON(dto: CreateRelObrasDto): Promise<PPObrasRelatorioDto> {
@@ -253,6 +255,7 @@ export class PPObrasService implements ReportableService {
         const out_aditivos: RelObrasAditivosDto[] = [];
         const out_origens: RelObrasOrigemDto[] = [];
         const out_processos_sei: RelObrasSeiDto[] = [];
+        const out_enderecos: RelObrasGeolocDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
 
@@ -265,8 +268,7 @@ export class PPObrasService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
-
-        const out_enderecos: RelObrasGeolocDto[] = await this.getDataObrasGeoloc(dto.portfolio_id);
+        await this.queryDataObrasGeoloc(whereCond, out_enderecos);
 
         return {
             linhas: out_obras,
@@ -1149,23 +1151,27 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async getDataObrasGeoloc(portfolio_id: number): Promise<RelObrasGeolocDto[]> {
-        const rows = await this.projetoService.findAllIds('MDO', undefined, portfolio_id, true);
+    private async queryDataObrasGeoloc(whereCond: WhereCond, out: RelObrasGeolocDto[]) {
+        const sql = `
+                SELECT
+                    projeto.id AS projeto_id,
+                    geo.endereco_exibicao AS endereco
+                FROM projeto
+                LEFT JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+                LEFT JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+                ${whereCond.whereString}
+            `;
 
-        const geoDto = new ReferenciasValidasBase();
-        geoDto.projeto_id = rows.map((r) => r.id);
-        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+        const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
-        return rows.map((r) => {
-            const geo = geolocalizacao.get(r.id) || [];
+        out.push(...this.convertRowsLoc(data));
+    }
 
+    private convertRowsLoc(input: RetornoDbLoc[]): RelObrasGeolocDto[] {
+        return input.map((db) => {
             return {
-                obra_id: r.id,
-                endereco: geo
-                    .map((g) => {
-                        return g.endereco_exibicao;
-                    })
-                    .join('|'),
+                obra_id: db.projeto_id,
+                endereco: db.endereco,
             };
         });
     }

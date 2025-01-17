@@ -4,15 +4,9 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { PPObrasService } from './pp-obras.service';
 import { TarefaModule } from '../../pp/tarefa/tarefa.module';
 import { PPObrasController } from './pp-obras.controller';
-import { GeoLocModule } from 'src/geo-loc/geo-loc.module';
 
 @Module({
-    imports: [
-        PrismaModule,
-        forwardRef(() => ProjetoModule),
-        forwardRef(() => TarefaModule),
-        forwardRef(() => GeoLocModule),
-    ],
+    imports: [PrismaModule, forwardRef(() => ProjetoModule), forwardRef(() => TarefaModule)],
     controllers: [PPObrasController],
     providers: [PPObrasService],
     exports: [PPObrasService],
