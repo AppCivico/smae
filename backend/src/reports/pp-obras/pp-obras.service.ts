@@ -22,11 +22,14 @@ import {
     RelObrasCronogramaDto,
     RelObrasDto,
     RelObrasFontesRecursoDto,
+    RelObrasGeolocDto,
     RelObrasOrigemDto,
     RelObrasRegioesDto,
     RelObrasSeiDto,
 } from './entities/obras.entity';
 import { formataSEI } from 'src/common/formata-sei';
+import { ReferenciasValidasBase } from 'src/geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from 'src/geo-loc/geo-loc.service';
 
 const {
     Parser,
@@ -236,7 +239,8 @@ export class PPObrasService implements ReportableService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
+        @Inject(forwardRef(() => GeoLocService)) private readonly geolocService: GeoLocService
     ) {}
 
     async asJSON(dto: CreateRelObrasDto): Promise<PPObrasRelatorioDto> {
@@ -262,6 +266,8 @@ export class PPObrasService implements ReportableService {
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
 
+        const out_enderecos: RelObrasGeolocDto[] = await this.getDataObrasGeoloc(dto.portfolio_id);
+
         return {
             linhas: out_obras,
             cronograma: out_cronogramas,
@@ -272,6 +278,7 @@ export class PPObrasService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             processos_sei: out_processos_sei,
+            enderecos: out_enderecos,
         };
     }
 
@@ -1138,6 +1145,27 @@ export class PPObrasService implements ReportableService {
                 link: db.link ?? null,
                 comentarios: db.comentarios ?? null,
                 observacoes: db.observacoes ?? null,
+            };
+        });
+    }
+
+    private async getDataObrasGeoloc(portfolio_id: number): Promise<RelObrasGeolocDto[]> {
+        const rows = await this.projetoService.findAllIds('MDO', undefined, portfolio_id, true);
+
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.projeto_id = rows.map((r) => r.id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
+        return rows.map((r) => {
+            const geo = geolocalizacao.get(r.id) || [];
+
+            return {
+                obra_id: r.id,
+                endereco: geo
+                    .map((g) => {
+                        return g.endereco_exibicao;
+                    })
+                    .join('|'),
             };
         });
     }
