@@ -10,11 +10,12 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 
-const alertStore = useAlertStore();
-const PlanosSetoriaisStore = usePlanosSetoriaisStore();
-const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
+
+const alertStore = useAlertStore();
+const PlanosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
+const relatoriosStore = useRelatoriosStore();
 
 const currentYear = new Date().getFullYear();
 

@@ -29,7 +29,7 @@ export const useMetasStore = defineStore({
         case 'pdm':
           return usePdMStore().activePdm;
         case 'planoSetorial':
-          return usePlanosSetoriaisStore().emFoco || {};
+          return usePlanosSetoriaisStore(this.route.meta.entidadeMãe).emFoco || {};
         default:
           throw new Error('Erro ao buscar PdM ativo');
       }

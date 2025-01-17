@@ -5,13 +5,16 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import {
   defineOptions,
 } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const route = useRoute();
+
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const {
   emFoco,
 } = storeToRefs(planosSetoriaisStore);

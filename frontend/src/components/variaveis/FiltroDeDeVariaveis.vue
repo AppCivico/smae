@@ -454,7 +454,7 @@ const chavesDeValoresValidos = [
 const assuntosStore = useAssuntosStore();
 const MetasStore = usePsMetasStore();
 const ÓrgãosStore = useOrgansStore();
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe as string);
 const regionsStore = useRegionsStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 

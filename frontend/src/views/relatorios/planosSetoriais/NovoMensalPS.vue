@@ -13,19 +13,20 @@ import { ErrorMessage, Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const route = useRoute();
+const router = useRouter();
+
 const TagsStore = useTagsStore();
 const { filtradasPorPdM, Tags } = storeToRefs(TagsStore);
 const alertStore = useAlertStore();
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 
 const planosMetasSimplificadosStore = usePlanosSimplificadosStore();
 const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosStore);
 
 const relatoriosStore = useRelatoriosStore();
-const route = useRoute();
-const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
 
 const initialValues = ref({
