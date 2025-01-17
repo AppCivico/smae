@@ -128,7 +128,7 @@ BEGIN
         JOIN workflow_tarefa t ON fluxo_tarefa.workflow_tarefa_id = t.id
         JOIN transferencia_andamento_tarefa taf ON taf.workflow_tarefa_fluxo_id = t.id AND taf.removido_em IS NULL
         JOIN transferencia_andamento ta ON ta.id = taf.transferencia_andamento_id
-            AND ta.transferencia_id = 289 AND ta.workflow_fase_id = f.fase_id
+            AND ta.workflow_fase_id = f.fase_id
             AND ta.removido_em IS NULL
         WHERE fluxo_tarefa.removido_em IS NULL
         ORDER BY f.id ASC, fluxo_tarefa.ordem ASC
