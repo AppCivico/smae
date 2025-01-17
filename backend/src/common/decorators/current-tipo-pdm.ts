@@ -1,6 +1,6 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Request } from 'express';
+import { BadRequestException, createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { TipoPdm } from '@prisma/client';
+import { Request } from 'express';
 
 export type TipoPdmType = 'PS' | 'PDM' | 'PDM_AS_PS';
 
@@ -13,7 +13,7 @@ export const extractPdmMode = (request: Request): TipoPdmType => {
     const h = request.headers['smae-tipo'];
     if (h === 'PDM') return 'PDM_AS_PS';
     if (h === 'PS') return 'PS';
-    if (h) throw new Error(`Tipo de PDM desconhecido: ${h}`);
+    if (h) throw new BadRequestException(`Tipo de PDM desconhecido: ${h}`);
 
     // Fallback para Plano Setorial
     return 'PS';
