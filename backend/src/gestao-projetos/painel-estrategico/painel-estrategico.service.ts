@@ -268,10 +268,10 @@ export class PainelEstrategicoService {
             )
             SELECT
                 COALESCE(SUM(pc.quantidade), 0)::int as quantidade,
-                ad.ano,
-                ad.mes,
-                ad.linha,
-                ad.coluna
+                ad.ano::int,
+                ad.mes::int,
+                ad.linha::int,
+                ad.coluna::int
             FROM all_dates ad
             LEFT JOIN project_counts pc 
                 ON pc.ano = ad.ano 
@@ -363,8 +363,8 @@ export class PainelEstrategicoService {
             )
             SELECT
                 COALESCE(SUM(pc.quantidade), 0)::int as quantidade,
-                ad.ano,
-                ad.mes,
+                ad.ano::int,
+                ad.mes::int,
                 CASE
                     WHEN ad.ano < EXTRACT(YEAR FROM CURRENT_DATE) THEN -1
                     WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) THEN 3
@@ -372,7 +372,7 @@ export class PainelEstrategicoService {
                     WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) + 2 THEN 1
                     WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) + 3 THEN 0
                 END as linha,
-                ad.coluna
+                ad.coluna::int
             FROM all_dates ad
             LEFT JOIN project_counts pc 
                 ON pc.ano = ad.ano 
