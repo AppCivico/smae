@@ -1,21 +1,26 @@
 <script setup>
-import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
-import maskMonth from '@/helpers/maskMonth';
-import monthAndYearToDate from '@/helpers/monthAndYearToDate';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import CheckClose from '@/components/CheckClose.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import maskMonth from '@/helpers/maskMonth';
+import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import CheckClose from '../../components/CheckClose.vue';
+import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
 
+const route = useRoute();
 const alertStore = useAlertStore();
+
 const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 const relatoriosStore = useRelatoriosStore();
-const route = useRoute();
 const router = useRouter();
+
+const formularioSujo = useIsFormDirty();
 
 const currentYear = new Date().getFullYear();
 
@@ -62,10 +67,14 @@ PlanosSetoriaisStore.buscarTudo();
 </script>
 
 <template>
+  <MigalhasDePao class="mb1" />
+
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <Form

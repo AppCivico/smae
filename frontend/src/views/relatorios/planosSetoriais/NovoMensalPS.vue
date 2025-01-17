@@ -1,19 +1,25 @@
 <script setup>
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  ErrorMessage, Field, Form, useIsFormDirty,
+} from 'vee-validate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { relatórioMensalPS as schema } from '@/consts/formSchemas';
-import months from '@/consts/months';
-import nulificadorTotal from '@/helpers/nulificadorTotal';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { relatórioMensalPS as schema } from '@/consts/formSchemas';
+import months from '@/consts/months';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
 
 const TagsStore = useTagsStore();
+const relatoriosStore = useRelatoriosStore();
+
 const { filtradasPorPdM, Tags } = storeToRefs(TagsStore);
 const alertStore = useAlertStore();
 
@@ -23,7 +29,8 @@ const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 const planosMetasSimplificadosStore = usePlanosSimplificadosStore();
 const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosStore);
 
-const relatoriosStore = useRelatoriosStore();
+const formularioSujo = useIsFormDirty();
+
 const route = useRoute();
 const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
@@ -69,10 +76,14 @@ if (!listaDePlanosDisponiveis.value.length) {
 }
 </script>
 <template>
+  <MigalhasDePao class="mb1" />
+
   <header class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <Form
