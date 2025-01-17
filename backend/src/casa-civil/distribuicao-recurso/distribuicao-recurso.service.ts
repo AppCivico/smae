@@ -537,7 +537,7 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 status: {
-                    orderBy: { data_troca: 'asc' },
+                    orderBy: { data_troca: 'desc' },
                     select: {
                         id: true,
                         data_troca: true,
@@ -737,7 +737,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 status: {
-                    orderBy: { data_troca: 'asc' },
+                    orderBy: { data_troca: 'desc' },
                     select: {
                         id: true,
                         data_troca: true,
