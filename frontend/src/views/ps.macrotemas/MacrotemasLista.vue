@@ -98,7 +98,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const macrotemasStore = useMacrotemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(macrotemasStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirMacrotema(id, descricao) {

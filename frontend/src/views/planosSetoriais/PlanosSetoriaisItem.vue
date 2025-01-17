@@ -2,8 +2,11 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { storeToRefs } from 'pinia';
 import { onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const route = useRoute();
+
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 
 const props = defineProps({
   planoSetorialId: {
