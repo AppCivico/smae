@@ -22,7 +22,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const route = useRoute();
 const router = useRouter();
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const alertStore = useAlertStore();
 const documentTypesStore = useDocumentTypesStore();
 const { tempDocumentTypes } = storeToRefs(documentTypesStore);
