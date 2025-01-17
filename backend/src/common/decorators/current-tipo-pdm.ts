@@ -1,7 +1,8 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
-import { TipoPdmType } from '../../pdm/pdm.service';
 import { TipoPdm } from '@prisma/client';
+
+export type TipoPdmType = 'PS' | 'PDM' | 'PDM_AS_PS';
 
 export const TipoPDM = createParamDecorator((data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
@@ -21,4 +22,9 @@ export const extractPdmMode = (request: Request): TipoPdmType => {
 export const PdmModoParaTipo = (tipo: TipoPdmType): TipoPdm => {
     if (tipo == 'PDM_AS_PS') return 'PDM';
     return tipo == 'PDM' ? 'PDM' : 'PS';
+};
+
+export const PdmModoParaTipoOrNull = (tipo: TipoPdmType | null): TipoPdm | null => {
+    if (tipo == null) return null;
+    return PdmModoParaTipo(tipo);
 };

@@ -35,6 +35,7 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
+import { PdmModoParaTipo, PdmModoParaTipoOrNull, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -71,7 +72,7 @@ export class MetaService {
         private readonly pdmService: PdmService
     ) {}
 
-    async create(tipo: TipoPdm, dto: CreateMetaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, dto: CreateMetaDto, user: PessoaFromJwt) {
         const pdm = await this.loadPdmById(dto.pdm_id, tipo);
         await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
 
@@ -214,11 +215,11 @@ export class MetaService {
         return created;
     }
 
-    private async loadPdmById(pdm_id: number, tipo: TipoPdm) {
+    private async loadPdmById(pdm_id: number, tipo: TipoPdmType) {
         return await this.prisma.pdm.findFirstOrThrow({
             where: {
                 id: pdm_id,
-                tipo,
+                tipo: PdmModoParaTipo(tipo),
                 removido_em: null,
             },
             select: {
@@ -321,11 +322,11 @@ export class MetaService {
         return arr;
     }
 
-    private async getMetasPermissionSet(tipo: TipoPdm, user: PessoaFromJwt | undefined, isBi: boolean) {
+    private async getMetasPermissionSet(tipo: TipoPdmType, user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
-                pdm: { tipo },
+                pdm: { tipo: PdmModoParaTipo(tipo) },
             },
         ];
         if (!user) return permissionsSet;
@@ -491,12 +492,12 @@ export class MetaService {
         });
     }
 
-    async getMetaFilterSet(tipo: TipoPdm, user: PessoaFromJwt) {
+    async getMetaFilterSet(tipo: TipoPdmType, user: PessoaFromJwt) {
         return await this.getMetasPermissionSet(tipo, user, false);
     }
 
     async assertMetaWriteOrThrow(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         meta_id: number,
         user: PessoaFromJwt,
         context?: string,
@@ -511,7 +512,7 @@ export class MetaService {
         }
 
         // precisa de acesso no plano setorial tbm
-        if (tipo == 'PS')
+        if (tipo == 'PS' || tipo == 'PDM_AS_PS')
             await this.pdmService.getDetail(
                 tipo,
                 meta[0].pdm_id,
@@ -529,7 +530,7 @@ export class MetaService {
     }
 
     async findAll(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         filters: FilterMetaDto | undefined = undefined,
         user: PessoaFromJwt,
         skipObjects: boolean = false
@@ -547,7 +548,10 @@ export class MetaService {
                           ]
                         : undefined,
                 pdm_id: filters?.pdm_id,
-                pdm: { tipo, id: filters?.pdm_id },
+                pdm: {
+                    tipo: PdmModoParaTipo(tipo),
+                    id: filters?.pdm_id,
+                },
                 id: filters?.id,
             },
             orderBy: [{ codigo: 'asc' }],
@@ -748,7 +752,7 @@ export class MetaService {
         return ret;
     }
 
-    async update(tipo: TipoPdm, id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
         //        if (!user.hasSomeRoles([tipo ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
         //            // TODO: ver comentário no método remove
         //            await user.assertHasMetaRespAccessNaCp(id, this.prisma);
@@ -1267,7 +1271,7 @@ export class MetaService {
         return orgaosParticipantes;
     }
 
-    private async loadMetaOrThrow(id: number, tipo: TipoPdm, user: PessoaFromJwt) {
+    private async loadMetaOrThrow(id: number, tipo: TipoPdmType, user: PessoaFromJwt) {
         const perms = await this.getMetaFilterSet(tipo, user);
         const r = await this.prisma.meta.findFirstOrThrow({
             where: {
@@ -1281,7 +1285,7 @@ export class MetaService {
         return r;
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         // if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
         //  // logo, só pode editar se for responsável
         //   // TODO: no Plano Setorial, isso aqui provavelmente ta erradíssimo ou faltando algo
@@ -1412,8 +1416,9 @@ export class MetaService {
         );
     }
 
-    async buscaMetasIniciativaAtividades(tipo: TipoPdm | null, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividades(tipoParam: TipoPdmType | null, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
         const list: DadosCodTituloMetaDto[] = [];
+        const tipo = PdmModoParaTipoOrNull(tipoParam);
 
         for (const meta_id of metas) {
             const rows: DadosMetaIniciativaAtividadesDto[] = await this.prisma.$queryRaw`
@@ -1484,7 +1489,7 @@ export class MetaService {
         return list;
     }
 
-    async buscaRelacionados(tipo: TipoPdm, dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
+    async buscaRelacionados(tipo: TipoPdmType, dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
         if (!dto.meta_id && !dto.iniciativa_id && !dto.atividade_id) {
             throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
         }

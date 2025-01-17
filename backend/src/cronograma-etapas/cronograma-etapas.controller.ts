@@ -11,6 +11,7 @@ import { ListCronogramaEtapaDto } from './dto/list-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { TipoPdm } from '@prisma/client';
 import { API_TAGS_CRONOGRAMA } from '../cronograma/cronograma.controller';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('cronograma-etapa')
@@ -49,7 +50,6 @@ export class CronogramaEtapaController {
 @ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('plano-setorial-cronograma-etapa')
 export class CronogramaEtapaPSController {
-    private tipo: TipoPdm = 'PS';
     constructor(private readonly cronogramaEtapaService: CronogramaEtapaService) {}
 
     @ApiBearerAuth('access-token')
@@ -57,16 +57,21 @@ export class CronogramaEtapaPSController {
     @Roles(MetaSetorialController.ReadPerm)
     async findAll(
         @Query() filters: FilterCronogramaEtapaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<ListCronogramaEtapaDto> {
-        return { linhas: await this.cronogramaEtapaService.findAll(this.tipo, filters, user, false) };
+        return { linhas: await this.cronogramaEtapaService.findAll(tipo, filters, user, false) };
     }
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.WritePerm)
-    async update(@Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.cronogramaEtapaService.update(this.tipo, updateCronogramaEtapaDto, user);
+    async update(
+        @Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ) {
+        return await this.cronogramaEtapaService.update(tipo, updateCronogramaEtapaDto, user);
     }
 
     @Delete(':id')
@@ -74,8 +79,8 @@ export class CronogramaEtapaPSController {
     @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.cronogramaEtapaService.delete(this.tipo, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.cronogramaEtapaService.delete(tipo, +params.id, user);
         return '';
     }
 }

@@ -1,12 +1,13 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubTemaDto } from './dto/create-subtema.dto';
 import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
-import { Prisma, TipoPdm } from '@prisma/client';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PdmService } from '../pdm/pdm.service';
 
 @Injectable()
 export class SubTemaService {
@@ -17,14 +18,14 @@ export class SubTemaService {
         private readonly pdmService: PdmService
     ) {}
 
-    async create(tipo: TipoPdm, dto: CreateSubTemaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, dto: CreateSubTemaDto, user: PessoaFromJwt) {
         await this.pdmService.getDetail(tipo, dto.pdm_id, user, 'ReadWrite');
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pdm = await prismaTx.pdm.count({
                 where: {
                     id: dto.pdm_id,
-                    tipo,
+                    tipo: PdmModoParaTipo(tipo),
                     removido_em: null,
                 },
             });
@@ -33,7 +34,7 @@ export class SubTemaService {
             const descricaoExists = await prismaTx.subTema.count({
                 where: {
                     pdm_id: dto.pdm_id,
-                    pdm: { tipo, id: dto.pdm_id },
+                    pdm: { tipo: PdmModoParaTipo(tipo), id: dto.pdm_id },
                     removido_em: null,
                     descricao: {
                         equals: dto.descricao,
@@ -58,14 +59,14 @@ export class SubTemaService {
         return created;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterSubTemaDto) {
+    async findAll(tipo: TipoPdmType, filters: FilterSubTemaDto) {
         const pdmId = filters.pdm_id;
 
         const listActive = await this.prisma.subTema.findMany({
             where: {
                 pdm_id: pdmId,
                 id: filters.id,
-                pdm: { tipo, id: pdmId },
+                pdm: { tipo: PdmModoParaTipo(tipo), id: pdmId },
                 removido_em: null,
             },
             select: {
@@ -78,7 +79,7 @@ export class SubTemaService {
         return listActive;
     }
 
-    async update(tipo: TipoPdm, id: number, dto: UpdateSubTemaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, dto: UpdateSubTemaDto, user: PessoaFromJwt) {
         delete dto.pdm_id; // nao deixa editar o PDM
 
         const self = await this.prisma.subTema.findFirstOrThrow({
@@ -93,7 +94,7 @@ export class SubTemaService {
                     const descricaoExists = await prismaTx.subTema.count({
                         where: {
                             pdm_id: self.pdm_id,
-                            pdm: { tipo, id: dto.pdm_id },
+                            pdm: { tipo: PdmModoParaTipo(tipo), id: dto.pdm_id },
                             removido_em: null,
                             descricao: {
                                 equals: dto.descricao,
@@ -109,7 +110,7 @@ export class SubTemaService {
                 }
 
                 const subTema = await this.prisma.subTema.update({
-                    where: { id: id, pdm: { tipo } },
+                    where: { id: id, pdm: { tipo: PdmModoParaTipo(tipo) } },
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
@@ -125,7 +126,7 @@ export class SubTemaService {
         return updated;
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.subTema.findFirstOrThrow({
             where: { id },
             select: { pdm_id: true },
@@ -135,14 +136,14 @@ export class SubTemaService {
         const emUso = await this.prisma.meta.count({
             where: {
                 macro_tema_id: id,
-                pdm: { tipo },
+                pdm: { tipo: PdmModoParaTipo(tipo) },
                 removido_em: null,
             },
         });
         if (emUso > 0) throw new HttpException('Tema em uso em Metas.', 400);
 
         const created = await this.prisma.subTema.updateMany({
-            where: { id: id, pdm: { tipo } },
+            where: { id: id, pdm: { tipo: PdmModoParaTipo(tipo) } },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),

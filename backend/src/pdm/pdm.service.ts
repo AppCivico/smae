@@ -30,7 +30,7 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
-import { PdmModoParaTipo } from '../common/decorators/current-tipo-pdm';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -51,8 +51,6 @@ class AdminCpDbItem {
     orgao_id: number;
     equipe_id: number;
 }
-
-export type TipoPdmType = 'PS' | 'PDM' | 'PDM_AS_PS';
 
 @Injectable()
 export class PdmService {

@@ -18,7 +18,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
-import { TipoPDM } from '../common/decorators/current-tipo-pdm';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MacroTemaService } from '../macro-tema/macro-tema.service';
@@ -34,7 +34,7 @@ import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
-import { PdmService, TipoPdmType } from './pdm.service';
+import { PdmService } from './pdm.service';
 
 @ApiTags('PDM')
 @Controller('pdm')

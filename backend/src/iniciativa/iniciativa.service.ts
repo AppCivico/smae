@@ -1,7 +1,9 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { UniqueNumbers } from '../common/UniqueNumbers';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
@@ -16,7 +18,6 @@ import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-i
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, IniciativaDto, IniciativaOrgao } from './entities/iniciativa.entity';
-import { UniqueNumbers } from '../common/UniqueNumbers';
 
 interface IniciativaResponsavelChanges {
     added: {
@@ -38,7 +39,7 @@ export class IniciativaService {
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(tipo: TipoPdm, dto: CreateIniciativaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, dto: CreateIniciativaDto, user: PessoaFromJwt) {
         await this.metaService.assertMetaWriteOrThrow(tipo, dto.meta_id, user, 'iniciativa');
 
         const meta = await this.prisma.meta.findFirstOrThrow({
@@ -274,7 +275,7 @@ export class IniciativaService {
         return arr;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterIniciativaDto, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdmType, filters: FilterIniciativaDto, user: PessoaFromJwt) {
         const meta_id = filters?.meta_id;
 
         const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
@@ -439,9 +440,9 @@ export class IniciativaService {
         return ret;
     }
 
-    async update(tipo: TipoPdm, id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({
-            where: { id, meta: { pdm: { tipo } }, removido_em: null },
+            where: { id, meta: { pdm: { tipo: PdmModoParaTipo(tipo) } }, removido_em: null },
             select: { meta_id: true, meta: { select: { ativo: true } } },
         });
 
@@ -885,7 +886,7 @@ export class IniciativaService {
         }
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({
             where: { id, removido_em: null },
             select: {

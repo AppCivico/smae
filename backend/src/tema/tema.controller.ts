@@ -24,6 +24,7 @@ import { ListObjetivoEstrategicoDto } from './dto/list-tema.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
 import { ObjetivoEstrategicoDto } from './entities/objetivo-estrategico.entity';
 import { TemaService } from './tema.service';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags('Tema para PDM (Antigo Objetivo Estratégico)')
 @Controller('tema')
@@ -80,7 +81,6 @@ export class TemaController {
 @ApiTags('Tema para Plano Setorial (Antigo Objetivo Estratégico)')
 @Controller('plano-setorial-tema')
 export class TemaControllerPS {
-    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly objetivoEstrategicoService: TemaService) {}
 
     @Post()
@@ -88,21 +88,25 @@ export class TemaControllerPS {
     @Roles(['CadastroTemaPS.inserir'])
     async create(
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.objetivoEstrategicoService.create(this.tipoPdm, createObjetivoEstrategicoDto, user);
+        return await this.objetivoEstrategicoService.create(tipo, createObjetivoEstrategicoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
-        return { linhas: await this.objetivoEstrategicoService.findAll(this.tipoPdm, filters) };
+    async findAll(
+        @Query() filters: FilterObjetivoEstrategicoDto,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<ListObjetivoEstrategicoDto> {
+        return { linhas: await this.objetivoEstrategicoService.findAll(tipo, filters) };
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<ObjetivoEstrategicoDto> {
-        const linhas = await this.objetivoEstrategicoService.findAll(this.tipoPdm, { id: +params.id });
+    async findOne(@Param() params: FindOneParams, @TipoPDM() tipo: TipoPdmType): Promise<ObjetivoEstrategicoDto> {
+        const linhas = await this.objetivoEstrategicoService.findAll(tipo, { id: +params.id });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
     }
@@ -113,9 +117,10 @@ export class TemaControllerPS {
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateObjetivoEstrategicoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.objetivoEstrategicoService.update(this.tipoPdm, +params.id, dto, user);
+        return await this.objetivoEstrategicoService.update(tipo, +params.id, dto, user);
     }
 
     @Delete(':id')
@@ -123,8 +128,8 @@ export class TemaControllerPS {
     @Roles(['CadastroTemaPS.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.objetivoEstrategicoService.remove(this.tipoPdm, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.objetivoEstrategicoService.remove(tipo, +params.id, user);
         return '';
     }
 }
