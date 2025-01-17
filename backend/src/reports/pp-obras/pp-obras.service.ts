@@ -1170,8 +1170,8 @@ export class PPObrasService implements ReportableService {
                     geo.endereco_exibicao AS endereco
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
-                LEFT JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
-                LEFT JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+                JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
                 ${whereCond.whereString}
             `;
 
