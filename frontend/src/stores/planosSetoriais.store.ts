@@ -1,6 +1,8 @@
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   DadosCodTituloMetaDto,
+  ListDadosMetaIniciativaAtividadesDto,
 } from '@back/meta/dto/create-meta.dto';
 import type { DetalhePSDto } from '@back/pdm/dto/detalhe-pdm.dto';
 import type { ListPdmDto, OrcamentoConfig } from '@back/pdm/dto/list-pdm.dto';
@@ -65,7 +67,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.emFoco = null;
 
       try {
-        const resposta: DetalhePSDto | PlanoSetorialDto = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params) as DetalhePSDto | PlanoSetorialDto;
 
         this.emFoco = 'pdm' in resposta
           ? {
@@ -86,7 +88,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.lista = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial`, params) as ListPdmDto;
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erros.lista = erro;
@@ -110,14 +112,14 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
     },
 
-    async salvarItem(params = {}, id = 0): Promise<boolean> {
+    async salvarItem(params = {}, id = 0): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.emFoco = true;
       this.erros.emFoco = null;
 
       try {
         const resposta = id
-          ? await this.requestS.patch(`${baseUrl}/plano-setorial/${id}`, params)
-          : await this.requestS.post(`${baseUrl}/plano-setorial`, params);
+          ? await this.requestS.patch(`${baseUrl}/plano-setorial/${id}`, params) as RecordWithId
+          : await this.requestS.post(`${baseUrl}/plano-setorial`, params) as RecordWithId;
 
         this.chamadasPendentes.emFoco = false;
         return resposta;
@@ -133,7 +135,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.arquivos = null;
 
       try {
-        const resposta: ListPdmDocument = await this.requestS.get(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params) as ListPdmDocument;
 
         if (Array.isArray(resposta.linhas)) {
           this.arquivos = resposta.linhas;
@@ -162,7 +164,11 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
     },
 
-    async associarArquivo(params = {}, id = 0, idDoPlanoSetorial = 0): Promise<boolean> {
+    async associarArquivo(
+      params = {},
+      id = 0,
+      idDoPlanoSetorial = 0,
+    ): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.arquivos = true;
       this.erros.arquivos = null;
 
@@ -170,9 +176,9 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento/${id}`, params) as RecordWithId;
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+          resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params) as RecordWithId;
         }
 
         this.chamadasPendentes.arquivos = false;
@@ -189,7 +195,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.arvoreDeMetas = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
 
         if (Array.isArray(linhas)) {
           linhas.forEach((cur:DadosCodTituloMetaDto) => {
