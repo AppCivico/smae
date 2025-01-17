@@ -708,7 +708,7 @@ export class ProjetoService {
     async findAllIds(
         tipo: TipoProjeto,
         user: PessoaFromJwt | undefined,
-        portfolio_id: number | number[] | undefined = undefined,
+        portfolio_id: number | number[] | number[] | undefined = undefined,
         aceita_compartilhado: boolean = false,
         orgao_responsavel_id: number | number[] | undefined = undefined,
         projeto_id: number | number[] | undefined = undefined
