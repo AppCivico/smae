@@ -286,37 +286,6 @@ export class PainelEstrategicoService {
 
     private async buildProjetosPlanejadosPorAno(projetoIds: number[]): Promise<PainelEstrategicoProjetosAno[]> {
         const sql = `
-            WITH year_range AS (
-                SELECT generate_series(
-                    EXTRACT(YEAR FROM CURRENT_DATE)::INT,
-                    EXTRACT(YEAR FROM CURRENT_DATE)::INT + 3
-                ) AS ano
-            ),
-            project_counts AS (
-                SELECT
-                    COUNT(DISTINCT projeto_id) as quantidade,
-                    ano_previsao as ano
-                FROM view_painel_estrategico_projeto
-                WHERE realizado_termino IS NULL
-                    AND previsao_termino IS NOT NULL
-                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE)
-                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE) + 3
-                    AND projeto_id IN (${projetoIds})
-                GROUP BY ano_previsao
-            )
-            SELECT
-                COALESCE(SUM(pc.quantidade), 0)::int as quantidade,
-                yr.ano
-            FROM year_range yr
-            LEFT JOIN project_counts pc ON pc.ano = yr.ano
-            GROUP BY yr.ano
-            ORDER BY yr.ano DESC
-        `;
-        return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosAno[];
-    }
-
-    private async buildProjetosPlanejadosPorMesAno(projetoIds: number[]): Promise<PainelEstrategicoProjetosMesAno[]> {
-        const sql = `
             WITH RECURSIVE date_series AS (
                 SELECT 
                     date_trunc('month', 
@@ -340,15 +309,15 @@ export class PainelEstrategicoService {
                 SELECT
                     COUNT(DISTINCT projeto_id) as quantidade,
                     ano_previsao as ano,
-                    mes_termino as mes,
-                    mes_termino - 1 as coluna
+                    EXTRACT(MONTH FROM previsao_termino) as mes,  -- Changed this line
+                    EXTRACT(MONTH FROM previsao_termino) - 1 as coluna  -- And this line
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NULL
                     AND previsao_termino IS NOT NULL
                     AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE) - 3
                     AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE) + 3
                     AND projeto_id IN (${projetoIds})
-                GROUP BY ano_previsao, mes_termino
+                GROUP BY ano_previsao, previsao_termino  -- Changed this line
             ),
             all_dates AS (
                 SELECT
@@ -379,7 +348,7 @@ export class PainelEstrategicoService {
                 ad.coluna
             ORDER BY 
                 ad.ano, 
-                ad.mes
+                ad.mes;
         `;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
     }
