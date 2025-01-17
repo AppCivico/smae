@@ -1,12 +1,12 @@
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import type {
   DadosCodTituloMetaDto,
-} from '@/../../backend/src/meta/dto/create-meta.dto';
-import type { DetalhePSDto } from '@/../../backend/src/pdm/dto/detalhe-pdm.dto';
-import type { ListPdmDto, OrcamentoConfig } from '@/../../backend/src/pdm/dto/list-pdm.dto';
-import type { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
-import type { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
-import type { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
+} from '@back/meta/dto/create-meta.dto';
+import type { DetalhePSDto } from '@back/pdm/dto/detalhe-pdm.dto';
+import type { ListPdmDto, OrcamentoConfig } from '@back/pdm/dto/list-pdm.dto';
+import type { PlanoSetorialDto } from '@back/pdm/dto/pdm.dto';
+import type { ListPdmDocument } from '@back/pdm/entities/list-pdm-document.entity';
+import type { ListPdm } from '@back/pdm/entities/list-pdm.entity';
 import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
 
