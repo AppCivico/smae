@@ -18,7 +18,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
-import tiposDePlanos from '@/consts/tiposDePlanos';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -33,7 +33,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
