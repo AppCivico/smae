@@ -684,7 +684,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           </tr>
         </thead>
 
-        <tbody>
+        <tbody v-if="colaboradoresPorGrupo">
           <tr
             v-for="grupoPortfolio in colaboradoresPorGrupo"
             :key="grupoPortfolio.id"
@@ -693,6 +693,13 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             <td>
               {{ combinadorDeListas(grupoPortfolio.colaboradores, ', ', 'nome_exibicao') }}
             </td>
+          </tr>
+        </tbody>
+
+        <tbody v-else>
+          <tr>
+            <td> - </td>
+            <td> - </td>
           </tr>
         </tbody>
       </table>
@@ -902,16 +909,22 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
 <style lang="less" scoped>
 .orgaos-participantes-grupo {
+  width: 100%;
+
   tr {
     th, td {
       &:not(:first-of-type) {
-        padding-left: 1rem;
+        padding-left: .7rem;
       }
     }
   }
 
   tr {
     border-bottom: 0.25rem solid transparent;
+
+    th:first-of-type {
+      width: 33.3333%;
+    }
   }
 
   thead tr {
