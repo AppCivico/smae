@@ -43,7 +43,6 @@ function excluirRelatório(id) {
           {{ campo.spec.label }}
         </th>
         <th />
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
       </tr>
     </thead>
     <tbody>
@@ -59,21 +58,9 @@ function excluirRelatório(id) {
             {{ item[campoIndex] }}
           </td>
 
-          <td class="tc">
-            <a
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            ><img
-              src="../../assets/icons/baixar.svg"
-            ></a>
-          </td>
-
-          <td
-            v-if="temPermissãoPara(['Reports.remover.'])"
-            class="tc"
-          >
+          <td class="tr">
             <button
+              v-if="temPermissãoPara(['Reports.remover.'])"
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
@@ -83,9 +70,18 @@ function excluirRelatório(id) {
                 width="20"
                 height="20"
               >
-                <use xlink:href="#i_remove" />
+                <use xlink:href="#i_waste" />
               </svg>
             </button>
+
+            <a
+              class="ml1"
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            ><img
+              src="../../assets/icons/baixar.svg"
+            ></a>
           </td>
         </tr>
       </template>

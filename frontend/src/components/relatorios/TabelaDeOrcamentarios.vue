@@ -1,17 +1,16 @@
 <script setup>
-import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
-import dateToTitle from '@/helpers/dateToTitle';
-import { localizarDataHorario } from '@/helpers/dateToDate';
+import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import dateToTitle from '@/helpers/dateToTitle';
+import { localizarDataHorario } from '@/helpers/dateToDate';
 import { relatorioOrcamentarioPlanoSetorial as schema } from '@/consts/formSchemas';
-
-const { temPermissãoPara } = storeToRefs(useAuthStore());
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
+const { temPermissãoPara } = storeToRefs(useAuthStore());
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -45,9 +44,9 @@ function excluirRelatório(id) {
           {{ campo.spec.label }}
         </th>
         <th />
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
       </tr>
     </thead>
+
     <tbody>
       <template v-if="lista.length">
         <tr
@@ -61,24 +60,9 @@ function excluirRelatório(id) {
             {{ item[campoIndex] }}
           </td>
 
-          <td class="tc">
-            <a
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_baixar" /></svg>
-            </a>
-          </td>
-
-          <td
-            v-if="temPermissãoPara(['Reports.remover.'])"
-            class="tc"
-          >
+          <td class="tr">
             <button
+              v-if="temPermissãoPara(['Reports.remover.'])"
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
@@ -87,8 +71,24 @@ function excluirRelatório(id) {
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_waste" />
+              </svg>
             </button>
+
+            <a
+              class="ml1"
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_baixar" />
+              </svg>
+            </a>
           </td>
         </tr>
       </template>

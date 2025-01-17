@@ -1,12 +1,13 @@
 <script setup>
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { relatorioPlanoSetorialBase as schema } from '@/consts/formSchemas';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -38,8 +39,10 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <router-link
       v-if="temPermissãoPara('Reports.executar.PlanoSetorial') "
       :to="{ name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais' }"
@@ -63,7 +66,6 @@ iniciar();
           {{ campo.spec.label }}
         </th>
         <th />
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
       </tr>
     </thead>
     <tbody>
@@ -79,24 +81,9 @@ iniciar();
             {{ item[campoIndex] }}
           </td>
 
-          <td class="tc">
-            <a
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_baixar" /></svg>
-            </a>
-          </td>
-
-          <td
-            v-if="temPermissãoPara(['Reports.remover.'])"
-            class="tc"
-          >
+          <td class="tr">
             <button
+              v-if="temPermissãoPara(['Reports.remover.'])"
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
@@ -106,9 +93,23 @@ iniciar();
                 width="20"
                 height="20"
               >
-                <use xlink:href="#i_remove" />
+                <use xlink:href="#i_waste" />
               </svg>
             </button>
+
+            <a
+              class="ml1"
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_baixar" />
+              </svg>
+            </a>
           </td>
         </tr>
       </template>
