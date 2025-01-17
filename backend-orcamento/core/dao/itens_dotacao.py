@@ -33,7 +33,7 @@ class ItensDotacao:
         return OrderedDict(
             orgaos = 'lstOrgaos',
             unidades = 'lstUnidades',
-            funcoes = 'lstFuncoes',
+            funcoes = 'lstFuncao',
             subfuncoes = 'lstSubFuncoes',
             programas = 'lstProgramas',
             projetos_atividades = 'lstProjetosAtividades',
@@ -49,25 +49,43 @@ class ItensDotacao:
         unique_keys = set()
         for item in data:
             unique_keys.update(tuple(item.keys()))
-        
+
         return unique_keys
+
+    def __is_code_key(self, key:str)->bool:
+
+        key_lower = key.lower()
+        return key_lower.startswith('cod')
+
+
+    def __is_desc_key(self, key:str)->bool:
+
+        starts = ('txt', 'text')
+
+        key_lower = key.lower()
+
+        for start in starts:
+            if key_lower.startswith(start):
+                return True
+        else:
+            return False
 
     def __solve_data_keys(self, data:list)->dict:
 
-        
+
         unique_keys = self.__get_unique_keys(data)
 
         final_keys = {}
         for key in unique_keys:
-            if key.lower().startswith('cod'):
+            if self.__is_code_key(key):
                 final_keys['cod'] = key
-            elif key.lower().startswith('txt'):
+            elif self.__is_desc_key(key):
                 final_keys['desc'] = key
             else:
                 print(f'Unexpected key: {key}')
 
         return final_keys
-    
+
     def __parse_data(self, resp:list)->dict:
 
 
@@ -75,7 +93,8 @@ class ItensDotacao:
             return []
 
         keys = self.__solve_data_keys(resp)
-        
+
+        #print(resp)
         parsed = [
                     {'codigo' : item[keys['cod']],
                     'descricao' : item[keys['desc']]}
@@ -92,7 +111,7 @@ class ItensDotacao:
         resp = self.sof(data_key=data_key, attr_keys=None,
                         endpoint_name=endpoint_name, ano=ano,
                         **kwargs)
-        
+
         return self.__parse_data(resp)
 
 
@@ -114,9 +133,9 @@ class ItensDotacao:
                 continue
             for unid in unid_org:
                 unid['cod_orgao'] = cod_orgao
-            
+
             unidades.extend(unid_org)
-            
+
         data['unidades'] = unidades
 
 
@@ -137,6 +156,6 @@ class ItensDotacao:
                 with open('fontes_cache.json') as f:
                     hardcode_data = json.load(f)['fonte_recursos']
                 data['fonte_recursos'] = hardcode_data
-            
-        
+
+
         return data

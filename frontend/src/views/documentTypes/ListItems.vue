@@ -51,7 +51,7 @@ function filterItems() {
 
       <router-link
         v-if="perm?.CadastroTipoDocumento?.inserir"
-        :to="{ name: 'tipo-documento.novo' }"
+        :to="{ name: 'tipoDocumento.novo' }"
         class="btn big ml2"
       >
         Novo Tipo de Documento
@@ -102,7 +102,7 @@ function filterItems() {
               <router-link
                 v-if="perm?.CadastroTipoDocumento?.editar"
                 :to="{
-                  name: 'tipo-documento.editar',
+                  name: 'tipoDocumento.editar',
                   params: { id: item.id }
                 }"
                 class="tprimary"

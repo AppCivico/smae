@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma, } from '@prisma/client';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { MetaService } from '../meta/meta.service';
 
 @Injectable()
 export class CronogramaService {
@@ -17,7 +18,7 @@ export class CronogramaService {
         private readonly cronogramaEtapaService: CronogramaEtapaService
     ) {}
 
-    async create(tipo: TipoPdm, createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
             throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
 
@@ -26,7 +27,7 @@ export class CronogramaService {
                 meta_id: createCronogramaDto.meta_id,
                 atividade_id: createCronogramaDto.atividade_id,
                 iniciativa_id: createCronogramaDto.iniciativa_id,
-                pdm: { tipo },
+                pdm: { tipo: PdmModoParaTipo(tipo) },
             },
             select: { meta_id: true },
         });
@@ -59,7 +60,7 @@ export class CronogramaService {
         return created;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterCronogramaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdmType, filters: FilterCronogramaDto | undefined = undefined, user: PessoaFromJwt) {
         const metaId = filters?.meta_id;
         const atividadeId = filters?.atividade_id;
         const iniciativaId = filters?.iniciativa_id;
@@ -123,7 +124,7 @@ export class CronogramaService {
         return ret;
     }
 
-    async update(tipo: TipoPdm, id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
         const self = await this.prisma.view_meta_cronograma.findFirstOrThrow({
             where: { cronograma_id: id },
             select: { meta_id: true },
@@ -152,7 +153,7 @@ export class CronogramaService {
         return { id };
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.view_meta_cronograma.findFirstOrThrow({
             where: { cronograma_id: id },
             select: { meta_id: true },

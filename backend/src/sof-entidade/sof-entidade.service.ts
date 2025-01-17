@@ -16,7 +16,6 @@ export class SofEntidadeService {
     ) {}
 
     async findByYear(ano: number) {
-        if (ano == 2025) ano = 2024;
         let dados = await this.prisma.sofEntidade.findFirst({ where: { ano: ano } });
         const thisYear = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
         if (!dados) {
@@ -36,8 +35,6 @@ export class SofEntidadeService {
     @Cron(process.env['SOF_CRONTAB_STRING'] || '*/5 * * * *')
     async handleListaSofCron() {
         if (process.env['DISABLE_SOF_CRONTAB'] || process.env['DISABLED_CRONTABS'] == 'all') return;
-        // aguardando api para 2025
-        return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

@@ -1,20 +1,17 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  computed, defineOptions, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import ConcluirPorOrgao from '@/components/orcamento/ConcluirPorOrgao.vue';
 import SimpleOrcamentoCusteio from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
 import SimpleOrcamentoPlanejado from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
-
 import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { storeToRefs } from 'pinia';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -149,12 +146,12 @@ function buscarDadosParaAno(ano) {
   }
 }
 
-async function concluirOrçamento(evento, metaId, ano) {
+async function concluirOrçamento(evento, meta, ano) {
   const valor = !OrcamentoRealizadoConclusao.value[ano].concluido;
 
   alertStore.confirmAction('Somente a coordenadoria poderá desfazer essa ação. Tem certeza?', async () => {
     const carga = {
-      meta_id: metaId,
+      meta_id: meta,
       ano_referencia: ano,
       concluido: valor,
     };
@@ -187,12 +184,6 @@ watch(() => route.query.aba, (novoValor) => {
     buscarDadosParaAno(novoValor);
   }
 }, { immediate: true });
-</script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
 </script>
 <template>
   <div class="flex spacebetween center mb2">

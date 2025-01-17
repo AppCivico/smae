@@ -25,6 +25,7 @@ import { ListSubTemaDto } from './dto/list-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 import { SubTemaDto } from './entities/subtema.entity';
 import { SubTemaService } from './subtema.service';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags('SubTema para PDM')
 @Controller('subtema')
@@ -88,7 +89,6 @@ const PermsPS: ListaDePrivilegios[] = [
 @ApiTags('SubTema para Plano Setorial')
 @Controller('plano-setorial-subtema')
 export class PlanoSetorialSubTemaController {
-    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly subTemaService: SubTemaService) {}
 
     @Post()
@@ -96,21 +96,22 @@ export class PlanoSetorialSubTemaController {
     @Roles(PermsPS)
     async create(
         @Body() createSubTemaDto: CreateSubTemaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.subTemaService.create(this.tipoPdm, createSubTemaDto, user);
+        return await this.subTemaService.create(tipo, createSubTemaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterSubTemaDto): Promise<ListSubTemaDto> {
-        return { linhas: await this.subTemaService.findAll(this.tipoPdm, filters) };
+    async findAll(@Query() filters: FilterSubTemaDto, @TipoPDM() tipo: TipoPdmType): Promise<ListSubTemaDto> {
+        return { linhas: await this.subTemaService.findAll(tipo, filters) };
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<SubTemaDto> {
-        const linhas = await this.subTemaService.findAll(this.tipoPdm, { id: +params.id });
+    async findOne(@Param() params: FindOneParams, @TipoPDM() tipo: TipoPdmType): Promise<SubTemaDto> {
+        const linhas = await this.subTemaService.findAll(tipo, { id: +params.id });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
     }
@@ -121,9 +122,10 @@ export class PlanoSetorialSubTemaController {
     async update(
         @Param() params: FindOneParams,
         @Body() updateSubTemaDto: UpdateSubTemaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.subTemaService.update(this.tipoPdm, +params.id, updateSubTemaDto, user);
+        return await this.subTemaService.update(tipo, +params.id, updateSubTemaDto, user);
     }
 
     @Delete(':id')
@@ -131,8 +133,8 @@ export class PlanoSetorialSubTemaController {
     @Roles(PermsPS)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.subTemaService.remove(this.tipoPdm, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.subTemaService.remove(tipo, +params.id, user);
         return '';
     }
 }

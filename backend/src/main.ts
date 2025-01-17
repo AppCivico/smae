@@ -140,6 +140,12 @@ function createSwaggerConfig(title: string, description: string) {
             in: 'header',
             required: false,
             example: 'SMAE,PDM,CasaCivil,Projetos,PlanoSetorial,MDO',
+        })
+        .addGlobalParameters({
+            name: 'smae-tipo',
+            in: 'header',
+            required: false,
+            example: 'PS',
         });
 }
 

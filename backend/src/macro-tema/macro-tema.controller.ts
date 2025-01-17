@@ -24,6 +24,7 @@ import { ListEixoDto } from './dto/list-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
 import { MacroTemaDto } from './entities/macro-tema.entity';
 import { MacroTemaService } from './macro-tema.service';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags('Macro Tema para PDM (Antigo Eixo)')
 @Controller('macrotema')
@@ -77,26 +78,29 @@ export class MacroTemaController {
 @ApiTags('Macro Tema para Plano Setorial (Antigo Eixo)')
 @Controller('plano-setorial-macrotema')
 export class PlanoSetorialMacroTemaController {
-    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['CadastroMacroTemaPS.inserir'])
-    async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.eixoService.create(this.tipoPdm, createEixoDto, user);
+    async create(
+        @Body() createEixoDto: CreateEixoDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RecordWithId> {
+        return await this.eixoService.create(tipo, createEixoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
-        return { linhas: await this.eixoService.findAll(this.tipoPdm, filters) };
+    async findAll(@Query() filters: FilterEixoDto, @TipoPDM() tipo: TipoPdmType): Promise<ListEixoDto> {
+        return { linhas: await this.eixoService.findAll(tipo, filters) };
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<MacroTemaDto> {
-        const linhas = await this.eixoService.findAll(this.tipoPdm, { id: +params.id });
+    async findOne(@Param() params: FindOneParams, @TipoPDM() tipo: TipoPdmType): Promise<MacroTemaDto> {
+        const linhas = await this.eixoService.findAll(tipo, { id: +params.id });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
     }
@@ -107,9 +111,10 @@ export class PlanoSetorialMacroTemaController {
     async update(
         @Param() params: FindOneParams,
         @Body() updateEixoDto: UpdateEixoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.eixoService.update(this.tipoPdm, +params.id, updateEixoDto, user);
+        return await this.eixoService.update(tipo, +params.id, updateEixoDto, user);
     }
 
     @Delete(':id')
@@ -117,8 +122,8 @@ export class PlanoSetorialMacroTemaController {
     @Roles(['CadastroMacroTemaPS.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.eixoService.remove(this.tipoPdm, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.eixoService.remove(tipo, +params.id, user);
         return '';
     }
 }

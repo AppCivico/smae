@@ -22,6 +22,7 @@ import {
     RelObrasCronogramaDto,
     RelObrasDto,
     RelObrasFontesRecursoDto,
+    RelObrasGeolocDto,
     RelObrasOrigemDto,
     RelObrasRegioesDto,
     RelObrasSeiDto,
@@ -230,6 +231,11 @@ class RetornoDbObrasSEI {
     observacoes: string | null;
 }
 
+class RetornoDbLoc {
+    projeto_id: number;
+    endereco: string;
+}
+
 @Injectable()
 export class PPObrasService implements ReportableService {
     constructor(
@@ -249,6 +255,7 @@ export class PPObrasService implements ReportableService {
         const out_aditivos: RelObrasAditivosDto[] = [];
         const out_origens: RelObrasOrigemDto[] = [];
         const out_processos_sei: RelObrasSeiDto[] = [];
+        const out_enderecos: RelObrasGeolocDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
 
@@ -261,6 +268,7 @@ export class PPObrasService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
+        await this.queryDataObrasGeoloc(whereCond, out_enderecos);
 
         return {
             linhas: out_obras,
@@ -272,6 +280,7 @@ export class PPObrasService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             processos_sei: out_processos_sei,
+            enderecos: out_enderecos,
         };
     }
 
@@ -389,6 +398,18 @@ export class PPObrasService implements ReportableService {
             const linhas = json2csvParser.parse(dados.processos_sei);
             out.push({
                 name: 'processos_sei.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.enderecos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.enderecos);
+            out.push({
+                name: 'enderecos.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
@@ -1138,6 +1159,32 @@ export class PPObrasService implements ReportableService {
                 link: db.link ?? null,
                 comentarios: db.comentarios ?? null,
                 observacoes: db.observacoes ?? null,
+            };
+        });
+    }
+
+    private async queryDataObrasGeoloc(whereCond: WhereCond, out: RelObrasGeolocDto[]) {
+        const sql = `
+                SELECT
+                    projeto.id AS projeto_id,
+                    geo.endereco_exibicao AS endereco
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+                ${whereCond.whereString}
+            `;
+
+        const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsLoc(data));
+    }
+
+    private convertRowsLoc(input: RetornoDbLoc[]): RelObrasGeolocDto[] {
+        return input.map((db) => {
+            return {
+                obra_id: db.projeto_id,
+                endereco: db.endereco,
             };
         });
     }

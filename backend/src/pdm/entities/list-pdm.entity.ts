@@ -1,3 +1,4 @@
+import { TipoPdm } from '@prisma/client';
 import { IsBoolean, IsISO8601, IsOptional, IsString, Length, MaxLength, MinLength } from 'class-validator';
 
 export class ListPdm {
@@ -62,4 +63,6 @@ export class ListPdm {
 
     id: number;
     pode_editar: boolean;
+
+    tipo: TipoPdm;
 }

@@ -1,8 +1,9 @@
 import { Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
-import { CronogramaEtapaNivel, Prisma, TipoPdm } from '@prisma/client';
+import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { MetaService } from '../meta/meta.service';
@@ -26,7 +27,7 @@ export class CronogramaEtapaService {
     ) {}
 
     async findAll(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         filters: FilterCronogramaEtapaDto,
         user: PessoaFromJwt,
         desligaAssertMeta: boolean
@@ -501,7 +502,7 @@ export class CronogramaEtapaService {
     }
 
     async update(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         dto: UpdateCronogramaEtapaDto,
         user: PessoaFromJwt,
         prismaCtx?: Prisma.TransactionClient
@@ -650,7 +651,7 @@ export class CronogramaEtapaService {
     }
 
     private async assertMetaForCronograma(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         cronograma_id: number,
         user: PessoaFromJwt,
         readwrite: 'readonly' | 'readwrite' = 'readwrite'
@@ -718,7 +719,7 @@ export class CronogramaEtapaService {
         return { nivel, ordem };
     }
 
-    async delete(tipo: TipoPdm, cronograma_etapa_id: number, user: PessoaFromJwt) {
+    async delete(tipo: TipoPdmType, cronograma_etapa_id: number, user: PessoaFromJwt) {
         const self = await this.prisma.cronogramaEtapa.findUnique({
             where: { id: cronograma_etapa_id },
             select: {

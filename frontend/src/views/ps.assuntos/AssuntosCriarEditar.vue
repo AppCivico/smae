@@ -2,9 +2,12 @@
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
     <h1> <span v-if="!assuntoId">Novo</span> Assunto</h1>
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
@@ -93,9 +96,13 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import {
+  ErrorMessage, Field, Form, useIsFormDirty,
+} from 'vee-validate';
+
 import { assunto as schema } from '@/consts/formSchemas';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 
@@ -107,6 +114,8 @@ const props = defineProps({
     default: 0,
   },
 });
+
+const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();
@@ -134,7 +143,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       assuntosStore.$reset();
-      router.push({ name: 'assuntosListar' });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
