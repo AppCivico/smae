@@ -429,6 +429,18 @@ export class PPProjetosService implements ReportableService {
             });
         }
 
+        if (dados.enderecos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.enderecos);
+            out.push({
+                name: 'enderecos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
         return [
             {
                 name: 'info.json',
