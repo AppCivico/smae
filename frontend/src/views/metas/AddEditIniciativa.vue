@@ -1,10 +1,10 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import {

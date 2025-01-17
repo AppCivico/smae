@@ -46,22 +46,17 @@
 </template>
 
 <script lang="ts" setup>
-import type { Component } from 'vue';
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
-
+import SmallModal from '@/components/SmallModal.vue';
 import dateToDate from '@/helpers/dateToDate';
-
-import { useAlertStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-
-import SmallModal from '@/components/SmallModal.vue';
-
+import { storeToRefs } from 'pinia';
+import type { Component } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import CicloAtualizacaoModalAdicionar from './CicloAtualizacaoModalAdicionar.vue';
 import CicloAtualizacaoModalEditar from './CicloAtualizacaoModalEditar.vue';
-
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type ConteudoOpcao = {

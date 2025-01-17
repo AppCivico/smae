@@ -1,7 +1,9 @@
 <script setup>
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { router } from '@/router';
-import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import { nextTick, ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';

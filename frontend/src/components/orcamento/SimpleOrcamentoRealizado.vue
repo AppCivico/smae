@@ -1,10 +1,10 @@
 <script setup>
-import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado.vue';
+import LinhaRealizado from '@/components/orcamento/LinhaRealizado.vue';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
+import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { usePdMStore } from '@/stores/pdm.store';
-import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import {
@@ -150,7 +150,9 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         </h3>
 
         <div
-          v-if="activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura"
+          v-if="activePdm?.pode_editar
+            || !permissõesDaObraEmFoco?.apenas_leitura
+            || !permissõesDoProjetoEmFoco?.apenas_leitura"
         >
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
