@@ -15,13 +15,16 @@ import { relatórioMensalPS as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
 
+const route = useRoute();
+const router = useRouter();
+
 const TagsStore = useTagsStore();
 const relatoriosStore = useRelatoriosStore();
 
 const { filtradasPorPdM, Tags } = storeToRefs(TagsStore);
 const alertStore = useAlertStore();
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 
 const planosMetasSimplificadosStore = usePlanosSimplificadosStore();

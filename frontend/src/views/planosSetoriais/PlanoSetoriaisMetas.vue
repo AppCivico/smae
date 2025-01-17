@@ -2,14 +2,17 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
 });
 
+const route = useRoute();
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco, erros } = storeToRefs(planosSetoriaisStore);
 </script>
 <template>

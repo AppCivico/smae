@@ -41,7 +41,7 @@ interface Estado {
   erros: Erros;
 }
 
-export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
+export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -321,4 +321,4 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: ListPdm } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
-});
+})();

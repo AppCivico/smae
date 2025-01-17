@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia';
 import {
   defineOptions,
 } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 defineProps({
@@ -20,9 +21,11 @@ defineProps({
   },
 });
 
+const route = useRoute();
+
 const alertStore = useAlertStore();
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const {
   emFoco,
   chamadasPendentes,
