@@ -201,4 +201,5 @@ export class PPObrasRelatorioDto {
 export class RelObrasGeolocDto {
     obra_id: number;
     endereco: string;
+    cep: string;
 }

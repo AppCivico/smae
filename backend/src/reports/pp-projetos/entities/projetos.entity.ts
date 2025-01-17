@@ -196,6 +196,7 @@ export class RelProjetosOrigemDto {
 export class RelProjetosGeolocDto {
     projeto_id: number;
     endereco: string;
+    cep: string;
 }
 
 export class PPProjetosRelatorioDto {

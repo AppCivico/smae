@@ -234,6 +234,7 @@ class RetornoDbObrasSEI {
 class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
+    geojson: string;
 }
 
 @Injectable()
@@ -1167,7 +1168,8 @@ export class PPObrasService implements ReportableService {
         const sql = `
                 SELECT
                     projeto.id AS projeto_id,
-                    geo.endereco_exibicao AS endereco
+                    geo.endereco_exibicao AS endereco,
+                    geo.geom_geojson AS geojson
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
                 JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -1182,9 +1184,12 @@ export class PPObrasService implements ReportableService {
 
     private convertRowsLoc(input: RetornoDbLoc[]): RelObrasGeolocDto[] {
         return input.map((db) => {
+            const geojson = JSON.parse(db.geojson);
+
             return {
                 obra_id: db.projeto_id,
                 endereco: db.endereco,
+                cep: geojson.properties.cep,
             };
         });
     }
