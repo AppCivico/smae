@@ -721,6 +721,11 @@ export class ProjetoService {
                 : orgao_responsavel_id?.length
                   ? orgao_responsavel_id
                   : undefined;
+
+        console.log('===============================================================');
+        console.log(orgao_responsavel_id);
+        console.log(filtroOrgaoResponsavel);
+        console.log('===============================================================');
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: tipo,

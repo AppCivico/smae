@@ -36,9 +36,10 @@ export class PainelEstrategicoService {
     ) {}
 
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
-        const projetoIds = (await this.projetoService.findAllIds('PP', user, filtro.portfolio_id, true)).map(
-            (p) => p.id
-        );
+        const projetoIds = (
+            await this.projetoService.findAllIds('PP', user, filtro.portfolio_id, true, filtro.orgao_responsavel_id)
+        ).map((p) => p.id);
+        if (projetoIds.length == 0) projetoIds.push(-1);
 
         console.log('=======================================');
         console.log(projetoIds);
