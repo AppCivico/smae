@@ -20,6 +20,9 @@ import {
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const router = useRouter();
+const route = useRoute();
+
 const alertStore = useAlertStore();
 
 const authStore = useAuthStore();
@@ -34,7 +37,7 @@ const {
 const ÓrgãosStore = useOrgansStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const {
   chamadasPendentes,
   emFoco,
@@ -51,9 +54,6 @@ const props = defineProps({
     default: 0,
   },
 });
-
-const router = useRouter();
-const route = useRoute();
 
 // necessário por causa de 🤬
 const montarCampoEstático = ref(false);

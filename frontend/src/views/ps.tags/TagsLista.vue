@@ -116,7 +116,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirTag(id, descricao) {
