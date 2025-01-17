@@ -594,6 +594,7 @@ model Orgao {
     ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                 @relation("prop")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
     FormulaComposta                   FormulaComposta[]
+    ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
 
     @@map("orgao")
 }
@@ -1064,10 +1065,11 @@ model ProjetoEtapa {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa?   @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
-    Projeto     Projeto[]
+    atualizador                   Pessoa?                         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                       Pessoa?                         @relation("Criador", fields: [criado_por], references: [id])
+    removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
+    Projeto                       Projeto[]
+    ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
 
     @@map("projeto_etapa")
 }
@@ -1294,6 +1296,7 @@ model Meta {
     ProjetoOrigem                          CompromissoOrigem[]                      @relation("fk")
     ProjetoOrigemRel                       CompromissoOrigem[]                      @relation("rel")
     PdmPerfil                              PdmPerfil[]
+    ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -3494,15 +3497,16 @@ model Portfolio {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    ProjetoNumerosSequenciais    ProjetoNumeroSequencial[]
-    PortfolioDotacaoPlanejado    PortfolioDotacaoPlanejado[]
-    PortfolioDotacaoRealizado    PortfolioDotacaoRealizado[]
-    PortfolioDotacaoProcesso     PortfolioDotacaoProcesso[]
-    PortfolioDotacaoProcessoNota PortfolioDotacaoProcessoNota[]
-    ImportacaoLog                ImportacaoOrcamento[]
-    PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
-    projetosCompartilhados       PortfolioProjetoCompartilhado[]
-    ViewProjetoMDO               ViewProjetoMDO[]
+    ProjetoNumerosSequenciais     ProjetoNumeroSequencial[]
+    PortfolioDotacaoPlanejado     PortfolioDotacaoPlanejado[]
+    PortfolioDotacaoRealizado     PortfolioDotacaoRealizado[]
+    PortfolioDotacaoProcesso      PortfolioDotacaoProcesso[]
+    PortfolioDotacaoProcessoNota  PortfolioDotacaoProcessoNota[]
+    ImportacaoLog                 ImportacaoOrcamento[]
+    PortfolioGrupoPortfolio       PortfolioGrupoPortfolio[]
+    projetosCompartilhados        PortfolioProjetoCompartilhado[]
+    ViewProjetoMDO                ViewProjetoMDO[]
+    ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
 
     @@map("portfolio")
 }
@@ -3774,7 +3778,8 @@ model Projeto {
     tags          Int[]               @default([])
     ProjetoOrigem CompromissoOrigem[]
 
-    origem_cache Json @default("{}") @db.Json
+    origem_cache                  Json                            @default("{}") @db.Json
+    ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -7290,4 +7295,20 @@ model SerieVariavelHistorico {
     ciclo_fisico_id              Int?
 
     @@map("serie_variavel_historico")
+}
+
+view ViewPainelEstrategicoProjetos {
+    projeto_id           Int           @id
+    projeto              Projeto       @relation(fields: [projeto_id], references: [id])
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao?        @relation(fields: [orgao_responsavel_id], references: [id])
+    meta_id              Int?
+    meta                 Meta?         @relation(fields: [meta_id], references: [id])
+    portfolio_id         Int?
+    portfolio            Portfolio?    @relation(fields: [portfolio_id], references: [id])
+    projeto_etapa_id     Int?
+    projeto_etapa        ProjetoEtapa? @relation(fields: [projeto_etapa_id], references: [id])
+    status               ProjetoStatus
+
+    @@map("view_painel_estrategico_projetos")
 }
