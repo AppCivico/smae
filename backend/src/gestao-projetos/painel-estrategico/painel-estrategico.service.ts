@@ -238,7 +238,11 @@ export class PainelEstrategicoService {
                 SELECT 
                     (data_ + interval '1 month')::date
                 FROM date_series
-                WHERE data_ < date_trunc('month', CURRENT_DATE)
+                WHERE data_ < make_date(
+                    EXTRACT(YEAR FROM CURRENT_DATE)::int,
+                    12,
+                    1
+                ) 
             ),
             project_counts AS (
                 SELECT
