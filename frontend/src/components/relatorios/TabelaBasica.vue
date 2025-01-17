@@ -1,14 +1,14 @@
 <script setup>
-import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 
-const { temPermissãoPara } = storeToRefs(useAuthStore());
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
+const { temPermissãoPara } = storeToRefs(useAuthStore());
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -42,19 +42,6 @@ function excluirRelatório(id) {
 </script>
 <template>
   <table class="tablemain">
-    <col>
-    <col class="col--dataHora">
-    <colgroup
-      v-if="colunas &&
-        Object.keys(colunas).length"
-      :span="Object.keys(colunas).length"
-    />
-    <col
-      v-if="temPermissãoPara(['Reports.remover.'])"
-      class="col--botão-de-ação"
-    >
-    <col class="col--botão-de-ação">
-
     <thead>
       <tr>
         <th>criador</th>
@@ -65,7 +52,6 @@ function excluirRelatório(id) {
         >
           {{ valor }}
         </th>
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
         <th />
       </tr>
     </thead>
@@ -98,8 +84,10 @@ function excluirRelatório(id) {
                   || item.parametros[chave] }}
             </template>
           </td>
-          <td v-if="temPermissãoPara(['Reports.remover.'])">
+
+          <td class="tr">
             <button
+              v-if="temPermissãoPara(['Reports.remover.'])"
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
@@ -108,11 +96,11 @@ function excluirRelatório(id) {
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              ><use xlink:href="#i_waste" /></svg>
             </button>
-          </td>
-          <td>
+
             <a
+              class="ml1"
               :href="`${baseUrl}/download/${item.arquivo}`"
               download
               title="baixar"

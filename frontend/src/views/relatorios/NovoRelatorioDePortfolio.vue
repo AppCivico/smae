@@ -1,27 +1,32 @@
 <script setup>
-import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
+import { Field, Form, useIsFieldDirty } from 'vee-validate';
 import statuses from '@/consts/projectStatuses';
+import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import CheckClose from '../../components/CheckClose.vue';
 
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 
-const ÓrgãosStore = useOrgansStore();
-const portfolioStore = usePortfolioStore();
-const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
+const route = useRoute();
+const router = useRouter();
+
+const formularioSujo = useIsFieldDirty();
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
-const route = useRoute();
-const router = useRouter();
+const ÓrgãosStore = useOrgansStore();
+const portfolioStore = usePortfolioStore();
+
+const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const initialValues = {
   fonte: 'Projetos',
@@ -65,10 +70,14 @@ iniciar();
 </script>
 
 <template>
+  <MigalhasDePao />
+
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <Form

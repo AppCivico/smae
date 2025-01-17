@@ -72,9 +72,9 @@ relatoriosStore.getAll({ fonte });
           {{ campo.spec.label }}
         </th>
         <th />
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
       </tr>
     </thead>
+
     <tbody>
       <template v-if="lista.length">
         <tr
@@ -88,24 +88,9 @@ relatoriosStore.getAll({ fonte });
             {{ item[campoIndex] }}
           </td>
 
-          <td class="tc">
-            <a
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_baixar" /></svg>
-            </a>
-          </td>
-
-          <td
-            v-if="temPermissãoPara(['Reports.remover.'])"
-            class="tc"
-          >
+          <td class="tr">
             <button
+              v-if="temPermissãoPara(['Reports.remover.'])"
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
@@ -114,11 +99,28 @@ relatoriosStore.getAll({ fonte });
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_waste" />
+              </svg>
             </button>
+
+            <a
+              class="ml1"
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_baixar" />
+              </svg>
+            </a>
           </td>
         </tr>
       </template>
+
       <tr v-else-if="relatoriosStore.loading">
         <td
           :colspan="temPermissãoPara(['Reports.remover.']) ? 5 : 4"
