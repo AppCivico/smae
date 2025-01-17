@@ -18,7 +18,6 @@ import {
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
 import { Prisma } from '@prisma/client';
-import { ppPainelBigNumbers } from '@prisma/client/sql';
 import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';
@@ -41,6 +40,10 @@ export class PainelEstrategicoService {
             (p) => p.id
         );
 
+        console.log('=======================================');
+        console.log(projetoIds);
+        console.log('=======================================');
+
         const response = new PainelEstrategicoResponseDto();
         response.grandes_numeros = await this.buildGrandeNumeros(projetoIds);
         response.projeto_status = await this.buildProjetosPorStatus(projetoIds);
@@ -52,6 +55,8 @@ export class PainelEstrategicoService {
         response.projeto_orgao_responsavel = await this.buildProjetosOrgaoResponsavel(projetoIds);
         response.anos_mapa_calor_concluidos = this.buildAnosMapaCalor(new Date().getFullYear(), -3);
         response.anos_mapa_calor_planejados = this.buildAnosMapaCalor(new Date().getFullYear(), +3);
+
+        filtro = await this.addPermissaoProjetos(filtro, user);
         response.quantidades_projeto = await this.buildQuantidadesProjeto(projetoIds);
         response.resumo_orcamentario = await this.buildResumoOrcamentario(filtro);
         response.execucao_orcamentaria_ano = await this.buildExecucaoOrcamentariaAno(filtro);
@@ -71,6 +76,17 @@ export class PainelEstrategicoService {
             strFilter += ' and coalesce(po.portfolio_id,p.portfolio_id) in (+' + filtro.portfolio_id.toString() + ')';
         }
         return strFilter;
+    }
+
+    private async addPermissaoProjetos(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt) {
+        filtro.projeto_id = filtro.projeto_id ?? [];
+
+        const allowed = (await this.projetoService.findAllIds('PP', user)).map((p) => p.id);
+        filtro.projeto_id = filtro.projeto_id.length ? Arr.intersection(filtro.projeto_id, allowed) : allowed;
+
+        if (filtro.projeto_id.length == 0) filtro.projeto_id.push(-1);
+
+        return filtro;
     }
 
     private async buildGrandeNumeros(projetoIds: number[]): Promise<PainelEstrategicoGrandesNumeros> {
@@ -378,7 +394,7 @@ export class PainelEstrategicoService {
                             orgao_descricao,
                             ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT projeto_id) DESC) as ranking
                         FROM view_painel_estrategico_projeto
-                        WHERE projeto_id IN (${projetoIds})
+                        WHERE projeto_id = ANY(${projetoIds}::bigint[])
                         GROUP BY orgao_sigla, orgao_descricao
                     )
                     SELECT 

@@ -713,17 +713,14 @@ export class ProjetoService {
     ): Promise<{ id: number }[]> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, true);
 
-        const filtroPortfolio = portfolio_id
-            ? typeof portfolio_id == 'number'
-                ? [portfolio_id]
-                : portfolio_id
-            : undefined;
-        const filtroOrgaoResponsavel = orgao_responsavel_id
-            ? typeof orgao_responsavel_id == 'number'
+        const filtroPortfolio =
+            typeof portfolio_id == 'number' ? [portfolio_id] : portfolio_id?.length ? portfolio_id : undefined;
+        const filtroOrgaoResponsavel =
+            typeof orgao_responsavel_id == 'number'
                 ? [orgao_responsavel_id]
-                : orgao_responsavel_id
-            : undefined;
-
+                : orgao_responsavel_id?.length
+                  ? orgao_responsavel_id
+                  : undefined;
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: tipo,
