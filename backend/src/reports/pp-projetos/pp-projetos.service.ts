@@ -18,12 +18,15 @@ import {
     RelProjetosContratosDto,
     RelProjetosCronogramaDto,
     RelProjetosDto,
+    RelProjetosGeolocDto,
     RelProjetosLicoesAprendidasDto,
     RelProjetosOrigemDto,
     RelProjetosPlanoAcaoDto,
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
+import { GeoLocService } from 'src/geo-loc/geo-loc.service';
+import { ReferenciasValidasBase } from 'src/geo-loc/entities/geo-loc.entity';
 
 const {
     Parser,
@@ -248,7 +251,8 @@ export class PPProjetosService implements ReportableService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
+        @Inject(forwardRef(() => GeoLocService)) private readonly geolocService: GeoLocService
     ) {}
 
     async asJSON(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -276,6 +280,8 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
 
+        const out_enderecos: RelProjetosGeolocDto[] = await this.getDataProjetosGeoloc(dto.portfolio_id);
+
         return {
             linhas: out_projetos,
             cronograma: out_cronogramas,
@@ -287,6 +293,7 @@ export class PPProjetosService implements ReportableService {
             contratos: out_contratos,
             aditivos: out_aditivos,
             origens: out_origens,
+            enderecos: out_enderecos,
         };
     }
 
@@ -1226,6 +1233,27 @@ export class PPProjetosService implements ReportableService {
                 iniciativa_titulo: db.iniciativa_titulo ?? null,
                 atividade_id: db.atividade_id ?? null,
                 atividade_titulo: db.atividade_titulo ?? null,
+            };
+        });
+    }
+
+    private async getDataProjetosGeoloc(portfolio_id: number): Promise<RelProjetosGeolocDto[]> {
+        const rows = await this.projetoService.findAllIds('MDO', undefined, portfolio_id, true);
+
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.projeto_id = rows.map((r) => r.id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
+        return rows.map((r) => {
+            const geo = geolocalizacao.get(r.id) || [];
+
+            return {
+                projeto_id: r.id,
+                endereco: geo
+                    .map((g) => {
+                        return g.endereco_exibicao;
+                    })
+                    .join('|'),
             };
         });
     }
