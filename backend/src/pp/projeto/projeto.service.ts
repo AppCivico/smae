@@ -3252,7 +3252,7 @@ export class ProjetoService {
                     { portfolio_id: filters.portfolio_id },
                     {
                         portfolios_compartilhados: filters.portfolio_id
-                            ? { some: { portfolio_id: filters.portfolio_id } }
+                            ? { some: { portfolio_id: filters.portfolio_id, removido_em: null } }
                             : undefined,
                     },
                 ],
