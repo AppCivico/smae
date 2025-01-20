@@ -87,7 +87,9 @@ planosSetoriaisStore.buscarTudo();
         >
           <th>
             <router-link
-              :to="{ name: 'planosSetoriaisResumo', params: { planoSetorialId: item.id } }"
+              :to="{
+                name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
+                params: { planoSetorialId: item.id } }"
             >
               {{ item.nome }}
             </router-link>
