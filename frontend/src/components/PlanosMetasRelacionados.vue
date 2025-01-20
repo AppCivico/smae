@@ -53,7 +53,7 @@
             <component
               :is="relacionamento.ehPlanoSetorial ? SmaeLink : 'span'"
               :to="{
-                name: 'planosSetoriaisResumo',
+                name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
                 params: { planoSetorialId: relacionamento.pdm_id }
               }"
             >
@@ -148,12 +148,13 @@
 import type { IdSigla } from '@/../../backend/src/common/dto/IdSigla.dto.ts';
 import type { MetaPdmDto } from '@/../../backend/src/meta/entities/meta.entity.ts';
 
+import { uniqBy } from 'lodash';
+import { computed, defineProps } from 'vue';
+import { useRoute } from 'vue-router';
 import tiposDePlanos from '@/consts/tiposDePlanos';
 import SmaeLink from '@/components/SmaeLink.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import truncate from '@/helpers/truncate';
-import { uniqBy } from 'lodash';
-import { computed, defineProps } from 'vue';
 
 type MetaPdmDtoComOrgaosCombinados = MetaPdmDto & {
   orgaos: IdSigla[];
@@ -170,6 +171,8 @@ const props = defineProps({
     default: 'Relacionamentos com outros compromissos',
   },
 });
+
+const route = useRoute();
 
 function combinadorDeOrgaos(relacionamento: MetaPdmDto): IdSigla[] {
   let todosOsOrgaos: IdSigla[] = [];
