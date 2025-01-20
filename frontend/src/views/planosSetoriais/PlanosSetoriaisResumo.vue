@@ -344,10 +344,8 @@ usersStore.buscarPessoasSimplificadas();
               <router-link
                 v-if="item.id"
                 :to="{
-                  name: 'planosSetoriaisResumo', params: {
-                    planoSetorialId:
-                      item.id
-                  }
+                  name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
+                  params: { planoSetorialId: item.id }
                 }"
               >
                 {{ item.nome || item }}
