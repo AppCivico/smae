@@ -13,6 +13,7 @@ import {
     ProjetoAcompanhamento,
     ProjetoAcompanhamentoRowDto,
 } from './entities/acompanhamento.entity';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class AcompanhamentoService {
@@ -186,7 +187,7 @@ export class AcompanhamentoService {
         return projetoAcompanhamento.map((r) => {
             return {
                 id: r.id,
-                data_registro: r.data_registro,
+                data_registro: Date2YMD.toString(r.data_registro),
                 participantes: r.participantes,
                 detalhamento: r.detalhamento,
                 criado_em: r.criado_em,
@@ -220,8 +221,8 @@ export class AcompanhamentoService {
         return {
             id: r.id,
             encaminhamento: r.encaminhamento,
-            prazo_encaminhamento: r.prazo_encaminhamento ? r.prazo_encaminhamento : null,
-            prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
+            prazo_encaminhamento: Date2YMD.toStringOrNull(r.prazo_encaminhamento),
+            prazo_realizado: Date2YMD.toStringOrNull(r.prazo_realizado),
             responsavel: r.responsavel,
             ordem: r.ordem,
             numero_identificador: r.numero_identificador,
@@ -281,7 +282,7 @@ export class AcompanhamentoService {
 
         return {
             id: projetoAcompanhamento.id,
-            data_registro: projetoAcompanhamento.data_registro,
+            data_registro: Date2YMD.toString(projetoAcompanhamento.data_registro),
             participantes: projetoAcompanhamento.participantes,
 
             detalhamento: projetoAcompanhamento.detalhamento,

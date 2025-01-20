@@ -1,17 +1,25 @@
 import { TipoPdm } from '@prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class PdmDto {
     nome: string;
     descricao: string | null;
     prefeito: string;
     equipe_tecnica: string | null;
+    @IsDateYMD({ nullable: true })
     data_inicio: string | null;
+    @IsDateYMD({ nullable: true })
     data_fim: string | null;
+    @IsDateYMD({ nullable: true })
     data_publicacao: string | null;
+    @IsDateYMD({ nullable: true })
     periodo_do_ciclo_participativo_inicio: string | null;
+    @IsDateYMD({ nullable: true })
     periodo_do_ciclo_participativo_fim: string | null;
+    @IsDateYMD({ nullable: true })
+    considerar_atraso_apos: string | null;
     rotulo_macro_tema: string;
     rotulo_tema: string;
     rotulo_sub_tema: string;

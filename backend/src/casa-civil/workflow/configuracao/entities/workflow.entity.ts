@@ -5,6 +5,7 @@ import { WorkflowfluxoFaseDto } from '../fluxo-fase/entities/workflow-fluxo-fase
 import { WorkflowFluxoTarefaDto } from '../fluxo-tarefa/entities/workflow-fluxo-tarefa.entity';
 import { WorkflowSituacaoDto } from '../situacao/entities/workflow-situacao.entity';
 import { DistribuicaoStatusDto } from 'src/casa-civil/distribuicao-recurso/distribuicao-status/entities/distribuicao-status.dto';
+import { IsDateYMD } from '../../../../auth/decorators/date.decorator';
 
 export class WorkflowDto {
     id: number;
@@ -23,8 +24,10 @@ export class WorkflowDetailDto {
     id: number;
     nome: string;
     ativo: boolean;
-    inicio: Date;
-    termino: Date | null;
+    @IsDateYMD()
+    inicio: string;
+    @IsDateYMD({ nullable: true })
+    termino: string | null;
     transferencia_tipo: IdNomeDto;
     edicao_restrita: boolean;
     fluxo: DetailWorkflowFluxoDto[];

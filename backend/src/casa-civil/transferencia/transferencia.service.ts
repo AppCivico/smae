@@ -27,6 +27,7 @@ import {
 } from './entities/transferencia.dto';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
+import { Date2YMD } from '../../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -1567,15 +1568,15 @@ export class TransferenciaService {
             id: transferenciaCronograma.id,
             previsao_custo: transferenciaCronograma.previsao_custo,
             previsao_duracao: transferenciaCronograma.previsao_duracao,
-            previsao_inicio: transferenciaCronograma.previsao_inicio,
-            previsao_termino: transferenciaCronograma.previsao_termino,
+            previsao_inicio: Date2YMD.toStringOrNull(transferenciaCronograma.previsao_inicio),
+            previsao_termino: Date2YMD.toStringOrNull(transferenciaCronograma.previsao_termino),
             atraso: transferenciaCronograma.atraso,
             em_atraso: transferenciaCronograma.em_atraso,
-            projecao_termino: transferenciaCronograma.projecao_termino,
+            projecao_termino: Date2YMD.toStringOrNull(transferenciaCronograma.projecao_termino),
             realizado_duracao: transferenciaCronograma.realizado_duracao,
             percentual_concluido: transferenciaCronograma.percentual_concluido,
-            realizado_inicio: transferenciaCronograma.realizado_inicio,
-            realizado_termino: transferenciaCronograma.realizado_termino,
+            realizado_inicio: Date2YMD.toStringOrNull(transferenciaCronograma.realizado_inicio),
+            realizado_termino: Date2YMD.toStringOrNull(transferenciaCronograma.realizado_termino),
             realizado_custo: transferenciaCronograma.realizado_custo,
             tolerancia_atraso: transferenciaCronograma.tolerancia_atraso,
             percentual_atraso: transferenciaCronograma.percentual_atraso,

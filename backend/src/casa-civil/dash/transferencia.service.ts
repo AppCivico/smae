@@ -17,6 +17,7 @@ import {
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { UploadService } from 'src/upload/upload.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { Date2YMD } from '../../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -76,7 +77,7 @@ export class DashTransferenciaService {
         const ret: ListMfDashTransferenciasDto = {
             linhas: rows.map((r): MfDashTransferenciasDto => {
                 return {
-                    data: r.data,
+                    data: Date2YMD.toStringOrNull(r.data),
                     data_origem: r.data_origem,
                     atividade: r.situacao,
                     identificador: r.transferencia.identificador,

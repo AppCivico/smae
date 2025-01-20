@@ -8,6 +8,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { ContratoDetailDto, ContratoItemDto } from './entities/contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
+import { Date2YMD } from '../../common/date2ymd';
+import { ContratoAditivoItemDto } from '../contrato-aditivo/entities/contrato-aditivo.entity';
 
 @Injectable()
 export class ContratoService {
@@ -221,9 +223,9 @@ export class ContratoService {
             empresa_contratada: contrato.empresa_contratada,
             cnpj_contratada: contrato.cnpj_contratada,
             observacoes: contrato.observacoes,
-            data_assinatura: contrato.data_assinatura,
-            data_inicio: contrato.data_inicio,
-            data_termino: contrato.data_termino,
+            data_assinatura: Date2YMD.toStringOrNull(contrato.data_assinatura),
+            data_inicio: Date2YMD.toStringOrNull(contrato.data_inicio),
+            data_termino: Date2YMD.toStringOrNull(contrato.data_termino),
             prazo_numero: contrato.prazo_numero,
             prazo_unidade: contrato.prazo_unidade,
             data_base_mes: contrato.data_base_mes,
@@ -243,8 +245,8 @@ export class ContratoService {
                 return {
                     id: aditivo.id,
                     numero: aditivo.numero,
-                    data: aditivo.data,
-                    data_termino_atualizada: aditivo.data_termino_atualizada,
+                    data: Date2YMD.toStringOrNull(aditivo.data),
+                    data_termino_atualizada: Date2YMD.toStringOrNull(aditivo.data_termino_atualizada),
                     valor: aditivo.valor,
                     percentual_medido: aditivo.percentual_medido,
                     tipo: {
@@ -253,7 +255,7 @@ export class ContratoService {
                         habilita_valor: aditivo.tipo_aditivo.habilita_valor,
                         habilita_valor_data_termino: aditivo.tipo_aditivo.habilita_valor_data_termino,
                     },
-                };
+                } satisfies ContratoAditivoItemDto;
             }),
         };
     }

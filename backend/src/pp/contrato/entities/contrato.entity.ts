@@ -3,8 +3,8 @@ import { StatusContrato } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
-import { ProjetoModalidadeContratacaoDto } from 'src/pp/_mdo/modalidade-contratacao/dto/mod-contratacao.dto';
 import { ContratoAditivoItemDto } from 'src/pp/contrato-aditivo/entities/contrato-aditivo.entity';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class ContratoDetailDto {
     id: number;
@@ -23,9 +23,14 @@ export class ContratoDetailDto {
     empresa_contratada: string | null;
     cnpj_contratada: string | null;
     observacoes: string | null;
-    data_assinatura: Date | null;
-    data_inicio: Date | null;
-    data_termino: Date | null;
+
+    @IsDateYMD({ nullable: true })
+    data_assinatura: string | null;
+    @IsDateYMD({ nullable: true })
+    data_inicio: string | null;
+    @IsDateYMD({ nullable: true })
+    data_termino: string | null;
+
     prazo_numero: number | null;
     prazo_unidade: string | null;
     data_base_mes: number | null;

@@ -115,7 +115,10 @@ export class MfService {
             throw new HttpException('Não há ciclo ativo no momento.' + detail, 404);
         }
 
-        return cicloAtivo;
+        return {
+            ...cicloAtivo,
+            data_ciclo: Date2YMD.toString(cicloAtivo.data_ciclo),
+        };
     }
 
     // foi movido pra cá, pq pode ser que uma ação (risco, fechamento, analise) possa mudar o status

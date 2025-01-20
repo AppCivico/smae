@@ -67,7 +67,7 @@ export class MfMetaAgrupadaDto {
 
 export class CicloAtivoDto {
     id: number;
-    data_ciclo: Date;
+    data_ciclo: string;
     pdm: {
         id: number;
     };

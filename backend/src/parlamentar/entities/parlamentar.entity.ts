@@ -9,12 +9,14 @@ import {
 import { IsEnum } from 'class-validator';
 import { EleicaoDto } from 'src/eleicao/entity/eleicao.entity';
 import { PartidoDto } from 'src/partido/entities/partido.entity';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class ParlamentarDetailDto {
     id: number;
     nome: string;
     nome_popular: string | null;
-    nascimento: string | undefined;
+    @IsDateYMD({ nullable: true })
+    nascimento: string | null;
     telefone: string | null;
     email: string | null;
     em_atividade: boolean;

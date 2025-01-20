@@ -81,10 +81,10 @@ export class VariavelGlobalCicloDto {
     fase: VariavelFase;
     em_atraso: boolean;
 
-    @ApiProperty({ type: 'string', format: 'date' })
+    @IsDateYMD()
     proximo_periodo_abertura: string;
 
-    @ApiProperty({ type: 'string', format: 'date' })
+    @IsDateYMD()
     ultimo_periodo_valido: string;
 
     pedido_complementacao: boolean;

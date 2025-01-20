@@ -6,6 +6,7 @@ import { PlanoAcao, PlanoAcaoDetailDto } from '../plano-de-acao/entities/plano-a
 import { CreatePlanoAcaoDto } from './dto/create-plano-acao.dto';
 import { FilterPlanoAcaoDto } from './dto/filter-plano-acao.dto';
 import { UpdatePlanoAcaoDto } from './dto/update-plano-acao.dto';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class PlanoAcaoService {
@@ -51,7 +52,7 @@ export class PlanoAcaoService {
         filters: FilterPlanoAcaoDto,
         user: PessoaFromJwt | undefined
     ): Promise<PlanoAcao[]> {
-        return await this.prisma.planoAcao.findMany({
+        const rows = await this.prisma.planoAcao.findMany({
             where: {
                 projeto_risco: {
                     projeto_id: projetoId,
@@ -84,6 +85,14 @@ export class PlanoAcaoService {
                 },
             },
         });
+
+        return rows.map((row) => {
+            return {
+                ...row,
+                prazo_contramedida: Date2YMD.toStringOrNull(row.prazo_contramedida),
+                data_termino: Date2YMD.toStringOrNull(row.data_termino),
+            };
+        });
     }
 
     async findOne(projetoId: number, plano_acao_id: number, user: PessoaFromJwt): Promise<PlanoAcaoDetailDto> {
@@ -115,7 +124,11 @@ export class PlanoAcaoService {
         });
         if (!plano_acao) throw new HttpException('plano_acao| inválido', 400);
 
-        return plano_acao;
+        return {
+            ...plano_acao,
+            prazo_contramedida: Date2YMD.toStringOrNull(plano_acao.prazo_contramedida),
+            data_termino: Date2YMD.toStringOrNull(plano_acao.data_termino),
+        };
     }
 
     async update(plano_acao_id: number, dto: UpdatePlanoAcaoDto, user: PessoaFromJwt) {

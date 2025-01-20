@@ -372,6 +372,7 @@ export class PdmService {
                 tipo: true,
                 ps_admin_cps: true,
                 orgao_admin_id: true,
+                considerar_atraso_apos: true,
             },
             orderBy: [{ ativo: 'desc' }, { data_inicio: 'desc' }, { data_fim: 'desc' }],
         });
@@ -415,6 +416,7 @@ export class PdmService {
                     periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(
                         pdm.periodo_do_ciclo_participativo_inicio
                     ),
+                    considerar_atraso_apos: Date2YMD.toStringOrNull(pdm.considerar_atraso_apos),
                 } satisfies ListPdm;
             })
         );
@@ -510,6 +512,7 @@ export class PdmService {
             data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
             periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
             periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
+            considerar_atraso_apos: Date2YMD.toStringOrNull(pdm.considerar_atraso_apos),
         };
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;

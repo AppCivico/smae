@@ -1,8 +1,9 @@
 import { IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
-export class Indicador {
+export class IndicadorDto {
     id: number;
     polaridade: Polaridade;
     periodicidade: Periodicidade;
@@ -12,8 +13,12 @@ export class Indicador {
     iniciativa_id: number | null;
     atividade_id: number | null;
     regionalizavel: boolean;
-    inicio_medicao: Date;
-    fim_medicao: Date;
+
+    @IsDateYMD()
+    inicio_medicao: string;
+    @IsDateYMD()
+    fim_medicao: string;
+
     nivel_regionalizacao: number | null;
     contexto: string | null;
     complemento: string | null;

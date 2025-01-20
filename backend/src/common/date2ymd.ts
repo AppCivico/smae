@@ -59,4 +59,11 @@ export class Date2YMD {
         const dt = DateTime.fromJSDate(data, { zone: 'UTC' });
         return dt.day.toString().padStart(2, '0') + '/' + dt.month.toString().padStart(2, '0') + '/' + dt.year;
     }
+
+    static ymdToDMY(data: string | null): string {
+        if (!data) return '-';
+        const parts = data.split('-');
+        if (parts.length != 3) return `Invalid date: ${data}`;
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
 }
