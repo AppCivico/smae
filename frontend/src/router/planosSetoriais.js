@@ -303,7 +303,7 @@ export default {
             },
             {
               path: ':subtemaId',
-              name: 'planosSetoriaisEditarSubtema',
+              name: `${entidadeMãe}.planosSetoriaisEditarSubtema`,
               component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
               props: ({ params }) => ({
                 ...params,
