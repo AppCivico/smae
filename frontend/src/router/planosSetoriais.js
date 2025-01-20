@@ -249,7 +249,7 @@ export default {
             },
             {
               path: 'novo',
-              name: 'planosSetoriaisNovoTema',
+              name: `${entidadeMãe}.planosSetoriaisNovoTema`,
               component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Novo Tema',
@@ -261,7 +261,7 @@ export default {
             },
             {
               path: ':temaId',
-              name: 'planosSetoriaisEditarTema',
+              name: `${entidadeMãe}.planosSetoriaisEditarTema`,
               component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
               props: ({ params }) => ({
                 ...params,
