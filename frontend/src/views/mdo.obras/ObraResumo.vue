@@ -100,7 +100,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <router-link
       v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
-      :to="{ name: 'obrasEditar', params: { obraId: emFoco.id } }"
+      :to="{
+        name: 'obrasEditar',
+        params: { obraId: emFoco.id },
+        query: { escape: { name: 'obrasResumo' } }
+      }"
       class="btn big ml2"
     >
       Editar
