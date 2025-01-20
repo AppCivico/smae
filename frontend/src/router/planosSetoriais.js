@@ -75,7 +75,7 @@ export default {
             rotas.push('planosSetoriaisSubtemas');
           }
           rotas.push('planoSetorial:listaDeMetas');
-          rotas.push('planosSetoriaisTags');
+          rotas.push(`${entidadeMãe}.planosSetoriaisTags`);
           return rotas;
         },
         rotasParaMigalhasDePão: [
@@ -157,7 +157,7 @@ export default {
           children: [
             {
               path: '',
-              name: 'planosSetoriaisTags',
+              name: `${entidadeMãe}.planosSetoriaisTags`,
               component: () => import('@/views/ps.tags/TagsLista.vue'),
               meta: {
                 título: 'Tags',
@@ -172,7 +172,7 @@ export default {
                 limitarÀsPermissões: [
                   'CadastroTagPS.inserir',
                 ],
-                rotaDeEscape: 'planosSetoriaisTags',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
               },
             },
             {
@@ -188,7 +188,7 @@ export default {
                 limitarÀsPermissões: [
                   'CadastroTagPS.editar',
                 ],
-                rotaDeEscape: 'planosSetoriaisTags',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
               },
             },
           ],
