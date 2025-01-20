@@ -25,7 +25,7 @@
         </tr>
       </thead>
 
-      <tbody>
+      <tbody :aria-busy="chamadasPendentes.emFoco">
         <tr
           v-for="item in historicoStatus"
           :key="item.id"
@@ -59,7 +59,16 @@
           </td>
         </tr>
 
-        <tr v-if="historicoStatus.length === 0">
+        <tr v-if="chamadasPendentes.emFoco">
+          <td
+            colspan="999"
+          >
+            <LoadingComponent class="horizontal">
+              Carregando histórico de status
+            </LoadingComponent>
+          </td>
+        </tr>
+        <tr v-else-if="historicoStatus.length === 0">
           <td
             class="text-center"
             colspan="6"
