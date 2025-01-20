@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: 'planosSetoriaisNovoSubtema' }"
+      :to="{ name: `${route.meta.entidadeMãe}.planosSetoriaisNovoSubtema` }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -75,13 +75,13 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,

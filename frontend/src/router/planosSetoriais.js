@@ -291,7 +291,7 @@ export default {
             },
             {
               path: 'novo',
-              name: 'planosSetoriaisNovoSubtema',
+              name: `${entidadeMãe}.planosSetoriaisNovoSubtema`,
               component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
               meta: {
                 rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
