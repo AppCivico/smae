@@ -31,9 +31,7 @@
           :key="item.id"
         >
           <td>
-            {{
-              item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : ''
-            }}
+            {{ item.data_troca ? dateToDate(item.data_troca) : '' }}
           </td>
           <td>{{ item.status_base?.nome || item.status_customizado?.nome }}</td>
           <td>{{ item.orgao_responsavel?.sigla }}</td>
@@ -98,16 +96,15 @@
 </template>
 
 <script setup>
+import dateToDate from '@/helpers/dateToDate';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import { useIsFormDirty } from 'vee-validate';
 import {
   computed, onMounted, onUnmounted, ref,
 } from 'vue';
-
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-
+import { useRoute, useRouter } from 'vue-router';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
