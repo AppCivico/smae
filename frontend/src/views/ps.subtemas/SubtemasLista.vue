@@ -31,7 +31,10 @@
         <td>
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
-            :to="{ name: 'planosSetoriaisEditarSubtema', params: { subtemaId: item.id } }"
+            :to="{
+              name: `${route.meta.entidadeMãe}.planosSetoriaisEditarSubtema`,
+              params: { subtemaId: item.id }
+            }"
             class="tprimary"
           >
             <svg
