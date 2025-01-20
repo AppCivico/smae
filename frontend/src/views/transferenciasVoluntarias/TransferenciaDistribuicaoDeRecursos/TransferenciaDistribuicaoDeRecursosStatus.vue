@@ -15,12 +15,12 @@
     <table class="tablemain mb2">
       <thead>
         <tr>
-          <th>DATA</th>
-          <th>STATUS</th>
-          <th>ÓRGÃO</th>
-          <th>RESPONSÁVEL</th>
-          <th>MOTIVO</th>
-          <th>TOTAL DE DIAS NO STATUS</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Órgão</th>
+          <th>Responsável</th>
+          <th>Motivo</th>
+          <th>Total de dias no status</th>
           <th />
         </tr>
       </thead>
