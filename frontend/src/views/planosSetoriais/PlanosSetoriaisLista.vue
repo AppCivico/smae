@@ -102,7 +102,10 @@ planosSetoriaisStore.buscarTudo();
           <td>
             <router-link
               v-if="item.pode_editar"
-              :to="{ name: 'planosSetoriaisEditar', params: { planoSetorialId: item.id } }"
+              :to="{
+                name: `${route.meta.entidadeMãe}.planosSetoriaisEditar`,
+                params: { planoSetorialId: item.id }
+              }"
               class="tprimary"
             >
               <svg
