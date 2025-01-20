@@ -61,13 +61,13 @@
   </div>
 </template>
 <script setup>
-import { macrotema as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
+import { useAlertStore } from '@/stores/alert.store';
+import { macrotema as schema } from '@/consts/formSchemas';
 
 defineOptions({
   inheritAttrs: false,
@@ -110,7 +110,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       macrotemasStore.$reset();
-      router.push({ name: 'planosSetoriaisMacrotemas' });
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisMacrotemas` });
     }
   } catch (error) {
     alertStore.error(error);
