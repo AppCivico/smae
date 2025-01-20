@@ -2,11 +2,22 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { TaskService } from '../task/task.service';
 
+// Error handlers
+process.on('uncaughtException', async (error: Error) => {
+    console.error('Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', async (reason: unknown) => {
+    console.error('Unhandled rejection:', reason);
+});
+
 async function bootstrap() {
     // desliga os crontab do 'fork'
     process.env.ENABLED_CRONTABS = '';
 
-    const app = await NestFactory.createApplicationContext(AppModule);
+    const app = await NestFactory.createApplicationContext(AppModule, {
+        logger: ['error', 'warn'],
+    });
     app.enableShutdownHooks();
 
     const taskService = app.get(TaskService);
@@ -15,6 +26,8 @@ async function bootstrap() {
 
     if (isNaN(taskId)) throw Error(`process.argv[2] is not a number: ${process.argv[2]}`);
     try {
+        app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
+
         const result = await taskService.runInFg(taskId, null);
         if (typeof result !== 'string' && 'error' in result) throw result.error;
 
@@ -31,8 +44,11 @@ async function bootstrap() {
         } else {
             console.log('error', error);
         }
+    } finally {
+        process.exit(0);
     }
-
-    await app.close();
 }
-bootstrap();
+bootstrap().catch((error) => {
+    console.error('Bootstrap error:', error);
+    process.exit(1);
+});
