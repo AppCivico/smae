@@ -138,7 +138,7 @@ export default {
             },
             {
               path: ':arquivoId',
-              name: 'planosSetoriaisEditarDocumento',
+              name: `${entidadeMãe}.planosSetoriaisEditarDocumento`,
               component: () => import('@/views/planosSetoriais/PlanosSetoriaisEnviarArquivo.vue'),
               props: ({ params }) => ({
                 ...params,
