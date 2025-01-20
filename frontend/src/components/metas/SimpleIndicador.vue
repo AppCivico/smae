@@ -1,13 +1,15 @@
 <script setup>
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
+// eslint-disable-next-line import/no-named-default
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
+import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
-import { computed, nextTick } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -33,9 +35,17 @@ const activePdm = computed(() => {
   }
 });
 
-(async () => {
-  if (!tempIndicadores.value.length
+const contagemDeRecarregamentos = ref(0);
+const numeroMaximoDeRecarregamentos = ref(2);
+
+async function iniciar(forcarAtualizacao = false) {
+  contagemDeRecarregamentos.value += 1;
+  if (
+    !tempIndicadores.value.length
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     || tempIndicadores.value[0][props.parent_field] != props.parent_id
+    || forcarAtualizacao
   ) {
     await IndicadoresStore.filterIndicadores(props.parent_id, props.parent_field);
   }
@@ -47,7 +57,9 @@ const activePdm = computed(() => {
   nextTick().then(() => {
     rolarTelaPara();
   });
-})();
+}
+
+iniciar();
 </script>
 <template>
   <template v-if="tempIndicadores.length">
@@ -93,21 +105,32 @@ const activePdm = computed(() => {
             ><use xlink:href="#i_edit" /></svg>
           </SmaeLink>
         </div>
-        <GraficoHeatmapVariavelCategorica
-          v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
-          :valores="ValoresInd[ind.id]"
-        />
-        <EvolucaoGraph
-          v-else
-          :dataserie="ValoresInd[ind.id]"
-        />
-        <div class="tc">
-          <SmaeLink
-            :to="`${parentlink}/evolucao`"
-            class="btn big mt1 mb1"
-          >
-            <span>Acompanhar evolução</span>
-          </SmaeLink>
+        <div class="relative">
+          <GraficoHeatmapVariavelCategorica
+            v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
+            :valores="ValoresInd[ind.id]"
+          />
+          <EvolucaoGraph
+            v-else
+            :dataserie="ValoresInd[ind.id]"
+          />
+          <div class="tc">
+            <SmaeLink
+              :to="`${parentlink}/evolucao`"
+              class="btn big mt1 mb1"
+            >
+              <span>Acompanhar evolução</span>
+            </SmaeLink>
+          </div>
+          <OverlayIndisponivel
+            v-if="ind.recalculando || ind.recalculo_tempo"
+            :tem-tentar-novamente="true"
+            :texto-descritivo="ind.recalculo_erro"
+            :tentar-novamente-em="contagemDeRecarregamentos >= numeroMaximoDeRecarregamentos
+              ? null
+              : ind.recalculo_tempo "
+            @recarregar-dados="iniciar(true)"
+          />
         </div>
       </div>
     </div>
