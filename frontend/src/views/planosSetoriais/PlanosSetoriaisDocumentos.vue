@@ -77,7 +77,7 @@ iniciar();
       : null"
     :rota-de-edição="emFoco?.pode_editar
       ? {
-        name: 'planosSetoriaisEditarDocumento'
+        name: `${route.meta.entidadeMãe}.planosSetoriaisEditarDocumento`
       }
       : null"
     @apagar="($params) => excluirArquivo($params)"
