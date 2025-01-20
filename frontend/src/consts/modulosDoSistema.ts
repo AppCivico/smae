@@ -67,7 +67,7 @@ const modulos: ModulosDoSistema = {
     ícone: planosSetoriais,
     rotaInicial: [
       {
-        name: 'planosSetoriaisListar',
+        name: 'planoSetorial.planosSetoriaisListar',
       },
     ],
   },
