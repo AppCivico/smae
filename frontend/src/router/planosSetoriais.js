@@ -86,7 +86,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'planosSetoriaisEditar',
+          name: `${entidadeMãe}planosSetoriaisEditar`,
           component: () => import('@/views/planosSetoriais/PlanosSetoriaisCriarEditar.vue'),
           props: ({ params }) => ({
             ...params,
