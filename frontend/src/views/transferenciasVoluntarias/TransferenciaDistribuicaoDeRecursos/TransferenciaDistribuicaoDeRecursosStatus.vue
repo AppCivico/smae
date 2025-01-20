@@ -40,9 +40,7 @@
           <td>{{ item.dias_no_status }}</td>
           <td>
             <button
-              v-if="
-                item.id === historicoStatus[historicoStatus.length - 1].id
-              "
+              v-if="item.id === registroMaisRecente?.id"
               class="like-a__text"
               arial-label="editar"
               title="editar"
@@ -136,6 +134,19 @@ const historicoStatus = computed(() => {
 
   return distribuiçãoEmFoco.value?.historico_status;
 });
+
+const registroMaisRecente = computed(() => historicoStatus.value
+  .toSorted((a, b) => {
+    const dataA = a.data_troca;
+    const dataB = b.data_troca;
+    if (dataA < dataB) {
+      return 1;
+    }
+    if (dataA > dataB) {
+      return -1;
+    }
+    return 0;
+  })[0]);
 
 function voltarTela() {
   router.push({
