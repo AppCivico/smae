@@ -61,7 +61,7 @@ export default {
       meta: {
         rotasParaMenuSecundário: () => {
           const rotas = [
-            'planosSetoriaisResumo',
+            `${entidadeMãe}.planosSetoriaisResumo`,
             'planosSetoriaisDocumentos',
           ];
 
@@ -86,7 +86,7 @@ export default {
       children: [
         {
           path: '',
-          name: `${entidadeMãe}planosSetoriaisEditar`,
+          name: `${entidadeMãe}.planosSetoriaisEditar`,
           component: () => import('@/views/planosSetoriais/PlanosSetoriaisCriarEditar.vue'),
           props: ({ params }) => ({
             ...params,
@@ -103,7 +103,7 @@ export default {
         },
         {
           path: 'resumo',
-          name: 'planosSetoriaisResumo',
+          name: `${entidadeMãe}.planosSetoriaisResumo`,
           component: () => import('@/views/planosSetoriais/PlanosSetoriaisResumo.vue'),
           props: ({ params }) => ({
             ...params,

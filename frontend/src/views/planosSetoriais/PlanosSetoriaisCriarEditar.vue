@@ -1,4 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
@@ -10,15 +19,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -83,7 +83,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
       if (route.meta.rotaDeEscape) {
         router.push({
-          name: 'planosSetoriaisResumo',
+          name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
           params: { planoSetorialId: resposta.id },
         });
       }
@@ -273,7 +273,9 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_inicio', $v || null); }"
+            @update:model-value="($v) => {
+              setFieldValue('periodo_do_ciclo_participativo_inicio', $v || null)
+            }"
           />
           <ErrorMessage name="periodo_do_ciclo_participativo_inicio" />
         </div>
@@ -288,7 +290,9 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_fim', $v || null); }"
+            @update:model-value="($v) => {
+              setFieldValue('periodo_do_ciclo_participativo_fim', $v || null)
+            }"
           />
           <ErrorMessage name="periodo_do_ciclo_participativo_fim" />
         </div>
