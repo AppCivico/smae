@@ -129,7 +129,7 @@ export default {
           children: [
             {
               path: 'novo',
-              name: 'planosSetoriaisNovoDocumento',
+              name: `${entidadeMãe}.planosSetoriaisNovoDocumento`,
               component: () => import('@/views/planosSetoriais/PlanosSetoriaisEnviarArquivo.vue'),
               meta: {
                 rotaDeEscape: `${entidadeMãe}.planosSetoriaisDocumentos`,
