@@ -34,10 +34,8 @@
             ? 'router-link'
             : 'span'"
           :to="{
-            name: 'planosSetoriaisResumo', params: {
-              planoSetorialId:
-                plano.id
-            }
+            name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
+            params: { planoSetorialId: plano.id }
           }"
           :title="plano.nome?.length > 36 ? plano.nome : null"
         >
@@ -52,10 +50,11 @@
 </template>
 <script setup lang="ts">
 import type { VariavelGlobalItemDto, VariavelItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
-import truncate from '@/helpers/truncate';
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { defineProps } from 'vue';
+import { useRoute } from 'vue-router';
+import truncate from '@/helpers/truncate';
+import { useAuthStore } from '@/stores/auth.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -67,6 +66,8 @@ defineProps({
     default: null,
   },
 });
+
+const route = useRoute();
 
 const authStore = useAuthStore();
 
