@@ -61,13 +61,13 @@
   </div>
 </template>
 <script setup>
-import { tema as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTemasPsStore } from '@/stores/temasPs.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTemasPsStore } from '@/stores/temasPs.store';
+import { useAlertStore } from '@/stores/alert.store';
+import { tema as schema } from '@/consts/formSchemas';
 
 defineOptions({
   inheritAttrs: false,
@@ -110,7 +110,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       temasStore.$reset();
-      router.push({ name: 'planosSetoriaisTemas' });
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisTemas` });
     }
   } catch (error) {
     alertStore.error(error);
