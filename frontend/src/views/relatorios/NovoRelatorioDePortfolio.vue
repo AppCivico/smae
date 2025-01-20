@@ -10,9 +10,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import CheckClose from '../../components/CheckClose.vue';
 
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 

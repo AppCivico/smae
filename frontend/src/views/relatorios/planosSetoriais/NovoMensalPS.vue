@@ -14,8 +14,6 @@ import { useTagsStore } from '@/stores/tags.store';
 import { relatórioMensalPS as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 
 const TagsStore = useTagsStore();
 const relatoriosStore = useRelatoriosStore();

@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import SmaeLink from '@/components/SmaeLink.vue';
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
