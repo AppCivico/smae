@@ -2,9 +2,6 @@
 import { Field, Form, useIsFormDirty } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '@/components/CheckClose.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';

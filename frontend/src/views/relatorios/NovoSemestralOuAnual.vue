@@ -9,8 +9,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
