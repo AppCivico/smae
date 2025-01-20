@@ -62,7 +62,7 @@ export default {
         rotasParaMenuSecundário: () => {
           const rotas = [
             `${entidadeMãe}.planosSetoriaisResumo`,
-            'planosSetoriaisDocumentos',
+            `${entidadeMãe}.planosSetoriaisDocumentos`,
           ];
 
           if (usePlanosSetoriaisStore()?.emFoco?.possui_macro_tema) {
@@ -116,7 +116,7 @@ export default {
         },
         {
           path: 'documentos',
-          name: 'planosSetoriaisDocumentos',
+          name: `${entidadeMãe}.planosSetoriaisDocumentos`,
           component: () => import('@/views/planosSetoriais/PlanosSetoriaisDocumentos.vue'),
           props: ({ params }) => ({
             ...params,
@@ -132,7 +132,7 @@ export default {
               name: 'planosSetoriaisNovoDocumento',
               component: () => import('@/views/planosSetoriais/PlanosSetoriaisEnviarArquivo.vue'),
               meta: {
-                rotaDeEscape: 'planosSetoriaisDocumentos',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisDocumentos`,
                 títuloParaMenu: 'Novo documento',
               },
             },
@@ -145,7 +145,7 @@ export default {
                 ...{ arquivoId: Number.parseInt(params.arquivoId, 10) || undefined },
               }),
               meta: {
-                rotaDeEscape: 'planosSetoriaisDocumentos',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisDocumentos`,
                 títuloParaMenu: 'Editar documento',
               },
             },
