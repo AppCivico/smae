@@ -1,29 +1,31 @@
 <template>
-  <div class="indisponivel flex justifycenter center">
-    <template v-if="temTentarNovamente">
-      <div class="indisponivel__content">
-        <div class="flex column text-center g3">
-          <slot name="textoDescritivo" />
+  <div
+    v-if="temTentarNovamente"
+    aria-live="polite"
+    class="indisponivel flex justifycenter center"
+  >
+    <div class="indisponivel__content">
+      <div class="flex column text-center g3">
+        <slot name="textoDescritivo">
           <p class="w700">
             {{ textoDescritivo }}
           </p>
-          <slot />
-          <div>
-            <button
-              type="button"
-              class="btn"
-              :disabled="estaTentandoNovamente"
-              @click="recarregarDados"
-            >
-              {{ estaTentandoNovamente
-                ? `Recarregando em ${tempoRestante}
-                  ${tempoRestante === 1 ? 'segundo' : 'segundos'}...`
-                : tentarNovamenteTextoDoBotao }}
-            </button>
-          </div>
+        </slot>
+        <div>
+          <button
+            type="button"
+            class="btn"
+            :aria-busy="estaTentandoNovamente"
+            @click="recarregarDados"
+          >
+            {{ estaTentandoNovamente
+              ? `Recarregando em ${tempoRestante}
+                ${tempoRestante === 1 ? 'segundo' : 'segundos'}...`
+              : tentarNovamenteTextoDoBotao }}
+          </button>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -98,18 +100,17 @@ function recarregarDados() {
   }
 }
 
-watch(() => props.tentarNovamenteEm, (novoValor) => {
-  limparContagem();
-  if (novoValor) {
-    estaTentandoNovamente.value = true;
-    iniciarContagemRegressiva();
-  }
-});
-
-if (props.tentarNovamenteEm) {
-  estaTentandoNovamente.value = true;
-  iniciarContagemRegressiva();
-}
+watch(
+  () => props.tentarNovamenteEm,
+  (novoValor) => {
+    limparContagem();
+    if (novoValor) {
+      estaTentandoNovamente.value = true;
+      iniciarContagemRegressiva();
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
