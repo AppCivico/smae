@@ -1,5 +1,6 @@
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TipoRelatorioTransferencia } from '../dto/create-transferencias.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class RelTransferenciasDto {
     id: number;
@@ -8,6 +9,7 @@ export class RelTransferenciasDto {
     objeto: string;
     detalhamento: string | null;
     clausula_suspensiva: string;
+    @IsDateYMD({ nullable: true })
     clausula_suspensiva_vencimento: string | null;
     normativa: string | null;
     observacoes: string | null;
@@ -69,8 +71,8 @@ export class RelTransferenciasDto {
         conclusao_suspensiva: string | null;
         registro_sei: string | null;
     } | null;
-    tipo_transferencia :string;
-    classificacao : string | null;
+    tipo_transferencia: string;
+    classificacao: string | null;
 }
 
 export class TransferenciasRelatorioDto {

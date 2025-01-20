@@ -12,7 +12,7 @@ import {
     OperacaoSuportadaOrdem,
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
-import { Indicador } from './entities/indicador.entity';
+import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
 import { CreatePSFormulaCompostaDto, UpdatePSFormulaCompostaDto } from '../variavel/dto/variavel.formula-composta.dto';
@@ -71,7 +71,7 @@ export class IndicadorFormulaCompostaService {
         dto: CreateIndicadorFormulaCompostaDto | CreatePSFormulaCompostaDto,
         formula_compilada: string,
         user: PessoaFromJwt,
-        indicador: Indicador | null
+        indicador: IndicadorDto | null
     ) {
         const tipo: TipoPdm = indicador ? 'PDM' : 'PS';
         const sameTitle = await prismaTx.formulaComposta.count({
@@ -230,7 +230,7 @@ export class IndicadorFormulaCompostaService {
     }
 
     async updateById(
-        indicador: Indicador | null,
+        indicador: IndicadorDto | null,
         id: number,
         dto: UpdatePSFormulaCompostaDto,
         user: PessoaFromJwt
@@ -677,7 +677,7 @@ export class IndicadorFormulaCompostaService {
     private async buscaFilhosRegiao(
         prismaTx: Prisma.TransactionClient,
         regiaoId: number,
-        indicador: Indicador
+        indicador: IndicadorDto
     ): Promise<{ filho_id: number }[]> {
         return await prismaTx.$queryRaw`
         WITH RECURSIVE regiao_path AS (

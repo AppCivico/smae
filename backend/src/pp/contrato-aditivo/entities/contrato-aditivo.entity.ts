@@ -1,12 +1,15 @@
 import { Decimal } from '@prisma/client/runtime/library';
 import { ProjetoTipoAditivoDto } from 'src/tipo-aditivo/dto/tipo-aditivo.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class ContratoAditivoItemDto {
     id: number;
     numero: string;
     tipo: ProjetoTipoAditivoDto;
-    data: Date | null;
-    data_termino_atualizada: Date | null;
+    @IsDateYMD({ nullable: true })
+    data: string | null;
+    @IsDateYMD({ nullable: true })
+    data_termino_atualizada: string | null;
     valor: Decimal | null;
     percentual_medido: Decimal | null;
 }

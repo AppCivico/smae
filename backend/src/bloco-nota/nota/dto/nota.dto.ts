@@ -22,6 +22,7 @@ import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { FindOneParams } from '../../../common/decorators/find-params';
 import { IdSigla } from '../../../common/dto/IdSigla.dto';
 import { IdNomeExibicao } from '../../../meta/entities/meta.entity';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => {
     if (!a.value) return undefined;
@@ -157,13 +158,19 @@ export class TipoNotaItem {
     nota: string;
     titulo: string | null;
     dados: Record<string, any> | null;
-    data_nota: Date;
-    data_ordenacao: Date;
+
+    @IsDateYMD()
+    data_nota: string;
+    @IsDateYMD()
+    data_ordenacao: string;
+
     bloco_token: string;
     tipo_nota_id: number;
     pessoa_responsavel: IdNomeExibicao;
     orgao_responsavel: IdSigla | null;
-    rever_em: Date | null;
+
+    @IsDateYMD({ nullable: true })
+    rever_em: string | null;
     dispara_email: boolean;
     status: StatusNota;
 

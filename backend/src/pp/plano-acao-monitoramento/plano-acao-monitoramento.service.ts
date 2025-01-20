@@ -9,6 +9,7 @@ import {
     UpdatePlanoAcaoMonitoramentoDto,
 } from './dto/create-plano-acao-monitoramento.dto';
 import { PlanoAcaoMonitoramentoDto } from './entities/plano-acao-monitoramento.entity';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class PlanoAcaoMonitoramentoService {
@@ -140,7 +141,12 @@ export class PlanoAcaoMonitoramentoService {
             },
         });
 
-        return listActive;
+        return listActive.map((row) => {
+            return {
+                ...row,
+                data_afericao: Date2YMD.toString(row.data_afericao),
+            };
+        });
     }
 
     async remove(projetoId: number, id: number, user: PessoaFromJwt) {

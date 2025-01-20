@@ -24,6 +24,8 @@ import {
 } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { IdTituloPeriodicidade } from '../reports/monitoramento-mensal/entities/monitoramento-mensal.entity';
+import { PainelDto } from './entities/painel.entity';
+import { Date2YMD } from '../common/date2ymd';
 
 export class PainelConteudoForSync {
     id: number;
@@ -99,7 +101,11 @@ export class PainelService {
         return created;
     }
 
-    async findAll(filters: FilterPainelDto | undefined = undefined, restringirGrupos: boolean, user: PessoaFromJwt) {
+    async findAll(
+        filters: FilterPainelDto | undefined = undefined,
+        restringirGrupos: boolean,
+        user: PessoaFromJwt
+    ): Promise<PainelDto[]> {
         let ativo = filters?.ativo;
 
         // por padrão filtra apenas os ativos (acho que é pra remover esse padrão)
@@ -115,7 +121,7 @@ export class PainelService {
             });
         }
 
-        return await this.prisma.painel.findMany({
+        const rows = await this.prisma.painel.findMany({
             where: {
                 ativo: ativo,
                 removido_em: null,
@@ -226,9 +232,22 @@ export class PainelService {
             },
             orderBy: { nome: 'asc' },
         });
+
+        return rows.map((r) => {
+            return {
+                ...r,
+                painel_conteudo: r.painel_conteudo.map((pc) => {
+                    return {
+                        ...pc,
+                        periodo_fim: Date2YMD.toStringOrNull(pc.periodo_fim),
+                        periodo_inicio: Date2YMD.toStringOrNull(pc.periodo_inicio),
+                    };
+                }),
+            };
+        });
     }
 
-    async getDetail(id: number) {
+    async getDetail(id: number): Promise<PainelDto> {
         const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const painel_conteudo: PainelConteudoForSync[] = await prisma.painelConteudo.findMany({
                 where: { painel_id: id },
@@ -382,7 +401,16 @@ export class PainelService {
             });
         });
 
-        return ret;
+        return {
+            ...ret,
+            painel_conteudo: ret.painel_conteudo.map((pc) => {
+                return {
+                    ...pc,
+                    periodo_fim: Date2YMD.toStringOrNull(pc.periodo_fim),
+                    periodo_inicio: Date2YMD.toStringOrNull(pc.periodo_inicio),
+                };
+            }),
+        };
     }
 
     async getPainelShortData(opts: { painel_id: number }): Promise<IdTituloPeriodicidade | null> {

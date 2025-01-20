@@ -1,18 +1,23 @@
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
+
 export class TarefaCronogramaDto {
     id: number;
-    previsao_inicio: Date | null;
+    @IsDateYMD({ nullable: true })
+    previsao_inicio: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;
-    previsao_termino: Date | null;
-
+    @IsDateYMD({ nullable: true })
+    previsao_termino: string | null;
     atraso: number | null;
     em_atraso: boolean;
-    projecao_termino: Date | null;
+    @IsDateYMD({ nullable: true })
+    projecao_termino: string | null;
     realizado_duracao: number | null;
     percentual_concluido: number | null;
-
-    realizado_inicio: Date | null;
-    realizado_termino: Date | null;
+    @IsDateYMD({ nullable: true })
+    realizado_inicio: string | null;
+    @IsDateYMD({ nullable: true })
+    realizado_termino: string | null;
     realizado_custo: number | null;
     tolerancia_atraso: number | null;
     percentual_atraso: number | null;

@@ -1,5 +1,5 @@
-import { Indicador } from '../entities/indicador.entity';
+import { IndicadorDto } from '../entities/indicador.entity';
 
 export class ListIndicadorDto {
-    linhas: Indicador[];
+    linhas: IndicadorDto[];
 }

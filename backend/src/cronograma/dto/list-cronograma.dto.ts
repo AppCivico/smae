@@ -1,5 +1,5 @@
-import { Cronograma } from '../entities/cronograma.entity';
+import { CronogramaDto } from '../entities/cronograma.entity';
 
 export class ListCronogramaDto {
-    linhas: Cronograma[];
+    linhas: CronogramaDto[];
 }

@@ -1,5 +1,6 @@
 import { TipoPdm } from '@prisma/client';
-import { IsBoolean, IsISO8601, IsOptional, IsString, Length, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class ListPdm {
     /**
@@ -21,15 +22,13 @@ export class ListPdm {
     /**
      * Data de inicio
      */
-    @IsISO8601({ strict: true }, { message: '$property| data_inicio: Precisa ser uma data' })
-    @Length(10, 10)
+    @IsDateYMD({ nullable: true })
     data_inicio?: string | null;
 
     /**
      * Data de fim
      */
-    @IsISO8601({ strict: true }, { message: '$property| data_fim: Precisa ser uma data' })
-    @Length(10, 10)
+    @IsDateYMD({ nullable: true })
     data_fim?: string | null;
 
     /**
@@ -39,9 +38,15 @@ export class ListPdm {
     ativo: boolean;
 
     prefeito: string;
+    @IsDateYMD({ nullable: true })
     data_publicacao: string | null;
+    @IsDateYMD({ nullable: true })
     periodo_do_ciclo_participativo_inicio: string | null;
+    @IsDateYMD({ nullable: true })
     periodo_do_ciclo_participativo_fim: string | null;
+
+    @IsDateYMD({ nullable: true })
+    considerar_atraso_apos: string | null;
 
     rotulo_macro_tema: string;
     rotulo_tema: string;

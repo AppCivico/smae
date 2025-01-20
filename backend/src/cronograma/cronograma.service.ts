@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -9,6 +9,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
+import { CronogramaDto } from './entities/cronograma.entity';
+import { Date2YMD } from '../common/date2ymd';
 
 @Injectable()
 export class CronogramaService {
@@ -60,7 +62,11 @@ export class CronogramaService {
         return created;
     }
 
-    async findAll(tipo: TipoPdmType, filters: FilterCronogramaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(
+        tipo: TipoPdmType,
+        filters: FilterCronogramaDto | undefined = undefined,
+        user: PessoaFromJwt
+    ): Promise<CronogramaDto[]> {
         const metaId = filters?.meta_id;
         const atividadeId = filters?.atividade_id;
         const iniciativaId = filters?.iniciativa_id;
@@ -102,7 +108,7 @@ export class CronogramaService {
         // acredito que o sistema usa apenas 1 por vez (atividade, meta ou iniciativa)
         if (rows.length > 10) throw new Error('Filtro muito abrangente, limite de 10 registros');
 
-        const ret = [];
+        const ret: CronogramaDto[] = [];
         for (const row of rows) {
             let cronogramaAtraso: string | null = null;
 
@@ -118,6 +124,10 @@ export class CronogramaService {
             ret.push({
                 ...row,
                 atraso_grau: cronogramaAtraso,
+                inicio_previsto: Date2YMD.toStringOrNull(row.inicio_previsto),
+                termino_previsto: Date2YMD.toStringOrNull(row.termino_previsto),
+                inicio_real: Date2YMD.toStringOrNull(row.inicio_real),
+                termino_real: Date2YMD.toStringOrNull(row.termino_real),
             });
         }
 

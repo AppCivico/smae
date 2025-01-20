@@ -13,6 +13,7 @@ import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -49,7 +50,9 @@ export class VariavelItemDto {
     ano_base?: number | null;
     codigo: string;
     atraso_meses: number;
+    @IsDateYMD({ nullable: true })
     inicio_medicao: string | null;
+    @IsDateYMD({ nullable: true })
     fim_medicao: string | null;
     suspendida: boolean;
     supraregional: boolean;
@@ -160,6 +163,7 @@ export class SerieValorNomimal {
      * referencia em data para usar caso não seja um humano consumindo a api
      * @example "2023-01-01"
      */
+    @IsDateYMD()
     data_valor: DateYMD;
 
     /**

@@ -1,11 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CicloFase } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { IsDateYMD } from '../../../../auth/decorators/date.decorator';
 import { NumberArrayTransformOrUndef } from '../../../../auth/transforms/number-array.transform';
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
 import { IdTituloOrNullDto } from '../../../../common/dto/IdTitulo.dto';
 import { MfPerfilDto } from '../../dto/mf-meta.dto';
-import { CicloFase } from '@prisma/client';
 
 export class MfMetaVariavelCount {
     total: number | number[];
@@ -52,7 +53,8 @@ export class MfDashMetaPendenteDto extends IdCodTituloDto {
 }
 
 export class MfMetaAtrasoItemDto {
-    data: Date;
+    @IsDateYMD()
+    data: string;
     total: number;
 }
 
@@ -62,6 +64,7 @@ export class MfDashMetaAtrasadaDto extends IdCodTituloDto {
 }
 
 export class MfMetaAtrasoDetalheItemDto extends IdCodTituloDto {
+    @IsDateYMD({ isArray: true })
     meses: string[];
 }
 

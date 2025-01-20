@@ -8,6 +8,7 @@ import { UpdateDistribuicaoRecursoStatusDto } from './dto/update-distribuicao-re
 import { DateTime } from 'luxon';
 import { DistribuicaoHistoricoStatusDto } from './entities/distribuicao-recurso.entity';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class DistribuicaoRecursoStatusService {
@@ -56,7 +57,7 @@ export class DistribuicaoRecursoStatusService {
         return rows.map((r) => {
             return {
                 id: r.id,
-                data_troca: r.data_troca,
+                data_troca: Date2YMD.toString(r.data_troca),
                 dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
                 motivo: r.motivo,
                 nome_responsavel: r.nome_responsavel,

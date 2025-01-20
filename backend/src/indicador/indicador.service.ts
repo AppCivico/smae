@@ -16,7 +16,7 @@ import { VariavelService } from '../variavel/variavel.service';
 import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
-import { Indicador } from './entities/indicador.entity';
+import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
@@ -392,13 +392,13 @@ export class IndicadorService {
         return formula_compilada;
     }
 
-    async findOne(tipo: TipoPdm, indicador_id: number, user: PessoaFromJwt): Promise<Indicador | null> {
+    async findOne(tipo: TipoPdm, indicador_id: number, user: PessoaFromJwt): Promise<IndicadorDto | null> {
         const list = await this.findAll(tipo, { id: indicador_id }, user);
 
         return list.length ? list[0] : null;
     }
 
-    async findAll(tipo: TipoPdmType, filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<Indicador[]> {
+    async findAll(tipo: TipoPdmType, filters: FilterIndicadorDto, user: PessoaFromJwt): Promise<IndicadorDto[]> {
         if (filters.id) {
             const indicadorFound = await this.prisma.indicador.findFirst({
                 where: {
@@ -474,7 +474,13 @@ export class IndicadorService {
             orderBy: { criado_em: 'desc' },
         });
 
-        return listActive;
+        return listActive.map((r) => {
+            return {
+                ...r,
+                inicio_medicao: Date2YMD.toString(r.inicio_medicao),
+                fim_medicao: Date2YMD.toString(r.fim_medicao),
+            } satisfies IndicadorDto;
+        });
     }
 
     async update(tipoParam: TipoPdmType, id: number, dto: UpdateIndicadorDto, user: PessoaFromJwt) {

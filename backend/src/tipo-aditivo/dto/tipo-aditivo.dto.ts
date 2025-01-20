@@ -27,6 +27,7 @@ export class FilterTipoAditivoDto {
 }
 
 export class ProjetoTipoAditivoDto {
+    id: number;
     nome: string;
     habilita_valor: boolean;
     habilita_valor_data_termino: boolean;

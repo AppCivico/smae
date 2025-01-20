@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CONST_TIPO_NOTA_DIST_RECURSO, CONST_TIPO_NOTA_TRANSF_GOV } from '../../common/consts';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
@@ -196,7 +196,7 @@ export class NotaService {
         if (!filters.status && !filters.nota_id) filters.status = ['Programado', 'Em_Curso'];
 
         const permissionSet: Prisma.Enumerable<Prisma.NotaWhereInput[]> = this.permissionSet(user);
-        const today = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').valueOf();
+        const today = Date2YMD.toString(DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').toJSDate());
         const rows = await this.prisma.nota.findMany({
             where: {
                 removido_em: null,
@@ -227,16 +227,17 @@ export class NotaService {
                 return {
                     id_jwt: idPerm.token,
                     bloco_token: this.blocoService.getToken(r.bloco_nota_id),
-                    data_nota: r.data_nota,
+                    data_nota: Date2YMD.toString(r.data_nota),
                     dispara_email: r.dispara_email,
                     nota: r.nota,
                     status: r.status,
                     tipo_nota_id: r.tipo_nota_id,
                     orgao_responsavel: r.orgao_responsavel,
                     // voltando o calculo aqui, pra não ter que fazer join com a view sendo que já estamos na nota...
-                    data_ordenacao: r.data_nota.valueOf() <= today && r.rever_em ? r.rever_em : r.data_nota,
-
-                    rever_em: r.rever_em,
+                    data_ordenacao: Date2YMD.toString(
+                        Date2YMD.toString(r.data_nota) <= today && r.rever_em ? r.rever_em : r.data_nota
+                    ),
+                    rever_em: Date2YMD.toStringOrNull(r.rever_em),
                     bloco_id: r.bloco_nota_id,
                     pessoa_responsavel: r.pessoa_responsavel,
                     n_enderecamentos: r.n_enderecamentos,
@@ -251,13 +252,14 @@ export class NotaService {
                 if (a.bloco_id !== b.bloco_id) {
                     return a.bloco_id - b.bloco_id;
                 } else {
-                    return a.data_ordenacao.getTime() - b.data_ordenacao.getTime();
+                    return a.data_ordenacao.localeCompare(b.data_ordenacao);
                 }
             });
     }
 
     async findOne(signedId: string, user: PessoaFromJwt): Promise<TipoNotaDetail> {
         const id = this.checkToken(signedId);
+        const today = Date2YMD.toString(DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').toJSDate());
 
         const r = await this.prisma.nota.findFirst({
             where: { id, removido_em: null },
@@ -319,20 +321,22 @@ export class NotaService {
             id_jwt: idPerm.token,
             pode_editar: idPerm.write,
             bloco_token: this.blocoService.getToken(r.bloco_nota_id),
-            data_nota: r.data_nota,
+            data_nota: Date2YMD.toString(r.data_nota),
             dispara_email: r.dispara_email,
             nota: r.nota,
             status: r.status,
             tipo_nota_id: r.tipo_nota_id,
             orgao_responsavel: r.orgao_responsavel,
-            data_ordenacao: r.rever_em ? r.rever_em : r.data_nota,
+            data_ordenacao: Date2YMD.toString(
+                Date2YMD.toString(r.data_nota) <= today && r.rever_em ? r.rever_em : r.data_nota
+            ),
             bloco_id: r.bloco_nota_id,
             pessoa_responsavel: r.pessoa_responsavel,
             n_enderecamentos: r.n_enderecamentos,
             n_repostas: r.n_repostas,
             ultima_resposta: r.ultima_resposta,
             enderecamentos: r.NotaEnderecamento,
-            rever_em: r.rever_em,
+            rever_em: Date2YMD.toStringOrNull(r.rever_em),
             dados: r.dados ? (r.dados.valueOf() as any) : null,
             titulo: r.titulo,
             respostas: r.NotaEnderecamentoResposta.map((resp): NotaEnderecamentoRespostas => {

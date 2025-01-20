@@ -338,7 +338,7 @@ export class MetasService {
         const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
 
         const retorno: RetornoMetaVariaveisDto = {
-            data_ciclo: cicloFisicoAtivo.data_ciclo.toISOString().substring(0, 10),
+            data_ciclo: cicloFisicoAtivo.data_ciclo,
             perfil: config.perfil,
             ordem_series: calcSerieVariaveis.ordem_series,
             meta: {
@@ -750,7 +750,7 @@ export class MetasService {
             (cte.data - (atraso_meses || 'month')::interval - periodicidade_intervalo(periodicidade))::date::text as data_anterior,
             id as variavel_id
         from
-            (select ${Date2YMD.toString(ciclo.data_ciclo)}::date as data) cte,
+            (select ${ciclo.data_ciclo}::date as data) cte,
             variavel v
         where v.id = ANY(${Object.keys(map)}::int[])
         `;
@@ -2099,9 +2099,9 @@ export class MetasService {
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
 
-        if (dto.data_ciclo.toISOString() != cicloAtivo.data_ciclo.toISOString())
+        if (Date2YMD.dbDateToDMY(dto.data_ciclo) != Date2YMD.ymdToDMY(cicloAtivo.data_ciclo))
             throw new BadRequestException(
-                `Você só pode enviar análises para o ciclo ativo, ${cicloAtivo.data_ciclo.toISOString()}`
+                `Você só pode enviar análises para o ciclo ativo, ${Date2YMD.ymdToDMY(cicloAtivo.data_ciclo)}`
             );
 
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);
@@ -2261,9 +2261,9 @@ export class MetasService {
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
 
-        if (dto.data_ciclo.toISOString() != cicloAtivo.data_ciclo.toISOString())
+        if (Date2YMD.dbDateToDMY(dto.data_ciclo) != Date2YMD.ymdToDMY(cicloAtivo.data_ciclo))
             throw new BadRequestException(
-                `Você só pode enviar análises para o ciclo ativo, ${cicloAtivo.data_ciclo.toISOString()}`
+                `Você só pode enviar análises para o ciclo ativo, ${Date2YMD.ymdToDMY(cicloAtivo.data_ciclo)}`
             );
 
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);

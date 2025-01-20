@@ -4,6 +4,7 @@ import { IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validato
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class TransfereGovDto {
     id: number;
@@ -59,9 +60,12 @@ export class TransfereGovTransferenciasDto {
     nome_programa: string;
     sit_programa: string;
     ano_disponibilizacao: number;
-    data_disponibilizacao: Date;
-    dt_ini_receb: Date;
-    dt_fim_receb: Date;
+    @IsDateYMD()
+    data_disponibilizacao: string;
+    @IsDateYMD()
+    dt_ini_receb: string;
+    @IsDateYMD()
+    dt_fim_receb: string;
     modalidade_programa: string;
     acao_orcamentaria: string;
 }

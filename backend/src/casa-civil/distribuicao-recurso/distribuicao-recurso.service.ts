@@ -15,6 +15,7 @@ import { CreateDistribuicaoRecursoDto, CreateDistribuicaoRegistroSEIDto } from '
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import {
+    AditamentosDto,
     DistribuicaoHistoricoStatusDto,
     DistribuicaoRecursoDetailDto,
     DistribuicaoRecursoDto,
@@ -23,6 +24,7 @@ import {
     SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
+import { Date2YMD } from '../../common/date2ymd';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -605,19 +607,25 @@ export class DistribuicaoRecursoService {
                 custeio: r.custeio,
                 investimento: r.investimento,
                 empenho: r.empenho,
-                data_empenho: r.data_empenho,
+                data_empenho: Date2YMD.toStringOrNull(r.data_empenho),
                 programa_orcamentario_estadual: r.programa_orcamentario_estadual,
                 programa_orcamentario_municipal: r.programa_orcamentario_municipal,
                 dotacao: r.dotacao,
                 proposta: r.proposta,
                 contrato: r.contrato,
                 convenio: r.convenio,
-                assinatura_termo_aceite: r.assinatura_termo_aceite,
-                assinatura_municipio: r.assinatura_municipio,
-                assinatura_estado: r.assinatura_estado,
-                vigencia: r.vigencia,
-                aditamentos: r.aditamentos,
-                conclusao_suspensiva: r.conclusao_suspensiva,
+                assinatura_termo_aceite: Date2YMD.toStringOrNull(r.assinatura_termo_aceite),
+                assinatura_municipio: Date2YMD.toStringOrNull(r.assinatura_municipio),
+                assinatura_estado: Date2YMD.toStringOrNull(r.assinatura_estado),
+                vigencia: Date2YMD.toStringOrNull(r.vigencia),
+                aditamentos: r.aditamentos.map((a) => {
+                    return {
+                        ...a,
+                        data_vigencia: Date2YMD.toString(a.data_vigencia),
+                        data_vigencia_corrente: Date2YMD.toString(a.data_vigencia_corrente),
+                    };
+                }),
+                conclusao_suspensiva: Date2YMD.toStringOrNull(r.conclusao_suspensiva),
                 pode_registrar_status: pode_registrar_status,
                 pct_valor_transferencia: pct_valor_transferencia,
                 parlamentares: r.parlamentares,
@@ -641,7 +649,7 @@ export class DistribuicaoRecursoService {
 
                     return {
                         id: status.id,
-                        data_troca: status.data_troca,
+                        data_troca: Date2YMD.toString(status.data_troca),
                         dias_no_status: Math.abs(
                             data_prox_row
                                 ? Math.round(
@@ -829,7 +837,7 @@ export class DistribuicaoRecursoService {
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
                 id: r.id,
-                data_troca: r.data_troca,
+                data_troca: Date2YMD.toString(r.data_troca),
                 dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
                 motivo: r.motivo,
                 nome_responsavel: r.nome_responsavel,
@@ -906,18 +914,18 @@ export class DistribuicaoRecursoService {
             custeio: row.custeio,
             investimento: row.investimento,
             empenho: row.empenho,
-            data_empenho: row.data_empenho,
+            data_empenho: Date2YMD.toStringOrNull(row.data_empenho),
             programa_orcamentario_estadual: row.programa_orcamentario_estadual,
             programa_orcamentario_municipal: row.programa_orcamentario_municipal,
             dotacao: row.dotacao,
             proposta: row.proposta,
             contrato: row.contrato,
             convenio: row.convenio,
-            assinatura_termo_aceite: row.assinatura_termo_aceite,
-            assinatura_municipio: row.assinatura_municipio,
-            assinatura_estado: row.assinatura_estado,
-            vigencia: row.vigencia,
-            conclusao_suspensiva: row.conclusao_suspensiva,
+            assinatura_termo_aceite: Date2YMD.toStringOrNull(row.assinatura_termo_aceite),
+            assinatura_municipio: Date2YMD.toStringOrNull(row.assinatura_municipio),
+            assinatura_estado: Date2YMD.toStringOrNull(row.assinatura_estado),
+            vigencia: Date2YMD.toStringOrNull(row.vigencia),
+            conclusao_suspensiva: Date2YMD.toStringOrNull(row.conclusao_suspensiva),
             pode_registrar_status: pode_registrar_status,
             pct_valor_transferencia: pct_valor_transferencia,
             historico_status: historico_status,
@@ -928,10 +936,10 @@ export class DistribuicaoRecursoService {
             },
             aditamentos: row.aditamentos.map((aditamento) => {
                 return {
-                    data_vigencia: aditamento.data_vigencia,
-                    data_vigencia_corrente: aditamento.data_vigencia_corrente,
+                    data_vigencia: Date2YMD.toString(aditamento.data_vigencia),
+                    data_vigencia_corrente: Date2YMD.toString(aditamento.data_vigencia_corrente),
                     justificativa: aditamento.justificativa,
-                };
+                } satisfies AditamentosDto;
             }),
             registros_sei: row.registros_sei.map((s) => {
                 return {
@@ -1005,7 +1013,7 @@ export class DistribuicaoRecursoService {
                 if (
                     dto.vigencia &&
                     self.vigencia != null &&
-                    dto.vigencia.toISOString() != self.vigencia.toISOString()
+                    Date2YMD.dbDateToDMY(dto.vigencia) != Date2YMD.ymdToDMY(self.vigencia)
                 ) {
                     await this.registerAditamento(prismaTx, id, dto, user, now);
                 }

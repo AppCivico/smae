@@ -15,6 +15,7 @@ import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 import { ProjetoService } from '../projeto/projeto.service';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class PortfolioService {
@@ -136,6 +137,7 @@ export class PortfolioService {
 
         return {
             ...{ ...r, PortfolioGrupoPortfolio: undefined },
+            data_criacao: Date2YMD.toStringOrNull(r.data_criacao),
             grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
         };

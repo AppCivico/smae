@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRiscoDto } from './dto/create-risco.dto';
 import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { ProjetoRisco, ProjetoRiscoDetailDto } from './entities/risco.entity';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class RiscoService {
@@ -277,6 +278,8 @@ export class RiscoService {
             planos_de_acao: projetoRisco.planos_de_acao.map((pa) => {
                 return {
                     ...pa,
+                    prazo_contramedida: Date2YMD.toStringOrNull(pa.prazo_contramedida),
+                    data_termino: Date2YMD.toStringOrNull(pa.data_termino),
                 };
             }),
         };

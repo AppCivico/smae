@@ -6,6 +6,7 @@ import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IdSiglaDescricao } from '../../../common/dto/IdSigla.dto';
 import { IdTituloNivelMaxRegDto, ProjetoDetailDto } from '../../projeto/entities/projeto.entity';
 import { TarefaDependenciaDto } from '../dto/create-tarefa.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class TarefaItemDto {
     id: number;
@@ -15,18 +16,19 @@ export class TarefaItemDto {
     tarefa_pai_id: number | null;
     tarefa: string;
 
-    @Transform(DateTransform)
-    inicio_planejado: Date | null;
-    @Transform(DateTransform)
-    termino_planejado: Date | null;
+    @IsDateYMD({nullable: true})
+    inicio_planejado: string | null;
+
+    @IsDateYMD({nullable: true})
+    termino_planejado: string | null;
 
     duracao_planejado: number | null;
 
-    @Transform(DateTransform)
-    inicio_real: Date | null;
+    @IsDateYMD({nullable: true})
+    inicio_real: string | null;
 
-    @Transform(DateTransform)
-    termino_real: Date | null;
+    @IsDateYMD({nullable: true})
+    termino_real: string | null;
 
     duracao_real: number | null;
 

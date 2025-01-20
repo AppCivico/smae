@@ -24,6 +24,7 @@ import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.ent
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaHelpers } from '../common/PrismaHelpers';
+import { Date2YMD } from '../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -342,7 +343,7 @@ export class ParlamentarService {
 
         return {
             ...parlamentar,
-            nascimento: parlamentar.nascimento?.toISOString().split('T')[0],
+            nascimento: Date2YMD.toStringOrNull(parlamentar.nascimento),
             telefone: user && user.hasSomeRoles(['SMAE.acesso_telefone']) ? parlamentar.telefone : null,
             foto: parlamentar.foto_upload_id
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
