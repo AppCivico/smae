@@ -37,7 +37,7 @@ export default {
       },
     },
     {
-      name: 'planosSetoriaisCriar',
+      name: `${entidadeMãe}.planosSetoriaisCriar`,
       path: 'novo',
       component: () => import('@/views/planosSetoriais/PlanosSetoriaisCriarEditar.vue'),
       meta: {
