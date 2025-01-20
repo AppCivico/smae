@@ -72,7 +72,7 @@ export default {
             rotas.push(`${entidadeMãe}.planosSetoriaisTemas`);
           }
           if (usePlanosSetoriaisStore()?.emFoco?.possui_sub_tema) {
-            rotas.push('planosSetoriaisSubtemas');
+            rotas.push(`${entidadeMãe}.planosSetoriaisSubtemas`);
           }
           rotas.push('planoSetorial:listaDeMetas');
           rotas.push(`${entidadeMãe}.planosSetoriaisTags`);
@@ -283,7 +283,7 @@ export default {
           children: [
             {
               path: '',
-              name: 'planosSetoriaisSubtemas',
+              name: `${entidadeMãe}.planosSetoriaisSubtemas`,
               component: () => import('@/views/ps.subtemas/SubtemasLista.vue'),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Subtema',
@@ -294,7 +294,7 @@ export default {
               name: 'planosSetoriaisNovoSubtema',
               component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
               meta: {
-                rotaDeEscape: 'planosSetoriaisSubtemas',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Novo Subtema',
                 limitarÀsPermissões: [
                   'CadastroSubTemaPS.inserir',
@@ -311,7 +311,7 @@ export default {
               }),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Editar Subtema',
-                rotaDeEscape: 'planosSetoriaisSubtemas',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
                 limitarÀsPermissões: [
                   'CadastroSubTemaPS.editar',
                 ],
