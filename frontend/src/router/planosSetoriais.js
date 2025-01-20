@@ -66,7 +66,7 @@ export default {
           ];
 
           if (usePlanosSetoriaisStore()?.emFoco?.possui_macro_tema) {
-            rotas.push('planosSetoriaisMacrotemas');
+            rotas.push(`${entidadeMãe}.planosSetoriaisMacrotemas`);
           }
           if (usePlanosSetoriaisStore()?.emFoco?.possui_tema) {
             rotas.push('planosSetoriaisTemas');
@@ -199,7 +199,7 @@ export default {
           children: [
             {
               path: '',
-              name: 'planosSetoriaisMacrotemas',
+              name: `${entidadeMãe}.planosSetoriaisMacrotemas`,
               component: () => import('@/views/ps.macrotemas/MacrotemasLista.vue'),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Macrotema',
@@ -214,7 +214,7 @@ export default {
                 limitarÀsPermissões: [
                   'CadastroMacroTemaPS.inserir',
                 ],
-                rotaDeEscape: 'planosSetoriaisMacrotemas',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
               },
             },
             {
@@ -230,7 +230,7 @@ export default {
                 limitarÀsPermissões: [
                   'CadastroMacroTemaPS.editar',
                 ],
-                rotaDeEscape: 'planosSetoriaisMacrotemas',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
               },
             },
           ],
