@@ -7,6 +7,7 @@ async function bootstrap() {
     process.env.ENABLED_CRONTABS = '';
 
     const app = await NestFactory.createApplicationContext(AppModule);
+    app.enableShutdownHooks();
 
     const taskService = app.get(TaskService);
 

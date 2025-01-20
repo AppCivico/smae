@@ -10,6 +10,7 @@ import { AppModulePdm } from './app.module.pdm';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { Request, Response } from 'express';
 
+const SMAE_HEADERS = 'smae-sistemas,smae-tipo';
 const winston = require('winston'),
     expressWinston = require('express-winston');
 
@@ -109,7 +110,14 @@ Usar o link do do swagger + "-json"
 
     app.enableShutdownHooks();
 
-    if (process.env.ENABLE_CORS) app.enableCors();
+    if (process.env.ENABLE_CORS) {
+        app.enableCors({
+            allowedHeaders: [
+                ...'Origin,Content-Type,Accept,X-API-Key,Authorization,content-disposition'.split(','),
+                ...SMAE_HEADERS.split(','),
+            ],
+        });
+    }
 
     await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
