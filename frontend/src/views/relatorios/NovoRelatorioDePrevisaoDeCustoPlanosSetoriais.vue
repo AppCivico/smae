@@ -10,7 +10,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useTagsStore } from '@/stores/tags.store.ts';
+import { useTagsStore } from '@/stores/tags.store.js';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
