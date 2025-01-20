@@ -102,11 +102,6 @@
 </template>
 
 <script setup>
-import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
-import { tag as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOdsStore } from '@/stores/odsPs.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -114,6 +109,11 @@ import {
 } from 'vee-validate';
 import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
+import { tag as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOdsStore } from '@/stores/odsPs.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -157,7 +157,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       tagsStore.$reset();
-      router.push({ name: 'planosSetoriaisTags' });
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisTags` });
     }
   } catch (error) {
     alertStore.error(error);
