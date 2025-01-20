@@ -69,7 +69,7 @@ export default {
             rotas.push(`${entidadeMãe}.planosSetoriaisMacrotemas`);
           }
           if (usePlanosSetoriaisStore()?.emFoco?.possui_tema) {
-            rotas.push('planosSetoriaisTemas');
+            rotas.push(`${entidadeMãe}.planosSetoriaisTemas`);
           }
           if (usePlanosSetoriaisStore()?.emFoco?.possui_sub_tema) {
             rotas.push('planosSetoriaisSubtemas');
@@ -241,7 +241,7 @@ export default {
           children: [
             {
               path: '',
-              name: 'planosSetoriaisTemas',
+              name: `${entidadeMãe}.planosSetoriaisTemas`,
               component: () => import('@/views/ps.temas/TemasLista.vue'),
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Tema',
@@ -256,7 +256,7 @@ export default {
                 limitarÀsPermissões: [
                   'CadastroTemaPS.inserir',
                 ],
-                rotaDeEscape: 'planosSetoriaisTemas',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
               },
             },
             {
@@ -272,7 +272,7 @@ export default {
                 limitarÀsPermissões: [
                   'CadastroTemaPS.editar',
                 ],
-                rotaDeEscape: 'planosSetoriaisTemas',
+                rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
               },
             },
           ],
