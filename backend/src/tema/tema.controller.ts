@@ -85,7 +85,7 @@ export class TemaControllerPS {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTemaPS.inserir'])
+    @Roles(['CadastroTemaPS.inserir', 'CadastroTemaPDM.inserir'])
     async create(
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt,
@@ -113,7 +113,7 @@ export class TemaControllerPS {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTemaPS.editar'])
+    @Roles(['CadastroTemaPS.editar', 'CadastroTemaPDM.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateObjetivoEstrategicoDto,
@@ -125,7 +125,7 @@ export class TemaControllerPS {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTemaPS.remover'])
+    @Roles(['CadastroTemaPS.remover', 'CadastroTemaPDM.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {

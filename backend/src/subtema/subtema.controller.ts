@@ -84,6 +84,9 @@ const PermsPS: ListaDePrivilegios[] = [
     'CadastroSubTemaPS.inserir',
     'CadastroSubTemaPS.editar',
     'CadastroSubTemaPS.remover',
+    'CadastroSubTemaPDM.inserir',
+    'CadastroSubTemaPDM.editar',
+    'CadastroSubTemaPDM.remover',
 ];
 
 @ApiTags('SubTema para Plano Setorial')

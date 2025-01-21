@@ -65,7 +65,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroIniciativaPS: ['Iniciativas', 'PlanoSetorial'],
     CadastroAtividadePS: ['Atividades', 'PlanoSetorial'],
     CadastroCronogramaPS: ['Cronogramas', 'PlanoSetorial'],
-    CadastroGrupoPaineisPS: ['Grupos de Painéis', 'PlanoSetorial'],
+
     ReportsPS: ['Relatórios de Plano Setorial', 'PlanoSetorial'],
     ReportsProgramaDeMetas: ['Relatórios de Programa de Metas', 'ProgramaDeMetas'],
 
@@ -85,6 +85,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     PS: ['Regras de Negócio do Plano Setorial', 'PlanoSetorial'],
     ProgramaDeMetas: ['Regras de Negócio do Plano Setorial', 'ProgramaDeMetas'],
 
+    CadastroGrupoPaineisPS: ['', null],
     CadastroPainelPS: ['', null],
     CadastroOdsPS: ['', null],
     CadastroVariavelCategoricaPS: ['', null],
@@ -161,6 +162,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroPainelPS: false,
     PS: false,
     CadastroVariavelCategoricaPS: false,
+    CadastroGrupoPaineisPS: false,
 
     CadastroTransferenciaTipo: [
         ['CadastroTransferenciaTipo.inserir', 'Inserir Transferência Tipo'],
@@ -356,11 +358,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ],
         ['CadastroMetaPS.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMetaPS.listar', 'Listar metas, iniciativas e atividades'],
-    ],
-    CadastroGrupoPaineisPS: [
-        ['CadastroGrupoPaineisPS.inserir', 'Inserir Grupo de Painéis'],
-        ['CadastroGrupoPaineisPS.editar', 'Editar Grupo de Painéis'],
-        ['CadastroGrupoPaineisPS.remover', 'Remover Grupo de Painéis'],
     ],
     ReportsPS: [
         ['Reports.dashboard_ps', 'Dashboard de Plano Setorial'],

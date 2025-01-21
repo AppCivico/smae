@@ -116,7 +116,12 @@ export class MetaSetorialController {
     public static WritePerm: ListaDePrivilegios[] = [
         'CadastroMetaPS.administrador_no_pdm', // sṍ pode editar de acordo com o perfil
         'CadastroPS.administrador', // edita qualquer item
-        'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel?
+        'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel? SIM
+
+        'CadastroMetaPDM.administrador_no_pdm',
+        'CadastroPDM.administrador',
+        'CadastroPDM.administrador_no_orgao',
+
     ];
     public static ReadPerm: ListaDePrivilegios[] = [...MetaSetorialController.WritePerm, 'CadastroMetaPS.listar'];
     constructor(private readonly metaService: MetaService) {}

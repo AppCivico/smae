@@ -82,7 +82,7 @@ export class TagPSController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTagPS.inserir'])
+    @Roles(['CadastroTagPS.inserir', 'CadastroTagPDM.inserir'])
     async create(
         @Body() createTagDto: CreateTagDto,
         @CurrentUser() user: PessoaFromJwt,
@@ -113,7 +113,7 @@ export class TagPSController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTagPS.editar'])
+    @Roles(['CadastroTagPS.editar', 'CadastroTagPDM.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateTagDto,
@@ -125,7 +125,7 @@ export class TagPSController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTagPS.remover'])
+    @Roles(['CadastroTagPS.remover', 'CadastroTagPDM.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(
