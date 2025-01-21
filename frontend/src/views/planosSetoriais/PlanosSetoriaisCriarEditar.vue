@@ -234,6 +234,7 @@ watch(itemParaEdicao, (novoValor) => {
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('data_inicio', $v || null); }"
           />
+          <ErrorMessage name="data_inicio" />
         </div>
         <div class="f1 fb10em">
           <LabelFromYup
