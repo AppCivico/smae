@@ -82,7 +82,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTemaPS.inserir'])
+    @Roles(['CadastroMacroTemaPS.inserir', 'CadastroMacroTemaPDM.inserir'])
     async create(
         @Body() createEixoDto: CreateEixoDto,
         @CurrentUser() user: PessoaFromJwt,
@@ -107,7 +107,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTemaPS.editar'])
+    @Roles(['CadastroMacroTemaPS.editar', 'CadastroMacroTemaPDM.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateEixoDto: UpdateEixoDto,
@@ -119,7 +119,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTemaPS.remover'])
+    @Roles(['CadastroMacroTemaPS.remover', 'CadastroMacroTemaPDM.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
