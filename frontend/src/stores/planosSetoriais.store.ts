@@ -1,4 +1,3 @@
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   DadosCodTituloMetaDto,
@@ -10,6 +9,7 @@ import type { PlanoSetorialDto } from '@back/pdm/dto/pdm.dto';
 import type { ListPdmDocument } from '@back/pdm/entities/list-pdm-document.entity';
 import type { ListPdm } from '@back/pdm/entities/list-pdm.entity';
 import { defineStore } from 'pinia';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -41,7 +41,7 @@ interface Estado {
   erros: Erros;
 }
 
-export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
+export const usePlanosSetoriaisStore = (prefixo?: string) => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
