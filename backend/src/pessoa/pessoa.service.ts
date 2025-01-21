@@ -1624,10 +1624,13 @@ export class PessoaService {
             removePrivilegios('ModalidadeContratacao.');
         }
 
-        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
+        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas')) {
             removePrivilegios('CadastroOds.');
             removePrivilegios('CadastroUnidadeMedida.');
+            removePrivilegios('CadastroVariavelGlobal.');
+            removePrivilegios('CadastroGrupoVariavel.');
         }
+
         //
         //        if (!(sistema == 'PlanoSetorial')) {
         //            removePrivilegios('FonteVariavel.');

@@ -186,6 +186,7 @@ const PermsPS: ListaDePrivilegios[] = [
     'CadastroPS.administrador',
     'CadastroPS.administrador_no_orgao',
     'CadastroMetaPS.listar',
+    'SMAE.GrupoVariavel.participante',
 ];
 
 @ApiTags('Plano Setorial')
@@ -301,7 +302,7 @@ export class PlanoSetorialController {
 
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
-    @Roles([...PermsPS, 'PS.ponto_focal'])
+    @Roles([...PermsPS])
     async download(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt,
