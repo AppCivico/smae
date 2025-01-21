@@ -398,8 +398,8 @@ export class MetaService {
                 });
             }
 
-            if (user.hasSomeRoles(['PS.admin_cp'])) {
-                this.logger.verbose(`Usuário tem PS.admin_cp, filtrando PS onde é admin_cp`);
+            if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+                this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é admin_cp`);
                 orSet.push({
                     pdm: {
                         PdmPerfil: {
@@ -414,8 +414,8 @@ export class MetaService {
                 });
             }
 
-            if (user.hasSomeRoles(['PS.tecnico_cp'])) {
-                this.logger.verbose(`Usuário tem PS.tecnico_cp, filtrando PS onde é tecnico_cp`);
+            if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+                this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é tecnico_cp`);
                 orSet.push({
                     pdm: {
                         PdmPerfil: {
@@ -436,8 +436,8 @@ export class MetaService {
                 });
             }
 
-            if (user.hasSomeRoles(['PS.ponto_focal'])) {
-                this.logger.verbose(`Usuário tem PS.ponto_focal, filtrando PS onde é ponto_focal`);
+            if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+                this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é ponto_focal`);
                 orSet.push({
                     pdm: {
                         PdmPerfil: {
@@ -708,7 +708,7 @@ export class MetaService {
 
             if (ehPdm && user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
                 podeEditar = true;
-            } else if (ehPdm && user.hasSomeRoles(['PS.tecnico_cp'])) {
+            } else if (ehPdm && user.hasSomeRoles(['PDM.tecnico_cp'])) {
                 podeEditar = coordenadores_cp.some((r) => r.id == user.id);
             } else if (!ehPdm) {
                 podeEditar = true; // TODO plano setorial
@@ -1416,7 +1416,10 @@ export class MetaService {
         );
     }
 
-    async buscaMetasIniciativaAtividades(tipoParam: TipoPdmType | null, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividades(
+        tipoParam: TipoPdmType | null,
+        metas: number[]
+    ): Promise<DadosCodTituloMetaDto[]> {
         const list: DadosCodTituloMetaDto[] = [];
         const tipo = PdmModoParaTipoOrNull(tipoParam);
 
@@ -1489,7 +1492,11 @@ export class MetaService {
         return list;
     }
 
-    async buscaRelacionados(tipo: TipoPdmType, dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
+    async buscaRelacionados(
+        tipo: TipoPdmType,
+        dto: FilterRelacionadosDTO,
+        user: PessoaFromJwt
+    ): Promise<RelacionadosDTO> {
         if (!dto.meta_id && !dto.iniciativa_id && !dto.atividade_id) {
             throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
         }

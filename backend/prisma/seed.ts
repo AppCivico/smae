@@ -45,7 +45,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroTema: ['Temas', 'PDM'],
     CadastroMeta: ['Metas', 'PDM'],
     CadastroIndicador: ['Indicadores', 'PDM'],
-    CadastroVariavelCategorica: ['Variável Categórica', 'PlanoSetorial'],
+    CadastroVariavelCategorica: ['Variável Categórica', ['PlanoSetorial', 'ProgramaDeMetas']],
     CadastroIniciativa: ['Iniciativas', 'PDM'],
     CadastroAtividade: ['Atividades', 'PDM'],
     CadastroCronograma: ['Cronogramas', 'PDM'],
@@ -56,25 +56,41 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     ReportsPdm: ['Relatórios de PDM', 'PDM'],
 
     CadastroPS: ['Plano Setorial', 'PlanoSetorial'],
-    CadastroOdsPS: ['Categorias', 'PlanoSetorial'],
     CadastroTagPS: ['Tags', 'PlanoSetorial'],
     CadastroMacroTemaPS: ['Macro Temas', 'PlanoSetorial'],
     CadastroSubTemaPS: ['Sub Temas', 'PlanoSetorial'],
     CadastroTemaPS: ['Temas', 'PlanoSetorial'],
     CadastroMetaPS: ['Metas', 'PlanoSetorial'],
     CadastroIndicadorPS: ['Indicadores', 'PlanoSetorial'],
-    CadastroVariavelCategoricaPS: ['', null],
-
     CadastroIniciativaPS: ['Iniciativas', 'PlanoSetorial'],
     CadastroAtividadePS: ['Atividades', 'PlanoSetorial'],
     CadastroCronogramaPS: ['Cronogramas', 'PlanoSetorial'],
-    CadastroPainelPS: ['Painéis', 'PlanoSetorial'],
     CadastroGrupoPaineisPS: ['Grupos de Painéis', 'PlanoSetorial'],
-    PS: ['Regras de Negócio do Plano Setorial', 'PlanoSetorial'],
     ReportsPS: ['Relatórios de Plano Setorial', 'PlanoSetorial'],
+    ReportsProgramaDeMetas: ['Relatórios de Programa de Metas', 'ProgramaDeMetas'],
 
-    FonteVariavel: ['Fontes de Variáveis', 'PlanoSetorial'],
-    AssuntoVariavel: ['Assuntos de Variáveis', 'PlanoSetorial'],
+    CadastroPDM: ['Programa de Metas', 'ProgramaDeMetas'],
+    CadastroTagPDM: ['Tags', 'ProgramaDeMetas'],
+    CadastroMacroTemaPDM: ['Macro Temas', 'ProgramaDeMetas'],
+    CadastroSubTemaPDM: ['Sub Temas', 'ProgramaDeMetas'],
+    CadastroTemaPDM: ['Temas', 'ProgramaDeMetas'],
+    CadastroMetaPDM: ['Metas', 'ProgramaDeMetas'],
+    CadastroIndicadorPDM: ['Indicadores', 'ProgramaDeMetas'],
+    CadastroIniciativaPDM: ['Iniciativas', 'ProgramaDeMetas'],
+    CadastroAtividadePDM: ['Atividades', 'ProgramaDeMetas'],
+    CadastroCronogramaPDM: ['Cronogramas', 'ProgramaDeMetas'],
+    CadastroPainelPDM: ['Painéis', 'ProgramaDeMetas'],
+    CadastroGrupoPaineisPDM: ['Grupos de Painéis', 'ProgramaDeMetas'],
+
+    PS: ['Regras de Negócio do Plano Setorial', 'PlanoSetorial'],
+    ProgramaDeMetas: ['Regras de Negócio do Plano Setorial', 'ProgramaDeMetas'],
+
+    CadastroPainelPS: ['', null],
+    CadastroOdsPS: ['', null],
+    CadastroVariavelCategoricaPS: ['', null],
+
+    FonteVariavel: ['Fontes de Variáveis', ['PlanoSetorial', 'ProgramaDeMetas']],
+    AssuntoVariavel: ['Assuntos de Variáveis', ['PlanoSetorial', 'ProgramaDeMetas']],
 
     CadastroGrupoPortfolio: ['Grupos de Portfólio', 'Projetos'],
     CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'MDO'],
@@ -100,8 +116,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
 
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
-    CadastroVariavelGlobal: ['Variáveis Globais', 'PlanoSetorial'], // depois vai ter o PDM
-    CadastroGrupoVariavel: ['Grupos de Variáveis', ['PlanoSetorial']], // depois vai ter o PDM
+    CadastroVariavelGlobal: ['Variáveis Globais', ['SMAE']],
+    CadastroGrupoVariavel: ['Grupos de Variáveis', ['SMAE']],
     CadastroEquipamentoMDO: ['Equipamentos', 'MDO'],
     CadastroEmpreendimentoMDO: ['Empreendimentos', 'MDO'],
     TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
@@ -142,6 +158,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroIndicadorPS: false,
     CadastroCronograma: false,
     CadastroCronogramaPS: false,
+    CadastroPainelPS: false,
+    PS: false,
+    CadastroVariavelCategoricaPS: false,
 
     CadastroTransferenciaTipo: [
         ['CadastroTransferenciaTipo.inserir', 'Inserir Transferência Tipo'],
@@ -272,11 +291,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMacroTema.editar', 'Editar Macro Tema'],
         ['CadastroMacroTema.remover', 'Remover Macro Tema'],
     ],
-    CadastroMacroTemaPS: [
-        ['CadastroMacroTemaPS.inserir', 'Inserir Macro Tema'],
-        ['CadastroMacroTemaPS.editar', 'Editar Macro Tema'],
-        ['CadastroMacroTemaPS.remover', 'Remover Macro Tema'],
-    ],
+
     CadastroEquipamentoMDO: [
         ['CadastroEquipamentoMDO.inserir', 'Inserir Equipamento'],
         ['CadastroEquipamentoMDO.editar', 'Editar Equipamento'],
@@ -304,30 +319,106 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTema.editar', 'Editar Tema'],
         ['CadastroTema.remover', 'Remover Tema'],
     ],
-    CadastroTemaPS: [
-        ['CadastroTemaPS.inserir', 'Inserir Tema'],
-        ['CadastroTemaPS.editar', 'Editar Tema'],
-        ['CadastroTemaPS.remover', 'Remover Tema'],
-    ],
     CadastroSubTema: [
         ['CadastroSubTema.inserir', 'Inserir SubTema'],
         ['CadastroSubTema.editar', 'Editar SubTema'],
         ['CadastroSubTema.remover', 'Remover SubTema'],
+    ],
+    // Plano Setorial e Programa de Metas
+    CadastroMacroTemaPS: [
+        ['CadastroMacroTemaPS.inserir', 'Inserir Macro Tema'],
+        ['CadastroMacroTemaPS.editar', 'Editar Macro Tema'],
+        ['CadastroMacroTemaPS.remover', 'Remover Macro Tema'],
+    ],
+    CadastroTemaPS: [
+        ['CadastroTemaPS.inserir', 'Inserir Tema'],
+        ['CadastroTemaPS.editar', 'Editar Tema'],
+        ['CadastroTemaPS.remover', 'Remover Tema'],
     ],
     CadastroSubTemaPS: [
         ['CadastroSubTemaPS.inserir', 'Inserir SubTema'],
         ['CadastroSubTemaPS.editar', 'Editar SubTema'],
         ['CadastroSubTemaPS.remover', 'Remover SubTema'],
     ],
-    CadastroTag: [
-        ['CadastroTag.inserir', 'Inserir Tag'],
-        ['CadastroTag.editar', 'Editar Tag'],
-        ['CadastroTag.remover', 'Remover Tag'],
-    ],
     CadastroTagPS: [
         ['CadastroTagPS.inserir', 'Inserir Tag'],
         ['CadastroTagPS.editar', 'Editar Tag'],
         ['CadastroTagPS.remover', 'Remover Tag'],
+    ],
+    CadastroMetaPS: [
+        [
+            'CadastroMetaPS.administrador_no_pdm',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis nos planos setoriais, de acordo com o seu perfil.',
+        ],
+        [
+            'CadastroMetaPS.administrador_orcamento',
+            'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
+        ],
+        ['CadastroMetaPS.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
+        ['CadastroMetaPS.listar', 'Listar metas, iniciativas e atividades'],
+    ],
+    CadastroGrupoPaineisPS: [
+        ['CadastroGrupoPaineisPS.inserir', 'Inserir Grupo de Painéis'],
+        ['CadastroGrupoPaineisPS.editar', 'Editar Grupo de Painéis'],
+        ['CadastroGrupoPaineisPS.remover', 'Remover Grupo de Painéis'],
+    ],
+    ReportsPS: [
+        ['Reports.dashboard_ps', 'Dashboard de Plano Setorial'],
+        ['Reports.executar.PlanoSetorial', 'Executar relatórios de Programa Setorial'],
+        ['Reports.remover.PlanoSetorial', 'Executar relatórios de Programa Setorial'],
+    ],
+    CadastroPS: [
+        ['CadastroPS.administrador', 'Gerenciar Plano Setorial'],
+        ['CadastroPS.administrador_no_orgao', 'Gerenciar Plano Setorial do órgão ao qual pertence'],
+    ],
+
+    CadastroMacroTemaPDM: [
+        ['CadastroMacroTemaPDM.inserir', 'Inserir Macro Tema'],
+        ['CadastroMacroTemaPDM.editar', 'Editar Macro Tema'],
+        ['CadastroMacroTemaPDM.remover', 'Remover Macro Tema'],
+    ],
+    CadastroTemaPDM: [
+        ['CadastroTemaPDM.inserir', 'Inserir Tema'],
+        ['CadastroTemaPDM.editar', 'Editar Tema'],
+        ['CadastroTemaPDM.remover', 'Remover Tema'],
+    ],
+    CadastroSubTemaPDM: [
+        ['CadastroSubTemaPDM.inserir', 'Inserir SubTema'],
+        ['CadastroSubTemaPDM.editar', 'Editar SubTema'],
+        ['CadastroSubTemaPDM.remover', 'Remover SubTema'],
+    ],
+    CadastroTagPDM: [
+        ['CadastroTagPDM.inserir', 'Inserir Tag'],
+        ['CadastroTagPDM.editar', 'Editar Tag'],
+        ['CadastroTagPDM.remover', 'Remover Tag'],
+    ],
+    CadastroMetaPDM: [
+        [
+            'CadastroMetaPDM.administrador_no_pdm',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis nos planos setoriais, de acordo com o seu perfil.',
+        ],
+        [
+            'CadastroMetaPDM.administrador_orcamento',
+            'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
+        ],
+        ['CadastroMetaPDM.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
+        ['CadastroMetaPDM.listar', 'Listar metas, iniciativas e atividades'],
+    ],
+    CadastroGrupoPaineisPDM: [
+        ['CadastroGrupoPaineisPDM.inserir', 'Inserir Grupo de Painéis'],
+        ['CadastroGrupoPaineisPDM.editar', 'Editar Grupo de Painéis'],
+        ['CadastroGrupoPaineisPDM.remover', 'Remover Grupo de Painéis'],
+    ],
+
+    CadastroPDM: [
+        ['CadastroPDM.administrador', 'Gerenciar Programa de Meta'],
+        ['CadastroPDM.administrador_no_orgao', 'Gerenciar Programa de Meta do órgão ao qual pertence'],
+    ],
+
+    CadastroTag: [
+        ['CadastroTag.inserir', 'Inserir Tag'],
+        ['CadastroTag.editar', 'Editar Tag'],
+        ['CadastroTag.remover', 'Remover Tag'],
     ],
     ProjetoTag: [
         ['ProjetoTag.inserir', 'Inserir Tag'],
@@ -357,18 +448,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMeta.listar', 'Listar metas, iniciativas e atividades'],
     ],
-    CadastroMetaPS: [
-        [
-            'CadastroMetaPS.administrador_no_pdm',
-            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis nos planos setoriais, de acordo com o seu perfil.',
-        ],
-        [
-            'CadastroMetaPS.administrador_orcamento',
-            'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
-        ],
-        ['CadastroMetaPS.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
-        ['CadastroMetaPS.listar', 'Listar metas, iniciativas e atividades'],
-    ],
     CadastroVariavelGlobal: [
         ['CadastroVariavelGlobal.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
         ['CadastroVariavelGlobal.administrador_no_orgao', 'Inserir Indicadores e variáveis quando for responsável'],
@@ -376,7 +455,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroVariavelCategorica: [
         ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
     ],
-    CadastroVariavelCategoricaPS: [['CadastroVariavelCategoricaPS.administrador', false]],
 
     CadastroPainel: [
         ['CadastroPainel.visualizar', 'Visualizar Painéis e detalhes do conteúdo'],
@@ -384,22 +462,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroPainel.editar', 'Editar Painéis pelos quais for responsável'],
         ['CadastroPainel.remover', 'Remover Painéis pelos quais for responsável'],
     ],
-    CadastroPainelPS: [
-        ['CadastroPainelPS.visualizar', 'Visualizar Painéis e detalhes do conteúdo'],
-        ['CadastroPainelPS.inserir', 'Inserir Painéis pelos quais for responsável'],
-        ['CadastroPainelPS.editar', 'Editar Painéis pelos quais for responsável'],
-        ['CadastroPainelPS.remover', 'Remover Painéis pelos quais for responsável'],
-    ],
+
     CadastroGrupoPaineis: [
         ['CadastroGrupoPaineis.inserir', 'Inserir Grupo de Painéis'],
         ['CadastroGrupoPaineis.editar', 'Editar Grupo de Painéis'],
         ['CadastroGrupoPaineis.remover', 'Remover Grupo de Painéis'],
-    ],
-
-    CadastroGrupoPaineisPS: [
-        ['CadastroGrupoPaineisPS.inserir', 'Inserir Grupo de Painéis'],
-        ['CadastroGrupoPaineisPS.editar', 'Editar Grupo de Painéis'],
-        ['CadastroGrupoPaineisPS.remover', 'Remover Grupo de Painéis'],
     ],
 
     CadastroBancada: [
@@ -448,11 +515,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.executar.PDM', 'Executar relatórios de programa de metas'],
         ['Reports.remover.PDM', 'Executar relatórios de programa de metas'],
     ],
-    ReportsPS: [
-        ['Reports.dashboard_ps', 'Dashboard de Plano Setorial'],
-        ['Reports.executar.PlanoSetorial', 'Executar relatórios de Programa Setorial'],
-        ['Reports.remover.PlanoSetorial', 'Executar relatórios de Programa Setorial'],
-    ],
     ReportsProjetos: [
         ['Reports.dashboard_portfolios', 'Dashboard de portfólios'],
         ['Reports.executar.Projetos', 'Executar relatórios de projetos'],
@@ -462,6 +524,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.dashboard_mdo', 'Dashboard de portfólios de MdO'],
         ['Reports.executar.MDO', 'Executar relatórios de projetos de MdO'],
         ['Reports.remover.MDO', 'Executar relatórios de projetos de MdO'],
+    ],
+    ReportsProgramaDeMetas: [
+        ['Reports.dashboard_programademetas', 'Dashboard de Programa de Metas'],
+        ['Reports.executar.ProgramaDeMetas', 'Executar relatórios de Programa Setorial'],
+        ['Reports.remover.ProgramaDeMetas', 'Executar relatórios de Programa Setorial'],
     ],
     ReportsCasaCivil: [
         ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
@@ -478,6 +545,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
+        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
@@ -523,17 +592,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PDM.admin_cp', 'Monitoramento - Administrador CP'],
         ['PDM.ponto_focal', 'Monitoramento - Ponto Focal'],
     ],
-    CadastroPS: [
-        ['CadastroPS.administrador', 'Gerenciar Plano Setorial'],
-        ['CadastroPS.administrador_no_orgao', 'Gerenciar Plano Setorial do órgão ao qual pertence'],
-    ],
-    PS: [
-        ['PS.tecnico_cp', 'Plano Setorial - Técnico CP'],
-        ['PS.admin_cp', 'Plano Setorial - Administrador CP'],
-        ['PS.ponto_focal', 'Plano Setorial - Ponto Focal'],
-        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
-        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
-    ],
+    ProgramaDeMetas: [],
     CadastroClassificacao: [
         ['CadastroClassificacao.editar', 'Editar Classificação'],
         ['CadastroClassificacao.inserir', 'Incluir Classificação'],
@@ -621,20 +680,7 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
     ...PDMCadastroBasico,
 ];
 
-const PSCadastroBasico: ListaDePrivilegios[] = [
-    'CadastroMacroTemaPS.inserir',
-    'CadastroMacroTemaPS.editar',
-    'CadastroMacroTemaPS.remover',
-    'CadastroTemaPS.inserir',
-    'CadastroTemaPS.editar',
-    'CadastroTemaPS.remover',
-    'CadastroSubTemaPS.inserir',
-    'CadastroSubTemaPS.editar',
-    'CadastroSubTemaPS.remover',
-    'CadastroTagPS.inserir',
-    'CadastroTagPS.editar',
-    'CadastroTagPS.remover',
-
+const PSCoreCadastroBasico: ListaDePrivilegios[] = [
     // ODS é Categoria
     'CadastroOds.inserir',
     'CadastroOds.editar',
@@ -650,21 +696,59 @@ const PSCadastroBasico: ListaDePrivilegios[] = [
 
     ...SMAECadastroBasico,
 ];
+const PSCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroMacroTemaPS.inserir',
+    'CadastroMacroTemaPS.editar',
+    'CadastroMacroTemaPS.remover',
+    'CadastroTemaPS.inserir',
+    'CadastroTemaPS.editar',
+    'CadastroTemaPS.remover',
+    'CadastroSubTemaPS.inserir',
+    'CadastroSubTemaPS.editar',
+    'CadastroSubTemaPS.remover',
+    'CadastroTagPS.inserir',
+    'CadastroTagPS.editar',
+    'CadastroTagPS.remover',
+
+    ...PSCoreCadastroBasico,
+];
+
+const PDM_AS_PSCadastroBasico: ListaDePrivilegios[] = [
+    'CadastroMacroTemaPDM.inserir',
+    'CadastroMacroTemaPDM.editar',
+    'CadastroMacroTemaPDM.remover',
+    'CadastroTemaPDM.inserir',
+    'CadastroTemaPDM.editar',
+    'CadastroTemaPDM.remover',
+    'CadastroSubTemaPDM.inserir',
+    'CadastroSubTemaPDM.editar',
+    'CadastroSubTemaPDM.remover',
+    'CadastroTagPDM.inserir',
+    'CadastroTagPDM.editar',
+    'CadastroTagPDM.remover',
+
+    ...PSCoreCadastroBasico,
+];
 
 const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
     'CadastroMetaPS.administrador_no_pdm',
     'CadastroMetaPS.administrador_orcamento',
     'CadastroMetaPS.listar',
 
-    //    'CadastroPainelPS.inserir',
-    //    'CadastroPainelPS.editar',
-    //    'CadastroPainelPS.remover',
-    //    'CadastroPainelPS.visualizar',
-
     'Reports.executar.PlanoSetorial',
     'Reports.remover.PlanoSetorial',
     'Reports.dashboard_ps',
 ];
+const PDM_AS_PSMetasReportsEAdmin: ListaDePrivilegios[] = [
+    'CadastroMetaPDM.administrador_no_pdm',
+    'CadastroMetaPDM.administrador_orcamento',
+    'CadastroMetaPDM.listar',
+
+    'Reports.executar.ProgramaDeMetas',
+    'Reports.remover.ProgramaDeMetas',
+    'Reports.dashboard_programademetas',
+];
+
 const removerNomePerfil = (nome: string) => {
     return {
         nome: nome,
@@ -1032,7 +1116,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 ];
 
-// Perfis de Plano Setoriais
+// Perfis de Plano Setoriais e Programa de Metas
 PerfilAcessoConfig.push(
     {
         nome: atualizarNomePerfil('Administrador Geral dos Planos Setoriais', [
@@ -1049,18 +1133,39 @@ PerfilAcessoConfig.push(
             ...PSMetasReportsEAdmin, // Metas, Reports, Painel
         ],
     },
-
+    {
+        nome: atualizarNomePerfil('Administrador Geral dos Programa de Metas', []),
+        descricao: 'Acesso irrestrito aos Programs de Metas e Banco de Variáveis.',
+        privilegios: [
+            'CadastroPDM.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
+            'CadastroVariavelGlobal.administrador',
+            'CadastroVariavelCategorica.administrador',
+            ...PDM_AS_PSCadastroBasico, // Tema, Tags, etc...
+            ...PDM_AS_PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
         descricao: 'Acesso restrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
-            'PS.admin_cp',
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',
 
             // faltando equipe , painel externo
             ...PSCadastroBasico, // Tema, Tags, etc...
             ...PSMetasReportsEAdmin, // Metas, Reports, Painel
+        ],
+    },
+    {
+        nome: atualizarNomePerfil('Administrador de Programa de Metas no órgão', []),
+        descricao: 'Acesso restrito aos Programa de Metas e Banco de Variáveis do próprio órgão ao qual pertence.',
+        privilegios: [
+            'CadastroPDM.administrador_no_orgao', // so pode criar no orgao_admin dele
+            'CadastroVariavelGlobal.administrador_no_orgao',
+
+            // faltando equipe , painel externo
+            ...PDM_AS_PSCadastroBasico, // Tema, Tags, etc...
+            ...PDM_AS_PSMetasReportsEAdmin, // Metas, Reports, Painel
         ],
     },
 
@@ -1076,17 +1181,13 @@ PerfilAcessoConfig.push(
             'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador de plano, Coleta, Conferencia, Liberação, Ponto Focal e Técnico)',
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
-            'PS.admin_cp', // backcompat. com frontend
-            'PS.tecnico_cp', // backcompat. com frontend
-            'PS.ponto_focal', // backcompat. com frontend
             'CadastroMetaPS.listar', // grant da listagem do PDM e Metas/ini/etc
-            'CadastroPainelPS.visualizar', // nao ta sendo usado
         ],
     },
 
     {
         nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
-        descricao: 'Pode utilizar o orçamento para as metas que participa, não pode reabrir o orçamento.',
+        descricao: 'LEGADO SERA REMOVIDO ATE O FINAL DA SPRINT',
         privilegios: ['CadastroMetaPS.orcamento'],
     }
 );

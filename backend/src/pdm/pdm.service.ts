@@ -428,10 +428,10 @@ export class PdmService {
     }
 
     async calcPodeEditar(
-        pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null; orgao_admin_id: number | null },
+        pdm: { tipo: TipoPdmType; ps_admin_cps: Prisma.JsonValue | null; orgao_admin_id: number | null },
         user: PessoaFromJwt
     ): Promise<boolean> {
-        if (pdm.tipo == 'PS') {
+        if (pdm.tipo == 'PS' || pdm.tipo == 'PDM_AS_PS') {
             if (user.hasSomeRoles(['CadastroPS.administrador'])) {
                 this.logger.log('Usuário com permissão total em PS');
                 return true;
@@ -447,8 +447,8 @@ export class PdmService {
             const dbValue = pdm.ps_admin_cps?.valueOf();
             const collab = await user.getEquipesColaborador(this.prisma);
 
-            if (Array.isArray(dbValue) && user.hasSomeRoles(['PS.tecnico_cp'])) {
-                this.logger.log('Verificando permissão de PS..tecnico_cp no PS');
+            if (Array.isArray(dbValue)) {
+                this.logger.log('Verificando permissão pelas equipes');
 
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
 
@@ -509,7 +509,7 @@ export class PdmService {
             nivel_orcamento: pdm.nivel_orcamento,
             tipo: pdm.tipo,
 
-            pode_editar: await this.calcPodeEditar(pdm, user),
+            pode_editar: await this.calcPodeEditar({ ...pdm, tipo }, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
             data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
             data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
@@ -599,7 +599,7 @@ export class PdmService {
         });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        const pode_editar = await this.calcPodeEditar(pdm, user);
+        const pode_editar = await this.calcPodeEditar({ ...pdm, tipo }, user);
         if (!pode_editar && readonly == 'ReadWrite') {
             throw new ForbiddenException(
                 `Você não tem permissão para editar este ${pdm.tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'}`
@@ -612,7 +612,7 @@ export class PdmService {
     private async verificarPrivilegiosEdicao(
         updatePdmDto: UpdatePdmDto | null,
         user: PessoaFromJwt,
-        pdm: { ativo: boolean; tipo: TipoPdm; orgao_admin_id: number | null; ps_admin_cps: Prisma.JsonValue | null }
+        pdm: { ativo: boolean; tipo: TipoPdmType; orgao_admin_id: number | null; ps_admin_cps: Prisma.JsonValue | null }
     ) {
         if (
             updatePdmDto &&
@@ -637,7 +637,7 @@ export class PdmService {
             throw new ForbiddenException(
                 `Você não tem permissão para ${
                     updatePdmDto ? 'editar' : 'remover'
-                } este ${pdm.tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'}`
+                } este ${pdm.tipo == 'PDM' || pdm.tipo == 'PDM_AS_PS' ? 'Plano de Metas' : 'Plano Setorial'}`
             );
     }
 

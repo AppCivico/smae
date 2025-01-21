@@ -5253,6 +5253,7 @@ enum ModuloSistema {
     Projetos
     PlanoSetorial
     MDO
+    ProgramaDeMetas
 }
 
 enum EleicaoTipo {
