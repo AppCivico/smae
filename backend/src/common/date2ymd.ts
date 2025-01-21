@@ -66,4 +66,9 @@ export class Date2YMD {
         if (parts.length != 3) return `Invalid date: ${data}`;
         return parts[2] + '/' + parts[1] + '/' + parts[0];
     }
+
+    static FromISOOrNull(data: string | null): DateTime | null {
+        if (!data) return null;
+        return DateTime.fromISO(data, { zone: 'UTC' });
+    }
 }
