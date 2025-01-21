@@ -163,6 +163,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     PS: false,
     CadastroVariavelCategoricaPS: false,
     CadastroGrupoPaineisPS: false,
+    CadastroGrupoPaineisPDM: false,
 
     CadastroTransferenciaTipo: [
         ['CadastroTransferenciaTipo.inserir', 'Inserir Transferência Tipo'],
@@ -401,11 +402,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMetaPDM.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMetaPDM.listar', 'Listar metas, iniciativas e atividades'],
     ],
-    CadastroGrupoPaineisPDM: [
-        ['CadastroGrupoPaineisPDM.inserir', 'Inserir Grupo de Painéis'],
-        ['CadastroGrupoPaineisPDM.editar', 'Editar Grupo de Painéis'],
-        ['CadastroGrupoPaineisPDM.remover', 'Remover Grupo de Painéis'],
-    ],
+
 
     CadastroPDM: [
         ['CadastroPDM.administrador', 'Gerenciar Programa de Meta'],
