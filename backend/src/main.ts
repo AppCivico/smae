@@ -10,7 +10,7 @@ import { AppModulePdm } from './app.module.pdm';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { Request, Response } from 'express';
 
-const SMAE_HEADERS = 'smae-sistemas,smae-tipo';
+const SMAE_HEADERS = 'smae-sistemas';
 const winston = require('winston'),
     expressWinston = require('express-winston');
 
@@ -148,12 +148,6 @@ function createSwaggerConfig(title: string, description: string) {
             in: 'header',
             required: false,
             example: 'SMAE,PDM,CasaCivil,Projetos,PlanoSetorial,MDO',
-        })
-        .addGlobalParameters({
-            name: 'smae-tipo',
-            in: 'header',
-            required: false,
-            example: 'PS',
         });
 }
 
