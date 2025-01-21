@@ -1629,6 +1629,8 @@ export class PessoaService {
             removePrivilegios('CadastroUnidadeMedida.');
             removePrivilegios('CadastroVariavelGlobal.');
             removePrivilegios('CadastroGrupoVariavel.');
+            removePrivilegios('FonteVariavel.');
+            removePrivilegios('AssuntoVariavel.');
         }
 
         //
