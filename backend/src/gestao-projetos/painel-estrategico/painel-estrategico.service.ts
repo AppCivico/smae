@@ -37,13 +37,16 @@ export class PainelEstrategicoService {
 
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
         const projetoIds = (
-            await this.projetoService.findAllIds('PP', user, filtro.portfolio_id, true, filtro.orgao_responsavel_id)
+            await this.projetoService.findAllIds(
+                'PP',
+                user,
+                filtro.portfolio_id,
+                true,
+                filtro.orgao_responsavel_id,
+                filtro.projeto_id
+            )
         ).map((p) => p.id);
         if (projetoIds.length == 0) projetoIds.push(-1);
-
-        console.log('=======================================');
-        console.log(projetoIds);
-        console.log('=======================================');
 
         const response = new PainelEstrategicoResponseDto();
         response.grandes_numeros = await this.buildGrandeNumeros(projetoIds);

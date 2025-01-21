@@ -709,12 +709,15 @@ export class ProjetoService {
         user: PessoaFromJwt | undefined,
         portfolio_id: number | number[] | undefined = undefined,
         aceita_compartilhado: boolean = false,
-        orgao_responsavel_id: number | number[] | undefined = undefined
+        orgao_responsavel_id: number | number[] | undefined = undefined,
+        projeto_id: number | number[] | undefined = undefined
     ): Promise<{ id: number }[]> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, true);
 
         const filtroPortfolio =
             typeof portfolio_id == 'number' ? [portfolio_id] : portfolio_id?.length ? portfolio_id : undefined;
+        const filtroProjeto =
+            typeof projeto_id == 'number' ? [projeto_id] : projeto_id?.length ? projeto_id : undefined;
         const filtroOrgaoResponsavel =
             typeof orgao_responsavel_id == 'number'
                 ? [orgao_responsavel_id]
@@ -722,10 +725,6 @@ export class ProjetoService {
                   ? orgao_responsavel_id
                   : undefined;
 
-        console.log('===============================================================');
-        console.log(orgao_responsavel_id);
-        console.log(filtroOrgaoResponsavel);
-        console.log('===============================================================');
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: tipo,
@@ -765,6 +764,16 @@ export class ProjetoService {
 
                     {
                         AND: permissionsSet.length ? permissionsSet : undefined,
+                    },
+
+                    {
+                        AND: filtroProjeto
+                            ? [
+                                  {
+                                      id: { in: filtroProjeto },
+                                  },
+                              ]
+                            : undefined,
                     },
                 ],
             },
