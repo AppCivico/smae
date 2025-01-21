@@ -9,6 +9,7 @@ import { UploadModule } from '../upload/upload.module';
 import { VariavelModule } from '../variavel/variavel.module';
 import { PdmController, PlanoSetorialController } from './pdm.controller';
 import { PdmService } from './pdm.service';
+import { EquipeRespModule } from '../equipe-resp/equipe-resp.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { PdmService } from './pdm.service';
         forwardRef(() => VariavelModule),
         forwardRef(() => UploadModule),
         forwardRef(() => PessoaPrivilegioModule),
+        forwardRef(() => EquipeRespModule),
     ],
     controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],

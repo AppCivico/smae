@@ -28,6 +28,8 @@ model Pessoa {
     desativado_motivo   String?
     pessoa_fisica_id    Int?
 
+    equipe_pdm_tipos TipoPdm[] @default([])
+
     ProjetoOrigemQcriei     CompromissoOrigem[] @relation("Criador")
     ProjetoOrigemQAtualizei CompromissoOrigem[] @relation("Atualizador")
     ProjetoOrigemQRemovi    CompromissoOrigem[] @relation("Removedor")

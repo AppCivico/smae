@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { FeatureFlagDto } from './FeatureFlagDto';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
 export class PessoaFromJwtBase {
@@ -27,4 +27,10 @@ export class PessoaFromJwtBase {
     modulo_sistema: ModuloSistema[];
 
     ip: string | null;
+
+    @ApiProperty({
+        description: 'Lista de tipos de PDM que ela tem acesso de acordo com as equipes atuais',
+        isArray: true,
+    })
+    equipe_pdm_tipos: TipoPdm[];
 }
