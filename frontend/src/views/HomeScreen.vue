@@ -85,7 +85,7 @@ async function iniciar() {
   emEspera.value = true;
   erro.value = null;
 
-  requestS.get(`${baseUrl}/minha-conta`, { 'smae-sistemas': Object.keys(módulos).join(',') })
+  requestS.get(`${baseUrl}/minha-conta`, null, { headers: { 'smae-sistemas': Object.keys(módulos).join(',') } })
     .then((resposta) => {
       const { sessao: { sistemas } } = resposta;
       sessao.value = resposta.sessao;
