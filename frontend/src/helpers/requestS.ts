@@ -9,15 +9,39 @@ type Method = 'GET' | 'POST' | 'UPLOAD' | 'PUT' | 'PATCH' | 'DELETE';
 export type ParametrosDeRequisicao = URLSearchParams
 | Record<string, unknown>
 | FormData
-| undefined;
+| null;
 
 export type RequestS = {
-  get: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
-  post: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  upload: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  put: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  patch: (url: RequestInfo | URL, params: ParametrosDeRequisicao) => Promise<unknown>;
-  delete: (url: RequestInfo | URL, params?: ParametrosDeRequisicao) => Promise<unknown>;
+  get: (
+    url: RequestInfo | URL,
+    params?: ParametrosDeRequisicao,
+    opcoes?: Record<string, unknown>
+  ) => Promise<unknown>;
+  post: (
+    url: RequestInfo | URL,
+    params: ParametrosDeRequisicao,
+    opcoes?: Record<string, unknown>
+  ) => Promise<unknown>;
+  upload: (
+    url: RequestInfo | URL,
+    params: ParametrosDeRequisicao,
+    opcoes?: Record<string, unknown>
+  ) => Promise<unknown>;
+  put: (
+    url: RequestInfo | URL,
+    params: ParametrosDeRequisicao,
+    opcoes?: Record<string, unknown>
+  ) => Promise<unknown>;
+  patch: (
+    url: RequestInfo | URL,
+    params: ParametrosDeRequisicao,
+    opcoes?: Record<string, unknown>
+  ) => Promise<unknown>;
+  delete: (
+    url: RequestInfo | URL,
+    params?: ParametrosDeRequisicao,
+    opcoes?: Record<string, unknown>
+  ) => Promise<unknown>;
 };
 
 type Alerta = {
@@ -99,7 +123,7 @@ function userToken(url: RequestInfo | URL): HeadersInit {
 function request(method: Method, upload = false) {
   return (
     url: RequestInfo | URL,
-    params: ParametrosDeRequisicao | undefined,
+    params: ParametrosDeRequisicao = null,
     opcoes: { AlertarErros?: boolean; headers?: HeadersInit } = { AlertarErros: true },
   ) => {
     let urlFinal = url;
