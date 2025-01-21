@@ -214,56 +214,74 @@ export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo 
   },
 
   getters: {
-    itemParaEdicao: ({ emFoco }) => ({
-      ...emFoco,
-      data_fim: emFoco?.data_fim
-        ? dateTimeToDate(emFoco.data_fim)
-        : null,
-      data_inicio: emFoco?.data_inicio
-        ? dateTimeToDate(emFoco.data_inicio)
-        : null,
-      data_publicacao: emFoco?.data_publicacao
-        ? dateTimeToDate(emFoco.data_publicacao)
-        : null,
-      equipe_tecnica: emFoco?.equipe_tecnica || '',
-      monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
-      nome: emFoco?.nome || '',
-      orgao_admin_id: emFoco?.orgao_admin?.id || null,
-      pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
-        ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
-        : [],
-      periodo_do_ciclo_participativo_fim: emFoco?.periodo_do_ciclo_participativo_fim
-        ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_fim)
-        : null,
-      periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
-        ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
-        : null,
-      possui_atividade: !!emFoco?.possui_atividade,
-      possui_complementacao_meta: !!emFoco?.possui_complementacao_meta,
-      possui_contexto_meta: !!emFoco?.possui_contexto_meta,
-      possui_iniciativa: !!emFoco?.possui_iniciativa,
-      possui_macro_tema: !!emFoco?.possui_macro_tema,
-      possui_sub_tema: !!emFoco?.possui_sub_tema,
-      possui_tema: !!emFoco?.possui_tema,
-      prefeito: emFoco?.prefeito || '',
-      ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.equipes)
-        ? emFoco.ps_admin_cp
-        : { equipes: [] },
-      ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.equipes)
-        ? emFoco.ps_ponto_focal
-        : { equipes: [] },
-      ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.equipes)
-        ? emFoco.ps_tecnico_cp
-        : { equipes: [] },
-      rotulo_atividade: emFoco?.rotulo_atividade || '',
-      rotulo_complementacao_meta: emFoco?.rotulo_complementacao_meta || '',
-      rotulo_contexto_meta: emFoco?.rotulo_contexto_meta || '',
-      rotulo_iniciativa: emFoco?.rotulo_iniciativa || '',
-      rotulo_macro_tema: emFoco?.rotulo_macro_tema || '',
-      rotulo_sub_tema: emFoco?.rotulo_sub_tema || '',
-      rotulo_tema: emFoco?.rotulo_tema || '',
-      upload_logo: emFoco?.logo || null,
-    }),
+    itemParaEdicao({ emFoco }) {
+      let tipoPadrao;
+      switch (this.route.meta.entidadeMãe) {
+        case 'planoSetorial':
+          tipoPadrao = 'PS';
+          break;
+        case 'programaDeMetas':
+          tipoPadrao = 'PDM';
+          break;
+        default:
+          throw new Error('Módulo não pôde ser detectado');
+      }
+
+      return {
+        ...emFoco,
+
+        // campo oculto
+        tipo: emFoco?.tipo || tipoPadrao,
+
+        data_fim: emFoco?.data_fim
+          ? dateTimeToDate(emFoco.data_fim)
+          : null,
+        data_inicio: emFoco?.data_inicio
+          ? dateTimeToDate(emFoco.data_inicio)
+          : null,
+        data_publicacao: emFoco?.data_publicacao
+          ? dateTimeToDate(emFoco.data_publicacao)
+          : null,
+        equipe_tecnica: emFoco?.equipe_tecnica || '',
+        monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
+        nome: emFoco?.nome || '',
+        orgao_admin_id: emFoco?.orgao_admin?.id || null,
+        pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
+          ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
+          : [],
+        periodo_do_ciclo_participativo_fim: emFoco?.periodo_do_ciclo_participativo_fim
+          ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_fim)
+          : null,
+        periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
+          ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
+          : null,
+        possui_atividade: !!emFoco?.possui_atividade,
+        possui_complementacao_meta: !!emFoco?.possui_complementacao_meta,
+        possui_contexto_meta: !!emFoco?.possui_contexto_meta,
+        possui_iniciativa: !!emFoco?.possui_iniciativa,
+        possui_macro_tema: !!emFoco?.possui_macro_tema,
+        possui_sub_tema: !!emFoco?.possui_sub_tema,
+        possui_tema: !!emFoco?.possui_tema,
+        prefeito: emFoco?.prefeito || '',
+        ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.equipes)
+          ? emFoco.ps_admin_cp
+          : { equipes: [] },
+        ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.equipes)
+          ? emFoco.ps_ponto_focal
+          : { equipes: [] },
+        ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.equipes)
+          ? emFoco.ps_tecnico_cp
+          : { equipes: [] },
+        rotulo_atividade: emFoco?.rotulo_atividade || '',
+        rotulo_complementacao_meta: emFoco?.rotulo_complementacao_meta || '',
+        rotulo_contexto_meta: emFoco?.rotulo_contexto_meta || '',
+        rotulo_iniciativa: emFoco?.rotulo_iniciativa || '',
+        rotulo_macro_tema: emFoco?.rotulo_macro_tema || '',
+        rotulo_sub_tema: emFoco?.rotulo_sub_tema || '',
+        rotulo_tema: emFoco?.rotulo_tema || '',
+        upload_logo: emFoco?.logo || null,
+      };
+    },
 
     arquivosPorId: ({ arquivos }: Estado) => {
       const result = arquivos.reduce((acc, cur) => ({
