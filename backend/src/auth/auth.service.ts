@@ -91,6 +91,7 @@ export class AuthService {
             flags: await this.featureFlagService.featureFlag(),
             modulo_sistema,
             ip: null,
+            equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
         });
     }
 
@@ -115,6 +116,7 @@ export class AuthService {
             flags: await this.featureFlagService.featureFlag(),
             modulo_sistema,
             ip: null,
+            equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
         });
     }
 

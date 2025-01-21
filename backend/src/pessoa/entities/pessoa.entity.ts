@@ -1,4 +1,4 @@
-import { PessoaFisica } from '@prisma/client';
+import { PessoaFisica, TipoPdm } from '@prisma/client';
 
 export class Pessoa {
     id?: number;
@@ -9,7 +9,6 @@ export class Pessoa {
 
     atualizado_em?: Date;
 
-
     token_acesso_api?: string;
     session_id?: number;
     senha_bloqueada?: boolean;
@@ -18,4 +17,5 @@ export class Pessoa {
     desativado: boolean;
 
     pessoa_fisica: PessoaFisica | null;
+    equipe_pdm_tipos: TipoPdm[];
 }

@@ -31,6 +31,7 @@ import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -62,7 +63,9 @@ export class PdmService {
         @Inject(forwardRef(() => VariavelService))
         private readonly variavelService: VariavelService,
         @Inject(forwardRef(() => PessoaPrivilegioService))
-        private readonly pessoaPrivService: PessoaPrivilegioService
+        private readonly pessoaPrivService: PessoaPrivilegioService,
+        @Inject(forwardRef(() => EquipeRespService))
+        private readonly equipeRespService: EquipeRespService
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreatePdmDto, user: PessoaFromJwt) {
@@ -979,6 +982,27 @@ export class PdmService {
                 this.logger.log(`Equipe mantida sem alterações: ${equipe.id}`);
             }
         }
+
+        // Depois te todos os updates, pega todas as pessoas afetadas
+        const pessoasAfetadas = new Set<number>();
+        for (const equipe_id of [...keptRecord, ...data.equipes]) {
+            const membros = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+                where: {
+                    grupo_responsavel_equipe_id: equipe_id,
+                    removido_em: null,
+                },
+                select: { pessoa_id: true },
+            });
+            for (const r of membros) {
+                pessoasAfetadas.add(r.pessoa_id);
+            }
+        }
+
+        const promessas: Promise<void>[] = [];
+        for (const pessoaId of pessoasAfetadas) {
+            promessas.push(this.equipeRespService.recalculaPessoaPdmTipos(pessoaId, prismaTx));
+        }
+        await Promise.all(promessas);
 
         return cpItens;
     }

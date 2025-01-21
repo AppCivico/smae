@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -198,6 +198,46 @@ export class EquipeRespService {
                 });
             }
         }
+        await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+    }
+
+    async recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma.TransactionClient) {
+        const equipes = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+            where: {
+                pessoa_id: pessoaId,
+                removido_em: null,
+            },
+            select: {
+                grupo_responsavel_equipe_id: true,
+            },
+        });
+
+        // Pega os tipos de PDM dos grupos
+        const pdmTipos = await prismaTx.pdm.findMany({
+            distinct: ['tipo'],
+            where: {
+                removido_em: null,
+                PdmPerfil: {
+                    some: {
+                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe_id) },
+                        removido_em: null,
+                    },
+                },
+            },
+            select: { tipo: true },
+        });
+
+        const tipos = new Set<TipoPdm>();
+        for (const tipo of pdmTipos) {
+            tipos.add(tipo.tipo);
+        }
+
+        await prismaTx.pessoa.update({
+            where: { id: pessoaId },
+            data: {
+                equipe_pdm_tipos: Array.from(tipos),
+            },
+        });
     }
 
     async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {
