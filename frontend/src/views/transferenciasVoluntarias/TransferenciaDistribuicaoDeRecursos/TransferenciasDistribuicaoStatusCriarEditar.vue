@@ -11,7 +11,7 @@
     </div>
 
     <form
-      :aria-busy="chamadasPendentes.emFoco"
+      :aria-busy="montando || chamadasPendentes.emFoco"
       @submit.prevent="onSubmit"
     >
       <div>
@@ -154,7 +154,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const formularioSujo = useIsFormDirty();
 
@@ -194,6 +194,8 @@ const props = defineProps({
 const emit = defineEmits(['fecharModal', 'salvouStatus']);
 
 const alertStore = useAlertStore();
+
+const montando = ref(false);
 
 const itemParaEdicao = computed(() => ({
   ...props.statusEmFoco,
@@ -255,11 +257,31 @@ watch(props.statusEmFoco, (novosValores) => {
   resetForm({ values: novosValores });
 });
 
-if (!props.transferenciaWorkflowId) {
-  if (!statusBase.value.length) {
-    statusDistribuicaoWorflowStore.buscarTudo();
+function iniciar() {
+  const promessas = [];
+  montando.value = true;
+
+  if (!props.transferenciaWorkflowId) {
+    if (!statusBase.value.length) {
+      promessas.push(statusDistribuicaoWorflowStore.buscarTudo());
+    }
+  } else if (fluxoProjetoEmFoco.value?.id !== props.transferenciaWorkflowId) {
+    promessas.push(fluxosProjetosStore.buscarItem(props.transferenciaWorkflowId));
   }
-} else if (fluxoProjetoEmFoco.value?.id !== props.transferenciaWorkflowId) {
-  fluxosProjetosStore.buscarItem(props.transferenciaWorkflowId);
+
+  if (!órgãosComoLista.value.length) {
+    promessas.push(ÓrgãosStore.getAll());
+  }
+
+  if (promessas.length) {
+    Promise.allSettled(promessas)
+      .finally(() => {
+        montando.value = false;
+      });
+  } else {
+    montando.value = false;
+  }
 }
+
+iniciar();
 </script>
