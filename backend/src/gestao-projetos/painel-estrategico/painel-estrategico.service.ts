@@ -399,7 +399,7 @@ export class PainelEstrategicoService {
                             orgao_descricao,
                             ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT projeto_id) DESC) as ranking
                         FROM view_painel_estrategico_projeto
-                        WHERE projeto_id = ANY(${projetoIds}::bigint[])
+                        WHERE projeto_id = ANY(${projetoIds}::bigint[]) AND orgao_sigla IS NOT NULL
                         GROUP BY orgao_sigla, orgao_descricao
                     )
                     SELECT 
