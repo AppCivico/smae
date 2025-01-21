@@ -90,8 +90,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroOdsPS: ['', null],
     CadastroVariavelCategoricaPS: ['', null],
 
-    FonteVariavel: ['Fontes de Variáveis', ['PlanoSetorial', 'ProgramaDeMetas']],
-    AssuntoVariavel: ['Assuntos de Variáveis', ['PlanoSetorial', 'ProgramaDeMetas']],
+    FonteVariavel: ['Fontes de Variáveis', 'SMAE'],
+    AssuntoVariavel: ['Assuntos de Variáveis', 'SMAE'],
 
     CadastroGrupoPortfolio: ['Grupos de Portfólio', 'Projetos'],
     CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'MDO'],
@@ -1129,7 +1129,7 @@ PerfilAcessoConfig.push(
     },
     {
         nome: atualizarNomePerfil('Administrador Geral dos Programa de Metas', []),
-        descricao: 'Acesso irrestrito aos Programs de Metas e Banco de Variáveis.',
+        descricao: 'Acesso irrestrito aos Programa de Metas e Banco de Variáveis.',
         privilegios: [
             'CadastroPDM.administrador', // bloquear criação se não tiver já a mesma permissão no PDM
             'CadastroVariavelGlobal.administrador',
