@@ -514,10 +514,8 @@ export class TarefaService {
                     this.logger.error(
                         `tarefa.inicio_real da tarefa ID ${tarefa.id} está nulo mas deveria existir (pois há data de termino), assumindo data corrente.`
                     );
-                tarefa.projecao_inicio = tarefa.inicio_real
-                    ? DateTime.fromSQL(tarefa.inicio_real, { zone: 'UTC' })
-                    : hoje;
-                tarefa.projecao_termino = DateTime.fromSQL(tarefa.termino_real, { zone: 'UTC' });
+                tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
+                tarefa.projecao_termino = Date2YMD.FromISOOrNull(tarefa.termino_real)!;
 
                 this.logger.debug(`tarefa ${tarefa.id} já finalizou`);
                 return;
@@ -528,9 +526,7 @@ export class TarefaService {
             //if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
             if (tarefa.dependencias.length == 0 || tarefa.inicio_real) {
                 // se não tem inicio real preenchido, considera que começou hj
-                tarefa.projecao_inicio = tarefa.inicio_real
-                    ? DateTime.fromSQL(tarefa.inicio_real, { zone: 'UTC' })
-                    : hoje;
+                tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
 
                 tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
                 this.logger.debug(
