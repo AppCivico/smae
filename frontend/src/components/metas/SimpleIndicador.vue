@@ -123,7 +123,7 @@ iniciar();
             </SmaeLink>
           </div>
           <OverlayIndisponivel
-            v-if="ind.recalculando || ind.recalculo_tempo"
+            v-if="ind.recalculando"
             :tem-tentar-novamente="true"
             :texto-descritivo="ind.recalculo_erro"
             :tentar-novamente-em="contagemDeRecarregamentos >= numeroMaximoDeRecarregamentos
