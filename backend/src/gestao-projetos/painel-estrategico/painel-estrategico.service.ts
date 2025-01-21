@@ -409,16 +409,6 @@ export class PainelEstrategicoService {
                         CASE WHEN ranking <= 10 THEN 1 ELSE 0 END as indice
                     FROM orgao_counts
                     WHERE ranking <= 10
-                    UNION ALL
-                    SELECT 
-                        SUM(quantidade)::int,
-                        'OUTROS',
-                        'Outros',
-                        0
-                    FROM orgao_counts
-                    WHERE ranking > 10
-                    HAVING SUM(quantidade) > 0
-                    ORDER BY indice DESC, quantidade DESC
                 `;
 
                 return result;
