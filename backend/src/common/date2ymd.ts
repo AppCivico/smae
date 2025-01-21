@@ -69,6 +69,10 @@ export class Date2YMD {
 
     static FromISOOrNull(data: string | null): DateTime | null {
         if (!data) return null;
+
+        // WHY??? Tem alguem mentindo no Tarefa.service... sem tempo no momento para debuggar isso, resolvendo na marreta
+        if ((data as any) instanceof Date) return DateTime.fromJSDate(data as any, { zone: 'UTC' });
+
         return DateTime.fromISO(data, { zone: 'UTC' });
     }
 }
