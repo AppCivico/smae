@@ -22,21 +22,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(req: Request, payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
-        let xSistemas = req.query['smae-sistemas'] || req.headers['smae-sistemas'];
-        if (xSistemas && typeof xSistemas !== 'string') throw new BadRequestException('query smae-sistemas invalid');
-
-        let validSistemas: ModuloSistema[] | undefined = undefined;
-        if (xSistemas) {
-            if (!Array.isArray(xSistemas)) xSistemas = xSistemas.split(',');
-
-            validSistemas = [];
-            for (const v of xSistemas) {
-                validSistemas.push(ValidateModuloSistema(v));
-            }
-        }
+        const validSistemas = ExtractValidSistemas(req);
 
         const user = await this.authService.pessoaJwtFromSessionId(payload.sid, validSistemas);
         user.ip = extractIpAddress(req);
         return user;
     }
+}
+
+export function ExtractValidSistemas(req: Request) {
+    let xSistemas = req.query['smae-sistemas'] || req.headers['smae-sistemas'];
+    if (xSistemas && typeof xSistemas !== 'string') throw new BadRequestException('query smae-sistemas invalid');
+
+    let validSistemas: ModuloSistema[] | undefined = undefined;
+    if (xSistemas) {
+        if (!Array.isArray(xSistemas)) xSistemas = xSistemas.split(',');
+
+        validSistemas = [];
+        for (const v of xSistemas) {
+            validSistemas.push(ValidateModuloSistema(v));
+        }
+    }
+    return validSistemas;
 }

@@ -1,6 +1,7 @@
 import { BadRequestException, createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { TipoPdm } from '@prisma/client';
 import { Request } from 'express';
+import { ExtractValidSistemas } from '../../auth/strategies/jwt.strategy';
 
 export type TipoPdmType = 'PS' | 'PDM' | 'PDM_AS_PS';
 
@@ -10,13 +11,20 @@ export const TipoPDM = createParamDecorator((data: unknown, context: ExecutionCo
 });
 
 export const extractPdmMode = (request: Request): TipoPdmType => {
-    const h = request.headers['smae-tipo'];
-    if (h === 'PDM') return 'PDM_AS_PS';
-    if (h === 'PS') return 'PS';
-    if (h) throw new BadRequestException(`Tipo de PDM desconhecido: ${h}`);
+    const sistemas = ExtractValidSistemas(request);
 
-    // Fallback para Plano Setorial
-    return 'PS';
+    if (!sistemas) return 'PS';
+
+    const parts = sistemas.filter((s) => s !== 'SMAE');
+    if (parts.length > 1) {
+        throw new BadRequestException('Apenas um smae-sistema pode enviado por vez para a API neste endpoint.');
+    }
+
+    const h = parts[0];
+    if (h === 'ProgramaDeMetas') return 'PDM_AS_PS';
+    if (h === 'PDM') return 'PS';
+
+    throw new BadRequestException(`smae-sistema '${h}' não é um sistema válido para este endpoint.`);
 };
 
 export const PdmModoParaTipo = (tipo: TipoPdmType): TipoPdm => {
