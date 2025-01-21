@@ -28,6 +28,8 @@ function obterTitulo(entidadeMãe: EntidadesPossiveis): TituloDaPagina {
 }
 
 function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
+  const tituloEntidade = obterTitulo(entidadeMãe);
+
   return {
     path: '/planos-setoriais',
     component: () => import('@/views/planosSetoriais/PlanosSetoriaisRaiz.vue'),
@@ -65,7 +67,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
           ],
           rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
           rotasParaMigalhasDePão: [`${entidadeMãe}.planosSetoriaisListar`],
-          título: `Cadastro de ${modeloTitulo.singular}`,
+          título: `Cadastro de ${tituloEntidade.singular}`,
         },
       },
       {
@@ -82,7 +84,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               `${entidadeMãe}.planosSetoriaisDocumentos`,
             ];
 
-            if (usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_macro_tema) {
+            if (
+              usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_macro_tema
+            ) {
               rotas.push(`${entidadeMãe}.planosSetoriaisMacrotemas`);
             }
             if (usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_tema) {
@@ -114,7 +118,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 'CadastroPS.administrador_no_orgao',
               ],
               rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
-              título: 'Editar Plano Setorial',
+              título: `Editar ${tituloEntidade.singular}`,
             },
           },
           {
@@ -128,7 +132,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             }),
             meta: {
               título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
-                || 'Resumo de Plano Setorial',
+                || `Resumo de ${tituloEntidade.singular}`,
               títuloParaMenu: 'Resumo',
             },
           },
@@ -142,7 +146,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 Number.parseInt(params.planoSetorialId, 10) || undefined,
             }),
             meta: {
-              título: 'Documentos de Plano Setorial',
+              título: `Documentos de ${tituloEntidade.singular}`,
               títuloParaMenu: 'Documentos',
             },
             children: [
@@ -224,8 +228,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                 component: () => import('@/views/ps.macrotemas/MacrotemasLista.vue'),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_macro_tema
-                    || 'Macrotema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                    ?.rotulo_macro_tema || 'Macrotema',
                 },
               },
               {
@@ -233,8 +237,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: 'planosSetoriaisNovoMacrotema',
                 component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_macro_tema
-                    || 'Novo Macrotema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                    ?.rotulo_macro_tema || 'Novo Macrotema',
                   limitarÀsPermissões: ['CadastroMacroTemaPS.inserir'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                 },
@@ -251,8 +255,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   },
                 }),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_macro_tema
-                    || 'Editar Macrotema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                    ?.rotulo_macro_tema || 'Editar Macrotema',
                   limitarÀsPermissões: ['CadastroMacroTemaPS.editar'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                 },
@@ -268,7 +272,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.planosSetoriaisTemas`,
                 component: () => import('@/views/ps.temas/TemasLista.vue'),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_tema || 'Tema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_tema
+                    || 'Tema',
                 },
               },
               {
@@ -310,8 +315,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.planosSetoriaisSubtemas`,
                 component: () => import('@/views/ps.subtemas/SubtemasLista.vue'),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_sub_tema
-                    || 'Subtema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                    ?.rotulo_sub_tema || 'Subtema',
                 },
               },
               {
@@ -320,8 +325,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
                 meta: {
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_sub_tema
-                    || 'Novo Subtema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                    ?.rotulo_sub_tema || 'Novo Subtema',
                   limitarÀsPermissões: ['CadastroSubTemaPS.inserir'],
                 },
               },
@@ -337,8 +342,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   },
                 }),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_sub_tema
-                    || 'Editar Subtema',
+                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                    ?.rotulo_sub_tema || 'Editar Subtema',
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
                   limitarÀsPermissões: ['CadastroSubTemaPS.editar'],
                 },
@@ -356,7 +361,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               prefixoDosCaminhos: (route) => `/planos-setoriais/${route.params.planoSetorialId}`,
 
               título: () => `Metas de ${
-                usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome || 'Plano Setorial'
+                usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
+                  || tituloEntidade.singular
               }`,
               títuloParaMenu: 'Metas',
               desabilitarMigalhasDePãoPadrão: true,
