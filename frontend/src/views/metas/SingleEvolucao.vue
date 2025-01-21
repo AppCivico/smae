@@ -201,7 +201,7 @@ watch([parentId, parentField], iniciar, { immediate: true });
                 :casas-decimais="ind.casas_decimais"
               />
               <OverlayIndisponivel
-                v-if="ind.recalculando || ind.recalculo_tempo"
+                v-if="ind.recalculando"
                 :tem-tentar-novamente="true"
                 :texto-descritivo="ind.recalculo_erro"
                 :tentar-novamente-em="contagemDeRecarregamentos >= numeroMaximoDeRecarregamentos
