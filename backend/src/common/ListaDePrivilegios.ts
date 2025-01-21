@@ -80,10 +80,6 @@ export type ListaDePrivilegios =
     | 'CadastroPainelPS.editar'
     | 'CadastroPainelPS.remover'
     | 'CadastroPainelPS.visualizar'
-    | 'CadastroGrupoPaineisPS.inserir'
-    | 'CadastroGrupoPaineisPS.editar'
-    | 'CadastroGrupoPaineisPS.remover'
-
     | 'CadastroMacroTemaPDM.inserir'
     | 'CadastroMacroTemaPDM.editar'
     | 'CadastroMacroTemaPDM.remover'
@@ -108,9 +104,6 @@ export type ListaDePrivilegios =
     | 'CadastroPainelPDM.editar'
     | 'CadastroPainelPDM.remover'
     | 'CadastroPainelPDM.visualizar'
-    | 'CadastroGrupoPaineisPDM.inserir'
-    | 'CadastroGrupoPaineisPDM.editar'
-    | 'CadastroGrupoPaineisPDM.remover'
 
     | 'CadastroPainel.inserir'
     | 'CadastroPainel.editar'
