@@ -22,7 +22,7 @@ export const extractPdmMode = (request: Request): TipoPdmType => {
 
     const h = parts[0];
     if (h === 'ProgramaDeMetas') return 'PDM_AS_PS';
-    if (h === 'PDM') return 'PS';
+    if (h === 'PlanoSetorial') return 'PS';
 
     throw new BadRequestException(`smae-sistema '${h}' não é um sistema válido para este endpoint.`);
 };
