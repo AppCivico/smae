@@ -1,7 +1,8 @@
-import $eventHub from '@/components/eventHub';
 import qs from 'qs';
 import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
+
+import $eventHub from '@/components/eventHub';
 
 // Stores
 import { useAuthStore } from '@/stores/auth.store';
@@ -26,7 +27,7 @@ import obras from './obras';
 import painelEstratégico from './painelEstrategico';
 import panoramaTransferencias from './panoramaTransferencias';
 import parlamentares from './parlamentares';
-import planosSetoriais from './planosSetoriais';
+import planosSetoriaisRoutes from './programaDeMetas/planosSetoriais.routes';
 import projetos from './projetos';
 import oportunidades from './ps.oportunidades';
 import relatorios from './relatorios';
@@ -73,7 +74,7 @@ export const router = createRouter({
     monitoramento,
     metas,
     parlamentares,
-    planosSetoriais,
+    planosSetoriaisRoutes,
     projetos,
     análise,
     obras,
@@ -103,7 +104,8 @@ export const router = createRouter({
       decoder(str, defaultDecoder, charset, type) {
         return type !== 'value'
           ? defaultDecoder(str, defaultDecoder, charset)
-          : decodificadorDePrimitivas(str) || defaultDecoder(str, defaultDecoder, charset);
+          : decodificadorDePrimitivas(str)
+              || defaultDecoder(str, defaultDecoder, charset);
       },
     });
   },
