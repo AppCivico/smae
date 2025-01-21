@@ -130,6 +130,11 @@ watch(itemParaEdicao, (novoValor) => {
     :aria-busy="chamadasPendentes.emFoco && !emFoco"
     @submit="onSubmit"
   >
+    <Field
+      type="hidden"
+      name="tipo"
+    />
+
     <fieldset>
       <div
         v-if="planoSetorialId && temPermissãoPara([
@@ -757,7 +762,7 @@ watch(itemParaEdicao, (novoValor) => {
       </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset v-if="carga?.tipo === 'PS'">
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
