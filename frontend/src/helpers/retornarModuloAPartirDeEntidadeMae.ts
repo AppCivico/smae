@@ -1,23 +1,15 @@
-export default ((entidadeMae: string) => {
-  switch (entidadeMae) {
-    case 'projeto':
-    case 'portfolio':
-      return 'Projetos';
+import modulosDoSistema from '@/consts/modulosDoSistema';
 
-    case 'mdo':
-    case 'obras':
-      return 'MDO';
-
-    case 'pdm':
-      return 'PDM';
-
-    case 'TransferenciasVoluntarias':
-      return 'CasaCivil';
-
-    case 'planoSetorial':
-      return 'PlanoSetorial';
-
-    default:
-      return '';
+const mapaDeModulos = Object.keys(modulosDoSistema).reduce((acc, key) => {
+  const modulo = modulosDoSistema[key as keyof typeof modulosDoSistema];
+  if (Array.isArray(modulo.possiveisEntidadesMae)) {
+    modulo.possiveisEntidadesMae.forEach((possiveisEntidadesMae) => {
+      acc[possiveisEntidadesMae] = key;
+    });
+  } else {
+    acc[modulo.possiveisEntidadesMae] = key;
   }
-});
+  return acc;
+}, {} as Record<string, string>);
+
+export default ((possiveisEntidadesMae: string) => mapaDeModulos[possiveisEntidadesMae] || '');

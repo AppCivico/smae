@@ -12,6 +12,7 @@ export type Modulo = {
   nome: string;
   ícone: string;
   rotaInicial: RotaInicial | RotaInicial[];
+  possiveisEntidadesMae: string | string[];
 };
 
 export type ModulosDoSistema = {
@@ -20,11 +21,15 @@ export type ModulosDoSistema = {
   CasaCivil: Modulo;
   MDO: Modulo;
   PlanoSetorial: Modulo;
+  ProgramaDeMetas: Modulo;
 };
 
 const modulos: ModulosDoSistema = {
   PDM: {
     nome: 'Programa de metas',
+    possiveisEntidadesMae: [
+      'pdm',
+    ],
     ícone: programaDeMetas,
     rotaInicial: [
       {
@@ -35,8 +40,24 @@ const modulos: ModulosDoSistema = {
       },
     ],
   },
+  ProgramaDeMetas: {
+    nome: 'Programa de metas 😎',
+    possiveisEntidadesMae: [
+      'programaDeMetas',
+    ],
+    ícone: programaDeMetas,
+    rotaInicial: [
+      {
+        name: 'programaDeMetas.metas',
+      },
+    ],
+  },
   Projetos: {
     nome: 'Gestão de projetos',
+    possiveisEntidadesMae: [
+      'projeto',
+      'portfolio',
+    ],
     ícone: gestaoDeProjetos,
     rotaInicial: [
       {
@@ -46,6 +67,9 @@ const modulos: ModulosDoSistema = {
   },
   CasaCivil: {
     nome: 'Transferências voluntárias',
+    possiveisEntidadesMae: [
+      'TransferenciasVoluntarias',
+    ],
     ícone: transferenciasVoluntarias,
     rotaInicial: [
       {
@@ -55,6 +79,10 @@ const modulos: ModulosDoSistema = {
   },
   MDO: {
     nome: 'Monitoramento de Obras',
+    possiveisEntidadesMae: [
+      'mdo',
+      'obras',
+    ],
     ícone: monitoramentoDeObras,
     rotaInicial: [
       {
@@ -64,6 +92,9 @@ const modulos: ModulosDoSistema = {
   },
   PlanoSetorial: {
     nome: 'Planos setoriais',
+    possiveisEntidadesMae: [
+      'planoSetorial',
+    ],
     ícone: planosSetoriais,
     rotaInicial: [
       {
