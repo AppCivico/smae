@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: `${route.meta.entidadeMãe}.novaTag` }"
+      :to="{ name: '.novaTag' }"
       class="btn big ml1"
     >
       Nova tag
@@ -51,7 +51,7 @@
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
             :to="{
-              name: `${route.meta.entidadeMãe}.editarTag`,
+              name: '.editarTag',
               params: { tagId: item.id }
             }"
             class="tprimary"

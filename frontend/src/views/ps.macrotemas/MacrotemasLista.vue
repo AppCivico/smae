@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: `${route.meta.entidadeMãe}.novoMacrotema` }"
+      :to="{ name: '.novoMacrotema' } "
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -32,7 +32,7 @@
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
             :to="{
-              name: `${route.meta.entidadeMãe}.editarMacrotema`,
+              name: '.editarMacrotem',
               params: { macrotemaId: item.id }
             }"
             class="tprimary"
