@@ -41,7 +41,7 @@ interface Estado {
   erros: Erros;
 }
 
-export const usePlanosSetoriaisStore = (prefixo?: string) => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
+export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
