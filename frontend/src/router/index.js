@@ -20,7 +20,7 @@ import obras from './obras';
 import painelEstratégico from './painelEstrategico';
 import panoramaTransferencias from './panoramaTransferencias';
 import parlamentares from './parlamentares';
-import planosSetoriaisRoutes from './programaDeMetas/planosSetoriais.routes';
+import planejamentoEMonitoramentoRoutes from './planejamentoEMonitoramento/index.routes';
 import projetos from './projetos';
 import oportunidades from './ps.oportunidades';
 import relatorios from './relatorios';
@@ -67,7 +67,7 @@ export const router = createRouter({
     monitoramento,
     metas,
     parlamentares,
-    planosSetoriaisRoutes,
+    ...planejamentoEMonitoramentoRoutes,
     projetos,
     análise,
     obras,
