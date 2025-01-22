@@ -477,6 +477,8 @@ watch(accessProfiles, () => {
                       class="lista-de-privilegios__item"
                     >
                       {{ privilegio.privilegio.nome }}
+
+                      <pre v-ScrollLockDebug>{{ privilegio.privilegio.codigo }}</pre>
                     </li>
                   </ul>
                 </TransitionExpand>
