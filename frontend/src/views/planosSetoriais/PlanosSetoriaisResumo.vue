@@ -1,14 +1,14 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-import {
-  defineOptions,
-} from 'vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useUsersStore } from '@/stores/users.store';
+import { storeToRefs } from 'pinia';
+import {
+  defineOptions,
+} from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -314,7 +314,10 @@ usersStore.buscarPessoasSimplificadas();
       </dl>
     </div>
 
-    <div class="flex flexwrap g2 mb2">
+    <div
+      v-if="emFoco?.tipo === 'PS'"
+      class="flex flexwrap g2 mb2"
+    >
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.legislacao_de_instituicao.spec.label }}
@@ -328,7 +331,7 @@ usersStore.buscarPessoasSimplificadas();
     </div>
 
     <div
-      v-if="emFoco?.pdm_anteriores?.length"
+      v-if="emFoco?.tipo === 'PS' && emFoco?.pdm_anteriores?.length"
       class="flex flexwrap g2 mb2"
     >
       <dl class="f1 mb1">
