@@ -35,7 +35,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
     component: () => import('@/views/planosSetoriais/PlanosSetoriaisRaiz.vue'),
 
     meta: {
-      título: 'Planos setoriais',
+      título: tituloEntidade.plural,
       entidadeMãe,
       íconeParaMenu: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
 <circle cx="5" cy="19" r="2" fill="#152741"/>
@@ -195,7 +195,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               },
               {
                 path: 'novo',
-                name: 'planosSetoriaisNovaTag',
+                name: `${entidadeMãe}.novaTag`,
                 component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
                 meta: {
                   título: 'Nova Tag',
@@ -205,7 +205,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               },
               {
                 path: ':tagId',
-                name: 'planosSetoriaisEditarTag',
+                name: `${entidadeMãe}.editarTag`,
                 component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
@@ -234,7 +234,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               },
               {
                 path: 'novo',
-                name: 'planosSetoriaisNovoMacrotema',
+                name: `${entidadeMãe}.novoMacrotema`,
                 component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
                 meta: {
                   título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
@@ -245,7 +245,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               },
               {
                 path: ':macrotemaId',
-                name: 'planosSetoriaisEditarMacrotema',
+                name: `${entidadeMãe}.editarMacrotema`,
                 component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
