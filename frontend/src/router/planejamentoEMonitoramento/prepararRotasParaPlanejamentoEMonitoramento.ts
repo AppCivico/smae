@@ -1,25 +1,28 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
-import metas from '../metasDePlanosSetoriais';
+import metasRoutes from './metas.routes';
 
-type EntidadesPossiveis = 'planoSetorial' | 'programaDeMetas';
-type TituloDaPagina = {
+export type EntidadesPossiveis = 'planoSetorial' | 'programaDeMetas';
+export type ParametrosPagina = {
   singular: string;
   plural: string;
+  segmentoRaiz: string;
 };
 
-function obterTitulo(entidadeMãe: EntidadesPossiveis): TituloDaPagina {
+function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina {
   switch (entidadeMãe) {
     case 'planoSetorial':
       return {
         singular: 'Plano Setorial',
         plural: 'Planos Setoriais',
+        segmentoRaiz: '/plano-setorial',
       };
 
     case 'programaDeMetas':
       return {
         singular: 'Programa de Meta',
         plural: 'Programa de Metas',
+        segmentoRaiz: '/programa-de-meta',
       };
 
     default:
@@ -28,14 +31,14 @@ function obterTitulo(entidadeMãe: EntidadesPossiveis): TituloDaPagina {
 }
 
 function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
-  const tituloEntidade = obterTitulo(entidadeMãe);
+  const parametrosPagina = getParametrosPagina(entidadeMãe);
 
   return {
-    path: '/planos-setoriais',
+    path: parametrosPagina.segmentoRaiz,
     component: () => import('@/views/planosSetoriais/PlanosSetoriaisRaiz.vue'),
 
     meta: {
-      título: tituloEntidade.plural,
+      título: parametrosPagina.plural,
       entidadeMãe,
       íconeParaMenu: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
 <circle cx="5" cy="19" r="2" fill="#152741"/>
@@ -67,7 +70,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
           ],
           rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
           rotasParaMigalhasDePão: [`${entidadeMãe}.planosSetoriaisListar`],
-          título: `Cadastro de ${tituloEntidade.singular}`,
+          título: `Cadastro de ${parametrosPagina.singular}`,
         },
       },
       {
@@ -118,7 +121,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 'CadastroPS.administrador_no_orgao',
               ],
               rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
-              título: `Editar ${tituloEntidade.singular}`,
+              título: `Editar ${parametrosPagina.singular}`,
             },
           },
           {
@@ -132,7 +135,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             }),
             meta: {
               título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
-                || `Resumo de ${tituloEntidade.singular}`,
+                || `Resumo de ${parametrosPagina.singular}`,
               títuloParaMenu: 'Resumo',
             },
           },
@@ -146,7 +149,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 Number.parseInt(params.planoSetorialId, 10) || undefined,
             }),
             meta: {
-              título: `Documentos de ${tituloEntidade.singular}`,
+              título: `Documentos de ${parametrosPagina.singular}`,
               títuloParaMenu: 'Documentos',
             },
             children: [
@@ -362,13 +365,13 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
               título: () => `Metas de ${
                 usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
-                  || tituloEntidade.singular
+                  || parametrosPagina.singular
               }`,
               títuloParaMenu: 'Metas',
               desabilitarMigalhasDePãoPadrão: true,
             },
 
-            children: metas,
+            children: metasRoutes({ entidadeMãe, parametrosPagina }),
           },
         ],
       },
