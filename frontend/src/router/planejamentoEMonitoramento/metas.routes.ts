@@ -95,7 +95,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     return rotasDoOrçamento.length
       ? [
         {
-          título: `Metas do ${parametrosPagina.singular}`,
+          título: `Metas do ${parametrosPagina.tituloSingular}`,
           rotas: rotasDoPdm,
         },
         {
@@ -105,7 +105,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       ]
       : [
         {
-          título: `Metas do ${parametrosPagina.singular}`,
+          título: `Metas do ${parametrosPagina.tituloSingular}`,
           rotas: rotasDoPdm,
         },
       ];
