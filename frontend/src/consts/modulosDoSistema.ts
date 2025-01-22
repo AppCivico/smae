@@ -48,7 +48,7 @@ const modulos: ModulosDoSistema = {
     ícone: programaDeMetas,
     rotaInicial: [
       {
-        name: 'programaDeMetas.metas',
+        name: 'programaDeMetas.metasDoProgramaCorrente',
       },
     ],
   },
