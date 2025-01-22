@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: 'planosSetoriaisNovoMacrotema' }"
+      :to="{ name: `${route.meta.entidadeMãe}.novoMacrotema` }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -31,7 +31,10 @@
         <td>
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
-            :to="{ name: 'planosSetoriaisEditarMacrotema', params: { macrotemaId: item.id } }"
+            :to="{
+              name: `${route.meta.entidadeMãe}.editarMacrotema`,
+              params: { macrotemaId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -74,13 +77,13 @@
   </table>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
