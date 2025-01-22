@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 const router = useRouter();
 const route = useRoute();
@@ -20,7 +20,7 @@ async function iniciar() {
     if (plano.ativo) {
       await router.push({
         name: `${route.meta.entidadeMãe}.planosSetoriaisMetas`,
-        params: { id: plano.id },
+        params: { planoSetorialId: plano.id },
       });
     }
   });
@@ -31,6 +31,7 @@ async function iniciar() {
 }
 iniciar();
 </script>
+
 <template>
   <LoadingComponent v-if="chamadasPendentes.lista">
     Carregando {{ $route.meta.tituloPlural || 'listagem' }}...
