@@ -1,20 +1,13 @@
 import qs from 'qs';
 import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
-
-import $eventHub from '@/components/eventHub';
-
-// Stores
-import { useAuthStore } from '@/stores/auth.store';
-
-// Views
 import { Home } from '@/views';
-
+import Panorama from '@/views/Panorama.vue';
+import $eventHub from '@/components/eventHub';
 import { Login, LostPassword, NewPassword } from '@/views/auth';
-
+import { useAuthStore } from '@/stores/auth.store';
 import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
-import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
@@ -163,18 +156,6 @@ router.afterEach((to, from) => {
 
 router.beforeEach((to, from, next) => {
   const { meta } = to;
-
-  // if (typeof to.meta.queryPadrao === 'object' && Object.keys(to.meta.queryPadrao).length && to.name !== from.name) {
-  //   next({
-  //     ...to,
-  //     query: {
-  //       ...to.meta.queryPadrao,
-  //       ...to.query,
-  //     },
-  //   });
-
-  //   return;
-  // }
 
   if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
     $eventHub.emit('recebimentoIniciado', to); // Start progress bar
