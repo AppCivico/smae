@@ -89,7 +89,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         }),
         meta: {
           rotasParaMenuSecundário: () => {
-            const rotas = [
+            const rotasParaMenu = [
               `${entidadeMãe}.planosSetoriaisResumo`,
               `${entidadeMãe}.planosSetoriaisDocumentos`,
             ];
@@ -97,17 +97,17 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             if (
               usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_macro_tema
             ) {
-              rotas.push(`${entidadeMãe}.planosSetoriaisMacrotemas`);
+              rotasParaMenu.push(`${entidadeMãe}.planosSetoriaisMacrotemas`);
             }
             if (usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_tema) {
-              rotas.push(`${entidadeMãe}.planosSetoriaisTemas`);
+              rotasParaMenu.push(`${entidadeMãe}.planosSetoriaisTemas`);
             }
             if (usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_sub_tema) {
-              rotas.push(`${entidadeMãe}.planosSetoriaisSubtemas`);
+              rotasParaMenu.push(`${entidadeMãe}.planosSetoriaisSubtemas`);
             }
-            rotas.push(`${entidadeMãe}.listaDeMetas`);
-            rotas.push(`${entidadeMãe}.planosSetoriaisTags`);
-            return rotas;
+            rotasParaMenu.push(`${entidadeMãe}.listaDeMetas`);
+            rotasParaMenu.push(`${entidadeMãe}.planosSetoriaisTags`);
+            return rotasParaMenu;
           },
           rotasParaMigalhasDePão: [`${entidadeMãe}.planosSetoriaisListar`],
         },
