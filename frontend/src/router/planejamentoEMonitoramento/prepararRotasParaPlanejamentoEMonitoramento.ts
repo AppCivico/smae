@@ -105,7 +105,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             if (usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.possui_sub_tema) {
               rotas.push(`${entidadeMãe}.planosSetoriaisSubtemas`);
             }
-            rotas.push('planoSetorial:listaDeMetas');
+            rotas.push(`${entidadeMãe}.listaDeMetas`);
             rotas.push(`${entidadeMãe}.planosSetoriaisTags`);
             return rotas;
           },
