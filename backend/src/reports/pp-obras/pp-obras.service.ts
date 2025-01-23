@@ -234,7 +234,7 @@ class RetornoDbObrasSEI {
 class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
-    geojson: string;
+    geojson: unknown;
 }
 
 @Injectable()
@@ -1183,8 +1183,14 @@ export class PPObrasService implements ReportableService {
     }
 
     private convertRowsLoc(input: RetornoDbLoc[]): RelObrasGeolocDto[] {
+        interface JSONGeo {
+            properties: {
+                cep: string;
+            };
+        }
+
         return input.map((db) => {
-            const geojson = JSON.parse(db.geojson);
+            const geojson = db.geojson as JSONGeo;
 
             return {
                 obra_id: db.projeto_id,
