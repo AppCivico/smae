@@ -367,9 +367,17 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
                 meta: {
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
-                    ?.rotulo_sub_tema || 'Novo Subtema',
+                  título: () => {
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
+                      ?.emFoco?.rotulo_sub_tema || 'Subtema';
+
+                    return `Novo ${tituloEntidade}`;
+                  },
                   limitarÀsPermissões: ['CadastroSubTemaPS.inserir'],
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisSubtemas`,
+                  ],
                 },
               },
               {
@@ -384,10 +392,18 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   },
                 }),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
-                    ?.rotulo_sub_tema || 'Editar Subtema',
+                  título: () => {
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
+                      ?.emFoco?.rotulo_sub_tema || 'Subtema';
+
+                    return `Editar ${tituloEntidade}`;
+                  },
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
                   limitarÀsPermissões: ['CadastroSubTemaPS.editar'],
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisSubtemas`,
+                  ],
                 },
               },
             ],
