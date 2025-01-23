@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 const router = useRouter();
 const route = useRoute();
@@ -14,20 +14,26 @@ const {
 async function iniciar() {
   if (!lista.value.length) {
     await planosSetoriaisStore.buscarTudo();
-  }
-
-  lista.value.forEach(async (plano) => {
-    if (plano.ativo) {
+    // mesmo após consulta, a lista ainda é vazia
+    if (!lista.value.length) {
       await router.push({
-        name: `${route.meta.entidadeMãe}.planosSetoriaisMetas`,
-        params: { planoSetorialId: plano.id },
+        name: 'variaveisListar',
       });
     }
-  });
+  }
 
-  router.push({
-    name: `${route.meta.entidadeMãe}.planosSetoriaisListar`,
-  });
+  const planoAtivo = lista.value.find((plano) => plano.ativo);
+
+  if (planoAtivo) {
+    router.push({
+      name: `${route.meta.entidadeMãe}.planosSetoriaisMetas`,
+      params: { planoSetorialId: planoAtivo.id },
+    });
+  } else {
+    router.push({
+      name: `${route.meta.entidadeMãe}.planosSetoriaisListar`,
+    });
+  }
 }
 iniciar();
 </script>
