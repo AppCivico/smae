@@ -32,7 +32,7 @@
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
             :to="{
-              name: '.editarMacrotem',
+              name: '.editarMacrotema',
               params: { macrotemaId: item.id }
             }"
             class="tprimary"
