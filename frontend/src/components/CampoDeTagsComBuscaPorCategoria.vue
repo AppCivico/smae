@@ -2,7 +2,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
-import { useODSStore } from '@/stores/ods.store';
+import { useOdsStore } from '@/stores/odsPs.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
@@ -41,8 +41,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const categoriasStore = useODSStore();
-const { ODS } = storeToRefs(categoriasStore);
+const categoriasStore = useOdsStore();
+const { lista: categorias } = storeToRefs(categoriasStore);
 
 function caminhoParaApi(rotaMeta) {
   if (rotaMeta.entidadeMãe === 'pdm') {
@@ -73,13 +73,9 @@ const { handleChange } = useField(props.name, undefined, {
   initialValue: props.modelValue,
 });
 
-const categoriasDisponiveis = computed(() => {
-  const categorias = Array.isArray(ODS.value) ? ODS.value : [];
-
-  return (props.categoriasPermitidas.length && categorias
-    ? categorias.filter((x) => props.categoriasPermitidas.indexOf(x.id) !== -1)
-    : categorias).filter((x) => !!tagsPorCategoria.value[x.id]?.length);
-});
+const categoriasDisponiveis = computed(() => (props.categoriasPermitidas.length
+  ? categorias.value.filter((x) => props.categoriasPermitidas.indexOf(x.id) !== -1)
+  : categorias.value).filter((x) => !!tagsPorCategoria.value[x.id]?.length));
 
 // usar lista para manter a ordem
 const listaDeCategorias = ref([]);
@@ -132,8 +128,8 @@ function adicionarTags(tags, i) {
 }
 
 async function montar() {
-  if (!Array.isArray(ODS.value) || !ODS.value.length) {
-    await categoriasStore.getAll();
+  if (!categorias.value.length) {
+    await categoriasStore.buscarTudo();
   }
 
   listaDeCategorias.value = Object.values(props.valoresIniciais.reduce((acc, cur) => {

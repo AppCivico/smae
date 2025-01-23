@@ -14,6 +14,7 @@ export const useODSStore = defineStore({
       this.tempODS = {};
     },
     async getAll() {
+      console.warn('Obsoleto! Utilize o `odsPs.store.js`');
       this.ODS = { loading: true };
       try {
         const r = await this.requestS.get(`${baseUrl}/ods`);
@@ -23,6 +24,7 @@ export const useODSStore = defineStore({
       }
     },
     async getById(id) {
+      console.warn('Obsoleto! Utilize o `odsPs.store.js`');
       this.tempODS = { loading: true };
       try {
         if (!this.ODS.length) {
@@ -39,10 +41,12 @@ export const useODSStore = defineStore({
       }
     },
     async insert(params) {
+      console.warn('Obsoleto! Utilize o `odsPs.store.js`');
       if (await this.requestS.post(`${baseUrl}/ods`, params)) return true;
       return false;
     },
     async update(id, params) {
+      console.warn('Obsoleto! Utilize o `odsPs.store.js`');
       const m = {
         numero: params.numero,
         titulo: params.titulo,
@@ -52,10 +56,12 @@ export const useODSStore = defineStore({
       return false;
     },
     async delete(id) {
+      console.warn('Obsoleto! Utilize o `odsPs.store.js`');
       if (await this.requestS.delete(`${baseUrl}/ods/${id}`)) return true;
       return false;
     },
     async filterODS(f) {
+      console.warn('Obsoleto! Utilize o `odsPs.store.js`');
       this.tempODS = { loading: true };
       try {
         if (!this.ODS.length) {
