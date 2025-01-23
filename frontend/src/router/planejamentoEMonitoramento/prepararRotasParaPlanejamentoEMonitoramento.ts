@@ -307,10 +307,18 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.planosSetoriaisNovoTema`,
                 component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_tema
-                    || 'Novo Tema',
+                  título: () => {
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
+                      ?.emFoco?.rotulo_tema || 'Tema';
+
+                    return `Nova ${tituloEntidade}`;
+                  },
                   limitarÀsPermissões: ['CadastroTemaPS.inserir'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisTemas`,
+                  ],
                 },
               },
               {
@@ -324,10 +332,18 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   },
                 }),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.rotulo_tema
-                    || 'Editar Tema',
+                  título: () => {
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
+                      ?.emFoco?.rotulo_tema || 'Tema';
+
+                    return `Editar ${tituloEntidade}`;
+                  },
                   limitarÀsPermissões: ['CadastroTemaPS.editar'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisTemas`,
+                  ],
                 },
               },
             ],
