@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
+import type { Modulo, ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store';
@@ -32,6 +32,7 @@ const {
   rotaEhPermitida,
 } = storeToRefs(authStore);
 
+const módulosAcessíveis = ref([]);
 const módulosDisponíveis = ref([]);
 
 // PRA-FAZER: mover para o gerenciador de estado `auth.store`
@@ -87,10 +88,11 @@ async function iniciar() {
 
   requestS.get(`${baseUrl}/minha-conta`, null, { headers: { 'smae-sistemas': Object.keys(módulos).join(',') } })
     .then((resposta) => {
-      const { sessao: { sistemas } } = resposta;
+      const { sessao: { sistemas, sistemas_disponiveis: sistemasDisponiveis } } = resposta;
       sessao.value = resposta.sessao;
       if (Array.isArray(sistemas)) {
-        módulosDisponíveis.value.splice(0, módulosDisponíveis.value.length, ...sistemas);
+        módulosAcessíveis.value.splice(0, módulosAcessíveis.value.length, ...sistemas);
+        módulosDisponíveis.value.splice(0, módulosDisponíveis.value.length, ...sistemasDisponiveis);
       }
     })
     .catch((err) => {
@@ -127,23 +129,24 @@ iniciar();
     </div>
 
     <ul
-      v-if="Object.keys(módulos).length"
+      v-if="módulosDisponíveis.length"
       class="escolha-de-módulos__lista flex column g2 uc"
     >
       <li
-        v-for="(sistema, k) in módulos"
+        v-for="(sistema, k) in módulosDisponíveis"
         :key="k"
       >
         <button
           type="button"
           class="escolha-de-módulos__opção opção uc like-a__link tprimary tl t24 w700
         flex g05 center"
-          :disabled="!sistema?.rotaInicial || !módulosDisponíveis.includes(k)"
-          @click="escolher(k)"
+          :disabled="!módulos[sistema as keyof ModulosDoSistema]?.rotaInicial
+            || !módulosAcessíveis.includes(sistema)"
+          @click="escolher(sistema)"
         >
           <img
-            v-if="sistema.ícone"
-            :src="sistema?.ícone"
+            v-if="módulos[sistema as keyof ModulosDoSistema]?.ícone"
+            :src="módulos[sistema as keyof ModulosDoSistema].ícone"
             class="opção__ícone"
             aria-hidden="true"
             width="48"
@@ -151,7 +154,7 @@ iniciar();
             alt=""
           >
           <span class="opção__nome">
-            {{ sistema?.nome || sistema }}
+            {{ módulos[sistema as keyof ModulosDoSistema]?.nome || sistema }}
           </span>
         </button>
       </li>
