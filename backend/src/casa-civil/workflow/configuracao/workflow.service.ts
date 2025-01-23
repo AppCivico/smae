@@ -247,7 +247,13 @@ export class WorkflowService {
             },
         });
 
-        return rows;
+        return rows.map((r) => {
+            return {
+                ...r,
+                inicio: Date2YMD.toString(r.inicio),
+                termino: Date2YMD.toStringOrNull(r.termino),
+            };
+        });
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<WorkflowDetailDto> {
