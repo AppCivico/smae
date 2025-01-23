@@ -186,6 +186,7 @@ const PermsPS: ListaDePrivilegios[] = [
     'CadastroPS.administrador',
     'CadastroPS.administrador_no_orgao',
     'CadastroMetaPS.listar',
+    'CadastroMetaPDM.listar',
     'SMAE.GrupoVariavel.participante',
 ];
 

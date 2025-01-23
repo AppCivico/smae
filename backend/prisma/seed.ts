@@ -16,6 +16,7 @@ import {
     CONST_TIPO_NOTA_TRANSF_GOV,
     CONST_VAR_SEM_UN_MEDIDA,
     CONST_PERFIL_PARTICIPANTE_EQUIPE,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -45,7 +46,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroTema: ['Temas', 'PDM'],
     CadastroMeta: ['Metas', 'PDM'],
     CadastroIndicador: ['Indicadores', 'PDM'],
-    CadastroVariavelCategorica: ['Variável Categórica', ['PlanoSetorial', 'ProgramaDeMetas']],
+    CadastroVariavelCategorica: ['Variável Categórica', 'SMAE'],
     CadastroIniciativa: ['Iniciativas', 'PDM'],
     CadastroAtividade: ['Atividades', 'PDM'],
     CadastroCronograma: ['Cronogramas', 'PDM'],
@@ -402,7 +403,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroMetaPDM.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMetaPDM.listar', 'Listar metas, iniciativas e atividades'],
     ],
-
 
     CadastroPDM: [
         ['CadastroPDM.administrador', 'Gerenciar Programa de Meta'],
@@ -1110,6 +1110,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 ];
 
+const DESC_EQUIPE =
+    'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador de plano, Coleta, Conferencia, Liberação, Ponto Focal e Técnico)';
 // Perfis de Plano Setoriais e Programa de Metas
 PerfilAcessoConfig.push(
     {
@@ -1171,11 +1173,18 @@ PerfilAcessoConfig.push(
 
     {
         nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
-        descricao:
-            'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador de plano, Coleta, Conferencia, Liberação, Ponto Focal e Técnico)',
+        descricao: DESC_EQUIPE,
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
             'CadastroMetaPS.listar', // grant da listagem do PDM e Metas/ini/etc
+        ],
+    },
+    {
+        nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM, []),
+        descricao: DESC_EQUIPE,
+        privilegios: [
+            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
+            'CadastroMetaPDM.listar', // grant da listagem do PDM e Metas/ini/etc
         ],
     },
 

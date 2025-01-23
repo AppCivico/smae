@@ -131,6 +131,7 @@ export class IndicadorVariavelPDMController {
 export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
     'CadastroVariavelGlobal.administrador_no_orgao',
     'CadastroMetaPS.listar',
+    'CadastroMetaPDM.listar',
     'CadastroVariavelGlobal.administrador',
     ...ROLES_ACESSO_VARIAVEL_PDM,
 ];

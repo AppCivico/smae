@@ -380,14 +380,14 @@ export class MetaService {
 
             permissionsSet.push({ OR: orSet });
         } else {
-            if (user.hasSomeRoles(['CadastroPS.administrador'])) {
+            if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
                 this.logger.verbose('Usuário tem CadastroPS.administrador, liberando toda as metas de todos os PDMs.');
                 return permissionsSet;
             }
 
             const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
 
-            if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+            if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
                 this.logger.verbose(
                     `Usuário tem CadastroPS.administrador_no_orgao, liberando todas as metas do órgão ${orgaoId} + responsavel=true e ps.orgao_admin_id=${orgaoId}.`
                 );
