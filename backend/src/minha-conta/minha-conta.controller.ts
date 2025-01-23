@@ -25,29 +25,35 @@ export class MinhaContaController {
         ];
 
         let sistemas: ModuloSistema[] = user.sistemas;
+        let modulos_sobrescritos = false;
 
-        let hasPS = false;
-        let hasPDM = false;
-        if (
-            user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPS.administrador']) ||
-            (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PS'))
-        )
-            hasPS = true;
-        if (
-            user.hasSomeRoles(['CadastroPDM.administrador_no_orgao', 'CadastroPDM.administrador']) ||
-            (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PDM'))
-        )
-            hasPDM = true;
+        if (!user.sobreescrever_modulos) {
+            let hasPS = false;
+            let hasPDM = false;
+            if (
+                user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPS.administrador']) ||
+                (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PS'))
+            )
+                hasPS = true;
+            if (
+                user.hasSomeRoles(['CadastroPDM.administrador_no_orgao', 'CadastroPDM.administrador']) ||
+                (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PDM'))
+            )
+                hasPDM = true;
 
-        sistemas = sistemas.filter((sistema) => {
-            if (sistema === 'ProgramaDeMetas' && !hasPDM) {
-                return false;
-            }
-            if (sistema === 'PlanoSetorial' && !hasPS) {
-                return false;
-            }
-            return true;
-        });
+            sistemas = sistemas.filter((sistema) => {
+                if (sistema === 'ProgramaDeMetas' && !hasPDM) {
+                    return false;
+                }
+                if (sistema === 'PlanoSetorial' && !hasPS) {
+                    return false;
+                }
+                return true;
+            });
+        } else {
+            modulos_sobrescritos = !sistemas.every((sistema) => user.sistemas.includes(sistema));
+            sistemas = user.modulos_permitidos;
+        }
 
         return {
             sessao: {
@@ -60,6 +66,7 @@ export class MinhaContaController {
                 modulos: user.modulos,
                 orgao_id: user.orgao_id,
                 flags: user.flags,
+                modulos_sobrescritos,
             } satisfies SessaoDto,
         };
     }

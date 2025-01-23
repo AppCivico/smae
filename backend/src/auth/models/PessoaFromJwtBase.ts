@@ -33,4 +33,7 @@ export class PessoaFromJwtBase {
         isArray: true,
     })
     equipe_pdm_tipos: TipoPdm[];
+
+    sobreescrever_modulos: boolean;
+    modulos_permitidos: ModuloSistema[];
 }

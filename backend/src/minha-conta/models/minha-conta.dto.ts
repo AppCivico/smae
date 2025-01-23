@@ -14,6 +14,8 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
 ]) {
     @ApiProperty({ description: 'Lista de Módulos', enum: ModuloSistema, enumName: 'ModuloSistema' })
     sistemas_disponiveis: ModuloSistema[];
+
+    modulos_sobrescritos: boolean;
 }
 
 export class MinhaContaDto {
