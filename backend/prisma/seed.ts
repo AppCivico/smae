@@ -1180,7 +1180,7 @@ PerfilAcessoConfig.push(
         ],
     },
     {
-        nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM, ['<PDM>Participante em equipes']),
+        nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM, []),
         descricao: DESC_EQUIPE,
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
