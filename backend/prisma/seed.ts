@@ -126,6 +126,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
     GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
+    SMAE_BETA_FEATURES: ['Beta', ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'ProgramaDeMetas', 'Projetos']],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -541,6 +542,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
+    ],
+    SMAE_BETA_FEATURES: [
+        // também precisade um modulo só para ele, pois não podemos deixar no SMAE... too complexo to explain..
         ['SMAE.liberar_pdm_as_ps', 'Permite visualizar os Programa de Metas no modulo de Plano Setorial'],
     ],
     ParticipanteEquipe: [
