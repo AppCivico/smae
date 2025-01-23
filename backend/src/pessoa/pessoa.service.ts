@@ -24,7 +24,7 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '../common/consts';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM } from '../common/consts';
 
 const BCRYPT_ROUNDS = 10;
 const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['SMAE.superadmin'];
@@ -600,13 +600,16 @@ export class PessoaService {
                         ? updatePessoaDto.perfil_acesso_ids
                         : await this.loadPrivPessoa(pessoaId, prismaTx, perfisVisiveis);
 
-                    const perfilEquipe = await prismaTx.perfilAcesso.findFirstOrThrow({
-                        where: {
-                            nome: CONST_PERFIL_PARTICIPANTE_EQUIPE,
-                            removido_em: null,
-                        },
-                        select: { id: true },
-                    });
+                    const [perfilEquipePS, perfilEquipePDM] = await Promise.all([
+                        prismaTx.perfilAcesso.findFirstOrThrow({
+                            where: { nome: CONST_PERFIL_PARTICIPANTE_EQUIPE, removido_em: null },
+                            select: { id: true },
+                        }),
+                        prismaTx.perfilAcesso.findFirstOrThrow({
+                            where: { nome: CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM, removido_em: null },
+                            select: { id: true },
+                        }),
+                    ]);
 
                     logger.log(`Equipes antes: ${equipesAntesSorted}`);
                     logger.log(`Equipes agora: ${novasEquipesSorted}`);
@@ -614,10 +617,14 @@ export class PessoaService {
                     // se a pessoa não está em nenhuma equipe, remove o perfil de acesso
                     if (updatePessoaDto.equipes.length == 0) {
                         updatePessoaDto.perfil_acesso_ids = updatePessoaDto.perfil_acesso_ids.filter(
-                            (e) => e != perfilEquipe.id
+                            (e) => e != perfilEquipePS.id && e != perfilEquipePDM.id
                         );
-                    } else if (updatePessoaDto.perfil_acesso_ids.indexOf(perfilEquipe.id) == -1) {
-                        updatePessoaDto.perfil_acesso_ids.push(perfilEquipe.id);
+                    } else {
+                        if (updatePessoaDto.perfil_acesso_ids.indexOf(perfilEquipePS.id) == -1)
+                            updatePessoaDto.perfil_acesso_ids.push(perfilEquipePS.id);
+
+                        if (updatePessoaDto.perfil_acesso_ids.indexOf(perfilEquipePDM.id) == -1)
+                            updatePessoaDto.perfil_acesso_ids.push(perfilEquipePDM.id);
                     }
 
                     await this.equipeRespService.atualizaEquipe(

@@ -7,7 +7,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM } from 'src/common/consts';
 
 @Injectable()
 export class EquipeRespService {
@@ -41,8 +41,12 @@ export class EquipeRespService {
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
                 const pEnviados = await this.pessoaPrivService.pessoasComPriv([], dto.participantes);
-                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
-                    ['SMAE.GrupoVariavel.participante'],
+                const pComPrivPS = await this.pessoaPrivService.pessoasComPriv(
+                    ['CadastroMetaPS.listar'],
+                    dto.participantes
+                );
+                const pComPrivPDM = await this.pessoaPrivService.pessoasComPriv(
+                    ['CadastroMetaPDM.listar'],
                     dto.participantes
                 );
                 for (const pessoaId of dto.participantes) {
@@ -53,11 +57,19 @@ export class EquipeRespService {
                             `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
                         );
 
-                    const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!temPriv) {
+                    const temPrivPS = pComPrivPS.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPrivPS) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
                             CONST_PERFIL_PARTICIPANTE_EQUIPE,
+                            prismaTx
+                        );
+                    }
+                    const temPrivPDM = pComPrivPDM.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPrivPDM) {
+                        await this.pessoaPrivService.adicionaPerfilAcesso(
+                            pessoaId,
+                            CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
                             prismaTx
                         );
                     }
@@ -399,8 +411,12 @@ export class EquipeRespService {
                 });
 
                 const pEnviados = await this.pessoaPrivService.pessoasComPriv([], dto.participantes);
-                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
-                    ['SMAE.GrupoVariavel.participante'],
+                const pComPrivPS = await this.pessoaPrivService.pessoasComPriv(
+                    ['CadastroMetaPS.listar'],
+                    dto.participantes
+                );
+                const pComPrivPDM = await this.pessoaPrivService.pessoasComPriv(
+                    ['CadastroMetaPDM.listar'],
                     dto.participantes
                 );
                 for (const pessoaId of dto.participantes) {
@@ -411,11 +427,19 @@ export class EquipeRespService {
                             `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
                         );
 
-                    const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!temPriv) {
+                    const temPrivPS = pComPrivPS.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPrivPS) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
                             CONST_PERFIL_PARTICIPANTE_EQUIPE,
+                            prismaTx
+                        );
+                    }
+                    const temPrivPDM = pComPrivPDM.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPrivPDM) {
+                        await this.pessoaPrivService.adicionaPerfilAcesso(
+                            pessoaId,
+                            CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
                             prismaTx
                         );
                     }
@@ -448,11 +472,19 @@ export class EquipeRespService {
                             `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
                         );
 
-                    const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!temPriv) {
+                    const temPrivPS = pComPrivPS.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPrivPS) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
-                            'SMAE.GrupoVariavel.participante',
+                            CONST_PERFIL_PARTICIPANTE_EQUIPE,
+                            prismaTx
+                        );
+                    }
+                    const temPrivPDM = pComPrivPDM.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPrivPDM) {
+                        await this.pessoaPrivService.adicionaPerfilAcesso(
+                            pessoaId,
+                            CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
                             prismaTx
                         );
                     }
@@ -495,7 +527,7 @@ export class EquipeRespService {
                     },
                 });
 
-                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                const pComPrivColaborador = await this.pessoaPrivService.pessoasComPriv(
                     ['SMAE.GrupoVariavel.colaborador'],
                     dto.colaboradores
                 );
@@ -521,7 +553,7 @@ export class EquipeRespService {
                 }
 
                 for (const pessoaId of dto.colaboradores) {
-                    const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
+                    const pessoa = pComPrivColaborador.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
                     if (pessoa.orgao_id != orgao_id)
