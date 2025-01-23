@@ -3,14 +3,15 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta, segmentoOriginal) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return segmentoOriginal;
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return segmentoOriginal;
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return `plano-setorial-${segmentoOriginal}`;
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return `plano-setorial-${segmentoOriginal}`;
-  }
-
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useEtapasStore = defineStore({

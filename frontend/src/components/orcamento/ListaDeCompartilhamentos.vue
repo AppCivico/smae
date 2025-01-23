@@ -158,6 +158,7 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
         break;
 
       case 'planoSetorial':
+      case 'programaDeMetas':
         caminhoNaApi = `${baseUrl}/plano-setorial-orcamento-realizado/compartilhados-no-pdm`;
         break;
       default:
