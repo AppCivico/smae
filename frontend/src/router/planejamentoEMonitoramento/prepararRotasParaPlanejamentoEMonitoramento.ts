@@ -247,10 +247,18 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.novoMacrotema`,
                 component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
-                    ?.rotulo_macro_tema || 'Novo Macrotema',
+                  título: () => {
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
+                      ?.emFoco?.rotulo_macro_tema || 'Macrotema';
+
+                    return `Novo ${tituloEntidade}`;
+                  },
                   limitarÀsPermissões: ['CadastroMacroTemaPS.inserir'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisMacrotemas`,
+                  ],
                 },
               },
               {
@@ -265,10 +273,18 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   },
                 }),
                 meta: {
-                  título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco
-                    ?.rotulo_macro_tema || 'Editar Macrotema',
+                  título: () => {
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
+                      ?.emFoco?.rotulo_macro_tema || 'Macrotema';
+
+                    return `Editar ${tituloEntidade}`;
+                  },
                   limitarÀsPermissões: ['CadastroMacroTemaPS.editar'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisMacrotemas`,
+                  ],
                 },
               },
             ],
