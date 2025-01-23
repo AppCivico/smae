@@ -333,7 +333,7 @@ watch(currentEdit, (novosValores) => {
 
       <template v-if="respostasof.dotacao">
         <ListaDeCompartilhamentos
-          v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe) && respostasof.dotacao"
+          v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe) && respostasof.dotacao"
           :ano="ano"
           :pdm="activePdm.id"
           :dotação="values.dotacao"
@@ -342,7 +342,7 @@ watch(currentEdit, (novosValores) => {
           class="mb1"
         />
 
-        <div v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe)">
+        <div v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
           <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
           <div

@@ -34,13 +34,15 @@ interface Estado {
 }
 
 function caminhoParaApi(rotaMeta: RouteMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'meta';
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'meta';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-meta';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-meta';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const usePsMetasStore = defineStore('psMetas', {

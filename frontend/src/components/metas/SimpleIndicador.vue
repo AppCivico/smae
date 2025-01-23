@@ -23,6 +23,7 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 const activePdm = computed(() => {
   switch (route.meta.entidadeMãe) {
     case 'planoSetorial':
+    case 'programaDeMetas':
       return usePlanosSetoriaisStore(route.meta.entidadeMãe).emFoco;
 
     case 'pdm':

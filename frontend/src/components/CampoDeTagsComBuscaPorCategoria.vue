@@ -45,13 +45,15 @@ const categoriasStore = useODSStore();
 const { ODS } = storeToRefs(categoriasStore);
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'tag';
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'tag';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-tag';
+    default:
+      throw new Error('Não foi possível identificar o módulo para buscar suas tags.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-tag';
-  }
-  throw new Error('Não foi possível identificar o módulo para buscar suas tags.');
 }
 
 const listaDeTags = ref([]);

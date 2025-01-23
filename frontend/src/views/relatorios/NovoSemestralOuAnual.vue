@@ -1,14 +1,14 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
@@ -99,16 +99,16 @@ onMounted(async () => {
     <div class="flex g2 mb2">
       <div class="f1">
         <label
-          v-if="route.meta.entidadeMãe==='pdm'"
+          v-if="route.meta.entidadeMãe === 'pdm'"
           class="label"
         >
           <abbr title="Programa de metas">PdM</abbr>&nbsp;<span class="tvermelho">*</span>
         </label>
         <label
-          v-if="route.meta.entidadeMãe==='planoSetorial'"
+          v-else
           class="label"
         >
-          Plano Setorial&nbsp;<span class="tvermelho">*</span>
+          {{ $route.meta.tituloSingular }}&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           v-model="currentOptions.parametros.pdm_id"
