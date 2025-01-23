@@ -1,7 +1,9 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!macrotemaId">Novo</span> {{ titulo || "Macrotema" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
   <Form
@@ -68,6 +70,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { macrotema as schema } from '@/consts/formSchemas';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 defineOptions({
   inheritAttrs: false,
