@@ -121,9 +121,13 @@ export class MetaSetorialController {
         'CadastroMetaPDM.administrador_no_pdm',
         'CadastroPDM.administrador',
         'CadastroPDM.administrador_no_orgao',
-
     ];
-    public static ReadPerm: ListaDePrivilegios[] = [...MetaSetorialController.WritePerm, 'CadastroMetaPS.listar'];
+    public static ReadPerm: ListaDePrivilegios[] = [
+        ...MetaSetorialController.WritePerm,
+        'CadastroMetaPS.listar',
+        'CadastroMetaPDM.listar',
+        'SMAE.GrupoVariavel.participante',
+    ];
     constructor(private readonly metaService: MetaService) {}
 
     @Post()
