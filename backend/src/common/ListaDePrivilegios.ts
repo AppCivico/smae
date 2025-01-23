@@ -243,4 +243,5 @@ export type ListaDePrivilegios =
     | 'CadastroClassificacao.inserir'
     | 'CadastroClassificacao.editar'
     | 'CadastroClassificacao.remover'
-    | 'CadastroClassificacao.listar';
+    | 'CadastroClassificacao.listar'
+    | 'SMAE.liberar_pdm_as_ps';

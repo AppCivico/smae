@@ -541,6 +541,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
+        ['SMAE.liberar_pdm_as_ps', 'Permite visualizar os Programa de Metas no modulo de Plano Setorial'],
     ],
     ParticipanteEquipe: [
         // era só do config, mas para ele ficar em dois módulos ao mesmo tempo, precisa de um namespace separado
@@ -1112,6 +1113,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroGrupoVariavel.colaborador_responsavel',
         ],
     },
+    {
+        nome: atualizarNomePerfil('Habilita Programa de Metas versão Beta', []),
+        descricao: 'Habilita o acesso ao Programa de Metas',
+        privilegios: ['SMAE.liberar_pdm_as_ps'],
+    },
 ];
 
 const DESC_EQUIPE =
@@ -1179,7 +1185,7 @@ PerfilAcessoConfig.push(
         nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
         descricao: DESC_EQUIPE,
         privilegios: [
-            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
+            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessSMAE.liberar_pdm_as_psas
         ],
     },
     {
