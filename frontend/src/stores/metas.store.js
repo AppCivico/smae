@@ -5,13 +5,15 @@ import { usePlanosSetoriaisStore } from './planosSetoriais.store.ts';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'meta';
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'meta';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-meta';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-meta';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useMetasStore = defineStore({
@@ -29,6 +31,7 @@ export const useMetasStore = defineStore({
         case 'pdm':
           return usePdMStore().activePdm;
         case 'planoSetorial':
+        case 'programaDeMetas':
           return usePlanosSetoriaisStore(this.route.meta.entidadeMãe).emFoco || {};
         default:
           throw new Error('Erro ao buscar PdM ativo');

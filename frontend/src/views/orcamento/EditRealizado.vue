@@ -78,6 +78,7 @@ const complemento = computed(() => {
 
       case 'pdm':
       case 'planoSetorial':
+      case 'programaDeMetas':
         await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
         break;
 
@@ -100,9 +101,11 @@ const complemento = computed(() => {
     }).join('.');
     dota.value = currentEdit.value.dotacao;
     validaPartes(currentEdit.value.dotacao);
-
+    // mantendo comportamento legado
+    // eslint-disable-next-line no-nested-ternary
     currentEdit.value.location = currentEdit.value.atividade?.id
       ? `a${currentEdit.value.atividade.id}`
+      // eslint-disable-next-line no-nested-ternary
       : currentEdit.value.iniciativa?.id
         ? `i${currentEdit.value.iniciativa.id}`
         : currentEdit.value.meta?.id
@@ -503,7 +506,7 @@ export default {
         </tbody>
       </table>
 
-      <div v-if="['pdm', 'planoSetorial'].includes($route.meta.entidadeMãe)">
+      <div v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <pre v-ScrollLockDebug>activePdm.nivel_orcamento: {{ activePdm.nivel_orcamento }}</pre>

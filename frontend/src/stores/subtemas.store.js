@@ -4,13 +4,15 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'subtema';
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'subtema';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-subtema';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-subtema';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useSubtemasStore = defineStore({
