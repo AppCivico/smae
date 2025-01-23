@@ -3,8 +3,9 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaService } from '../pessoa/pessoa.service';
-import { MinhaContaDto } from './models/minha-conta.dto';
+import { MinhaContaDto, SessaoDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
+import { ModuloSistema } from '@prisma/client';
 
 @ApiTags('Minha Conta')
 @Controller('')
@@ -14,7 +15,28 @@ export class MinhaContaController {
     @Get('minha-conta')
     @ApiBearerAuth('access-token')
     getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
-        return { sessao: user };
+        const sistemas_disponiveis: (ModuloSistema | undefined)[] = [
+            'PDM',
+            user.hasSomeRoles(['SMAE.liberar_pdm_as_ps']) ? 'ProgramaDeMetas' : undefined,
+            'Projetos',
+            'CasaCivil',
+            'MDO',
+            'PlanoSetorial',
+        ];
+
+        return {
+            sessao: {
+                id: user.id,
+                nome_exibicao: user.nome_exibicao,
+                session_id: user.session_id,
+                privilegios: user.privilegios,
+                sistemas: user.sistemas,
+                sistemas_disponiveis: sistemas_disponiveis.filter((sistema) => sistema !== undefined),
+                modulos: user.modulos,
+                orgao_id: user.orgao_id,
+                flags: user.flags,
+            } satisfies SessaoDto,
+        };
     }
 
     @Post('trocar-senha')
