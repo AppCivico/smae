@@ -30,6 +30,9 @@ model Pessoa {
 
     equipe_pdm_tipos TipoPdm[] @default([])
 
+    sobreescrever_modulos Boolean         @default(false)
+    modulos_permitidos    ModuloSistema[]
+
     ProjetoOrigemQcriei     CompromissoOrigem[] @relation("Criador")
     ProjetoOrigemQAtualizei CompromissoOrigem[] @relation("Atualizador")
     ProjetoOrigemQRemovi    CompromissoOrigem[] @relation("Removedor")

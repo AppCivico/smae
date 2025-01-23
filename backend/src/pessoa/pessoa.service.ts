@@ -189,6 +189,14 @@ export class PessoaService {
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
+
+        if (!ehAdmin) {
+            if (updatePessoaDto.sobreescrever_modulos !== undefined)
+                throw new ForbiddenException('Você não pode modificar sobreescrever_modulos');
+            if (updatePessoaDto.modulos_permitidos !== undefined)
+                throw new ForbiddenException('Você não pode modificar modulos_permitidos');
+        }
+
         if (user.hasSomeRoles(['SMAE.superadmin']) == false && updatePessoaDto.perfil_acesso_ids) {
             const oldPessoaPerfis = (
                 await this.prisma.pessoaPerfil.findMany({
@@ -366,6 +374,7 @@ export class PessoaService {
             select: { id: true, codigo: true, nome: true },
         });
 
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
         const listFixed: DetalhePessoaDto = {
             id: pessoa.id,
             nome_completo: pessoa.nome_completo,
@@ -386,6 +395,11 @@ export class PessoaService {
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
             equipes,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+            permissoes: {
+                posso_editar_modulos: ehAdmin,
+            },
         };
 
         return listFixed;
@@ -532,7 +546,12 @@ export class PessoaService {
                     nome_completo: updatePessoaDto.nome_completo,
                     nome_exibicao: updatePessoaDto.nome_exibicao,
                     email: updatePessoaDto.email,
-
+                    ...(user.hasSomeRoles(LISTA_PRIV_ADMIN)
+                        ? {
+                              sobreescrever_modulos: updatePessoaDto.sobreescrever_modulos,
+                              modulos_permitidos: updatePessoaDto.modulos_permitidos,
+                          }
+                        : {}),
                     pessoa_fisica: {
                         update: {
                             cargo: updatePessoaDto.cargo,
@@ -1196,6 +1215,15 @@ export class PessoaService {
                         senha_bloqueada: true,
                         senha_bloqueada_em: new Date(Date.now()),
                         pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
+                        ...(user.hasSomeRoles(LISTA_PRIV_ADMIN)
+                            ? {
+                                  sobreescrever_modulos: createPessoaDto.sobreescrever_modulos ?? false,
+                                  modulos_permitidos: createPessoaDto.modulos_permitidos ?? [],
+                              }
+                            : {
+                                  sobreescrever_modulos: false,
+                                  modulos_permitidos: [],
+                              }),
                     },
                 });
 
