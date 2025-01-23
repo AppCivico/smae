@@ -28,6 +28,7 @@ const props = defineProps({
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const conteudoDoModal = computed(() => (route.meta.entidadeMãe === 'planoSetorial'
+  || route.meta.entidadeMãe === 'programaDeMetas'
   ? CicloFisicoPS
   : CicloFisicoPdM));
 
@@ -52,6 +53,7 @@ function openAnalise() {
 
 function hasModal(cicloFisico) {
   return route.meta.entidadeMãe === 'planoSetorial'
+    || route.meta.entidadeMãe === 'programaDeMetas'
     ? cicloFisico?.contagem_qualitativa
     : cicloFisico?.analise || cicloFisico?.tem_documentos;
 }
@@ -60,6 +62,7 @@ function hasModal(cicloFisico) {
 async function buscarAnalise(dataValor, variavelId) {
   try {
     analise.value = route.meta.entidadeMãe === 'planoSetorial'
+      || route.meta.entidadeMãe === 'programaDeMetas'
       ? await requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
         consulta_historica: true,
         data_referencia: dataValor,
@@ -78,7 +81,10 @@ function handleClick(obj) {
   if (hasModal(obj.ciclo_fisico)) {
     periodo.value = obj.periodo;
 
-    if (route.meta.entidadeMãe === 'planoSetorial') {
+    if (
+      route.meta.entidadeMãe === 'planoSetorial'
+      || route.meta.entidadeMãe === 'programaDeMetas'
+    ) {
       buscarAnalise(
         `${obj.periodo}-01`,
         props.g.variavel?.variavel_mae_id || props.g.variavel?.id,

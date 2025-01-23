@@ -162,7 +162,10 @@ async function onSubmit(_, { controlledValues: values }) {
 
     // remove orgaos_participantes de plano setorial pois a api
     // gera sozinha esse valor agora
-    if (route.meta.entidadeMãe === 'planoSetorial') {
+    if (
+      route.meta.entidadeMãe === 'planoSetorial'
+      || route.meta.entidadeMãe === 'programaDeMetas'
+    ) {
       values.orgaos_participantes = [];
     }
 
