@@ -38,7 +38,11 @@ export const useODSStore = defineStore({
         if (!this.ODS.length) {
           await this.getAll();
         }
+        // Mantendo comportamento legado
+        // eslint-disable-next-line eqeqeq
         this.tempODS = this.ODS.find((u) => u.id == id);
+        // Mantendo comportamento legado
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (!this.tempODS) throw 'ODS não encontrada';
       } catch (error) {
         this.tempODS = { error };
@@ -67,7 +71,12 @@ export const useODSStore = defineStore({
         if (!this.ODS.length) {
           await this.getAll();
         }
-        this.tempODS = f ? this.ODS.filter((u) => (f.textualSearch ? (u.descricao + u.titulo + u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1)) : this.ODS;
+        this.tempODS = f
+          ? this.ODS.filter((u) => (f.textualSearch
+            ? (u.descricao + u.titulo + u.numero).toLowerCase()
+              .includes(f.textualSearch.toLowerCase())
+            : 1))
+          : this.ODS;
       } catch (error) {
         this.tempODS = { error };
       }
