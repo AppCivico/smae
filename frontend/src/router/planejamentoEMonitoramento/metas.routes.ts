@@ -128,6 +128,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: 'editar/:meta_id',
+      name: `${entidadeMãe}.editarMeta`,
       component: AddEditMetas,
       props: { type: 'editar', parentPage: 'metas' },
       meta: {
@@ -186,7 +187,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         títuloParaMenu: 'Resumo',
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -197,7 +198,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.meta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -209,7 +210,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.meta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -222,7 +223,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.indicadorDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -236,7 +237,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.indicadorDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -249,7 +250,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.indicadorDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -261,7 +262,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.indicadorDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -273,7 +274,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.indicadorDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -285,7 +286,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.indicadorDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -303,7 +304,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -318,7 +319,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -332,7 +333,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -348,7 +349,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -363,7 +364,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -378,7 +379,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         títuloParaMenu: 'Painel da meta',
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -391,7 +392,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
       children: [
@@ -401,7 +402,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           meta: {
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -411,7 +412,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             group: 'variaveis',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -421,7 +422,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             group: 'variaveis',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -431,7 +432,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             group: 'variaveis',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -442,7 +443,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.evolucaoDoIndicador`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -453,7 +454,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.evolucaoDoIndicador`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -467,7 +468,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         títuloParaMenu: 'Cronograma',
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -478,7 +479,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -489,7 +490,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -500,7 +501,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -511,7 +512,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -522,7 +523,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -533,7 +534,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -544,7 +545,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -555,7 +556,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -566,7 +567,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -577,7 +578,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -588,7 +589,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       meta: {
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
     },
@@ -601,7 +602,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
-          usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
       children: [
@@ -615,7 +616,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             limitarÀsPermissões: 'CadastroMetaPS.orcamento',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -626,7 +627,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoCusto`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -637,7 +638,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoCusto`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -651,7 +652,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             limitarÀsPermissões: 'CadastroMetaPS.orcamento',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -662,7 +663,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoPlanejado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -673,7 +674,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoPlanejado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -688,7 +689,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             limitarÀsPermissões: 'CadastroMetaPS.orcamento',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -699,7 +700,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -710,7 +711,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -721,7 +722,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -732,7 +733,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -743,7 +744,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -760,7 +761,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           meta: {
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
@@ -771,7 +772,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             rotaDeEscape: `${entidadeMãe}.listaDeIniciativas`,
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
-              usePlanosSetoriaisStore().orcamentosDisponiveisNoPlanoEmFoco,
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
           },
         },
