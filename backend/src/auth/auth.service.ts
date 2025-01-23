@@ -92,6 +92,8 @@ export class AuthService {
             modulo_sistema,
             ip: null,
             equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
         });
     }
 
@@ -117,6 +119,8 @@ export class AuthService {
             modulo_sistema,
             ip: null,
             equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
         });
     }
 
