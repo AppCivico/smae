@@ -26,7 +26,7 @@ async function iniciar() {
 
   if (planoAtivo) {
     router.push({
-      name: `${route.meta.entidadeMãe}.planosSetoriaisMetas`,
+      name: `${route.meta.entidadeMãe}.listaDeMetas`,
       params: { planoSetorialId: planoAtivo.id },
     });
   } else {
