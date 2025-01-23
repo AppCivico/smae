@@ -110,6 +110,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroWorkflow: ['Workflows', 'CasaCivil'],
     ReportsCasaCivil: ['Relatórios de Transferências Voluntárias', 'CasaCivil'],
 
+    ParticipanteEquipe: ['Participantes de Equipe', ['PlanoSetorial', 'ProgramaDeMetas']],
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
@@ -539,8 +540,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
-        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
+    ],
+    ParticipanteEquipe: [
+        // era só do config, mas para ele ficar em dois módulos ao mesmo tempo, precisa de um namespace separado
+        ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
@@ -1176,18 +1180,8 @@ PerfilAcessoConfig.push(
         descricao: DESC_EQUIPE,
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
-            'CadastroMetaPS.listar', // grant da listagem do PDM e Metas/ini/etc
         ],
     },
-    {
-        nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM, []),
-        descricao: DESC_EQUIPE,
-        privilegios: [
-            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessoas
-            'CadastroMetaPDM.listar', // grant da listagem do PDM e Metas/ini/etc
-        ],
-    },
-
     {
         nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
         descricao: 'LEGADO SERA REMOVIDO ATE O FINAL DA SPRINT',
@@ -1214,7 +1208,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Responsável por meta na Coordenadoria de Planejamento Setorial'),
     removerNomePerfil('Administrador de Plano Setorial'),
     removerNomePerfil('Administrador de equipes'),
-    removerNomePerfil('Administrador de Grupo de Variáveis no Órgão')
+    removerNomePerfil('Administrador de Grupo de Variáveis no Órgão'),
+    removerNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM)
 );
 
 async function main() {
