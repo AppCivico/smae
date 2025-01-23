@@ -1,13 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useSubtemasStore } from '@/stores/subtemas.store';
 import { useTemasStore } from '@/stores/temas.store';
-import { storeToRefs } from 'pinia';
-import { reactive, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -24,6 +24,7 @@ const route = useRoute();
 const { id } = route.params;
 let currentStore;
 let currentStoreKey;
+
 switch (props.group) {
   case 'macro_tema':
     currentStore = useMacrotemasStore();
@@ -36,6 +37,8 @@ switch (props.group) {
   case 'sub_tema':
     currentStore = useSubtemasStore();
     currentStoreKey = 'tempSubtemas';
+    break;
+  default:
     break;
 }
 currentStore.getById(id);
@@ -170,7 +173,10 @@ function groupSlug(s) {
             class="meta flex center mb1"
           >
             <SmaeLink
-              :to="`/metas/${m.id}`"
+              :to="{
+                name: `.meta`,
+                params: { meta_id: m.id }
+              }"
               class="flex center f1"
             >
               <div class="farol" />
@@ -183,7 +189,10 @@ function groupSlug(s) {
                 'CadastroMeta.administrador_no_pdm',
                 'CadastroMetaPS.administrador_no_pdm'
               ])"
-              :to="`/metas/editar/${m.id}`"
+              :to="{
+                name: '.editarMeta',
+                params: { meta_id: m.id }
+              }"
               class="f0 tprimary ml1"
             >
               <svg
