@@ -184,7 +184,9 @@ export class PdmController {
 
 const PermsPS: ListaDePrivilegios[] = [
     'CadastroPS.administrador',
+    'CadastroPDM.administrador',
     'CadastroPS.administrador_no_orgao',
+    'CadastroPDM.administrador_no_orgao',
     'CadastroMetaPS.listar',
     'CadastroMetaPDM.listar',
     'SMAE.GrupoVariavel.participante',
