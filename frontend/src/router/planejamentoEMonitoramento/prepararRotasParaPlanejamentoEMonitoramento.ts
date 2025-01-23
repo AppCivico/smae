@@ -211,6 +211,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   título: 'Nova Tag',
                   limitarÀsPermissões: ['CadastroTagPS.inserir'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisTags`,
+                  ],
                 },
               },
               {
@@ -225,6 +229,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                   título: 'Editar Tag',
                   limitarÀsPermissões: ['CadastroTagPS.editar'],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.planosSetoriaisListar`,
+                    `${entidadeMãe}.planosSetoriaisTags`,
+                  ],
                 },
               },
             ],
