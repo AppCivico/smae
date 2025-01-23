@@ -42,7 +42,7 @@ if (!lista.length) {
       :to="{ name: `${route.meta.entidadeMãe}.planosSetoriaisCriar` }"
       class="btn big ml1"
     >
-      Novo plano setorial
+      Novo {{ $route.meta.tituloSingular }}
     </router-link>
   </header>
 
