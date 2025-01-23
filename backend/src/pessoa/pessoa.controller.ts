@@ -49,6 +49,7 @@ export class PessoaController {
         'CadastroPS.administrador',
         'SMAE.GrupoVariavel.participante', // entrando no lugar de 'PS.admin_cp'/PS.tecnico_cp'/PS.ponto_focal'
         'CadastroMetaPS.listar',
+        'CadastroMetaPDM.listar',
         'CadastroPessoa.administrador.MDO',
     ])
     async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
@@ -79,6 +80,7 @@ export class PessoaController {
         'CadastroPS.administrador',
         'SMAE.GrupoVariavel.participante', // entrando no lugar de 'PS.admin_cp'/PS.tecnico_cp'/PS.ponto_focal'
         'CadastroMetaPS.listar',
+        'CadastroMetaPDM.listar',
         'CadastroPessoa.administrador.MDO',
         ...PROJETO_READONLY_ROLES,
         ...PROJETO_READONLY_ROLES_MDO,

@@ -77,7 +77,14 @@ export class PdmService {
             if (!dto.nivel_orcamento) throw new BadRequestException('Nível de Orçamento é obrigatório');
             this.removeCamposPlanoSetorial(dto);
         } else if (tipo == 'PS' || tipo == 'PDM_AS_PS') {
-            if (!user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao'])) {
+            if (
+                !user.hasSomeRoles([
+                    'CadastroPS.administrador',
+                    'CadastroPDM.administrador',
+                    'CadastroPS.administrador_no_orgao',
+                    'CadastroPDM.administrador_no_orgao',
+                ])
+            ) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano Setorial');
             }
 
@@ -203,6 +210,9 @@ export class PdmService {
                 'CadastroMetaPS.listar',
                 'CadastroPS.administrador',
                 'CadastroPS.administrador_no_orgao',
+                'CadastroMetaPDM.listar',
+                'CadastroPDM.administrador',
+                'CadastroPDM.administrador_no_orgao',
                 'SMAE.GrupoVariavel.participante',
             ])
         ) {
@@ -211,8 +221,8 @@ export class PdmService {
                 tipo: tipoPdm,
             });
 
-            if (user.hasSomeRoles(['CadastroPS.administrador'])) {
-                this.logger.log('Usuário com permissão total em PS');
+            if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
+                this.logger.log('Usuário com permissão total em PS/PDM');
                 orList.push({
                     // só pra ter algo, sempre vai dar true
                     removido_em: null,
@@ -223,7 +233,7 @@ export class PdmService {
                 // cache warmup
                 const collab = await user.getEquipesColaborador(this.prisma);
 
-                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
                     this.logger.log('Usuário com permissão total em PS no órgão');
 
                     const orgaoId = user.orgao_id;
@@ -432,14 +442,17 @@ export class PdmService {
         user: PessoaFromJwt
     ): Promise<boolean> {
         if (pdm.tipo == 'PS' || pdm.tipo == 'PDM_AS_PS') {
-            if (user.hasSomeRoles(['CadastroPS.administrador'])) {
+            if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
                 this.logger.log('Usuário com permissão total em PS');
                 return true;
             }
             if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado, necessário para PS', 400);
 
             // é pra ficar assim mesmo, não adicionar a equipe
-            if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao']) && pdm.orgao_admin_id) {
+            if (
+                user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao']) &&
+                pdm.orgao_admin_id
+            ) {
                 this.logger.log('Usuário com permissão total em PS no órgão');
                 return user.orgao_id == pdm.orgao_admin_id;
             }
@@ -880,8 +893,8 @@ export class PdmService {
                 select: { id: true, descricao: true, sigla: true },
             });
 
-            if (!user.hasSomeRoles(['CadastroPS.administrador'])) {
-                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+            if (!user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
+                if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
                     if (user.orgao_id != dto.orgao_admin_id) {
                         throw new BadRequestException(
                             `Você não tem permissão no órgão ${org.descricao} (${org.sigla})`
