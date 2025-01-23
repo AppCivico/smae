@@ -2,16 +2,6 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'ods';
-  }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-ods';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
-}
-
 export const useODSStore = defineStore({
   id: 'ODS',
   state: () => ({
@@ -26,7 +16,7 @@ export const useODSStore = defineStore({
     async getAll() {
       this.ODS = { loading: true };
       try {
-        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`);
+        const r = await this.requestS.get(`${baseUrl}/ods`);
         this.ODS = r.linhas;
       } catch (error) {
         this.ODS = { error };
@@ -49,7 +39,7 @@ export const useODSStore = defineStore({
       }
     },
     async insert(params) {
-      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/ods`, params)) return true;
       return false;
     },
     async update(id, params) {
@@ -58,11 +48,11 @@ export const useODSStore = defineStore({
         titulo: params.titulo,
         descricao: params.descricao,
       };
-      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/ods/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/ods/${id}`)) return true;
       return false;
     },
     async filterODS(f) {
