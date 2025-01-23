@@ -24,13 +24,38 @@ export class MinhaContaController {
             'PlanoSetorial',
         ];
 
+        let sistemas: ModuloSistema[] = user.sistemas;
+
+        let hasPS = false;
+        let hasPDM = false;
+        if (
+            user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPS.administrador']) ||
+            (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PS'))
+        )
+            hasPS = true;
+        if (
+            user.hasSomeRoles(['CadastroPDM.administrador_no_orgao', 'CadastroPDM.administrador']) ||
+            (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PDM'))
+        )
+            hasPDM = true;
+
+        sistemas = sistemas.filter((sistema) => {
+            if (sistema === 'ProgramaDeMetas' && !hasPDM) {
+                return false;
+            }
+            if (sistema === 'PlanoSetorial' && !hasPS) {
+                return false;
+            }
+            return true;
+        });
+
         return {
             sessao: {
                 id: user.id,
                 nome_exibicao: user.nome_exibicao,
                 session_id: user.session_id,
                 privilegios: user.privilegios,
-                sistemas: user.sistemas,
+                sistemas: sistemas,
                 sistemas_disponiveis: sistemas_disponiveis.filter((sistema) => sistema !== undefined),
                 modulos: user.modulos,
                 orgao_id: user.orgao_id,
