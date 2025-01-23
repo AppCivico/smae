@@ -11,8 +11,10 @@ export class WorkflowDto {
     id: number;
     nome: string;
     ativo: boolean;
-    inicio: Date;
-    termino: Date | null;
+    @IsDateYMD()
+    inicio: string;
+    @IsDateYMD({ nullable: true })
+    termino: string | null;
     transferencia_tipo: IdNomeDto;
 }
 
