@@ -13,6 +13,7 @@ import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { ClassificacaoDto } from '../../../transferencias-voluntarias/classificacao/entities/classificacao.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { TransferenciaTipoCurtoDto } from '../tipo/entities/transferencia-tipo.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class TransferenciaDto {
     id: number;
@@ -25,7 +26,8 @@ export class TransferenciaDto {
     objeto: string;
     detalhamento: string | null;
     clausula_suspensiva: boolean | null;
-    clausula_suspensiva_vencimento: Date | null;
+    @IsDateYMD({ nullable: true })
+    clausula_suspensiva_vencimento: string | null;
     normativa: string | null;
     observacoes: string | null;
     programa: string | null;
@@ -52,7 +54,8 @@ export class TransferenciaDetailDto {
     objeto: string;
     detalhamento: string | null;
     clausula_suspensiva: boolean | null;
-    clausula_suspensiva_vencimento: Date | null;
+    @IsDateYMD({ nullable: true })
+    clausula_suspensiva_vencimento: string | null;
     normativa: string | null;
     observacoes: string | null;
     programa: string | null;
