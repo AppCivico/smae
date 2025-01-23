@@ -2,15 +2,19 @@ import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     IsArray,
+    IsBoolean,
     IsEmail,
+    IsEnum,
     IsInt,
     IsOptional,
     IsString,
     MaxLength,
     MinLength,
-    ValidateIf
+    ValidateIf,
 } from 'class-validator';
 import { IsValidCPF } from '../../common/decorators/IsValidCPF';
+import { ModuloSistema } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePessoaDto {
     /**
@@ -104,4 +108,14 @@ export class CreatePessoaDto {
     @IsOptional()
     @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
     equipes?: number[];
+
+    @IsOptional()
+    @IsBoolean()
+    sobreescrever_modulos?: boolean;
+
+    @IsOptional()
+    @IsArray()
+    @IsEnum(ModuloSistema, { each: true })
+    @ApiProperty({ type: 'array', enum: ModuloSistema })
+    modulos_permitidos?: ModuloSistema[];
 }
