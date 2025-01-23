@@ -1,7 +1,9 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Tags" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
   <Form
@@ -120,17 +122,11 @@ defineOptions({
 });
 
 const route = useRoute();
-const props = defineProps({
-  tagId: {
-    type: Number,
-    default: 0,
-  },
-});
+const router = useRouter();
 
 const alertStore = useAlertStore();
 const tagsStore = useTagsPsStore();
 const odsStore = useOdsStore();
-const router = useRouter();
 
 const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tagsStore);
 const {
@@ -140,7 +136,7 @@ const {
 async function onSubmit(values) {
   try {
     let response;
-    const msg = props.tagId
+    const msg = route.meta?.tagId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
