@@ -24,6 +24,7 @@ export class MinhaContaController {
             'PlanoSetorial',
         ];
 
+        console.log(sistemas_disponiveis)
         let sistemas: ModuloSistema[] = user.sistemas;
         let modulos_sobrescritos = false;
 
