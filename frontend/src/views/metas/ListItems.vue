@@ -276,7 +276,7 @@ watch(() => props.group, (novoValor) => {
               >
                 <div class="farol" />
                 <div class="t13">
-                  Aqui1 - Meta {{ m.codigo }} - {{ m.titulo }}
+                  Meta {{ m.codigo }} - {{ m.titulo }}
                 </div>
               </SmaeLink>
               <SmaeLink
