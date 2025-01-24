@@ -45,7 +45,10 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroMacroTemaPS.remover') && psEmFoco?.pode_editar"
+            v-if="temPermissãoPara([
+              'CadastroMacroTemaPS.remover',
+              'CadastroMacroTemaPDM.remover',
+            ]) && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
