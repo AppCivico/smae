@@ -208,28 +208,49 @@ export class EquipeRespService {
                 removido_em: null,
             },
             select: {
-                grupo_responsavel_equipe_id: true,
-            },
-        });
-
-        // Pega os tipos de PDM dos grupos
-        const pdmTipos = await prismaTx.pdm.findMany({
-            distinct: ['tipo'],
-            where: {
-                removido_em: null,
-                PdmPerfil: {
-                    some: {
-                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe_id) },
-                        removido_em: null,
+                grupo_responsavel_equipe: {
+                    select: {
+                        id: true,
+                        perfil: true,
                     },
                 },
             },
-            select: { tipo: true },
         });
 
         const tipos = new Set<TipoPdm>();
-        for (const tipo of pdmTipos) {
-            tipos.add(tipo.tipo);
+        const perfilBanco = equipes.map(
+            (e) =>
+                e.grupo_responsavel_equipe.perfil == 'Medicao' ||
+                e.grupo_responsavel_equipe.perfil == 'Liberacao' ||
+                e.grupo_responsavel_equipe.perfil == 'Validacao'
+        );
+
+        // se tem algum perfil de banco, então já libera ambos os menus
+        // provavelmente não vai ficar assim, mas não tem outra forma de fazer por enquanto
+        // se cruzar pelo indicador vai ficar muito complexo, então provavelmente vai ser pelo
+        // sobreescrever_modulos=TRUE + modulos_permitidos que vai ser usar pra controlar
+        if (perfilBanco.length) {
+            tipos.add('PDM');
+            tipos.add('PS');
+        } else {
+            // Pega os tipos de PDM dos grupos
+            const pdmTipos = await prismaTx.pdm.findMany({
+                distinct: ['tipo'],
+                where: {
+                    removido_em: null,
+                    PdmPerfil: {
+                        some: {
+                            equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
+                            removido_em: null,
+                        },
+                    },
+                },
+                select: { tipo: true },
+            });
+
+            for (const tipo of pdmTipos) {
+                tipos.add(tipo.tipo);
+            }
         }
 
         await prismaTx.pessoa.update({
