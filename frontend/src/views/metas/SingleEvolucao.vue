@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
 import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
 import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
@@ -14,11 +19,6 @@ import { useVariaveisStore } from '@/stores/variaveis.store';
 import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
-import { storeToRefs } from 'pinia';
-import {
-  computed, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -179,7 +179,8 @@ watch([parentId, parentField], iniciar, { immediate: true });
               <SmaeLink
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
+                  'CadastroMetaPS.administrador_no_pdm',
+                  'CadastroMetaPDM.administrador_no_pdm'
                 ])"
                 :to="`${parentLink}/indicadores/${ind.id}`"
                 class="tprimary"
@@ -298,7 +299,8 @@ watch([parentId, parentField], iniciar, { immediate: true });
       <div
         v-if="temPermissãoPara([
           'CadastroMeta.administrador_no_pdm',
-          'CadastroMetaPS.administrador_no_pdm'
+          'CadastroMetaPS.administrador_no_pdm',
+          'CadastroMetaPDM.administrador_no_pdm'
         ])"
         class="bgc50"
       >

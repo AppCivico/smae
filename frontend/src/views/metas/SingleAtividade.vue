@@ -1,4 +1,6 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -8,8 +10,6 @@ import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const authStore = useAuthStore();
@@ -70,7 +70,8 @@ iniciar();
     <SmaeLink
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
       ])"
       :to="`/metas/${metaId}/iniciativas/${iniciativaId}/atividades/editar/${atividadeId}`"
       class="btn big ml2"
