@@ -49,7 +49,11 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       rotaPrescindeDeChave: true,
       presenteNoMenu: true,
       pesoNoMenu: 2,
-      limitarÀsPermissões: ['CadastroPS.', 'CadastroMetaPS.listar', 'CadastroMetaPDM.listar'],
+      limitarÀsPermissões: [
+        'CadastroPS.',
+        'CadastroMetaPS.listar',
+        'CadastroMetaPDM.listar',
+      ],
     },
     children: [
       {
@@ -65,7 +69,11 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
         meta: {
           // não entendi o motivo dessa rota não herdar a propriedade `meta` da mãe
-          limitarÀsPermissões: ['CadastroPS.', 'CadastroMetaPS.listar', 'CadastroMetaPDM.listar'],
+          limitarÀsPermissões: [
+            'CadastroPS.',
+            'CadastroMetaPS.listar',
+            'CadastroMetaPDM.listar',
+          ],
         },
       },
       {
@@ -339,7 +347,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Nova ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: ['CadastroTemaPS.inserir'],
+                  limitarÀsPermissões: [
+                    'CadastroTemaPS.inserir',
+                    'CadastroTemaPDM.inserir',
+                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -364,7 +375,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Editar ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: ['CadastroTemaPS.editar'],
+                  limitarÀsPermissões: [
+                    'CadastroTemaPS.editar',
+                    'CadastroTemaPDM.editar',
+                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
