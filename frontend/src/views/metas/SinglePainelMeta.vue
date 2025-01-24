@@ -1,10 +1,10 @@
 <script setup>
-import { default as EvolucaoGraphComparison } from '@/components/EvolucaoGraphComparison.vue';
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { default as EvolucaoGraphComparison } from '@/components/EvolucaoGraphComparison.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -105,7 +105,8 @@ const mouseUpHandler = function (e) {
     <SmaeLink
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
       ])"
       :to="`/metas/editar/${singleMeta.id}`"
       class="btn big ml2"
