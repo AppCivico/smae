@@ -19,6 +19,7 @@ export default {
     pesoNoMenu: 2,
     limitarÀsPermissões: [
       'Reports.dashboard_pdm',
+      'Reports.dashboard_programademetas',
       'Reports.dashboard_portfolios',
       'SMAE.espectador_de_painel_externo',
     ],
