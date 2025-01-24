@@ -126,7 +126,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
     GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
-    SMAE_BETA_FEATURES: ['Beta', ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'ProgramaDeMetas', 'Projetos']],
+    SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
