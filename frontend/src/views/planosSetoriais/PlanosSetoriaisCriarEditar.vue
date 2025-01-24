@@ -139,7 +139,9 @@ watch(itemParaEdicao, (novoValor) => {
       <div
         v-if="planoSetorialId && temPermissãoPara([
           'CadastroPS.administrador',
+          'CadastroPDM.administrador',
           'CadastroPS.administrador_no_orgao',
+          'CadastroPDM.administrador_no_orgao',
         ])"
         class="flex flexwrap g2 mb1"
       >
