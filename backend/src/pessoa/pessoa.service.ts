@@ -1583,7 +1583,11 @@ export class PessoaService {
                 JOIN perfil_privilegio priv ON priv.perfil_acesso_id = pa.id
                 JOIN privilegio p ON p.id = priv.privilegio_id
                 JOIN privilegio_modulo m ON p.modulo_id = m.id
+                LEFT JOIN pessoa pms ON pms.id = ${pessoaId} AND pms.sobreescrever_modulos=true
                 JOIN filter_modulos fm ON m.modulo_sistema && fm.modulos
+                    -- se a pessoa tem sobreescrever_modulos, então filtra mais uma vez
+                    -- apenas os módulos que ela tem permissão pela sobrescrita
+                    AND (pms.id IS NULL OR m.modulo_sistema &&  pms.modulos_permitidos )
             )
             SELECT
                 array_agg(DISTINCT cod_priv) AS privilegios,
