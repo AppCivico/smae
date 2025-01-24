@@ -52,7 +52,7 @@ export class MinhaContaController {
                 return true;
             });
         } else {
-            modulos_sobrescritos = !sistemas.every((sistema) => user.sistemas.includes(sistema));
+            modulos_sobrescritos = !user.sistemas.every((sistema) => sistemas.includes(sistema));
             sistemas = user.modulos_permitidos;
         }
 
@@ -64,7 +64,7 @@ export class MinhaContaController {
                 privilegios: user.privilegios,
                 sistemas: sistemas,
                 sistemas_disponiveis: sistemas_disponiveis.filter((sistema) => sistema !== undefined),
-                modulos: user.modulos,
+
                 orgao_id: user.orgao_id,
                 flags: user.flags,
                 modulos_sobrescritos,

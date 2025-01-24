@@ -8,7 +8,6 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
     'session_id',
     'privilegios',
     'sistemas',
-    'modulos',
     'orgao_id',
     'flags',
 ]) {
