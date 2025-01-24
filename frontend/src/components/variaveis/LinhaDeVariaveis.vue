@@ -29,7 +29,9 @@
         <component
           :is="temPermissãoPara([
             'CadastroPS.administrador',
-            'CadastroPS.administrador_no_orgao'
+            'CadastroPDM.administrador',
+            'CadastroPS.administrador_no_orgao',
+            'CadastroPDM.administrador_no_orgao',
           ])
             ? 'router-link'
             : 'span'"
