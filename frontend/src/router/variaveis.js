@@ -26,7 +26,9 @@ export default {
     pesoNoMenu: 3,
     limitarÀsPermissões: [
       'CadastroPS.administrador',
+      'CadastroPDM.administrador',
       'CadastroPS.administrador_no_orgao',
+      'CadastroPDM.administrador_no_orgao',
       'CadastroMetaPS.administrador_no_pdm',
       'CadastroVariavelGlobal.administrador_no_orgao',
       'CadastroMetaPS.listar',
