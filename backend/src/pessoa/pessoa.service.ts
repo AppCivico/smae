@@ -1587,7 +1587,7 @@ export class PessoaService {
                 JOIN filter_modulos fm ON m.modulo_sistema && fm.modulos
                     -- se a pessoa tem sobreescrever_modulos, então filtra mais uma vez
                     -- apenas os módulos que ela tem permissão pela sobrescrita
-                    AND (pms.id IS NULL OR m.modulo_sistema &&  pms.modulos_permitidos )
+                    AND (pms.id IS NULL OR m.modulo_sistema && ARRAY_APPEND(pms.modulos_permitidos,'SMAE'))
             )
             SELECT
                 array_agg(DISTINCT cod_priv) AS privilegios,
