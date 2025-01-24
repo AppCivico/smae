@@ -55,7 +55,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       {
         path: 'metas-programa-corrente',
         name: `${entidadeMãe}.metasDoProgramaCorrente`,
-        component: () => import('@/views/planosSetoriais/RedirecionamentoParaMetasDoProgramaCorrente.vue'),
+        component: () => import(
+          '@/views/planosSetoriais/RedirecionamentoParaMetasDoProgramaCorrente.vue'
+        ),
       },
       {
         name: `${entidadeMãe}.planosSetoriaisListar`,
@@ -73,7 +75,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         meta: {
           limitarÀsPermissões: [
             'CadastroPS.administrador',
+            'CadastroPDM.administrador',
             'CadastroPS.administrador_no_orgao',
+            'CadastroPDM.administrador_no_orgao',
           ],
           rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
           rotasParaMigalhasDePão: [`${entidadeMãe}.planosSetoriaisListar`],
@@ -125,7 +129,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             meta: {
               limitarÀsPermissões: [
                 'CadastroPS.administrador',
+                'CadastroPDM.administrador',
                 'CadastroPS.administrador_no_orgao',
+                'CadastroPDM.administrador_no_orgao',
               ],
               rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
               título: `Editar ${parametrosPagina.tituloSingular}`,
@@ -256,8 +262,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
                 meta: {
                   título: () => {
-                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
-                      ?.emFoco?.rotulo_macro_tema || 'Macrotema';
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                      ?.rotulo_macro_tema || 'Macrotema';
 
                     return `Novo ${tituloEntidade}`;
                   },
@@ -282,8 +288,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 }),
                 meta: {
                   título: () => {
-                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
-                      ?.emFoco?.rotulo_macro_tema || 'Macrotema';
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                      ?.rotulo_macro_tema || 'Macrotema';
 
                     return `Editar ${tituloEntidade}`;
                   },
@@ -316,8 +322,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
                 meta: {
                   título: () => {
-                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
-                      ?.emFoco?.rotulo_tema || 'Tema';
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                      ?.rotulo_tema || 'Tema';
 
                     return `Nova ${tituloEntidade}`;
                   },
@@ -341,8 +347,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 }),
                 meta: {
                   título: () => {
-                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
-                      ?.emFoco?.rotulo_tema || 'Tema';
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                      ?.rotulo_tema || 'Tema';
 
                     return `Editar ${tituloEntidade}`;
                   },
@@ -376,8 +382,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 meta: {
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
                   título: () => {
-                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
-                      ?.emFoco?.rotulo_sub_tema || 'Subtema';
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                      ?.rotulo_sub_tema || 'Subtema';
 
                     return `Novo ${tituloEntidade}`;
                   },
@@ -401,8 +407,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 }),
                 meta: {
                   título: () => {
-                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)
-                      ?.emFoco?.rotulo_sub_tema || 'Subtema';
+                    const tituloEntidade = usePlanosSetoriaisStore(entidadeMãe)?.emFoco
+                      ?.rotulo_sub_tema || 'Subtema';
 
                     return `Editar ${tituloEntidade}`;
                   },
