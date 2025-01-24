@@ -413,7 +413,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Novo ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: ['CadastroSubTemaPS.inserir'],
+                  limitarÀsPermissões: [
+                    'CadastroSubTemaPS.inserir',
+                    'CadastroSubTemaPDM.inserir',
+                  ],
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
                     `${entidadeMãe}.planosSetoriaisSubtemas`,
@@ -439,7 +442,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                     return `Editar ${tituloEntidade}`;
                   },
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
-                  limitarÀsPermissões: ['CadastroSubTemaPS.editar'],
+                  limitarÀsPermissões: [
+                    'CadastroSubTemaPS.editar',
+                    'CadastroSubTemaPDM.editar',
+                  ],
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
                     `${entidadeMãe}.planosSetoriaisSubtemas`,
