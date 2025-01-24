@@ -1590,7 +1590,7 @@ export class PessoaService {
                 array_agg(DISTINCT modulo_sistema) AS sistemas
             FROM perms;
         `;
-        if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
+        if (!dados[0] || dados[0].sistemas === null || !Array.isArray(dados[0].sistemas)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
@@ -1598,7 +1598,7 @@ export class PessoaService {
             const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
             this.filtraPrivilegiosSMAE(sistema, ret);
         }
-        if (!ret.modulos.includes('SMAE')) ret.modulos.push('SMAE');
+        if (!ret.sistemas.includes('SMAE')) ret.sistemas.push('SMAE');
 
         if (ret.privilegios.includes('SMAE.login_suspenso'))
             throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
