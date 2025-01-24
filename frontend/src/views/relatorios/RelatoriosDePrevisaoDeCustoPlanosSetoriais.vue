@@ -44,7 +44,10 @@ iniciar();
     <hr class="ml2 f1">
 
     <router-link
-      v-if="temPermissãoPara('Reports.executar.PlanoSetorial') "
+      v-if="temPermissãoPara([
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.ProgramaDeMetas'
+      ]) "
       :to="{ name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais' }"
       class="btn big ml2"
     >

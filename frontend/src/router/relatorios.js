@@ -617,7 +617,10 @@ export default {
         entidadeMãe: 'planoSetorial',
         título: 'Relatórios de previsão de custo de Planos Setoriais',
         títuloParaMenu: undefined,
-        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+        limitarÀsPermissões: [
+          'Reports.executar.PlanoSetorial',
+          'Reports.executar.ProgramaDeMetas',
+        ],
       },
       children: [
         {
@@ -646,6 +649,7 @@ export default {
         títuloParaMenu: undefined,
         limitarÀsPermissões: [
           'Reports.executar.PlanoSetorial',
+          'Reports.executar.ProgramaDeMetas',
         ],
       },
       children: [
@@ -674,7 +678,10 @@ export default {
         fonteParaRelatório: 'PSIndicadores',
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: undefined,
-        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+        limitarÀsPermissões: [
+          'Reports.executar.PlanoSetorial',
+          'Reports.executar.ProgramaDeMetas',
+        ],
       },
 
       children: [
@@ -701,7 +708,10 @@ export default {
       meta: {
         título: 'Relatórios orçamentários de Planos Setoriais',
         títuloParaMenu: undefined,
-        limitarÀsPermissões: 'Reports.executar.PlanoSetorial',
+        limitarÀsPermissões: [
+          'Reports.executar.PlanoSetorial',
+          'Reports.executar.ProgramaDeMetas',
+        ],
       },
       children: [
         {
