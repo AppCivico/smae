@@ -49,11 +49,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       rotaPrescindeDeChave: true,
       presenteNoMenu: true,
       pesoNoMenu: 2,
-      limitarÀsPermissões: [
-        'CadastroPS.',
-        'CadastroMetaPS.listar',
-        'CadastroMetaPDM.listar',
-      ],
+      limitarÀsPermissões: 'CadastroPS.',
     },
     children: [
       {
@@ -69,11 +65,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
         meta: {
           // não entendi o motivo dessa rota não herdar a propriedade `meta` da mãe
-          limitarÀsPermissões: [
-            'CadastroPS.',
-            'CadastroMetaPS.listar',
-            'CadastroMetaPDM.listar',
-          ],
+          limitarÀsPermissões: 'CadastroPS.',
         },
       },
       {
