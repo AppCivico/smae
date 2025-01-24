@@ -1,7 +1,7 @@
-import modulos from '@/consts/modulosDoSistema.ts';
-import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae.ts';
-import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
+import modulos from '@/consts/modulosDoSistema';
+import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
+import { useAlertStore } from '@/stores/alert.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -172,6 +172,7 @@ export const useAuthStore = defineStore({
       if (this.temPermissãoPara('SMAE.loga_direto_na_analise')
         && this.temPermissãoPara([
           'Reports.dashboard_pdm',
+          'Reports.dashboard_programademetas',
           'Reports.dashboard_portfolios',
           'SMAE.espectador_de_painel_externo',
         ])
