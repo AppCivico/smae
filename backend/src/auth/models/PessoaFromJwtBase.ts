@@ -17,9 +17,6 @@ export class PessoaFromJwtBase {
     @ApiProperty({ description: 'Lista de Módulos', enum: ModuloSistema, enumName: 'ModuloSistema' })
     sistemas: ModuloSistema[];
 
-    @ApiProperty({ description: 'Lista de Módulos dos privilégios' })
-    modulos: string[];
-
     orgao_id: undefined | number;
 
     flags: FeatureFlagDto;
