@@ -215,7 +215,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
                 meta: {
                   título: 'Nova Tag',
-                  limitarÀsPermissões: ['CadastroTagPS.inserir'],
+                  limitarÀsPermissões: [
+                    'CadastroTagPS.inserir',
+                    'CadastroTagPDM.inserir',
+                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -233,7 +236,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 }),
                 meta: {
                   título: 'Editar Tag',
-                  limitarÀsPermissões: ['CadastroTagPS.editar'],
+                  limitarÀsPermissões: [
+                    'CadastroTagPS.editar',
+                    'CadastroTagPDM.editar',
+                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
