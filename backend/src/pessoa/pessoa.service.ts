@@ -1577,7 +1577,7 @@ export class PessoaService {
                 WHERE removido_em IS NULL
             ),
             perms AS (
-                SELECT DISTINCT p.codigo AS cod_priv, m.codigo AS cod_modulos, unnest(m.modulo_sistema) AS modulo_sistema
+                SELECT DISTINCT p.codigo AS cod_priv, unnest(m.modulo_sistema) AS modulo_sistema
                 FROM filtered_pessoa_perfil pp
                 JOIN filtered_perfil_acesso pa ON pp.perfil_acesso_id = pa.id
                 JOIN perfil_privilegio priv ON priv.perfil_acesso_id = pa.id
@@ -1587,7 +1587,6 @@ export class PessoaService {
             )
             SELECT
                 array_agg(DISTINCT cod_priv) AS privilegios,
-                array_agg(DISTINCT cod_modulos) AS modulos,
                 array_agg(DISTINCT modulo_sistema) AS sistemas
             FROM perms;
         `;
