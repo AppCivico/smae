@@ -273,7 +273,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Novo ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: ['CadastroMacroTemaPS.inserir'],
+                  limitarÀsPermissões: [
+                    'CadastroMacroTemaPS.inserir',
+                    'CadastroMacroTemaPDM.inserir',
+                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -299,7 +302,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Editar ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: ['CadastroMacroTemaPS.editar'],
+                  limitarÀsPermissões: [
+                    'CadastroMacroTemaPS.editar',
+                    'CadastroMacroTemaPDM.editar',
+                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
