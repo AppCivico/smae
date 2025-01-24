@@ -70,7 +70,8 @@
             && !variavel.etapa
             && temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])"
           class="f0 dropbtn right"
         >
@@ -184,16 +185,16 @@
   </article>
 </template>
 <script lang="ts" setup>
+import type { Indicador } from '@back/indicador/entities/indicador.entity';
+import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
+import { storeToRefs } from 'pinia';
+import { ref, watch, type PropType } from 'vue';
 import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import type { Indicador } from '@back/indicador/entities/indicador.entity';
-import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
-import { storeToRefs } from 'pinia';
-import { ref, watch, type PropType } from 'vue';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;

@@ -81,7 +81,10 @@ function groupSlug(s) {
     <hr class="f1">
 
     <SmaeLink
-      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm')"
+      v-if="temPermissãoPara([
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
+      ])"
       class="btn big"
       to="/metas/novo"
     >
@@ -187,7 +190,7 @@ function groupSlug(s) {
             <SmaeLink
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm','CadastroMetaPDM.administrador_no_pdm'
               ])"
               :to="{
                 name: '.editarMeta',
@@ -206,7 +209,7 @@ function groupSlug(s) {
         <div
           v-if="temPermissãoPara([
             'CadastroMeta.administrador_no_pdm',
-            'CadastroMetaPS.administrador_no_pdm'
+            'CadastroMetaPS.administrador_no_pdm','CadastroMetaPDM.administrador_no_pdm'
           ])"
           class="tc bgc50 p1"
         >

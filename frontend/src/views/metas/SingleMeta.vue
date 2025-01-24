@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -11,9 +14,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
@@ -103,7 +103,8 @@ iniciar();
       <SmaeLink
         v-if="temPermissãoPara([
           'CadastroMeta.administrador_no_pdm',
-          'CadastroMetaPS.administrador_no_pdm'
+          'CadastroMetaPS.administrador_no_pdm',
+          'CadastroMetaPDM.administrador_no_pdm'
         ]) && activePdm?.pode_editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
@@ -223,7 +224,8 @@ iniciar();
             <SmaeLink
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])
                 && activePdm.possui_iniciativa
                 && activePdm?.pode_editar"
@@ -269,7 +271,8 @@ iniciar();
                   <div
                     v-if="temPermissãoPara([
                       'CadastroMeta.administrador_no_pdm',
-                      'CadastroMetaPS.administrador_no_pdm'
+                      'CadastroMetaPS.administrador_no_pdm',
+                      'CadastroMetaPDM.administrador_no_pdm'
                     ])"
                     class="f0 flex g1"
                   >
