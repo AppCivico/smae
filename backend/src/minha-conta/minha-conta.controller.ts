@@ -64,7 +64,6 @@ export class MinhaContaController {
                 privilegios: user.privilegios,
                 sistemas: sistemas,
                 sistemas_disponiveis: sistemas_disponiveis.filter((sistema) => sistema !== undefined),
-
                 orgao_id: user.orgao_id,
                 flags: user.flags,
                 modulos_sobrescritos,
