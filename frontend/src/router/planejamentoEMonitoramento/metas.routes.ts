@@ -613,7 +613,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           props: { area: 'Custo', title: 'Previsão de Custo' },
           meta: {
             títuloParaMenu: 'Previsão de custo',
-            limitarÀsPermissões: 'CadastroMetaPS.orcamento',
+            limitarÀsPermissões: [
+              'CadastroMetaPS.orcamento',
+              'CadastroMetaPDM.orcamento',
+            ],
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -649,7 +652,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           props: { area: 'Planejado', title: 'Orçamento Planejado' },
           meta: {
             títuloParaMenu: 'Orçamento planejado',
-            limitarÀsPermissões: 'CadastroMetaPS.orcamento',
+            limitarÀsPermissões: [
+              'CadastroMetaPS.orcamento',
+              'CadastroMetaPDM.orcamento',
+            ],
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -686,7 +692,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           props: { area: 'Realizado', title: 'Execução orçamentária' },
           meta: {
             títuloParaMenu: 'Execução orçamentária',
-            limitarÀsPermissões: 'CadastroMetaPS.orcamento',
+            limitarÀsPermissões: [
+              'CadastroMetaPS.orcamento',
+              'CadastroMetaPDM.orcamento',
+            ],
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
