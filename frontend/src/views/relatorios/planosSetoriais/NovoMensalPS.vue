@@ -32,8 +32,6 @@ const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosS
 
 const formularioSujo = useIsFormDirty();
 
-const route = useRoute();
-const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
 
 const initialValues = ref({
