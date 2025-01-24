@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -9,9 +12,6 @@ import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -105,7 +105,8 @@ iniciar();
     <SmaeLink
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
       ])"
       :to="`/metas/${metaId}/iniciativas/editar/${iniciativaId}`"
       class="btn big ml2"
@@ -202,7 +203,8 @@ iniciar();
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])"
             :to="`${parentlink}/atividades/novo`"
             class="btn ml2"
