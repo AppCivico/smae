@@ -33,6 +33,7 @@ export default {
       'CadastroMetaPDM.administrador_no_pdm',
       'CadastroVariavelGlobal.administrador_no_orgao',
       'CadastroMetaPS.listar',
+      'CadastroMetaPDM.listar',
     ],
     rotasParaMenuSecundário: ['variaveisListar', 'cicloAtualizacao'],
   },
