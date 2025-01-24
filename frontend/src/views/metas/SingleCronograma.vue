@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, watch, reactive, ref,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -10,11 +15,6 @@ import { useMetasStore } from '@/stores/metas.store';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
-import { storeToRefs } from 'pinia';
-import {
-  computed, watch, reactive, ref,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const alertStore = useAlertStore();
@@ -154,7 +154,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     <SmaeLink
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
       ])
         && !singleCronograma?.loading
         && singleCronograma?.id"
@@ -166,7 +167,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     <div
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
       ])
         && !singleCronograma?.loading && singleCronograma?.id
       "
@@ -178,7 +180,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >
@@ -189,7 +192,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])
               && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
@@ -201,7 +205,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])
               && activePdm.possui_atividade && meta_id && !atividade_id"
             :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
@@ -464,7 +469,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])"
               class="dropbtn right"
             >
@@ -589,7 +595,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])"
               class="ml1 f0"
               style="flex-basis:20px;"
@@ -597,7 +604,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])"
               class="ml1 f0"
               style="flex-basis:20px;"
@@ -682,7 +690,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -706,7 +715,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -759,7 +769,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               <div
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
+                  'CadastroMetaPS.administrador_no_pdm',
+                  'CadastroMetaPDM.administrador_no_pdm'
                 ])"
                 class="ml1 f0"
                 style="flex-basis:20px;"
@@ -767,7 +778,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               <div
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
+                  'CadastroMetaPS.administrador_no_pdm',
+                  'CadastroMetaPDM.administrador_no_pdm'
                 ])"
                 class="ml1 f0"
                 style="flex-basis:20px;"
@@ -866,7 +878,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                 <div
                   v-if="temPermissãoPara([
                     'CadastroMeta.administrador_no_pdm',
-                    'CadastroMetaPS.administrador_no_pdm'
+                    'CadastroMetaPS.administrador_no_pdm',
+                    'CadastroMetaPDM.administrador_no_pdm'
                   ])"
                   class="ml1 f0 flex center mr05"
                 >
@@ -889,7 +902,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                 <div
                   v-if="temPermissãoPara([
                     'CadastroMeta.administrador_no_pdm',
-                    'CadastroMetaPS.administrador_no_pdm'
+                    'CadastroMetaPS.administrador_no_pdm',
+                    'CadastroMetaPDM.administrador_no_pdm'
                   ])"
                   class="ml1 f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -912,7 +926,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <div
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])"
             class="pl3"
           >
@@ -933,7 +948,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
         <div
           v-if="temPermissãoPara([
             'CadastroMeta.administrador_no_pdm',
-            'CadastroMetaPS.administrador_no_pdm'
+            'CadastroMetaPS.administrador_no_pdm',
+            'CadastroMetaPDM.administrador_no_pdm'
           ])"
           class="pl1"
         >

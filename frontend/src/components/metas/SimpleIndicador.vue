@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, nextTick, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 // eslint-disable-next-line import/no-named-default
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
@@ -8,9 +11,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { storeToRefs } from 'pinia';
-import { computed, nextTick, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -96,6 +96,7 @@ iniciar();
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ]) && activePdm?.pode_editar"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"
@@ -149,6 +150,7 @@ iniciar();
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
       ]) && activePdm?.pode_editar"
       class="bgc50"
     >
