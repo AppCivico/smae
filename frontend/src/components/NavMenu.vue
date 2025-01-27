@@ -101,7 +101,7 @@ onBeforeRouteUpdate(() => {
     >
       <ul class="menu__lista">
         <li class="menu__item">
-          <SmaeLink
+          <router-link
             v-if="rotaInicial"
             :to="rotaInicial"
             class="menu__link"
@@ -115,7 +115,7 @@ onBeforeRouteUpdate(() => {
             <span class="menu__texto-do-link">
               Página inicial
             </span>
-          </SmaeLink>
+          </router-link>
         </li>
 
         <li
@@ -161,7 +161,7 @@ onBeforeRouteUpdate(() => {
               height="8"
             ><use xlink:href="#i_down" /></svg>
           </button>
-          <SmaeLink
+          <router-link
             v-else
             :to="item.path"
             class="menu__link"
@@ -189,7 +189,7 @@ onBeforeRouteUpdate(() => {
             >
               {{ item.name }}
             </span>
-          </SmaeLink>
+          </router-link>
           <TransitionExpand>
             <ul
               v-if="item.rotasFilhas?.length"
@@ -201,7 +201,7 @@ onBeforeRouteUpdate(() => {
                 :key="j"
                 class="menu__item menu__item--sub"
               >
-                <SmaeLink
+                <router-link
                   class="menu__link menu__link--sub"
                   :to="subitem.path"
                 >
@@ -223,7 +223,7 @@ onBeforeRouteUpdate(() => {
                   >
                     {{ subitem.name }}
                   </span>
-                </SmaeLink>
+                </router-link>
               </li>
             </ul>
           </TransitionExpand>
@@ -231,7 +231,7 @@ onBeforeRouteUpdate(() => {
         <li
           class="menu__item menu__item--módulos"
         >
-          <SmaeLink
+          <router-link
             :to="{ name: 'home' }"
             class="menu__link menu__link--módulos"
           >
@@ -253,7 +253,7 @@ onBeforeRouteUpdate(() => {
             <span class="menu__texto-do-link">
               Meus módulos
             </span>
-          </SmaeLink>
+          </router-link>
         </li>
       </ul>
     </nav>
