@@ -18,13 +18,8 @@ import { PdmCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcam
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
-import {
-    CreatePsMonitoramentoMensalFilterDto
-} from '../../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
-import {
-    CreateCasaCivilAtividadesPendentesFilterDto
-} from '../../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
-
+import { CreatePsMonitoramentoMensalFilterDto } from '../../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
+import { CreateCasaCivilAtividadesPendentesFilterDto } from '../../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
 
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
@@ -63,4 +58,8 @@ export class CreateReportDto {
     @IsOptional()
     @IsBoolean()
     salvar_arquivo?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    eh_publico?: boolean;
 }

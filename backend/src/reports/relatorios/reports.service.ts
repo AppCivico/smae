@@ -203,6 +203,7 @@ export class ReportsService {
                 pdm_id: pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
+                eh_publico: dto.eh_publico, // Default é true.
                 tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
                 parametros_processados: await this.buildParametrosProcessados(dto),
@@ -290,6 +291,7 @@ export class ReportsService {
                 fonte: filters.fonte,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
+                eh_publico: true,
             },
             select: {
                 id: true,
