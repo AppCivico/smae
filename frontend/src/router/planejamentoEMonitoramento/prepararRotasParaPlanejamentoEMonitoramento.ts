@@ -465,6 +465,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               }`,
               títuloParaMenu: 'Metas',
               desabilitarMigalhasDePãoPadrão: true,
+              limitarÀsPermissões: undefined,
             },
 
             children: metasRoutes({ entidadeMãe, parametrosPagina }),
