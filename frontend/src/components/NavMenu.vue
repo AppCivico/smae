@@ -94,6 +94,7 @@ onBeforeRouteUpdate(() => {
         ><use xlink:href="#i_graf" /></svg>
       </button>
     </hgroup>
+
     <nav
       v-if="user"
       id="menu"
@@ -101,9 +102,11 @@ onBeforeRouteUpdate(() => {
     >
       <ul class="menu__lista">
         <li class="menu__item">
-          <router-link
+          <SmaeLink
             v-if="rotaInicial"
             :to="rotaInicial"
+            prefixo-dos-caminhos=""
+            sufixo-dos-caminhos=""
             class="menu__link"
           >
             <span class="menu__envelope-svg">
@@ -115,7 +118,7 @@ onBeforeRouteUpdate(() => {
             <span class="menu__texto-do-link">
               Página inicial
             </span>
-          </router-link>
+          </SmaeLink>
         </li>
 
         <li
@@ -161,9 +164,11 @@ onBeforeRouteUpdate(() => {
               height="8"
             ><use xlink:href="#i_down" /></svg>
           </button>
-          <router-link
+          <SmaeLink
             v-else
             :to="item.path"
+            prefixo-dos-caminhos=""
+            sufixo-dos-caminhos=""
             class="menu__link"
           >
             <span
@@ -189,7 +194,7 @@ onBeforeRouteUpdate(() => {
             >
               {{ item.name }}
             </span>
-          </router-link>
+          </SmaeLink>
           <TransitionExpand>
             <ul
               v-if="item.rotasFilhas?.length"
@@ -201,7 +206,9 @@ onBeforeRouteUpdate(() => {
                 :key="j"
                 class="menu__item menu__item--sub"
               >
-                <router-link
+                <SmaeLink
+                  prefixo-dos-caminhos=""
+                  sufixo-dos-caminhos=""
                   class="menu__link menu__link--sub"
                   :to="subitem.path"
                 >
@@ -223,7 +230,7 @@ onBeforeRouteUpdate(() => {
                   >
                     {{ subitem.name }}
                   </span>
-                </router-link>
+                </SmaeLink>
               </li>
             </ul>
           </TransitionExpand>
@@ -231,8 +238,10 @@ onBeforeRouteUpdate(() => {
         <li
           class="menu__item menu__item--módulos"
         >
-          <router-link
+          <SmaeLink
             :to="{ name: 'home' }"
+            prefixo-dos-caminhos=""
+            sufixo-dos-caminhos=""
             class="menu__link menu__link--módulos"
           >
             <span class="menu__envelope-svg">
@@ -253,7 +262,7 @@ onBeforeRouteUpdate(() => {
             <span class="menu__texto-do-link">
               Meus módulos
             </span>
-          </router-link>
+          </SmaeLink>
         </li>
       </ul>
     </nav>
