@@ -56,13 +56,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
     },
     children: [
       {
-        path: 'metas-programa-corrente',
-        name: `${entidadeMãe}.metasDoProgramaCorrente`,
-        component: () => import(
-          '@/views/planosSetoriais/RedirecionamentoParaMetasDoProgramaCorrente.vue'
-        ),
-      },
-      {
         name: `${entidadeMãe}.planosSetoriaisListar`,
         path: '',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
