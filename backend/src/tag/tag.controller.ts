@@ -15,21 +15,20 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { FilterTagDto } from './dto/filter-tag.dto';
 import { ListTagDto } from './dto/list-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
-import { TagService } from './tag.service';
-import { TipoPdm } from '@prisma/client';
 import { TagDto } from './entities/tag.entity';
-import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { TagService } from './tag.service';
 
 @ApiTags('Tag')
 @Controller('tag')
 export class TagController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(private readonly tagService: TagService) {}
 
     @Post()

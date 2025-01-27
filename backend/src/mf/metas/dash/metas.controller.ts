@@ -51,7 +51,7 @@ export class MfDashMetasController {
     @ApiBearerAuth('access-token')
     @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     async filtroMetas(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
-        return { linhas: await this.metaService.findAll('PDM', filters, user.cloneWithRoles(['SMAE.acesso_bi'])) };
+        return { linhas: await this.metaService.findAll('_PDM', filters, user.cloneWithRoles(['SMAE.acesso_bi'])) };
     }
 
     @Get('etapa-hierarquia')

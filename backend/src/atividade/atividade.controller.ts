@@ -12,7 +12,6 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -30,7 +29,7 @@ import { AtividadeDto } from './entities/atividade.entity';
 @ApiTags('Atividade')
 @Controller('atividade')
 export class AtividadeController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(private readonly atividadeService: AtividadeService) {}
 
     @Post()

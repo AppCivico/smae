@@ -12,10 +12,10 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateEixoDto } from './dto/create-macro-tema.dto';
@@ -24,12 +24,11 @@ import { ListEixoDto } from './dto/list-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
 import { MacroTemaDto } from './entities/macro-tema.entity';
 import { MacroTemaService } from './macro-tema.service';
-import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags('Macro Tema para PDM (Antigo Eixo)')
 @Controller('macrotema')
 export class MacroTemaController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()

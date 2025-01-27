@@ -135,7 +135,7 @@ export class DashboardService {
                 if (!config['params']['tipo_pdm']) config['params']['tipo_pdm'] = 'PDM';
 
                 memory['metas_ids'] = (
-                    await this.metaService.findAllIds(config['params']['tipo_pdm'] == 'PDM' ? 'PDM' : 'PS', user)
+                    await this.metaService.findAllIds(config['params']['tipo_pdm'] == 'PDM' ? '_PDM' : '_PS', user)
                 ).map((p) => p.id);
                 if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
             }

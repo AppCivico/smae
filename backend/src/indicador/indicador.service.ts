@@ -1,8 +1,9 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Periodicidade, Prisma, Serie, TipoPdm } from '@prisma/client';
+import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -18,7 +19,6 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
-import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -392,7 +392,7 @@ export class IndicadorService {
         return formula_compilada;
     }
 
-    async findOne(tipo: TipoPdm, indicador_id: number, user: PessoaFromJwt): Promise<IndicadorDto | null> {
+    async findOne(tipo: TipoPdmType, indicador_id: number, user: PessoaFromJwt): Promise<IndicadorDto | null> {
         const list = await this.findAll(tipo, { id: indicador_id }, user);
 
         return list.length ? list[0] : null;
@@ -1065,7 +1065,12 @@ export class IndicadorService {
         return [...variaveis.map((r) => r.referencia), ...formulaCompostas.map((r) => r.referencia)];
     }
 
-    async linkVariavel(id: number, dto: LinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
+    async linkVariavel(
+        tipo: TipoPdmType,
+        id: number,
+        dto: LinkIndicadorVariavelDto,
+        user: PessoaFromJwt
+    ): Promise<void> {
         const indicador = await this.prisma.indicador.findFirstOrThrow({
             where: { id: id, removido_em: null },
             select: {
@@ -1084,7 +1089,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PS', metaRow.meta_id, user, 'indicador');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
 
         const variaveisDb = await this.prisma.variavel.findMany({
             where: {
@@ -1156,7 +1161,12 @@ export class IndicadorService {
         return;
     }
 
-    async unlinkVariavel(id: number, dto: UnlinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
+    async unlinkVariavel(
+        tipo: TipoPdmType,
+        id: number,
+        dto: UnlinkIndicadorVariavelDto,
+        user: PessoaFromJwt
+    ): Promise<void> {
         const indicador = await this.prisma.indicador.findFirstOrThrow({
             where: { id: id, removido_em: null },
             select: {
@@ -1175,7 +1185,7 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PS', metaRow.meta_id, user, 'indicador');
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
 
         const alreadyInIndicador = await this.prisma.indicadorVariavel.findFirst({
             where: {

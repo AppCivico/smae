@@ -13,7 +13,6 @@ import {
     forwardRef,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiResponse, ApiTags, refs } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -39,7 +38,7 @@ import { PdmService } from './pdm.service';
 @ApiTags('PDM')
 @Controller('pdm')
 export class PdmController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(
         private readonly pdmService: PdmService,
         @Inject(forwardRef(() => TemaService))

@@ -3,7 +3,7 @@ import { TipoPdm } from '@prisma/client';
 import { Request } from 'express';
 import { ExtractValidSistemas } from '../../auth/strategies/jwt.strategy';
 
-export type TipoPdmType = 'PS' | 'PDM' | 'PDM_AS_PS';
+export type TipoPdmType = '_PS' | '_PDM' | 'PDM_AS_PS';
 
 export const TipoPDM = createParamDecorator((data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
@@ -13,7 +13,7 @@ export const TipoPDM = createParamDecorator((data: unknown, context: ExecutionCo
 export const extractPdmMode = (request: Request): TipoPdmType => {
     const sistemas = ExtractValidSistemas(request);
 
-    if (!sistemas) return 'PS';
+    if (!sistemas) return '_PS';
 
     const parts = sistemas.filter((s) => s !== 'SMAE');
     if (parts.length > 1) {
@@ -22,14 +22,14 @@ export const extractPdmMode = (request: Request): TipoPdmType => {
 
     const h = parts[0];
     if (h === 'ProgramaDeMetas') return 'PDM_AS_PS';
-    if (h === 'PlanoSetorial') return 'PS';
+    if (h === 'PlanoSetorial') return '_PS';
 
     throw new BadRequestException(`smae-sistema '${h}' não é um sistema válido para este endpoint.`);
 };
 
 export const PdmModoParaTipo = (tipo: TipoPdmType): TipoPdm => {
     if (tipo == 'PDM_AS_PS') return 'PDM';
-    return tipo == 'PDM' ? 'PDM' : 'PS';
+    return tipo == '_PDM' ? 'PDM' : 'PS';
 };
 
 export const PdmModoParaTipoOrNull = (tipo: TipoPdmType | null): TipoPdm | null => {

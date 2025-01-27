@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -29,7 +28,7 @@ import { IndicadorService } from './indicador.service';
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(
         private readonly indicadorService: IndicadorService,
         private readonly indicadorFormulaCompostaService: IndicadorFormulaCompostaService
@@ -203,8 +202,9 @@ export class IndicadorPSController {
         @Param() params: FindOneParams,
         @Body() dto: LinkIndicadorVariavelDto,
         @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.indicadorService.linkVariavel(+params.id, dto, user);
+        return await this.indicadorService.linkVariavel(tipo, +params.id, dto, user);
     }
 
     @Delete('plano-setorial-indicador/:id/desassociar-variavel')
@@ -214,8 +214,9 @@ export class IndicadorPSController {
         @Param() params: FindOneParams,
         @Body() dto: UnlinkIndicadorVariavelDto,
         @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.indicadorService.unlinkVariavel(+params.id, dto, user);
+        return await this.indicadorService.unlinkVariavel(tipo, +params.id, dto, user);
     }
 
     @Patch('plano-setorial-indicador/:id')

@@ -108,7 +108,7 @@ export class IniciativaService {
                     );
                 }
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (!op) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
 
                     await prismaTx.iniciativaOrgao.createMany({
@@ -466,7 +466,7 @@ export class IniciativaService {
             delete dto.ps_ponto_focal;
             delete dto.origens_extra;
 
-            if (tipo === 'PDM' && cp && !op)
+            if (tipo === '_PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
             if (dto.codigo) {
@@ -515,7 +515,7 @@ export class IniciativaService {
                 await CompromissoOrigemHelper.upsert(id, 'iniciativa', origens_extra, prismaTx, user, now);
             }
 
-            if (tipo === 'PDM') {
+            if (tipo === '_PDM') {
                 if (op) {
                     if (op.length == 0) throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
 
