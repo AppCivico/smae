@@ -1,4 +1,18 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  Form,
+} from 'vee-validate';
+import {
+  computed,
+  defineOptions,
+  ref,
+  unref,
+  watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -17,20 +31,6 @@ import { useSubtemasStore } from '@/stores/subtemas.store';
 import { useTagsStore } from '@/stores/tags.store';
 import { useTemasStore } from '@/stores/temas.store';
 import { useUsersStore } from '@/stores/users.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  Form,
-} from 'vee-validate';
-import {
-  computed,
-  defineOptions,
-  ref,
-  unref,
-  watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -225,9 +225,12 @@ async function checkDelete(id) {
 
           if (route.meta.entidadeMãe === 'pdm') {
             router.push({ name: 'pdm.metas' });
-          } else if (route.meta.entidadeMãe === 'planoSetorial') {
+          } else if ([
+            'planoSetorial',
+            'programaDeMetas',
+          ].includes(route.meta.entidadeMãe)) {
             router.push({
-              name: 'planoSetorial:listaDeMetas',
+              name: `${route.meta.entidadeMãe}.listaDeMetas`,
               params: {
                 planoSetorialId: route.params.planoSetorialId,
               },
