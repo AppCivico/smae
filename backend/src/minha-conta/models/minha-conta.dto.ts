@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { PessoaFromJwtBase } from '../../auth/models/PessoaFromJwtBase';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema, TipoPdm } from '@prisma/client';
 
 export class SessaoDto extends PickType(PessoaFromJwtBase, [
     'id',
@@ -15,6 +15,8 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
     sistemas_disponiveis: ModuloSistema[];
 
     modulos_sobrescritos: boolean;
+
+    equipe_pdm_tipos: TipoPdm[];
 }
 
 export class MinhaContaDto {

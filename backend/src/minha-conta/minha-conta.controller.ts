@@ -24,7 +24,7 @@ export class MinhaContaController {
             'PlanoSetorial',
         ];
 
-        console.log(sistemas_disponiveis)
+        console.log(sistemas_disponiveis);
         let sistemas: ModuloSistema[] = user.sistemas;
         let modulos_sobrescritos = false;
 
@@ -67,6 +67,7 @@ export class MinhaContaController {
                 orgao_id: user.orgao_id,
                 flags: user.flags,
                 modulos_sobrescritos,
+                equipe_pdm_tipos: user.equipe_pdm_tipos,
             } satisfies SessaoDto,
         };
     }
