@@ -7,6 +7,7 @@ export type ParametrosPagina = {
   tituloSingular: string;
   tituloPlural: string;
   segmentoRaiz: string;
+  privilegioRaiz: 'CadastroPS.' | 'CadastroPDM.';
 };
 
 function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina {
@@ -16,6 +17,7 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         tituloSingular: 'Plano Setorial',
         tituloPlural: 'Planos Setoriais',
         segmentoRaiz: '/plano-setorial',
+        privilegioRaiz: 'CadastroPS.',
       };
 
     case 'programaDeMetas':
@@ -23,6 +25,7 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         tituloSingular: 'Programa de Meta',
         tituloPlural: 'Programa de Metas',
         segmentoRaiz: '/programa-de-meta',
+        privilegioRaiz: 'CadastroPDM.',
       };
 
     default:
@@ -49,10 +52,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       rotaPrescindeDeChave: true,
       presenteNoMenu: true,
       pesoNoMenu: 2,
-      limitarÀsPermissões: [
-        'CadastroPDM.',
-        'CadastroPS.',
-      ],
+      limitarÀsPermissões: parametrosPagina.privilegioRaiz,
     },
     children: [
       {
