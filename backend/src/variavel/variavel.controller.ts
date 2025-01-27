@@ -133,6 +133,7 @@ export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
     'CadastroMetaPS.listar',
     'CadastroMetaPDM.listar',
     'CadastroVariavelGlobal.administrador',
+    'SMAE.GrupoVariavel.participante',
 ];
 
 @ApiTags('Variável Global')
