@@ -15,8 +15,6 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
     sistemas_disponiveis: ModuloSistema[];
 
     modulos_sobrescritos: boolean;
-
-    equipe_pdm_tipos: TipoPdm[];
 }
 
 export class MinhaContaDto {
