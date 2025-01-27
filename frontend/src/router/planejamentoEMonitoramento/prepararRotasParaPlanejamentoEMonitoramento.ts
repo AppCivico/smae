@@ -1,4 +1,5 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import type { RouteLocation } from 'vue-router';
 
 import metasRoutes from './metas.routes';
 
@@ -454,7 +455,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             meta: {
               // possível apenas porque os valores to tipo `function` são
               // executados no guarda `router.beforeEach()`.Veja `/router/index`.
-              prefixoDosCaminhos: (route) => `/planos-setoriais/${route.params.planoSetorialId}`,
+              prefixoDosCaminhos: (route: RouteLocation) => `${parametrosPagina.segmentoRaiz}/${route.params.planoSetorialId}`,
 
               título: () => `Metas de ${
                 usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
