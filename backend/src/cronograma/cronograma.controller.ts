@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateEtapaDto } from '../etapa/dto/create-etapa.dto';
@@ -14,13 +14,12 @@ import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from './dto/list-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
-import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 export const API_TAGS_CRONOGRAMA = 'Cronograma - PDM e PS';
 @ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('cronograma')
 export class CronogramaController {
-    private tipo: TipoPdm = 'PDM';
+    private tipo: TipoPdmType = '_PDM';
     constructor(
         private readonly cronogramaService: CronogramaService,
         private readonly etapaService: EtapaService

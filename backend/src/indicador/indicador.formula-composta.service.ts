@@ -16,6 +16,7 @@ import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
 import { CreatePSFormulaCompostaDto, UpdatePSFormulaCompostaDto } from '../variavel/dto/variavel.formula-composta.dto';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @Injectable()
 export class IndicadorFormulaCompostaService {
@@ -28,8 +29,9 @@ export class IndicadorFormulaCompostaService {
         private readonly indicadorService: IndicadorService
     ) {}
 
-    async create(tipo: TipoPdm, indicador_id: number, dto: CreateIndicadorFormulaCompostaDto, user: PessoaFromJwt) {
-        if (tipo == 'PS') throw new HttpException('Não é possível criar fórmula composta para PS em um indicador', 400);
+    async create(tipo: TipoPdmType, indicador_id: number, dto: CreateIndicadorFormulaCompostaDto, user: PessoaFromJwt) {
+        if (tipo == '_PS' || tipo == 'PDM_AS_PS')
+            throw new HttpException('Não é possível criar fórmula composta para PS em um indicador', 400);
 
         const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
@@ -154,7 +156,11 @@ export class IndicadorFormulaCompostaService {
             throw new HttpException('Fórmula Composta não pode conter outra Fórmula Composta', 400);
     }
 
-    async findAll(tipo: TipoPdm, indicador_id: number, user: PessoaFromJwt): Promise<IndicadorFormulaCompostaDto[]> {
+    async findAll(
+        tipo: TipoPdmType,
+        indicador_id: number,
+        user: PessoaFromJwt
+    ): Promise<IndicadorFormulaCompostaDto[]> {
         const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
@@ -217,7 +223,7 @@ export class IndicadorFormulaCompostaService {
     }
 
     async update(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         indicador_id: number,
         id: number,
         dto: UpdateIndicadorFormulaCompostaDto,
@@ -356,7 +362,7 @@ export class IndicadorFormulaCompostaService {
         );
     }
 
-    async remove(tipo: TipoPdm, indicador_id: number, id: number, user: PessoaFromJwt): Promise<void> {
+    async remove(tipo: TipoPdmType, indicador_id: number, id: number, user: PessoaFromJwt): Promise<void> {
         const indicador = await this.indicadorService.findOne(tipo, indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
@@ -578,12 +584,10 @@ export class IndicadorFormulaCompostaService {
                 }
             }
         }
-
-
     }
 
     async geradorFormula(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         indicador_id: number,
         dto: GeneratorFormulaCompostaFormDto,
         user: PessoaFromJwt
@@ -738,7 +742,7 @@ export class IndicadorFormulaCompostaService {
     }
 
     async contaVariavelPrefixo(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         indicador_id: number,
         dto: FilterFormulaCompostaFormDto,
         user: PessoaFromJwt

@@ -12,11 +12,11 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateSubTemaDto } from './dto/create-subtema.dto';
@@ -25,12 +25,11 @@ import { ListSubTemaDto } from './dto/list-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 import { SubTemaDto } from './entities/subtema.entity';
 import { SubTemaService } from './subtema.service';
-import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags('SubTema para PDM')
 @Controller('subtema')
 export class SubTemaController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
 
     constructor(private readonly subTemaService: SubTemaService) {}
 

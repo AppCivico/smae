@@ -1138,7 +1138,9 @@ PerfilAcessoConfig.push(
         ],
     },
     {
-        nome: atualizarNomePerfil('Administrador Geral dos Programa de Metas', []),
+        nome: atualizarNomePerfil('Administrador Geral dos Programas de Metas', [
+            'Administrador Geral dos Programa de Metas',
+        ]),
         descricao: 'Acesso irrestrito aos Programa de Metas e Banco de Variáveis.',
         privilegios: [
             'CadastroPDM.administrador', // bloquear criação se não tiver já a mesma permissão no PDM

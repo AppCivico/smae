@@ -362,7 +362,7 @@ export class ImportacaoOrcamentoService {
         }
 
         if (sistema == 'PDM' && user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
-            const metas = await this.metaService.findAllIds('PDM', user);
+            const metas = await this.metaService.findAllIds('_PDM', user);
             this.logger.warn(`só pode as metas ${metas.map((r) => r.id)}`);
 
             filtros.push({
@@ -387,7 +387,7 @@ export class ImportacaoOrcamentoService {
             user.hasSomeRoles(PlanoSetorialController.OrcamentoWritePerms) &&
             filters.pdm_id
         ) {
-            const metas = await this.metaService.findAllIds(sistema == 'PlanoSetorial' ? 'PS' : 'PDM_AS_PS', user);
+            const metas = await this.metaService.findAllIds(sistema == 'PlanoSetorial' ? '_PS' : 'PDM_AS_PS', user);
             this.logger.warn(`só pode as metas plano setorial ${metas.map((r) => r.id)}`);
 
             filtros.push({
@@ -643,7 +643,9 @@ export class ImportacaoOrcamentoService {
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
             tipo_pdm = job.pdm!.tipo;
-            const metasDoUser = await this.metaService.findAllIds(tipo_pdm, user, job.pdm_id);
+            // TODO aqui ta errado, vai precisar saber tbm qual foi o sistema que subiu o job pra iniciar corretamente
+            // o processamento
+            const metasDoUser = await this.metaService.findAllIds(tipo_pdm == 'PS' ? '_PS' : '_PDM', user, job.pdm_id);
 
             metasIds.push(...metasDoUser.map((r) => r.id));
         }

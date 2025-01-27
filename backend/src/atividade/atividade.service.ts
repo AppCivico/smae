@@ -131,7 +131,7 @@ export class AtividadeService {
                     select: { id: true },
                 });
 
-                if (tipo == 'PDM') {
+                if (tipo == '_PDM') {
                     if (!orgaos_participantes || orgaos_participantes.length === 0)
                         throw new BadRequestException(
                             'orgaos_participantes| Precisa ter pelo menos um orgão participante'
@@ -519,7 +519,7 @@ export class AtividadeService {
             delete dto.ps_ponto_focal;
             delete dto.origens_extra;
 
-            if (tipo === 'PDM' && cp && !op)
+            if (tipo === '_PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
             if (dto.codigo) {
@@ -579,7 +579,7 @@ export class AtividadeService {
                 });
             }
 
-            if (tipo == 'PDM') {
+            if (tipo == '_PDM') {
                 if (!op || op.length === 0)
                     throw new BadRequestException('orgaos_participantes| Precisa ter pelo menos um orgão participante');
                 if (!cp || cp.length === 0)

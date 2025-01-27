@@ -12,10 +12,10 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
@@ -23,14 +23,13 @@ import { CreateIniciativaDto } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { ListIniciativaDto } from './dto/list-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
-import { IniciativaService } from './iniciativa.service';
 import { IniciativaDto } from './entities/iniciativa.entity';
-import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { IniciativaService } from './iniciativa.service';
 
 @ApiTags('Iniciativa')
 @Controller('iniciativa')
 export class IniciativaController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(private readonly iniciativaService: IniciativaService) {}
 
     @Post()

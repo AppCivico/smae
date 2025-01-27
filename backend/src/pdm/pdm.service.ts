@@ -69,14 +69,14 @@ export class PdmService {
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreatePdmDto, user: PessoaFromJwt) {
-        if (tipo == 'PDM') {
+        if (tipo == '_PDM') {
             if (!user.hasSomeRoles(['CadastroPdm.inserir'])) {
-                throw new ForbiddenException('Você não tem permissão para inserir Plano de Metas');
+                throw new ForbiddenException('Você não tem permissão para inserir Programas de Metas');
             }
 
             if (!dto.nivel_orcamento) throw new BadRequestException('Nível de Orçamento é obrigatório');
             this.removeCamposPlanoSetorial(dto);
-        } else if (tipo == 'PS' || tipo == 'PDM_AS_PS') {
+        } else if (tipo == '_PS' || tipo == 'PDM_AS_PS') {
             if (
                 !user.hasSomeRoles([
                     'CadastroPS.administrador',
@@ -181,7 +181,7 @@ export class PdmService {
                 );
             }
 
-            if (tipo == 'PDM') {
+            if (tipo == '_PDM') {
                 this.logger.log(`Chamando monta_ciclos_pdm...`);
                 await prismaTx.$queryRaw`select monta_ciclos_pdm(${pdm.id}::int, false)`;
             }
@@ -205,7 +205,7 @@ export class PdmService {
         const andList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
         if (
-            (tipo == 'PS' || tipo == 'PDM_AS_PS') &&
+            (tipo == '_PS' || tipo == 'PDM_AS_PS') &&
             user.hasSomeRoles([
                 'CadastroMetaPS.listar',
                 'CadastroPS.administrador',
@@ -290,7 +290,7 @@ export class PdmService {
             andList.push({
                 OR: orList,
             });
-        } else if (tipo == 'PS') {
+        } else if (tipo == '_PS') {
             throw new HttpException('Usuário sem permissão para acessar Plano Setorial.', 403);
         } else if (tipo == 'PDM_AS_PS') {
             throw new HttpException('Usuário sem permissão para acessar Programa de Metas (Módulo 3).', 403);
@@ -299,7 +299,7 @@ export class PdmService {
         // talvez tenha que liberar pra mais pessoas, mas na teoria seria isso
         // mas tem GET no /pdm o tempo inteiro no frontend, então talvez precise liberar pra mais perfis
         if (
-            tipo == 'PDM' &&
+            tipo == '_PDM' &&
             user.hasSomeRoles([
                 'PDM.ponto_focal',
                 'PDM.tecnico_cp',
@@ -313,7 +313,7 @@ export class PdmService {
             andList.push({
                 tipo: 'PDM',
             });
-        } else if (tipo == 'PDM') {
+        } else if (tipo == '_PDM') {
             throw new HttpException('Usuário sem permissão para acessar Programa de Metas (Módulo 1).', 403);
         }
 
@@ -420,7 +420,7 @@ export class PdmService {
                     nivel_orcamento: pdm.nivel_orcamento,
                     tipo: pdm.tipo,
 
-                    pode_editar: await this.calcPodeEditar(pdm, user),
+                    pode_editar: await this.calcPodeEditar({ ...pdm, tipo: tipo }, user),
                     logo: logo,
                     data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
                     data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
@@ -441,7 +441,7 @@ export class PdmService {
         pdm: { tipo: TipoPdmType; ps_admin_cps: Prisma.JsonValue | null; orgao_admin_id: number | null },
         user: PessoaFromJwt
     ): Promise<boolean> {
-        if (pdm.tipo == 'PS' || pdm.tipo == 'PDM_AS_PS') {
+        if (pdm.tipo == '_PS' || pdm.tipo == 'PDM_AS_PS') {
             if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
                 this.logger.log('Usuário com permissão total em PS');
                 return true;
@@ -478,7 +478,7 @@ export class PdmService {
             // ponto focal nunca pode editar
 
             return false;
-        } else if (pdm.tipo == 'PDM') {
+        } else if (pdm.tipo == '_PDM') {
             return user.hasSomeRoles(['CadastroPdm.editar']);
         }
         return false;
@@ -532,7 +532,7 @@ export class PdmService {
         };
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
-        if (tipo == 'PS' || tipo == 'PDM_AS_PS') {
+        if (tipo == '_PS' || tipo == 'PDM_AS_PS') {
             if (!pdm.monitoramento_orcamento) pdmInfo.nivel_orcamento = '';
 
             const pdmPerfis = await this.prisma.pdmPerfil.findMany({
@@ -615,7 +615,7 @@ export class PdmService {
         const pode_editar = await this.calcPodeEditar({ ...pdm, tipo }, user);
         if (!pode_editar && readonly == 'ReadWrite') {
             throw new ForbiddenException(
-                `Você não tem permissão para editar este ${pdm.tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'}`
+                `Você não tem permissão para editar este ${pdm.tipo == 'PDM' ? 'Programas de Metas' : 'Plano Setorial'}`
             );
         }
 
@@ -629,20 +629,20 @@ export class PdmService {
     ) {
         if (
             updatePdmDto &&
-            pdm.tipo == 'PDM' &&
+            pdm.tipo == '_PDM' &&
             updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === true &&
             user.hasSomeRoles(['CadastroPdm.ativar']) === false
         ) {
-            throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
+            throw new ForbiddenException(`Você não pode ativar Programas de Metas`);
         } else if (
             updatePdmDto &&
-            pdm.tipo == 'PDM' &&
+            pdm.tipo == '_PDM' &&
             updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === false &&
             user.hasSomeRoles(['CadastroPdm.inativar']) === false
         ) {
-            throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
+            throw new ForbiddenException(`Você não pode inativar Programas de Metas`);
         }
 
         const podeEditar = await this.calcPodeEditar(pdm, user);
@@ -650,14 +650,14 @@ export class PdmService {
             throw new ForbiddenException(
                 `Você não tem permissão para ${
                     updatePdmDto ? 'editar' : 'remover'
-                } este ${pdm.tipo == 'PDM' || pdm.tipo == 'PDM_AS_PS' ? 'Plano de Metas' : 'Plano Setorial'}`
+                } este ${pdm.tipo == '_PDM' || pdm.tipo == 'PDM_AS_PS' ? 'Programas de Metas' : 'Plano Setorial'}`
             );
     }
 
     async delete(tipo: TipoPdmType, id: number, user: PessoaFromJwt): Promise<void> {
         const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite');
 
-        await this.verificarPrivilegiosEdicao({}, user, pdm);
+        await this.verificarPrivilegiosEdicao({}, user, { ...pdm, tipo: tipo });
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -676,7 +676,7 @@ export class PdmService {
                     select: { id: true, nome: true },
                 });
                 throw new HttpException(
-                    `Este ${tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'} está sendo referenciado como anterior por ${emUso} ${
+                    `Este ${tipo == '_PDM' ? 'Programas de Metas' : 'Plano Setorial'} está sendo referenciado como anterior por ${emUso} ${
                         emUso == 1 ? 'outro registro' : 'outros registros'
                     }: ${lista.map((item) => item.nome).join(', ')}`,
                     400
@@ -702,8 +702,9 @@ export class PdmService {
     ) {
         const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite', prismaCtx);
         const prismaTx = prismaCtx || this.prisma;
-        await this.verificarPrivilegiosEdicao(dto, user, pdm);
-        if (tipo == 'PDM') {
+        console.log(tipo, dto);
+        await this.verificarPrivilegiosEdicao(dto, user, { ...pdm, tipo: tipo });
+        if (tipo == '_PDM') {
             if (dto.nivel_orcamento == null) throw new BadRequestException('Nível de Orçamento é obrigatório no PDM.');
 
             this.removeCamposPlanoSetorial(dto);

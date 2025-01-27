@@ -115,7 +115,7 @@ export class EtapaService {
                     select: { id: true },
                 });
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (Array.isArray(dto.responsaveis))
                         await prismaTx.etapaResponsavel.createMany({
                             data: await this.buildEtapaResponsaveis(etapa.id, dto.responsaveis),
@@ -395,7 +395,7 @@ export class EtapaService {
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
-            if (tipo === 'PS' || tipo == 'PDM_AS_PS') {
+            if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
                 if (dto.ps_ponto_focal) {
                     const etapaInfo = await prismaTx.etapa.findFirstOrThrow({
                         where: { id },
@@ -681,7 +681,7 @@ export class EtapaService {
         now: Date
     ) {
         if (self.variavel_id === null && dto.variavel) {
-            if (tipoPdm == 'PDM') {
+            if (tipoPdm == '_PDM') {
                 if (!dto.variavel.codigo || !dto.variavel.titulo)
                     throw new BadRequestException('Código e título da variável são obrigatórios');
             } else {
@@ -720,7 +720,7 @@ export class EtapaService {
             if (!indicadorInfo || !indicadorInfo.indicador?.id)
                 throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
 
-            if (tipoPdm == 'PS' && !dto.variavel.codigo) {
+            if (tipoPdm == '_PS' && !dto.variavel.codigo) {
                 dto.variavel.codigo = await this.variavelService.geraCodigoVariavel('Global', {
                     inicio_medicao: indicadorInfo.indicador.inicio_medicao,
                     periodicidade: indicadorInfo.indicador.periodicidade,
@@ -738,7 +738,7 @@ export class EtapaService {
                 user,
                 prismaTx,
                 now,
-                tipoPdm == 'PS' ? 'Global' : 'PDM'
+                tipoPdm == '_PS' ? 'Global' : 'PDM'
             );
 
             for (const r of etapaAtualizada.responsaveis) {
@@ -763,7 +763,7 @@ export class EtapaService {
                 where: { id: self.variavel_id },
                 data: {
                     titulo: dto.variavel.titulo,
-                    codigo: tipoPdm == 'PS' ? undefined : dto.variavel.codigo,
+                    codigo: tipoPdm == '_PS' ? undefined : dto.variavel.codigo,
                 },
             });
         } else if (self.variavel_id && dto.variavel === null) {

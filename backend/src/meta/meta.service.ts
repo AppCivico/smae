@@ -138,7 +138,7 @@ export class MetaService {
                     await CompromissoOrigemHelper.upsert(meta.id, 'meta', origens_extra, prismaTx, user, now);
                 }
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (!op || op.length == 0)
                         throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
                     await prismaTx.metaOrgao.createMany({
@@ -149,7 +149,7 @@ export class MetaService {
                     await prismaTx.metaResponsavel.createMany({
                         data: await this.buildMetaResponsaveis(meta.id, op, cp),
                     });
-                } else if (tipo === 'PS') {
+                } else if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
                     if (psTecnicoCP) {
                         validatePSEquipes(psTecnicoCP.equipes, pdm.PdmPerfil, 'CP', pdm.id);
 
@@ -342,7 +342,7 @@ export class MetaService {
         // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
         // depois o busca a serie do painel-conteúdo correspondente
 
-        if (tipo == 'PDM') {
+        if (tipo == '_PDM') {
             if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
                 this.logger.verbose(
                     'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
@@ -512,7 +512,7 @@ export class MetaService {
         }
 
         // precisa de acesso no plano setorial tbm
-        if (tipo == 'PS' || tipo == 'PDM_AS_PS')
+        if (tipo == '_PS' || tipo == 'PDM_AS_PS')
             await this.pdmService.getDetail(
                 tipo,
                 meta[0].pdm_id,
@@ -703,7 +703,7 @@ export class MetaService {
                 }
             }
 
-            const ehPdm = tipo == 'PDM';
+            const ehPdm = tipo == '_PDM';
             let podeEditar = false;
 
             if (ehPdm && user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
@@ -777,7 +777,7 @@ export class MetaService {
         delete updateMetaDto.ps_ponto_focal;
         delete updateMetaDto.origens_extra;
         const now = new Date(Date.now());
-        if (tipo === 'PDM' && cp && !op)
+        if (tipo === '_PDM' && cp && !op)
             throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
         await this.prisma.$transaction(
@@ -825,7 +825,7 @@ export class MetaService {
                     select: { id: true },
                 });
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (op) {
                         if (op.length == 0)
                             throw new BadRequestException('orgaos_participantes é obrigatório para PDM');
@@ -840,7 +840,7 @@ export class MetaService {
                             await this.upsertMetaResponsaveis(prismaTx, meta.id, op, cp);
                         }
                     }
-                } else if (tipo === 'PS') {
+                } else if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
                     // Fetch current PdmPerfil for this meta
                     const currentPdmPerfis = await prismaTx.pdmPerfil.findMany({
                         where: {

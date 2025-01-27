@@ -255,7 +255,7 @@ export class VariavelService {
                 },
                 select: { meta_id: true },
             });
-            await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
+            await this.metaService.assertMetaWriteOrThrow('_PDM', metaRow.meta_id, user, 'variavel do indicador');
 
             this.fixIndicadorInicioFim(dto, indicador);
             await this.checkDup(dto, undefined, indicador.id);
@@ -2043,7 +2043,7 @@ export class VariavelService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
+        await this.metaService.assertMetaWriteOrThrow('_PDM', metaRow.meta_id, user, 'variavel do indicador');
         return indicadorViaVar;
     }
 

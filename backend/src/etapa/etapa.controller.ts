@@ -1,20 +1,19 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { API_TAGS_CRONOGRAMA } from '../cronograma/cronograma.controller';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { EtapaService } from './etapa.service';
-import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('etapa')
 export class EtapaController {
-    private tipo: TipoPdm = 'PDM';
+    private tipo: TipoPdmType = '_PDM';
     constructor(private readonly etapaService: EtapaService) {}
 
     @Patch(':id')

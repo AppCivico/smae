@@ -190,7 +190,7 @@ export class MetasController {
             }
         } else if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm'])) {
             // logo é tem que ser admin_cp
-            await this.metaService.assertMetaWriteOrThrow('PDM', dto.variavel_id, user, 'readonly');
+            await this.metaService.assertMetaWriteOrThrow('_PDM', dto.variavel_id, user, 'readonly');
         }
 
         return {
@@ -241,7 +241,7 @@ export class MetasController {
         } else if (!user.hasSomeRoles(['CadastroMeta.administrador_no_pdm'])) {
             // logo é tem que ser admin_cp
             for (const item of dto.linhas) {
-                await this.metaService.assertMetaWriteOrThrow('PDM', item.variavel_id, user, 'readonly');
+                await this.metaService.assertMetaWriteOrThrow('_PDM', item.variavel_id, user, 'readonly');
             }
         }
 
