@@ -1,9 +1,10 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PdmModoParaTipo, PdmModoParaTipoOrNull, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -35,7 +36,6 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
-import { PdmModoParaTipo, PdmModoParaTipoOrNull, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -470,7 +470,7 @@ export class MetaService {
     }
 
     async findAllIds(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         user: PessoaFromJwt | undefined,
         pdm_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {

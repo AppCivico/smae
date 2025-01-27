@@ -30,6 +30,7 @@ import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dt
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -116,7 +117,7 @@ export class ImportacaoOrcamentoService {
                 dto.tipo_projeto = 'PP';
             } else if (sistema === 'PDM') {
                 dto.tipo_pdm = 'PDM';
-            } else if (sistema === 'PlanoSetorial') {
+            } else if (sistema === 'PlanoSetorial' || sistema === 'ProgramaDeMetas') {
                 dto.tipo_pdm = 'PS';
             }
         } else {
@@ -138,7 +139,7 @@ export class ImportacaoOrcamentoService {
                 throw new BadRequestException('Você não tem permissão para Meta');
             }
 
-            if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(['CadastroMetaPS.orcamento'])) {
+            if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(PlanoSetorialController.WritePerms)) {
                 throw new BadRequestException('Você não tem permissão para Meta do Plano Setorial');
             }
         }
@@ -381,8 +382,12 @@ export class ImportacaoOrcamentoService {
                     },
                 ],
             });
-        } else if (sistema == 'PlanoSetorial' && user.hasSomeRoles(['CadastroMetaPS.orcamento']) && filters.pdm_id) {
-            const metas = await this.metaService.findAllIds('PS', user);
+        } else if (
+            (sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas') &&
+            user.hasSomeRoles(PlanoSetorialController.WritePerms) &&
+            filters.pdm_id
+        ) {
+            const metas = await this.metaService.findAllIds(sistema == 'PlanoSetorial' ? 'PS' : 'PDM_AS_PS', user);
             this.logger.warn(`só pode as metas plano setorial ${metas.map((r) => r.id)}`);
 
             filtros.push({
@@ -390,7 +395,7 @@ export class ImportacaoOrcamentoService {
                     { portfolio_id: { not: null } },
                     {
                         pdm: {
-                            tipo: 'PS',
+                            tipo: sistema == 'PlanoSetorial' ? 'PS' : 'PDM',
                             Meta: {
                                 some: {
                                     id: {
