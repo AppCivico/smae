@@ -34,8 +34,7 @@ FROM
     join privilegio p on p.id = priv.privilegio_id
     join public.pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
 WHERE mo.responsavel AND p.codigo in (
-    'CadastroMeta.orcamento', 'CadastroMeta.administrador_orcamento' ,
-    'CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'
+    'CadastroMeta.orcamento', 'CadastroMeta.administrador_orcamento'
 )
 group by 1, 2;
 

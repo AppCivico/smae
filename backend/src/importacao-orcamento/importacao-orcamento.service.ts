@@ -139,7 +139,7 @@ export class ImportacaoOrcamentoService {
                 throw new BadRequestException('Você não tem permissão para Meta');
             }
 
-            if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(PlanoSetorialController.WritePerms)) {
+            if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(PlanoSetorialController.OrcamentoWritePerms)) {
                 throw new BadRequestException('Você não tem permissão para Meta do Plano Setorial');
             }
         }
@@ -384,7 +384,7 @@ export class ImportacaoOrcamentoService {
             });
         } else if (
             (sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas') &&
-            user.hasSomeRoles(PlanoSetorialController.WritePerms) &&
+            user.hasSomeRoles(PlanoSetorialController.OrcamentoWritePerms) &&
             filters.pdm_id
         ) {
             const metas = await this.metaService.findAllIds(sistema == 'PlanoSetorial' ? 'PS' : 'PDM_AS_PS', user);

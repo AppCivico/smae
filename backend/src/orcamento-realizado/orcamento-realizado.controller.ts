@@ -16,6 +16,7 @@ import {
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizadoService } from './orcamento-realizado.service';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 @ApiTags('Orçamento - Realizado')
 @Controller('orcamento-realizado')
@@ -118,7 +119,7 @@ export class OrcamentoRealizadoPSController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async create(
         @Body() createMetaDto: CreateOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -128,7 +129,7 @@ export class OrcamentoRealizadoPSController {
 
     @Patch('orcamento-concluido')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async patchProprioOrgaoOrcamentoConcluido(
@@ -141,7 +142,7 @@ export class OrcamentoRealizadoPSController {
 
     @Patch('orcamento-concluido-admin')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async patchOrcamentoConcluidoAdmin(
@@ -154,7 +155,7 @@ export class OrcamentoRealizadoPSController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async update(
         @Param() params: FindOneParams,
         @Body() createMetaDto: UpdateOrcamentoRealizadoDto,
@@ -165,7 +166,7 @@ export class OrcamentoRealizadoPSController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async findAll(
         @Query() filters: FilterOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -175,7 +176,7 @@ export class OrcamentoRealizadoPSController {
 
     @ApiBearerAuth('access-token')
     @Get('compartilhados-no-pdm')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async findCompartilhado(
         @Query() filters: FilterOrcamentoRealizadoCompartilhadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -185,7 +186,7 @@ export class OrcamentoRealizadoPSController {
 
     @Delete('em-lote')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async removeEmLote(@Body() params: BatchRecordWithId, @CurrentUser() user: PessoaFromJwt) {
@@ -195,7 +196,7 @@ export class OrcamentoRealizadoPSController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

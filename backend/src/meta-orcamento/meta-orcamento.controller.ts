@@ -13,6 +13,7 @@ import {
     UpdateOrcamentoPrevistoZeradoDto,
 } from './dto/meta-orcamento.dto';
 import { MetaOrcamentoService } from './meta-orcamento.service';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 @Controller(['meta-orcamento', 'orcamento-previsto'])
 @ApiTags('Orçamento - Meta (Custeio e Investimento)')
@@ -83,7 +84,7 @@ export class MetaPSOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async create(
         @Body() createMetaDto: CreateMetaOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -93,7 +94,7 @@ export class MetaPSOrcamentoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async findAll(
         @Query() filters: FilterMetaOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -106,7 +107,7 @@ export class MetaPSOrcamentoController {
 
     @Patch('zerado')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
     async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
@@ -116,7 +117,7 @@ export class MetaPSOrcamentoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(
         @Param() params: FindOneParams,
@@ -128,7 +129,7 @@ export class MetaPSOrcamentoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -10,6 +10,7 @@ import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
 import { ImportacaoOrcamentoService } from './importacao-orcamento.service';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 @Controller('importacao-orcamento')
 @ApiTags('Importação')
@@ -18,14 +19,24 @@ export class ImportacaoOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.orcamento', 'CadastroMetaPS.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
+    @Roles([
+        'CadastroMeta.orcamento',
+        ...PlanoSetorialController.OrcamentoWritePerms,
+        'Projeto.orcamento',
+        'ProjetoMDO.orcamento',
+    ])
     async create(@Body() dto: CreateImportacaoOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return this.importacaoOrcamentoService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.orcamento', 'CadastroMetaPS.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
+    @Roles([
+        'CadastroMeta.orcamento',
+        ...PlanoSetorialController.OrcamentoWritePerms,
+        'Projeto.orcamento',
+        'ProjetoMDO.orcamento',
+    ])
     @ApiPaginatedResponse(ImportacaoOrcamentoDto)
     async findAll(
         @Query() filters: FilterImportacaoOrcamentoDto,
@@ -36,7 +47,12 @@ export class ImportacaoOrcamentoController {
 
     @Get('portfolio')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.orcamento', 'CadastroMetaPS.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
+    @Roles([
+        'CadastroMeta.orcamento',
+        ...PlanoSetorialController.OrcamentoWritePerms,
+        'Projeto.orcamento',
+        'ProjetoMDO.orcamento',
+    ])
     async findAll_portfolio(@CurrentUser() user: PessoaFromJwt): Promise<PortfolioDto[]> {
         return await this.importacaoOrcamentoService.findAll_portfolio(user);
     }

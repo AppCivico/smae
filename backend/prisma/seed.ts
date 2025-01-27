@@ -356,11 +356,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
             'CadastroMetaPS.administrador_no_pdm',
             'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis nos planos setoriais, de acordo com o seu perfil.',
         ],
-        [
-            'CadastroMetaPS.administrador_orcamento',
-            'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
-        ],
-        ['CadastroMetaPS.orcamento', 'Atualizar a Execução Orçamentária pelas quais for responsável'],
         ['CadastroMetaPS.listar', 'Listar metas, iniciativas e atividades'],
     ],
     ReportsPS: [
@@ -735,7 +730,6 @@ const PDM_AS_PSCadastroBasico: ListaDePrivilegios[] = [
 
 const PSMetasReportsEAdmin: ListaDePrivilegios[] = [
     'CadastroMetaPS.administrador_no_pdm',
-    'CadastroMetaPS.administrador_orcamento',
     'CadastroMetaPS.listar',
 
     'Reports.executar.PlanoSetorial',
@@ -1191,11 +1185,6 @@ PerfilAcessoConfig.push(
         privilegios: [
             'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessSMAE.liberar_pdm_as_psas
         ],
-    },
-    {
-        nome: atualizarNomePerfil('Orçamento - Metas Setorial', ['Orçamento']),
-        descricao: 'LEGADO SERA REMOVIDO ATE O FINAL DA SPRINT',
-        privilegios: ['CadastroMetaPS.orcamento'],
     }
 );
 
@@ -1219,7 +1208,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Administrador de Plano Setorial'),
     removerNomePerfil('Administrador de equipes'),
     removerNomePerfil('Administrador de Grupo de Variáveis no Órgão'),
-    removerNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM)
+    removerNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM),
+    removerNomePerfil('Orçamento - Metas Setorial')
 );
 
 async function main() {

@@ -24,6 +24,7 @@ import {
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
 
@@ -832,7 +833,7 @@ export class OrcamentoRealizadoService {
         const ehAdmin = user.hasSomeRoles([
             'CadastroMeta.administrador_orcamento',
             // TODO PS permissão de admin de meta
-            'CadastroMetaPS.administrador_orcamento',
+            ...PlanoSetorialController.OrcamentoWritePerms,
         ]);
 
         // economizando query, admin não entra na condição de testar se está dentro dessa lista
@@ -922,7 +923,7 @@ export class OrcamentoRealizadoService {
         let filterIdIn: undefined | number[] = undefined;
         if (
             !ehCompartilhado &&
-            !user.hasSomeRoles(['CadastroMeta.administrador_orcamento', 'CadastroMetaPS.administrador_orcamento'])
+            !user.hasSomeRoles(['CadastroMeta.administrador_orcamento', ...PlanoSetorialController.OrcamentoWritePerms])
         )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
@@ -1273,8 +1274,8 @@ export class OrcamentoRealizadoService {
     async patchOrcamentoConcluidoProprioOrgao(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
         const isAdmin = user.hasSomeRoles([
             'CadastroMeta.administrador_orcamento',
-            // TODO ps
-            'CadastroMetaPS.administrador_orcamento',
+            // TODO PS permissão de admin de meta
+            ...PlanoSetorialController.OrcamentoWritePerms,
         ]);
 
         if (isAdmin) throw new BadRequestException(`Administrador de orçamento não deve utilizar esse serviço`);
@@ -1320,7 +1321,8 @@ export class OrcamentoRealizadoService {
     async patchOrcamentoConcluidoMetaOrgao(dto: PatchOrcamentoRealizadoConcluidoComOrgaoDto, user: PessoaFromJwt) {
         const isAdmin = user.hasSomeRoles([
             'CadastroMeta.administrador_orcamento',
-            'CadastroMetaPS.administrador_orcamento',
+            // TODO PS permissão de admin de meta
+            ...PlanoSetorialController.OrcamentoWritePerms,
         ]);
 
         if (!isAdmin) {

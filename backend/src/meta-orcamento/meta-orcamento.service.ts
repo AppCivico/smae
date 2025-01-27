@@ -13,6 +13,7 @@ import {
     UpdateOrcamentoPrevistoZeradoDto,
 } from './dto/meta-orcamento.dto';
 import { MetaOrcamento } from './entities/meta-orcamento.entity';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 export class MetaOrcamentoUpdatedRet {
     id: number;
@@ -101,8 +102,8 @@ export class MetaOrcamentoService {
         if (
             !user.hasSomeRoles([
                 'CadastroMeta.administrador_orcamento',
-                // TODO PS permissões
-                'CadastroMetaPS.administrador_orcamento',
+                // TODO PS permissão de admin de meta
+                ...PlanoSetorialController.OrcamentoWritePerms,
             ])
         )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
