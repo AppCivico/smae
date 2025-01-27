@@ -14,7 +14,8 @@ const {
 async function iniciar() {
   if (!lista.value.length) {
     await planosSetoriaisStore.buscarTudo();
-    // mesmo após consulta, a lista ainda é vazia
+    // mesmo após consulta, a lista ainda é vazia?
+    // então, vamos para a lista de variáveis
     if (!lista.value.length) {
       await router.push({
         name: 'variaveisListar',
