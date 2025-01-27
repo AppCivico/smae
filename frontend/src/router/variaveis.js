@@ -69,7 +69,7 @@ export default {
       },
       children: [
         {
-          name: `${entidadeMãe}.variaveisResumo`,
+          name: 'variaveisResumo',
           path: 'resumo',
           component: () => import('@/views/variaveis/VariaveisResumo.vue'),
           meta: {
