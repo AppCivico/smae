@@ -271,10 +271,13 @@ watch(() => props.group, (novoValor) => {
               class="meta flex center mb1"
             >
               <SmaeLink
-                :to="{
-                  name: `.meta`,
-                  params: { meta_id: m.id }
-                }"
+                :to="
+                  $route.meta.entidadeMãe === 'pdm'
+                    ? `/metas/${m.id}` : {
+                      name: `.meta`,
+                      params: { meta_id: m.id }
+                    }
+                "
                 class="flex center f1"
               >
                 <div class="farol" />
@@ -287,10 +290,13 @@ watch(() => props.group, (novoValor) => {
                   'CadastroMeta.administrador_no_pdm',
                   'CadastroMetaPs.administrador_no_pdm'
                 ])"
-                :to="{
-                  name: '.editarMeta',
-                  params: { meta_id: m.id }
-                }"
+                :to="
+                  $route.meta.entidadeMãe === 'pdm' ?
+                    `/metas/editar/${m.id}` : {
+                      name: '.editarMeta',
+                      params: { meta_id: m.id }
+                    }
+                "
                 class="ml1 tprimary"
               >
                 <svg
