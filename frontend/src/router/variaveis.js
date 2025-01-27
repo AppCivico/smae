@@ -34,6 +34,7 @@ export default {
       'CadastroVariavelGlobal.administrador_no_orgao',
       'CadastroMetaPS.listar',
       'CadastroMetaPDM.listar',
+      'SMAE.GrupoVariavel.participante',
     ],
     rotasParaMenuSecundário: ['variaveisListar', 'cicloAtualizacao'],
   },
