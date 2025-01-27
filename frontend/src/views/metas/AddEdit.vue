@@ -156,13 +156,15 @@ const valoresIniciais = computed(() => ({
     : [],
 }));
 
+const isPlanejamentoEMonitoramento = computed(() => ['planoSetorial', 'programaDeMetas'].includes(route.meta.entidadeMãe));
+
 async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
 
     // remove orgaos_participantes de plano setorial pois a api
     // gera sozinha esse valor agora
-    if (route.meta.isPlanejamentoEMonitoramento.value) {
+    if (isPlanejamentoEMonitoramento.value) {
       values.orgaos_participantes = [];
     }
 
@@ -222,7 +224,7 @@ async function checkDelete(id) {
 
           if (route.meta.entidadeMãe === 'pdm') {
             router.push({ name: 'pdm.metas' });
-          } else if (route.meta.isPlanejamentoEMonitoramento.value) {
+          } else if (isPlanejamentoEMonitoramento.value) {
             router.push({
               name: `${route.meta.entidadeMãe}.listaDeMetas`,
               params: {
@@ -620,7 +622,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
       </template>
 
       <fieldset
-        v-if="route.meta.isPlanejamentoEMonitoramento"
+        v-if="isPlanejamentoEMonitoramento"
         class="mb2"
       >
         <legend class="label">
@@ -666,7 +668,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
       </fieldset>
 
       <fieldset
-        v-if="route.meta.isPlanejamentoEMonitoramento"
+        v-if="isPlanejamentoEMonitoramento"
         class="mb2"
       >
         <legend class="label">
@@ -686,9 +688,8 @@ watch(() => activePdm.value.id, async (novoValor) => {
         </div>
       </fieldset>
 
-      <h1>1234</h1>
       <CampoDePlanosMetasRelacionados
-        v-if="route.meta.isPlanejamentoEMonitoramento"
+        v-if="isPlanejamentoEMonitoramento"
         :apenas-pdms="false"
         titulo="Relacionamentos com outros compromissos"
         :model-value="values.origens_extra"
