@@ -220,7 +220,7 @@ watch(() => props.valoresIniciais, async (novoValor) => {
             :title="orgao.descricao?.length > 36 ? orgao.descricao : undefined"
             :disabled="mapaDeOrgaos[orgao.id] && listaDeOrgaos[idx].id !== orgao.id"
           >
-            {{ orgao.id }} - {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
+            {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
           </option>
         </select>
       </div>
