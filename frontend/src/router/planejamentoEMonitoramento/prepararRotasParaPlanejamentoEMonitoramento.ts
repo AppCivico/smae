@@ -1,6 +1,5 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
-
 import metasRoutes from './metas.routes';
 
 export type EntidadesPossiveis = 'planoSetorial' | 'programaDeMetas';
@@ -50,7 +49,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       rotaPrescindeDeChave: true,
       presenteNoMenu: true,
       pesoNoMenu: 2,
-      limitarÀsPermissões: 'CadastroPS.',
+      limitarÀsPermissões: [
+        'CadastroPDM.',
+        'CadastroPS.',
+      ],
     },
     children: [
       {
