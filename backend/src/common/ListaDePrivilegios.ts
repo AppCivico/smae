@@ -102,7 +102,6 @@ export type ListaDePrivilegios =
     | 'CadastroPainelPDM.editar'
     | 'CadastroPainelPDM.remover'
     | 'CadastroPainelPDM.visualizar'
-
     | 'CadastroPainel.inserir'
     | 'CadastroPainel.editar'
     | 'CadastroPainel.remover'
@@ -242,4 +241,5 @@ export type ListaDePrivilegios =
     | 'CadastroClassificacao.editar'
     | 'CadastroClassificacao.remover'
     | 'CadastroClassificacao.listar'
-    | 'SMAE.liberar_pdm_as_ps';
+    | 'SMAE.liberar_pdm_as_ps'
+    | 'Menu.metas';

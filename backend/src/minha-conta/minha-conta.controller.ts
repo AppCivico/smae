@@ -1,11 +1,11 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { ModuloSistema } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { MinhaContaDto, SessaoDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
-import { ModuloSistema } from '@prisma/client';
 
 @ApiTags('Minha Conta')
 @Controller('')
@@ -39,8 +39,10 @@ export class MinhaContaController {
             if (
                 user.hasSomeRoles(['CadastroPDM.administrador_no_orgao', 'CadastroPDM.administrador']) ||
                 (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PDM'))
-            )
+            ) {
                 hasPDM = true;
+                user.privilegios.push('Menu.metas');
+            }
 
             sistemas = sistemas.filter((sistema) => {
                 if (sistema === 'ProgramaDeMetas' && !hasPDM) {
@@ -67,7 +69,6 @@ export class MinhaContaController {
                 orgao_id: user.orgao_id,
                 flags: user.flags,
                 modulos_sobrescritos,
-                equipe_pdm_tipos: user.equipe_pdm_tipos,
             } satisfies SessaoDto,
         };
     }
