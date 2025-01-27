@@ -53,7 +53,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       presenteNoMenu: true,
       pesoNoMenu: 2,
       limitarÀsPermissões: parametrosPagina.privilegioRaiz,
-      isPlanejamentoEMonitoramento: true,
     },
     children: [
       {
