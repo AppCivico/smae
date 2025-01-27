@@ -11,6 +11,7 @@ import {
     UpdateOrcamentoPlanejadoDto,
 } from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
@@ -244,11 +245,12 @@ export class OrcamentoPlanejadoService {
             !user.hasSomeRoles([
                 'CadastroMeta.administrador_orcamento',
                 // TODO mais um local pra adicionar permissão de acordo com o nivel do PS
-                'CadastroMetaPS.administrador_orcamento',
+                ...PlanoSetorialController.OrcamentoWritePerms,
             ])
         )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
+        // TODO: basicamente aqui obriga a meta a ser passada, então da pra usar o findIds pra verificar as perms
         const meta = await this.prisma.meta.findFirst({
             where: { id: filters.meta_id, removido_em: null },
             select: { pdm_id: true },

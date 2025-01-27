@@ -196,6 +196,7 @@ const PermsPS: ListaDePrivilegios[] = [
 @Controller('plano-setorial')
 export class PlanoSetorialController {
     static readonly WritePerms: ListaDePrivilegios[] = PermsPS;
+    static readonly OrcamentoWritePerms: ListaDePrivilegios[] = PermsPS;
 
     constructor(private readonly pdmService: PdmService) {}
 

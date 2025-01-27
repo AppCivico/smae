@@ -12,6 +12,7 @@ import {
     UpdateOrcamentoPlanejadoDto,
 } from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 
 @ApiTags('Orçamento - Planejado')
 @Controller('orcamento-planejado')
@@ -69,7 +70,7 @@ export class OrcamentoPlanejadoPSController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async create(
         @Body() createMetaDto: CreateOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -79,7 +80,7 @@ export class OrcamentoPlanejadoPSController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async update(
         @Param() params: FindOneParams,
         @Body() createMetaDto: UpdateOrcamentoPlanejadoDto,
@@ -90,7 +91,7 @@ export class OrcamentoPlanejadoPSController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     async findAll(
         @Query() filters: FilterOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -102,7 +103,7 @@ export class OrcamentoPlanejadoPSController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMetaPS.orcamento', 'CadastroMetaPS.administrador_orcamento'])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

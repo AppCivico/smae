@@ -73,8 +73,6 @@ export type ListaDePrivilegios =
     | 'CadastroTagPS.remover'
     | 'CadastroMetaPS.listar'
     | 'CadastroMetaPS.administrador_no_pdm'
-    | 'CadastroMetaPS.orcamento'
-    | 'CadastroMetaPS.administrador_orcamento'
     | 'CadastroVariavelCategoricaPS.administrador'
     | 'CadastroPainelPS.inserir'
     | 'CadastroPainelPS.editar'
