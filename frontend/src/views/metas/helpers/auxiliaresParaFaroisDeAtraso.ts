@@ -1,8 +1,7 @@
 /* eslint-disable max-len */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { CronogramaEtapaAtrasoGrau } from '@/../../common/CronogramaEtapaAtrasoGrau';
+import type { CronogramaEtapaAtrasoGrau } from '@/../../common/CronogramaEtapaAtrasoGrau';
 
-export const textoParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | any, dias = 0): String | null => {
+export const textoParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | unknown, dias = 0): string | null => {
   switch (grau) {
     case 'Concluido':
       return 'Concluído';
@@ -22,6 +21,6 @@ export const textoParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | any, d
   }
 });
 
-export const classeParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | any): String | null => (grau && grau !== 'Neutro'
+export const classeParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | unknown): string | null => (grau && grau !== 'Neutro'
   ? `alerta-de-atraso alerta-de-atraso--${String(grau).toLowerCase()}`
   : null));
