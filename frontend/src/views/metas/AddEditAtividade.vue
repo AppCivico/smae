@@ -392,7 +392,7 @@ function filterResponsible(orgao_id) {
         ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
       </template>
 
-      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+      <fieldset v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <label class="label">Órgãos responsáveis</label>
         <div
           class="flex flexwrap g2 mb1"
@@ -431,7 +431,7 @@ function filterResponsible(orgao_id) {
         </div>
       </fieldset>
 
-      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+      <fieldset v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <legend class="label">
           Equipe Técnica de Administração do Plano
         </legend>
