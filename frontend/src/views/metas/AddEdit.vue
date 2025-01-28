@@ -689,7 +689,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
       </fieldset>
 
       <CampoDePlanosMetasRelacionados
-        v-if="isPlanejamentoEMonitoramento"
+        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
         :apenas-pdms="false"
         titulo="Relacionamentos com outros compromissos"
         :model-value="values.origens_extra"
