@@ -905,6 +905,13 @@ export class DistribuicaoRecursoService {
             ]),
         ];
 
+        let status_atual: string = '-';
+        if (historico_status.length) {
+            const linhaAtual = historico_status[0];
+
+            status_atual = linhaAtual.status_base?.nome ?? linhaAtual.status_customizado?.nome ?? '-';
+        }
+
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
@@ -931,6 +938,7 @@ export class DistribuicaoRecursoService {
             pode_registrar_status: pode_registrar_status,
             pct_valor_transferencia: pct_valor_transferencia,
             historico_status: historico_status,
+            status_atual: status_atual,
             orgao_gestor: {
                 id: row.orgao_gestor.id,
                 sigla: row.orgao_gestor.sigla,
