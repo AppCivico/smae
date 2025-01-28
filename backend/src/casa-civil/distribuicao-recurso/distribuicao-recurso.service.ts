@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -294,7 +294,7 @@ export class DistribuicaoRecursoService {
                         const rowParlamentarTransf = parlamentaresNaTransf.find(
                             (e) => e.parlamentar_id == novaRow.parlamentar_id
                         );
-                        if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                        if (!rowParlamentarTransf) throw new InternalServerErrorException('Erro em verificar valores na transferência.');
                         const valorNaTransf = rowParlamentarTransf.valor ?? 0;
 
                         if (valorNaTransf == 0)
@@ -1313,7 +1313,7 @@ export class DistribuicaoRecursoService {
                         const rowParlamentarTransf = parlamentaresNaTransf.find(
                             (e) => e.parlamentar_id == relParlamentar.parlamentar_id
                         );
-                        if (!rowParlamentarTransf) throw new Error('Erro em verificar valores na transferência.');
+                        if (!rowParlamentarTransf) throw new InternalServerErrorException('Erro em verificar valores na transferência.');
                         const valorNaTransf = rowParlamentarTransf.valor ?? 0;
                         if (valorNaTransf == 0 && relParlamentar.valor != null && relParlamentar.valor > 0)
                             throw new HttpException(
@@ -1793,13 +1793,13 @@ export class DistribuicaoRecursoService {
                 },
             });
             if (tarefasExistentes.length == 0)
-                throw new Error('Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.');
+                throw new InternalServerErrorException('Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.');
 
             let tarefa_pai_id: number | undefined;
             let numero: number = 1;
             for (const andamentoTarefa of andamentoTarefas) {
                 if (!andamentoTarefa.transferencia_andamento.tarefaEspelhada[0])
-                    throw new Error('Erro interno! Tarefa espelhada não encontrada.');
+                    throw new InternalServerErrorException('Erro interno! Tarefa espelhada não encontrada.');
 
                 if (tarefa_pai_id != andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id) {
                     tarefa_pai_id = andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id;
@@ -1948,7 +1948,7 @@ export class DistribuicaoRecursoService {
                     },
                 });
 
-                if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                if (!tarefaFilha) throw new InternalServerErrorException('Erro ao encontrar tarefa filha para base de projeção.');
 
                 updates.push(
                     prismaTxn.tarefa.update({
@@ -1974,7 +1974,7 @@ export class DistribuicaoRecursoService {
                         db_projecao_termino: true,
                     },
                 });
-                if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                if (!tarefaIrma) throw new InternalServerErrorException('Erro ao encontrar tarefa filha para base de projeção.');
 
                 updates.push(
                     prismaTxn.tarefa.update({
