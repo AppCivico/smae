@@ -417,7 +417,7 @@ export class TransferenciaService {
                 // O workflow e seu cronograma devem ser removidos.
                 if (self.tipo_id != dto.tipo_id) {
                     await prismaTxn.transferenciaAndamento.updateMany({
-                        where: { transferencia_id: id },
+                        where: { transferencia_id: id, removido_em: null },
                         data: {
                             removido_em: agora,
                             removido_por: user.id,
@@ -429,6 +429,7 @@ export class TransferenciaService {
                             transferencia_andamento: {
                                 transferencia_id: id,
                             },
+                            removido_em: null,
                         },
                         data: {
                             removido_em: agora,
@@ -438,9 +439,7 @@ export class TransferenciaService {
 
                     await prismaTxn.tarefa.updateMany({
                         where: {
-                            tarefa_cronograma: {
-                                transferencia_id: id,
-                            },
+                            tarefa_cronograma: { transferencia_id: id, removido_em: null },
                         },
                         data: {
                             transferencia_fase_id: null,
@@ -451,7 +450,7 @@ export class TransferenciaService {
                     });
 
                     await prismaTxn.tarefaCronograma.updateMany({
-                        where: { transferencia_id: id },
+                        where: { transferencia_id: id, removido_em: null },
                         data: {
                             removido_em: agora,
                             removido_por: user.id,
