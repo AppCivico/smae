@@ -848,10 +848,10 @@ export class VariavelCicloService {
 
                     // se tem o RealizadoAcumulado e Realizado, então recalcula o acumulado do form baseado
                     // no acumulado anterior
-                    if (realizadoAcumulado && realizado && valorForm.valor_realizado) {
+                    if (realizadoAcumulado && valorForm.valor_realizado) {
                         const valorRecalc =
                             parseFloat(realizadoAcumulado.valor_nominal.toString()) -
-                            parseFloat(realizado.valor_nominal.toString()) +
+                            (realizado ? parseFloat(realizado.valor_nominal.toString()) : 0) +
                             parseFloat(valorForm.valor_realizado);
 
                         remapSeriesVariavel.push({
