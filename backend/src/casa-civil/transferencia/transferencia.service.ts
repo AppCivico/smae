@@ -1,4 +1,11 @@
-import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
@@ -112,7 +119,9 @@ export class TransferenciaService {
                     },
                 });
                 if (identificadorExiste)
-                    throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
+                    throw new InternalServerErrorException(
+                        `Erro ao gerar identificador, já está em uso: ${identificador}`
+                    );
 
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
@@ -253,7 +262,10 @@ export class TransferenciaService {
                             },
                         });
 
-                        if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                        if (!tarefaFilha)
+                            throw new InternalServerErrorException(
+                                'Erro ao encontrar tarefa filha para base de projeção.'
+                            );
 
                         updates.push(
                             prismaTxn.tarefa.update({
@@ -279,7 +291,10 @@ export class TransferenciaService {
                                 db_projecao_termino: true,
                             },
                         });
-                        if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                        if (!tarefaIrma)
+                            throw new InternalServerErrorException(
+                                'Erro ao encontrar tarefa filha para base de projeção.'
+                            );
 
                         updates.push(
                             prismaTxn.tarefa.update({
@@ -393,14 +408,16 @@ export class TransferenciaService {
                         },
                     });
                     if (identificadorExiste)
-                        throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
+                        throw new InternalServerErrorException(
+                            `Erro ao gerar identificador, já está em uso: ${identificador}`
+                        );
                 }
 
                 // Caso o tipo da transferência seja modificado.
                 // O workflow e seu cronograma devem ser removidos.
                 if (self.tipo_id != dto.tipo_id) {
                     await prismaTxn.transferenciaAndamento.updateMany({
-                        where: { transferencia_id: id },
+                        where: { transferencia_id: id, removido_em: null },
                         data: {
                             removido_em: agora,
                             removido_por: user.id,
@@ -412,6 +429,7 @@ export class TransferenciaService {
                             transferencia_andamento: {
                                 transferencia_id: id,
                             },
+                            removido_em: null,
                         },
                         data: {
                             removido_em: agora,
@@ -421,9 +439,7 @@ export class TransferenciaService {
 
                     await prismaTxn.tarefa.updateMany({
                         where: {
-                            tarefa_cronograma: {
-                                transferencia_id: id,
-                            },
+                            tarefa_cronograma: { transferencia_id: id, removido_em: null },
                         },
                         data: {
                             transferencia_fase_id: null,
@@ -434,7 +450,7 @@ export class TransferenciaService {
                     });
 
                     await prismaTxn.tarefaCronograma.updateMany({
-                        where: { transferencia_id: id },
+                        where: { transferencia_id: id, removido_em: null },
                         data: {
                             removido_em: agora,
                             removido_por: user.id,
@@ -454,7 +470,7 @@ export class TransferenciaService {
                     });
                 }
 
-                let workflow_id: number | undefined;
+                let workflow_id: number | undefined | null;
                 if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
@@ -466,6 +482,7 @@ export class TransferenciaService {
                             id: true,
                         },
                     });
+                    workflow_id = null;
                     if (workflow) workflow_id = workflow?.id;
                 }
 
