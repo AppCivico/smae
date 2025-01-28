@@ -1863,6 +1863,7 @@ export class DistribuicaoRecursoService {
                 removido_em: null,
                 tarefa_cronograma: {
                     transferencia_id: distribuicaoRecurso.transferencia_id,
+                    removido_em: null,
                 },
             },
             select: {
@@ -1908,6 +1909,7 @@ export class DistribuicaoRecursoService {
             where: {
                 tarefa_cronograma: {
                     transferencia_id: distribuicaoRecurso.transferencia_id,
+                    removido_em: null,
                 },
                 termino_planejado: null,
                 db_projecao_termino: null,
