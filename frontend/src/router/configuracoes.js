@@ -100,6 +100,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternosListar',
   'equipesListar',
   'Workflow',
+  'programaDeMetas.planosSetoriaisListar',
 ];
 
 export default [
