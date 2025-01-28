@@ -499,6 +499,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'etapas' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -510,6 +511,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'etapas' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -521,6 +523,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'fase' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -532,6 +535,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'fase' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -543,6 +547,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'subfase' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -554,6 +559,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'subfase' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -565,6 +571,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'monitorar', recorte: 'iniciativa' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -576,6 +583,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'monitorar', recorte: 'atividade' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -587,6 +595,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: SingleCronograma,
       props: { group: 'monitorar' },
       meta: {
+        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -1028,6 +1037,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'etapas' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1036,6 +1046,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'etapas' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1044,6 +1055,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'fase' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1052,6 +1064,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'fase' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1060,6 +1073,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'subfase' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1068,6 +1082,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'subfase' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1076,6 +1091,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'monitorar', recorte: 'atividade' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1084,6 +1100,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'monitorar' },
           meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1350,6 +1367,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleCronograma,
               props: { group: 'etapas' },
               meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
@@ -1358,6 +1376,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleCronograma,
               props: { group: 'etapas' },
               meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
@@ -1366,6 +1385,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleCronograma,
               props: { group: 'fase' },
               meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
@@ -1374,6 +1394,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleCronograma,
               props: { group: 'fase' },
               meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
@@ -1382,6 +1403,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleCronograma,
               props: { group: 'subfase' },
               meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
@@ -1390,6 +1412,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleCronograma,
               props: { group: 'subfase' },
               meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
