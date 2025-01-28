@@ -1,4 +1,11 @@
-import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
@@ -113,7 +120,9 @@ export class TransferenciaService {
                     },
                 });
                 if (identificadorExiste)
-                    throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
+                    throw new InternalServerErrorException(
+                        `Erro ao gerar identificador, já está em uso: ${identificador}`
+                    );
 
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
@@ -254,7 +263,10 @@ export class TransferenciaService {
                             },
                         });
 
-                        if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                        if (!tarefaFilha)
+                            throw new InternalServerErrorException(
+                                'Erro ao encontrar tarefa filha para base de projeção.'
+                            );
 
                         updates.push(
                             prismaTxn.tarefa.update({
@@ -280,7 +292,10 @@ export class TransferenciaService {
                                 db_projecao_termino: true,
                             },
                         });
-                        if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+                        if (!tarefaIrma)
+                            throw new InternalServerErrorException(
+                                'Erro ao encontrar tarefa filha para base de projeção.'
+                            );
 
                         updates.push(
                             prismaTxn.tarefa.update({
@@ -394,7 +409,9 @@ export class TransferenciaService {
                         },
                     });
                     if (identificadorExiste)
-                        throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
+                        throw new InternalServerErrorException(
+                            `Erro ao gerar identificador, já está em uso: ${identificador}`
+                        );
                 }
 
                 // Caso o tipo da transferência seja modificado.
