@@ -1722,11 +1722,13 @@ export class DistribuicaoRecursoService {
             where: {
                 transferencia_andamento: {
                     transferencia_id: distribuicaoRecurso.transferencia_id,
+                    removido_em: null,
                 },
                 workflow_tarefa: {
                     fluxoTarefas: {
                         some: {
                             responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+                            removido_em: null,
                         },
                     },
                 },
