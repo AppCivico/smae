@@ -12,36 +12,25 @@ import { useCronogramasStore } from '@/stores/cronogramas.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useEtapasStore } from '@/stores/etapas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
-import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
-import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
+import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
+import AddEditFase from '@/views/metas/AddEditFase.vue';
+import AddEditMonitorar from '@/views/metas/AddEditMonitorar.vue';
+import { storeToRefs } from 'pinia';
+import {
+  computed,
+  watchEffect
+} from 'vue';
+import { useRoute } from 'vue-router';
+import achatarGeoLocalizacao from './helpers/achatarGeoLocalizacao';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+
+const props = defineProps(['group', 'recorte']);
+const route = useRoute();
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const EtapasStore = useEtapasStore();
 const { temPermissãoPara } = storeToRefs(authStore);
-
-const props = defineProps(['group', 'recorte']);
-const route = useRoute();
-const meta_id = reactive(route.params.meta_id);
-const iniciativa_id = reactive(route.params.iniciativa_id);
-const atividade_id = reactive(route.params.atividade_id);
-
-const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
-const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
-const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
-const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
-(async () => {
-  await MetasStore.getPdM();
-  if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
-  else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
-})();
-
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
 const editModalStore = useEditModalStore();
