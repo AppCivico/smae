@@ -25,7 +25,11 @@ defineOptions({
 
 const alertStore = useAlertStore();
 const route = useRoute();
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { meta_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { iniciativa_id } = route.params;
 const oktogo = ref(0);
 
@@ -36,16 +40,18 @@ IniciativasStore.clearEdit();
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const orgaos_participantes = ref([
   {
     orgao_id: null, responsavel: true, participantes: [], busca: '',
   },
 ]);
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const coordenadores_cp = ref({ participantes: [], busca: '' });
-const m_tags = ref({ participantes: [], busca: '' });
 
 const TagsStore = useTagsStore();
-const { tempTags } = storeToRefs(TagsStore);
 
 const EquipesStore = useEquipesStore();
 EquipesStore.buscarTudo();
@@ -106,7 +112,8 @@ if (iniciativa_id) {
       });
     }
     if (singleIniciativa.value.coordenadores_cp) {
-      coordenadores_cp.value.participantes = singleIniciativa.value.coordenadores_cp.map((x) => x.id);
+      coordenadores_cp.value.participantes = singleIniciativa.value.coordenadores_cp
+        .map((x) => x.id);
     }
   }
   oktogo.value = true;
@@ -139,6 +146,8 @@ async function onSubmit(_, { controlledValues: values }) {
     if (!values.meta_id) values.meta_id = meta_id;
     values.compoe_indicador_meta = !!values.compoe_indicador_meta;
 
+    // mantendo comportamento legado
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     if (er.length) throw er.join('<br />');
 
     let msg;
@@ -353,7 +362,10 @@ function filterResponsible(orgao_id) {
                 @change="item.participantes=[]"
               >
                 <option
-                  v-for="o in organsAvailable.filter(a => a.orgao_id == item.orgao_id || !orgaos_participantes.map(b => b.orgao_id).includes(a.orgao_id))"
+                  v-for="o in organsAvailable
+                    .filter(a => a.orgao_id == item.orgao_id ||
+                      !orgaos_participantes
+                        .map(b => b.orgao_id).includes(a.orgao_id))"
                   :key="o.orgao_id"
                   :value="o.orgao_id"
                   :title="o.orgao.descricao?.length > 36 ? o.orgao.descricao : null"
