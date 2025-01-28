@@ -487,6 +487,7 @@ export class WorkflowService {
                     removido_em: null,
                 },
                 select: {
+                    ativo: true,
                     etapasFluxo: {
                         where: { removido_em: null },
                         select: {
@@ -504,6 +505,7 @@ export class WorkflowService {
                 },
             });
             if (!row) throw new InternalServerErrorException('Workflow não encontrado em function configCompleta');
+            if (!row.ativo) return false;
 
             const etapas = row.etapasFluxo;
             const fases = etapas.map((e) => e.fases);
