@@ -1,9 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  computed, watch, reactive, ref,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -35,68 +30,67 @@ const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
 const editModalStore = useEditModalStore();
 
-function mapearAtrasoParaCor(grau) {
-  switch (grau.toLowerCase()) {
-    case 'alto':
-      return 'vermelho';
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
 
-    case 'moderado':
-      return 'laranja';
+const metaId = computed(() => route.params.meta_id);
+const iniciativaId = computed(() => route.params.iniciativa_id);
+const atividadeId = computed(() => route.params.atividade_id);
 
-    case 'concluido':
-      return 'verde';
-
-    default:
-      return null;
+const parentLink = computed(() => {
+  let link = '';
+  if (metaId?.value) {
+    link += `/metas/${metaId?.value}`;
   }
-}
 
-function achatarGeoLocalização(data) {
-  let geoLocalizaçãoAchatada = [];
+  if (iniciativaId?.value) {
+    link += `/iniciativas/${iniciativaId?.value}`;
+  }
 
-  data.forEach((item) => {
-    if (item?.etapa?.geolocalizacao?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(item.etapa.geolocalizacao.map((x) => {
-          if (!x?.endereco?.properties?.atraso_grau) {
-            // eslint-disable-next-line no-param-reassign
-            x.endereco.properties.cor_do_marcador = mapearAtrasoParaCor(item.atraso_grau);
-          }
+  if (atividadeId?.value) {
+    link += `/atividades/${atividadeId?.value}`;
+  }
 
-          return x;
-        }));
-    }
+  return link;
+});
 
-    if (item?.geolocalizacao?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(item.geolocalizacao.map((x) => {
-          if (!x?.endereco?.properties?.atraso_grau) {
-            // eslint-disable-next-line no-param-reassign
-            x.endereco.properties.cor_do_marcador = mapearAtrasoParaCor(item.atraso_grau);
-          }
+const parentVar = computed(() => atividadeId?.value
+  ?? iniciativaId?.value
+  ?? metaId?.value
+  ?? false);
 
-          return x;
-        }));
-    }
+const parentField = computed(() => {
+  if (atividadeId?.value) {
+    return 'atividade_id';
+  }
 
-    if (item?.etapa?.etapa_filha?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(achatarGeoLocalização(item.etapa.etapa_filha));
-    }
+  if (iniciativaId?.value) {
+    return 'iniciativa_id';
+  }
 
-    if (item?.etapa_filha?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(achatarGeoLocalização(item.etapa_filha));
-    }
-  });
+  if (metaId?.value) {
+    return 'meta_id';
+  }
 
-  return geoLocalizaçãoAchatada;
-}
+  return false;
+});
+
+const parentLabel = computed(() => {
+  if (atividadeId?.value) {
+    return activePdm.value.rotulo_atividade;
+  }
+
+  if (iniciativaId?.value) {
+    return activePdm.value.rotulo_iniciativa;
+  }
+
+  return 'Meta';
+});
 
 const marcadoresDasEtapas = computed(() => (singleCronogramaEtapas.value?.loading
   || !singleCronogramaEtapas.value.length
   ? []
-  : achatarGeoLocalização(singleCronogramaEtapas.value)
+  : achatarGeoLocalizacao(singleCronogramaEtapas.value)
     .map((x) => x.endereco)));
 
 function excluirEtapa(id) {
@@ -105,22 +99,22 @@ function excluirEtapa(id) {
     if (r) {
       EtapasStore.clear();
       CronogramasStore.clear();
-      CronogramasStore.getActiveByParent(parentVar, parentField);
+      CronogramasStore.getActiveByParent(parentVar.value, parentField.value);
     }
   }, 'Excluir');
 }
 
-CronogramasStore.clearEdit();
-CronogramasStore.getActiveByParent(parentVar, parentField);
+watchEffect(() => {
+  MetasStore.getPdM();
 
-function start() {
-  if (props.group == 'etapas') editModalStore.modal(AddEditEtapa, props);
-  if (props.group == 'fase') editModalStore.modal(AddEditFase, props);
-  if (props.group == 'subfase') editModalStore.modal(AddEditFase, props);
-  if (props.group == 'monitorar') editModalStore.modal(AddEditMonitorar, props);
-}
+  CronogramasStore.clearEdit();
+  CronogramasStore.getActiveByParent(parentVar.value, parentField.value);
 
-watch(() => props.group, () => { start(); }, { immediate: true });
+  if (props.group === 'etapas') editModalStore.modal(AddEditEtapa, props);
+  if (props.group === 'fase') editModalStore.modal(AddEditFase, props);
+  if (props.group === 'subfase') editModalStore.modal(AddEditFase, props);
+  if (props.group === 'monitorar') editModalStore.modal(AddEditMonitorar, props);
+});
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
@@ -148,7 +142,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
       ])
         && !singleCronograma?.loading
         && singleCronograma?.id"
-      :to="`${parentlink}/cronograma/${singleCronograma?.id}`"
+      :to="`${parentLink}/cronograma/${singleCronograma?.id}`"
       class="btn ml2"
     >
       Editar Cronograma
@@ -172,7 +166,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               'CadastroMetaPS.administrador_no_pdm',
               'CadastroMetaPDM.administrador_no_pdm'
             ])"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >
             Etapa da {{ parentLabel }}
           </SmaeLink>
@@ -184,8 +178,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               'CadastroMetaPS.administrador_no_pdm',
               'CadastroMetaPDM.administrador_no_pdm'
             ])
-              && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
+              && activePdm.possui_iniciativa && metaId && !iniciativaId"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
           >
             A partir de {{ activePdm.rotulo_iniciativa }}
           </SmaeLink>
@@ -197,8 +191,8 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               'CadastroMetaPS.administrador_no_pdm',
               'CadastroMetaPDM.administrador_no_pdm'
             ])
-              && activePdm.possui_atividade && meta_id && !atividade_id"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
+              && activePdm.possui_atividade && metaId && !atividadeId"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
           >
             A partir de {{ activePdm.rotulo_atividade }}
           </SmaeLink>
@@ -472,7 +466,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                   <SmaeLink
                     v-if="!r.cronograma_origem_etapa
                       || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                    :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
+                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
                   >
                     Editar Etapa
                   </SmaeLink>
@@ -481,7 +475,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                   <SmaeLink
                     v-if="r.cronograma_origem_etapa
                       && r.cronograma_origem_etapa?.id != singleCronograma?.id"
-                    :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`"
+                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`"
                   >
                     Editar Monitoramento
                   </SmaeLink>
@@ -713,7 +707,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               <SmaeLink
                 v-if="!r.cronograma_origem_etapa
                   || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
+                :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
               >
                 <svg
                   width="20"
@@ -900,7 +894,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                   <SmaeLink
                     v-if="!r.cronograma_origem_etapa
                       || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                    :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
+                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
                   >
                     <svg
                       width="20"
@@ -923,7 +917,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <SmaeLink
               v-if="!r.cronograma_origem_etapa
                 || r.cronograma_origem_etapa.id == singleCronograma?.id"
-              :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
+              :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
               class="addlink mt05 mb05"
             >
               <svg
@@ -945,7 +939,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="!r.cronograma_origem_etapa
               || r.cronograma_origem_etapa.id == singleCronograma?.id"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
             class="addlink"
           >
             <svg
@@ -971,7 +965,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     >
       <div class="tc">
         <SmaeLink
-          :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
+          :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           class="btn mt1 mb1"
         >
           <span>Adicionar Etapa</span>
@@ -994,7 +988,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
   >
     <div class="tc">
       <SmaeLink
-        :to="`${parentlink}/cronograma/novo`"
+        :to="`${parentLink}/cronograma/novo`"
         class="btn mt1 mb1"
       >
         <span>Adicionar Cronograma</span>
