@@ -121,6 +121,7 @@ export class DistribuicaoRecursoService {
                         valor_total: true,
                         status: {
                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                            where: { removido_em: null },
                             take: 1,
                             select: {
                                 id: true,
@@ -267,6 +268,7 @@ export class DistribuicaoRecursoService {
                                         status: {
                                             take: 1,
                                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                            where: { removido_em: null },
                                             select: {
                                                 status_base: {
                                                     select: {
@@ -537,7 +539,8 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 status: {
-                    orderBy: { data_troca: 'asc' },
+                    orderBy: { data_troca: 'desc' },
+                    where: { removido_em: null },
                     select: {
                         id: true,
                         data_troca: true,
@@ -593,6 +596,62 @@ export class DistribuicaoRecursoService {
                 r.registros_sei.map((s) => s.processo_sei).includes(i.processo_sei)
             );
 
+            const historico_status = r.status.map((status, idx) => {
+                // Caso tenha rows mais novas, o dado "dias_no_status" deve ser calculado olhando a prox row.
+                //const proxRow = r.status![idx + 1];
+                const proxRow = r.status && idx + 1 < r.status.length ? r.status[idx + 1] : null;
+                let data_prox_row;
+                if (proxRow) {
+                    data_prox_row = proxRow.data_troca;
+                }
+
+                return {
+                    id: status.id,
+                    data_troca: status.data_troca,
+                    dias_no_status: Math.abs(
+                        data_prox_row
+                            ? Math.round(
+                                  DateTime.fromJSDate(status.data_troca).diff(
+                                      DateTime.fromJSDate(data_prox_row),
+                                      'days'
+                                  ).days
+                              )
+                            : Math.round(DateTime.fromJSDate(status.data_troca).diffNow('days').days)
+                    ),
+                    motivo: status.motivo,
+                    nome_responsavel: status.nome_responsavel,
+                    orgao_responsavel: status.orgao_responsavel
+                        ? {
+                              id: status.orgao_responsavel.id,
+                              sigla: status.orgao_responsavel.sigla,
+                          }
+                        : null,
+                    status_customizado: status.status
+                        ? {
+                              id: status.status.id,
+                              nome: status.status.nome,
+                              tipo: status.status.tipo,
+                              status_base: false,
+                          }
+                        : null,
+                    status_base: status.status_base
+                        ? {
+                              id: status.status_base.id,
+                              nome: status.status_base.nome,
+                              tipo: status.status_base.tipo,
+                              status_base: true,
+                          }
+                        : null,
+                };
+            });
+
+            let status_atual: string = '-';
+            if (historico_status.length) {
+                const linhaAtual = historico_status[0];
+
+                status_atual = linhaAtual.status_base?.nome ?? linhaAtual.status_customizado?.nome ?? '-';
+            }
+
             return {
                 id: r.id,
                 nome: r.nome,
@@ -630,54 +689,8 @@ export class DistribuicaoRecursoService {
                         lido: readStatusMap.get(s.processo_sei) ?? false,
                     };
                 }),
-                historico_status: r.status.map((status, idx) => {
-                    // Caso tenha rows mais novas, o dado "dias_no_status" deve ser calculado olhando a prox row.
-                    //const proxRow = r.status![idx + 1];
-                    const proxRow = r.status && idx + 1 < r.status.length ? r.status[idx + 1] : null;
-                    let data_prox_row;
-                    if (proxRow) {
-                        data_prox_row = proxRow.data_troca;
-                    }
-
-                    return {
-                        id: status.id,
-                        data_troca: status.data_troca,
-                        dias_no_status: Math.abs(
-                            data_prox_row
-                                ? Math.round(
-                                      DateTime.fromJSDate(status.data_troca).diff(
-                                          DateTime.fromJSDate(data_prox_row),
-                                          'days'
-                                      ).days
-                                  )
-                                : Math.round(DateTime.fromJSDate(status.data_troca).diffNow('days').days)
-                        ),
-                        motivo: status.motivo,
-                        nome_responsavel: status.nome_responsavel,
-                        orgao_responsavel: status.orgao_responsavel
-                            ? {
-                                  id: status.orgao_responsavel.id,
-                                  sigla: status.orgao_responsavel.sigla,
-                              }
-                            : null,
-                        status_customizado: status.status
-                            ? {
-                                  id: status.status.id,
-                                  nome: status.status.nome,
-                                  tipo: status.status.tipo,
-                                  status_base: false,
-                              }
-                            : null,
-                        status_base: status.status_base
-                            ? {
-                                  id: status.status_base.id,
-                                  nome: status.status_base.nome,
-                                  tipo: status.status_base.tipo,
-                                  status_base: true,
-                              }
-                            : null,
-                    };
-                }),
+                historico_status: historico_status,
+                status_atual: status_atual,
             } satisfies DistribuicaoRecursoDto;
         });
     }
@@ -737,7 +750,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 status: {
-                    orderBy: { data_troca: 'asc' },
+                    orderBy: { data_troca: 'desc' },
                     select: {
                         id: true,
                         data_troca: true,
@@ -895,6 +908,13 @@ export class DistribuicaoRecursoService {
             ]),
         ];
 
+        let status_atual: string = '-';
+        if (historico_status.length) {
+            const linhaAtual = historico_status[0];
+
+            status_atual = linhaAtual.status_base?.nome ?? linhaAtual.status_customizado?.nome ?? '-';
+        }
+
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
@@ -921,6 +941,7 @@ export class DistribuicaoRecursoService {
             pode_registrar_status: pode_registrar_status,
             pct_valor_transferencia: pct_valor_transferencia,
             historico_status: historico_status,
+            status_atual: status_atual,
             orgao_gestor: {
                 id: row.orgao_gestor.id,
                 sigla: row.orgao_gestor.sigla,
@@ -1044,6 +1065,7 @@ export class DistribuicaoRecursoService {
                             valor_total: true,
                             status: {
                                 orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                where: { removido_em: null },
                                 take: 1,
                                 select: {
                                     status_base: {
@@ -1307,6 +1329,7 @@ export class DistribuicaoRecursoService {
                                         status: {
                                             take: 1,
                                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                            where: { removido_em: null },
                                             select: {
                                                 status_base: {
                                                     select: {

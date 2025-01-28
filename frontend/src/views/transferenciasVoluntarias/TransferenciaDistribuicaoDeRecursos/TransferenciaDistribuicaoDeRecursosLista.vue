@@ -53,7 +53,7 @@
                 {{ item.nome || '-' }}
               </td>
               <td>
-                {{ obterUltimoStatus(item.historico_status) }}
+                {{ item.status_atual }}
               </td>
               <td class="tr">
                 <SmaeLink
@@ -196,16 +196,6 @@ function voltarTela() {
 
 async function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
-}
-
-function obterUltimoStatus(historico = []) {
-  const ultimoStatus = historico.at(-1);
-
-  if (!ultimoStatus) {
-    return '-';
-  }
-
-  return ultimoStatus.status_base.nome;
 }
 
 iniciar();

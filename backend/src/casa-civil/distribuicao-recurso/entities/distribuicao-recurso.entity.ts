@@ -34,6 +34,7 @@ export class DistribuicaoRecursoDto {
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
     pode_registrar_status: boolean;
     historico_status: DistribuicaoHistoricoStatusDto[];
+    status_atual?: string;
     pct_valor_transferencia: number;
     parlamentares?: ParlamentarDistribuicaoDto[];
 }
