@@ -454,7 +454,7 @@ export class TransferenciaService {
                     });
                 }
 
-                let workflow_id: number | undefined;
+                let workflow_id: number | undefined | null;
                 if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
@@ -466,6 +466,7 @@ export class TransferenciaService {
                             id: true,
                         },
                     });
+                    workflow_id = null;
                     if (workflow) workflow_id = workflow?.id;
                 }
 
