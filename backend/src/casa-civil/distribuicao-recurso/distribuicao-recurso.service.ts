@@ -123,6 +123,7 @@ export class DistribuicaoRecursoService {
                         valor_total: true,
                         status: {
                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                            where: { removido_em: null },
                             take: 1,
                             select: {
                                 id: true,
@@ -269,6 +270,7 @@ export class DistribuicaoRecursoService {
                                         status: {
                                             take: 1,
                                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                            where: { removido_em: null },
                                             select: {
                                                 status_base: {
                                                     select: {
@@ -540,6 +542,7 @@ export class DistribuicaoRecursoService {
                 },
                 status: {
                     orderBy: { data_troca: 'desc' },
+                    where: { removido_em: null },
                     select: {
                         id: true,
                         data_troca: true,
@@ -757,6 +760,7 @@ export class DistribuicaoRecursoService {
 
                 status: {
                     orderBy: { data_troca: 'desc' },
+                    where: { removido_em: null },
                     select: {
                         id: true,
                         data_troca: true,
@@ -1071,6 +1075,7 @@ export class DistribuicaoRecursoService {
                             valor_total: true,
                             status: {
                                 orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                where: { removido_em: null },
                                 take: 1,
                                 select: {
                                     status_base: {
@@ -1334,6 +1339,7 @@ export class DistribuicaoRecursoService {
                                         status: {
                                             take: 1,
                                             orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                            where: { removido_em: null },
                                             select: {
                                                 status_base: {
                                                     select: {
