@@ -36,16 +36,6 @@ function alternaExpandido() {
   }
 }
 
-function buscaStatus(historico) {
-  const últimoStatus = historico[historico.length - 1];
-  if (!últimoStatus) {
-    return '-';
-  }
-  return últimoStatus.status_customizado?.nome
-    ? últimoStatus.status_customizado?.nome
-    : últimoStatus.status_base?.nome;
-}
-
 function removeParlamentaresSemValor(distribuicao) {
   if (!distribuicao.parlamentares.length) {
     return [];
@@ -80,7 +70,7 @@ function removeParlamentaresSemValor(distribuicao) {
               Status atual
             </dt>
             <dd>
-              {{ buscaStatus(distribuicao.historico_status) }}
+              {{ distribuicao.status_atual }}
             </dd>
           </dl>
           <dl class="f1">
@@ -263,7 +253,11 @@ function removeParlamentaresSemValor(distribuicao) {
                     Investimento
                   </dt>
                   <dd>
-                    {{ distribuicao.investimento ? `R$${dinheiro(distribuicao.investimento)}` : '-' }}
+                    {{
+                      distribuicao.investimento ?
+                        `R$${dinheiro(distribuicao.investimento)}`
+                        : '-'
+                    }}
                   </dd>
                 </dl>
                 <dl class="mb1 pb1">
@@ -424,7 +418,9 @@ function removeParlamentaresSemValor(distribuicao) {
 
                       <div>
                         Sincronização:
-                        {{ localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em) }}
+                        {{
+                          localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em)
+                        }}
                       </div>
                     </span>
                   </td>
@@ -436,7 +432,9 @@ function removeParlamentaresSemValor(distribuicao) {
                   <td>
                     {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
                   </td>
-                  <td>{{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}</td>
+                  <td>
+                    {{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}
+                  </td>
                   <td>
                     {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
                     -
