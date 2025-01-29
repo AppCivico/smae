@@ -9,8 +9,11 @@ export class RolesGuard implements CanActivate {
     constructor(private reflector: Reflector) {}
 
     canActivate(context: ExecutionContext): boolean {
+        const handler = context.getHandler();
+        const className = context.getClass().name;
+
         const requiredRoles = this.reflector.getAllAndOverride<ListaDePrivilegios[]>(ROLES_KEY, [
-            context.getHandler(),
+            handler,
             context.getClass(),
         ]);
         if (!requiredRoles) {
@@ -20,10 +23,11 @@ export class RolesGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const { user } = request;
         const requestUrl = request.originalUrl || request.url;
-        const debug = `requestUrl = ${requestUrl}, smae-sistemas = ${request.headers['smae-sistemas'] ?? '-'}`;
+        const debug = `requestUrl = ${requestUrl}, controller = ${className}, smae-sistemas = ${request.headers['smae-sistemas'] ?? '-'}`;
+
         if (!user)
             throw new UnauthorizedException(
-                `Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}, ${debug}`
+                `Usuário não encontrado, necessário para verificar os acessos:\n${requiredRoles.join(', ')}\n\n${debug}`
             );
 
         const JwtUser = user as PessoaFromJwt;
@@ -32,7 +36,7 @@ export class RolesGuard implements CanActivate {
         }
 
         throw new UnauthorizedException(
-            `Ao menos um dos seguintes privilégios é necessário para o acesso: ${requiredRoles.join(', ')}, ${debug}`
+            `Ao menos um dos seguintes privilégios é necessário para o acesso:\n\n${requiredRoles.join(', ')}\n\n${debug}`
         );
     }
 }
