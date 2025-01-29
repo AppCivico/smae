@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { relatorioPlanoSetorialBase as schema } from '@/consts/formSchemas';
