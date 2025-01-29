@@ -13,7 +13,7 @@ import AddEditMonitorar from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
 import {
   computed,
-  watchEffect
+  watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import achatarGeoLocalizacao from './helpers/achatarGeoLocalizacao';
@@ -33,9 +33,18 @@ const editModalStore = useEditModalStore();
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
 
-const metaId = computed(() => route.params.meta_id);
-const iniciativaId = computed(() => route.params.iniciativa_id);
-const atividadeId = computed(() => route.params.atividade_id);
+const metaId = computed(() => {
+  const id = Number(route.params.meta_id);
+  return Number.isNaN(id) ? undefined : id;
+});
+const iniciativaId = computed(() => {
+  const id = Number(route.params.iniciativa_id);
+  return Number.isNaN(id) ? undefined : id;
+});
+const atividadeId = computed(() => {
+  const id = Number(route.params.atividade_id);
+  return Number.isNaN(id) ? undefined : id;
+});
 
 const parentLink = computed(() => {
   let link = '';
