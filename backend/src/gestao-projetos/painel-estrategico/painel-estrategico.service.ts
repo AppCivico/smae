@@ -707,6 +707,14 @@ export class PainelEstrategicoService {
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
 
+        // Filtro de órgão responsável
+        let strOrgao = '';
+        let strOrgao2 = '';
+        if (filtro.orgao_responsavel_id && filtro.orgao_responsavel_id.length > 0) {
+            strOrgao = ' and pr.orgao_responsavel_id in (' + filtro.orgao_responsavel_id.toString() + ')';
+            strOrgao2 = ' and p.orgao_responsavel_id in (' + filtro.orgao_responsavel_id.toString() + ')';
+        }
+
         const sql = `
             WITH projeto_base AS (
                 SELECT pr.id,
@@ -716,6 +724,7 @@ export class PainelEstrategicoService {
                   AND pr.arquivado = FALSE
                   AND pr.tipo = 'PP'
                   ${strPortfolio}
+                  ${strOrgao}
                 UNION
                 SELECT p.id,
                        p.orgao_responsavel_id
@@ -727,6 +736,7 @@ export class PainelEstrategicoService {
                   AND p.arquivado = FALSE
                   AND p.tipo = 'PP'
                   ${strPortfolio2}
+                  ${strOrgao2}
             ),
             tarefa_custos AS (
                 SELECT sum(t.custo_estimado) AS previsao_custo,
