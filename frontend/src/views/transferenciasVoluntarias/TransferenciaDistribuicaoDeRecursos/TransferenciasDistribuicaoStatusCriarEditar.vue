@@ -203,7 +203,7 @@ const itemParaEdicao = computed(() => ({
     ? props.statusEmFoco.status_base.id
     : props.statusEmFoco?.status_customizado.id,
   data_troca: dateTimeToDate(props.statusEmFoco?.data_troca) || null,
-  orgao_responsavel_id: props.statusEmFoco?.orgao_responsavel.id,
+  orgao_responsavel_id: props.statusEmFoco?.orgao_responsavel?.id,
 }));
 
 const statusesDisponiveis = computed(() => (props.transferenciaWorkflowId
