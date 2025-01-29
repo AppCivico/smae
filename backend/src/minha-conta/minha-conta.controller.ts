@@ -24,33 +24,14 @@ export class MinhaContaController {
             'PlanoSetorial',
         ];
 
-        console.log(sistemas_disponiveis);
         let sistemas: ModuloSistema[] = user.sistemas;
         let modulos_sobrescritos = false;
 
         if (!user.sobreescrever_modulos) {
-            let hasPS = false;
-            let hasPDM = false;
-            if (
-                user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPS.administrador']) ||
-                (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PS'))
-            )
-                hasPS = true;
-            if (
-                user.hasSomeRoles(['CadastroPDM.administrador_no_orgao', 'CadastroPDM.administrador']) ||
-                (user.equipe_pdm_tipos && user.equipe_pdm_tipos.includes('PDM'))
-            ) {
-                hasPDM = true;
-                user.privilegios.push('Menu.metas');
-            }
-
             sistemas = sistemas.filter((sistema) => {
-                if (sistema === 'ProgramaDeMetas' && !hasPDM) {
+                if (sistema === 'ProgramaDeMetas' && !user.hasSomeRoles(['ReferencialEm.Equipe.ProgramaDeMetas']))
                     return false;
-                }
-                if (sistema === 'PlanoSetorial' && !hasPS) {
-                    return false;
-                }
+                if (sistema === 'PlanoSetorial' && !user.hasSomeRoles(['ReferencialEm.Equipe.PS'])) return false;
                 return true;
             });
         } else {

@@ -1591,7 +1591,8 @@ export class PessoaService {
             )
             SELECT
                 array_agg(DISTINCT cod_priv) AS privilegios,
-                array_agg(DISTINCT modulo_sistema) AS sistemas
+                array_agg(DISTINCT modulo_sistema) AS sistemas,
+                (select equipe_pdm_tipos from pessoa where id = ${pessoaId}) as equipe_pdm_tipos
             FROM perms;
         `;
         if (!dados[0] || dados[0].sistemas === null || !Array.isArray(dados[0].sistemas)) {
@@ -1606,6 +1607,15 @@ export class PessoaService {
 
         if (ret.privilegios.includes('SMAE.login_suspenso'))
             throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
+
+        if (ret.equipe_pdm_tipos.includes('PDM')) {
+            ret.privilegios.push('Menu.metas');
+            ret.privilegios.push('ReferencialEm.Equipe.ProgramaDeMetas');
+        }
+
+        if (ret.equipe_pdm_tipos.includes('PS')) {
+            ret.privilegios.push('ReferencialEm.Equipe.PS');
+        }
 
         return ret;
     }

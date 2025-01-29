@@ -242,4 +242,7 @@ export type ListaDePrivilegios =
     | 'CadastroClassificacao.remover'
     | 'CadastroClassificacao.listar'
     | 'SMAE.liberar_pdm_as_ps'
-    | 'Menu.metas';
+    | 'Menu.metas'
+    | 'Menu.meta.pdm'
+    | 'ReferencialEm.Equipe.ProgramaDeMetas'
+    | 'ReferencialEm.Equipe.PS';
