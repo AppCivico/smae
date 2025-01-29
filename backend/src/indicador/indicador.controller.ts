@@ -245,7 +245,7 @@ export class IndicadorPSController {
     @ApiTags('Indicador')
     @Get('plano-setorial-indicador/:id/serie')
     @ApiBearerAuth('access-token')
-    @Roles(MetaSetorialController.WritePerm)
+    @Roles(MetaSetorialController.ReadPerm)
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
         description:
