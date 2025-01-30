@@ -1613,18 +1613,20 @@ export class PessoaService {
             throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
 
         if (
-            ret.equipe_pdm_tipos.includes('PDM') ||
-            ret.privilegios.includes('CadastroPDM.administrador_no_orgao') ||
-            (ret.privilegios.includes('CadastroPDM.administrador') && filterModulos.includes('ProgramaDeMetas'))
+            (ret.equipe_pdm_tipos.includes('PDM') ||
+                ret.privilegios.includes('CadastroPDM.administrador_no_orgao') ||
+                ret.privilegios.includes('CadastroPDM.administrador')) &&
+            filterModulos.includes('ProgramaDeMetas')
         ) {
             ret.privilegios.push('Menu.metas');
             ret.privilegios.push('ReferencialEm.Equipe.ProgramaDeMetas');
         }
 
         if (
-            ret.equipe_pdm_tipos.includes('PS') ||
-            ret.privilegios.includes('CadastroPS.administrador_no_orgao') ||
-            (ret.privilegios.includes('CadastroPS.administrador') && filterModulos.includes('PlanoSetorial'))
+            (ret.equipe_pdm_tipos.includes('PS') ||
+                ret.privilegios.includes('CadastroPS.administrador_no_orgao') ||
+                ret.privilegios.includes('CadastroPS.administrador')) &&
+            filterModulos.includes('PlanoSetorial')
         ) {
             ret.privilegios.push('ReferencialEm.Equipe.PS');
         }
