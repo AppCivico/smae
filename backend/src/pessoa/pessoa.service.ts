@@ -337,7 +337,6 @@ export class PessoaService {
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user);
 
-        console.log('perfisVisiveis', perfisVisiveis);
         const equipes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
@@ -401,6 +400,10 @@ export class PessoaService {
                 posso_editar_modulos: ehAdmin,
             },
         };
+        if (listFixed.sobreescrever_modulos == false) {
+            // libera tudo exceto o modulo de metas novo
+            listFixed.modulos_permitidos = ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'Projetos'];
+        }
 
         return listFixed;
     }
