@@ -159,7 +159,8 @@ watchEffect(() => {
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm',
-        'CadastroMetaPDM.administrador_no_pdm'
+        'CadastroMetaPDM.administrador_no_pdm',
+        'SMAE.GrupoVariavel.participante',
       ])
         && !singleCronograma?.loading
         && singleCronograma?.id"
@@ -172,7 +173,8 @@ watchEffect(() => {
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm',
-        'CadastroMetaPDM.administrador_no_pdm'
+        'CadastroMetaPDM.administrador_no_pdm',
+        'SMAE.GrupoVariavel.participante',
       ])
         && !singleCronograma?.loading && singleCronograma?.id
       "
@@ -185,7 +187,8 @@ watchEffect(() => {
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPS.administrador_no_pdm',
-              'CadastroMetaPDM.administrador_no_pdm'
+              'CadastroMetaPDM.administrador_no_pdm',
+              'SMAE.GrupoVariavel.participante',
             ])"
             :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >

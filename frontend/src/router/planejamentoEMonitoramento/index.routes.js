@@ -16,8 +16,12 @@ export default [
 <path d="M5 5H3V17C3 17.5304 3.21071 18.0391 3.58578 18.4142C3.96086 18.7893 4.46957 19 5 19H14V17H5V5Z" />
 <path d="M0 8H2V20H11V22H2C1.46957 22 0.960858 21.7893 0.585785 21.4142C0.210712 21.0391 0 20.5304 0 20V8Z" />
 </svg>`,
-      limitarÀsPermissões: 'CadastroPDM.',
       pesoNoMenu: 2,
+      limitarÀsPermissões: [
+        'Menu.metas',
+        'CadastroPS.administrador',
+        'CadastroPS.administrador_no_orgao',
+      ],
     },
   },
   prepararRotasParaProgramaDeMetas('planoSetorial'),
