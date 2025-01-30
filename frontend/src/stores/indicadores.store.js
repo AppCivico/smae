@@ -38,7 +38,9 @@ export const useIndicadoresStore = defineStore({
     fieldToDate(d) {
       if (d) {
         const x = d.split('/');
-        return (x.length == 3) ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10) : null;
+        return (x.length === 3)
+          ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10)
+          : null;
       }
       return null;
     },
@@ -78,6 +80,8 @@ export const useIndicadoresStore = defineStore({
 
           this.singleIndicadores = x;
         } else {
+          // mantendo comportamento legado
+          // eslint-disable-next-line @typescript-eslint/no-throw-literal
           throw 'Indicador não encontrado';
         }
       } catch (error) {
@@ -99,6 +103,8 @@ export const useIndicadoresStore = defineStore({
     async filterIndicadores(p_id, parent_field, f) {
       try {
         this.tempIndicadores = { loading: true };
+        // mantendo comportamento legado
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (!p_id || !parent_field) throw 'Indicador incorreto';
         await this.getAll(p_id, parent_field);
         this.tempIndicadores = f
