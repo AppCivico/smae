@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed,
+  watchEffect,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -10,12 +16,6 @@ import { useMetasStore } from '@/stores/metas.store';
 import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 import AddEditFase from '@/views/metas/AddEditFase.vue';
 import AddEditMonitorar from '@/views/metas/AddEditMonitorar.vue';
-import { storeToRefs } from 'pinia';
-import {
-  computed,
-  watchEffect,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import achatarGeoLocalizacao from './helpers/achatarGeoLocalizacao';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -133,6 +133,7 @@ watchEffect(() => {
 
     default:
       editModalStore.$reset();
+      break;
   }
 });
 </script>
