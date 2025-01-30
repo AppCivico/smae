@@ -31,6 +31,7 @@ import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 import { PlanoSetorialController } from '../pdm/pdm.controller';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -771,7 +772,8 @@ export class ImportacaoOrcamentoService {
                     },
                     user,
                     tipo_projeto,
-                    tipo_pdm
+                    // TODO é por isso que precisa daqui o sistema, falta o PDM_AS_PS
+                    tipo_pdm == 'PS' ? '_PS' : tipo_pdm == 'PDM' ? '_PDM' : undefined
                 );
             } catch (error) {
                 feedback = `Erro durante processamento: ${error}`;
@@ -875,7 +877,7 @@ export class ImportacaoOrcamentoService {
         params: ProcessaLinhaParams,
         user: PessoaFromJwt,
         tipo_projeto: TipoProjeto | undefined,
-        _tipo_pdm: TipoPdm | undefined
+        tipo_pdm: TipoPdmType | undefined
     ): Promise<string> {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
         console.log({ row, col2row });
@@ -1099,6 +1101,7 @@ export class ImportacaoOrcamentoService {
             if (!meta_id) return 'Linha inválida: faltando meta_id';
 
             const existeNaMetaResult = await this.pdmOrcResService.findAllWithPermissions(
+                tipo_pdm!,
                 {
                     ano_referencia: row.ano_referencia,
                     meta_id,
@@ -1195,6 +1198,7 @@ export class ImportacaoOrcamentoService {
                 if (params.eh_metas) {
                     if (id) {
                         await this.pdmOrcResService.update(
+                            tipo_pdm!,
                             id,
                             {
                                 itens,
@@ -1206,6 +1210,7 @@ export class ImportacaoOrcamentoService {
                         );
                     } else {
                         await this.pdmOrcResService.create(
+                            tipo_pdm!,
                             {
                                 ano_referencia: row.ano_referencia,
                                 dotacao: dotacao!,

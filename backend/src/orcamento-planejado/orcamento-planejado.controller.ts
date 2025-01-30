@@ -13,10 +13,12 @@ import {
 } from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
 import { PlanoSetorialController } from '../pdm/pdm.controller';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @ApiTags('Orçamento - Planejado')
 @Controller('orcamento-planejado')
 export class OrcamentoPlanejadoController {
+    private readonly tipo: TipoPdmType = '_PDM';
     constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) {}
 
     @Post()
@@ -26,7 +28,7 @@ export class OrcamentoPlanejadoController {
         @Body() createMetaDto: CreateOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.orcamentoPlanejadoService.create(createMetaDto, user);
+        return await this.orcamentoPlanejadoService.create(this.tipo, createMetaDto, user);
     }
 
     @Patch(':id')
@@ -37,7 +39,7 @@ export class OrcamentoPlanejadoController {
         @Body() createMetaDto: UpdateOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.orcamentoPlanejadoService.update(+params.id, createMetaDto, user);
+        return await this.orcamentoPlanejadoService.update(this.tipo, +params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -48,7 +50,7 @@ export class OrcamentoPlanejadoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoPlanejadoDto> {
         return {
-            linhas: await this.orcamentoPlanejadoService.findAll(filters, user),
+            linhas: await this.orcamentoPlanejadoService.findAll(this.tipo, filters, user),
         };
     }
 
@@ -58,7 +60,7 @@ export class OrcamentoPlanejadoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.orcamentoPlanejadoService.remove(+params.id, user);
+        await this.orcamentoPlanejadoService.remove(this.tipo, +params.id, user);
         return '';
     }
 }
@@ -70,44 +72,47 @@ export class OrcamentoPlanejadoPSController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     async create(
         @Body() createMetaDto: CreateOrcamentoPlanejadoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.orcamentoPlanejadoService.create(createMetaDto, user);
+        return await this.orcamentoPlanejadoService.create(tipo, createMetaDto, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     async update(
         @Param() params: FindOneParams,
         @Body() createMetaDto: UpdateOrcamentoPlanejadoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.orcamentoPlanejadoService.update(+params.id, createMetaDto, user);
+        return await this.orcamentoPlanejadoService.update(tipo, +params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     async findAll(
         @Query() filters: FilterOrcamentoPlanejadoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<ListOrcamentoPlanejadoDto> {
         return {
-            linhas: await this.orcamentoPlanejadoService.findAll(filters, user),
+            linhas: await this.orcamentoPlanejadoService.findAll(tipo, filters, user),
         };
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.orcamentoPlanejadoService.remove(+params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.orcamentoPlanejadoService.remove(tipo, +params.id, user);
         return '';
     }
 }
