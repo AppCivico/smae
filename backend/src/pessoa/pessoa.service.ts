@@ -24,10 +24,10 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '../common/consts';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
 
 const BCRYPT_ROUNDS = 10;
-const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['SMAE.superadmin'];
+
 @Injectable()
 export class PessoaService {
     private readonly logger = new Logger(PessoaService.name);
