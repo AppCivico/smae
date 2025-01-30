@@ -47,8 +47,8 @@ type CicloFisicoResumo = {
     CicloFaseAtual: CicloFisicoFase | null;
 };
 
-class AdminCpDbItem {
-    perfil: PdmPerfilTipo;
+export class AdminCpDbItem {
+    tipo: PdmPerfilTipo;
     orgao_id: number;
     equipe_id: number;
 }
@@ -467,7 +467,7 @@ export class PdmService {
 
                 // e todos os itens são do mesmo órgão
                 const podeEditar = parsed.some(
-                    (item) => item.perfil == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
+                    (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
                 );
                 this.logger.verbose(`podeEditar: ${podeEditar}`);
                 return true;
@@ -971,7 +971,7 @@ export class PdmService {
             });
             if (!equipe) throw new BadRequestException(`Equipe ID ${equipe_id} inválida ou de tipo incorreto.`);
             cpItens.push({
-                perfil: tipo,
+                tipo: tipo,
                 orgao_id: equipe.orgao_id,
                 equipe_id: equipe.id,
             });

@@ -1,7 +1,11 @@
 import { BadRequestException, HttpException } from '@nestjs/common';
+import { ModuloSistema, PdmPerfilTipo, Prisma } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
+import { TipoPdmType } from '../../common/decorators/current-tipo-pdm';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
+import { Arr } from '../../mf/metas/dash/metas.service';
+import { AdminCpDbItem } from '../../pdm/pdm.service';
 import { PessoaFromJwtBase } from './PessoaFromJwtBase';
-import { ModuloSistema, Prisma } from '@prisma/client';
 
 export type LogOpt = {
     pessoa_id?: number | null;
@@ -68,41 +72,128 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         return;
     }
 
-    public async verificaPermissaoOrcamentoNaMetaRespNaCp(meta_id: number, prisma: Prisma.TransactionClient) {
-        // Verificar comentário abaixo sobre as permissões no PS
-        const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
-        if (isAdmin) return;
+    public async verificaPermissaoOrcamentoAdminOuCp(
+        tipo: TipoPdmType,
+        meta_id: number,
+        prisma: Prisma.TransactionClient
+    ) {
+        if (tipo === '_PDM') {
+            const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+            if (isAdmin) return;
 
-        const metas = await prisma.view_meta_pessoa_responsavel_na_cp.findMany({
-            where: { pessoa_id: this.id },
-            select: { meta_id: true },
-        });
+            const metas = await prisma.view_meta_pessoa_responsavel_na_cp.findMany({
+                where: { pessoa_id: this.id },
+                select: { meta_id: true },
+            });
 
-        if (!metas.map((r) => r.meta_id).includes(+meta_id))
-            throw new HttpException(
-                `Sem permissão para editar o orçamento na meta, necessário ser responsável na coordenadoria de planejamento`,
-                400
-            );
+            if (!metas.map((r) => r.meta_id).includes(+meta_id))
+                throw new HttpException(
+                    `Sem permissão para editar o orçamento na meta, necessário ser responsável na coordenadoria de planejamento`,
+                    400
+                );
+        } else {
+            const { ehAdmin, equipesIds, metaInfo } = await this.buscaMetaPdmEAcesso(prisma, meta_id, ['ADMIN', 'CP']);
+            if (ehAdmin) return;
+
+            const collab = await this.getEquipesColaborador(prisma);
+            const participaEquipe = Arr.intersection(equipesIds, collab);
+
+            if (!participaEquipe.length)
+                throw new HttpException(
+                    `Sem permissão no orçamento para meta: necessário ser colaborador na equipe de ` +
+                        `técnico ou administrador, ou administrador do ${metaInfo.pdm.tipo == 'PDM' ? 'Programa de Metas' : 'Plano Setorial'}`,
+                    400
+                );
+        }
+
         return;
     }
 
-    public async verificaPermissaoOrcamentoNaMeta(meta_id: number, prisma: Prisma.TransactionClient): Promise<void> {
-        // TODO aqui vai precisar carregar a meta do PS, ou receber o tipo do PDM, verificar de verdade a permissão
-        // do Usuario
-        // esse método é chamado em ... 16 lugares!!
-        const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
-        if (isAdmin) return;
+    public async verificaPermissaoOrcamentoPontoFocal(
+        tipo: TipoPdmType,
+        meta_id: number,
+        prisma: Prisma.TransactionClient
+    ): Promise<void> {
+        if (tipo === '_PDM') {
+            const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+            if (isAdmin) return;
 
-        const metas = await prisma.view_meta_responsavel_orcamento.findMany({
-            where: { pessoa_id: this.id },
-            select: { meta_id: true },
+            const metas = await prisma.view_meta_responsavel_orcamento.findMany({
+                where: { pessoa_id: this.id },
+                select: { meta_id: true },
+            });
+
+            if (!metas.map((r) => r.meta_id).includes(+meta_id))
+                throw new HttpException(
+                    `Sem permissão para editar o orçamento na meta, necessário ser responsável na meta`,
+                    400
+                );
+        } else {
+            const { ehAdmin, equipesIds, metaInfo } = await this.buscaMetaPdmEAcesso(prisma, meta_id, [
+                'ADMIN',
+                'CP',
+                'PONTO_FOCAL',
+            ]);
+            if (ehAdmin) return;
+
+            const collab = await this.getEquipesColaborador(prisma);
+            const participaEquipe = Arr.intersection(equipesIds, collab);
+
+            if (!participaEquipe.length)
+                throw new HttpException(
+                    `Sem permissão no orçamento para meta: necessário ser colaborador na equipe ou administrador do ` +
+                        `${metaInfo.pdm.tipo == 'PDM' ? 'Programa de Metas' : 'Plano Setorial'}`,
+                    400
+                );
+
+            throw new HttpException('xxx', 404);
+        }
+    }
+
+    private async buscaMetaPdmEAcesso(
+        prisma: Prisma.TransactionClient,
+        meta_id: number,
+
+        filtros: PdmPerfilTipo[]
+    ) {
+        let ehAdmin = false;
+        const metaInfo = await prisma.meta.findFirstOrThrow({
+            where: {
+                id: meta_id,
+                removido_em: null,
+            },
+            select: {
+                pdm: { select: { ps_admin_cps: true, tipo: true, orgao_admin_id: true } },
+            },
         });
 
-        if (!metas.map((r) => r.meta_id).includes(+meta_id))
-            throw new HttpException(
-                `Sem permissão para editar o orçamento na meta, necessário ser responsável na meta`,
-                400
-            );
+        // verifica pelos privilégios de administrador, se tiver já retorna
+        if (this.hasSomeRoles([metaInfo.pdm.tipo == 'PDM' ? 'CadastroPDM.administrador' : 'CadastroPS.administrador']))
+            ehAdmin = true;
+
+        // verifica pelos privilégios de administrador no orgão, se tiver já retorna
+        if (
+            this.hasSomeRoles([
+                metaInfo.pdm.tipo == 'PDM' ? 'CadastroPDM.administrador_no_orgao' : 'CadastroPS.administrador_no_orgao',
+            ]) &&
+            this.orgao_id == metaInfo.pdm.orgao_admin_id
+        )
+            ehAdmin = true;
+
+        let equipesIds: number[] = [];
+        if (!ehAdmin) {
+            const ps_admin_cps = Array.isArray(metaInfo.pdm.ps_admin_cps)
+                ? plainToInstance(AdminCpDbItem, metaInfo.pdm.ps_admin_cps)
+                : [];
+
+            console.log('ps_admin_cps', ps_admin_cps);
+            const equipes = ps_admin_cps.filter((r) => filtros.includes(r.tipo));
+            console.log('equipes', equipes);
+
+            equipesIds = equipes.map((r) => r.equipe_id);
+        }
+
+        return { ehAdmin, equipesIds, metaInfo };
     }
 
     public async getMetaIdsFromAnyModel(

@@ -14,10 +14,12 @@ import {
 } from './dto/meta-orcamento.dto';
 import { MetaOrcamentoService } from './meta-orcamento.service';
 import { PlanoSetorialController } from '../pdm/pdm.controller';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @Controller(['meta-orcamento', 'orcamento-previsto'])
 @ApiTags('Orçamento - Meta (Custeio e Investimento)')
 export class MetaOrcamentoController {
+    private readonly tipo: TipoPdmType = '_PDM';
     constructor(private readonly metaOrcamentoService: MetaOrcamentoService) {}
 
     @Post()
@@ -27,7 +29,7 @@ export class MetaOrcamentoController {
         @Body() createMetaDto: CreateMetaOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.metaOrcamentoService.create(createMetaDto, user);
+        return await this.metaOrcamentoService.create(this.tipo, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -38,8 +40,12 @@ export class MetaOrcamentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMetaOrcamentoDto> {
         return {
-            linhas: await this.metaOrcamentoService.findAll(filters, user),
-            ...(await this.metaOrcamentoService.orcamento_previsto_zero(filters.meta_id, filters.ano_referencia)),
+            linhas: await this.metaOrcamentoService.findAll(this.tipo, filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero(
+                this.tipo,
+                filters.meta_id,
+                filters.ano_referencia
+            )),
         };
     }
 
@@ -49,7 +55,7 @@ export class MetaOrcamentoController {
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
     async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.metaOrcamentoService.patchZerado(updateZeradoDto, user);
+        await this.metaOrcamentoService.patchZerado(this.tipo, updateZeradoDto, user);
         return '';
     }
 
@@ -62,7 +68,7 @@ export class MetaOrcamentoController {
         @Body() updateMetaDto: UpdateMetaOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<void> {
-        await this.metaOrcamentoService.update(+params.id, updateMetaDto, user);
+        await this.metaOrcamentoService.update(this.tipo, +params.id, updateMetaDto, user);
     }
 
     @Delete(':id')
@@ -71,7 +77,7 @@ export class MetaOrcamentoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.metaOrcamentoService.remove(+params.id, user);
+        await this.metaOrcamentoService.remove(this.tipo, +params.id, user);
         return '';
     }
 }
@@ -84,56 +90,63 @@ export class MetaPSOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     async create(
         @Body() createMetaDto: CreateMetaOrcamentoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.metaOrcamentoService.create(createMetaDto, user);
+        return await this.metaOrcamentoService.create(tipo, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     async findAll(
         @Query() filters: FilterMetaOrcamentoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<ListMetaOrcamentoDto> {
         return {
-            linhas: await this.metaOrcamentoService.findAll(filters, user),
-            ...(await this.metaOrcamentoService.orcamento_previsto_zero(filters.meta_id, filters.ano_referencia)),
+            linhas: await this.metaOrcamentoService.findAll(tipo, filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero(tipo, filters.meta_id, filters.ano_referencia)),
         };
     }
 
     @Patch('zerado')
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
-    async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.metaOrcamentoService.patchZerado(updateZeradoDto, user);
+    async patchZerado(
+        @Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ) {
+        await this.metaOrcamentoService.patchZerado(tipo, updateZeradoDto, user);
         return '';
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(
         @Param() params: FindOneParams,
         @Body() updateMetaDto: UpdateMetaOrcamentoDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<void> {
-        await this.metaOrcamentoService.update(+params.id, updateMetaDto, user);
+        await this.metaOrcamentoService.update(tipo, +params.id, updateMetaDto, user);
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.OrcamentoWritePerms, ])
+    @Roles([...PlanoSetorialController.OrcamentoWritePerms])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.metaOrcamentoService.remove(+params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.metaOrcamentoService.remove(tipo, +params.id, user);
         return '';
     }
 }

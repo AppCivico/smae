@@ -14,6 +14,7 @@ import {
 } from './dto/meta-orcamento.dto';
 import { MetaOrcamento } from './entities/meta-orcamento.entity';
 import { PlanoSetorialController } from '../pdm/pdm.controller';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 export class MetaOrcamentoUpdatedRet {
     id: number;
@@ -27,9 +28,10 @@ export class MetaOrcamentoService {
         private readonly dotacaoService: DotacaoService
     ) {}
 
-    async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipo: TipoPdmType, dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
-        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
+
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -91,12 +93,16 @@ export class MetaOrcamentoService {
         );
 
         // se por acaso tiver algum boolean zerado, remove ele
-        await this.patchZerado({ ano_referencia: dto.ano_referencia, meta_id: meta.id, considerar_zero: false }, user);
+        await this.patchZerado(
+            tipo,
+            { ano_referencia: dto.ano_referencia, meta_id: meta.id, considerar_zero: false },
+            user
+        );
 
         return created;
     }
 
-    async findAll(filters: FilterMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamento[]> {
+    async findAll(tipo: TipoPdmType, filters: FilterMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamento[]> {
         let filterIdIn: undefined | number[] = undefined;
 
         if (
@@ -145,7 +151,12 @@ export class MetaOrcamentoService {
         return list;
     }
 
-    async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamentoUpdatedRet> {
+    async update(
+        tipo: TipoPdmType,
+        id: number,
+        dto: UpdateMetaOrcamentoDto,
+        user: PessoaFromJwt
+    ): Promise<MetaOrcamentoUpdatedRet> {
         const alreadyUpdated = await this.prisma.orcamentoPrevisto.count({
             where: {
                 versao_anterior_id: +id,
@@ -155,7 +166,7 @@ export class MetaOrcamentoService {
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
-        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: meta_id, removido_em: null },
@@ -253,14 +264,14 @@ export class MetaOrcamentoService {
         return { id: id, new_id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!metaOrcamento || metaOrcamento.meta_id == null)
             throw new HttpException('meta orçamento não encontrada', 400);
 
-        await user.verificaPermissaoOrcamentoNaMeta(metaOrcamento.meta_id, this.prisma);
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, metaOrcamento.meta_id, this.prisma);
 
         const now = new Date(Date.now());
         await this.prisma.orcamentoPrevisto.updateMany({
@@ -269,7 +280,11 @@ export class MetaOrcamentoService {
         });
     }
 
-    async orcamento_previsto_zero(meta_id: number, ano_referencia: number): Promise<OrcamentoPrevistoEhZeroStatusDto> {
+    async orcamento_previsto_zero(
+        tipo: TipoPdmType,
+        meta_id: number,
+        ano_referencia: number
+    ): Promise<OrcamentoPrevistoEhZeroStatusDto> {
         const opz = await this.prisma.orcamentoPrevistoZerado.findFirst({
             where: {
                 meta_id: meta_id,
@@ -296,7 +311,7 @@ export class MetaOrcamentoService {
         };
     }
 
-    async patchZerado(dto: UpdateOrcamentoPrevistoZeradoDto, user: PessoaFromJwt): Promise<void> {
+    async patchZerado(tipo: TipoPdmType, dto: UpdateOrcamentoPrevistoZeradoDto, user: PessoaFromJwt): Promise<void> {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // apaga/remove todas versões anteriores não removidas

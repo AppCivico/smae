@@ -25,6 +25,7 @@ import {
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import { PlanoSetorialController } from '../pdm/pdm.controller';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
 
@@ -58,13 +59,13 @@ export class OrcamentoRealizadoService {
         this.liberarLiquidadoValoresMaioresQueSof = LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF;
     }
 
-    async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipo: TipoPdmType, dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const dotacao_complemento = ExtraiComplementoDotacao(dto);
         dto.dotacao = TrataDotacaoGrande(dto.dotacao);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
-        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -254,15 +255,20 @@ export class OrcamentoRealizadoService {
         return created;
     }
 
-    async update(id: number, dto: UpdateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        tipo: TipoPdmType,
+        id: number,
+        dto: UpdateOrcamentoRealizadoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
             throw new HttpException('Orçamento realizado não encontrado', 404);
 
-        await user.verificaPermissaoOrcamentoNaMeta(orcamentoRealizado.meta_id, this.prisma);
-        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(user, {
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, orcamentoRealizado.meta_id, this.prisma);
+        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(tipo, user, {
             ano_referencia: orcamentoRealizado.ano_referencia,
             meta_id: orcamentoRealizado.meta_id,
         });
@@ -787,10 +793,11 @@ export class OrcamentoRealizadoService {
     }
 
     async findAllWithPermissions(
+        tipo: TipoPdmType,
         filters: FilterOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<ListOrcamentoRealizadoDto> {
-        const { permissoes, concluidoStatus, concluidoAdmin } = await this.buscaPermissoesStatus(user, filters);
+        const { permissoes, concluidoStatus, concluidoAdmin } = await this.buscaPermissoesStatus(tipo, user, filters);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: filters.meta_id, removido_em: null },
@@ -800,7 +807,7 @@ export class OrcamentoRealizadoService {
 
         const ret: ListOrcamentoRealizadoDto = {
             permissoes: permissoes,
-            linhas: await this.findAll(filters, user, permissoes, false, meta.pdm_id),
+            linhas: await this.findAll(tipo, filters, user, permissoes, false, meta.pdm_id),
             concluido: concluidoStatus,
             concluido_admin: concluidoAdmin,
         };
@@ -809,6 +816,7 @@ export class OrcamentoRealizadoService {
     }
 
     async findCompartilhadosNoPdm(
+        tipo: TipoPdmType,
         filters: FilterOrcamentoRealizadoCompartilhadoDto,
         user: PessoaFromJwt
     ): Promise<ListApenasOrcamentoRealizadoDto> {
@@ -823,25 +831,31 @@ export class OrcamentoRealizadoService {
         }
 
         const ret: ListApenasOrcamentoRealizadoDto = {
-            linhas: await this.findAll(filters, user, undefined, true, filters.pdm_id),
+            linhas: await this.findAll(tipo, filters, user, undefined, true, filters.pdm_id),
         };
 
         return ret;
     }
 
-    private async buscaPermissoesStatus(user: PessoaFromJwt, filters: { meta_id: number; ano_referencia: number }) {
-        const ehAdmin = user.hasSomeRoles([
-            'CadastroMeta.administrador_orcamento',
-            // TODO PS permissão de admin de meta
-            ...PlanoSetorialController.OrcamentoWritePerms,
-        ]);
+    private async buscaPermissoesStatus(
+        tipo: TipoPdmType,
+        user: PessoaFromJwt,
+        filters: { meta_id: number; ano_referencia: number }
+    ) {
+        let ehAdmin = tipo == '_PDM' ? user.hasSomeRoles(['CadastroMeta.administrador_orcamento']) : false;
 
         // economizando query, admin não entra na condição de testar se está dentro dessa lista
         const metasRespCp = ehAdmin
             ? []
             : await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+        let estaNaMetaCp = metasRespCp.includes(+filters.meta_id);
 
-        const estaNaMetaCp = metasRespCp.includes(+filters.meta_id);
+        if (tipo !== '_PDM') {
+            // TODO PS buscar das equipes
+            ehAdmin = true;
+            estaNaMetaCp = true;
+        }
+
         const concluidoStatus =
             ehAdmin || estaNaMetaCp
                 ? null
@@ -914,6 +928,7 @@ export class OrcamentoRealizadoService {
     }
 
     private async findAll(
+        tipo: TipoPdmType,
         filters: FilterOrcamentoRealizadoDto | FilterOrcamentoRealizadoCompartilhadoDto,
         user: PessoaFromJwt,
         permissoes: OrcamentoRealizadoStatusPermissoesDto | undefined,
@@ -923,6 +938,7 @@ export class OrcamentoRealizadoService {
         let filterIdIn: undefined | number[] = undefined;
         if (
             !ehCompartilhado &&
+            // TODO PS/PDM_AS_PS: aqui está sem filtro as well, a meta que passar, está sendo usada
             !user.hasSomeRoles(['CadastroMeta.administrador_orcamento', ...PlanoSetorialController.OrcamentoWritePerms])
         )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
@@ -1217,7 +1233,7 @@ export class OrcamentoRealizadoService {
         return rows;
     }
 
-    async removeEmLote(params: BatchRecordWithId, user: PessoaFromJwt) {
+    async removeEmLote(tipo: TipoPdmType, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
         if (params.ids.length > MAX_BATCH_SIZE)
@@ -1225,7 +1241,7 @@ export class OrcamentoRealizadoService {
 
         // pra executar em lote, precisa ser CP
         const checkPermissions = params.ids.map((linha) =>
-            this.verificaPermissaoDelete(linha.id, user, 'verificaPermissaoOrcamentoNaMetaRespNaCp')
+            this.verificaPermissaoDelete(tipo, linha.id, user, 'verificaPermissaoOrcamentoAdminOuCp')
         );
 
         await Promise.all(checkPermissions);
@@ -1271,16 +1287,12 @@ export class OrcamentoRealizadoService {
         return ret;
     }
 
-    async patchOrcamentoConcluidoProprioOrgao(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
-        const isAdmin = user.hasSomeRoles([
-            'CadastroMeta.administrador_orcamento',
-            // TODO PS permissão de admin de meta
-            ...PlanoSetorialController.OrcamentoWritePerms,
-        ]);
-
-        if (isAdmin) throw new BadRequestException(`Administrador de orçamento não deve utilizar esse serviço`);
-
-        await user.verificaPermissaoOrcamentoNaMeta(dto.meta_id, this.prisma);
+    async patchOrcamentoConcluidoProprioOrgao(
+        tipo: TipoPdmType,
+        dto: PatchOrcamentoRealizadoConcluidoDto,
+        user: PessoaFromJwt
+    ) {
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, dto.meta_id, this.prisma);
         if (!user.orgao_id) throw new BadRequestException('necessário ter um órgão');
 
         const configAtual = await this.getStatusConcluido({
@@ -1289,8 +1301,8 @@ export class OrcamentoRealizadoService {
         });
 
         // só CP pode mudar depois de congelado
-        if (configAtual && configAtual.execucao_concluida && !isAdmin) {
-            await user.verificaPermissaoOrcamentoNaMetaRespNaCp(dto.meta_id, this.prisma);
+        if (configAtual && configAtual.execucao_concluida) {
+            await user.verificaPermissaoOrcamentoAdminOuCp(tipo, dto.meta_id, this.prisma);
         }
 
         // mesmo sendo tecnico, precisa ser do órgão do responsavel
@@ -1318,16 +1330,12 @@ export class OrcamentoRealizadoService {
         });
     }
 
-    async patchOrcamentoConcluidoMetaOrgao(dto: PatchOrcamentoRealizadoConcluidoComOrgaoDto, user: PessoaFromJwt) {
-        const isAdmin = user.hasSomeRoles([
-            'CadastroMeta.administrador_orcamento',
-            // TODO PS permissão de admin de meta
-            ...PlanoSetorialController.OrcamentoWritePerms,
-        ]);
-
-        if (!isAdmin) {
-            await user.verificaPermissaoOrcamentoNaMetaRespNaCp(dto.meta_id, this.prisma);
-        }
+    async patchOrcamentoConcluidoMetaOrgao(
+        tipo: TipoPdmType,
+        dto: PatchOrcamentoRealizadoConcluidoComOrgaoDto,
+        user: PessoaFromJwt
+    ) {
+        await user.verificaPermissaoOrcamentoAdminOuCp(tipo, dto.meta_id, this.prisma);
 
         // mesmo sendo tecnico, precisa ser do órgão do responsavel
         const podeEditar = await this.prisma.metaOrgao.findMany({
@@ -1404,8 +1412,8 @@ export class OrcamentoRealizadoService {
         });
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
-        await this.verificaPermissaoDelete(id, user, 'verificaPermissaoOrcamentoNaMeta');
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
+        await this.verificaPermissaoDelete(tipo, id, user, 'verificaPermissaoOrcamentoPontoFocal');
 
         const now = new Date(Date.now());
 
@@ -1421,9 +1429,10 @@ export class OrcamentoRealizadoService {
     }
 
     private async verificaPermissaoDelete(
+        tipo: TipoPdmType,
         id: number,
         user: PessoaFromJwt,
-        func: 'verificaPermissaoOrcamentoNaMeta' | 'verificaPermissaoOrcamentoNaMetaRespNaCp'
+        func: 'verificaPermissaoOrcamentoPontoFocal' | 'verificaPermissaoOrcamentoAdminOuCp'
     ) {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
@@ -1432,7 +1441,7 @@ export class OrcamentoRealizadoService {
         if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
             throw new HttpException('Orçamento realizado não encontrado', 404);
 
-        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(user, {
+        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(tipo, user, {
             ano_referencia: orcamentoRealizado.ano_referencia,
             meta_id: orcamentoRealizado.meta_id,
         });
@@ -1441,7 +1450,7 @@ export class OrcamentoRealizadoService {
                 `Sem permissão para remover o item. ${this.textoErroAnoConcluido(concluidoStatus)}`
             );
 
-        await user[func](orcamentoRealizado.meta_id, this.prisma);
+        await user[func](tipo, orcamentoRealizado.meta_id, this.prisma);
     }
 
     private textoErroAnoConcluido(status: OrcamentoRealizadoStatusConcluidoDto | null) {
