@@ -82,7 +82,7 @@ async function checkClose() {
   >{{ formularioSujo }}</pre>
 
   <button
-    class="btn round ml2"
+    class="btn round ml2 botao-de-fechamento"
     @click="checkClose"
   >
     <svg
@@ -91,3 +91,8 @@ async function checkClose() {
     ><use xlink:href="#i_x" /></svg>
   </button>
 </template>
+<style scoped>
+.botao-de-fechamento {
+  flex-shrink: 0;
+}
+</style>
