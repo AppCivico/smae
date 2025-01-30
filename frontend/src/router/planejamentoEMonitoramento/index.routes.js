@@ -19,8 +19,6 @@ export default [
       pesoNoMenu: 2,
       limitarÀsPermissões: [
         'Menu.metas',
-        'CadastroPS.administrador',
-        'CadastroPS.administrador_no_orgao',
       ],
     },
   },
