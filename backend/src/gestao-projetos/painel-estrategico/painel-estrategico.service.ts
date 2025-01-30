@@ -77,7 +77,12 @@ export class PainelEstrategicoService {
             strFilter += ' and p.orgao_responsavel_id in (+' + filtro.orgao_responsavel_id.toString() + ')';
         }
         if (filtro.portfolio_id && filtro.portfolio_id.length > 0) {
-            strFilter += ' and coalesce(po.portfolio_id,p.portfolio_id) in (+' + filtro.portfolio_id.toString() + ')';
+            strFilter +=
+                ' AND (po.portfolio_id IN (' +
+                filtro.portfolio_id.toString() +
+                ') OR p.portfolio_id IN (' +
+                filtro.portfolio_id.toString() +
+                ')) ';
         }
         return strFilter;
     }
