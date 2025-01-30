@@ -665,7 +665,8 @@ watch(valoresIniciais, (novoValor) => {
         >
           <div
             class="f1"
-            :hidden="$route.meta.entidadeMãe === 'planoSetorial' && !singleEtapa.value?.variavel"
+            :hidden="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
+              && !singleEtapa.value?.variavel"
           >
             <LabelFromYup
               :schema="schema.fields.variavel"
