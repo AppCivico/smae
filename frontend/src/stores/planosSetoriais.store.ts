@@ -1,3 +1,4 @@
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   DadosCodTituloMetaDto,
@@ -9,7 +10,6 @@ import type { PlanoSetorialDto } from '@back/pdm/dto/pdm.dto';
 import type { ListPdmDocument } from '@back/pdm/entities/list-pdm-document.entity';
 import type { ListPdm } from '@back/pdm/entities/list-pdm.entity';
 import { defineStore } from 'pinia';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -31,6 +31,12 @@ interface Erros {
 }
 
 type EmFoco = PlanoSetorialDto & { orcamento_config?: OrcamentoConfig[] | null };
+
+export type TiposDeOrcamentosDisponiveis = {
+  execucao_disponivel?: boolean;
+  planejado_disponivel?: boolean;
+  previsao_custo_disponivel?: boolean;
+};
 
 interface Estado {
   lista: Lista;
@@ -298,7 +304,7 @@ export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo 
       return result;
     },
 
-    orcamentosDisponiveisNoPlanoEmFoco: ({ emFoco }) => {
+    orcamentosDisponiveisNoPlanoEmFoco: ({ emFoco }):TiposDeOrcamentosDisponiveis => {
       const disponiveis = {
         execucao_disponivel: false,
         planejado_disponivel: false,

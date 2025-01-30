@@ -37,6 +37,7 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 // - `/meta/:meta_id/iniciativas/:iniciativa_id`
 // - `/meta/:meta_id/iniciativas/:iniciativa_id/atividades/:atividade_id`
 
+import type { TiposDeOrcamentosDisponiveis } from '@/stores/planosSetoriais.store';
 import type {
   EntidadesPossiveis,
   ParametrosPagina,
@@ -48,7 +49,12 @@ type Props = {
 };
 
 export default ({ entidadeMãe, parametrosPagina }: Props) => {
-  const rotasParaMenuSecundário = (nível, orcamentosDisponiveis) => {
+  type Nível = 'atividade' | 'iniciativa' | 'meta';
+
+  const rotasParaMenuSecundário = (
+    nível: Nível,
+    orcamentosDisponiveis: TiposDeOrcamentosDisponiveis = {},
+  ) => {
     let rotasDoPdm = [];
     const rotasDoOrçamento = [];
 
@@ -620,7 +626,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           'meta',
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
-        limitarAsPermissoes: undefined,
       },
       children: [
         {
