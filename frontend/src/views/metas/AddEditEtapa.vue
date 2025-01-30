@@ -293,6 +293,7 @@ const onSubmit = handleSubmit(async () => {
 
 function redefinirVariavel(habilitar = false) {
   const valorInicial = route.meta.entidadeMãe === 'planoSetorial'
+    || route.meta.entidadeMãe === 'programaDeMetas'
     ? {
       codigo: singleEtapa.value?.variavel?.codigo || 'GERAR_CODIGO',
       titulo: singleEtapa.value?.variavel?.titulo || '',
