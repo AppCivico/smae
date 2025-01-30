@@ -1608,12 +1608,20 @@ export class PessoaService {
         if (ret.privilegios.includes('SMAE.login_suspenso'))
             throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
 
-        if (ret.equipe_pdm_tipos.includes('PDM')) {
+        if (
+            ret.equipe_pdm_tipos.includes('PDM') ||
+            ret.privilegios.includes('CadastroPDM.administrador_no_orgao') ||
+            ret.privilegios.includes('CadastroPDM.administrador')
+        ) {
             ret.privilegios.push('Menu.metas');
             ret.privilegios.push('ReferencialEm.Equipe.ProgramaDeMetas');
         }
 
-        if (ret.equipe_pdm_tipos.includes('PS')) {
+        if (
+            ret.equipe_pdm_tipos.includes('PS') ||
+            ret.privilegios.includes('CadastroPS.administrador_no_orgao') ||
+            ret.privilegios.includes('CadastroPS.administrador')
+        ) {
             ret.privilegios.push('ReferencialEm.Equipe.PS');
         }
 
