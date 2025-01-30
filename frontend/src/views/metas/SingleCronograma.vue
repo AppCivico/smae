@@ -119,10 +119,21 @@ watchEffect(() => {
   CronogramasStore.clearEdit();
   CronogramasStore.getActiveByParent(parentVar.value, parentField.value);
 
-  if (props.group === 'etapas') editModalStore.modal(AddEditEtapa, props);
-  if (props.group === 'fase') editModalStore.modal(AddEditFase, props);
-  if (props.group === 'subfase') editModalStore.modal(AddEditFase, props);
-  if (props.group === 'monitorar') editModalStore.modal(AddEditMonitorar, props);
+  switch (props.group) {
+    case 'etapas':
+      editModalStore.modal(AddEditEtapa, props);
+      break;
+    case 'fase':
+    case 'subfase':
+      editModalStore.modal(AddEditFase, props);
+      break;
+    case 'monitorar':
+      editModalStore.modal(AddEditMonitorar, props);
+      break;
+
+    default:
+      editModalStore.$reset();
+  }
 });
 </script>
 <template>
