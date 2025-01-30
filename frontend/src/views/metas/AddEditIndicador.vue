@@ -371,7 +371,7 @@ watch(() => props.group, () => {
     {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.codigo }} {{ singleIniciativa.titulo }}
   </div>
   <div
-    v-else-if="meta_id"
+    v-else-if="metaId"
     class="t24 mb2"
   >
     Meta {{ singleMeta.codigo }} {{ singleMeta.titulo }}
