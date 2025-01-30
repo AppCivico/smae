@@ -1602,7 +1602,8 @@ export class PessoaService {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
-        if (filterModulos.length == 2) {
+        const comSistemaDefinido = filterModulos.length == 2;
+        if (comSistemaDefinido) {
             const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
             this.filtraPrivilegiosSMAE(sistema, ret);
         }
@@ -1614,7 +1615,7 @@ export class PessoaService {
         if (
             ret.equipe_pdm_tipos.includes('PDM') ||
             ret.privilegios.includes('CadastroPDM.administrador_no_orgao') ||
-            ret.privilegios.includes('CadastroPDM.administrador')
+            (ret.privilegios.includes('CadastroPDM.administrador') && filterModulos.includes('ProgramaDeMetas'))
         ) {
             ret.privilegios.push('Menu.metas');
             ret.privilegios.push('ReferencialEm.Equipe.ProgramaDeMetas');
@@ -1623,7 +1624,7 @@ export class PessoaService {
         if (
             ret.equipe_pdm_tipos.includes('PS') ||
             ret.privilegios.includes('CadastroPS.administrador_no_orgao') ||
-            ret.privilegios.includes('CadastroPS.administrador')
+            (ret.privilegios.includes('CadastroPS.administrador') && filterModulos.includes('PlanoSetorial'))
         ) {
             ret.privilegios.push('ReferencialEm.Equipe.PS');
         }
