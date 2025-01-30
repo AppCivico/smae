@@ -7,7 +7,7 @@ export type ParametrosPagina = {
   tituloSingular: string;
   tituloPlural: string;
   segmentoRaiz: string;
-  privilegioRaiz: 'CadastroPS.' | 'CadastroPDM.';
+  privilegioRaiz: string[] | string;
   presenteNoMenu: boolean;
 };
 
@@ -18,7 +18,10 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         tituloSingular: 'Plano Setorial',
         tituloPlural: 'Planos Setoriais',
         segmentoRaiz: '/plano-setorial',
-        privilegioRaiz: 'CadastroPS.',
+        privilegioRaiz: [
+          'CadastroPS.',
+          'ReferencialEm.Equipe.PS',
+        ],
         presenteNoMenu: true,
       };
 
@@ -62,13 +65,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         name: `${entidadeMãe}.planosSetoriaisListar`,
         path: '',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
-        meta: {
-          // não entendi o motivo dessa rota não herdar a propriedade `meta` da mãe
-          limitarÀsPermissões: [
-            'CadastroPS.',
-            'CadastroPDM.',
-          ],
-        },
       },
       {
         name: `${entidadeMãe}.planosSetoriaisCriar`,
