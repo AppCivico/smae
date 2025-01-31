@@ -756,6 +756,7 @@ export class VariavelCicloService {
                 valor_nominal: true,
             },
         });
+        console.log(valoresSerieVariavel);
 
         // carrega a ultima linha de cada uma das analises
         const fases: VariavelFase[] = ['Liberacao', 'Preenchimento', 'Validacao'];
