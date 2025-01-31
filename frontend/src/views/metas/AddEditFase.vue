@@ -449,7 +449,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
 
         <hr class="mt2 mb2">
 
-        <template v-if="$route.meta.entidadeMãe === 'pdm'">
+        <div v-if="$route.meta.entidadeMãe === 'pdm'">
           <label class="label">
             Responsável
           </label>
@@ -460,9 +460,9 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
               label="nome_exibicao"
             />
           </div>
-        </template>
+        </div>
 
-        <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+        <div v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
           <label class="label">
             Equipe Responsável
           </label>
@@ -478,7 +478,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
               />
             </div>
           </div>
-        </template>
+        </div>
 
         <hr
           v-if="singleCronograma.regionalizavel && tempRegions.length"
