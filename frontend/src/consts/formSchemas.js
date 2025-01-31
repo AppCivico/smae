@@ -3653,6 +3653,8 @@ export const usuário = object()
       .required('Preencha o e-mail')
       .email('E-mail inválido'),
     grupos: array(),
+    modulos_permitidos: array(),
+    sobreescrever_modulos: boolean(),
     lotacao: string()
       .label('Lotação')
       .required('Preencha a lotação'),
