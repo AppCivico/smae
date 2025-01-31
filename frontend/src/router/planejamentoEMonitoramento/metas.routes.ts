@@ -1101,7 +1101,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'monitorar' },
           meta: {
-            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaIniciativa`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
