@@ -2167,6 +2167,13 @@ export class VariavelService {
     }
 
     private async validaCamposCategorica(dto: UpdateVariavelDto, op: 'create' | 'update') {
+        if (dto.inicio_medicao && dto.inicio_medicao.getDay() != 1) {
+            throw new HttpException('O início da medição deve ser no primeiro dia do mês.', 400);
+        }
+        if (dto.fim_medicao && dto.fim_medicao.getDay() != 1) {
+            throw new HttpException('O fim da medição deve ser no primeiro dia do mês.', 400);
+        }
+
         if (dto.variavel_categorica_id) {
             dto.ano_base = null;
             dto.valor_base = 0;
