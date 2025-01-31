@@ -4,7 +4,7 @@ import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
-  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore
+  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { storeToRefs } from 'pinia';
@@ -17,12 +17,26 @@ const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
 const route = useRoute();
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { meta_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { iniciativa_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { atividade_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { cronograma_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { etapa_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { fase_id } = route.params;
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { subfase_id } = route.params;
 
 const props = defineProps(['props']);
@@ -32,12 +46,19 @@ const alertaDeExclusãoDeVariável = 'Atenção! Prosseguir excluirá a variáve
 const group = ref(props?.props?.group);
 
 const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
+// mantendo comportamento legado
+// eslint-disable-next-line no-nested-ternary
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const currentEdit = route.path.slice(0, route.path.indexOf('/cronograma') + 11);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
-if (cronograma_id && (!singleCronograma?.value?.id || singleCronograma?.value.id != cronograma_id)) {
+if (
+  cronograma_id
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
+  && (!singleCronograma?.value?.id || singleCronograma?.value.id != cronograma_id)
+) {
   CronogramasStore.getById(parentVar, parentField, cronograma_id);
 }
 
@@ -55,10 +76,12 @@ const title = ref(`Adicionar ${group.value}`);
 const level1 = ref(null);
 const level2 = ref(null);
 const level3 = ref(null);
+// mantendo comportamento legado
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const regiao_id_mount = ref(null);
 
-const currentParent = group.value == 'subfase' ? fase_id : etapa_id;
-const currentId = group.value == 'subfase' ? subfase_id : fase_id;
+const currentParent = group.value === 'subfase' ? fase_id : etapa_id;
+const currentId = group.value === 'subfase' ? subfase_id : fase_id;
 const currentFase = ref({
   peso: 1,
   percentual_execucao: 0,
@@ -88,6 +111,8 @@ async function getRegionByParent(r_id, cur) {
 
   if (level2.value) {
     minLevel.value = 2;
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
   } else if (cur && cur != level1.value) {
     level2.value = cur;
   }
@@ -98,9 +123,13 @@ async function getRegionByParent(r_id, cur) {
 
   if (level3.value) {
     minLevel.value = 3;
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
   } else if (cur && cur != level2.value) {
     level3.value = cur;
   }
+  // mantendo comportamento legado
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   lastlevel();
 }
 
@@ -112,21 +141,29 @@ async function onSubmit(values) {
     const concluirEnvio = async () => {
       values.responsaveis = responsaveis.value.participantes;
 
-      values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
+      values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
+        ? Number(values.regiao_id)
+        : null;
       values.ordem = Number(values.ordem) ?? null;
       values.peso = Number(values.peso) ?? null;
       values.percentual_execucao = Number(values.percentual_execucao) ?? null;
       values.etapa_pai_id = currentParent;
 
       let rota = false;
+      // mantendo comportamento legado
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       let etapa_id_gen = null;
       if (currentId) {
+        // mantendo comportamento legado
+        // eslint-disable-next-line eqeqeq
         if (currentFase.value.id == currentId) {
           r = await EtapasStore.update(currentId, values);
           msg = 'Dados salvos com sucesso!';
           rota = currentEdit;
           etapa_id_gen = currentId;
 
+          // mantendo comportamento legado
+          // eslint-disable-next-line eqeqeq
           if (values.ordem != currentFase.value.ordem) {
             await EtapasStore.monitorar({
               cronograma_id: Number(cronograma_id),
@@ -179,28 +216,48 @@ async function checkClose() {
 function lastlevel() {
   let r;
   if (level1.value) {
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     r = tempRegions.value[0]?.children.find((x) => x.id == level1.value)?.id;
   }
   if (level1.value && level2.value) {
     r = tempRegions.value[0]?.children
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
       .find((x) => x.id == level1.value)?.children
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
       .find((x) => x.id == level2.value)?.id;
   }
   if (level1.value && level2.value && level3.value) {
     r = tempRegions.value[0]?.children
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
       .find((x) => x.id == level1.value)?.children
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
       .find((x) => x.id == level2.value)?.children
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
       .find((x) => x.id == level3.value)?.id;
   }
   regiao_id_mount.value = r;
 }
 function maskDate(el) {
+  // mantendo comportamento legado
+  // eslint-disable-next-line no-restricted-globals
   const kC = event.keyCode;
   let data = el.target.value.replace(/[^0-9/]/g, '');
+  // mantendo comportamento legado
+  // eslint-disable-next-line eqeqeq
   if (kC != 8 && kC != 46) {
-    if (data.length == 2) {
+    if (data.length === 2) {
+    // mantendo comportamento legado
+    // eslint-disable-next-line no-multi-assign
       el.target.value = data += '/';
-    } else if (data.length == 5) {
+    } else if (data.length === 5) {
+      // mantendo comportamento legado
+      // eslint-disable-next-line no-multi-assign
       el.target.value = data += '/';
     } else {
       el.target.value = data;
@@ -242,27 +299,35 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
   let pc;
   let p1;
   let noregion = true;
-  if (group.value == 'subfase' && subfase_id) {
+  if (group.value === 'subfase' && subfase_id) {
     title.value = 'Editar subfase';
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
     pc = p1;
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     const p2 = p1?.etapa_filha?.find((x) => x.id == subfase_id) ?? {};
     currentFase.value = p2.id ? p2 : { error: 'Subfase não encontrada' };
     if (p1?.regiao_id) {
       getRegionByParent(p1.regiao_id, p2?.regiao_id);
       noregion = false;
     }
-  } else if (group.value == 'subfase') {
+  } else if (group.value === 'subfase') {
     title.value = 'Adicionar subfase';
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
     pc = p1;
     if (p1?.regiao_id) {
       getRegionByParent(p1.regiao_id);
       noregion = false;
     }
-  } else if (group.value == 'fase' && fase_id) {
+  } else if (group.value === 'fase' && fase_id) {
     title.value = `Editar ${group.value}`;
     pc = p0;
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq
     p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
     currentFase.value = p1.id ? p1 : { error: 'Fase não encontrada' };
     if (p1?.regiao_id) {
@@ -274,9 +339,13 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
   }
   if (currentFase.value?.responsaveis) {
     responsaveis.value.participantes = currentFase.value.responsaveis
+      // mantendo comportamento legado
+      // eslint-disable-next-line no-nested-ternary
       .map((x) => (x.id ? x.id : x.pessoa ? x.pessoa.id : null));
   }
   if (pc?.responsaveis) {
+    // mantendo comportamento legado
+    // eslint-disable-next-line no-nested-ternary
     usersAvailable.value = pc.responsaveis.map((x) => (x.id ? x : x.pessoa ? x.pessoa : null));
   }
 
