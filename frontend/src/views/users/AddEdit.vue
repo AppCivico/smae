@@ -1,7 +1,7 @@
 <script setup>
 import tipoDePerfil from '@/consts/tipoDePerfil';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '@back/common/consts';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
 // Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
@@ -45,7 +45,7 @@ const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
 PaineisGruposStore.getAll();
 
 const authStore = useAuthStore();
-const { sistemaCorrente } = storeToRefs(authStore);
+const { sistemaCorrente, permissions } = storeToRefs(authStore);
 
 let title = 'Cadastro de Usuário';
 const personalizarNomeParaExibição = ref(false);
@@ -103,6 +103,44 @@ const módulosOrdenados = computed(() => Object.values(perfisPorMódulo.value)
     }
   }));
 
+const handleModulosPermitidosChange = (novoValor) => {
+  if (!values.sobreescrever_modulos) {
+    setFieldValue('sobreescrever_modulos', true);
+  }
+
+  setFieldValue('modulos_permitidos', novoValor);
+};
+
+const módulosFiltrados = computed(() => {
+  if (!values.sobreescrever_modulos) {
+    return módulosOrdenados.value;
+  }
+
+  if (!values.modulos_permitidos || values.modulos_permitidos.length === 0) {
+    return [];
+  }
+
+  return módulosOrdenados.value
+    .filter((módulo) => values.modulos_permitidos.includes(módulo.nome));
+});
+
+const modulosPermitidosValue = computed(() => {
+  const permitidos = values.sobreescrever_modulos
+    ? values.modulos_permitidos
+    : módulosOrdenados.value.map((m) => m.nome);
+
+  return [...new Set([...permitidos, 'SMAE'])];
+});
+
+const modulosIds = computed(() => módulosFiltrados.value.map((módulo) => módulo.id).join('.'));
+
+// ficou meio complexo, mas precisamos validar a lista de permissões do backend
+// com o objeto de permissões que recebemos da store, dessa forma se a lista
+// de admins mudar no back não precisamos atualizar nada no front
+const podeEditarMódulos = computed(() => Object.entries(permissions.value || {})
+  .flatMap(([modulo, permissoes]) => Object.keys(permissoes).map((permissao) => `${modulo}.${permissao}`))
+  .some((permission) => LISTA_PRIV_ADMIN.includes(permission)));
+
 usersStore.getProfiles();
 
 if (id) {
@@ -116,6 +154,11 @@ if (id) {
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const carga = controlledValues;
+
+  if (podeEditarMódulos.value) {
+    carga.modulos_permitidos = controlledValues.modulos_permitidos;
+    carga.sobreescrever_modulos = values.sobreescrever_modulos;
+  }
 
   if (!personalizarNomeParaExibição.value) {
     carga.nome_exibicao = carga.nome_completo;
@@ -138,6 +181,18 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     }
   } catch (error) {
     alertStore.error(error);
+  }
+});
+
+watch(values.modulos_permitidos, (novoValor) => {
+  if (novoValor.length < módulosOrdenados.value.length) {
+    values.sobreescrever_modulos = true;
+  }
+});
+
+watch(() => values.sobreescrever_modulos, (novoValor) => {
+  if (!novoValor) {
+    setFieldValue('modulos_permitidos', módulosOrdenados.value.map((módulo) => módulo.nome));
   }
 });
 
@@ -348,17 +403,51 @@ watch(accessProfiles, () => {
           checkbox para selecionar o perfil desejado.
         </p>
 
+        <div
+          v-if="podeEditarMódulos"
+          class="mb2"
+        >
+          <p class="tc400 mb1">
+            Acesso aos módulos
+          </p>
+
+          <ul class="lista-de-perfis t12">
+            <li
+              v-for="módulo in módulosOrdenados"
+              :key="módulo.id"
+              class="mb1"
+            >
+              <label class="block mb1 perfil">
+                <Field
+                  name="modulos_permitidos"
+                  type="checkbox"
+                  :value="módulo.nome"
+                  :class="{ 'error': errors.modulos_permitidos }"
+                  :model-value="modulosPermitidosValue"
+                  :disabled="módulo.nome === 'SMAE'"
+                  :checked="módulo.nome === 'SMAE' || modulosPermitidosValue.includes(módulo.nome)"
+                  @update:model-value="handleModulosPermitidosChange($event)"
+                />
+                {{ módulo.etiqueta }}
+              </label>
+            </li>
+          </ul>
+        </div>
+
         <!--
           `v-if` em uso para contornar que não é possível ver a chegada
           atrasada de slots para aplicar a rota da aba inicial
+          `:key` usado para forçar a reavaliação dos
+          slots que não são reativos
         -->
         <EnvelopeDeAbas
-          v-if="módulosOrdenados.length"
+          v-if="módulosFiltrados.length"
+          :key="modulosIds"
           nome-da-chave-de-abas="modulo"
           class="mb2"
         >
           <template
-            v-for="(módulo) in módulosOrdenados"
+            v-for="(módulo) in módulosFiltrados"
             #[`${módulo.id}__cabecalho`]
             :key="módulo.id"
           >
@@ -371,7 +460,7 @@ watch(accessProfiles, () => {
           </template>
 
           <template
-            v-for="módulo in módulosOrdenados"
+            v-for="módulo in módulosFiltrados"
             #[módulo.id]="{ abaEstaAberta }"
             :key="módulo.id"
           >
