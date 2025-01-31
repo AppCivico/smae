@@ -437,8 +437,8 @@ watch(accessProfiles, () => {
         <!--
           `v-if` em uso para contornar que não é possível ver a chegada
           atrasada de slots para aplicar a rota da aba inicial
-          `:key` usado para forçar a reavaliação das
-          props que não são reativas
+          `:key` usado para forçar a reavaliação dos
+          slots que não são reativos
         -->
         <EnvelopeDeAbas
           v-if="módulosFiltrados.length"
