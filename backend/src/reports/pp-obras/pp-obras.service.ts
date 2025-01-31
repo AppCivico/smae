@@ -484,11 +484,19 @@ export class PPObrasService implements ReportableService {
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[]) {
         let portfolioParamIdx;
-        if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
-            const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
+
+        // Fazendo uma cópia pois aqui, possivelmente, é utilizada uma regex de replace.
+        let filterStr = whereCond.whereString;
+
+        if (filterStr.match(/portfolio_id = \$([0-9]+)/)) {
+            const match = filterStr.match(/portfolio_id = \$([0-9]+)/);
             portfolioParamIdx = match ? parseInt(match[1], 10) : null;
 
             if (!portfolioParamIdx) throw new Error('Erro interno ao extrair relatório');
+
+            // Nesta query o filtro de report deve ser aplicado na subquery port_array.
+            // Para que seja retornados todas as obras do portfolio, até as compartilhadas.
+            filterStr = filterStr.replace('projeto.portfolio_id', 'port_array.portfolio_id');
         }
 
         const sql = `SELECT
@@ -590,23 +598,11 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           LEFT JOIN LATERAL (
-                SELECT
-                    unnest(array[
-                        projeto.portfolio_id,
-                        portfolio_projeto_compartilhado.portfolio_id
-                    ]) AS portfolio_id
-                FROM
-                    portfolio_projeto_compartilhado
-                WHERE
-                    projeto.id = portfolio_projeto_compartilhado.projeto_id
+                SELECT projeto.portfolio_id AS portfolio_id
                 UNION ALL
-                SELECT
-                    projeto.portfolio_id AS portfolio_id
-                WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM portfolio_projeto_compartilhado
-                    WHERE projeto.id = portfolio_projeto_compartilhado.projeto_id
-                )
+                SELECT ppc.portfolio_id
+                FROM portfolio_projeto_compartilhado ppc
+                WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
             ) AS port_array ON true
           LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
