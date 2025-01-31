@@ -820,15 +820,16 @@ export class VariavelCicloService {
         const useSerieVariavel = cicloCorrente.fase === 'Preenchimento' && !ultimaAnalise; // ultimaAnalise=Form Enviado
 
         let valoresFormatados: VariavelValorDto[];
-        console.log(useSerieVariavel, valoresSerieVariavel);
 
         if (useSerieVariavel) {
             valoresFormatados = this.formatarValores(variavel, valoresSerieVariavel, []);
         } else {
             const valoresForm = ultimaAnalise?.valores as any as IUltimaAnaliseValor[];
-            for (const v of valoresForm) {
-                // seta a variavel mãe no item q está sem (form do preenchido natural)
-                if (!v.variavel_id) v.variavel_id = variavel_id;
+            if (valoresForm) {
+                for (const v of valoresForm) {
+                    // seta a variavel mãe no item q está sem (form do preenchido natural)
+                    if (!v.variavel_id) v.variavel_id = variavel_id;
+                }
             }
 
             const remapSeriesVariavel: ValorSerieInterface[] = [];
