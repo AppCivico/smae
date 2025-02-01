@@ -4,10 +4,12 @@ import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { JOB_PDM_ORCAMENTO_CONCLUIDO } from '../common/dto/locks';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import {
@@ -24,8 +26,6 @@ import {
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
-import { PlanoSetorialController } from '../pdm/pdm.controller';
-import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
 
@@ -842,19 +842,7 @@ export class OrcamentoRealizadoService {
         user: PessoaFromJwt,
         filters: { meta_id: number; ano_referencia: number }
     ) {
-        let ehAdmin = tipo == '_PDM' ? user.hasSomeRoles(['CadastroMeta.administrador_orcamento']) : false;
-
-        // economizando query, admin não entra na condição de testar se está dentro dessa lista
-        const metasRespCp = ehAdmin
-            ? []
-            : await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-        let estaNaMetaCp = metasRespCp.includes(+filters.meta_id);
-
-        if (tipo !== '_PDM') {
-            // TODO PS buscar das equipes
-            ehAdmin = true;
-            estaNaMetaCp = true;
-        }
+        const { ehAdmin, estaNaMetaCp } = await user.orcamentoPermissaoMeta(this.prisma, filters.meta_id, tipo);
 
         const concluidoStatus =
             ehAdmin || estaNaMetaCp
@@ -939,6 +927,10 @@ export class OrcamentoRealizadoService {
         if (
             !ehCompartilhado &&
             // TODO PS/PDM_AS_PS: aqui está sem filtro as well, a meta que passar, está sendo usada
+            // porém implementar isso pro PS duplicaria o código todo pois teria que criar a regra de cruzar com a coluna json
+            // dentro de uma view, talvez como é só uma listagem, só a trava pelo PDM esteja OK, já que o acesso das metas é OK,
+            // e tem o filtro do NOT que para funcionar corretamente na teoria precisaria de fato mostrar todas, ou incluir mais um count
+            // para contar quantas outras metas sem acesso a pessoa não está vendo
             !user.hasSomeRoles(['CadastroMeta.administrador_orcamento', ...PlanoSetorialController.OrcamentoWritePerms])
         )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
