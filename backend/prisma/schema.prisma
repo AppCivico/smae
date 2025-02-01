@@ -4572,6 +4572,8 @@ model ImportacaoOrcamento {
     saida_arquivo_id Int?
     saida_arquivo    Arquivo? @relation("output", fields: [saida_arquivo_id], references: [id])
 
+    modulo_sistema ModuloSistema @default(SMAE)
+
     pdm_id Int?
     pdm    Pdm? @relation(fields: [pdm_id], references: [id])
 
