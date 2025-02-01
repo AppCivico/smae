@@ -1,7 +1,7 @@
-import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, TipoPdm, TipoProjeto } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { DateTime } from 'luxon';
@@ -22,16 +22,16 @@ import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { read, utils, writeXLSX } from 'xlsx';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
+import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 import { Stream2Buffer } from '../common/helpers/Streaming';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
 import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
-import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
-import { PlanoSetorialController } from '../pdm/pdm.controller';
-import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -109,9 +109,8 @@ export class ImportacaoOrcamentoService {
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
+        const sistema = user.assertOneModuloSistema('criar', 'importações');
         if (!dto.tipo_projeto && !dto.tipo_pdm) {
-            const sistema = user.assertOneModuloSistema('criar', 'importações');
-
             if (sistema === 'MDO') {
                 dto.tipo_projeto = 'MDO';
             } else if (sistema === 'Projetos') {
@@ -169,6 +168,7 @@ export class ImportacaoOrcamentoService {
                         arquivo_id: arquivo_id,
                         pdm_id: dto.pdm_id,
                         portfolio_id: dto.portfolio_id,
+                        modulo_sistema: sistema,
                     },
                     select: { id: true },
                 });
@@ -636,17 +636,22 @@ export class ImportacaoOrcamentoService {
         const user = await this.authService.pessoaJwtFromId(job.criado_por);
 
         let tipo_projeto: TipoProjeto | undefined = undefined;
-        let tipo_pdm: TipoPdm | undefined = undefined;
 
+        const tipo_pdm: TipoPdmType | undefined =
+            job.modulo_sistema == 'ProgramaDeMetas'
+                ? 'PDM_AS_PS'
+                : job.modulo_sistema == 'PlanoSetorial'
+                  ? '_PS'
+                  : job.modulo_sistema == 'PDM'
+                    ? '_PDM'
+                    : undefined;
         if (job.portfolio_id) {
             tipo_projeto = job.portfolio!.tipo_projeto;
             const projetosDoUser = await this.projetoService.findAllIds(tipo_projeto, user, job.portfolio_id);
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
-            tipo_pdm = job.pdm!.tipo;
-            // TODO aqui ta errado, vai precisar saber tbm qual foi o sistema que subiu o job pra iniciar corretamente
-            // o processamento
-            const metasDoUser = await this.metaService.findAllIds(tipo_pdm == 'PS' ? '_PS' : '_PDM', user, job.pdm_id);
+            if (!tipo_pdm) throw new HttpException('Tipo de PDM não definido', 400);
+            const metasDoUser = await this.metaService.findAllIds(tipo_pdm, user, job.pdm_id);
 
             metasIds.push(...metasDoUser.map((r) => r.id));
         }
@@ -772,8 +777,7 @@ export class ImportacaoOrcamentoService {
                     },
                     user,
                     tipo_projeto,
-                    // TODO é por isso que precisa daqui o sistema, falta o PDM_AS_PS
-                    tipo_pdm == 'PS' ? '_PS' : tipo_pdm == 'PDM' ? '_PDM' : undefined
+                    tipo_pdm
                 );
             } catch (error) {
                 feedback = `Erro durante processamento: ${error}`;
