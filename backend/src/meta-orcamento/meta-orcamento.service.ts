@@ -109,6 +109,7 @@ export class MetaOrcamentoService {
             !user.hasSomeRoles([
                 'CadastroMeta.administrador_orcamento',
                 // TODO PS permissão de admin de meta
+                // ver comentário em src/orcamento-realizado/orcamento-realizado.service.ts
                 ...PlanoSetorialController.OrcamentoWritePerms,
             ])
         )

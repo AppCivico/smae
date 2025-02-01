@@ -150,12 +150,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         }
     }
 
-    private async buscaMetaPdmEAcesso(
-        prisma: Prisma.TransactionClient,
-        meta_id: number,
-
-        filtros: PdmPerfilTipo[]
-    ) {
+    private async buscaMetaPdmEAcesso(prisma: Prisma.TransactionClient, meta_id: number, filtros: PdmPerfilTipo[]) {
         let ehAdmin = false;
         const metaInfo = await prisma.meta.findFirstOrThrow({
             where: {
@@ -194,6 +189,33 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         }
 
         return { ehAdmin, equipesIds, metaInfo };
+    }
+
+    public async orcamentoPermissaoMeta(prisma: Prisma.TransactionClient, meta_id: number, tipo: TipoPdmType) {
+        let ehAdmin = false;
+        let estaNaMetaCp = false;
+
+        if (tipo == '_PDM') {
+            ehAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+
+            const metasRespCp = ehAdmin
+                ? [] // economiza uma query
+                : await this.getMetaIdsFromAnyModel(prisma.view_meta_pessoa_responsavel_na_cp);
+            estaNaMetaCp = ehAdmin ? true : metasRespCp.includes(meta_id);
+        } else {
+            const { ehAdmin, equipesIds } = await this.buscaMetaPdmEAcesso(prisma, meta_id, ['ADMIN', 'CP']);
+            if (ehAdmin) return { ehAdmin, estaNaMetaCp: true };
+
+            const collab = await this.getEquipesColaborador(prisma);
+            const participaEquipe = Arr.intersection(equipesIds, collab);
+
+            estaNaMetaCp = participaEquipe.length > 0;
+        }
+
+        return {
+            ehAdmin,
+            estaNaMetaCp,
+        };
     }
 
     public async getMetaIdsFromAnyModel(
