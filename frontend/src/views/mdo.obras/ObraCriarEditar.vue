@@ -1,14 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -33,6 +23,20 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed,
+  ref,
+  watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -304,15 +308,37 @@ function iniciar() {
   buscarPossíveisColaboradores();
   obrasStore.buscarPdms({ apenas_pdm: false });
 
-  empreendimentosStore.buscarTudo();
-  portfolioMdoStore.buscarTudo();
-  equipamentosStore.buscarTudo();
-  etiquetasStore.buscarTudo();
-  gruposTematicosStore.buscarTudo();
-  programaHabitacionalStore.buscarTudo();
-  tiposDeIntervencaoStore.buscarTudo();
+  if (!listaDeEmpreendimentos.length && !chamadasPendentesDeEmpreendimentos.lista) {
+    empreendimentosStore.buscarTudo();
+  }
 
-  observadoresStore.buscarTudo();
+  if (!portfolioMdoStore.lista.length && !portfolioMdoStore.chamadasPendentes.lista) {
+    portfolioMdoStore.buscarTudo();
+  }
+
+  if (!listaDeEquipamentos.length && !chamadasPendentesDeEquipamentos.lista) {
+    equipamentosStore.buscarTudo();
+  }
+
+  if (!listaDeEtiquetas.length && !chamadasPendentesDeEtiquetas.lista) {
+    etiquetasStore.buscarTudo();
+  }
+
+  if (!listaDeGruposTemáticos.length && !chamadasPendentesDeGruposTemáticos.lista) {
+    gruposTematicosStore.buscarTudo();
+  }
+
+  if (!listaDeProgramasHabitacionais.length && !chamadasPendentesDeProgramasHabitacionais.lista) {
+    programaHabitacionalStore.buscarTudo();
+  }
+
+  if (!listaDeTiposDeIntervenção.length && !chamadasPendentesDeTiposDeIntervenção.lista) {
+    tiposDeIntervencaoStore.buscarTudo();
+  }
+
+  if (!gruposDeObservadores.length && !gruposDeObservadoresPendentes.lista) {
+    observadoresStore.buscarTudo();
+  }
 
   // Aqui por causa de alguma falha de reatividade apenas nesse store
   ÓrgãosStore.$reset();
@@ -359,7 +385,6 @@ watch(itemParaEdicao, (novoValor) => {
   montarCampoEstático.value = true;
 });
 </script>
-
 <template>
   <header class="flex flexwrap spacebetween g1 center mb2">
     <h1 class="mb0">
@@ -552,6 +577,9 @@ watch(itemParaEdicao, (novoValor) => {
           name="tags"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroDeEtiquetas"
+        />
       </div>
 
       <div class="f1 mb1 fb15em">
@@ -586,6 +614,9 @@ watch(itemParaEdicao, (novoValor) => {
           name="grupo_tematico_id"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroDeGrupoTemático.lista"
+        />
       </div>
       <div class="f1 mb1 fb15em">
         <LabelFromYup
@@ -613,6 +644,9 @@ watch(itemParaEdicao, (novoValor) => {
         <ErrorMessage
           name="equipamento_id"
           class="error-msg"
+        />
+        <ErrorComponent
+          :erro="erroDeEquipamentos.lista"
         />
       </div>
     </div>
@@ -712,6 +746,9 @@ watch(itemParaEdicao, (novoValor) => {
           name="empreendimento_id"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroDeEmpreendimentos"
+        />
       </div>
     </div>
 
@@ -721,7 +758,13 @@ watch(itemParaEdicao, (novoValor) => {
         :schema="schema"
         class="mb1"
       />
-      <ul class="lista-de-perfis t12">
+
+      <LoadingComponent v-if="chamadasPendentesDeTiposDeIntervenção.lista" />
+
+      <ul
+        v-else
+        class="lista-de-perfis t12"
+      >
         <li
           v-for="item in listaDeTiposDeIntervenção"
           :key="item.id"
@@ -748,6 +791,9 @@ watch(itemParaEdicao, (novoValor) => {
       <ErrorMessage
         name="tipo_intervencao_id"
         class="error-msg"
+      />
+      <ErrorComponent
+        :erro="erroDeTiposDeIntervenção.lista"
       />
     </div>
     <div
@@ -836,6 +882,10 @@ watch(itemParaEdicao, (novoValor) => {
         <ErrorMessage
           name="programa_id"
           class="error-msg"
+        />
+
+        <ErrorComponent
+          :erro="erroDeProgramasHabitacional"
         />
       </div>
       <div
@@ -1667,6 +1717,10 @@ watch(itemParaEdicao, (novoValor) => {
       <ErrorMessage
         name="grupo_portfolio"
         class="error-msg"
+      />
+
+      <ErrorComponent
+        :erro="erroNosDadosDeObservadores"
       />
     </div>
 
