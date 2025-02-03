@@ -787,7 +787,7 @@ export class EtapaService {
 
         const tipoPdm = PdmModoParaTipo(tipo);
 
-        if (tipoPdm === 'PS') {
+        if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
             if (!dto.ps_ponto_focal?.equipes.length) {
                 throw new BadRequestException(
                     'É necessário ter pelo menos uma equipe de ponto focal para gerar a variável.'

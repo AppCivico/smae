@@ -554,7 +554,7 @@ export class IndicadorService {
                     if (dto.variavel_categoria_id !== null) {
                         if (dto.indicador_tipo !== 'Categorica')
                             throw new HttpException(
-                                'Apenas indicadores do tipo Categorica podem ter uma variável de categoria',
+                                'Apenas indicadores do tipo Categórica podem ter uma variável de categoria',
                                 400
                             );
 
@@ -677,8 +677,9 @@ export class IndicadorService {
                         });
                 }
 
-                //Tratamento para series inválidas
-                if (tipo === 'PDM') {
+                // Tratamento para series inválidas (apenas _PDM) pois no pdm novo se usar a variavel global
+                // vai apagar a serie_variavel
+                if (tipoParam === '_PDM') {
                     const variaveis = await prismaTx.indicadorVariavel.findMany({
                         where: { indicador_id: indicador.id, indicador_origem_id: null },
                     });
