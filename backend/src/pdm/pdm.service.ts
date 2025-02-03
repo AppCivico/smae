@@ -241,14 +241,21 @@ export class PdmService {
 
                     orList.push({
                         tipo: tipoPdm,
-                        PdmPerfil: {
-                            some: {
-                                removido_em: null,
-                                tipo: 'ADMIN',
-                                orgao_id: orgaoId,
-                                // não entra a equipe
+                        OR: [
+                            {
+                                PdmPerfil: {
+                                    some: {
+                                        removido_em: null,
+                                        tipo: 'ADMIN',
+                                        orgao_id: orgaoId,
+                                        // não entra a equipe
+                                    },
+                                },
                             },
-                        },
+                            {
+                                criado_por: user.id,
+                            },
+                        ],
                     });
                 }
 
