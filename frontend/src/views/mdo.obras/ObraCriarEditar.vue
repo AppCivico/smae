@@ -1491,7 +1491,7 @@ watch(itemParaEdicao, (novoValor) => {
       <div class="flex flexwrap g2 mb1">
         <CampoDePessoasComBuscaPorOrgao
           v-model="values.colaboradores_no_orgao"
-          name="participantes"
+          name="colaboradores_no_orgao"
           orgao-label="Órgão Colaborador"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
           :pronto-para-montagem="montarCampoEstático"
