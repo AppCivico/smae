@@ -6,6 +6,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
@@ -110,6 +111,10 @@ app.directive('ScrollLockDebug', {
       }
     });
   },
+});
+
+app.directive('selecionar-multiplas-opcoes', {
+  mounted: (el) => selecionarMultiplasOpcoes(el),
 });
 
 app.directive('focus', {
