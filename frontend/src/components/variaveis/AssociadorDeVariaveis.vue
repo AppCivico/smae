@@ -40,6 +40,7 @@
     </p>
 
     <TabelaDeVariaveisGlobais
+      v-selecionar-multiplas-opcoes
       :numero-de-colunas-extras="1"
       class="mb1"
     >
