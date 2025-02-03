@@ -820,7 +820,7 @@ export class IndicadorService {
                     ${endStr}::date
                 ELSE
                     LEAST(${filterEnd}::date, ${endStr}::date) -- mais velhas entre as datas
-                END
+                END,
                 (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))
             ) p
         `;
@@ -872,6 +872,11 @@ export class IndicadorService {
             },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
+
+        if ((tipoParam == 'PDM_AS_PS' || tipoParam == '_PS') && !filters.data_fim && !filters.data_inicio) {
+            filters.data_inicio = indicador.inicio_medicao;
+            filters.data_fim = indicador.fim_medicao;
+        }
 
         if (indicador.variavel_categoria_id === CONST_CRONO_VAR_CATEGORICA_ID) {
             indicador.variavel_categoria_id = null;
