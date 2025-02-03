@@ -1274,6 +1274,12 @@ export class VariavelService {
                     select: {
                         supraregional: true,
                         variavel_categorica_id: true,
+                        medicao_orgao: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1379,6 +1385,12 @@ export class VariavelService {
                               parente_id: r.regiao.parente_id,
                               pdm_codigo_sufixo: r.regiao.pdm_codigo_sufixo,
                           } satisfies Regiao)
+                        : null,
+                    orgao_responsal_coleta: r.variavel.medicao_orgao
+                        ? {
+                              id: r.variavel.medicao_orgao.id,
+                              sigla: r.variavel.medicao_orgao.sigla,
+                          }
                         : null,
                 };
             }),

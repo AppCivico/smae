@@ -14,6 +14,7 @@ import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { IdSigla } from 'src/common/dto/IdSigla.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -87,6 +88,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     pode_editar: boolean;
     pode_editar_valor: boolean;
     pode_excluir: boolean;
+    orgao_responsal_coleta: IdSigla | null;
 }
 
 export class FilterPeriodoDto {
