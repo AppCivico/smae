@@ -347,12 +347,21 @@ watch(emFoco, () => {
 
 watch(itemParaEdicao, (novoValor) => {
   montarCampoEstático.value = false;
-  resetForm({
-    initialValues: novoValor,
-  });
+
+  if (route.params.obraId) {
+    resetForm({
+      initialValues: novoValor,
+    });
+  } else {
+    resetForm({
+      initialValues: {},
+    });
+  }
+
   montarCampoEstático.value = true;
 });
 </script>
+
 <template>
   <header class="flex flexwrap spacebetween g1 center mb2">
     <h1 class="mb0">
@@ -1093,14 +1102,18 @@ watch(itemParaEdicao, (novoValor) => {
             }"
             :disabled="
               !arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades
-                || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades).length
+                || !Object.keys(arvoreDeMetas?.[values.meta_id]
+                  ?.iniciativas?.[values.iniciativa_id]?.atividades).length
             "
           >
             <option :value="null">
               Selecionar
             </option>
             <option
-              v-for="item in arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades"
+              v-for="
+                item in arvoreDeMetas
+                  ?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades
+              "
               :key="item.id"
               :value="item.id"
               :title="item.titulo"
