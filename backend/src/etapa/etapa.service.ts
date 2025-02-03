@@ -720,7 +720,7 @@ export class EtapaService {
             if (!indicadorInfo || !indicadorInfo.indicador?.id)
                 throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
 
-            if (tipoPdm == '_PS' && !dto.variavel.codigo) {
+            if ((tipoPdm == '_PS' || tipoPdm == 'PDM_AS_PS') && !dto.variavel.codigo) {
                 dto.variavel.codigo = await this.variavelService.geraCodigoVariavel('Global', {
                     inicio_medicao: indicadorInfo.indicador.inicio_medicao,
                     periodicidade: indicadorInfo.indicador.periodicidade,
@@ -738,7 +738,7 @@ export class EtapaService {
                 user,
                 prismaTx,
                 now,
-                tipoPdm == '_PS' ? 'Global' : 'PDM'
+                tipoPdm == '_PS' || tipoPdm == 'PDM_AS_PS' ? 'Global' : 'PDM'
             );
 
             for (const r of etapaAtualizada.responsaveis) {
@@ -763,7 +763,7 @@ export class EtapaService {
                 where: { id: self.variavel_id },
                 data: {
                     titulo: dto.variavel.titulo,
-                    codigo: tipoPdm == '_PS' ? undefined : dto.variavel.codigo,
+                    codigo: tipoPdm == '_PS' || tipoPdm == 'PDM_AS_PS' ? undefined : dto.variavel.codigo,
                 },
             });
         } else if (self.variavel_id && dto.variavel === null) {
