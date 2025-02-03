@@ -1682,6 +1682,9 @@ export class PessoaService {
         if (!(sistema == 'PDM' || sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas')) {
             removePrivilegios('CadastroOds.');
             removePrivilegios('CadastroUnidadeMedida.');
+        }
+
+        if (!(sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas')) {
             removePrivilegios('CadastroVariavelGlobal.');
             removePrivilegios('CadastroGrupoVariavel.');
             removePrivilegios('CadastroVariavelCategorica.');
