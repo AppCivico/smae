@@ -329,7 +329,7 @@ iniciar();
                     </div>
                     <div class="f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Responsável na coordenadoria de planejamento2
+                        Responsável na coordenadoria de planejamento
                       </div>
                       <div class="t13">
                         {{
