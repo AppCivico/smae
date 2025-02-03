@@ -407,7 +407,7 @@ watch(accessProfiles, () => {
           v-if="podeEditarMódulos"
           class="mb2"
         >
-          <p class="tc400 mb1">
+          <p class="mb1 w900">
             Acesso aos módulos
           </p>
 
