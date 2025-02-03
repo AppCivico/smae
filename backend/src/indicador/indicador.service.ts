@@ -884,7 +884,7 @@ export class IndicadorService {
         // caso seja variável categórica, pega a série de proxy
         if (indicador.variavel_categoria_id) {
             const proxy = await this.variavelService.getSeriePrevistoRealizado(
-                tipo == 'PS' ? 'Global' : 'PDM',
+                tipoParam == 'PDM_AS_PS' || tipoParam == '_PS' ? 'Global' : 'PDM',
                 {
                     uso: 'leitura',
                     incluir_auxiliares: true,
