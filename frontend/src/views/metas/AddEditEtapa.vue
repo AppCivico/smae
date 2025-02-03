@@ -476,7 +476,7 @@ watch(valoresIniciais, (novoValor) => {
         </div>
       </template>
 
-      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+      <template v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
         <div class="flex">
           <div class="f1 mb1">
