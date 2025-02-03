@@ -14,10 +14,15 @@
   </td>
   <td class="cell--nowrap">
     <abbr
-      v-if="$props.linha?.orgao"
-      :title="$props.linha?.orgao.descricao"
+      v-if="$props.linha?.orgao_responsal_coleta || $props.linha?.orgao"
+      :title="$props.linha.orgao_responsal_coleta.sigla || $props.linha.orgao.descricao"
     >
-      {{ $props.linha?.orgao.sigla || $props.linha?.orgao }}
+      {{
+        $props.linha.orgao_responsal_coleta.sigla
+          || $props.linha?.orgao_responsal_coleta
+          || $props.linha?.orgao.sigla
+          || $props.linha?.orgao
+      }}
     </abbr>
   </td>
   <td class="contentStyle">
