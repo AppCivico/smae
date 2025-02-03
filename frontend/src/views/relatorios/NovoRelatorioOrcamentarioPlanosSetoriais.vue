@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
