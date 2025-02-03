@@ -296,6 +296,10 @@ const onSubmit = handleSubmit(async () => {
 });
 
 function iniciar() {
+  if (!props.obraId) {
+    obrasStore.$reset();
+  }
+
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
   obrasStore.buscarPdms({ apenas_pdm: false });
@@ -348,15 +352,9 @@ watch(emFoco, () => {
 watch(itemParaEdicao, (novoValor) => {
   montarCampoEstático.value = false;
 
-  if (route.params.obraId) {
-    resetForm({
-      initialValues: novoValor,
-    });
-  } else {
-    resetForm({
-      initialValues: {},
-    });
-  }
+  resetForm({
+    initialValues: novoValor,
+  });
 
   montarCampoEstático.value = true;
 });
