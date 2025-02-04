@@ -33,6 +33,7 @@ import {
 } from 'vee-validate';
 import {
   computed,
+  nextTick,
   ref,
   watch,
 } from 'vue';
@@ -383,6 +384,19 @@ watch(itemParaEdicao, (novoValor) => {
   });
 
   montarCampoEstático.value = true;
+});
+
+watch(listaDeTiposDeIntervenção, () => {
+  // redefinir o formulário porque um atraso na carga da lista de intervenções
+  // pode sujá-lo. Vamos tomar o cuidado de manter os dados já preenchidos.
+  nextTick(() => {
+    resetForm({
+      values: {
+        ...values,
+        tipo_intervencao_id: itemParaEdicao.value.tipo_intervencao_id,
+      },
+    });
+  });
 });
 </script>
 <template>
