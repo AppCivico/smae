@@ -4,7 +4,6 @@ import {
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '@/components/CheckClose.vue';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchemas';
@@ -66,13 +65,13 @@ portfolioStore.buscarTudo();
 <template>
   <MigalhasDePao class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"

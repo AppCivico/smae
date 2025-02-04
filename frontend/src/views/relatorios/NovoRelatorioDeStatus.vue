@@ -1,7 +1,6 @@
 <script setup>
 import { Field, Form, useIsFormDirty } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '@/components/CheckClose.vue';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
@@ -59,13 +58,13 @@ projetosStore.buscarTudo();
 <template>
   <MigalhasDePao class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
