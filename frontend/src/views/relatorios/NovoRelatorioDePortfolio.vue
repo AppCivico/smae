@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   Field, Form, useIsFormDirty,
 } from 'vee-validate';
-import CheckClose from '@/components/CheckClose.vue';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import statuses from '@/consts/projectStatuses';
@@ -74,13 +73,13 @@ iniciar();
 <template>
   <MigalhasDePao class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
 
   <Form
     v-slot="{ errors, isSubmitting, values }"
@@ -158,9 +157,7 @@ iniciar();
         </div>
       </div>
 
-      <div
-        class="f05 mb1"
-      >
+      <div class="f05 mb1">
         <LabelFromYup
           name="status"
           :schema="schema.fields.parametros"
@@ -171,9 +168,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ error: errors.status }"
         >
-          <option
-            :value="null"
-          >
+          <option :value="null">
             Selecionar
           </option>
           <option
