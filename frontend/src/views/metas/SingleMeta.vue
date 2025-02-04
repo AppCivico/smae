@@ -236,9 +236,7 @@ iniciar();
             </SmaeLink>
           </div>
 
-          <template
-            v-if="Array.isArray(Iniciativas[metaId])"
-          >
+          <template v-if="Array.isArray(Iniciativas[metaId])">
             <div
               v-for="ini in Iniciativas[metaId]"
               :id="`iniciativa__${ini.id}`"
@@ -258,7 +256,9 @@ iniciar();
                       viewBox="0 0 32 38"
                       color="#8EC122"
                       xmlns="http://www.w3.org/2000/svg"
-                    ><use xlink:href="#i_iniciativa" /></svg>
+                    >
+                      <use xlink:href="#i_iniciativa" />
+                    </svg>
                   </SmaeLink>
                   <SmaeLink
                     :to="`${parentlink}/iniciativas/${ini.id}`"
@@ -283,7 +283,9 @@ iniciar();
                       <svg
                         width="20"
                         height="20"
-                      ><use xlink:href="#i_edit" /></svg>
+                      >
+                        <use xlink:href="#i_edit" />
+                      </svg>
                     </SmaeLink>
                     <button
                       class="like-a__text"
@@ -294,7 +296,9 @@ iniciar();
                       <svg
                         width="20"
                         height="20"
-                      ><use xlink:href="#i_waste" /></svg>
+                      >
+                        <use xlink:href="#i_waste" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -313,7 +317,14 @@ iniciar();
                         Órgão participante
                       </div>
                       <div class="t13">
-                        {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
+                        {{
+                          ini.ps_ponto_focal.equipes.length === 0
+                            ? '-' :
+                              combinadorDeListas(
+                                EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
+                                false,
+                                'titulo',
+                              ) }}
                       </div>
                     </div>
                     <div class="f1">
@@ -321,7 +332,14 @@ iniciar();
                         Responsável na coordenadoria de planejamento
                       </div>
                       <div class="t13">
-                        {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
+                        {{
+                          ini.ps_tecnico_cp.equipes.length === 0
+                            ? '-' :
+                              combinadorDeListas(
+                                EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
+                                false,
+                                'titulo',
+                              ) }}
                       </div>
                     </div>
                   </div>
@@ -340,7 +358,9 @@ iniciar();
                   class="ml1 ib"
                   width="20"
                   height="20"
-                ><use xlink:href="#i_spin" /></svg>
+                >
+                  <use xlink:href="#i_spin" />
+                </svg>
               </div>
             </div>
           </div>
@@ -471,7 +491,9 @@ iniciar();
             class="ml1 ib"
             width="20"
             height="20"
-          ><use xlink:href="#i_spin" /></svg>
+          >
+            <use xlink:href="#i_spin" />
+          </svg>
         </div>
       </template>
       <template v-else-if="singleMeta.error">
