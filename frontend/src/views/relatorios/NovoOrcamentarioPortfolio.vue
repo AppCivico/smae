@@ -1,4 +1,12 @@
 <script setup>
+import {
+  Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import CheckClose from '@/components/CheckClose.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
@@ -6,10 +14,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const portfolioStore = usePortfolioStore();
 const alertStore = useAlertStore();
@@ -29,6 +33,8 @@ const initialValues = computed(() => ({
   },
   salvar_arquivo: false,
 }));
+
+const formularioSujo = useIsFormDirty();
 
 async function onSubmit(values) {
   const carga = values;
@@ -58,11 +64,16 @@ portfolioStore.buscarTudo();
 </script>
 
 <template>
+  <MigalhasDePao class="mb1" />
+
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"

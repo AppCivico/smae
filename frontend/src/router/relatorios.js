@@ -260,7 +260,7 @@ export default {
       path: 'orcamentarios-portfolio',
       meta: {
         título: 'Relatórios orçamentários de portfólio',
-        títuloParaMenu: 'Execução orçamentária',
+        títuloParaMenu: undefined,
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -276,6 +276,7 @@ export default {
           meta: {
             título: 'Novo relatório orçamentário de portfólio',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolio',
+            rotasParaMigalhasDePão: ['RelatóriosOrçamentáriosPortfolio'],
           },
         },
       ],
@@ -389,7 +390,7 @@ export default {
       path: 'projeto',
       meta: {
         título: 'Relatórios de projeto',
-        títuloParaMenu: 'Relatório de projeto',
+        títuloParaMenu: undefined,
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -405,6 +406,7 @@ export default {
           meta: {
             título: 'Novo relatório de projeto',
             rotaDeEscape: 'RelatóriosDeProjeto',
+            rotasParaMigalhasDePão: ['RelatóriosDeProjeto'],
           },
         },
       ],
@@ -439,7 +441,7 @@ export default {
       path: 'previsao-de-custo-portfolio',
       meta: {
         título: 'Relatórios de previsão de custo de portfólio',
-        títuloParaMenu: 'Previsão de custo',
+        títuloParaMenu: undefined,
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -455,6 +457,7 @@ export default {
           meta: {
             título: 'Novo relatório de previsão de custo de portfólio',
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPortfolio',
+            rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPortfolio'],
           },
         },
       ],
@@ -464,7 +467,7 @@ export default {
       path: 'portfolio',
       meta: {
         título: 'Relatórios de portfólio',
-        títuloParaMenu: 'Relatório de portfólio',
+        títuloParaMenu: undefined,
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -480,6 +483,7 @@ export default {
           meta: {
             título: 'Novo relatório de portfólio',
             rotaDeEscape: 'RelatóriosDePortfolio',
+            rotasParaMigalhasDePão: ['RelatóriosDePortfolio'],
           },
         },
       ],
@@ -489,7 +493,7 @@ export default {
       path: 'projeto-e-status',
       meta: {
         título: 'Relatórios de status',
-        títuloParaMenu: 'Relatório de status',
+        títuloParaMenu: undefined,
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -505,6 +509,7 @@ export default {
           meta: {
             título: 'Novo relatório de status',
             rotaDeEscape: 'RelatóriosDeStatus',
+            rotasParaMigalhasDePão: ['RelatóriosDeStatus'],
           },
         },
       ],
