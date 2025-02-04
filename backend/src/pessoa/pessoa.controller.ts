@@ -82,6 +82,7 @@ export class PessoaController {
         'CadastroMetaPS.listar',
         'CadastroMetaPDM.listar',
         'CadastroPessoa.administrador.MDO',
+        'CadastroGrupoVariavel.colaborador_responsavel', // cadastra as equipes
         ...PROJETO_READONLY_ROLES,
         ...PROJETO_READONLY_ROLES_MDO,
     ])
