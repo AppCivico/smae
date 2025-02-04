@@ -1,14 +1,16 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import CheckClose from '@/components/CheckClose.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPortfolio as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const projetosStore = useProjetosStore();
 const alertStore = useAlertStore();
@@ -17,6 +19,8 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 const { current, loading } = storeToRefs(relatoriosStore);
+
+const formularioSujo = useIsFormDirty();
 
 const currentYear = new Date().getFullYear();
 
@@ -64,11 +68,16 @@ function iniciar() {
 iniciar();
 </script>
 <template>
+  <MigalhasDePao class="mb1" />
+
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
@@ -152,24 +161,23 @@ iniciar();
 
       <div class="f1">
         <LabelFromYup
-            name="ano"
-            :schema="schema.fields.parametros"
-          />
+          name="ano"
+          :schema="schema.fields.parametros"
+        />
         <Field
           name="parametros.ano"
           type="text"
           class="inputtext light mb2"
           maxlength="4"
           :class="{ 'error': errors['parametros.ano'] }"
-        >
-        </Field>
+        />
         <div
           v-if="errors['parametros.ano']"
           class="error-msg"
         >
           {{ errors['parametros.ano'] }}
         </div>
-      </div>  
+      </div>
     </div>
 
     <div class="mb2">

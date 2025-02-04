@@ -1,7 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Field, Form, useIsFieldDirty } from 'vee-validate';
+import {
+  Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import CheckClose from '@/components/CheckClose.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import statuses from '@/consts/projectStatuses';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
@@ -16,7 +21,7 @@ const listaDeStatuses = arrayToValueAndLabel(statuses);
 const route = useRoute();
 const router = useRouter();
 
-const formularioSujo = useIsFieldDirty();
+const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -67,7 +72,7 @@ iniciar();
 </script>
 
 <template>
-  <MigalhasDePao />
+  <MigalhasDePao class="mb1" />
 
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
