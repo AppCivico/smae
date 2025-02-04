@@ -172,7 +172,7 @@ export class GrupoPainelExternoService {
         }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
-            if (dto.orgao_id && dto.orgao_id != gp.orgao_id) {
+            if (dto.orgao_id) {
                 // verificando se órgão não foi removido
                 const orgao = await this.prisma.orgao.findFirst({
                     where: {
