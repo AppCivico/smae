@@ -100,20 +100,27 @@ const geolocalizaçãoPorToken = computed(() => (
     }, {})
 ));
 
-const valoresIniciais = computed(() => (singleEtapa.value?.loading
-  || singleEtapa.value?.error
-  || !singleEtapa.value?.id
-  ? {
-    peso: 1,
-    percentual_execucao: 0,
-    endereco_obrigatorio: false,
-    geolocalizacao: [],
-    variavel: null,
+const valoresIniciais = computed(() => {
+  if (singleEtapa.value?.loading || singleEtapa.value?.error || !singleEtapa.value?.id) {
+    return {
+      peso: 1,
+      percentual_execucao: 0,
+      endereco_obrigatorio: false,
+      geolocalizacao: [],
+      variavel: null,
+      inicio_previsto: '',
+      termino_previsto: '',
+      inicio_real: '',
+      termino_real: '',
+    };
   }
-  : {
-    ...singleEtapa.value?.etapa,
-    geolocalizacao: singleEtapa.value?.etapa?.geolocalizacao?.map((x) => x.token) || [],
-  }));
+
+  const { etapa } = singleEtapa.value;
+  return {
+    ...etapa,
+    geolocalizacao: etapa.geolocalizacao?.map((x) => x.token) || [],
+  };
+});
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -733,7 +740,7 @@ watch(valoresIniciais, (novoValor) => {
             :class="{ 'error': errors.inicio_previsto }"
             maxlength="10"
             placeholder="dd/mm/aaaa"
-            @keyup="maskDate"
+            @input="maskDate"
           />
           <div class="error-msg">
             {{ errors.inicio_previsto }}
@@ -748,7 +755,7 @@ watch(valoresIniciais, (novoValor) => {
             :class="{ 'error': errors.termino_previsto }"
             maxlength="10"
             placeholder="dd/mm/aaaa"
-            @keyup="maskDate"
+            @input="maskDate"
           />
           <div class="error-msg">
             {{ errors.termino_previsto }}
