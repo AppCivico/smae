@@ -29,6 +29,15 @@ export class GrupoPainelExternoService {
                 );
         }
 
+        // verificando se órgão não foi removido
+        const orgao = await this.prisma.orgao.findFirst({
+            where: {
+                id: orgao_id,
+                removido_em: null,
+            },
+        });
+        if (!orgao) throw new BadRequestException('Órgão não encontrado.');
+
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const exists = await prismaTx.grupoPainelExterno.count({
@@ -163,6 +172,17 @@ export class GrupoPainelExternoService {
         }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            if (dto.orgao_id && dto.orgao_id != gp.orgao_id) {
+                // verificando se órgão não foi removido
+                const orgao = await this.prisma.orgao.findFirst({
+                    where: {
+                        id: dto.orgao_id,
+                        removido_em: null,
+                    },
+                });
+                if (!orgao) throw new BadRequestException('Órgão não encontrado.');
+            }
+
             if (dto.titulo) {
                 const exists = await prismaTx.grupoPainelExterno.count({
                     where: {
