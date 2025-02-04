@@ -1699,6 +1699,10 @@ export class VariavelService {
             const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id);
 
             let equipes_configuradas: boolean | undefined = undefined;
+
+            let medicao_orgao_id: number | undefined = undefined;
+            let validacao_orgao_id: number | undefined = undefined;
+            let liberacao_orgao_id: number | undefined = undefined;
             if (IsArrayContentsChanged(gruposRecebidos, gruposAtuais)) {
                 logger.log('Equipe responsáveis alteradas...');
                 equipes_configuradas = this.isEquipesConfiguradas(dto);
@@ -1707,6 +1711,11 @@ export class VariavelService {
                     where: { variavel_id: variavelId, removido_em: null },
                     data: { removido_em: now },
                 });
+
+                if (dto.medicao_orgao_id) medicao_orgao_id = dto.medicao_orgao_id;
+                if (dto.validacao_orgao_id) validacao_orgao_id = dto.validacao_orgao_id;
+                if (dto.liberacao_orgao_id) liberacao_orgao_id = dto.liberacao_orgao_id;
+
                 await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger);
             }
 
@@ -1732,7 +1741,9 @@ export class VariavelService {
                     atraso_meses: dto.atraso_meses,
                     inicio_medicao: dto.inicio_medicao,
                     fim_medicao: dto.fim_medicao,
-
+                    medicao_orgao_id,
+                    validacao_orgao_id,
+                    liberacao_orgao_id,
                     dado_aberto: dto.dado_aberto,
                     metodologia: dto.metodologia,
                     descricao: dto.descricao,
@@ -2212,7 +2223,7 @@ export class VariavelService {
         const medicao_orgao_id = dto.medicao_orgao_id ?? antigo.medicao_orgao_id;
         const validacao_orgao_id = dto.validacao_orgao_id ?? antigo.validacao_orgao_id;
         const liberacao_orgao_id = dto.liberacao_orgao_id ?? antigo.liberacao_orgao_id;
-
+        console.log(dto, antigo, medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id);
         const grupoPrefetch = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
                 orgao_id: { in: [medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id] },
