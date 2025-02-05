@@ -49,7 +49,7 @@
         >
           -
         </td>
-        <td class="tr">
+        <td class="tr nowrap">
           <SmaeLink
             :to="{ name: 'equipesEditar', params: { equipeId: item.id } }"
             class="tprimary"
