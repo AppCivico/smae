@@ -97,7 +97,7 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
             if (geolocalizacao.endereco) {
               acc.enderecos.push(geolocalizacao.endereco);
 
-              const rotulo = [cur.projeto_codigo, cur.projeto_nome].join(' - ');
+              const rotulo = cur.projeto_nome;
               const descricao = [cur.projeto_status, cur.projeto_etapa].join('<br/>');
 
               if (rotulo) {
