@@ -21,6 +21,11 @@
     <hr class="ml2 f1">
   </div>
   <table class="tablemain">
+    <col>
+    <col>
+    <col>
+    <col>
+    <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th> Nome </th>
