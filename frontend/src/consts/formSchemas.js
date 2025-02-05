@@ -1,18 +1,4 @@
 /* eslint-disable no-template-curly-in-string */
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
-import { isBefore, isAfter } from 'date-fns';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -34,6 +20,21 @@ import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
+import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
+import { isAfter, isBefore } from 'date-fns';
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -107,6 +108,16 @@ addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não e
     test(value) {
       return (this.resolve(arrayToCompare) || []).includes(value);
     },
+  });
+});
+
+addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não pode ter valores repetidos', params = {}) {
+  return this.test('semDuplicatas', message, function semDuplicatasTeste(value) {
+    const { path, createError } = this;
+
+    return haDuplicatasNaLista(value, params)
+      ? createError({ path, message })
+      : true;
   });
 });
 
