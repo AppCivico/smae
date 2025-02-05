@@ -25,6 +25,7 @@ import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
+import { ListPessoa } from './entities/list-pessoa.entity';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -1283,36 +1284,12 @@ export class PessoaService {
         return await this.listaPerfilAcessoIdsPorSistema(sistema);
     }
 
-    async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt): Promise<ListPessoa[]> {
         const visiblePriv = await this.buscaPerfisVisiveis(user);
 
         this.logger.log(`buscando pessoas...`);
-        const selectColumns = {
-            id: true,
-            nome_completo: true,
-            nome_exibicao: true,
-            atualizado_em: true,
-            desativado_em: true,
-            desativado_motivo: true,
-            desativado: true,
-            email: true,
-            pessoa_fisica: {
-                select: {
-                    lotacao: true,
-                    orgao_id: true,
-                },
-            },
-            PessoaPerfil: {
-                select: {
-                    perfil_acesso_id: true,
-                },
-            },
-        };
 
         const filtrosExtra = this.filtrosPrivilegios(filters);
-        if (filters?.orgao_id) {
-            this.logger.log(`filtrando órgão é ${filters?.orgao_id}`);
-        }
 
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
@@ -1320,14 +1297,38 @@ export class PessoaService {
                 id: { gt: 0 },
                 NOT: { pessoa_fisica_id: null },
                 AND: filtrosExtra,
+                ...(filters?.orgao_id ? { pessoa_fisica: { orgao_id: filters.orgao_id } } : {}),
+            },
+            select: {
+                id: true,
+                nome_completo: true,
+                nome_exibicao: true,
+                atualizado_em: true,
+                desativado_em: true,
+                desativado_motivo: true,
+                desativado: true,
+                email: true,
                 pessoa_fisica: {
-                    orgao_id: filters?.orgao_id,
+                    select: {
+                        lotacao: true,
+                        orgao_id: true,
+                        orgao: {
+                            select: {
+                                sigla: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                PessoaPerfil: {
+                    select: {
+                        perfil_acesso_id: true,
+                    },
                 },
             },
-            select: selectColumns,
         });
 
-        const listFixed = listActive.map((p) => {
+        const listFixed: ListPessoa[] = listActive.map((p) => {
             return {
                 id: p.id,
                 nome_completo: p.nome_completo,
@@ -1337,6 +1338,7 @@ export class PessoaService {
                 desativado_em: p.desativado_em || undefined,
                 desativado: p.desativado,
                 email: p.email,
+                orgao: p.pessoa_fisica?.orgao ? p.pessoa_fisica.orgao : { id: 0, sigla: '' },
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
                 perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) => visiblePriv.includes(e)),
@@ -1691,13 +1693,6 @@ export class PessoaService {
             removePrivilegios('FonteVariavel.');
             removePrivilegios('AssuntoVariavel.');
         }
-
-        //
-        //        if (!(sistema == 'PlanoSetorial')) {
-        //            removePrivilegios('FonteVariavel.');
-        //            removePrivilegios('AssuntoVariavel.');
-        //        }
-        //
 
         if (sistema == 'CasaCivil') {
             removePrivilegios('CadastroPainelExterno.');
