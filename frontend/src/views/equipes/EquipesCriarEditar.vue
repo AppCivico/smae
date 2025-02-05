@@ -1,8 +1,7 @@
 <template>
-  <MigalhasDePão class="mb1" />
-
   <header class="flex spacebetween center mb2">
-    <h1>{{ titulo || "Equipes" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
@@ -24,6 +23,7 @@
         name="titulo"
       />
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -31,13 +31,12 @@
           :schema="schema"
         />
         <Field
-          v-model="orgao"
           name="orgao_id"
           as="select"
           class="inputtext light mb1"
           :class="{
             error: errors.orgao_id,
-            loading: ÓrgãosStore.chamadasPendentes?.lista,
+            loading: orgaosStore.chamadasPendentes?.lista,
           }"
           :disabled="
             !órgãosComoLista?.length ||
@@ -92,6 +91,7 @@
         />
       </div>
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -103,9 +103,9 @@
           name="colaboradores"
           :controlador="{
             busca: '',
-            participantes: carga?.colaboradores || [],
+            participantes: values?.colaboradores || [],
           }"
-          :grupo="colaboradores[orgao] || []"
+          :grupo="colaboradores[values.orgao_id] || []"
           label="nome_exibicao"
         />
         <ErrorMessage
@@ -123,9 +123,9 @@
           name="participantes"
           :controlador="{
             busca: '',
-            participantes: carga?.participantes || [],
+            participantes: values?.participantes || [],
           }"
-          :grupo="participantes[orgao]"
+          :grupo="participantes[values.orgao_id]"
           label="nome_exibicao"
         />
         <ErrorMessage
@@ -134,6 +134,7 @@
         />
       </div>
     </div>
+
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -169,6 +170,13 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { ref, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { equipes as schema } from '@/consts/formSchemas';
 import tipoDePerfil from '@/consts/tipoDePerfil';
@@ -179,12 +187,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useUsersStore } from '@/stores/users.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -204,31 +206,21 @@ const props = defineProps({
 const colaboradores = ref({});
 const participantes = ref({});
 
-const orgao = ref(0);
-
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
-
 const alertStore = useAlertStore();
 const usersStore = useUsersStore();
-const ÓrgãosStore = useOrgansStore();
+const orgaosStore = useOrgansStore();
 const equipesStore = useEquipesStore();
-const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+const { órgãosComoLista } = storeToRefs(orgaosStore);
 const {
   chamadasPendentes, emFoco, erro, itemParaEdicao,
-} = storeToRefs(
-  equipesStore,
-);
+} = storeToRefs(equipesStore);
 
 const {
   errors,
   handleSubmit,
   isSubmitting,
   resetForm,
-  resetField,
-  setFieldValue,
-  values: carga,
+  values,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema,
@@ -247,11 +239,11 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
     if (route.params?.equipeId) {
       response = await equipesStore.salvarItem(
-        carga,
+        values,
         route.params.equipeId,
       );
     } else {
-      response = await equipesStore.salvarItem(carga);
+      response = await equipesStore.salvarItem(values);
     }
     if (response) {
       alertStore.success(msg);
@@ -264,32 +256,32 @@ const onSubmit = handleSubmit.withControlled(async () => {
 });
 
 async function buscarPessoasSimplificadas() {
-  if (!participantes.value[orgao.value]) {
+  if (!participantes.value[values.orgao_id]) {
     const { linhas: linhasParticipantes } = await requestS.get(
       `${baseUrl}/pessoa/reduzido`,
       {
-        orgao_id: orgao.value,
+        orgao_id: values.orgao_id,
       },
     );
 
     if (Array.isArray(linhasParticipantes)) {
-      participantes.value[orgao.value] = linhasParticipantes;
+      participantes.value[values.orgao_id] = linhasParticipantes;
     } else {
       throw new Error('Erro ao buscar pessoas simplificadas');
     }
   }
 
-  if (!colaboradores.value[orgao.value]) {
+  if (!colaboradores.value[values.orgao_id]) {
     const { linhas: linhasColaboradores } = await requestS.get(
       `${baseUrl}/pessoa/reduzido`,
       {
         colaborador_grupo_variavel: true,
-        orgao_id: orgao.value,
+        orgao_id: values.orgao_id,
       },
     );
 
     if (Array.isArray(linhasColaboradores)) {
-      colaboradores.value[orgao.value] = linhasColaboradores;
+      colaboradores.value[values.orgao_id] = linhasColaboradores;
     } else {
       throw new Error('Erro ao buscar pessoas simplificadas');
     }
@@ -298,27 +290,41 @@ async function buscarPessoasSimplificadas() {
 
 async function iniciar() {
   usersStore.buscarPessoasSimplificadas();
-  orgao.value = user.value.orgao_id;
-  ÓrgãosStore.getAll().finally(() => {
-    chamadasPendentes.value.emFoco = false;
-  });
 
-  resetForm();
+  if (emFoco.value?.id !== route.params?.equipeId) {
+    equipesStore.$reset();
+
+    if (route.params?.equipeId) {
+      await equipesStore.buscarItem({ id: route.params.equipeId });
+
+      resetForm({
+        values: itemParaEdicao.value,
+      });
+    }
+  }
+
+  if (orgaosStore.órgãosComoLista.length === 0) {
+    await orgaosStore.getAll().finally(() => {
+      chamadasPendentes.value.emFoco = false;
+    });
+  }
+
+  if (!route.params.equipeId) {
+    resetForm({
+      values: {
+        orgao_id: user.value.orgao_id,
+      },
+    });
+  }
 }
 
-watch(orgao, () => {
-  if (orgao.value) {
+watch(() => values.orgao_id, () => {
+  if (values.orgao_id) {
     buscarPessoasSimplificadas();
   }
 });
 
-iniciar();
-
-equipesStore.$reset();
-// não foi usada a prop.equipeId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.equipeId) {
-  equipesStore.buscarItem({ id: route.params.equipeId });
-}
+onMounted(() => {
+  iniciar();
+});
 </script>
-
-<style></style>
