@@ -314,7 +314,7 @@ iniciar();
                     </div>
                     <div class="mr1 f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Órgão participante
+                        Equipe do órgão responsável
                       </div>
                       <div class="t13">
                         {{
@@ -329,7 +329,7 @@ iniciar();
                     </div>
                     <div class="f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Responsável na coordenadoria de planejamento
+                        Equipe técnica responsável
                       </div>
                       <div class="t13">
                         {{
