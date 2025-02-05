@@ -47,6 +47,8 @@ import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDi
 import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
 import StatusDistribuicaoRaiz from '@/views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
 
+import { useEquipesStore } from '@/stores/equipes.store';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -413,7 +415,7 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar Equipe',
+              título: () => useEquipesStore().itemParaEdicao.titulo,
               rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: ['equipesListar'],
             },
