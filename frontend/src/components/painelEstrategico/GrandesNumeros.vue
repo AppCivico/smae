@@ -5,7 +5,7 @@
       :numero="grandesNumeros.total_projetos"
       cor="#221F43"
       legenda="Total de projetos"
-      :tamanho-do-numero="tamanhoDoNúmeroPrimário"
+      :tamanho-do-numero="tamanhoDoNúmeroSecundário"
       :tamanho-da-legenda="12"
     />
 
