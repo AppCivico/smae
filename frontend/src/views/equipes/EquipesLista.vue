@@ -1,14 +1,17 @@
 <template>
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TítuloDePágina />
+
     <hr class="ml2 f1">
-    <router-link
+
+    <SmaeLink
       :to="{ name: 'equipesCriar' }"
       class="btn big ml1"
     >
       Nova Equipe
-    </router-link>
-  </div>
+    </SmaeLink>
+  </header>
+
   <div class="flex center mb2 spacebetween">
     <LocalFilter
       v-model="listaFiltradaPorTermoDeBusca"
@@ -18,19 +21,12 @@
     <hr class="ml2 f1">
   </div>
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th> Nome </th>
         <th> Órgão</th>
         <th> Tipo de grupo </th>
         <th> Participantes </th>
-        <th />
         <th />
       </tr>
     </thead>
@@ -42,9 +38,7 @@
         <td>{{ item.titulo }}</td>
         <td>{{ item.orgao.sigla }}</td>
         <td>{{ tipoDePerfil[item.perfil].nome || '' }}</td>
-        <td
-          v-if="item.participantes.length"
-        >
+        <td v-if="item.participantes.length">
           <span>
             {{ item.participantes.map(item => item.nome_exibicao).join(', ') }}
           </span>
@@ -55,20 +49,21 @@
         >
           -
         </td>
-        <td>
-          <router-link
+        <td class="tr">
+          <SmaeLink
             :to="{ name: 'equipesEditar', params: { equipeId: item.id } }"
             class="tprimary"
           >
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
-        <td>
+            >
+              <use xlink:href="#i_edit" />
+            </svg>
+          </SmaeLink>
+
           <button
-            class="like-a__text"
+            class="like-a__text ml1"
             arial-label="excluir"
             title="excluir"
             @click="excluirGrupo(item.id, item.titulo)"
@@ -76,7 +71,9 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            >
+              <use xlink:href="#i_waste" />
+            </svg>
           </button>
         </td>
       </tr>
@@ -102,9 +99,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { useAlertStore } from '@/stores/alert.store';
+import SmaeLink from '@/components/SmaeLink.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 
+import { useAlertStore } from '@/stores/alert.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 
 import tipoDePerfil from '@/consts/tipoDePerfil';
