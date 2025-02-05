@@ -1036,6 +1036,14 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao: 'Pode participar como leitor em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
     },
+    {
+        nome: 'Observador de projetos com orçamento',
+        descricao: 'Pode participar como leitor em portfólio e projetos e visualizar a execução orçamentária',
+        privilegios: [
+            'Projeto.orcamento', // adiciona a permissão de orçamento
+            'SMAE.espectador_de_projeto', // manter em sync com o Observador de projetos
+        ],
+    },
     // TODO Observador de obras
     {
         nome: atualizarNomePerfil('Observador de obra', []),
