@@ -48,8 +48,6 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
   : usersStore.users.map((x) => ({
     ...x,
     // TODO: usar esses valores na própria tabela para poupar recursos
-    siglaDoÓrgãoParaBuscaLivre: filterOrgan(x.orgao_id).sigla,
-    // TODO: usar esses valores na própria tabela para poupar recursos
     nomesDosPerfisParaBuscaLivre: filterPerfil(x.perfil_acesso_ids),
   }))));
 </script>
@@ -165,7 +163,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
             </td>
             <td>{{ user.nome_exibicao }}</td>
             <td>{{ user.lotacao ?? '-' }}</td>
-            <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
+            <td>{{ user.orgao?.sigla || user.orgao_id || '-' }}</td>
             <td>
               {{ user.perfil_acesso_ids?.length
                 ? filterPerfil(user.perfil_acesso_ids) : '-' }}
