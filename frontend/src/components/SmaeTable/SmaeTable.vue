@@ -14,6 +14,7 @@
         />
       </tr>
     </thead>
+
     <tbody>
       <tr
         v-for="(linha, linhaIndex) in dados"
@@ -26,14 +27,30 @@
           <TableColumn
             :linha="linha"
             :caminho="coluna.chave"
-          />
+          >
+            <template
+              v-for="nomeSlot in slotsDaCelula"
+              :key="nomeSlot"
+              #[nomeSlot]="slotProps"
+            >
+              <slot
+                :name="nomeSlot"
+                v-bind="slotProps"
+              />
+            </template>
+          </TableColumn>
         </template>
       </tr>
     </tbody>
+
+    <tfoot v-if="$slots.footer">
+      <slot name="footer" />
+    </tfoot>
   </table>
 </template>
 
 <script lang="ts" setup>
+import { computed, useSlots } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
 
 import TableColumn, { type Linha } from '@/components/SmaeTable/partials/TableColumn.vue';
@@ -46,4 +63,13 @@ type Props = {
   esconderDeletar?: boolean
 };
 defineProps<Props>();
+
+const slots = useSlots();
+
+const listaSlots = computed<string[]>(() => Object.keys(slots));
+const slotsDaCelula = computed<string[]>(() => {
+  const slotsCelula = listaSlots.value.filter((slot) => slot.includes('celula:'));
+
+  return slotsCelula;
+});
 </script>
