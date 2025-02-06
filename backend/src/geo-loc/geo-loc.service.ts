@@ -298,9 +298,49 @@ export class GeoLocService {
     }
 
     async buscaCamadas(dto: FilterCamadasDto): Promise<GeoLocCamadaFullDto[]> {
+        let filtroRegioes: number[] | undefined = undefined;
+
+        if (dto.filha_de_regiao_id) {
+            const regioes = await this.prisma.$queryRaw<{ id: number }[]>`
+                WITH RECURSIVE subRegioes AS (
+                    -- Base case: começa com a região
+                    SELECT id, parente_id, nivel
+                    FROM regiao
+                    WHERE id = ${dto.filha_de_regiao_id}
+                    AND removido_em IS NULL
+                    UNION ALL
+                    -- Recursive case: busca os filhos
+                    SELECT r.id, r.parente_id, r.nivel
+                    FROM regiao r
+                    INNER JOIN subRegioes sr ON r.parente_id = sr.id
+                    WHERE r.removido_em IS NULL
+                )
+                SELECT id
+                FROM subRegioes
+                WHERE true
+                AND (
+                    ${dto.regiao_nivel_regionalizacao}::int IS NULL
+                    OR
+                    nivel = ${dto.regiao_nivel_regionalizacao}::int
+                )
+            `;
+
+            filtroRegioes = regioes.map((r) => r.id);
+        }
+
         const rows = await this.prisma.geoCamada.findMany({
             where: {
                 id: { in: dto.camada_ids },
+                nivel_regionalizacao: dto.camada_nivel_regionalizacao,
+                GeoCamadaRegiao: filtroRegioes
+                    ? {
+                          some: {
+                              regiao: {
+                                  id: filtroRegioes ? { in: filtroRegioes } : undefined,
+                              },
+                          },
+                      }
+                    : undefined,
             },
             select: {
                 id: true,
