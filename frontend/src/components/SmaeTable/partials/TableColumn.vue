@@ -1,6 +1,7 @@
 <template>
   <td>
     <slot
+      :name="`celula:${caminho}`"
       :caminho="caminho"
       :linha="linha"
     >
@@ -10,7 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineProps, defineSlots } from 'vue';
+import { computed, defineProps } from 'vue';
 
 export type Linha = { [key: string]: string | number | unknown; };
 
@@ -22,13 +23,7 @@ type ParametrosDaColuna = {
 type Props = ParametrosDaColuna & {
   classe?: string
 };
-
-type Slots = {
-  default(props: ParametrosDaColuna): any
-};
-
 const props = defineProps<Props>();
-const slots = defineSlots<Slots>();
 
 const conteudoColuna = computed(() => {
   if (!props.caminho.includes('.')) {
