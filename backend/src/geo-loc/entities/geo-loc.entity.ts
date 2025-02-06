@@ -6,7 +6,7 @@ import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } fro
 import { GeoJSON } from 'geojson';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
-import { NumberTransform } from '../../auth/transforms/number.transform';
+import { NumberTransform, PositiveNumberTransform } from '../../auth/transforms/number.transform';
 
 export class GeoLocDto {
     @IsString()
@@ -64,6 +64,25 @@ export class FilterCamadasDto {
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrUndef)
     camada_ids?: number[];
+
+    @IsOptional()
+    @IsInt()
+    @Transform(PositiveNumberTransform)
+    camada_nivel_regionalizacao?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(PositiveNumberTransform)
+    regiao_nivel_regionalizacao?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(PositiveNumberTransform)
+    @ApiProperty({
+        description:
+            'Filtra Apenas camadas que estão associadas com regiões do SMAE, onde as regiões do SMAE são filhas diretas ou indiretas desta',
+    })
+    filha_de_regiao_id?: number;
 }
 
 export class CreateEnderecoDto {
