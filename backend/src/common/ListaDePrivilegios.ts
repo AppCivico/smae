@@ -214,6 +214,7 @@ export type ListaDePrivilegios =
     | 'MDO.colaborador_de_projeto'
     | 'MDO.espectador_de_projeto'
     | 'MDO.revisar_obra'
+    | 'Projeto.revisar_projeto'
     | 'ModalidadeContratacao.inserir'
     | 'ModalidadeContratacao.editar'
     | 'ModalidadeContratacao.remover'

@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -30,6 +30,7 @@ import {
     ProjetoMdoDto,
     ProjetoMetaDetailDto,
     ProjetoPermissoesDto,
+    ProjetoV2Dto,
 } from './entities/projeto.entity';
 
 import { JwtService } from '@nestjs/jwt';
@@ -811,34 +812,6 @@ export class ProjetoService {
                 arquivado: true,
                 codigo: true,
 
-                //                atividade: {
-                //                    select: {
-                //                        iniciativa: {
-                //                            select: {
-                //                                meta: {
-                //                                    select: {
-                //                                        id: true,
-                //                                        codigo: true,
-                //                                        titulo: true,
-                //                                    },
-                //                                },
-                //                            },
-                //                        },
-                //                    },
-                //                },
-                //
-                //                iniciativa: {
-                //                    select: {
-                //                        meta: {
-                //                            select: {
-                //                                id: true,
-                //                                codigo: true,
-                //                                titulo: true,
-                //                            },
-                //                        },
-                //                    },
-                //                },
-
                 meta: {
                     select: {
                         id: true,
@@ -1021,6 +994,142 @@ export class ProjetoService {
                             : false
                         : null,
                 };
+            }),
+        };
+    }
+
+    async findAllV2(
+        tipo: TipoProjeto,
+        filters: FilterProjetoMDODto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<ProjetoV2Dto>> {
+        let retToken = filters.token_paginacao;
+
+        let ipp = filters.ipp ?? 50;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
+        let tem_mais = false;
+
+        if (page > 1 && !retToken) throw new HttpException('Campo obrigatório para paginação', 400);
+
+        const filterToken = filters.token_paginacao;
+        // para não atrapalhar no hash, remove o campo pagina
+        delete filters.pagina;
+        delete filters.token_paginacao;
+
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+
+        let now = new Date(Date.now());
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filters);
+            total_registros = decoded.total_rows;
+            ipp = decoded.ipp;
+            now = new Date(decoded.issued_at);
+        }
+
+        const offset = (page - 1) * ipp;
+
+        // AVISO: os dois métodos abaixo alteram o número de rows!
+        // getProjetoWhereSet e getProjetoMDOWhereSet
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
+        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave, user.id);
+
+        const linhas = await this.prisma.viewProjetoV2.findMany({
+            where: {
+                // Filtro por palavras-chave com tsvector
+                projeto: {
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
+                },
+            },
+            include: {
+                orgao_origem: { select: { id: true, sigla: true, descricao: true } },
+                portfolio: { select: { id: true, titulo: true } },
+            },
+            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            skip: offset,
+            take: ipp,
+        });
+
+        if (filterToken) {
+            retToken = filterToken;
+            tem_mais = offset + linhas.length < total_registros;
+        } else {
+            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
+            retToken = info.jwt;
+            total_registros = info.body.total_rows;
+            tem_mais = offset + linhas.length < total_registros;
+        }
+
+        const linhasRevisao = await this.prisma.projetoPessoaRevisao.findMany({
+            where: { pessoa_id: user.id },
+            select: { projeto_id: true },
+        });
+
+        // COUNT para mensagem de aviso quando o usuário quiser desmarcar a revisão de todas as obras.
+        const total_registros_revisados: number = await this.prisma.projetoPessoaRevisao.count({
+            where: { pessoa_id: user.id },
+        });
+
+        const canRevise =
+            tipo == 'MDO'
+                ? user.hasSomeRoles(['MDO.revisar_obra', 'ProjetoMDO.administrador'])
+                : user.hasSomeRoles(['Projeto.revisar_projeto', 'Projeto.administrador']);
+
+        const paginas = Math.ceil(total_registros / ipp);
+        return {
+            tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
+            total_registros: total_registros,
+            total_registros_revisados: total_registros_revisados,
+            token_paginacao: retToken,
+            paginas,
+            pagina_corrente: page,
+            linhas: linhas.map((r): ProjetoV2Dto => {
+                const linhaRevisao = linhasRevisao.find((lr) => lr.projeto_id == r.id);
+
+                return {
+                    id: r.id,
+                    codigo: r.codigo,
+                    nome: r.nome,
+                    status: r.status,
+                    orgao_origem: r.orgao_origem
+                        ? {
+                              descricao: r.orgao_origem.descricao!,
+                              sigla: r.orgao_origem.sigla!,
+                              id: r.orgao_origem.id,
+                          }
+                        : null,
+                    grupo_tematico: r.grupo_tematico_id
+                        ? {
+                              id: r.grupo_tematico_id!,
+                              nome: r.grupo_tematico_nome!,
+                          }
+                        : null,
+                    equipamento: r.equipamento_id ? { id: r.equipamento_id, nome: r.equipamento_nome! } : null,
+                    empreendimento: r.empreendimento_id
+                        ? {
+                              id: r.empreendimento_id,
+                              nome: r.empreendimento_nome!,
+                              identificador: r.empreendimento_identificador!,
+                          }
+                        : null,
+                    tipo_intervencao: r.tipo_intervencao_id
+                        ? { id: r.tipo_intervencao_id, nome: r.tipo_intervencao_nome! }
+                        : null,
+                    regioes: r.regioes,
+                    portfolio: r.portfolio,
+                    revisado: canRevise ? (linhaRevisao ? true : false) : null,
+                    previsao_custo: r.previsao_custo,
+                    previsao_termino: Date2YMD.toStringOrNull(r.previsao_termino),
+                    orgao_responsavel: r.orgao_responsavel_id
+                        ? {
+                              id: r.orgao_responsavel_id,
+                              sigla: r.orgao_responsavel_sigla!,
+                              descricao: r.orgao_responsavel_descricao!,
+                          }
+                        : null,
+                } satisfies ProjetoV2Dto;
             }),
         };
     }

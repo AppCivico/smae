@@ -562,6 +562,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.espectador_de_projeto', 'Participante de Grupos de Portfólio'],
         ['SMAE.gestor_de_projeto', 'Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', 'Colaborador de projeto'],
+        ['Projeto.revisar_projeto', 'Revisar projetos'],
     ],
     ProjetoMDO: [
         ['ProjetoMDO.administrar_portfolios', 'Administrar todos os portfólios de MdO, sem acesso aos projetos'],
@@ -925,6 +926,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
             'Projeto.orcamento',
+            'Projeto.revisar_projeto',
             ...PPCadastroBasico,
         ],
     },
@@ -976,6 +978,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
+            'Projeto.revisar_projeto',
         ],
     },
     {
@@ -1004,6 +1007,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
+            'Projeto.revisar_projeto',
         ],
     },
     {
@@ -1034,7 +1038,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     {
         nome: atualizarNomePerfil('Observador de projetos', ['Espectador de projetos', 'Consulta multissetorial']),
         descricao: 'Pode participar como leitor em portfólio e projetos',
-        privilegios: ['SMAE.espectador_de_projeto'],
+        privilegios: ['SMAE.espectador_de_projeto', 'Projeto.revisar_projeto'],
     },
     {
         nome: 'Observador de projetos com orçamento',
