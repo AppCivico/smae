@@ -11,7 +11,18 @@
           v-for="coluna in colunas"
           :key="`header--${coluna.chave}`"
           :coluna="coluna"
-        />
+        >
+          <template
+            v-for="nomeSlot in slotsDoCabecalho"
+            :key="nomeSlot"
+            #[nomeSlot]="slotProps"
+          >
+            <slot
+              :name="nomeSlot"
+              v-bind="slotProps"
+            />
+          </template>
+        </TableHeaderColumn>
       </tr>
     </thead>
 
@@ -69,6 +80,12 @@ const slots = useSlots();
 const listaSlots = computed<string[]>(() => Object.keys(slots));
 const slotsDaCelula = computed<string[]>(() => {
   const slotsCelula = listaSlots.value.filter((slot) => slot.includes('celula:'));
+
+  return slotsCelula;
+});
+
+const slotsDoCabecalho = computed<string[]>(() => {
+  const slotsCelula = listaSlots.value.filter((slot) => slot.includes('cabecalho:'));
 
   return slotsCelula;
 });
