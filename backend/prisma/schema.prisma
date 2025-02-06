@@ -599,6 +599,8 @@ model Orgao {
     ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                 @relation("prop")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
     FormulaComposta                   FormulaComposta[]
+    ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
+    ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
 
     @@map("orgao")
 }
@@ -3510,6 +3512,7 @@ model Portfolio {
     PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
     projetosCompartilhados       PortfolioProjetoCompartilhado[]
     ViewProjetoMDO               ViewProjetoMDO[]
+    ViewProjetoV2                ViewProjetoV2[]
 
     @@map("portfolio")
 }
@@ -3781,7 +3784,8 @@ model Projeto {
     tags          Int[]               @default([])
     ProjetoOrigem CompromissoOrigem[]
 
-    origem_cache Json @default("{}") @db.Json
+    origem_cache  Json            @default("{}") @db.Json
+    ViewProjetoV2 ViewProjetoV2[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -3868,6 +3872,51 @@ view ViewProjetoMDO {
     status ProjetoStatus
 
     @@map("view_projeto_mdo")
+}
+
+view ViewProjetoV2 {
+    id               Int       @id
+    nome             String
+    codigo           String?
+    portfolio_id     Int
+    portfolio        Portfolio @relation(fields: [portfolio_id], references: [id])
+    portfolio_titulo String
+
+    registrado_em DateTime
+
+    projeto Projeto @relation(fields: [id], references: [id])
+
+    grupo_tematico_id   Int?
+    grupo_tematico_nome String?
+
+    tipo_intervencao_id   Int?
+    tipo_intervencao_nome String?
+
+    equipamento_id   Int?
+    equipamento_nome String?
+
+    empreendimento_id            Int?
+    empreendimento_nome          String?
+    empreendimento_identificador String?
+
+    orgao_origem_id Int?
+    orgao_origem    Orgao? @relation("orgao_origem", fields: [orgao_origem_id], references: [id])
+
+    regioes String
+
+    previsao_custo   Float?
+    previsao_termino DateTime? @db.Date
+    projeto_etapa    String?
+    orgao_gestor_id  Int?
+
+    orgao_responsavel_id        Int?
+    orgao_responsavel           Orgao?  @relation("orgao_responsavel", fields: [orgao_responsavel_id], references: [id])
+    orgao_responsavel_sigla     String?
+    orgao_responsavel_descricao String?
+
+    status ProjetoStatus
+
+    @@map("view_projeto_v2")
 }
 
 view ViewVariavelGlobal {

@@ -90,6 +90,18 @@ export class ProjetoController {
         return await this.projetoService.create('PP', createProjetoDto, user);
     }
 
+    @Get('v2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    @ApiExtraModels(ResumoOrigensMetasItemDto, DetalheOrigensDto)
+    @ApiPaginatedWithPagesResponse(ProjetoMdoDto)
+    async findAllV2(
+        @Query() filters: FilterProjetoMDODto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+        return this.projetoService.findAllV2('PP', filters, user);
+    }
+
     @Get()
     @ApiBearerAuth('access-token')
     @Roles([...roles])
