@@ -94,11 +94,23 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       .reduce((acc, cur) => {
         if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
           cur.geolocalizacao.forEach((geolocalizacao) => {
+            let subPrefeitura = '';
+
+            if (geolocalizacao.camadas) {
+              acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
+
+              subPrefeitura = geolocalizacao.camadas
+                .find((camada) => camada.nivel_regionalizacao === 3)?.titulo;
+
+              if (subPrefeitura) {
+                subPrefeitura = `<i>${subPrefeitura}</i>`;
+              }
+            }
+
             if (geolocalizacao.endereco) {
               acc.enderecos.push(geolocalizacao.endereco);
-
               const rotulo = cur.projeto_nome;
-              const descricao = [cur.projeto_status, cur.projeto_etapa].join('<br/>');
+              const descricao = [subPrefeitura, cur.projeto_status, cur.projeto_etapa].join('<br/>');
 
               if (rotulo) {
                 acc.enderecos[acc.enderecos.length - 1].properties.rotulo = rotulo;
@@ -107,9 +119,6 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
               if (descricao) {
                 acc.enderecos[acc.enderecos.length - 1].properties.descricao = descricao;
               }
-            }
-            if (geolocalizacao.camadas) {
-              acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
             }
           });
         }
