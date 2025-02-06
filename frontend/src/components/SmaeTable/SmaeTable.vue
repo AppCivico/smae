@@ -6,24 +6,29 @@
     >
 
     <thead>
-      <tr>
-        <TableHeaderCell
-          v-for="coluna in colunas"
-          :key="`header--${coluna.chave}`"
-          v-bind="coluna"
-        >
-          <template
-            v-for="nomeSlot in slotsDoCabecalho"
-            :key="nomeSlot"
-            #[nomeSlot]="slotProps"
+      <slot
+        name="cabecalho"
+        v-bind="colunas"
+      >
+        <tr>
+          <TableHeaderCell
+            v-for="coluna in colunas"
+            :key="`header--${coluna.chave}`"
+            v-bind="coluna"
           >
-            <slot
-              :name="nomeSlot"
-              v-bind="slotProps"
-            />
-          </template>
-        </TableHeaderCell>
-      </tr>
+            <template
+              v-for="nomeSlot in slotsDoCabecalho"
+              :key="nomeSlot"
+              #[nomeSlot]="slotProps"
+            >
+              <slot
+                :name="nomeSlot"
+                v-bind="slotProps"
+              />
+            </template>
+          </TableHeaderCell>
+        </tr>
+      </slot>
     </thead>
 
     <tbody>
