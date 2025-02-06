@@ -1,5 +1,5 @@
 <template>
-  <td>
+  <td class="table-cell">
     <slot
       :name="`celula:${caminho}`"
       :caminho="caminho"
