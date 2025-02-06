@@ -1,16 +1,18 @@
 <template>
-  <table>
+  <table class="tablemain">
     <col
       v-for="coluna in colunas"
-      :key="`colunas--${coluna.key}`"
+      :key="`colunas--${coluna.chave}`"
     >
 
     <thead>
-      <TableHeaderColumn
-        v-for="coluna in colunas"
-        :key="`header--${coluna.key}`"
-        :coluna="coluna"
-      />
+      <tr>
+        <TableHeaderColumn
+          v-for="coluna in colunas"
+          :key="`header--${coluna.chave}`"
+          :coluna="coluna"
+        />
+      </tr>
     </thead>
     <tbody>
       <tr
@@ -23,7 +25,7 @@
         >
           <TableColumn
             :linha="linha"
-            :caminho="coluna.key"
+            :caminho="coluna.chave"
           />
         </template>
       </tr>

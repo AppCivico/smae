@@ -7,7 +7,7 @@
 <script lang="ts" setup>
 import { defineProps } from 'vue';
 
-export type Coluna = { key: string, label: string };
+export type Coluna = { chave: string, label: string };
 
 // type ParametrosDaColuna = {
 //   linha: ColunaValor
