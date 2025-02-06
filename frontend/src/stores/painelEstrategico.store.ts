@@ -19,9 +19,16 @@ type Erros = {
   orcamentosPaginados: unknown;
 };
 
-type Estado = Record<string, unknown> & {
+type ItemGenerico = Record<string, (unknown[] | Record<string, unknown>)>;
+
+type Estado = ItemGenerico & {
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
+  grandesNumeros: {
+    total_projetos?: number;
+    total_orgaos?: number;
+    total_metas?: number;
+  };
   paginacaoProjetos: {
     tokenPaginacao: string;
     paginas: number;
