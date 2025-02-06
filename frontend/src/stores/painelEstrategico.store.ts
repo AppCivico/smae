@@ -97,44 +97,52 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     },
   }),
   getters: {
-    locaisAgrupados: ({ projetosParaMapa }) => projetosParaMapa
-      .reduce((acc, cur) => {
-        if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
-          cur.geolocalizacao.forEach((geolocalizacao) => {
-            let subPrefeitura = '';
+    locaisAgrupados: ({ projetosParaMapa }: Estado) => {
+      const nivelParaPainelFlutuante = 3;
+      const niveisDeCamadasParaManter = [3];
 
-            if (geolocalizacao.camadas) {
-              acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
+      return projetosParaMapa
+        .reduce((acc: unknown, cur: unknown) => {
+          if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
+            cur.geolocalizacao.forEach((geolocalizacao) => {
+              let subPrefeitura = '';
 
-              subPrefeitura = geolocalizacao.camadas
-                .find((camada) => camada.nivel_regionalizacao === 3)?.titulo;
+              if (geolocalizacao.camadas) {
+                acc.camadas = acc.camadas.concat(geolocalizacao.camadas
+                  .filter((camada) => niveisDeCamadasParaManter
+                    .includes(camada.nivel_regionalizacao)));
 
-              if (subPrefeitura) {
-                subPrefeitura = `<i>${subPrefeitura}</i>`;
-              }
-            }
+                subPrefeitura = geolocalizacao.camadas
+                  .find((camada) => camada.nivel_regionalizacao === nivelParaPainelFlutuante)
+                  ?.titulo;
 
-            if (geolocalizacao.endereco) {
-              acc.enderecos.push(geolocalizacao.endereco);
-              const rotulo = cur.projeto_nome;
-              const descricao = [subPrefeitura, cur.projeto_status, cur.projeto_etapa].join('<br/>');
-
-              if (rotulo) {
-                acc.enderecos[acc.enderecos.length - 1].properties.rotulo = rotulo;
+                if (subPrefeitura) {
+                  subPrefeitura = `<i>${subPrefeitura}</i>`;
+                }
               }
 
-              if (descricao) {
-                acc.enderecos[acc.enderecos.length - 1].properties.descricao = descricao;
-              }
-            }
-          });
-        }
+              if (geolocalizacao.endereco) {
+                acc.enderecos.push(geolocalizacao.endereco);
+                const rotulo = cur.projeto_nome;
+                const descricao = [subPrefeitura, cur.projeto_status, cur.projeto_etapa].join('<br/>');
 
-        return acc;
-      }, {
-        camadas: [],
-        enderecos: [],
-      }),
+                if (rotulo) {
+                  acc.enderecos[acc.enderecos.length - 1].properties.rotulo = rotulo;
+                }
+
+                if (descricao) {
+                  acc.enderecos[acc.enderecos.length - 1].properties.descricao = descricao;
+                }
+              }
+            });
+          }
+
+          return acc;
+        }, {
+          camadas: [],
+          enderecos: [],
+        });
+    },
   },
   actions: {
     async buscarDados(params = {}): Promise<void> {
