@@ -1,5 +1,5 @@
 <template>
-  <table class="tablemain">
+  <table class="smae-table tablemain">
     <col
       v-for="coluna in colunas"
       :key="`colunas--${coluna.chave}`"
@@ -7,10 +7,10 @@
 
     <thead>
       <tr>
-        <TableHeaderColumn
+        <TableHeaderCell
           v-for="coluna in colunas"
           :key="`header--${coluna.chave}`"
-          :coluna="coluna"
+          v-bind="coluna"
         >
           <template
             v-for="nomeSlot in slotsDoCabecalho"
@@ -22,7 +22,7 @@
               v-bind="slotProps"
             />
           </template>
-        </TableHeaderColumn>
+        </TableHeaderCell>
       </tr>
     </thead>
 
@@ -35,7 +35,7 @@
           v-for="coluna in colunas"
           :key="`linha--${linhaIndex}-${coluna.key}`"
         >
-          <TableColumn
+          <TableCell
             :linha="linha"
             :caminho="coluna.chave"
           >
@@ -49,13 +49,35 @@
                 v-bind="slotProps"
               />
             </template>
-          </TableColumn>
+          </TableCell>
         </template>
       </tr>
     </tbody>
 
-    <tfoot v-if="$slots.footer">
-      <slot name="footer" />
+    <tfoot v-if="$slots.footer || replicarCabecalho">
+      <slot
+        v-if="!replicarCabecalho"
+        name="footer"
+      />
+
+      <tr v-else>
+        <TableHeaderCell
+          v-for="coluna in colunas"
+          :key="`header--${coluna.chave}`"
+          v-bind="coluna"
+        >
+          <template
+            v-for="nomeSlot in slotsDoCabecalho"
+            :key="nomeSlot"
+            #[nomeSlot]="slotProps"
+          >
+            <slot
+              :name="nomeSlot"
+              v-bind="slotProps"
+            />
+          </template>
+        </TableHeaderCell>
+      </tr>
     </tfoot>
   </table>
 </template>
@@ -64,14 +86,15 @@
 import { computed, useSlots } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
 
-import TableColumn, { type Linha } from '@/components/SmaeTable/partials/TableColumn.vue';
-import TableHeaderColumn, { type Coluna } from '@/components/SmaeTable/partials/TableHeaderColumn.vue';
+import TableCell, { type Linha } from '@/components/SmaeTable/partials/TableCell.vue';
+import TableHeaderCell, { type Coluna } from '@/components/SmaeTable/partials/TableHeaderCell.vue';
 
 type Props = {
   colunas: Coluna[],
   dados: Linha[]
   rotaEditar?: string | RouteLocationRaw
   esconderDeletar?: boolean
+  replicarCabecalho?: boolean
 };
 defineProps<Props>();
 
