@@ -65,7 +65,8 @@ defineProps({
 
 .number {
   margin: 0;
-  font-family: "Roboto Slab", serif;
+  font-family: "Roboto Mono", monospace;
+  letter-spacing: -0.1em;
   font-weight: 600;
   font-style: normal;
 }
