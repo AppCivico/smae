@@ -18,7 +18,6 @@ import {
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
 import { Prisma } from '@prisma/client';
-import { ppPainelBigNumbers } from '@prisma/client/sql';
 import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';

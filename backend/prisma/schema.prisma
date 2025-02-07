@@ -602,7 +602,6 @@ model Orgao {
     ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
     ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
-    ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
 
     @@map("orgao")
 }
