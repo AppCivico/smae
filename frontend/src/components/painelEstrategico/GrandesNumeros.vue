@@ -9,25 +9,27 @@
       :tamanho-da-legenda="12"
     />
 
-    <NumeroComLegenda
-      como-item
-      :numero="grandesNumeros.total_orgaos"
-      cor="#221F43"
-      legenda="Total de órgãos"
-      cor-de-fundo="#e8e8e866"
-      :tamanho-do-numero="tamanhoDoNúmeroSecundário"
-      :tamanho-da-legenda="12"
-    />
+    <div class="flex flexwrap justifycenter g1">
+      <NumeroComLegenda
+        como-item
+        :numero="grandesNumeros.total_orgaos"
+        cor="#221F43"
+        legenda="Total de órgãos"
+        cor-de-fundo="#e8e8e866"
+        :tamanho-do-numero="tamanhoDoNúmeroSecundário"
+        :tamanho-da-legenda="12"
+      />
 
-    <NumeroComLegenda
-      como-item
-      :numero="grandesNumeros.total_metas"
-      cor="#221F43"
-      legenda="Total de metas"
-      cor-de-fundo="#e8e8e866"
-      :tamanho-do-numero="tamanhoDoNúmeroSecundário"
-      :tamanho-da-legenda="12"
-    />
+      <NumeroComLegenda
+        como-item
+        :numero="grandesNumeros.total_metas"
+        cor="#221F43"
+        legenda="Total de metas"
+        cor-de-fundo="#e8e8e866"
+        :tamanho-do-numero="tamanhoDoNúmeroSecundário"
+        :tamanho-da-legenda="12"
+      />
+    </div>
   </dl>
 </template>
 
