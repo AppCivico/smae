@@ -3429,11 +3429,11 @@ export class ProjetoService {
         return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'projeto', input);
     }
 
-    async revisarObras(dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
+    async updateProjetoRevisao(tipo: TipoProjeto, dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
                 const obrasRevisadas = await prismaTx.projetoPessoaRevisao.findMany({
-                    where: { pessoa_id: user.id },
+                    where: { pessoa_id: user.id, projeto: { tipo: tipo } },
                     select: { projeto_id: true },
                 });
 
@@ -3460,6 +3460,7 @@ export class ProjetoService {
                                         pessoa_id: user.id,
                                         projeto_id: obra.projeto_id,
                                     },
+                                    projeto: { tipo: tipo },
                                 },
                             })
                         );
@@ -3472,9 +3473,9 @@ export class ProjetoService {
         return updated;
     }
 
-    async revisarObrasDesmarcar(user: PessoaFromJwt) {
+    async deleteProjetoRevisao(tipo: TipoProjeto, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id } });
+            await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id, projeto: { tipo: tipo } } });
             return;
         });
     }
