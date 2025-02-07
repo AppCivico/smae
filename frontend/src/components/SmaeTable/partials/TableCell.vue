@@ -12,6 +12,7 @@
 
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
+import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
 
 export type Linha = { [key: string]: string | number | unknown; };
 
@@ -26,21 +27,8 @@ type Props = ParametrosDaColuna & {
 const props = defineProps<Props>();
 
 const conteudoColuna = computed(() => {
-  if (!props.caminho.includes('.')) {
-    return props.linha[props.caminho];
-  }
+  const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
 
-  const caminho = props.caminho.split('.');
-  const saida = caminho.reduce<any>((amount, itemCaminho) => {
-    if (!amount[itemCaminho]) {
-      // eslint-disable-next-line no-console
-      console.warn(`Item "${itemCaminho}" não encontrado encontrado no caminho "${props.caminho}"`);
-      return amount;
-    }
-
-    return amount[itemCaminho];
-  }, props.linha);
-
-  return saida;
+  return conteudo;
 });
 </script>
