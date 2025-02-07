@@ -11,7 +11,7 @@ import { tmpdir } from 'os';
 import * as path from 'path';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
+import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -36,6 +36,7 @@ import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramen
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import * as XLSX from 'xlsx';
 import { InputJsonValue } from '@prisma/client/runtime/library';
+import { uuidv7 } from 'uuidv7';
 
 type RelatorioProcesado = Record<string, string | Array<string>>;
 
@@ -56,6 +57,8 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
+    baseUrl: string;
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
@@ -77,7 +80,10 @@ export class ReportsService {
         private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
-    ) {}
+    ) {
+        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+    }
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
@@ -193,7 +199,11 @@ export class ReportsService {
         return zip.toBuffer();
     }
 
-    async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt | null): Promise<RecordWithId> {
+    async saveReport(
+        dto: CreateReportDto,
+        arquivoId: number | null,
+        user: PessoaFromJwt | null
+    ): Promise<RecordWithId> {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
@@ -209,10 +219,19 @@ export class ReportsService {
                 parametros_processados: await this.buildParametrosProcessados(dto),
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
+                processado_em: dto.background ? new Date(Date.now()) : null,
             },
             select: { id: true },
         });
         this.logger.log(`persistido arquivo ${arquivoId} no relatório ${result.id}`);
+
+        if (dto.background) {
+            await this.prisma.relatorioFila.create({
+                data: {
+                    relatorio_id: result.id,
+                },
+            });
+        }
         return { id: result.id };
     }
 
@@ -322,7 +341,9 @@ export class ReportsService {
                     ...r,
                     parametros_processados: this.bffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
-                    arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
+                    arquivo: r.arquivo_id
+                        ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
+                        : null,
                 };
             }),
             tem_mais: tem_mais,
@@ -404,6 +425,33 @@ export class ReportsService {
                 }
 
                 await this.verificaRelatorioProjetos();
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
+            }
+        );
+    }
+
+    @Cron('*/2 * * * *')
+    async handleRelatorioFilaCron() {
+        if (process.env['DISABLE_REPORT_CRONTAB']) return;
+
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                const locked: {
+                    locked: boolean;
+                }[] = await prisma.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked
+            `;
+                if (!locked[0].locked) {
+                    this.logger.debug(`Já está em processamento...`);
+                    return;
+                }
+
+                await this.verificaRelatorioFila();
             },
             {
                 maxWait: 30000,
@@ -495,6 +543,128 @@ export class ReportsService {
                     relatorio_id: report.id,
                 },
             });
+        }
+    }
+
+    private async verificaRelatorioFila(filtroId?: number | undefined) {
+        const pending = await this.prisma.relatorioFila.findMany({
+            where: {
+                executado_em: null,
+                AND: [
+                    {
+                        OR: [
+                            { id: filtroId },
+                            { congelado_em: null },
+                            {
+                                congelado_em: {
+                                    lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            take: 10,
+            orderBy: { criado_em: 'asc' },
+        });
+
+        for (const job of pending) {
+            await this.prisma.relatorioFila.update({
+                where: { id: job.id },
+                data: {
+                    congelado_em: new Date(Date.now()),
+                },
+            });
+
+            try {
+                const now = new Date(Date.now());
+
+                const relatorio = await this.prisma.relatorio.findFirst({
+                    where: { id: job.relatorio_id },
+                    select: {
+                        fonte: true,
+                        parametros: true,
+                        criador: {
+                            select: {
+                                email: true,
+                            },
+                        },
+                    },
+                });
+                if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
+
+                const files = await this.runReport({
+                    fonte: relatorio.fonte,
+                    parametros: relatorio.parametros,
+                });
+
+                const contentType = 'application/zip';
+                const filename = [
+                    relatorio.fonte.toString(),
+                    DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
+                ]
+                    .filter((r) => r)
+                    .join('-');
+
+                const zipBuffer = await this.zipFiles(files);
+
+                const arquivoId = await this.uploadService.uploadReport(
+                    relatorio.fonte,
+                    filename,
+                    zipBuffer,
+                    contentType,
+                    null
+                );
+
+                await this.prisma.relatorio.update({
+                    where: { id: job.relatorio_id },
+                    data: {
+                        arquivo_id: arquivoId,
+                        processado_em: now,
+                    },
+                });
+
+                await this.prisma.relatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        executado_em: new Date(Date.now()),
+                    },
+                });
+
+                // Enviando email com o relatório para o usuário.
+                if (relatorio.criador) {
+                    // A fonte precisa ser em slug para construir a URL.
+                    const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
+
+                    await this.prisma.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `Seu relatório ficou pronto!`,
+                            template: 'report.html',
+                            to: relatorio.criador.email,
+                            variables: {
+                                id: job.relatorio_id,
+                                fonte: relatorio.fonte.toString(),
+                                link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
+                            },
+                        },
+                    });
+                }
+            } catch (error) {
+                this.logger.error(`Falha ao processar relatório ID ${job.relatorio_id}: ${error}`);
+
+                await this.prisma.relatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        err_msg: error.toString(),
+                        executado_em: new Date(Date.now()),
+                        congelado_em: null,
+                    },
+                });
+
+                continue;
+            }
         }
     }
 

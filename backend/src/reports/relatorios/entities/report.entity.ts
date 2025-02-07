@@ -10,7 +10,7 @@ export class RelatorioDto {
     criado_em: Date;
     criador: { nome_exibicao: string };
     fonte: string;
-    arquivo: string;
+    arquivo: string | null;
     parametros: any;
 
     @ApiProperty({

@@ -3426,25 +3426,46 @@ model Relatorio {
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int?
-    arquivo_id Int
+    arquivo_id Int?
 
     removido_em  DateTime? @db.Timestamptz(6)
     removido_por Int?
 
     eh_publico Boolean @default(true)
 
+    // Coluna espelhada da RelatorioFilha, para facilitar a busca.
+    processado_em DateTime? @db.Timestamptz(6)
+
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte FonteRelatorio
 
     criador              Pessoa?                @relation("criador", fields: [criado_por], references: [id])
     removedor            Pessoa?                @relation("removedor", fields: [removido_por], references: [id])
-    arquivo              Arquivo                @relation(fields: [arquivo_id], references: [id])
+    arquivo              Arquivo?               @relation(fields: [arquivo_id], references: [id])
     pdm                  Pdm?                   @relation(fields: [pdm_id], references: [id])
     ProjetoRelatorioFila ProjetoRelatorioFila[]
+    processamento        RelatorioFila[]
 
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])
     @@map("relatorio")
+}
+
+model RelatorioFila {
+    id Int @id @default(autoincrement())
+
+    relatorio_id Int
+    relatorio    Relatorio @relation(fields: [relatorio_id], references: [id])
+
+    err_msg String?
+
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    congelado_em DateTime? @map("locked_at")
+    executado_em DateTime?
+
+    @@unique([relatorio_id])
+    @@index([executado_em, congelado_em])
+    @@map("relatorio_fila")
 }
 
 enum ProjetoFase {

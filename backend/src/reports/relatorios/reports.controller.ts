@@ -37,34 +37,46 @@ export class ReportsController {
         type: '',
     })
     async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt, @Res() res: Response) {
-        const contentType = 'application/zip';
-        const filename = [
-            dto.fonte,
-            (dto.parametros as any)['tipo'],
-            (dto.parametros as any)['ano'],
-            (dto.parametros as any)['mes'],
-            (dto.parametros as any)['periodo'],
-            (dto.parametros as any)['semestre'],
-            DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
-        ]
-            .filter((r) => r)
-            .join('-');
-        const files = await this.reportsService.runReport(dto);
-        const zipBuffer = await this.reportsService.zipFiles(files);
+        if (dto.background) {
+            await this.reportsService.saveReport(dto, null, user);
 
-        if (dto.salvar_arquivo) {
-            const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, user);
+            res.status(200).send('Relatório adicionado na fila.');
+        } else {
+            const contentType = 'application/zip';
+            const filename = [
+                dto.fonte,
+                (dto.parametros as any)['tipo'],
+                (dto.parametros as any)['ano'],
+                (dto.parametros as any)['mes'],
+                (dto.parametros as any)['periodo'],
+                (dto.parametros as any)['semestre'],
+                DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
+            ]
+                .filter((r) => r)
+                .join('-');
+            const files = await this.reportsService.runReport(dto);
+            const zipBuffer = await this.reportsService.zipFiles(files);
 
-            await this.reportsService.saveReport(dto, arquivoId, user);
+            if (dto.salvar_arquivo) {
+                const arquivoId = await this.uploadService.uploadReport(
+                    dto.fonte,
+                    filename,
+                    zipBuffer,
+                    contentType,
+                    user
+                );
+
+                await this.reportsService.saveReport(dto, arquivoId, user);
+            }
+
+            res.set({
+                'Content-Type': contentType,
+                'Content-Disposition': 'attachment; filename="' + filename.replace(/"/g, '-') + '"',
+                'Access-Control-Expose-Headers': 'content-disposition',
+            });
+            res.write(zipBuffer);
+            res.send();
         }
-
-        res.set({
-            'Content-Type': contentType,
-            'Content-Disposition': 'attachment; filename="' + filename.replace(/"/g, '-') + '"',
-            'Access-Control-Expose-Headers': 'content-disposition',
-        });
-        res.write(zipBuffer);
-        res.send();
     }
 
     @ApiBearerAuth('access-token')
