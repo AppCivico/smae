@@ -19,19 +19,19 @@ import { type Linha } from './TableCell.vue';
 export type EditButtonProps = {
   rotaEditar?: string | RouteLocationRaw
   parametroDaRota?: string
-  parametroNoObjeto?: string
+  parametroNoObjetoParaEditar?: string
 };
 
-type Props = Omit<EditButtonProps, 'parametroDaRota' | 'parametroNoObjeto'> & {
+type Props = Omit<EditButtonProps, 'parametroDaRota' | 'parametroNoObjetoParaEditar'> & {
   linha: Linha,
   parametroDaRota: string
-  parametroNoObjeto: string
+  parametroNoObjetoParaEditar: string
 };
 
 const props = defineProps<Props>();
 
 const parametrosEditar = computed<RouteLocationRaw>(() => {
-  const valorDoParametro = obterParametroNoObjeto(props.parametroNoObjeto, props.linha);
+  const valorDoParametro = obterParametroNoObjeto(props.parametroNoObjetoParaEditar, props.linha);
 
   if (typeof props.rotaEditar === 'string') {
     return `${props.rotaEditar}/${valorDoParametro}`;

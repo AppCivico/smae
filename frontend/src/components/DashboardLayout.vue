@@ -11,6 +11,10 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 // const props = defineProps(['submenu', 'parentPage']);
 // const authStore = useAuthStore();
 // const { user } = storeToRefs(authStore);
+
+function handleDeletar(linha) {
+  alert(`Deletar ${JSON.stringify(linha)}`);
+}
 </script>
 <script>
 // use normal <script> to declare options
@@ -40,7 +44,7 @@ export default {
 </template> -->
 
 <template>
-  <main>
+  <main style="padding-right: 30px;">
     <SmaeTable
       :dados="[
         { nome: 'Gustavo', idade: 27, empresa: { id: 1, nome: 'FGV' }, estado: 'RS' },
@@ -55,7 +59,9 @@ export default {
         { chave: 'customizado', label: 'Campo customizado'},
       ]"
       :rota-editar="{ name: 'editarUsuários'}"
-      parametro-no-objeto="idade"
+      parametro-no-objeto-para-editar="idade"
+      parametro-no-objeto-para-excluir="nome"
+      @deletar="handleDeletar"
     >
       <template #celula:customizado="{ caminho, linha }">
         campo: {{ caminho }}--{{ linha.nome }}-{{ linha.idade }}
