@@ -15,6 +15,10 @@
           <p>Sua nova senha para o sistema SMAE é <span style="color: black; font-weight: 900; display: block; text-align: center; font-size: 2.1em; line-height: 1.5em; padding: 1.2em">[% nova_senha %]</span></p>
         </mj-text>
 
+        <mj-text>
+          <span style="color: black; font-weight: 900; display: block; text-align: center; font-size: 2.1em; line-height: 1.5em; padding: 1.2em">[% nova_senha %]</span>
+        </mj-text>
+
         <mj-button href="[% link %]">Acessar sistema</mj-button>
 
         <mj-text>
