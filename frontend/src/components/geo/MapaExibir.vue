@@ -26,7 +26,7 @@ import 'leaflet.markercluster/dist/leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
-import { debounce } from 'lodash';
+import { debounce, merge } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
   defineEmits,
@@ -306,17 +306,16 @@ function prepararGeoJsonS(items) {
 }
 
 function criarPolígono(dadosDoPolígono) {
-  const opções = {
+  const config = {
+    // mapear propriedade para manter compatibilidade com o backend
+    color: dadosDoPolígono.config?.cor,
     ...props.opçõesDoPolígono,
+    ...dadosDoPolígono.config,
   };
 
-  if (dadosDoPolígono.config?.cor) {
-    opções.color = dadosDoPolígono.config?.cor;
-  }
-
   const polígono = dadosDoPolígono.geom_geojson
-    ? L.geoJSON(dadosDoPolígono.geom_geojson, opções).addTo(mapa)
-    : L.polygon(dadosDoPolígono.coordenadas, opções).addTo(mapa);
+    ? L.geoJSON(dadosDoPolígono.geom_geojson, config).addTo(mapa)
+    : L.polygon(dadosDoPolígono.coordenadas, config).addTo(mapa);
   polígono.id = dadosDoPolígono.id;
 
   atribuirPainelFlutuante(polígono, dadosDoPolígono);
@@ -355,7 +354,10 @@ async function prepararCamadas(camadasFornecidas = props.camadas) {
 
   const camadasSelecionadas = camadasFornecidas
     .reduce((acc, cur) => (camadas?.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
-      ? acc.concat(camadas?.value?.[cur.id])
+      ? acc.concat({
+        ...camadas?.value?.[cur.id],
+        config: merge({}, camadas?.value?.[cur.id].config, cur.config),
+      })
       : acc), []);
   chamarDesenhoDePolígonosNovos(camadasSelecionadas);
 }
