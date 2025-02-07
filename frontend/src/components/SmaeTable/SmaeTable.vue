@@ -69,7 +69,7 @@
               v-if="rotaEditar"
               :linha="linha"
               :rota-editar="rotaEditar"
-              :parametro-da-rota="parametroDaRota"
+              :parametro-da-rota-editar="parametroDaRotaEditar"
               :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
             />
 
@@ -134,7 +134,7 @@ type Emits = DeleteButtonEvents;
 
 const props = withDefaults(defineProps<Props>(), {
   rotaEditar: undefined,
-  parametroDaRota: 'id',
+  parametroDaRotaEditar: 'id',
   parametroNoObjetoParaEditar: 'id',
   parametroNoObjetoParaExcluir: 'descricao',
 });
