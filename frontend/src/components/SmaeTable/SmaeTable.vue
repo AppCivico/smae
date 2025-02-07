@@ -4,6 +4,10 @@
       v-for="coluna in colunas"
       :key="`colunas--${coluna.chave}`"
     >
+    <col
+      v-if="hasActionButton"
+      class="col--botão-de-ação"
+    >
 
     <thead>
       <slot
@@ -56,6 +60,16 @@
             </template>
           </TableCell>
         </template>
+
+        <td v-if="hasActionButton">
+          <EditButton
+            v-if="rotaEditar"
+            :linha="linha"
+            :rota-editar="rotaEditar"
+            :parametro-da-rota="parametroDaRota"
+            :parametro-no-objeto="parametroNoObjeto"
+          />
+        </td>
       </tr>
     </tbody>
 
@@ -89,19 +103,22 @@
 
 <script lang="ts" setup>
 import { computed, useSlots } from 'vue';
-import { RouteLocationRaw } from 'vue-router';
 
 import TableCell, { type Linha } from '@/components/SmaeTable/partials/TableCell.vue';
 import TableHeaderCell, { type Coluna } from '@/components/SmaeTable/partials/TableHeaderCell.vue';
+import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 
-type Props = {
+type Props = EditButtonProps & {
   colunas: Coluna[],
   dados: Linha[]
-  rotaEditar?: string | RouteLocationRaw
   esconderDeletar?: boolean
   replicarCabecalho?: boolean
 };
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  rotaEditar: undefined,
+  parametroDaRota: 'id',
+  parametroNoObjeto: 'id',
+});
 
 const slots = useSlots();
 
@@ -116,5 +133,13 @@ const slotsDoCabecalho = computed<string[]>(() => {
   const slotsCelula = listaSlots.value.filter((slot) => slot.includes('cabecalho:'));
 
   return slotsCelula;
+});
+
+const hasActionButton = computed<boolean>(() => {
+  if (props.rotaEditar) {
+    return true;
+  }
+
+  return false;
 });
 </script>
