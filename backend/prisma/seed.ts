@@ -1038,7 +1038,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     {
         nome: atualizarNomePerfil('Observador de projetos', ['Espectador de projetos', 'Consulta multissetorial']),
         descricao: 'Pode participar como leitor em portfólio e projetos',
-        privilegios: ['SMAE.espectador_de_projeto', 'Projeto.revisar_projeto'],
+        privilegios: ['SMAE.espectador_de_projeto'],
     },
     {
         nome: 'Observador de projetos com orçamento',
@@ -1052,7 +1052,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     {
         nome: atualizarNomePerfil('Observador de obra', []),
         descricao: 'Pode participar como leitor em portfólio e obras',
-        privilegios: ['MDO.espectador_de_projeto', 'MDO.revisar_obra'],
+        privilegios: ['MDO.espectador_de_projeto'],
     },
     {
         nome: atualizarNomePerfil('Observador de painéis externos', []),
