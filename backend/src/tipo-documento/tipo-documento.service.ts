@@ -76,6 +76,80 @@ export class TipoDocumentoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const documentos = await this.prisma.arquivo.count({
+            where: {
+                tipo_documento_id: id,
+
+                OR: [
+                    { Pdm: { some: { removido_em: null } } },
+                    { VariavelGlobalCicloDocumento: { some: { removido_em: null } } },
+                    { projeto_documentos: { some: { removido_em: null } } },
+                ],
+            },
+        });
+        if (documentos > 0) {
+            const inUse = await this.prisma.tipoDocumento.findFirst({
+                where: { id: id },
+                select: {
+                    Arquivo: {
+                        take: 1,
+                        select: {
+                            Pdm: {
+                                select: { id: true, nome: true, tipo: true },
+                            },
+                            VariavelGlobalCicloDocumento: {
+                                select: { id: true, variavel: { select: { codigo: true, titulo: true } } },
+                            },
+                            projeto_documentos: {
+                                select: { id: true, projeto: { select: { codigo: true, nome: true, tipo: true } } },
+                            },
+                        },
+                    },
+                },
+            });
+
+            let errorMessage = 'O Tipo de Documento não pode ser removido pois está em uso nos seguintes registros: ';
+            const usageDetails: string[] = [];
+
+            const arquivo = inUse?.Arquivo?.[0]; // Get the first "Arquivo" instance
+
+            if (arquivo) {
+                if (arquivo.Pdm?.length) {
+                    usageDetails.push(
+                        `${arquivo.Pdm.map(
+                            (pdm) => `${pdm.tipo === 'PDM' ? 'Programa de Meta' : 'Plano Setorial'} ${pdm.nome}`
+                        ).join(', ')}`
+                    );
+                }
+
+                if (arquivo.VariavelGlobalCicloDocumento?.length) {
+                    usageDetails.push(
+                        `${arquivo.VariavelGlobalCicloDocumento.map(
+                            (v) => `Variável ${v.variavel.codigo} - ${v.variavel.titulo}`
+                        ).join(', ')}`
+                    );
+                }
+
+                if (arquivo.projeto_documentos?.length) {
+                    usageDetails.push(
+                        `${arquivo.projeto_documentos
+                            .map(
+                                (p) =>
+                                    `${
+                                        p.projeto.tipo == 'MDO' ? 'Obra' : 'Projeto'
+                                    } ${p.id} (${p.projeto.codigo} - ${p.projeto.nome})`
+                            )
+                            .join(', ')}`
+                    );
+                }
+            }
+
+            if (usageDetails.length > 0) {
+                errorMessage += usageDetails.join('; ') + '.';
+                throw new HttpException(errorMessage, 400);
+            }
+        }
+
         const created = await this.prisma.tipoDocumento.updateMany({
             where: { id: id },
             data: {
