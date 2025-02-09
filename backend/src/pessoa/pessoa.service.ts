@@ -3,10 +3,13 @@ import { ModuloSistema, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { LoggerWithLog } from '../common/LoggerWithLog';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
+import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
 import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
@@ -20,12 +23,9 @@ import {
 } from './dto/responsabilidade-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
-import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
-import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
-import { Pessoa as PessoaDto } from './entities/pessoa.entity';
-import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
 import { ListPessoa } from './entities/list-pessoa.entity';
+import { Pessoa as PessoaDto } from './entities/pessoa.entity';
+import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -53,6 +53,32 @@ export class PessoaService {
             nome_exibicao: pessoa.nome_exibicao,
             id: pessoa.id,
         };
+    }
+
+    async reportPessoaFromJwt(pessoaId: number, sistema: ModuloSistema | null): Promise<PessoaFromJwt> {
+        const pessoa = await this.findById(pessoaId);
+        if (!pessoa) throw new Error(`Pessoa ${pessoaId} não encontrada`);
+
+        if (pessoa.pessoa_fisica === null) throw new Error(`Pessoa ID ${pessoaId} não tem pessoa_fisica associada`);
+
+        const filterModulos = sistema == 'SMAE' || !sistema ? undefined : [sistema];
+
+        const modPriv = await this.listaPrivilegiosModulos(pessoa.id as number, filterModulos);
+
+        return new PessoaFromJwt({
+            id: pessoa.id as number,
+            nome_exibicao: pessoa.nome_exibicao,
+            session_id: 0,
+            privilegios: modPriv.privilegios,
+            sistemas: modPriv.sistemas,
+            orgao_id: pessoa.pessoa_fisica?.orgao_id,
+            flags: {} as any,
+            modulo_sistema: [],
+            ip: null,
+            equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+        });
     }
 
     async senhaCorreta(senhaInformada: string, pessoa: Partial<Pessoa>) {

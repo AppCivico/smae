@@ -2,6 +2,7 @@ import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorExcep
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { FonteRelatorio, ModuloSistema, Prisma, TipoRelatorio } from '@prisma/client';
+import { InputJsonValue } from '@prisma/client/runtime/library';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { createWriteStream, WriteStream } from 'fs';
@@ -9,13 +10,17 @@ import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
+import { uuidv7 } from 'uuidv7';
+import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { PessoaService } from '../../pessoa/pessoa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
+import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
@@ -26,17 +31,13 @@ import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
+import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { TransferenciasService } from '../transferencias/transferencias.service';
+import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioParamDto } from './entities/report.entity';
-import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
-import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
-import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
-import * as XLSX from 'xlsx';
-import { InputJsonValue } from '@prisma/client/runtime/library';
-import { uuidv7 } from 'uuidv7';
 
 type RelatorioProcesado = Record<string, string | Array<string>>;
 
@@ -63,6 +64,8 @@ export class ReportsService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
 
+        @Inject(forwardRef(() => PessoaService)) private readonly pessoaService: PessoaService,
+
         @Inject(forwardRef(() => OrcamentoService)) private readonly orcamentoService: OrcamentoService,
         @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService,
         @Inject(forwardRef(() => IndicadoresService)) private readonly indicadoresService: IndicadoresService,
@@ -85,7 +88,7 @@ export class ReportsService {
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
     }
 
-    async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
+    async runReport(dto: CreateReportDto, user: PessoaFromJwt | null): Promise<FileOutput[]> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
@@ -128,7 +131,7 @@ export class ReportsService {
             },
         };
 
-        return await service.toFileOutput(parametros, mockContext);
+        return await service.toFileOutput(parametros, mockContext, user);
     }
 
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
@@ -547,7 +550,7 @@ export class ReportsService {
                     projeto_id: job.projeto_id,
                 } satisfies CreateRelProjetoDto,
             };
-            const files = await this.runReport(dto);
+            const files = await this.runReport(dto, null);
             const zipBuffer = await this.zipFiles(files);
 
             const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, null);
@@ -601,6 +604,8 @@ export class ReportsService {
                     select: {
                         fonte: true,
                         parametros: true,
+                        sistema: true,
+                        criado_por: true,
                         criador: {
                             select: {
                                 email: true,
@@ -610,10 +615,17 @@ export class ReportsService {
                 });
                 if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
 
-                const files = await this.runReport({
-                    fonte: relatorio.fonte,
-                    parametros: relatorio.parametros,
-                });
+                const pessaoJwt = relatorio.criado_por
+                    ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
+                    : null;
+
+                const files = await this.runReport(
+                    {
+                        fonte: relatorio.fonte,
+                        parametros: relatorio.parametros,
+                    },
+                    pessaoJwt
+                );
 
                 const contentType = 'application/zip';
                 const filename = [

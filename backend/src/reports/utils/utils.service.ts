@@ -19,6 +19,7 @@ import { CreateRelObrasDto } from '../pp-obras/dto/create-obras.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
 import { CreatePsMonitoramentoMensalFilterDto } from '../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from '../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 
 @Injectable()
 export class UtilsService {
@@ -90,8 +91,8 @@ export interface ReportContext {
 }
 
 export interface ReportableService {
-    toFileOutput(params: any, ctx: ReportContext): Promise<FileOutput[]>;
-    asJSON(params: any): Promise<any>;
+    toFileOutput(params: any, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]>;
+    asJSON(params: any, user: PessoaFromJwt | null): Promise<any>;
 }
 
 export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {

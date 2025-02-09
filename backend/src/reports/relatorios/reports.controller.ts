@@ -55,7 +55,7 @@ export class ReportsController {
             ]
                 .filter((r) => r)
                 .join('-');
-            const files = await this.reportsService.runReport(dto);
+            const files = await this.reportsService.runReport(dto, user);
             const zipBuffer = await this.reportsService.zipFiles(files);
 
             if (dto.salvar_arquivo) {
@@ -90,7 +90,10 @@ export class ReportsController {
         'Reports.executar.PlanoSetorial',
     ])
     @ApiPaginatedResponse(RelatorioDto)
-    async findAll(@Query() filters: FilterRelatorioDto, @CurrentUser() user: PessoaFromJwt): Promise<PaginatedDto<RelatorioDto>> {
+    async findAll(
+        @Query() filters: FilterRelatorioDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedDto<RelatorioDto>> {
         return await this.reportsService.findAll(filters, user);
     }
 
