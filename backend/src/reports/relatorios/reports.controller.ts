@@ -37,8 +37,9 @@ export class ReportsController {
         type: '',
     })
     async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt, @Res() res: Response) {
+        const sistema = user.assertOneModuloSistema('criar', 'Relatórios');
         if (dto.background) {
-            await this.reportsService.saveReport(dto, null, user);
+            await this.reportsService.saveReport(dto, null, user, sistema);
 
             res.status(200).send('Relatório adicionado na fila.');
         } else {
@@ -89,8 +90,8 @@ export class ReportsController {
         'Reports.executar.PlanoSetorial',
     ])
     @ApiPaginatedResponse(RelatorioDto)
-    async findAll(@Query() filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
-        return await this.reportsService.findAll(filters);
+    async findAll(@Query() filters: FilterRelatorioDto, @CurrentUser() user: PessoaFromJwt): Promise<PaginatedDto<RelatorioDto>> {
+        return await this.reportsService.findAll(filters, user);
     }
 
     @Delete(':id')

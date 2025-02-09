@@ -1,7 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { FonteRelatorio, Prisma, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ModuloSistema, Prisma, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { createWriteStream, WriteStream } from 'fs';
@@ -202,7 +202,8 @@ export class ReportsService {
     async saveReport(
         dto: CreateReportDto,
         arquivoId: number | null,
-        user: PessoaFromJwt | null
+        user: PessoaFromJwt | null,
+        sistema: ModuloSistema = 'SMAE'
     ): Promise<RecordWithId> {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
@@ -213,7 +214,9 @@ export class ReportsService {
                 pdm_id: pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
-                eh_publico: dto.eh_publico, // Default é true.
+                sistema: sistema,
+                /// here it's easy because the user is saying what he wants
+                visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
                 tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
                 parametros_processados: await this.buildParametrosProcessados(dto),
@@ -292,9 +295,10 @@ export class ReportsService {
         return service;
     }
 
-    async findAll(filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
+    async findAll(filters: FilterRelatorioDto, user: PessoaFromJwt): Promise<PaginatedDto<RelatorioDto>> {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
+        const sistema = user.assertOneModuloSistema('buscar', 'Relatórios');
 
         let ipp = filters.ipp ? filters.ipp : 25;
         let offset = 0;
@@ -310,7 +314,20 @@ export class ReportsService {
                 fonte: filters.fonte,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
-                eh_publico: true,
+                sistema: { in: [sistema, 'SMAE'] },
+                AND: [
+                    {
+                        OR: [
+                            {
+                                visibilidade: 'Privado',
+                                criado_por: user.id,
+                            },
+                            {
+                                visibilidade: 'Publico',
+                            },
+                        ],
+                    },
+                ],
             },
             select: {
                 id: true,

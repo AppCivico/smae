@@ -3418,6 +3418,12 @@ enum FonteRelatorio {
     PSIndicadores
 }
 
+enum RelatorioVisibilidade {
+    Publico
+    Privado
+    Restrito
+}
+
 model Relatorio {
     id Int @id @default(autoincrement())
 
@@ -3433,7 +3439,10 @@ model Relatorio {
     removido_em  DateTime? @db.Timestamptz(6)
     removido_por Int?
 
-    eh_publico Boolean @default(true)
+    visibilidade RelatorioVisibilidade @default(Privado)
+
+
+    sistema ModuloSistema @default(SMAE)
 
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
