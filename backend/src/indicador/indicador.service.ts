@@ -860,7 +860,6 @@ export class IndicadorService {
         user: PessoaFromJwt,
         filters: FilterIndicadorSerieDto
     ): Promise<ListSeriesAgrupadas> {
-        const tipo = PdmModoParaTipo(tipoParam);
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: +id },
             select: {
