@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
 import { SuperCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import {
     ListOrcamentoExecutadoDto,
@@ -88,14 +89,18 @@ class RetornoPlanejadoDb {
 export class OrcamentoService implements ReportableService {
     private readonly logger = new Logger(OrcamentoService.name);
     constructor(
+        @Inject(forwardRef(() => UtilsService))
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
         private readonly prevCustoService: PrevisaoCustoService
     ) {}
 
-    async asJSON(dto: SuperCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
-        const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(dto);
+    async asJSON(
+        dto: SuperCreateOrcamentoExecutadoDto,
+        user: PessoaFromJwt | null
+    ): Promise<ListOrcamentoExecutadoDto> {
+        const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(dto, user);
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
         const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
@@ -132,7 +137,7 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
-    private async buscaIds(dto: SuperCreateOrcamentoExecutadoDto) {
+    private async buscaIds(dto: SuperCreateOrcamentoExecutadoDto, user: PessoaFromJwt | null) {
         const anoIni = Date2YMD.toString(dto.inicio).substring(0, 4);
         const anoFim = Date2YMD.toString(dto.fim).substring(0, 4);
 
@@ -143,7 +148,7 @@ export class OrcamentoService implements ReportableService {
 
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
-            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false }, user);
             filtroMetas = metas.map((r) => r.id);
         }
 
@@ -618,8 +623,12 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
-    async toFileOutput(params: SuperCreateOrcamentoExecutadoDto, ctx: ReportContext): Promise<FileOutput[]> {
-        const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params);
+    async toFileOutput(
+        params: SuperCreateOrcamentoExecutadoDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
+        const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params, user);
         const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
         await ctx.progress(1);
 

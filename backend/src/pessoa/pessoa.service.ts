@@ -73,7 +73,7 @@ export class PessoaService {
             sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: {} as any,
-            modulo_sistema: [],
+            modulo_sistema: filterModulos as ModuloSistema[],
             ip: null,
             equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
             modulos_permitidos: pessoa.modulos_permitidos,

@@ -9,6 +9,7 @@ import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/creat
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { DateTime } from 'luxon';
 import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common/helpers/Streaming';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 const BATCH_SIZE = 500;
 const CREATE_TEMP_TABLE = 'CREATE TEMP TABLE _report_data ON COMMIT DROP AS';
 class RetornoDb {
@@ -74,8 +75,8 @@ export class IndicadoresService implements ReportableService {
         private readonly utils: UtilsService
     ) {}
 
-    async asJSON(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
-        const indicadores = await this.filtraIndicadores(dto);
+    async asJSON(dto: CreateRelIndicadorDto, user: PessoaFromJwt | null): Promise<ListIndicadoresDto> {
+        const indicadores = await this.filtraIndicadores(dto, user);
 
         if (indicadores.length >= 10000)
             throw new HttpException(
@@ -114,10 +115,10 @@ export class IndicadoresService implements ReportableService {
         };
     }
 
-    streamLinhas(dto: CreateRelIndicadorDto): Readable {
+    streamLinhas(dto: CreateRelIndicadorDto, user: PessoaFromJwt | null): Readable {
         const stream = new Readable({ objectMode: true, read() {} });
 
-        this.filtraIndicadores(dto)
+        this.filtraIndicadores(dto, user)
             .then((indicadores) => {
                 this.queryData(
                     indicadores.map((r) => r.id),
@@ -130,10 +131,10 @@ export class IndicadoresService implements ReportableService {
         return stream;
     }
 
-    streamRegioes(dto: CreateRelIndicadorRegioesDto): Readable {
+    streamRegioes(dto: CreateRelIndicadorRegioesDto, user: PessoaFromJwt | null): Readable {
         const stream = new Readable({ objectMode: true, read() {} });
 
-        this.filtraIndicadores(dto)
+        this.filtraIndicadores(dto, user)
             .then((indicadores) => {
                 this.queryDataRegiao(
                     indicadores.map((r) => r.id),
@@ -146,14 +147,18 @@ export class IndicadoresService implements ReportableService {
         return stream;
     }
 
-    private async filtraIndicadores(dto: CreateRelIndicadorDto) {
+    private async filtraIndicadores(dto: CreateRelIndicadorDto, user: PessoaFromJwt | null) {
         if (dto.periodo == 'Semestral' && !dto.semestre) {
             throw new HttpException('Necessário enviar semestre para o periodo Semestral', 400);
         }
-        const { metas, iniciativas, atividades } = await this.utils.applyFilter(dto, {
-            iniciativas: true,
-            atividades: true,
-        });
+        const { metas, iniciativas, atividades } = await this.utils.applyFilter(
+            dto,
+            {
+                iniciativas: true,
+                atividades: true,
+            },
+            user
+        );
 
         const indicadores = await this.prisma.indicador.findMany({
             where: {
@@ -497,7 +502,11 @@ export class IndicadoresService implements ReportableService {
         });
     }
 
-    async toFileOutput(params: CreateRelIndicadorDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: CreateRelIndicadorDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         if (params.tipo == 'Mensal' && !params.mes)
             throw new HttpException('Necessário enviar mês para o periodo Mensal', 400);
         if (params.periodo == 'Mensal' && params.tipo !== 'Geral')
@@ -507,7 +516,7 @@ export class IndicadoresService implements ReportableService {
         // porém, desta nova forma é possível gerar arquivos CSV a partir dos dados do streaming
         // sem a necessidade de armazenar todos os dados em memória duma vez
         this.logger.verbose(`Gerando arquivos CSV para ${JSON.stringify(params)}`);
-        const indicadores = await this.filtraIndicadores(params);
+        const indicadores = await this.filtraIndicadores(params, user);
         this.logger.verbose(`Indicadores encontrados: ${indicadores.length}`);
 
         await ctx.progress(1);
