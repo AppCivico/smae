@@ -57,6 +57,153 @@ interface MetaResponsavelChanges {
     }[];
 }
 
+export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJwt | undefined, isBi: boolean) => {
+    const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
+        {
+            removido_em: null,
+            pdm: { tipo: PdmModoParaTipo(tipo) },
+        },
+    ];
+    if (!user) return permissionsSet;
+    if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
+
+    const orgaoId = user.orgao_id;
+    if (!orgaoId) throw new HttpException('Usuário sem órgão', 400);
+
+    // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
+    // 'CadastroMeta.inserir'
+    // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
+    // pra outro lugar (o frontend da um get em /painel sem informar qual meta
+    // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
+    // depois o busca a serie do painel-conteúdo correspondente
+
+    if (tipo == '_PDM') {
+        if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
+            //this.logger.verbose(
+            //'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
+            //);
+            return permissionsSet;
+        }
+        const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
+
+        if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+            //this.logger.verbose('Usuário tem PDM.ponto_focal, liberando metas onde é responsável');
+            orSet.push({
+                ViewMetaPessoaResponsavel: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['PDM.tecnico_cp'])) {
+            //this.logger.verbose('Usuário tem PDM.tecnico_cp, liberando metas onde é responsável na CP');
+            orSet.push({
+                ViewMetaPessoaResponsavelNaCp: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+            });
+        }
+
+        if (orSet.length == 0) {
+            //this.logger.verbose('Usuário não tem permissão para nenhuma meta');
+            orSet.push({ id: MIN_DB_SAFE_INT32 });
+        }
+
+        permissionsSet.push({ OR: orSet });
+    } else {
+        if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
+            //this.logger.verbose('Usuário tem CadastroPS.administrador, liberando toda as metas de todos os PDMs.');
+            return permissionsSet;
+        }
+
+        const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
+
+        if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
+            //this.logger.verbose(
+            //`Usuário tem CadastroPS.administrador_no_orgao, liberando todas as metas do órgão ${orgaoId} + responsavel=true e ps.orgao_admin_id=${orgaoId}.`
+            //);
+            orSet.push({
+                pdm: {
+                    orgao_admin_id: orgaoId,
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+            //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é admin_cp`);
+            orSet.push({
+                pdm: {
+                    PdmPerfil: {
+                        some: {
+                            // TODO: validar como fica com estrutura nova de equipes
+                            //pessoa_id: user.id,
+                            removido_em: null,
+                            tipo: 'ADMIN',
+                        },
+                    },
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+            //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é tecnico_cp`);
+            orSet.push({
+                pdm: {
+                    PdmPerfil: {
+                        some: {
+                            // TODO: validar como fica com estrutura nova de equipes
+                            //pessoa_id: user.id,
+                            removido_em: null,
+                            tipo: 'CP',
+                        },
+                    },
+                },
+                ViewMetaPessoaResponsavelNaCp: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+                // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+            //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é ponto_focal`);
+            orSet.push({
+                pdm: {
+                    PdmPerfil: {
+                        some: {
+                            // TODO: validar como fica com estrutura nova de equipes
+                            //pessoa_id: user.id,
+                            removido_em: null,
+                            tipo: 'PONTO_FOCAL',
+                        },
+                    },
+                },
+                ViewMetaPessoaResponsavel: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+                // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
+            });
+        }
+
+        if (orSet.length == 0) {
+            //this.logger.verbose('Usuário não tem permissão para nenhuma meta');
+            orSet.push({ id: MIN_DB_SAFE_INT32 });
+        }
+
+        permissionsSet.push({ OR: orSet });
+    }
+
+    return permissionsSet;
+};
+
 @Injectable()
 export class MetaService {
     private readonly logger = new Logger(MetaService.name);
@@ -322,159 +469,12 @@ export class MetaService {
         return arr;
     }
 
-    private async getMetasPermissionSet(tipo: TipoPdmType, user: PessoaFromJwt | undefined, isBi: boolean) {
-        const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
-            {
-                removido_em: null,
-                pdm: { tipo: PdmModoParaTipo(tipo) },
-            },
-        ];
-        if (!user) return permissionsSet;
-        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
-
-        const orgaoId = user.orgao_id;
-        if (!orgaoId) throw new HttpException('Usuário sem órgão', 400);
-
-        // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
-        // 'CadastroMeta.inserir'
-        // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
-        // pra outro lugar (o frontend da um get em /painel sem informar qual meta
-        // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
-        // depois o busca a serie do painel-conteúdo correspondente
-
-        if (tipo == '_PDM') {
-            if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
-                this.logger.verbose(
-                    'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
-                );
-                return permissionsSet;
-            }
-            const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
-
-            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
-                this.logger.verbose('Usuário tem PDM.ponto_focal, liberando metas onde é responsável');
-                orSet.push({
-                    ViewMetaPessoaResponsavel: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                });
-            }
-
-            if (user.hasSomeRoles(['PDM.tecnico_cp'])) {
-                this.logger.verbose('Usuário tem PDM.tecnico_cp, liberando metas onde é responsável na CP');
-                orSet.push({
-                    ViewMetaPessoaResponsavelNaCp: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                });
-            }
-
-            if (orSet.length == 0) {
-                this.logger.verbose('Usuário não tem permissão para nenhuma meta');
-                orSet.push({ id: MIN_DB_SAFE_INT32 });
-            }
-
-            permissionsSet.push({ OR: orSet });
-        } else {
-            if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
-                this.logger.verbose('Usuário tem CadastroPS.administrador, liberando toda as metas de todos os PDMs.');
-                return permissionsSet;
-            }
-
-            const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
-
-            if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
-                this.logger.verbose(
-                    `Usuário tem CadastroPS.administrador_no_orgao, liberando todas as metas do órgão ${orgaoId} + responsavel=true e ps.orgao_admin_id=${orgaoId}.`
-                );
-                orSet.push({
-                    pdm: {
-                        orgao_admin_id: orgaoId,
-                    },
-                });
-            }
-
-            if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é admin_cp`);
-                orSet.push({
-                    pdm: {
-                        PdmPerfil: {
-                            some: {
-                                // TODO: validar como fica com estrutura nova de equipes
-                                //pessoa_id: user.id,
-                                removido_em: null,
-                                tipo: 'ADMIN',
-                            },
-                        },
-                    },
-                });
-            }
-
-            if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é tecnico_cp`);
-                orSet.push({
-                    pdm: {
-                        PdmPerfil: {
-                            some: {
-                                // TODO: validar como fica com estrutura nova de equipes
-                                //pessoa_id: user.id,
-                                removido_em: null,
-                                tipo: 'CP',
-                            },
-                        },
-                    },
-                    ViewMetaPessoaResponsavelNaCp: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                    // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
-                });
-            }
-
-            if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é ponto_focal`);
-                orSet.push({
-                    pdm: {
-                        PdmPerfil: {
-                            some: {
-                                // TODO: validar como fica com estrutura nova de equipes
-                                //pessoa_id: user.id,
-                                removido_em: null,
-                                tipo: 'PONTO_FOCAL',
-                            },
-                        },
-                    },
-                    ViewMetaPessoaResponsavel: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                    // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
-                });
-            }
-
-            if (orSet.length == 0) {
-                this.logger.verbose('Usuário não tem permissão para nenhuma meta');
-                orSet.push({ id: MIN_DB_SAFE_INT32 });
-            }
-
-            permissionsSet.push({ OR: orSet });
-        }
-
-        return permissionsSet;
-    }
-
     async findAllIds(
         tipo: TipoPdmType,
         user: PessoaFromJwt | undefined,
         pdm_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet = await this.getMetasPermissionSet(tipo, user, true);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, true);
 
         return await this.prisma.meta.findMany({
             where: {
@@ -493,7 +493,7 @@ export class MetaService {
     }
 
     async getMetaFilterSet(tipo: TipoPdmType, user: PessoaFromJwt) {
-        return await this.getMetasPermissionSet(tipo, user, false);
+        return await MetasGetPermissionSet(tipo, user, false);
     }
 
     async assertMetaWriteOrThrow(
@@ -535,7 +535,7 @@ export class MetaService {
         user: PessoaFromJwt,
         skipObjects: boolean = false
     ): Promise<MetaItemDto[]> {
-        const permissionsSet = await this.getMetasPermissionSet(tipo, user, false);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, false);
 
         const listActive = await this.prisma.meta.findMany({
             where: {
