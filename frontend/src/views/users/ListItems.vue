@@ -53,7 +53,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
 </script>
 <template>
   <Dashboard>
-    <header>
+    <header class="mb2">
       <div class="flex spacebetween center mb2">
         <h1>Gerenciar usuários</h1>
         <hr class="ml2 f1">
