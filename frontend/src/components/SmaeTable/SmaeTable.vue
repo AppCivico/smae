@@ -1,15 +1,17 @@
 <template>
   <table class="smae-table tablemain">
-    <colgroup>
-      <col
-        v-for="coluna in colunas"
-        :key="`colunas--${coluna.chave}`"
-      >
-      <col
-        v-if="hasActionButton"
-        class="col--botão-de-ação"
-      >
-    </colgroup>
+    <slot name="colgroup">
+      <colgroup>
+        <col
+          v-for="coluna in colunas"
+          :key="`colunas--${coluna.chave}`"
+        >
+        <col
+          v-if="hasActionButton"
+          class="col--botão-de-ação"
+        >
+      </colgroup>
+    </slot>
 
     <thead>
       <slot
@@ -47,6 +49,7 @@
           :key="`linha--${linhaIndex}-${coluna.key}`"
         >
           <TableCell
+            class="smae-table__cell"
             :linha="linha"
             :caminho="coluna.chave"
           >
@@ -115,7 +118,6 @@
 
 <script lang="ts" setup>
 import { computed, useSlots } from 'vue';
-
 import TableCell, { type Linha } from '@/components/SmaeTable/partials/TableCell.vue';
 import TableHeaderCell, { type Coluna } from '@/components/SmaeTable/partials/TableHeaderCell.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';

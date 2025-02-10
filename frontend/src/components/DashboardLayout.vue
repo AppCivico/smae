@@ -45,6 +45,11 @@ export default {
 
 <template>
   <main style="padding-right: 30px;">
+    <!-- @todo
+      rolagemHorizontal
+      slot body
+      slot head
+    -->
     <SmaeTable
       :dados="[
         { nome: 'Gustavo', idade: 27, empresa: { id: 1, nome: 'FGV' }, estado: 'RS' },
