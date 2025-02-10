@@ -153,7 +153,9 @@ async function preencherFormulário(item) {
       : acc), []);
 
     if (camadasABuscar.length) {
-      await RegionsStore.buscarCamadas(item.camadas.map((x) => x.id));
+      await RegionsStore.buscarCamadas({
+        camada_ids: item.camadas.map((x) => x.id),
+      });
     }
   }
 }

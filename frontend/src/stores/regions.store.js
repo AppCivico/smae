@@ -145,11 +145,11 @@ export const useRegionsStore = defineStore({
         this.tempRegions = { error };
       }
     },
-    async buscarCamadas(ids) {
+    async buscarCamadas(params) {
       this.chamadasPendentes.camadas = true;
       this.erros.camadas = null;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/camada`, { camada_ids: ids });
+        const { linhas } = await this.requestS.get(`${baseUrl}/camada`, params);
 
         if (!this.camadas) {
           this.camadas = {};
