@@ -1,11 +1,22 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Cron } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
+import { Object2Hash } from '../../common/object2hash';
+import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../../geo-loc/geo-loc.service';
+import { Arr } from '../../mf/metas/dash/metas.service';
+import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PainelEstrategicoFilterDto, PainelEstrategicoListaFilterDto } from './dto/painel-estrategico-filter.dto';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
     PainelEstrategicoExecucaoOrcamentariaAno,
     PainelEstrategicoExecucaoOrcamentariaLista,
     PainelEstrategicoGeoLocalizacaoDto,
+    PainelEstrategicoGeoLocalizacaoDtoV2,
+    PainelEstrategicoGeoLocalizacaoV2,
     PainelEstrategicoGrandesNumeros,
     PainelEstrategicoOrgaoResponsavel,
     PainelEstrategicoProjeto,
@@ -17,15 +28,6 @@ import {
     PainelEstrategicoResponseDto,
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
-import { Prisma } from '@prisma/client';
-import { ProjetoService } from '../../pp/projeto/projeto.service';
-import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
-import { Object2Hash } from '../../common/object2hash';
-import { JwtService } from '@nestjs/jwt';
-import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
-import { GeoLocService } from '../../geo-loc/geo-loc.service';
-import { Arr } from '../../mf/metas/dash/metas.service';
-import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -138,7 +140,7 @@ export class PainelEstrategicoService {
                 ) as s(status)
                 LEFT JOIN status_counts USING (status)
             )
-            SELECT 
+            SELECT
                 status,
                 quantidade
             FROM all_status
@@ -177,9 +179,9 @@ export class PainelEstrategicoService {
                     0 as quantidade
                 FROM projeto_etapa
                 WHERE ordem_painel IS NOT NULL
-                
+
                 UNION ALL
-                
+
                 SELECT etapa, ordem, quantidade
                 FROM (
                     VALUES
@@ -235,8 +237,8 @@ export class PainelEstrategicoService {
     async buildProjetosConcluidosPorMesAno(projetoIds: number[]): Promise<PainelEstrategicoProjetosMesAno[]> {
         const sql = `
             WITH RECURSIVE date_series AS (
-                SELECT 
-                    date_trunc('month', 
+                SELECT
+                    date_trunc('month',
                         make_date(
                             EXTRACT(YEAR FROM CURRENT_DATE)::int - 3,
                             1,
@@ -244,14 +246,14 @@ export class PainelEstrategicoService {
                         )
                     )::date as data_
                 UNION ALL
-                SELECT 
+                SELECT
                     (data_ + interval '1 month')::date
                 FROM date_series
                 WHERE data_ < make_date(
                     EXTRACT(YEAR FROM CURRENT_DATE)::int,
                     12,
                     1
-                ) 
+                )
             ),
             project_counts AS (
                 SELECT
@@ -282,16 +284,16 @@ export class PainelEstrategicoService {
                 ad.linha::int,
                 ad.coluna::int
             FROM all_dates ad
-            LEFT JOIN project_counts pc 
-                ON pc.ano = ad.ano 
+            LEFT JOIN project_counts pc
+                ON pc.ano = ad.ano
                 AND pc.mes = ad.mes
-            GROUP BY 
+            GROUP BY
                 ad.ano,
                 ad.mes,
                 ad.linha,
                 ad.coluna
-            ORDER BY 
-                ad.ano, 
+            ORDER BY
+                ad.ano,
                 ad.mes;
         `;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
@@ -331,8 +333,8 @@ export class PainelEstrategicoService {
     private async buildProjetosPlanejadosPorMesAno(projetoIds: number[]): Promise<PainelEstrategicoProjetosMesAno[]> {
         const sql = `
             WITH RECURSIVE date_series AS (
-                SELECT 
-                    date_trunc('month', 
+                SELECT
+                    date_trunc('month',
                         make_date(
                             EXTRACT(YEAR FROM CURRENT_DATE)::int - 3,
                             1,
@@ -340,7 +342,7 @@ export class PainelEstrategicoService {
                         )
                     )::date as data_
                 UNION ALL
-                SELECT 
+                SELECT
                     (data_ + interval '1 month')::date
                 FROM date_series
                 WHERE data_ < date_trunc('month', make_date(
@@ -383,15 +385,15 @@ export class PainelEstrategicoService {
                 END as linha,
                 ad.coluna::int
             FROM all_dates ad
-            LEFT JOIN project_counts pc 
-                ON pc.ano = ad.ano 
+            LEFT JOIN project_counts pc
+                ON pc.ano = ad.ano
                 AND pc.mes = ad.mes
-            GROUP BY 
+            GROUP BY
                 ad.ano,
                 ad.mes,
                 ad.coluna
-            ORDER BY 
-                ad.ano, 
+            ORDER BY
+                ad.ano,
                 ad.mes;
         `;
         return (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoProjetosMesAno[];
@@ -402,7 +404,7 @@ export class PainelEstrategicoService {
             async (prismaTx: Prisma.TransactionClient): Promise<PainelEstrategicoOrgaoResponsavel[]> => {
                 const result = await prismaTx.$queryRaw<PainelEstrategicoOrgaoResponsavel[]>`
                     WITH orgao_counts AS (
-                        SELECT 
+                        SELECT
                             COUNT(DISTINCT projeto_id)::int as quantidade,
                             orgao_sigla,
                             orgao_descricao,
@@ -411,7 +413,7 @@ export class PainelEstrategicoService {
                         WHERE projeto_id = ANY(${projetoIds}::bigint[]) AND orgao_sigla IS NOT NULL
                         GROUP BY orgao_sigla, orgao_descricao
                     )
-                    SELECT 
+                    SELECT
                         quantidade,
                         orgao_sigla,
                         orgao_descricao,
@@ -419,7 +421,7 @@ export class PainelEstrategicoService {
                     FROM orgao_counts
                     WHERE ranking <= 10
                     UNION ALL
-                    SELECT 
+                    SELECT
                         SUM(quantidade)::int,
                         'OUTROS',
                         'Outros',
@@ -467,20 +469,20 @@ export class PainelEstrategicoService {
                 SELECT EXTRACT(YEAR FROM CURRENT_DATE) as ano
             ),
             contagens AS (
-                SELECT 
-                    COUNT(DISTINCT CASE 
-                        WHEN realizado_termino IS NULL 
-                            AND previsao_termino IS NOT NULL 
+                SELECT
+                    COUNT(DISTINCT CASE
+                        WHEN realizado_termino IS NULL
+                            AND previsao_termino IS NOT NULL
                             AND ano_previsao = (SELECT ano FROM ano_corrente)
                         THEN projeto_id END)::int as quantidade_planejada,
-                    COUNT(DISTINCT CASE 
-                        WHEN realizado_termino IS NOT NULL 
+                    COUNT(DISTINCT CASE
+                        WHEN realizado_termino IS NOT NULL
                             AND ano_termino = (SELECT ano FROM ano_corrente)
                         THEN projeto_id END)::int as quantidade_concluida
                 FROM view_painel_estrategico_projeto
                 WHERE projeto_id IN (${projetoIds})
             )
-            SELECT 
+            SELECT
                 quantidade_planejada,
                 quantidade_concluida,
                 (SELECT ano FROM ano_corrente)::int as ano
@@ -984,6 +986,7 @@ export class PainelEstrategicoService {
             token_ttl: PAGINATION_TOKEN_TTL,
         } satisfies PaginatedWithPagesDto<PainelEstrategicoExecucaoOrcamentariaLista>;
     }
+
     async buildGeoLocalizacao(
         filtro: PainelEstrategicoFilterDto,
         user: PessoaFromJwt
@@ -1013,6 +1016,7 @@ export class PainelEstrategicoService {
                                                     JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
                                                     WHERE ppc.removido_em IS NULL) po ON po.projeto_id = p.id
                                                     left join projeto_etapa pe on pe.id = p.projeto_etapa_id
+                                                    JOIN geo_localizacao_referencia glr ON glr.projeto_id = p.id AND glr.removido_em IS NULL
                     ${whereFilter}`;
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
 
@@ -1032,6 +1036,55 @@ export class PainelEstrategicoService {
                 geolocalizacao: geolocalizacao.get(linha.projeto_id) || [],
             });
         });
+        return retorno;
+    }
+
+    async buildGeoLocalizacaoV2(
+        filtro: PainelEstrategicoFilterDto,
+        user: PessoaFromJwt
+    ): Promise<PainelEstrategicoGeoLocalizacaoDtoV2> {
+        //Cria apenas os projetos e orgãos responsáveis
+        filtro = await this.addPermissaoProjetos(filtro, user);
+        const whereFilter = this.applyFilter(filtro);
+        const sql = `
+                    SELECT
+                        p.id as projeto_id,
+                        gl.tipo,
+                        gl.endereco_exibicao,
+                        array_agg(glc.geo_camada_id) as camadas
+
+                     FROM projeto p
+                     FULL OUTER JOIN (
+                     SELECT ppc.projeto_id,
+                            po_1.id as portfolio_id
+                        FROM portfolio_projeto_compartilhado ppc
+                        JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                        WHERE ppc.removido_em IS NULL
+                    ) po ON po.projeto_id = p.id
+                    JOIN geo_localizacao_referencia glr ON glr.projeto_id = p.id AND glr.removido_em IS NULL
+                    JOIN geo_localizacao gl ON gl.id = glr.geo_localizacao_id
+                    LEFT JOIN geo_localizacao_camada glc ON glc.geo_localizacao_id = gl.id
+
+                    ${whereFilter}
+
+                    GROUP BY 1, 2, 3
+                    `;
+        const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
+
+        const retorno: PainelEstrategicoGeoLocalizacaoDtoV2 = {
+            linhas: linhas.map(
+                (linha) =>
+                    ({
+                        projeto_id: linha.projeto_id,
+                        geolocalizacao_sumario: {
+                            tipo: linha.tipo,
+                            endereco_exibicao: linha.endereco_exibicao,
+                            camadas: linha.camadas,
+
+                        },
+                    }) satisfies PainelEstrategicoGeoLocalizacaoV2
+            ),
+        };
         return retorno;
     }
 
