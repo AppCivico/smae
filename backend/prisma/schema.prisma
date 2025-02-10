@@ -3449,8 +3449,6 @@ model Relatorio {
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
 
-    eh_publico Boolean @default(true)
-
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte FonteRelatorio
 

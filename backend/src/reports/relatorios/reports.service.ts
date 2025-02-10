@@ -15,7 +15,6 @@ import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
-import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PessoaService } from '../../pessoa/pessoa.service';
@@ -226,7 +225,6 @@ export class ReportsService {
                 parametros_processados: await this.buildParametrosProcessados(dto),
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
-                processado_em: dto.background ? new Date(Date.now()) : null,
                 processado_em: dto.background ? new Date(Date.now()) : null,
             },
             select: { id: true },
