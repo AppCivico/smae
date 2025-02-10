@@ -708,25 +708,47 @@ export class ProjetoService {
     async findAllIds(
         tipo: TipoProjeto,
         user: PessoaFromJwt | undefined,
-        portfolio_id: number | undefined = undefined,
-        aceita_compartilhado: boolean = false
+        portfolio_id: number | number[] | number[] | undefined = undefined,
+        aceita_compartilhado: boolean = false,
+        orgao_responsavel_id: number | number[] | undefined = undefined,
+        projeto_id: number | number[] | undefined = undefined
     ): Promise<{ id: number }[]> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, true);
+
+        const filtroPortfolio =
+            typeof portfolio_id == 'number' ? [portfolio_id] : portfolio_id?.length ? portfolio_id : undefined;
+        const filtroProjeto =
+            typeof projeto_id == 'number' ? [projeto_id] : projeto_id?.length ? projeto_id : undefined;
+        const filtroOrgaoResponsavel =
+            typeof orgao_responsavel_id == 'number'
+                ? [orgao_responsavel_id]
+                : orgao_responsavel_id?.length
+                  ? orgao_responsavel_id
+                  : undefined;
+
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: tipo,
                 AND: [
-                    { portfolio_id: portfolio_id && !aceita_compartilhado ? portfolio_id : undefined },
+                    {
+                        portfolio_id: portfolio_id && !aceita_compartilhado ? { in: filtroPortfolio } : undefined,
+                    },
 
                     {
                         OR:
-                            aceita_compartilhado && portfolio_id
+                            aceita_compartilhado && filtroPortfolio
                                 ? [
-                                      { portfolio_id: portfolio_id },
+                                      {
+                                          portfolio_id: {
+                                              in: filtroPortfolio,
+                                          },
+                                      },
                                       {
                                           portfolios_compartilhados: {
                                               some: {
-                                                  portfolio_id: portfolio_id,
+                                                  portfolio_id: {
+                                                      in: filtroPortfolio,
+                                                  },
                                                   removido_em: null,
                                               },
                                           },
@@ -736,7 +758,23 @@ export class ProjetoService {
                     },
 
                     {
+                        AND: filtroOrgaoResponsavel
+                            ? [{ orgao_responsavel_id: { in: filtroOrgaoResponsavel } }]
+                            : undefined,
+                    },
+
+                    {
                         AND: permissionsSet.length ? permissionsSet : undefined,
+                    },
+
+                    {
+                        AND: filtroProjeto
+                            ? [
+                                  {
+                                      id: { in: filtroProjeto },
+                                  },
+                              ]
+                            : undefined,
                     },
                 ],
             },

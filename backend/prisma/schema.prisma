@@ -599,6 +599,7 @@ model Orgao {
     ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                 @relation("prop")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
     FormulaComposta                   FormulaComposta[]
+    ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
     ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
 
@@ -1071,10 +1072,11 @@ model ProjetoEtapa {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa?   @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
-    Projeto     Projeto[]
+    atualizador                   Pessoa?                         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                       Pessoa?                         @relation("Criador", fields: [criado_por], references: [id])
+    removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
+    Projeto                       Projeto[]
+    ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
 
     @@map("projeto_etapa")
 }
@@ -1301,6 +1303,7 @@ model Meta {
     ProjetoOrigem                          CompromissoOrigem[]                      @relation("fk")
     ProjetoOrigemRel                       CompromissoOrigem[]                      @relation("rel")
     PdmPerfil                              PdmPerfil[]
+    ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -3441,11 +3444,12 @@ model Relatorio {
 
     visibilidade RelatorioVisibilidade @default(Privado)
 
-
     sistema ModuloSistema @default(SMAE)
 
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
+
+    eh_publico Boolean @default(true)
 
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte FonteRelatorio
@@ -3533,16 +3537,17 @@ model Portfolio {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    ProjetoNumerosSequenciais    ProjetoNumeroSequencial[]
-    PortfolioDotacaoPlanejado    PortfolioDotacaoPlanejado[]
-    PortfolioDotacaoRealizado    PortfolioDotacaoRealizado[]
-    PortfolioDotacaoProcesso     PortfolioDotacaoProcesso[]
-    PortfolioDotacaoProcessoNota PortfolioDotacaoProcessoNota[]
-    ImportacaoLog                ImportacaoOrcamento[]
-    PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
-    projetosCompartilhados       PortfolioProjetoCompartilhado[]
-    ViewProjetoMDO               ViewProjetoMDO[]
-    ViewProjetoV2                ViewProjetoV2[]
+    ProjetoNumerosSequenciais     ProjetoNumeroSequencial[]
+    PortfolioDotacaoPlanejado     PortfolioDotacaoPlanejado[]
+    PortfolioDotacaoRealizado     PortfolioDotacaoRealizado[]
+    PortfolioDotacaoProcesso      PortfolioDotacaoProcesso[]
+    PortfolioDotacaoProcessoNota  PortfolioDotacaoProcessoNota[]
+    ImportacaoLog                 ImportacaoOrcamento[]
+    PortfolioGrupoPortfolio       PortfolioGrupoPortfolio[]
+    projetosCompartilhados        PortfolioProjetoCompartilhado[]
+    ViewProjetoMDO                ViewProjetoMDO[]
+    ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
+    ViewProjetoV2                 ViewProjetoV2[]
 
     @@map("portfolio")
 }
@@ -3814,8 +3819,9 @@ model Projeto {
     tags          Int[]               @default([])
     ProjetoOrigem CompromissoOrigem[]
 
-    origem_cache  Json            @default("{}") @db.Json
-    ViewProjetoV2 ViewProjetoV2[]
+    origem_cache                  Json                            @default("{}") @db.Json
+    ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
+    ViewProjetoV2                 ViewProjetoV2[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -7379,4 +7385,20 @@ model SerieVariavelHistorico {
     ciclo_fisico_id              Int?
 
     @@map("serie_variavel_historico")
+}
+
+view ViewPainelEstrategicoProjetos {
+    projeto_id           Int           @id
+    projeto              Projeto       @relation(fields: [projeto_id], references: [id])
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao?        @relation(fields: [orgao_responsavel_id], references: [id])
+    meta_id              Int?
+    meta                 Meta?         @relation(fields: [meta_id], references: [id])
+    portfolio_id         Int?
+    portfolio            Portfolio?    @relation(fields: [portfolio_id], references: [id])
+    projeto_etapa_id     Int?
+    projeto_etapa        ProjetoEtapa? @relation(fields: [projeto_etapa_id], references: [id])
+    status               ProjetoStatus
+
+    @@map("view_painel_estrategico_projetos")
 }
