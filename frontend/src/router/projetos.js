@@ -1,7 +1,7 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 import acompanhamentos from './acompanhamentos';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
@@ -43,7 +43,8 @@ const ProjetosItem = defineAsyncComponent({
   loadingComponent: LoadingComponent,
 });
 const ProjetosLista = defineAsyncComponent({
-  loader: () => import('@/views/projetos/ProjetosLista.vue'),
+  // loader: () => import('@/views/projetos/ProjetosLista.vue'),
+  loader: () => import('@/views/projetos/ProjetosLista/ProjetosLista.vue'),
   loadingComponent: LoadingComponent,
 });
 const ProjetosResumo = defineAsyncComponent({
