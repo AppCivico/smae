@@ -1,13 +1,13 @@
 <template>
-  <td class="table-cell">
-    <slot
-      :name="`celula:${caminho}`"
-      :caminho="caminho"
-      :linha="linha"
-    >
+  <slot
+    :name="`celula:${caminho}`"
+    :caminho="caminho"
+    :linha="linha"
+  >
+    <td :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]">
       {{ conteudoColuna }}
-    </slot>
-  </td>
+    </td>
+  </slot>
 </template>
 
 <script lang="ts" setup>
