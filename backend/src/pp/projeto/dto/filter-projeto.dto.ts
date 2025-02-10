@@ -10,7 +10,7 @@ import {
     IsInt,
     IsOptional,
     IsString,
-    MaxLength
+    MaxLength,
 } from 'class-validator';
 import {
     NumberArrayTransformOrEmpty,
@@ -139,6 +139,11 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
     equipamento_id?: number[];
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    projeto_etapa_id?: number[];
 
     @IsOptional()
     @IsInt()

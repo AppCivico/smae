@@ -40,6 +40,7 @@ import {
     ProjetoDetailMdoDto,
     ProjetoMdoDto,
     ProjetoSeiDto,
+    ProjetoV2Dto,
 } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
@@ -100,7 +101,7 @@ export class ProjetoController {
     async findAllV2(
         @Query() filters: FilterProjetoMDODto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+    ): Promise<PaginatedWithPagesDto<ProjetoV2Dto>> {
         return this.projetoService.findAllV2(this.tipo, filters, user);
     }
 

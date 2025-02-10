@@ -3380,6 +3380,7 @@ export class ProjetoService {
                           },
                       }
                     : undefined,
+                projeto_etapa_id: filters.projeto_etapa_id ? { in: filters.projeto_etapa_id } : undefined,
                 orgao_origem_id: filters.orgao_origem_id ? { in: filters.orgao_origem_id } : undefined,
                 status: filters.status ? { in: filters.status } : undefined,
                 nome: filters.nome ? { in: filters.nome } : undefined,
