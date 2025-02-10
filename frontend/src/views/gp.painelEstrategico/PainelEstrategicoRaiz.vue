@@ -17,12 +17,26 @@ import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import gerarCoresIntermediarias from '@/helpers/gerarCoresIntermediarias';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import type { GeoLocCamadaFullDto } from '@back/geo-loc/entities/geo-loc.entity.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+type Camada = GeoLocCamadaFullDto & {
+  config: Record<string, unknown>,
+  totalDeProjetos: number
+};
+
+const regiaoPadrao = 180;
+const nivelRegionalizacaoPadrao = 3;
+const nivelParaPainelFlutuante = 3;
+const corParaMaximo = '#FF6600';
+const corParaMinimo = '#66CC00';
 
 const route = useRoute();
 const router = useRouter();
@@ -33,11 +47,96 @@ const alertStore = useAlertStore();
 
 const {
   chamadasPendentes,
-  locaisAgrupados,
   erros,
   paginacaoProjetos,
   paginacaoOrcamentos,
+  projetosParaMapa,
 } = storeToRefs(painelEstrategicoStore);
+
+const camadasDaCidade = ref<number[]>([]);
+
+const locaisAgrupados = computed(() => {
+  const dadosDasCamadas: Record<number, Camada> = {};
+  const enderecos: unknown[] = [];
+
+  let i = 0;
+  let maximoDeProjetos = 0;
+
+  while (projetosParaMapa.value[i as keyof unknown]) {
+    const cur = projetosParaMapa.value[i as keyof unknown];
+    if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
+      let j = 0;
+      while (cur.geolocalizacao[j]) {
+        const geolocalizacao = cur.geolocalizacao[j];
+        let subPrefeitura = '';
+
+        if (geolocalizacao.camadas) {
+          for (let k = 0; k < geolocalizacao.camadas.length; k += 1) {
+            const camada = geolocalizacao.camadas[k];
+            if (nivelRegionalizacaoPadrao === camada.nivel_regionalizacao) {
+              if (dadosDasCamadas[camada.id]) {
+                dadosDasCamadas[camada.id].totalDeProjetos += 1;
+              } else {
+                dadosDasCamadas[camada.id] = { ...camada };
+                dadosDasCamadas[camada.id].totalDeProjetos = 1;
+              }
+
+              maximoDeProjetos = Math.max(
+                maximoDeProjetos,
+                dadosDasCamadas[camada.id].totalDeProjetos,
+              );
+            }
+          }
+
+          subPrefeitura = geolocalizacao.camadas
+            .find((camada: GeoLocCamadaFullDto) => camada.nivel_regionalizacao === nivelParaPainelFlutuante)
+            ?.titulo;
+
+          if (subPrefeitura) {
+            subPrefeitura = `<i>${subPrefeitura}</i>`;
+          }
+        }
+
+        if (geolocalizacao.endereco) {
+          enderecos.push(geolocalizacao.endereco);
+          const rotulo = cur.projeto_nome;
+          const descricao = [subPrefeitura, cur.projeto_status, cur.projeto_etapa].join('<br/>');
+
+          if (rotulo) {
+            enderecos[enderecos.length - 1].properties.rotulo = rotulo;
+          }
+
+          if (descricao) {
+            enderecos[enderecos.length - 1].properties.descricao = descricao;
+          }
+        }
+        j += 1;
+      }
+    }
+    i += 1;
+  }
+  const cores = [
+    corParaMinimo,
+    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, 'hex'),
+    corParaMaximo,
+  ];
+  return {
+    camadas: (camadasDaCidade.value.map((id) => ({ id })) as Camada[])
+      .concat(Object.values(dadosDasCamadas))
+      .map((camada) => {
+        if (!camada.config) {
+          camada.config = {};
+        }
+
+        camada.config.color = camada.totalDeProjetos
+          ? cores[camada.totalDeProjetos - 1]
+          : cores[0];
+
+        return camada;
+      }),
+    enderecos,
+  };
+});
 
 const limparPaginacao = () => {
   paginacaoProjetos.value.validoAte = 0;
@@ -116,7 +215,7 @@ function buscarOrcamentos() {
   });
 }
 
-function iniciar() {
+async function iniciar() {
   const parametros = {
     portfolio_id: route.query.portfolio_id,
     orgao_responsavel_id: route.query.orgao_responsavel_id,
@@ -124,7 +223,15 @@ function iniciar() {
   };
 
   painelEstrategicoStore.buscarDados(parametros);
-  painelEstrategicoStore.buscarProjetosParaMapa(parametros);
+
+  if (!camadasDaCidade.value.length) {
+    camadasDaCidade.value = await useRegionsStore().buscarCamadas({
+      filha_de_regiao_id: regiaoPadrao,
+      regiao_nivel_regionalizacao: nivelRegionalizacaoPadrao,
+    });
+  }
+
+  painelEstrategicoStore.buscarProjetosParaMapa(parametros, camadasDaCidade.value);
   buscarProjetos();
   buscarOrcamentos();
 }
