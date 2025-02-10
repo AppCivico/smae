@@ -33,7 +33,7 @@ defineProps({
         class="mb0 t36 w700"
       >
         <template #prefix>
-          <span class="ff-roboto">R$</span>
+          <span class="ff-regular">R$</span>
         </template>
       </AnimatedNumber>
     </div>
@@ -49,7 +49,7 @@ defineProps({
         class="mb0 t36 w700"
       >
         <template #prefix>
-          <span class="ff-roboto">R$</span>
+          <span class="ff-regular">R$</span>
         </template>
       </AnimatedNumber>
     </div>
@@ -65,7 +65,7 @@ defineProps({
         class="mb0 t36 w700 liquidado"
       >
         <template #prefix>
-          <span class="ff-roboto">R$</span>
+          <span class="ff-regular">R$</span>
         </template>
       </AnimatedNumber>
     </div>
