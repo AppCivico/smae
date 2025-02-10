@@ -17,7 +17,7 @@
 <script lang="ts" setup>
 import { useAlertStore } from '@/stores/alert.store';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import { type Linha } from './TableCell.vue';
+import { Linha } from '../types/tipagem';
 
 export type DeleteButtonProps = {
   esconderDeletar?: boolean
