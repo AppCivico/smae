@@ -349,7 +349,9 @@ async function prepararCamadas(camadasFornecidas = props.camadas) {
     : acc), []);
 
   if (camadasABuscar.length) {
-    await RegionsStore.buscarCamadas(camadasFornecidas.map((x) => x.id));
+    await RegionsStore.buscarCamadas({
+      camada_ids: camadasFornecidas.map((x) => x.id),
+    });
   }
 
   const camadasSelecionadas = camadasFornecidas
