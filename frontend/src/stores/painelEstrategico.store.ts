@@ -47,7 +47,9 @@ type Estado = ItemGenerico & {
   };
 };
 
-export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defineStore(prefixo ? `${prefixo}.painelEstrategico` : 'painelEstrategico', {
+export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defineStore(prefixo
+  ? `${prefixo}.painelEstrategico`
+  : 'painelEstrategico', {
   state: (): Estado => ({
     anosMapaCalorConcluidos: [],
     anosMapaCalorPlanejados: [],
