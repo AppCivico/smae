@@ -163,8 +163,10 @@ export const useRegionsStore = defineStore({
             this.camadas[camada.id] = camada;
           }
         }
+        return linhas.map((camada) => camada.id);
       } catch (error) {
         this.erros.camadas = error;
+        return [];
       } finally {
         this.chamadasPendentes.camadas = false;
       }
@@ -212,6 +214,5 @@ export const useRegionsStore = defineStore({
 
       return agrupadas;
     },
-
   },
 });
