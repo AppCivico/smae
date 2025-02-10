@@ -458,14 +458,14 @@ watch(
 
 .lista-de-cartoes {
   display: grid;
-  gap: 2rem 4rem;
+  gap: 2rem 3rem;
 
   @media screen and (min-width: @duas-colunas) {
     grid-template-columns: 2.5fr 1.5fr;
   }
 
   @media screen and (min-width: @tres-colunas) {
-    grid-template-columns: 2.5fr 1.5fr 2fr;
+    grid-template-columns: 3fr 2fr 2fr;
   }
 }
 
