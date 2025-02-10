@@ -10,11 +10,10 @@
 </template>
 
 <script lang="ts" setup>
-import { RouteLocationRaw } from 'vue-router';
-
 import { computed } from 'vue';
+import { RouteLocationRaw } from 'vue-router';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import { type Linha } from './TableCell.vue';
+import type { Linha } from '../types/tipagem';
 
 export type EditButtonProps = {
   rotaEditar?: string | RouteLocationRaw

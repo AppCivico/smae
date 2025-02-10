@@ -1,6 +1,9 @@
 <template>
   <table class="smae-table tablemain">
-    <slot name="colgroup">
+    <slot
+      name="colunas"
+      colunas="colunas"
+    >
       <colgroup>
         <col
           v-for="coluna in colunas"
@@ -39,59 +42,65 @@
       </slot>
     </thead>
 
-    <tbody>
-      <tr
-        v-for="(linha, linhaIndex) in dados"
-        :key="`coluna--${linhaIndex}`"
-      >
-        <template
-          v-for="coluna in colunas"
-          :key="`linha--${linhaIndex}-${coluna.key}`"
+    <slot
+      name="corpo"
+      :dados="dados"
+    >
+      <tbody>
+        <tr
+          v-for="(linha, linhaIndex) in dados"
+          :key="`coluna--${linhaIndex}`"
         >
-          <TableCell
-            class="smae-table__cell"
-            :linha="linha"
-            :caminho="coluna.chave"
+          <template
+            v-for="coluna in colunas"
+            :key="`linha--${linhaIndex}-${coluna.key}`"
           >
-            <template
-              v-for="nomeSlot in slotsDaCelula"
-              :key="nomeSlot"
-              #[nomeSlot]="slotProps"
+            <TableCell
+              class="smae-table__cell"
+              :linha="linha"
+              :caminho="coluna.chave"
             >
-              <slot
-                :name="nomeSlot"
-                v-bind="slotProps"
+              <template
+                v-for="nomeSlot in slotsDaCelula"
+                :key="nomeSlot"
+                #[nomeSlot]="slotProps"
+              >
+                <slot
+                  :name="nomeSlot"
+                  v-bind="slotProps"
+                />
+              </template>
+            </TableCell>
+          </template>
+
+          <td v-if="hasActionButton">
+            <div class="nowrap flex g1">
+              <EditButton
+                v-if="rotaEditar"
+                :linha="linha"
+                :rota-editar="rotaEditar"
+                :parametro-da-rota-editar="parametroDaRotaEditar"
+                :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
               />
-            </template>
-          </TableCell>
-        </template>
 
-        <td v-if="hasActionButton">
-          <div class="nowrap flex g1">
-            <EditButton
-              v-if="rotaEditar"
-              :linha="linha"
-              :rota-editar="rotaEditar"
-              :parametro-da-rota-editar="parametroDaRotaEditar"
-              :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
-            />
+              <DeleteButton
+                v-if="!esconderDeletar"
+                :linha="linha"
+                :esconder-deletar="esconderDeletar"
+                :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+                @deletar="ev => emit('deletar', ev)"
+              />
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </slot>
 
-            <DeleteButton
-              v-if="!esconderDeletar"
-              :linha="linha"
-              :esconder-deletar="esconderDeletar"
-              :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
-              @deletar="ev => emit('deletar', ev)"
-            />
-          </div>
-        </td>
-      </tr>
-    </tbody>
-
-    <tfoot v-if="$slots.footer || replicarCabecalho">
+    <tfoot v-if="$slots.rodape || replicarCabecalho">
       <slot
         v-if="!replicarCabecalho"
-        name="footer"
+        name="rodape"
+        :colunas="colunas"
       />
 
       <tr v-else>
@@ -118,17 +127,25 @@
 
 <script lang="ts" setup>
 import { computed, useSlots } from 'vue';
-import TableCell, { type Linha } from '@/components/SmaeTable/partials/TableCell.vue';
-import TableHeaderCell, { type Coluna } from '@/components/SmaeTable/partials/TableHeaderCell.vue';
+import TableCell from './partials/TableCell.vue';
+import TableHeaderCell from './partials/TableHeaderCell.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
+import { Colunas, Linhas } from './types/tipagem';
+
+type Slots = {
+  colunas: [colunas: Colunas]
+  cabecalho: [colunas: Colunas]
+  rodape: [colunas: Colunas]
+  corpo: [dados: Linhas]
+};
 
 type Props =
   EditButtonProps
   & DeleteButtonProps
   & {
-    colunas: Coluna[],
-    dados: Linha[]
+    colunas: Colunas,
+    dados: Linhas
     replicarCabecalho?: boolean
   };
 
@@ -141,6 +158,7 @@ const props = withDefaults(defineProps<Props>(), {
   parametroNoObjetoParaExcluir: 'descricao',
 });
 const emit = defineEmits<Emits>();
+defineSlots<Slots>();
 
 const slots = useSlots();
 

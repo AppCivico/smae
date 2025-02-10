@@ -47,8 +47,6 @@ export default {
   <main style="padding-right: 30px;">
     <!-- @todo
       rolagemHorizontal
-      slot body
-      slot head
     -->
     <SmaeTable
       :dados="[
@@ -73,7 +71,7 @@ export default {
         <input type="text">
       </template>
 
-      <template #footer>
+      <template #rodape>
         LAYOUT FOOTER
       </template>
     </SmaeTable>

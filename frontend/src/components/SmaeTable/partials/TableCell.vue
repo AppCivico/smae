@@ -13,10 +13,9 @@
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
+import type { Linha } from '../types/tipagem';
 
-export type Linha = { [key: string]: string | number | unknown; };
-
-type ParametrosDaColuna = {
+export type ParametrosDaColuna = {
   linha: Linha
   caminho: string
 };

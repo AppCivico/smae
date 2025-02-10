@@ -15,13 +15,7 @@
 
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
-
-export type Coluna = {
-  chave: string,
-  label: string,
-  cabecalho?: boolean,
-  classe?: any
-};
+import type { Coluna } from '../types/tipagem';
 
 type Props = Coluna;
 
