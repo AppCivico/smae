@@ -20,6 +20,7 @@ import {
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
 import { SmaeConfigService } from '../common/services/smae-config.service';
+import * as turf from '@turf/simplify';
 
 class GeoTokenJwtBody {
     id: number;
@@ -233,6 +234,50 @@ export class GeoLocService {
         }
 
         return ret;
+    }
+
+    async processGeoJsonSimplification(): Promise<void> {
+        const geoCamadas = await this.prisma.geoCamada.findMany({
+            where: {
+                config: {
+                    simplificar_em: { not: null }, // resolution
+                },
+            },
+            select: {
+                id: true,
+                geom_geojson_original: true,
+                config: {
+                    select: {
+                        simplificar_em: true,
+                    },
+                },
+            },
+        });
+
+        for (const r of geoCamadas) {
+            const originalGeoJson = r.geom_geojson_original as any as GeoJSON;
+
+            if (originalGeoJson.type === 'Feature' && originalGeoJson.geometry.type === 'Polygon') {
+                try {
+                    const simplifiedGeoJson = turf.simplify(originalGeoJson, {
+                        tolerance: r.config.simplificar_em!,
+                        highQuality: false,
+                        mutate: true,
+                    });
+
+                    await this.prisma.geoCamada.update({
+                        where: { id: r.id },
+                        data: {
+                            geom_geojson: simplifiedGeoJson as unknown as Prisma.InputJsonValue,
+                        },
+                    });
+                } catch (error) {
+                    this.logger.error(`Error simplifying GeoJSON for id ${r.id}: ${error}`, 'GeoLocService');
+                }
+            } else {
+                this.logger.warn(`GeoJSON with id ${r.id} is not a Polygon. Skipping simplification.`, 'GeoLocService');
+            }
+        }
     }
 
     private async criaCamada(

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GeoJsonObject } from 'geojson';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -16,6 +16,7 @@ import {
     RetornoGeoLocCamadaFullDto,
 } from './entities/geo-loc.entity';
 import { GeoLocService } from './geo-loc.service';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('')
 @ApiTags('GeoLocation')
@@ -67,5 +68,13 @@ export class GeoLocController {
             throw new HttpException('Invalid Secret', 403);
         }
         return await this.geoService.geoJsonCollection(filter);
+    }
+
+    @Patch('camada/simplificar')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async camadasSimplificar(): Promise<string> {
+        await this.geoService.processGeoJsonSimplification();
+        return 'OK';
     }
 }
