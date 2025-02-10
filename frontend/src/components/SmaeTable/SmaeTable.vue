@@ -4,16 +4,18 @@
     :aria-label="tituloParaRolagemHorizontal"
   >
     <table class="smae-table tablemain">
-      <caption
-        v-if="titulo"
-        class="tl"
-      >
-        {{ titulo }}
-      </caption>
+      <slot name="titulo">
+        <caption
+          v-if="titulo"
+          class="tl"
+        >
+          {{ titulo }}
+        </caption>
+      </slot>
 
       <slot
         name="colunas"
-        colunas="colunas"
+        :colunas="colunas"
       >
         <colgroup>
           <col
@@ -30,7 +32,7 @@
       <thead>
         <slot
           name="cabecalho"
-          v-bind="colunas"
+          :colunas="colunas"
         >
           <tr>
             <TableHeaderCell
@@ -148,6 +150,7 @@ import { Colunas, Linhas } from './types/tipagem';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 
 type Slots = {
+  titulo: []
   colunas: [colunas: Colunas]
   cabecalho: [colunas: Colunas]
   rodape: [colunas: Colunas]
