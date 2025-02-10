@@ -25,6 +25,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
 import { Arr } from '../../mf/metas/dash/metas.service';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -1032,5 +1033,14 @@ export class PainelEstrategicoService {
             });
         });
         return retorno;
+    }
+
+    @Cron('*/2 * * * *')
+    async refreshMaterializedView() {
+        try {
+            await this.prisma.$queryRaw`refresh materialized view view_painel_estrategico_projeto;`;
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
