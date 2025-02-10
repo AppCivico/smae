@@ -1,4 +1,18 @@
 /* eslint-disable no-template-curly-in-string */
+import { isAfter, isBefore } from 'date-fns';
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -21,20 +35,6 @@ import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
-import { isAfter, isBefore } from 'date-fns';
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -163,6 +163,8 @@ setLocale({
 });
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
+
+const direcaoOpcoes = ['asc', 'desc', undefined];
 
 export const acompanhamento = object()
   .shape({
@@ -2654,6 +2656,19 @@ export const projeto = object()
       .nullable()
       .max(20),
   });
+
+export const projetoFiltro = object().shape({
+  portfolio: number().label('portfolio'),
+  orgao_responsavel_id: number().label('órgão responsável'),
+  status_id: number().label('status'),
+  status_id1: number().label('status'),
+  etapa_id: number().label('etapa'),
+  data_registro: date().label('data de registro'),
+  revisado: boolean().label('revisado'),
+  ordenar_por: string().label('Ordenar por'),
+  direcao: string().label('Direção').oneOf(direcaoOpcoes),
+  itens_por_pagina: number().label('Itens por página'),
+});
 
 export const região = object()
   .shape({
