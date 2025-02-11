@@ -95,7 +95,7 @@ export class ProjetoController {
 
     @Get('v2')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...roles])
     @ApiExtraModels(ResumoOrigensMetasItemDto, DetalheOrigensDto)
     @ApiPaginatedWithPagesResponse(ProjetoMdoDto)
     async findAllV2(
