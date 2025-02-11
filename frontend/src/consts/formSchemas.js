@@ -2660,9 +2660,9 @@ export const projeto = object()
 export const projetoFiltro = object().shape({
   portfolio: number().label('portfolio'),
   orgao_responsavel_id: number().label('órgão responsável'),
-  status: number().label('status'),
+  status: string().label('status'),
   etapa_id: number().label('etapa'),
-  data_registro: date().label('data de registro'),
+  data_registro: date().label('data de registro').max(new Date()),
   revisado: boolean().label('revisado'),
   ordem_coluna: string().label('Ordenar por'),
   ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes),

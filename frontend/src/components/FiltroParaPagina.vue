@@ -96,12 +96,17 @@ watch(() => route.query, (val) => {
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
               >
-                <input
-                  type="checkbox"
-                  class="interruptor"
-                  :value="value"
-                  @input="(ev) => handleInput(ev.target.checked)"
+                <div
+                  class="flex itemscenter"
+                  style="height: 41px"
                 >
+                  <input
+                    type="checkbox"
+                    class="interruptor"
+                    :value="value"
+                    @input="(ev) => handleInput(ev.target.checked)"
+                  >
+                </div>
               </Field>
 
               <Field

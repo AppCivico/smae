@@ -20,6 +20,10 @@ function obterStatus(status: string) {
   return mapaDeEstatus[status] || status;
 }
 
+function alterarStatusRevsado(id: string, statusRevisao: boolean) {
+  console.log(id, statusRevisao);
+}
+
 watch(() => route.query, (query) => {
   projetosStore.buscarTudoV2(query);
 }, { immediate: true });
@@ -45,6 +49,7 @@ watch(() => route.query, (query) => {
         { chave: 'status', label: 'Status' },
         { chave: 'previsao_termino', label: 'Término Planejado' },
         { chave: 'previsao_custo', label: 'Custo Total Planejado' },
+        { chave: 'revisado', label: 'Revisado' },
       ]"
       parametro-da-rota-editar="projetoId"
       parametro-no-objeto-para-editar="id"
@@ -65,6 +70,15 @@ watch(() => route.query, (query) => {
 
       <template #celula:previsao_custo="{ linha }">
         {{ dinheiro(linha.previsao_custo) }}
+      </template>
+
+      <template #celula:revisado="{ linha }">
+        <input
+          type="checkbox"
+          class="interruptor"
+          :value="linha.revisado"
+          @change="ev => alterarStatusRevsado(linha.id, ev.target.checked)"
+        >
       </template>
     </SmaeTable>
   </section>
