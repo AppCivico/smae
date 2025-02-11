@@ -668,7 +668,7 @@ export class PainelEstrategicoService {
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
         const sql = `select
-                         sum((select previsao_custo total_custo from tarefa_cronograma tc where tc.projeto_id = bp.id and tc.removido_em is null)) custo_planejado_total,
+                         sum((select valor_planejado total_custo from orcamento_planejado op where op.projeto_id = op.id and op.removido_em is null)) custo_planejado_total,
                          sum((select sum(orc.soma_valor_empenho) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_empenhado_total,
                          sum((select sum(orc.soma_valor_liquidado) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_liquidado_total
                      from
@@ -747,15 +747,14 @@ export class PainelEstrategicoService {
                   ${strOrgao2}
             ),
             tarefa_custos AS (
-                SELECT sum(t.custo_estimado) AS previsao_custo,
-                       date_part('year', t.termino_planejado) AS ano_referencia,
-                       tc.projeto_id
-                FROM tarefa_cronograma tc
-                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
-                WHERE tc.removido_em IS NULL
-                  AND t.n_filhos_imediatos = 0
-                  AND t.removido_em IS NULL
-              GROUP BY date_part('year', t.termino_planejado), tc.projeto_id
+                SELECT 
+                    sum(op.valor_planejado) AS previsao_custo,
+                    op.ano_referencia,
+                    op.projeto_id
+                FROM orcamento_planejado op
+                WHERE op.removido_em IS NULL
+                    AND op.projeto_id IS NOT NULL
+                GROUP BY op.ano_referencia, op.projeto_id
             ),
             orc_realizado as (
                 SELECT sum(orcr.soma_valor_empenho) AS soma_valor_empenho,
@@ -889,11 +888,11 @@ export class PainelEstrategicoService {
         //ordernar pelo custo planejado total decrescente
         const sql = `select * from (
                         select (
-                             select tc.previsao_custo
-                             from tarefa_cronograma tc
-                             where tc.projeto_id = p.id
-                               and tc.removido_em is null
-                         )::float AS valor_custo_planejado_total,
+                            SELECT SUM(op.valor_planejado)
+                            FROM orcamento_planejado op
+                            WHERE op.projeto_id = p.id
+                            AND op.removido_em IS NULL
+                        )::float AS valor_custo_planejado_total,
                          (
                             select sum(t.custo_estimado)
                             from tarefa_cronograma tc
