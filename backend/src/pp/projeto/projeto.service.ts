@@ -940,9 +940,8 @@ export class ProjetoService {
                 portfolio: { select: { id: true, titulo: true } },
             },
             orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
-            skip: offset,
-            take: ipp,
         });
+
         // Alinha de volta a ordem do resultados da view com o resultado original
         const projetoIdIndexMap = new Map<number, number>();
         projetoIds.forEach((p, index) => {
