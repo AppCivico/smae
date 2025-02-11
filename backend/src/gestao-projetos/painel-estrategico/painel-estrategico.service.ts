@@ -1052,6 +1052,8 @@ export class PainelEstrategicoService {
                 p.codigo as projeto_codigo,
                 gl.tipo,
                 gl.endereco_exibicao,
+                gl.lat as endereco_lat,
+                gl.lon as endereco_lon,
                 array_agg(glc.geo_camada_id) as camadas,
                 COALESCE(org.sigla, '') as orgao_resp_sigla,
                 COALESCE(pe.descricao, '') as projeto_etapa,
@@ -1088,7 +1090,9 @@ export class PainelEstrategicoService {
                 gl.endereco_exibicao,
                 org.sigla,
                 pe.descricao,
-                p.status
+                p.status,
+                gl.lat,
+                gl.lon
             `;
 
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
@@ -1105,6 +1109,8 @@ export class PainelEstrategicoService {
                             tipo: linha.tipo,
                             endereco_exibicao: linha.endereco_exibicao,
                             camadas: linha.camadas,
+                            endereco_lat: linha.endereco_lat,
+                            endereco_long: linha.endereco_lon,
                         },
                     }) satisfies PainelEstrategicoGeoLocalizacaoV2
             ),

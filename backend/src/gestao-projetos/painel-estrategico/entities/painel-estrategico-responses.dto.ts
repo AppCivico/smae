@@ -103,6 +103,8 @@ export class PainelEstrategicoGeoLocalizacaoDto {
 
 export class GeolocalizacaoSummaryDto extends PickType(RetornoCreateEnderecoDto, ['endereco_exibicao', 'tipo']) {
     camadas: number[];
+    endereco_lat: number | null;
+    endereco_long: number | null;
 }
 
 export class PainelEstrategicoGeoLocalizacaoV2 {
@@ -110,6 +112,7 @@ export class PainelEstrategicoGeoLocalizacaoV2 {
     projeto_status: string;
     projeto_etapa: string;
     orgao_resp_sigla: string;
+    rotulo_endereco?: string;
     geolocalizacao_sumario: GeolocalizacaoSummaryDto;
 }
 
