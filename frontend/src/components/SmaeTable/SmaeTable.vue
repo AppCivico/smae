@@ -185,7 +185,7 @@ const slots = useSlots();
 
 const listaSlots = computed<string[]>(() => Object.keys(slots));
 const slotsDaCelula = computed<string[]>(() => {
-  const slotsCelula = listaSlots.value.filter((slot) => slot.includes('celula:'));
+  const slotsCelula = listaSlots.value.filter((slot) => slot.includes('celula:') || slot.includes('celula-fora:'));
 
   return slotsCelula;
 });
