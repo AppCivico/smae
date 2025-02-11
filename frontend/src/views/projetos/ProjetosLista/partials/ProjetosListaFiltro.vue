@@ -45,11 +45,7 @@ const campos = computed<Formulario>(() => [
       },
       etapa_id: { tipo: 'select', opcoes: ['1', '2'] },
       data_registro: { tipo: 'date' },
-      revisado: { tipo: 'select', opcoes: ['1', '2'] },
-    },
-  },
-  {
-    campos: {
+      revisado: { tipo: 'checkbox' },
     },
   },
   {
