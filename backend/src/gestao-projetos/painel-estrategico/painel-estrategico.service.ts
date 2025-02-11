@@ -1053,6 +1053,7 @@ export class PainelEstrategicoService {
                 gl.endereco_exibicao,
                 gl.lat as endereco_lat,
                 gl.lon as endereco_lon,
+                gl.geom_geojson as endereco_geom_geojson,
                 array_agg(glc.geo_camada_id) as camadas,
                 COALESCE(org.sigla, '') as orgao_resp_sigla,
                 COALESCE(pe.descricao, '') as projeto_etapa,
@@ -1110,6 +1111,7 @@ export class PainelEstrategicoService {
                             camadas: linha.camadas,
                             endereco_lat: linha.endereco_lat,
                             endereco_long: linha.endereco_lon,
+                            endereco_geom_geojson: linha.endereco_geom_geojson
                         },
                     }) satisfies PainelEstrategicoGeoLocalizacaoV2
             ),

@@ -105,6 +105,7 @@ export class GeolocalizacaoSummaryDto extends PickType(RetornoCreateEnderecoDto,
     camadas: number[];
     endereco_lat: number | null;
     endereco_long: number | null;
+    endereco_geom_geojson: any;
 }
 
 export class PainelEstrategicoGeoLocalizacaoV2 {
