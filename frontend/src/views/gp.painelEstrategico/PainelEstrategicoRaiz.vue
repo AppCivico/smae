@@ -17,7 +17,7 @@ import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
-import gerarCoresIntermediarias from '@/helpers/gerarCoresIntermediarias';
+import gerarCoresIntermediarias from '@/helpers/cores/gerarCoresIntermediarias';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { useRegionsStore } from '@/stores/regions.store';
@@ -117,7 +117,7 @@ const locaisAgrupados = computed(() => {
   }
   const cores = [
     corParaMinimo,
-    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, 'hex'),
+    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, { format: 'hsl', huePath: 'short' }),
     corParaMaximo,
   ];
   return {

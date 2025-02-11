@@ -3,7 +3,7 @@ import {
   expect,
   it,
 } from 'vitest';
-import hexToRgb from './hexToRgb';
+import hexToRgb from './hexToRgbArray';
 
 describe('hexToRgb', () => {
   it('deve converter HEX para RGB', () => {

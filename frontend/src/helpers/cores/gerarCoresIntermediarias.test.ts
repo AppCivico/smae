@@ -29,7 +29,7 @@ describe('gerarCoresIntermediarias', () => {
       corInicial,
       corFinal,
       quantidadeCores,
-      'rgb',
+      { format: 'rgb' },
     );
 
     expect(coresIntermediarias).toEqual(['rgb(191, 0, 64)', 'rgb(128, 0, 128)', 'rgb(64, 0, 191)']);
@@ -58,10 +58,50 @@ describe('gerarCoresIntermediarias', () => {
       corInicial,
       corFinal,
       quantidadeCores,
-      'hex',
+      { format: 'hex' },
     );
 
     expect(coresIntermediarias).toEqual(['#bf0040', '#800080', '#4000bf']);
+  });
+
+  it('deve gerar cores intermediárias a partir de HSL pelo caminho curto', () => {
+    const corInicial = 'hsl(0, 60% ,40%)';
+    const corFinal = 'hsl(240,40%,60%)';
+    const quantidadeCores = 3;
+
+    const coresIntermediarias = gerarCoresIntermediarias(
+      corInicial,
+      corFinal,
+      quantidadeCores,
+    );
+
+    expect(coresIntermediarias).toEqual([
+      'hsl(330, 55%, 45%)',
+      'hsl(300, 50%, 50%)',
+      'hsl(270, 45%, 55%)',
+    ]);
+  });
+
+  it('deve gerar cores intermediárias a partir de HSL pelo caminho longo', () => {
+    const corInicial = 'hsl(0, 60% ,40%)';
+    const corFinal = 'hsl(240,40%,60%)';
+    const quantidadeCores = 3;
+
+    const coresIntermediarias = gerarCoresIntermediarias(
+      corInicial,
+      corFinal,
+      quantidadeCores,
+      {
+        format: 'hsl',
+        huePath: 'long',
+      },
+    );
+
+    expect(coresIntermediarias).toEqual([
+      'hsl(60, 55%, 45%)',
+      'hsl(120, 50%, 50%)',
+      'hsl(180, 45%, 55%)',
+    ]);
   });
 
   it('deve retornar array vazio se a quantidade de cores for zero', () => {
@@ -73,7 +113,9 @@ describe('gerarCoresIntermediarias', () => {
       corInicial,
       corFinal,
       quantidadeCores,
-      'hex',
+      {
+        format: 'hex',
+      },
     );
 
     expect(coresIntermediarias).toEqual([]);
@@ -91,7 +133,9 @@ describe('gerarCoresIntermediarias', () => {
       corInicial,
       corFinal,
       quantidadeCores,
-      'hex',
+      {
+        format: 'hex',
+      },
     );
 
     expect(coresIntermediarias).toEqual([]);
