@@ -2664,8 +2664,8 @@ export const projetoFiltro = object().shape({
   etapa_id: number().label('etapa'),
   data_registro: date().label('data de registro'),
   revisado: boolean().label('revisado'),
-  ordenar_coluna: string().label('Ordenar por'),
-  ordenar_direcao: string().label('Direção').oneOf(direcaoOpcoes),
+  ordem_coluna: string().label('Ordenar por'),
+  ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes),
   ipp: number().label('Itens por página'),
 });
 

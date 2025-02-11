@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import projectStatuses from '@/consts/projectStatuses';
 import { projetoFiltro as schema } from '@/consts/formSchemas';
 import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
 
@@ -15,6 +16,24 @@ const ordenador = [
   label: schema.fields[item].spec.label,
 }));
 
+const mapaStatus = [
+  'Registrado',
+  'Selecionado',
+  'EmPlanejamento',
+  'Planejado',
+  'Validado',
+  'EmAcompanhamento',
+  'Suspenso',
+  'Fechado',
+  'MDO_NaoIniciada',
+  'MDO_EmAndamento',
+  'MDO_Concluida',
+  'MDO_Paralisada',
+].map((item) => ({
+  id: item,
+  label: projectStatuses[item] || item,
+}));
+
 const campos = computed<Formulario>(() => [
   {
     campos: {
@@ -22,20 +41,7 @@ const campos = computed<Formulario>(() => [
       orgao_responsavel_id: { tipo: 'select', opcoes: ['1', '2'] },
       status: {
         tipo: 'select',
-        opcoes: [
-          'Registrado',
-          'Selecionado',
-          'EmPlanejamento',
-          'Planejado',
-          'Validado',
-          'EmAcompanhamento',
-          'Suspenso',
-          'Fechado',
-          'MDO_NaoIniciada',
-          'MDO_EmAndamento',
-          'MDO_Concluida',
-          'MDO_Paralisada',
-        ],
+        opcoes: mapaStatus,
       },
       etapa_id: { tipo: 'select', opcoes: ['1', '2'] },
       data_registro: { tipo: 'date' },
@@ -49,16 +55,16 @@ const campos = computed<Formulario>(() => [
   {
     class: 'maxw',
     campos: {
-      ordenar_coluna: { class: 'fb0', tipo: 'select', opcoes: ordenador },
-      ordenar_direcao: { class: 'fb0', tipo: 'select', opcoes: [{ id: 'asc', label: 'Crescente' }, { id: 'desc', label: 'Decrescente' }] },
+      ordem_coluna: { class: 'fb0', tipo: 'select', opcoes: ordenador },
+      ordem_direcao: { class: 'fb0', tipo: 'select', opcoes: [{ id: 'asc', label: 'Crescente' }, { id: 'desc', label: 'Decrescente' }] },
       ipp: { class: 'fb0', tipo: 'select', opcoes: [10, 25, 50, 100] },
     },
   },
 ]);
 
 const valoresIniciais = computed(() => ({
-  direcao: 'desc',
-  itens_por_pagina: 100,
+  ordem_direcao: 'desc',
+  ipp: 100,
 }));
 </script>
 
