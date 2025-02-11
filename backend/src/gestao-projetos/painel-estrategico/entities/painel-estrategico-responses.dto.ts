@@ -107,6 +107,9 @@ export class GeolocalizacaoSummaryDto extends PickType(RetornoCreateEnderecoDto,
 
 export class PainelEstrategicoGeoLocalizacaoV2 {
     projeto_id: number;
+    projeto_status: string;
+    projeto_etapa: string;
+    orgao_resp_sigla: string;
     geolocalizacao_sumario: GeolocalizacaoSummaryDto;
 }
 

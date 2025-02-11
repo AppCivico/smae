@@ -1047,28 +1047,50 @@ export class PainelEstrategicoService {
         filtro = await this.addPermissaoProjetos(filtro, user);
         const whereFilter = this.applyFilter(filtro);
         const sql = `
-                    SELECT
-                        p.id as projeto_id,
-                        gl.tipo,
-                        gl.endereco_exibicao,
-                        array_agg(glc.geo_camada_id) as camadas
+            SELECT
+                p.id as projeto_id,
+                p.codigo as projeto_codigo,
+                gl.tipo,
+                gl.endereco_exibicao,
+                array_agg(glc.geo_camada_id) as camadas,
+                COALESCE(org.sigla, '') as orgao_resp_sigla,
+                COALESCE(pe.descricao, '') as projeto_etapa,
+                CASE
+                    WHEN p.status = 'Registrado'::"ProjetoStatus" THEN 'Registrado'::text
+                    WHEN p.status = 'Selecionado'::"ProjetoStatus" THEN 'Selecionado'::text
+                    WHEN p.status = 'EmPlanejamento'::"ProjetoStatus" THEN 'Em Planejamento'::text
+                    WHEN p.status = 'Planejado'::"ProjetoStatus" THEN 'Planejado'::text
+                    WHEN p.status = 'Validado'::"ProjetoStatus" THEN 'Validado'::text
+                    WHEN p.status = 'EmAcompanhamento'::"ProjetoStatus" THEN 'Em Acompanhamento'::text
+                    WHEN p.status = 'Suspenso'::"ProjetoStatus" THEN 'Suspenso'::text
+                    WHEN p.status = 'Fechado'::"ProjetoStatus" THEN 'Concluído'::text
+                    ELSE NULL::text
+                END as projeto_status
+            FROM projeto p
+            FULL OUTER JOIN (
+                SELECT
+                    ppc.projeto_id,
+                    po_1.id as portfolio_id
+                FROM portfolio_projeto_compartilhado ppc
+                JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
+                WHERE ppc.removido_em IS NULL
+            ) po ON po.projeto_id = p.id
+            JOIN geo_localizacao_referencia glr ON glr.projeto_id = p.id AND glr.removido_em IS NULL
+            JOIN geo_localizacao gl ON gl.id = glr.geo_localizacao_id
+            LEFT JOIN geo_localizacao_camada glc ON glc.geo_localizacao_id = gl.id
+            LEFT JOIN orgao org ON org.id = p.orgao_responsavel_id
+            LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
+            ${whereFilter}
+            GROUP BY
+                p.id,
+                p.codigo,
+                gl.tipo,
+                gl.endereco_exibicao,
+                org.sigla,
+                pe.descricao,
+                p.status
+            `;
 
-                     FROM projeto p
-                     FULL OUTER JOIN (
-                     SELECT ppc.projeto_id,
-                            po_1.id as portfolio_id
-                        FROM portfolio_projeto_compartilhado ppc
-                        JOIN portfolio po_1 ON po_1.id = ppc.portfolio_id
-                        WHERE ppc.removido_em IS NULL
-                    ) po ON po.projeto_id = p.id
-                    JOIN geo_localizacao_referencia glr ON glr.projeto_id = p.id AND glr.removido_em IS NULL
-                    JOIN geo_localizacao gl ON gl.id = glr.geo_localizacao_id
-                    LEFT JOIN geo_localizacao_camada glc ON glc.geo_localizacao_id = gl.id
-
-                    ${whereFilter}
-
-                    GROUP BY 1, 2, 3
-                    `;
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
 
         const retorno: PainelEstrategicoGeoLocalizacaoDtoV2 = {
@@ -1076,11 +1098,13 @@ export class PainelEstrategicoService {
                 (linha) =>
                     ({
                         projeto_id: linha.projeto_id,
+                        projeto_status: linha.projeto_status,
+                        projeto_etapa: linha.projeto_etapa,
+                        orgao_resp_sigla: linha.orgao_resp_sigla,
                         geolocalizacao_sumario: {
                             tipo: linha.tipo,
                             endereco_exibicao: linha.endereco_exibicao,
                             camadas: linha.camadas,
-
                         },
                     }) satisfies PainelEstrategicoGeoLocalizacaoV2
             ),
