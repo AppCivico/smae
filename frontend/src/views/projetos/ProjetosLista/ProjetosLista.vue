@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useProjetosStore } from '@/stores/projetos.store';
@@ -13,6 +15,8 @@ import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 const route = useRoute();
 const projetosStore = useProjetosStore();
 
+const { paginacaoProjetos } = storeToRefs(projetosStore);
+
 const listaDeProjetos = computed(() => projetosStore.listaV2);
 
 function obterStatus(status: string) {
@@ -21,11 +25,11 @@ function obterStatus(status: string) {
 }
 
 function alterarStatusRevsado(id: string, statusRevisao: boolean) {
-  console.log(id, statusRevisao);
+  projetosStore.revisar(id, statusRevisao);
 }
 
 function handleDesmarcarTodos() {
-  console.log('Desmarcar todos');
+  projetosStore.revisarTodos(false);
 }
 
 watch(() => route.query, (query) => {
@@ -42,6 +46,11 @@ watch(() => route.query, (query) => {
     </div>
 
     <ProjetosListaFiltro />
+
+    <MenuPaginacao
+      class="mt2 bgt"
+      v-bind="paginacaoProjetos"
+    />
 
     <SmaeTable
       class="mt2"

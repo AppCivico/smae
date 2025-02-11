@@ -44,6 +44,7 @@ interface ChamadasPendentes {
 interface Estado {
   lista: Lista;
   listaV2: PaginatedWithPagesDto<ProjetoMdoDto>['linhas'];
+  paginacaoProjetos: Omit<PaginatedWithPagesDto<ProjetoMdoDto>, 'linhas'>;
   emFoco: ProjetoDetailDto | null;
   arquivos: ListProjetoDocumento['linhas'] | [];
   diretórios: DiretorioItemDto[];
@@ -63,6 +64,7 @@ export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
     lista: [],
     listaV2: [],
+    paginacaoProjetos: {} as Omit<PaginatedWithPagesDto<ProjetoMdoDto>, 'linhas'>,
     emFoco: null,
     arquivos: [],
     diretórios: [],
@@ -174,10 +176,12 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = (await this.requestS.get(
+        const { linhas, ...paginacao } = (await this.requestS.get(
           `${baseUrl}/projeto/v2`,
           params,
         )) as PaginatedWithPagesDto<ProjetoMdoDto>;
+
+        this.paginacaoProjetos = paginacao;
 
         this.listaV2 = linhas;
       } catch (erro: unknown) {
@@ -234,6 +238,29 @@ export const useProjetosStore = defineStore('projetos', {
         this.erro = erro;
         this.chamadasPendentes.mudarStatus = false;
         return false;
+      }
+    },
+
+    async revisar(projetoId: string, status: boolean): Promise<void> {
+      try {
+        await this.requestS.post(`${baseUrl}/projeto/revisar`, {
+          obras: [
+            {
+              projeto_id: projetoId,
+              revisado: status,
+            },
+          ],
+        });
+      } catch (erro) {
+        this.erro = erro;
+      }
+    },
+
+    async revisarTodos(status: boolean): Promise<void> {
+      try {
+        await this.requestS.post(`${baseUrl}/projeto/revisar-todas`, {});
+      } catch (erro) {
+        this.erro = erro;
       }
     },
 
