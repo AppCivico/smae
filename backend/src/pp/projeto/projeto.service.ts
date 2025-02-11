@@ -919,13 +919,21 @@ export class ProjetoService {
         // getProjetoWhereSet e getProjetoMDOWhereSet
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
+
+        const projetoIds = await this.prisma.projeto.findMany({
+            where: {
+                registrado_em: { lte: now },
+                AND: [...permissionsSet, ...filterSet],
+            },
+            select: { id: true },
+            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            skip: offset,
+            take: ipp,
+        });
+
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
-                // Filtro por palavras-chave com tsvector
-                projeto: {
-                    registrado_em: { lte: now },
-                    AND: [...permissionsSet, ...filterSet],
-                },
+                id: { in: projetoIds.map((p) => p.id) },
             },
             include: {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
@@ -934,6 +942,14 @@ export class ProjetoService {
             orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
             skip: offset,
             take: ipp,
+        });
+        // Alinha de volta a ordem do resultados da view com o resultado original
+        const projetoIdIndexMap = new Map<number, number>();
+        projetoIds.forEach((p, index) => {
+            projetoIdIndexMap.set(p.id, index);
+        });
+        linhas.sort((a, b) => {
+            return projetoIdIndexMap.get(a.id)! - projetoIdIndexMap.get(b.id)!;
         });
 
         if (filterToken) {
@@ -1034,21 +1050,34 @@ export class ProjetoService {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
+        const projetoIds = await this.prisma.projeto.findMany({
+            where: {
+                registrado_em: { lte: now },
+                AND: [...permissionsSet, ...filterSet],
+            },
+            select: { id: true },
+            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            skip: offset,
+            take: ipp,
+        });
+
         const linhas = await this.prisma.viewProjetoV2.findMany({
             where: {
-                // Filtro por palavras-chave com tsvector
-                projeto: {
-                    registrado_em: { lte: now },
-                    AND: [...permissionsSet, ...filterSet],
-                },
+                id: { in: projetoIds.map((p) => p.id) },
             },
             include: {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
                 portfolio: { select: { id: true, titulo: true } },
             },
-            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
-            skip: offset,
-            take: ipp,
+        });
+
+        // Alinha de volta a ordem do resultados da view com o resultado original
+        const projetoIdIndexMap = new Map<number, number>();
+        projetoIds.forEach((p, index) => {
+            projetoIdIndexMap.set(p.id, index);
+        });
+        linhas.sort((a, b) => {
+            return projetoIdIndexMap.get(a.id)! - projetoIdIndexMap.get(b.id)!;
         });
 
         if (filterToken) {

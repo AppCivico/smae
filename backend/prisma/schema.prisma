@@ -3033,6 +3033,7 @@ model OrcamentoPrevisto {
     versao_seguinte OrcamentoPrevisto? @relation("versao_anterior")
 
     @@index([meta_id, ano_referencia])
+    @@index([projeto_id])
     @@map("meta_orcamento")
 }
 

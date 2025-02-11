@@ -7,6 +7,14 @@ WITH ProjetoRegioes AS (
     JOIN regiao r ON pr.regiao_id = r.id AND r.removido_em IS NULL
     WHERE pr.removido_em IS NULL
     GROUP BY pr.projeto_id
+), CustoPrevisto AS (
+    SELECT
+        po.projeto_id,
+        SUM(custo_previsto::numeric(14,2)) AS total_custo_previsto
+    FROM meta_orcamento po
+    WHERE po.removido_em IS NULL
+    AND po.ultima_revisao = TRUE
+    GROUP BY po.projeto_id
 )
 SELECT
   p.id,
@@ -32,8 +40,8 @@ SELECT
   p.empreendimento_id,
   emp.nome AS empreendimento_nome,
   emp.identificador AS empreendimento_identificador,
-  p.previsao_custo,
-  p.previsao_termino,
+  custoPrev.total_custo_previsto::float AS previsao_custo,
+  cp.previsao_termino AS previsao_termino,
   pe.descricao as projeto_etapa,
   p.orgao_gestor_id,
   p.orgao_responsavel_id,
@@ -41,6 +49,8 @@ SELECT
   org_resp.descricao AS orgao_responsavel_descricao
 FROM projeto AS p
 JOIN portfolio port ON p.portfolio_id = port.id
+LEFT JOIN tarefa_cronograma cp ON p.id = cp.projeto_id AND cp.removido_em IS NULL
+LEFT JOIN CustoPrevisto custoPrev ON p.id = custoPrev.projeto_id
 LEFT JOIN grupo_tematico AS gt ON p.grupo_tematico_id = gt.id
 LEFT JOIN tipo_intervencao AS ti ON p.tipo_intervencao_id = ti.id
 LEFT JOIN equipamento AS e ON p.equipamento_id = e.id
