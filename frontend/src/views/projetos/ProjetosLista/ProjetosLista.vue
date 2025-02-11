@@ -22,7 +22,7 @@ function obterStatus(status: string) {
 
 watch(() => route.query, (query) => {
   projetosStore.buscarTudoV2(query);
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -46,7 +46,15 @@ watch(() => route.query, (query) => {
         { chave: 'previsao_termino', label: 'Término Planejado' },
         { chave: 'previsao_custo', label: 'Custo Total Planejado' },
       ]"
+      parametro-da-rota-editar="projetoId"
+      parametro-no-objeto-para-editar="id"
+      parametro-no-objeto-para-excluir="portfolio.titulo"
+      :rota-editar="{ name: 'projetosEditar' }"
     >
+      <template #['celula:orgao_responsavel.descricao']="{ linha }">
+        {{ linha.orgao_responsavel?.descricao || '-' }}
+      </template>
+
       <template #celula:status="{ linha }">
         {{ obterStatus(linha.status) }}
       </template>
@@ -66,6 +74,7 @@ watch(() => route.query, (query) => {
 .projetos-lista {
   :deep {
     .table-cell--status {
+      white-space: nowrap;
       text-transform: uppercase;
     }
 

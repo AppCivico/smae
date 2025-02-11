@@ -1,5 +1,9 @@
 function obterParametroNoObjeto(caminho: string, objeto: any) {
   if (!caminho.includes('.')) {
+    if (!objeto) {
+      return objeto;
+    }
+
     if (objeto[caminho] === undefined) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -14,6 +18,10 @@ function obterParametroNoObjeto(caminho: string, objeto: any) {
   const caminhoEmPassos = caminho.split('.');
 
   const saida = caminhoEmPassos.reduce<any>((amount, itemCaminho) => {
+    if (!amount) {
+      return amount;
+    }
+
     if (amount[itemCaminho] === undefined) {
       // eslint-disable-next-line no-console
       console.warn(
