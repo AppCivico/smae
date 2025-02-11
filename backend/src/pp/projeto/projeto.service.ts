@@ -918,7 +918,7 @@ export class ProjetoService {
         // AVISO: os dois métodos abaixo alteram o número de rows!
         // getProjetoWhereSet e getProjetoMDOWhereSet
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave, user.id);
+        const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
                 // Filtro por palavras-chave com tsvector
@@ -940,7 +940,7 @@ export class ProjetoService {
             retToken = filterToken;
             tem_mais = offset + linhas.length < total_registros;
         } else {
-            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
+            const info = await this.encodeNextPageToken('MDO', filters, now, user, palavrasChave);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
             tem_mais = offset + linhas.length < total_registros;
@@ -1032,7 +1032,7 @@ export class ProjetoService {
         // AVISO: os dois métodos abaixo alteram o número de rows!
         // getProjetoWhereSet e getProjetoMDOWhereSet
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave, user.id);
+        const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
         const linhas = await this.prisma.viewProjetoV2.findMany({
             where: {
@@ -1055,7 +1055,7 @@ export class ProjetoService {
             retToken = filterToken;
             tem_mais = offset + linhas.length < total_registros;
         } else {
-            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
+            const info = await this.encodeNextPageToken(tipo, filters, now, user, palavrasChave);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
             tem_mais = offset + linhas.length < total_registros;
@@ -3356,7 +3356,7 @@ export class ProjetoService {
         }
     }
 
-    private getProjetoMDOWhereSet(
+    private getProjetoV2WhereSet(
         filters: FilterProjetoMDODto,
         ids: number[] | undefined,
         userId?: number
@@ -3432,6 +3432,7 @@ export class ProjetoService {
     }
 
     private async encodeNextPageToken(
+        tipo: TipoProjeto,
         filters: FilterProjetoMDODto,
         issued_at: Date,
         user: PessoaFromJwt,
@@ -3440,8 +3441,8 @@ export class ProjetoService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, ids, user.id);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
+        const filterSet = this.getProjetoV2WhereSet(filters, ids, user.id);
         const total_rows = await this.prisma.projeto.count({
             where: {
                 AND: [...permissionsSet, ...filterSet],
