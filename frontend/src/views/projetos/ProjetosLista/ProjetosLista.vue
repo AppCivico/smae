@@ -4,15 +4,21 @@ import { useRoute } from 'vue-router';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 import { useProjetosStore } from '@/stores/projetos.store';
 import dinheiro from '@/helpers/dinheiro';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import projectStatuses from '@/consts/projectStatuses';
+import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 
 const route = useRoute();
 const projetosStore = useProjetosStore();
 
 const listaDeProjetos = computed(() => projetosStore.listaV2);
+
+function obterStatus(status: string) {
+  const mapaDeEstatus = projectStatuses as Record<string, string>;
+  return mapaDeEstatus[status] || status;
+}
 
 watch(() => route.query, (query) => {
   projetosStore.buscarTudoV2(query);
@@ -42,7 +48,7 @@ watch(() => route.query, (query) => {
       ]"
     >
       <template #celula:status="{ linha }">
-        {{ linha.status }}
+        {{ obterStatus(linha.status) }}
       </template>
 
       <template #celula:previsao_termino="{ linha }">
@@ -55,3 +61,17 @@ watch(() => route.query, (query) => {
     </SmaeTable>
   </section>
 </template>
+
+<style lang="less" scoped>
+.projetos-lista {
+  :deep {
+    .table-cell--status {
+      text-transform: uppercase;
+    }
+
+    .table-cell--previsao_termino {
+      text-align: center;
+    }
+  }
+}
+</style>
