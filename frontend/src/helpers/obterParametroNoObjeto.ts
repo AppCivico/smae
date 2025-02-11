@@ -1,6 +1,6 @@
 function obterParametroNoObjeto(caminho: string, objeto: any) {
   if (!caminho.includes('.')) {
-    if (!objeto[caminho]) {
+    if (objeto[caminho] === undefined) {
       // eslint-disable-next-line no-console
       console.warn(
         `Item "${caminho}" não encontrado encontrado no objeto`,
@@ -14,7 +14,7 @@ function obterParametroNoObjeto(caminho: string, objeto: any) {
   const caminhoEmPassos = caminho.split('.');
 
   const saida = caminhoEmPassos.reduce<any>((amount, itemCaminho) => {
-    if (!amount[itemCaminho]) {
+    if (amount[itemCaminho] === undefined) {
       // eslint-disable-next-line no-console
       console.warn(
         `Item "${itemCaminho}" não encontrado encontrado no caminho "${caminho}"`,

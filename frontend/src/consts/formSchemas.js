@@ -2660,14 +2660,13 @@ export const projeto = object()
 export const projetoFiltro = object().shape({
   portfolio: number().label('portfolio'),
   orgao_responsavel_id: number().label('órgão responsável'),
-  status_id: number().label('status'),
-  status_id1: number().label('status'),
+  status: number().label('status'),
   etapa_id: number().label('etapa'),
   data_registro: date().label('data de registro'),
   revisado: boolean().label('revisado'),
-  ordenar_por: string().label('Ordenar por'),
-  direcao: string().label('Direção').oneOf(direcaoOpcoes),
-  itens_por_pagina: number().label('Itens por página'),
+  ordenar_coluna: string().label('Ordenar por'),
+  ordenar_direcao: string().label('Direção').oneOf(direcaoOpcoes),
+  ipp: number().label('Itens por página'),
 });
 
 export const região = object()
