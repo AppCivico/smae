@@ -19,7 +19,9 @@ import type { Coluna } from '../types/tipagem';
 
 type Props = Coluna;
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  cabecalho: true,
+});
 
 const elementoEnvelope = computed<'td' | 'th'>(() => (props.cabecalho ? 'th' : 'td'));
 </script>
