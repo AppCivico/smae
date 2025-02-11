@@ -747,7 +747,7 @@ export class PainelEstrategicoService {
                   ${strOrgao2}
             ),
             tarefa_custos AS (
-                SELECT 
+                SELECT
                     sum(op.valor_planejado) AS previsao_custo,
                     op.ano_referencia,
                     op.projeto_id
@@ -1083,16 +1083,7 @@ export class PainelEstrategicoService {
             LEFT JOIN orgao org ON org.id = p.orgao_responsavel_id
             LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
             ${whereFilter}
-            GROUP BY
-                p.id,
-                p.codigo,
-                gl.tipo,
-                gl.endereco_exibicao,
-                org.sigla,
-                pe.descricao,
-                p.status,
-                gl.lat,
-                gl.lon
+            GROUP BY 1,2,3,4,5,6,7,org.sigla,pe.descricao
             `;
 
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
