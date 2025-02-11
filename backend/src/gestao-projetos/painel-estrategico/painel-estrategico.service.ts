@@ -668,7 +668,7 @@ export class PainelEstrategicoService {
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
         const sql = `select
-                         sum((select valor_planejado total_custo from orcamento_planejado op where op.projeto_id = op.id and op.removido_em is null)) custo_planejado_total,
+                         sum((select sum(valor_planejado) total_custo from orcamento_planejado op where op.projeto_id = bp.id and op.removido_em is null)) custo_planejado_total,
                          sum((select sum(orc.soma_valor_empenho) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_empenhado_total,
                          sum((select sum(orc.soma_valor_liquidado) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_liquidado_total
                      from
