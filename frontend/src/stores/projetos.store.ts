@@ -1,24 +1,26 @@
+import { defineStore } from 'pinia';
+import { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type {
   DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
-} from '@/../../backend/src/meta/dto/create-meta.dto';
-import type { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
+} from '@back/meta/dto/create-meta.dto';
+import type { ProjetoAcao } from '@back/pp/projeto/acao/dto/acao.dto';
 import type {
   ListProjetoDocumento,
   ListProjetoDto,
   ProjetoDetailDto,
   ProjetoDto,
-} from '@/../../backend/src/pp/projeto/entities/projeto.entity';
+  ProjetoMdoDto,
+} from '@back/pp/projeto/entities/projeto.entity';
 import type {
   ListProjetoProxyPdmMetaDto,
   ProjetoProxyPdmMetaDto,
-} from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
-import type { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
-import consolidarDiretorios from '@/helpers/consolidarDiretorios';
+} from '@back/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+import type { DiretorioItemDto } from '@back/upload/dto/diretorio.dto';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
-import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -28,6 +30,7 @@ type MetaSimplificada = ListDadosMetaIniciativaAtividadesDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
+  listaV2: boolean;
   emFoco: boolean;
   pdmsSimplificados: boolean;
   metaSimplificada: boolean;
@@ -40,6 +43,7 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
+  listaV2: PaginatedWithPagesDto<ProjetoMdoDto>['linhas'];
   emFoco: ProjetoDetailDto | null;
   arquivos: ListProjetoDocumento['linhas'] | [];
   diretórios: DiretorioItemDto[];
@@ -58,12 +62,14 @@ interface Estado {
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
     lista: [],
+    listaV2: [],
     emFoco: null,
     arquivos: [],
     diretórios: [],
 
     chamadasPendentes: {
       lista: false,
+      listaV2: false,
       emFoco: false,
       pdmsSimplificados: false,
       metaSimplificada: false,
@@ -160,6 +166,26 @@ export const useProjetosStore = defineStore('projetos', {
       }
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
+    },
+
+    async buscarTudoV2(params = {}): Promise<void> {
+      this.listaV2 = [];
+      this.chamadasPendentes.listaV2 = true;
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        const { linhas } = (await this.requestS.get(
+          `${baseUrl}/projeto/v2`,
+          params,
+        )) as PaginatedWithPagesDto<ProjetoMdoDto>;
+
+        this.listaV2 = linhas;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      } finally {
+        this.chamadasPendentes.listaV2 = false;
+        this.chamadasPendentes.emFoco = true;
+      }
     },
 
     // Obsoleta

@@ -1,10 +1,10 @@
 <script setup>
 import Dashboard from '@/components/DashboardLayout.vue';
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store';
 
-const portfolioStore = usePortfolioStore();
+const projetosStore = useProjetosStore();
 
-portfolioStore.buscarTudo();
+projetosStore.buscarTudoV2();
 </script>
 <template>
   <Dashboard>
