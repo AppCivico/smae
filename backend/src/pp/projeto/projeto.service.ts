@@ -940,6 +940,7 @@ export class ProjetoService {
                 portfolio: { select: { id: true, titulo: true } },
             },
             orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            relationLoadStrategy: 'query',
         });
 
         // Alinha de volta a ordem do resultados da view com o resultado original
@@ -1068,6 +1069,7 @@ export class ProjetoService {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
                 portfolio: { select: { id: true, titulo: true } },
             },
+            relationLoadStrategy: 'query',
         });
 
         // Alinha de volta a ordem do resultados da view com o resultado original
