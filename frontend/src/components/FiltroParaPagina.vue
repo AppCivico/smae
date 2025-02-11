@@ -15,7 +15,7 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'date'
+  tipo: 'select' | 'text' | 'date' | 'checkbox'
   opcoes?: Opcoes
 };
 type Campos = Record<string, CampoFiltro>;
@@ -43,6 +43,7 @@ const { handleSubmit, isSubmitting, setValues } = useForm({
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  console.log('here', valoresControlados);
   router.replace({
     query: {
       ...route.query,
@@ -92,13 +93,20 @@ watch(() => route.query, (val) => {
               />
 
               <Field
-                v-if="campo.tipo !== 'select'"
-                class="inputtext light mb1"
+                v-if="campo.tipo === 'checkbox'"
+                v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
-                :type="campo.tipo"
-              />
+              >
+                <input
+                  type="checkbox"
+                  class="interruptor"
+                  :value="value"
+                  @input="(ev) => handleInput(ev.target.checked)"
+                >
+              </Field>
+
               <Field
-                v-else
+                v-else-if="campo.tipo === 'select'"
                 class="inputtext light mb1"
                 :name="campoNome"
                 as="select"
@@ -114,6 +122,13 @@ watch(() => route.query, (val) => {
                   </option>
                 </template>
               </Field>
+
+              <Field
+                v-else
+                class="inputtext light mb1"
+                :name="campoNome"
+                :type="campo.tipo"
+              />
 
               <ErrorMessage
                 class="error-msg mb1"

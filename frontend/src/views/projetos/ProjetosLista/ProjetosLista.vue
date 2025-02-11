@@ -39,8 +39,8 @@ watch(() => route.query, (query) => {
       class="mt2"
       :dados="listaDeProjetos"
       :colunas="[
-        { chave: 'orgao_responsavel.descricao', label: 'Órgão Responsável' },
         { chave: 'portfolio.titulo', label: 'Portfólio' },
+        { chave: 'orgao_responsavel.descricao', label: 'Órgão Responsável' },
         { chave: 'nome', label: 'Nome do Projeto' },
         { chave: 'status', label: 'Status' },
         { chave: 'previsao_termino', label: 'Término Planejado' },
