@@ -1164,7 +1164,7 @@ PerfilAcessoConfig.push(
     },
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Acesso restrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
+        descricao: 'Acesso irrestrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',
@@ -1176,7 +1176,7 @@ PerfilAcessoConfig.push(
     },
     {
         nome: atualizarNomePerfil('Administrador de Programa de Metas no órgão', []),
-        descricao: 'Acesso restrito aos Programa de Metas e Banco de Variáveis do próprio órgão ao qual pertence.',
+        descricao: 'Acesso irrestrito aos Programa de Metas e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'CadastroPDM.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',
