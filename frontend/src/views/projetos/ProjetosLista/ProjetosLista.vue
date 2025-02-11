@@ -24,6 +24,10 @@ function alterarStatusRevsado(id: string, statusRevisao: boolean) {
   console.log(id, statusRevisao);
 }
 
+function handleDesmarcarTodos() {
+  console.log('Desmarcar todos');
+}
+
 watch(() => route.query, (query) => {
   projetosStore.buscarTudoV2(query);
 }, { immediate: true });
@@ -56,6 +60,15 @@ watch(() => route.query, (query) => {
       parametro-no-objeto-para-excluir="portfolio.titulo"
       :rota-editar="{ name: 'projetosEditar' }"
     >
+      <template #cabecalho:acao>
+        <button
+          class="btn outline bgnone tcprimary"
+          @click="handleDesmarcarTodos"
+        >
+          Desmarcar todas
+        </button>
+      </template>
+
       <template #['celula:orgao_responsavel.descricao']="{ linha }">
         {{ linha.orgao_responsavel?.descricao || '-' }}
       </template>

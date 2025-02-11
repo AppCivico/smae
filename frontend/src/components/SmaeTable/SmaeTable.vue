@@ -51,6 +51,10 @@
                 />
               </template>
             </TableHeaderCell>
+
+            <td v-if="hasActionButton">
+              <slot name="cabecalho:acao" />
+            </td>
           </tr>
         </slot>
       </thead>
@@ -87,7 +91,7 @@
             </template>
 
             <td v-if="hasActionButton">
-              <div class="nowrap flex g1">
+              <div class="nowrap flex g1 justifycenter">
                 <EditButton
                   v-if="rotaEditar"
                   :linha="linha"
@@ -153,6 +157,7 @@ type Slots = {
   titulo: []
   colunas: [colunas: Colunas]
   cabecalho: [colunas: Colunas]
+  'cabecalho:acao': []
   rodape: [colunas: Colunas]
   corpo: [dados: Linhas]
 };
