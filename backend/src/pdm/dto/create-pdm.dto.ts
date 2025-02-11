@@ -339,6 +339,5 @@ export class CreatePdmDto {
     @IsArray()
     @IsInt({ each: true, message: 'PDM: Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
-    @Transform(NumberArrayTransformOrUndef)
     pdm_anteriores?: number[];
 }
