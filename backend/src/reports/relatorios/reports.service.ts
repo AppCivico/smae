@@ -676,14 +676,14 @@ export class ReportsService {
                             to: relatorio.criador.email,
                             variables: {
                                 id: job.relatorio_id,
-                                fonte: this.getRelatorioFonteString(relatorio.fonte),
+                                fonte: await this.getRelatorioFonteString(relatorio.fonte),
                                 parametros: relatorio.parametros_processados
                                     ? Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
                                           key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
                                           value: value,
                                       }))
-                                    : {},
-                                data_criacao: Date2YMD.tzSp2UTC(relatorio.criado_em),
+                                    : null,
+                                data_criacao: relatorio.criado_em,
                                 link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
                             },
                         },
@@ -822,7 +822,7 @@ export class ReportsService {
         return mapeamento[nomeChave];
     }
 
-    private getRelatorioFonteString(fonte: FonteRelatorio): string {
+    private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
         switch (fonte) {
             case FonteRelatorio.CasaCivilAtvPendentes:
                 return 'Casa Civil - Atividades Pendentes';

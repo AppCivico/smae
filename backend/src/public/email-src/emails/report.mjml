@@ -16,6 +16,7 @@
             <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Data de criação: [% data_criacao %]</p>
             
             <!-- Parameters Section -->
+            [% IF parametros %]
             <div style="margin-top: 16px;">
                 <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Parâmetros:</p>
                 <div style="padding-left: 16px; border-left: 2px solid #e0e0e0;">
@@ -31,6 +32,7 @@
                 [% END %]
                 </div>
             </div>
+            [% END %]
         </mj-text>
 
         <mj-button href="[% link %]">Acessar sistema</mj-button>
