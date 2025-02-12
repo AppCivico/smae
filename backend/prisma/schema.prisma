@@ -3471,7 +3471,7 @@ model RelatorioFila {
     relatorio_id Int
     relatorio    Relatorio @relation(fields: [relatorio_id], references: [id])
 
-    err_msg String?
+    err_msg String? @db.Text
 
     criado_em    DateTime  @default(now()) @db.Timestamptz(6)
     congelado_em DateTime? @map("locked_at")

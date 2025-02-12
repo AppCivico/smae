@@ -13,7 +13,7 @@ import * as path from 'path';
 import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -695,7 +695,7 @@ export class ReportsService {
                 await this.prisma.relatorioFila.update({
                     where: { id: job.id },
                     data: {
-                        err_msg: error.toString(),
+                        err_msg: error.toString().replace(/\s/g, ''),
                         executado_em: new Date(Date.now()),
                         congelado_em: null,
                     },
