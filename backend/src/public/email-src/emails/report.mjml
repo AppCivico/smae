@@ -28,7 +28,7 @@
                         [% p.key %]:
                     </span>
                     
-                    [% IF p.value.size %]
+                    [% IF p.value.0 %]
                         <ul style="margin: 0; padding-left: 20px; color: #444; list-style-type: disc;">
                         [% FOREACH item IN p.value %]
                             <li style="margin-bottom: 4px;">[% item %]</li>
