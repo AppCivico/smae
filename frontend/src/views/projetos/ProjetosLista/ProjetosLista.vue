@@ -24,6 +24,10 @@ function obterStatus(status: string) {
   return mapaDeEstatus[status] || status;
 }
 
+function atualizarDados() {
+  projetosStore.buscarTudoV2(route.query);
+}
+
 function alterarStatusRevsado(id: string, statusRevisao: boolean) {
   projetosStore.revisar(id, statusRevisao);
 }
@@ -32,8 +36,14 @@ function handleDesmarcarTodos() {
   projetosStore.revisarTodos(false);
 }
 
-watch(() => route.query, (query) => {
-  projetosStore.buscarTudoV2(query);
+async function handleDeletarItem({ id }) {
+  await projetosStore.excluirItem(id);
+
+  atualizarDados();
+}
+
+watch(() => route.query, () => {
+  atualizarDados();
 }, { immediate: true });
 </script>
 
@@ -68,6 +78,7 @@ watch(() => route.query, (query) => {
       parametro-no-objeto-para-editar="id"
       parametro-no-objeto-para-excluir="portfolio.titulo"
       :rota-editar="{ name: 'projetosEditar' }"
+      @deletar="handleDeletarItem"
     >
       <template #cabecalho:acao>
         <button
