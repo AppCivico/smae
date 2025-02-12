@@ -1,3 +1,4 @@
+import type { PainelEstrategicoGeoLocalizacaoDto } from '@back/gestao-projetos/painel-estrategico/entities/painel-estrategico-responses.dto';
 import { jwtDecode } from 'jwt-decode';
 import { camelCase } from 'lodash';
 import type { StoreGeneric } from 'pinia';
@@ -123,8 +124,10 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       this.erros.projetosParaMapa = null;
 
       try {
-        // TO-DO: atualizar endpoint
-        const { linhas } = await this.requestS.post(`${baseUrl}/painel-estrategico/geo-localizacao`, params);
+        const { linhas } = await this.requestS.post(
+          `${baseUrl}/painel-estrategico/geo-localizacao/v2`,
+          params,
+        ) as PainelEstrategicoGeoLocalizacaoDto;
 
         this.projetosParaMapa = linhas;
       } catch (error: unknown) {

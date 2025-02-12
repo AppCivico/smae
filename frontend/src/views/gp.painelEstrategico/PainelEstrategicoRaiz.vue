@@ -28,20 +28,31 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 type Camada = GeoLocCamadaFullDto & {
-  config: Record<string, unknown>,
+  id: number
+  config: Record<string, unknown>
   totalDeProjetos: number
+};
+
+type Endereco = {
+  properties: Record<string, unknown>
 };
 
 const regiaoPadrao = 180;
 const nivelRegionalizacaoPadrao = 3;
-const nivelParaPainelFlutuante = 3;
-const corParaMaximo = '#FF6600';
-const corParaMinimo = '#66CC00';
 
+const strokeColor = '#152741';
+const opacidadePreenchimento = 0.25;
+
+const corParaMaximo = '#152741';
+const corParaMinimo = '#f7c234';
 const route = useRoute();
 const router = useRouter();
 
 const painelEstrategicoStore = usePainelEstrategicoStore(route.meta.entidadeMãe as string);
+
+const regionsStore = useRegionsStore();
+
+const { camadas } = storeToRefs(regionsStore);
 
 const alertStore = useAlertStore();
 
@@ -56,65 +67,53 @@ const {
 const camadasDaCidade = ref<number[]>([]);
 
 const locaisAgrupados = computed(() => {
-  const dadosDasCamadas: Record<number, Camada> = {};
-  const enderecos: unknown[] = [];
+  const totalDeProjetos: Record<number, number> = {};
+  const enderecos: Endereco[] = [];
 
   let i = 0;
   let maximoDeProjetos = 0;
 
   while (projetosParaMapa.value[i as keyof unknown]) {
-    const cur = projetosParaMapa.value[i as keyof unknown];
-    if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
-      let j = 0;
-      while (cur.geolocalizacao[j]) {
-        const geolocalizacao = cur.geolocalizacao[j];
-        let subPrefeitura = '';
+    const projeto = projetosParaMapa.value[i as keyof unknown];
+    if (projeto.geolocalizacao_sumario) {
+      let subPrefeitura = '';
+      if (projeto.geolocalizacao_sumario.camadas) {
+        for (let k = 0; k < projeto.geolocalizacao_sumario.camadas.length; k += 1) {
+          const camadaId = projeto.geolocalizacao_sumario.camadas[k];
+          const camada = camadas.value?.[camadaId] as unknown as GeoLocCamadaFullDto;
 
-        if (geolocalizacao.camadas) {
-          for (let k = 0; k < geolocalizacao.camadas.length; k += 1) {
-            const camada = geolocalizacao.camadas[k];
-            if (nivelRegionalizacaoPadrao === camada.nivel_regionalizacao) {
-              if (dadosDasCamadas[camada.id]) {
-                dadosDasCamadas[camada.id].totalDeProjetos += 1;
-              } else {
-                dadosDasCamadas[camada.id] = { ...camada };
-                dadosDasCamadas[camada.id].totalDeProjetos = 1;
-              }
-
-              maximoDeProjetos = Math.max(
-                maximoDeProjetos,
-                dadosDasCamadas[camada.id].totalDeProjetos,
-              );
+          if (nivelRegionalizacaoPadrao === camada?.nivel_regionalizacao) {
+            if (totalDeProjetos[camadaId]) {
+              totalDeProjetos[camadaId] += 1;
+            } else {
+              totalDeProjetos[camadaId] = 1;
             }
-          }
 
-          subPrefeitura = geolocalizacao.camadas
-            .find((camada: GeoLocCamadaFullDto) => camada.nivel_regionalizacao === nivelParaPainelFlutuante)
-            ?.titulo;
+            subPrefeitura = camada?.regiao?.reduce((acc, cur) => `${acc + cur.descricao}, `, '')?.slice(0, -2)
+              || camada?.titulo
+              || '';
 
-          if (subPrefeitura) {
-            subPrefeitura = `<i>${subPrefeitura}</i>`;
-          }
-        }
-
-        if (geolocalizacao.endereco) {
-          enderecos.push(geolocalizacao.endereco);
-          const rotulo = cur.projeto_nome;
-          const descricao = [subPrefeitura, cur.projeto_status, cur.projeto_etapa].join('<br/>');
-
-          if (rotulo) {
-            enderecos[enderecos.length - 1].properties.rotulo = rotulo;
-          }
-
-          if (descricao) {
-            enderecos[enderecos.length - 1].properties.descricao = descricao;
+            maximoDeProjetos = Math.max(
+              maximoDeProjetos,
+              totalDeProjetos[camadaId],
+            );
           }
         }
-        j += 1;
+      }
+
+      if (projeto.geolocalizacao_sumario.endereco_geom_geojson) {
+        enderecos.push(projeto.geolocalizacao_sumario.endereco_geom_geojson);
+
+        enderecos[enderecos.length - 1].properties.projeto_nome = projeto.projeto_nome;
+        enderecos[enderecos.length - 1].properties.projeto_status = projeto.projeto_status;
+        enderecos[enderecos.length - 1].properties.projeto_etapa = projeto.projeto_etapa;
+        enderecos[enderecos.length - 1].properties.orgao_resp_sigla = projeto.orgao_resp_sigla;
+        enderecos[enderecos.length - 1].properties.subPrefeitura = subPrefeitura;
       }
     }
     i += 1;
   }
+
   const cores = [
     corParaMinimo,
     ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, { format: 'hsl', huePath: 'short' }),
@@ -122,14 +121,16 @@ const locaisAgrupados = computed(() => {
   ];
   return {
     camadas: (camadasDaCidade.value.map((id) => ({ id })) as Camada[])
-      .concat(Object.values(dadosDasCamadas))
       .map((camada) => {
         if (!camada.config) {
-          camada.config = {};
+          camada.config = {
+            color: strokeColor,
+            fillOpacity: opacidadePreenchimento,
+          };
         }
 
-        camada.config.color = camada.totalDeProjetos
-          ? cores[camada.totalDeProjetos - 1]
+        camada.config.fillColor = totalDeProjetos[camada.id]
+          ? cores[totalDeProjetos[camada.id] - 1]
           : cores[0];
 
         return camada;
@@ -225,9 +226,10 @@ async function iniciar() {
   painelEstrategicoStore.buscarDados(parametros);
 
   if (!camadasDaCidade.value.length) {
-    camadasDaCidade.value = await useRegionsStore().buscarCamadas({
+    camadasDaCidade.value = await regionsStore.buscarCamadas({
       filha_de_regiao_id: regiaoPadrao,
       regiao_nivel_regionalizacao: nivelRegionalizacaoPadrao,
+      retornar_regioes: true,
     });
   }
 
@@ -412,7 +414,72 @@ watch(
             opacity: 0.5,
           }"
           zoom="16"
-        />
+        >
+          <template #painel-flutuante="dados">
+            <p
+              v-if="dados.projeto_nome"
+              class="w900"
+            >
+              {{ dados.projeto_nome }}
+            </p>
+            <p
+              v-else-if="dados.titulo"
+              class="w900"
+            >
+              {{ dados.titulo }}
+            </p>
+            <p
+              v-else-if="dados.rotulo"
+              class="w900"
+            >
+              {{ dados.rotulo }}
+            </p>
+
+            <dl
+              v-if="dados.projeto_status
+                || dados.projeto_orgao_responsavel
+                || dados.subPrefeitura
+                || dados.orgao_resp_sigla
+                || dados.projeto_etapa"
+              class="painel-flutuante__dados"
+            >
+              <div
+                v-if="dados.orgao_resp_sigla"
+              >
+                <dt>
+                  Órgão Responsável
+                </dt>
+                <dd>{{ dados.orgao_resp_sigla }}</dd>
+              </div>
+              <div
+                v-if="dados.subPrefeitura"
+              >
+                <dt>
+                  Subprefeitura
+                </dt>
+                <dd>{{ dados.subPrefeitura }}</dd>
+              </div>
+              <div
+                v-if="dados.projeto_status"
+              >
+                <dt>
+                  Status
+                </dt>
+                <dd>{{ dados.projeto_status }}</dd>
+              </div>
+              <div
+                v-if="dados.projeto_etapa"
+              >
+                <dt>
+                  Etapa
+                </dt>
+                <dd>
+                  {{ dados.projeto_etapa }}
+                </dd>
+              </div>
+            </dl>
+          </template>
+        </MapaExibir>
       </CardEnvelope.conteudo>
 
       <CardEnvelope.Slide class="cartao-de-projetos">
@@ -602,6 +669,27 @@ watch(
 
   @media screen and (min-width: @tres-colunas) {
     grid-column: auto;
+  }
+}
+
+:deep(.leaflet-layer) {
+  filter: grayscale(0.8) hue-rotate(-65deg);
+}
+
+.painel-flutuante__dados {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+
+  dt {
+    font-weight: bold;
+    color: @c600;
+    font-size: smaller;
+    text-transform: lowercase;
+  }
+
+  dd {
+    font-weight: normal;
   }
 }
 </style>
