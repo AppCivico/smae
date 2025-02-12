@@ -231,21 +231,12 @@ export class ReportsService {
         });
         this.logger.log(`persistido arquivo ${arquivoId} no relatório ${result.id}`);
 
-        if (dto.background) {
-            await this.prisma.relatorioFila.create({
-                data: {
-                    relatorio_id: result.id,
-                },
-            });
-        }
+        await this.prisma.relatorioFila.create({
+            data: {
+                relatorio_id: result.id,
+            },
+        });
 
-        if (dto.background) {
-            await this.prisma.relatorioFila.create({
-                data: {
-                    relatorio_id: result.id,
-                },
-            });
-        }
         return { id: result.id };
     }
 
