@@ -1049,6 +1049,7 @@ export class PainelEstrategicoService {
             SELECT
                 p.id as projeto_id,
                 p.codigo as projeto_codigo,
+                p.nome as projeto_nome,
                 gl.tipo,
                 gl.endereco_exibicao,
                 gl.lat as endereco_lat,
@@ -1083,7 +1084,7 @@ export class PainelEstrategicoService {
             LEFT JOIN orgao org ON org.id = p.orgao_responsavel_id
             LEFT JOIN projeto_etapa pe ON pe.id = p.projeto_etapa_id
             ${whereFilter}
-            GROUP BY 1,2,3,4,5,6,7,org.sigla,pe.descricao
+            GROUP BY 1,2,3,4,5,6,7,8,org.sigla,pe.descricao
             `;
 
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as any[];
@@ -1096,6 +1097,7 @@ export class PainelEstrategicoService {
                         projeto_status: linha.projeto_status,
                         projeto_etapa: linha.projeto_etapa,
                         orgao_resp_sigla: linha.orgao_resp_sigla,
+                        projeto_nome: linha.projeto_nome,
                         geolocalizacao_sumario: {
                             tipo: linha.tipo,
                             endereco_exibicao: linha.endereco_exibicao,

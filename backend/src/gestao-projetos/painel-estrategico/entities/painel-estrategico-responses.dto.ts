@@ -113,6 +113,7 @@ export class PainelEstrategicoGeoLocalizacaoV2 {
     projeto_status: string;
     projeto_etapa: string;
     orgao_resp_sigla: string;
+    projeto_nome: string;
     rotulo_endereco?: string;
     geolocalizacao_sumario: GeolocalizacaoSummaryDto;
 }
