@@ -13,7 +13,7 @@ import * as path from 'path';
 import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -604,7 +604,9 @@ export class ReportsService {
                     select: {
                         fonte: true,
                         parametros: true,
+                        parametros_processados: true,
                         sistema: true,
+                        criado_em: true,
                         criado_por: true,
                         criador: {
                             select: {
@@ -674,7 +676,14 @@ export class ReportsService {
                             to: relatorio.criador.email,
                             variables: {
                                 id: job.relatorio_id,
-                                fonte: relatorio.fonte.toString(),
+                                fonte: this.getRelatorioFonteString(relatorio.fonte),
+                                parametros: relatorio.parametros_processados
+                                    ? Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
+                                          key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+                                          value: value,
+                                      }))
+                                    : {},
+                                data_criacao: Date2YMD.tzSp2UTC(relatorio.criado_em),
                                 link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
                             },
                         },
@@ -811,5 +820,54 @@ export class ReportsService {
         );
 
         return mapeamento[nomeChave];
+    }
+
+    private getRelatorioFonteString(fonte: FonteRelatorio): string {
+        switch (fonte) {
+            case FonteRelatorio.CasaCivilAtvPendentes:
+                return 'Casa Civil - Atividades Pendentes';
+            case FonteRelatorio.Indicadores:
+                return 'Indicadores';
+            case FonteRelatorio.MonitoramentoMensal:
+                return 'Monitoramento Mensal';
+            case FonteRelatorio.Obras:
+                return 'Obras';
+            case FonteRelatorio.ObrasOrcamento:
+                return 'Obras - Orçamento';
+            case FonteRelatorio.ObrasPrevisaoCusto:
+                return 'Obras - Previsão de Custo';
+            case FonteRelatorio.ObraStatus:
+                return 'Status de Obras';
+            case FonteRelatorio.Orcamento:
+                return 'Orçamento';
+            case FonteRelatorio.Parlamentares:
+                return 'Parlamentares';
+            case FonteRelatorio.PrevisaoCusto:
+                return 'Previsão de Custo';
+            case FonteRelatorio.Projeto:
+                return 'Projeto';
+            case FonteRelatorio.ProjetoOrcamento:
+                return 'Projeto - Orçamento';
+            case FonteRelatorio.ProjetoPrevisaoCusto:
+                return 'Projeto - Previsão de Custo';
+            case FonteRelatorio.ProjetoStatus:
+                return 'Status de Projetos';
+            case FonteRelatorio.Projetos:
+                return 'Projetos';
+            case FonteRelatorio.Transferencias:
+                return 'Transferências';
+            case FonteRelatorio.TribunalDeContas:
+                return 'Tribunal de Contas';
+            case FonteRelatorio.PSMonitoramentoMensal:
+                return 'Plano Setorial - Monitoramento Mensal';
+            case FonteRelatorio.PSOrcamento:
+                return 'Plano Setorial - Orçamento';
+            case FonteRelatorio.PSPrevisaoCusto:
+                return 'Plano Setorial - Previsão de Custo';
+            case FonteRelatorio.PSIndicadores:
+                return 'Plano Setorial - Indicadores';
+            default:
+                return 'Desconhecido';
+        }
     }
 }

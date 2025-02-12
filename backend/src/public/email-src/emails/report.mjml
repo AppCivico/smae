@@ -8,14 +8,19 @@
     <mj-section background-color="#fff">
       <mj-column>
         <mj-text>
-          <p>Seu relatório ( [% origem %] ) está pronto!</p>
+          <p>Seu relatório está pronto!</p>
+        </mj-text>
+
+        <mj-text>
+          <p>Tipo: [% fonte %]</p>
+          <p>Data de criação: [% data_criacao %]</p>
+          <p>Parâmetros:</p>
+          [% FOREACH p IN parametros %]
+            <p>[% p.key %]: [% p.value %]</p>
+          [% END %]
         </mj-text>
 
         <mj-button href="[% link %]">Acessar sistema</mj-button>
-
-        <mj-text>
-          <p>Obrigado!</p>
-        </mj-text>
 
       </mj-column>
     </mj-section>
