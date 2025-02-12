@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
 type PessoaOrgaoDto = {
     pessoa_id: number;
@@ -57,12 +57,18 @@ export class PessoaPrivilegioService {
     }
 
     async adicionaPerfilAcesso(pessoaId: number, perfil: string, prismaTx: Prisma.TransactionClient): Promise<void> {
-        const perfilAcesso = await prismaTx.perfilAcesso.findFirstOrThrow({
+        const perfilAcesso = await prismaTx.perfilAcesso.findFirst({
             where: {
                 nome: perfil,
                 removido_em: null,
             },
         });
+        if (!perfilAcesso) {
+            throw new InternalServerErrorException({
+                error: `Perfil de acesso não encontrado: ${perfil}, para adicionar em pessoa-id ${pessoaId}`,
+                stack: new Error().stack,
+            });
+        }
 
         await prismaTx.pessoaPerfil.create({
             data: {
