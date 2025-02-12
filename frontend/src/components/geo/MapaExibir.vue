@@ -12,6 +12,14 @@
       @ready="mapReady"
     />
   </KeepAlive>
+  <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component :is="() => conteudoPainelFlutuante" />
+  </div>
 </template>
 <script setup>
 import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
@@ -32,8 +40,10 @@ import {
   defineEmits,
   defineOptions,
   defineProps,
+  nextTick,
   onMounted,
   ref,
+  useSlots,
   watch,
 } from 'vue';
 
@@ -46,6 +56,9 @@ const { camadas } = storeToRefs(RegionsStore);
 let marcadorNoMapa = null;
 const polígonosNoMapa = [];
 const geoJsonsNoMapa = [];
+
+const elementoPainelFlutuante = ref(null);
+const conteudoPainelFlutuante = ref(null);
 const elementoMapa = ref(null);
 const alturaCorrente = ref();
 
@@ -145,6 +158,8 @@ const emits = defineEmits([
   'update:modelValue',
 ]);
 
+const slots = useSlots();
+
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
   if (e.latlng !== undefined) {
@@ -167,9 +182,23 @@ function marcadorFoiMovido() {
 }
 
 function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
-  let conteudo = '';
-
+  let conteudo;
   switch (true) {
+    case !!slots['painel-flutuante']:
+      conteudo = () => {
+        // ocultar e reexibir o elemento para forçar a atualização da sua posição
+        elementoPainelFlutuante.value.setAttribute('hidden', '');
+        conteudoPainelFlutuante.value = slots['painel-flutuante'](dados);
+
+        nextTick(() => {
+          if (elementoPainelFlutuante.value.hasAttribute('hidden')) {
+            elementoPainelFlutuante.value.removeAttribute('hidden');
+          }
+        });
+
+        return elementoPainelFlutuante.value;
+      };
+      break;
     case !!dados?.titulo:
       conteudo = dados.titulo;
       break;
@@ -189,6 +218,7 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
   if (conteudo) {
     item.bindTooltip(conteudo, {
       direction: 'center',
+      className: 'painel-flutuante',
       ...props.opcoesDoPainelFlutuante,
       ...opcoes,
     });
@@ -262,6 +292,8 @@ function criarGeoJson(dados) {
       pointToLayer: (_geoJsonPoint, latlng) => L.marker(latlng, { icon: ícone }),
     });
 
+    atribuirPainelFlutuante(geoJson, dados?.properties);
+
     if (props.agruparMarcadores) {
       grupoDeMarcadores.addLayer(geoJson);
     } else {
@@ -270,10 +302,11 @@ function criarGeoJson(dados) {
   } else {
     geoJson = L.geoJSON(dados);
 
+    // o painel flutuante não pode ser adicionado depois da inserção no cluster
+    atribuirPainelFlutuante(geoJson, dados?.properties);
+
     geoJson.addTo(mapa);
   }
-
-  atribuirPainelFlutuante(geoJson, dados?.properties);
 
   geoJsonsNoMapa.push(geoJson);
 }
@@ -495,9 +528,29 @@ watch(() => props.polígonos, (valorNovo) => {
 </script>
 <style lang="less">
 .mapa {
+  flex-grow: 1;
+
   &:focus {
     outline: 1px solid @c400;
     outline-style: solid !important;
+  }
+}
+
+.painel-flutuante {
+  translate: -50%;
+  padding: 0;
+}
+
+.painel-flutuante__conteudo {
+  width: 33em;
+  max-width: fit-content;
+
+  padding: 0.25em;
+
+  white-space: normal;
+
+  :last-child {
+    margin-bottom: 0;
   }
 }
 </style>
