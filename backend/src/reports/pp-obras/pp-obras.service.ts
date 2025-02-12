@@ -1,17 +1,20 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Date2YMD } from '../../common/date2ymd';
-import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
-import { PrismaService } from '../../prisma/prisma.service';
-
 import {
     CategoriaProcessoSei,
     ContratoPrazoUnidade,
     ProjetoOrigemTipo,
     ProjetoStatus,
     StatusContrato,
+    TipoProjeto,
 } from '@prisma/client';
+import { formataSEI } from 'src/common/formata-sei';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
+import { Transform } from 'stream';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { Date2YMD } from '../../common/date2ymd';
+import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelObrasDto } from './dto/create-obras.dto';
 import {
@@ -27,8 +30,6 @@ import {
     RelObrasRegioesDto,
     RelObrasSeiDto,
 } from './entities/obras.entity';
-import { formataSEI } from 'src/common/formata-sei';
-import { Transform } from 'stream';
 
 const {
     Parser,
@@ -245,6 +246,8 @@ const json2csvParser = new Parser({
 
 @Injectable()
 export class PPObrasService implements ReportableService {
+    private tipo: TipoProjeto = 'MDO';
+
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
@@ -252,7 +255,7 @@ export class PPObrasService implements ReportableService {
         @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
-    async asJSON(dto: CreateRelObrasDto): Promise<PPObrasRelatorioDto> {
+    async asJSON(dto: CreateRelObrasDto, user: PessoaFromJwt | null): Promise<PPObrasRelatorioDto> {
         const out_obras: RelObrasDto[] = [];
         const out_cronogramas: RelObrasCronogramaDto[] = [];
         const out_acompanhamentos: RelObrasAcompanhamentosDto[] = [];
@@ -264,7 +267,7 @@ export class PPObrasService implements ReportableService {
         const out_processos_sei: RelObrasSeiDto[] = [];
         const out_enderecos: RelObrasGeolocDto[] = [];
 
-        const whereCond = await this.buildFilteredWhereStr(dto);
+        const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_obras);
         await this.queryDataCronograma(whereCond, out_cronogramas);
@@ -291,11 +294,11 @@ export class PPObrasService implements ReportableService {
         };
     }
 
-    async toFileOutput(dto: CreateRelObrasDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(dto: CreateRelObrasDto, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
         ctx.progress(50);
 
-        const whereCond = await this.buildFilteredWhereStr(dto);
+        const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         out.push(
             await this.streamQueryToCSV(
@@ -454,11 +457,35 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async buildFilteredWhereStr(filters: CreateRelObrasDto): Promise<WhereCond> {
+    private async buildFilteredWhereStr(filters: CreateRelObrasDto, user: PessoaFromJwt | null): Promise<WhereCond> {
         const whereConditions: string[] = [];
         const queryParams: any[] = [];
 
         let paramIndex = 1;
+
+        if (user) {
+            const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
+
+            const allowed = await this.prisma.projeto.findMany({
+                where: {
+                    AND: perms,
+                    // reduz o número de linhas pra não virar um "IN" gigante
+                    portfolio_id: filters.portfolio_id,
+                    tipo: filters.tipo_projeto,
+                    orgao_responsavel_id: filters.orgao_responsavel_id,
+                    grupo_tematico_id: filters.grupo_tematico_id,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            if (allowed.length === 0) {
+                return { whereString: 'WHERE false', queryParams: [] };
+            }
+
+            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+            queryParams.push(allowed.map((n) => n.id));
+        }
 
         // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
         if (filters.tipo_projeto) {
@@ -785,7 +812,7 @@ export class PPObrasService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne('MDO', db.projeto_id, undefined, 'ReadOnly');
+            await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
 
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {
