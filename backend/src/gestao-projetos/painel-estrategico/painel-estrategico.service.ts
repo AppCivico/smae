@@ -1104,7 +1104,7 @@ export class PainelEstrategicoService {
                             camadas: linha.camadas,
                             endereco_lat: linha.endereco_lat,
                             endereco_long: linha.endereco_lon,
-                            endereco_geom_geojson: linha.endereco_geom_geojson
+                            endereco_geom_geojson: linha.endereco_geom_geojson,
                         },
                     }) satisfies PainelEstrategicoGeoLocalizacaoV2
             ),

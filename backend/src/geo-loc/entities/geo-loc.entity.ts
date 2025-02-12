@@ -41,8 +41,15 @@ export class GeoLocCamadaSimplesDto {
     cor: string | null;
 }
 
+export class IdRegiaoNivel {
+    id: number;
+    descricao: string;
+    nivel_regionalizacao: number;
+}
+
 export class GeoLocCamadaFullDto extends GeoLocCamadaSimplesDto {
     geom_geojson: GeoJSON;
+    regiao: IdRegiaoNivel[] | undefined;
 }
 
 export class RetornoGeoLocCamadaFullDto {
@@ -74,6 +81,8 @@ export class FilterCamadasDto {
     @IsInt()
     @Transform(PositiveNumberTransform)
     regiao_nivel_regionalizacao?: number;
+
+    retornar_regioes?: boolean;
 
     @IsOptional()
     @IsInt()

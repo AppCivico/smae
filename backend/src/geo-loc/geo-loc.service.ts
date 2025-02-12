@@ -393,6 +393,7 @@ export class GeoLocService {
                 titulo: true,
                 geom_geojson: true,
                 config: true,
+
             },
         });
 
@@ -401,6 +402,7 @@ export class GeoLocService {
             .map((r) => {
                 return {
                     ...r,
+                    regiao: [],
                     descricao: r.config.descricao,
                     cor: r.config.cor,
                     nivel_regionalizacao: r.config.nivel_regionalizacao,
