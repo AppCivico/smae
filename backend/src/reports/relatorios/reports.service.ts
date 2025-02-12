@@ -667,6 +667,21 @@ export class ReportsService {
                     // A fonte precisa ser em slug para construir a URL.
                     const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
 
+                    const params = {
+                        id: job.relatorio_id,
+                        fonte: await this.getRelatorioFonteString(relatorio.fonte),
+                        parametros: relatorio.parametros_processados
+                            ? Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
+                                  key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+                                  value: value,
+                              }))
+                            : null,
+                        data_criacao: relatorio.criado_em,
+                        link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
+                    };
+
+                    this.logger.debug(params);
+
                     await this.prisma.emaildbQueue.create({
                         data: {
                             id: uuidv7(),
