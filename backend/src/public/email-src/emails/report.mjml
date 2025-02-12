@@ -14,26 +14,38 @@
         <mj-text>
             <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Tipo: [% fonte %]</p>
             <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Data de criação: [% data_criacao %]</p>
-            
-            <!-- Parameters Section -->
-            [% IF parametros %]
-            <div style="margin-top: 16px;">
-                <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Parâmetros:</p>
-                <div style="padding-left: 16px; border-left: 2px solid #e0e0e0;">
-                [% FOREACH p IN parametros %]
-                    <p style="margin: 6px 0; line-height: 1.4;">
-                    <span style="font-weight: 500; color: #666; display: inline-block; min-width: 120px;">
+        </mj-text>
+
+        [% IF parametros %]
+        <mj-text>
+        <div style="margin-top: 16px;">
+            <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Parâmetros:</p>
+            <div style="padding-left: 16px; border-left: 2px solid #e0e0e0;">
+            [% FOREACH p IN parametros %]
+                [% IF p.value %]
+                    <div style="margin: 12px 0;">
+                    <span style="font-weight: 500; color: #666; display: block; margin-bottom: 4px;">
                         [% p.key %]:
                     </span>
-                    <span style="color: #444;">
+                    
+                    [% IF p.value.isArray %]
+                        <ul style="margin: 0; padding-left: 20px; color: #444; list-style-type: disc;">
+                        [% FOREACH item IN p.value %]
+                            <li style="margin-bottom: 4px;">[% item %]</li>
+                        [% END %]
+                        </ul>
+                    [% ELSE %]
+                        <div style="color: #444; padding-left: 8px;">
                         [% p.value %]
-                    </span>
-                    </p>
+                        </div>
+                    [% END %]
+                    </div>
                 [% END %]
-                </div>
-            </div>
             [% END %]
+            </div>
+        </div>
         </mj-text>
+        [% END %]
 
         <mj-button href="[% link %]">Acessar sistema</mj-button>
 
