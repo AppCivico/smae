@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { GeoCamadaConfig, Prisma } from '@prisma/client';
+import * as turf from '@turf/simplify';
 import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { GeoApiService } from '../geo-api/geo-api.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -14,13 +16,11 @@ import {
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
-    GeoLocDtoByLatLong as GeoLocDtoByLatLong,
+    GeoLocDtoByLatLong,
     GeolocalizacaoDto,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
-import { SmaeConfigService } from '../common/services/smae-config.service';
-import * as turf from '@turf/simplify';
 
 class GeoTokenJwtBody {
     id: number;
@@ -393,21 +393,50 @@ export class GeoLocService {
                 titulo: true,
                 geom_geojson: true,
                 config: true,
-
+                GeoCamadaRegiao: dto.retornar_regioes
+                    ? {
+                          select: {
+                              regiao: {
+                                  select: {
+                                      id: true,
+                                      descricao: true,
+                                      nivel: true,
+                                  },
+                              },
+                          },
+                      }
+                    : undefined,
             },
         });
 
         return rows
             .filter((r) => r.geom_geojson?.valueOf())
             .map((r) => {
+                const regiaoFiltro =
+                    dto.retornar_regioes && 'GeoCamadaRegiao' in r
+                        ? r.GeoCamadaRegiao.filter(
+                              (r) =>
+                                  !dto.regiao_nivel_regionalizacao ||
+                                  ('regiao' in r && dto.regiao_nivel_regionalizacao == (r as any).regiao.nivel)
+                          ).map((r) => {
+                              const regiao = (r as any).regiao;
+                              return {
+                                  id: regiao.id,
+                                  descricao: regiao.descricao,
+                                  nivel_regionalizacao: regiao.nivel,
+                              };
+                          })
+                        : undefined;
+
+                delete (r as any).GeoCamadaRegiao;
                 return {
                     ...r,
-                    regiao: [],
+                    regiao: regiaoFiltro,
                     descricao: r.config.descricao,
                     cor: r.config.cor,
                     nivel_regionalizacao: r.config.nivel_regionalizacao,
                     geom_geojson: r.geom_geojson?.valueOf() as GeoJSON,
-                };
+                } satisfies GeoLocCamadaFullDto;
             });
     }
 

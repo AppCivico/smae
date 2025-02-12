@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { GeoReferenciaTipo } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { GeoJSON } from 'geojson';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
@@ -82,6 +82,8 @@ export class FilterCamadasDto {
     @Transform(PositiveNumberTransform)
     regiao_nivel_regionalizacao?: number;
 
+    @Transform(({ value }: any) => value === 'true')
+    @IsBoolean()
     retornar_regioes?: boolean;
 
     @IsOptional()
