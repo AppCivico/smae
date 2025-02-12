@@ -229,7 +229,6 @@ export class ReportsService {
             },
             select: { id: true },
         });
-        this.logger.log(`persistido arquivo ${arquivoId} no relatório ${result.id}`);
 
         await this.prisma.relatorioFila.create({
             data: {
@@ -587,6 +586,8 @@ export class ReportsService {
             orderBy: { criado_em: 'asc' },
         });
 
+        this.logger.log(pending.length + ' relatórios pendentes');
+
         for (const job of pending) {
             await this.prisma.relatorioFila.update({
                 where: { id: job.id },
@@ -614,7 +615,7 @@ export class ReportsService {
                 });
                 if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
 
-                const pessaoJwt = relatorio.criado_por
+                const pessoaJwt = relatorio.criado_por
                     ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
                     : null;
 
@@ -623,7 +624,7 @@ export class ReportsService {
                         fonte: relatorio.fonte,
                         parametros: relatorio.parametros,
                     },
-                    pessaoJwt
+                    pessoaJwt
                 );
 
                 const contentType = 'application/zip';

@@ -273,7 +273,7 @@ export class UploadService {
         const originalname = filename;
 
         const arquivoId = await this.nextSequence();
-
+        console.log('============================');
         const key = [
             'reports',
             category,
@@ -283,6 +283,8 @@ export class UploadService {
             'arquivo-id-' + String(arquivoId),
             originalname.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
         ].join('/');
+        console.log(key);
+        console.log('============================');
 
         await this.storage.putBlob(key, buffer, {
             'Content-Type': mimetype || 'application/octet-stream',
