@@ -698,7 +698,9 @@ export class ReportsService {
                                           value: value,
                                       }))
                                     : null,
-                                data_criacao: relatorio.criado_em,
+                                data_criacao: relatorio.criado_em.toLocaleString('pt-BR', {
+                                    timeZone: 'America/Sao_Paulo',
+                                }),
                                 link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
                             },
                         },
