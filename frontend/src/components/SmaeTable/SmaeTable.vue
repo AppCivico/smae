@@ -68,30 +68,27 @@
             v-for="(linha, linhaIndex) in dados"
             :key="`coluna--${linhaIndex}`"
           >
-            <template
+            <TableCell
               v-for="coluna in colunas"
               :key="`linha--${linhaIndex}-${coluna.chave}`"
+              class="smae-table__cell"
+              :linha="linha"
+              :caminho="coluna.chave"
             >
-              <TableCell
-                class="smae-table__cell"
-                :linha="linha"
-                :caminho="coluna.chave"
+              <template
+                v-for="nomeSlot in slotsDaCelula"
+                :key="`linha--${linhaIndex}-${coluna.chave}}-${nomeSlot}`"
+                #[nomeSlot]="slotProps"
               >
-                <template
-                  v-for="nomeSlot in slotsDaCelula"
-                  :key="`linha--${linhaIndex}-${coluna.chave}}-${nomeSlot}`"
-                  #[nomeSlot]="slotProps"
-                >
-                  <slot
-                    :name="nomeSlot"
-                    v-bind="slotProps"
-                  />
-                </template>
-              </TableCell>
-            </template>
+                <slot
+                  :name="nomeSlot"
+                  v-bind="slotProps"
+                />
+              </template>
+            </TableCell>
 
             <td v-if="hasActionButton">
-              <div class="nowrap flex g1 justifycenter">
+              <div class="nowrap flex g1 justifyright">
                 <EditButton
                   v-if="rotaEditar"
                   :linha="linha"
@@ -219,6 +216,6 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
     return props.titulo;
   }
 
-  return gerarToken();
+  throw new Error('"titulo" é obrigatório para utilizar rolagem horizontal');
 });
 </script>
