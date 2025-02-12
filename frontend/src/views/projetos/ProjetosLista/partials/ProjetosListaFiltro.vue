@@ -41,9 +41,15 @@ const organsStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
 const etapasProjetosStore = useEtapasProjetosStore();
 
-const { organResponsibles } = storeToRefs(organsStore);
-const { lista: portfolioLista } = storeToRefs(portfolioStore);
-const { lista: etapasLista } = storeToRefs(etapasProjetosStore);
+const organResponsibles = computed(() => {
+  if (!Array.isArray(organsStore.organResponsibles)) {
+    return [];
+  }
+
+  return organsStore.organResponsibles;
+});
+const portfolioLista = computed(() => portfolioStore.lista || []);
+const etapasLista = computed(() => etapasProjetosStore.lista || []);
 
 const opcoesFormulario = computed(() => ({
   orgaos: organResponsibles.value.map((item) => ({
