@@ -116,7 +116,7 @@ const locaisAgrupados = computed(() => {
 
   const cores = [
     corParaMinimo,
-    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, { format: 'hsl', huePath: 'short' }),
+    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, { format: 'hsl', huePath: 'long' }),
     corParaMaximo,
   ];
   return {
