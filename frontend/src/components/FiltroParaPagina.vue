@@ -43,11 +43,26 @@ const { handleSubmit, isSubmitting, setValues } = useForm({
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const query = {
+    ...route.query,
+    ...valoresControlados,
+  };
+
+  const queryFiltrada = Object.keys(query).reduce((amount, item) => {
+    const value = query[item];
+
+    if (value === undefined || value === '') {
+      return amount;
+    }
+
+    return {
+      ...amount,
+      [item]: value,
+    };
+  }, {});
+
   router.replace({
-    query: {
-      ...route.query,
-      ...valoresControlados,
-    },
+    query: queryFiltrada,
   });
 });
 
@@ -115,7 +130,9 @@ watch(() => route.query, (val) => {
                 :name="campoNome"
                 as="select"
               >
-                <option>-</option>
+                <option :value="null">
+                  -
+                </option>
                 <template v-if="campo.opcoes?.length">
                   <option
                     v-for="opcao in padronizarOpcoes(campo.opcoes)"

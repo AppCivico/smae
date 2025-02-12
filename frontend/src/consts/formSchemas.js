@@ -2658,15 +2658,15 @@ export const projeto = object()
   });
 
 export const projetoFiltro = object().shape({
-  portfolio: number().label('portfolio'),
-  orgao_responsavel_id: number().label('órgão responsável'),
-  status: string().label('status'),
-  etapa_id: number().label('etapa'),
-  data_registro: date().label('data de registro').max(new Date()),
-  revisado: boolean().label('revisado'),
-  ordem_coluna: string().label('Ordenar por'),
-  ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes),
-  ipp: number().label('Itens por página'),
+  portfolio: number().label('portfolio').nullableOuVazio(),
+  orgao_responsavel_id: number().label('órgão responsável').nullableOuVazio(),
+  status: string().label('status').nullableOuVazio(),
+  etapa_id: number().label('etapa').nullableOuVazio(),
+  data_registro: date().label('data de registro').max(new Date()).nullableOuVazio(),
+  revisado: boolean().label('revisado').nullableOuVazio(),
+  ordem_coluna: string().label('Ordenar por').nullableOuVazio(),
+  ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
+  ipp: number().label('Itens por página').nullableOuVazio(),
 });
 
 export const região = object()

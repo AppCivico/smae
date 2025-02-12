@@ -44,7 +44,13 @@ interface ChamadasPendentes {
 interface Estado {
   lista: Lista;
   listaV2: PaginatedWithPagesDto<ProjetoMdoDto>['linhas'];
-  paginacaoProjetos: Omit<PaginatedWithPagesDto<ProjetoMdoDto>, 'linhas'>;
+  paginacaoProjetos: {
+    tokenPaginacao: string | null;
+    paginas: number;
+    paginaCorrente: number;
+    temMais: boolean;
+    totalRegistros: number;
+  };
   emFoco: ProjetoDetailDto | null;
   arquivos: ListProjetoDocumento['linhas'] | [];
   diretórios: DiretorioItemDto[];
@@ -64,7 +70,13 @@ export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
     lista: [],
     listaV2: [],
-    paginacaoProjetos: {} as Omit<PaginatedWithPagesDto<ProjetoMdoDto>, 'linhas'>,
+    paginacaoProjetos: {
+      tokenPaginacao: '',
+      paginas: 0,
+      paginaCorrente: 0,
+      temMais: true,
+      totalRegistros: 0,
+    },
     emFoco: null,
     arquivos: [],
     diretórios: [],
@@ -181,7 +193,13 @@ export const useProjetosStore = defineStore('projetos', {
           params,
         )) as PaginatedWithPagesDto<ProjetoMdoDto>;
 
-        this.paginacaoProjetos = paginacao;
+        this.paginacaoProjetos = {
+          tokenPaginacao: paginacao.token_paginacao,
+          paginas: paginacao.paginas,
+          paginaCorrente: paginacao.pagina_corrente,
+          temMais: paginacao.tem_mais,
+          totalRegistros: paginacao.total_registros,
+        };
 
         this.listaV2 = linhas;
       } catch (erro: unknown) {
