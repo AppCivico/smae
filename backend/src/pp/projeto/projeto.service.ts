@@ -268,6 +268,44 @@ export const ProjetoGetPermissionSet = async (
     return permissionsBaseSet;
 };
 
+const getOrderByConfig = (
+    ordem_coluna: string,
+    ordem_direcao: 'asc' | 'desc'
+): Prisma.Enumerable<Prisma.ProjetoOrderByWithRelationInput> => {
+    if (ordem_coluna === 'regioes') {
+        throw new BadRequestException('Ordenação por regiões não é mais suportada');
+    }
+
+    const direction = ordem_direcao === 'asc' ? 'asc' : 'desc';
+
+    switch (ordem_coluna) {
+        case 'id':
+        case 'nome':
+        case 'codigo':
+        case 'status':
+        case 'registrado_em':
+            return [{ [ordem_coluna]: direction }, { codigo: 'asc' }];
+
+        case 'portfolio_titulo':
+            return [{ portfolio: { titulo: direction } }, { codigo: 'asc' }];
+
+        case 'grupo_tematico_nome':
+            return [{ grupo_tematico: { nome: direction } }, { codigo: 'asc' }];
+
+        case 'tipo_intervencao_nome':
+            return [{ tipo_intervencao: { nome: direction } }, { codigo: 'asc' }];
+
+        case 'equipamento_nome':
+            return [{ equipamento: { nome: direction } }, { codigo: 'asc' }];
+
+        case 'orgao_origem_nome':
+            return [{ orgao_origem: { descricao: direction } }, { codigo: 'asc' }];
+
+        default:
+            return [{ codigo: 'asc' }];
+    }
+};
+
 @Injectable()
 export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
@@ -1076,7 +1114,7 @@ export class ProjetoService {
                 AND: [...permissionsSet, ...filterSet],
             },
             select: { id: true },
-            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
             skip: offset,
             take: ipp,
         });
@@ -1089,7 +1127,6 @@ export class ProjetoService {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
                 portfolio: { select: { id: true, titulo: true } },
             },
-            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
             relationLoadStrategy: 'query',
         });
 
@@ -1206,7 +1243,7 @@ export class ProjetoService {
                 AND: [...permissionsSet, ...filterSet],
             },
             select: { id: true },
-            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
             skip: offset,
             take: ipp,
         });
