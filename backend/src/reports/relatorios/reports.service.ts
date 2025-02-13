@@ -38,6 +38,7 @@ import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } 
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioParamDto } from './entities/report.entity';
+import { CrontabIsEnabled } from 'src/common/CrontabIsEnabled';
 
 type RelatorioProcesado = Record<string, string | Array<string>>;
 
@@ -58,6 +59,7 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
+    private enabled: boolean;
     baseUrl: string;
 
     constructor(
@@ -86,6 +88,7 @@ export class ReportsService {
     ) {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.enabled = CrontabIsEnabled('reports');
     }
 
     async runReport(dto: CreateReportDto, user: PessoaFromJwt | null): Promise<FileOutput[]> {
@@ -431,7 +434,7 @@ export class ReportsService {
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
-                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                this.logger.debug(`Adquirindo lock para verificação de relatórios de Projeto`);
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
@@ -454,6 +457,7 @@ export class ReportsService {
 
     @Cron('*/2 * * * *')
     async handleRelatorioFilaCron() {
+        if (!this.enabled) return;
         if (process.env['DISABLE_REPORT_CRONTAB']) return;
 
         await this.prisma.$transaction(
