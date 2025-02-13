@@ -89,6 +89,12 @@ watch(() => route.query, () => {
         </button>
       </template>
 
+      <template #['celula:portfolio.titulo']="{ linha }">
+        <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
+          {{ linha.portfolio.titulo }}
+        </SmaeLink>
+      </template>
+
       <template #['celula:orgao_responsavel.descricao']="{ linha }">
         {{ linha.orgao_responsavel?.descricao || '-' }}
       </template>
