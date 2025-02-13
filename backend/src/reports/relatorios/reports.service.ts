@@ -582,7 +582,7 @@ export class ReportsService {
                     },
                 ],
             },
-            take: 10,
+            take: 1,
             orderBy: { criado_em: 'asc' },
         });
 
