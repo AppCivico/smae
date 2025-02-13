@@ -15,6 +15,8 @@ import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 const route = useRoute();
 const projetosStore = useProjetosStore();
 
+const { ultimoVisitado } = storeToRefs(projetosStore);
+
 const { paginacaoProjetos } = storeToRefs(projetosStore);
 
 const listaDeProjetos = computed(() => projetosStore.listaV2);
@@ -77,6 +79,11 @@ watch(() => route.query, () => {
       parametro-da-rota-editar="projetoId"
       parametro-no-objeto-para-editar="id"
       parametro-no-objeto-para-excluir="portfolio.titulo"
+      :personalizar-linhas="{
+        parametro: 'id',
+        alvo: ultimoVisitado,
+        classe: 'selecionado'
+      }"
       :rota-editar="{ name: 'projetosEditar' }"
       @deletar="handleDeletarItem"
     >

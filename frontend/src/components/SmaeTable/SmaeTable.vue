@@ -66,7 +66,12 @@
         <tbody>
           <tr
             v-for="(linha, linhaIndex) in dados"
-            :key="`coluna--${linhaIndex}`"
+            :key="`linha--${linhaIndex}`"
+            :class="[
+              'smae-table__linha',
+              `smae-table__linha--${linhaIndex}`,
+              obterDestaqueDaLinha(linha)
+            ]"
           >
             <TableCell
               v-for="coluna in colunas"
@@ -146,7 +151,7 @@ import TableCell from './partials/TableCell.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
-import { Colunas, Linhas } from './types/tipagem';
+import { Colunas, Linha, Linhas } from './types/tipagem';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 
 type Slots = {
@@ -167,6 +172,11 @@ type Props =
     dados: Linhas
     replicarCabecalho?: boolean
     rolagemHorizontal?: boolean
+    personalizarLinhas?: {
+      parametro: string,
+      alvo: unknown,
+      classe: string
+    }
   };
 
 type Emits = DeleteButtonEvents;
@@ -178,6 +188,7 @@ const props = withDefaults(defineProps<Props>(), {
   parametroNoObjetoParaEditar: 'id',
   parametroNoObjetoParaExcluir: 'descricao',
   rolagemHorizontal: false,
+  personalizarLinhas: undefined,
 });
 const emit = defineEmits<Emits>();
 defineSlots<Slots>();
@@ -217,4 +228,16 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
 
   throw new Error('"titulo" é obrigatório para utilizar rolagem horizontal');
 });
+
+function obterDestaqueDaLinha(linha: Linha): string | null {
+  if (!props.personalizarLinhas) {
+    return null;
+  }
+
+  if (linha[props.personalizarLinhas.parametro] === props.personalizarLinhas.alvo) {
+    return props.personalizarLinhas.classe;
+  }
+
+  return null;
+}
 </script>
