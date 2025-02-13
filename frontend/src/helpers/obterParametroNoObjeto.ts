@@ -7,7 +7,7 @@ function obterParametroNoObjeto(caminho: string, objeto: any) {
     if (objeto[caminho] === undefined) {
       // eslint-disable-next-line no-console
       console.warn(
-        `Item "${caminho}" não encontrado encontrado no objeto`,
+        `Item "${caminho}" não encontrado no objeto`,
       );
       return objeto;
     }

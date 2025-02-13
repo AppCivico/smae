@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
 import projectStatuses from '@/consts/projectStatuses';
 import { projetoFiltro as schema } from '@/consts/formSchemas';
 import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
