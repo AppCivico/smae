@@ -32,6 +32,11 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  // usado para campos opcionais que exigem envio do array vazio no back-end
+  retornarArrayVazio: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const control = ref(props.controlador);
@@ -52,6 +57,10 @@ if (props.name) {
 
 function start() {
   control.value = props.controlador;
+
+  if (props.retornarArrayVazio && props.grupo.length === 0) {
+    emit('change', []);
+  }
 }
 
 start();
@@ -136,14 +145,28 @@ export default {
       <input
         v-bind="$attrs"
         type="text"
-        disabled
+        aria-disabled="true"
+        readonly
         class="inputtext light mb05"
+        aria-describedby="alerta"
       >
+      <span
+        id="alerta"
+        class="mensagem-alerta"
+        aria-live="polite"
+      >
+        Não há opções disponíveis.
+      </span>
     </div>
   </template>
 </template>
 <style scoped>
 .like-a__text {
   white-space: nowrap;
+}
+
+.mensagem-alerta {
+  font-size: 0.9rem;
+  display: block;
 }
 </style>

@@ -39,8 +39,9 @@
             loading: orgaosStore.chamadasPendentes?.lista,
           }"
           :disabled="
-            !órgãosComoLista?.length ||
-              !temPermissãoPara('CadastroGrupoVariavel.administrador')
+            !órgãosComoLista?.length
+              || emFoco?.id
+              || !temPermissãoPara('CadastroGrupoVariavel.administrador')
           "
         >
           <option>Selecionar</option>
@@ -101,6 +102,7 @@
         <AutocompleteField
           id="colaboradores"
           name="colaboradores"
+          :retornar-array-vazio="true"
           :controlador="{
             busca: '',
             participantes: values?.colaboradores || [],
@@ -120,12 +122,14 @@
           :schema="schema"
         />
         <AutocompleteField
+          id="participantes"
           name="participantes"
+          :retornar-array-vazio="true"
           :controlador="{
             busca: '',
             participantes: values?.participantes || [],
           }"
-          :grupo="participantes[values.orgao_id]"
+          :grupo="participantes[values.orgao_id] || []"
           label="nome_exibicao"
         />
         <ErrorMessage
@@ -220,6 +224,7 @@ const {
   handleSubmit,
   isSubmitting,
   resetForm,
+  setFieldValue,
   values,
 } = useForm({
   initialValues: itemParaEdicao,
@@ -230,7 +235,7 @@ const authStore = useAuthStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
 const formularioSujo = useIsFormDirty();
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     let response;
     const msg = props.grupoId
@@ -239,7 +244,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
     if (route.params?.equipeId) {
       response = await equipesStore.salvarItem(
-        values,
+        valoresControlados,
         route.params.equipeId,
       );
     } else {
@@ -310,17 +315,15 @@ async function iniciar() {
   }
 
   if (!route.params.equipeId) {
-    resetForm({
-      values: {
-        orgao_id: user.value.orgao_id,
-      },
-    });
+    setFieldValue('orgao_id', user.value.orgao_id);
   }
 }
 
 watch(() => values.orgao_id, () => {
   if (values.orgao_id) {
     buscarPessoasSimplificadas();
+    setFieldValue('colaboradores', []);
+    setFieldValue('participantes', []);
   }
 });
 
