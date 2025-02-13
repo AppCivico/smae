@@ -42,6 +42,7 @@ interface ChamadasPendentes {
 }
 
 interface Estado {
+  ultimoVisitado: number | null;
   lista: Lista;
   listaV2: PaginatedWithPagesDto<ProjetoMdoDto>['linhas'];
   paginacaoProjetos: {
@@ -68,6 +69,7 @@ interface Estado {
 
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
+    ultimoVisitado: Number(sessionStorage.getItem('projetos.ultimoVisitado')) || null,
     lista: [],
     listaV2: [],
     paginacaoProjetos: {
@@ -110,9 +112,11 @@ export const useProjetosStore = defineStore('projetos', {
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto/${id}`, params);
         this.emFoco = resposta;
+        sessionStorage.setItem('projetos.ultimoVisitado', this.emFoco.id);
       } catch (erro: unknown) {
         this.erro = erro;
       }
+
       this.chamadasPendentes.emFoco = false;
     },
 
@@ -202,6 +206,9 @@ export const useProjetosStore = defineStore('projetos', {
         };
 
         this.listaV2 = linhas;
+
+        sessionStorage.removeItem('projetos.ultimoVisitado');
+        this.ultimoVisitado = null;
       } catch (erro: unknown) {
         this.erro = erro;
       } finally {
