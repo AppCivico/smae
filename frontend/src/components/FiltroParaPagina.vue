@@ -15,7 +15,7 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'date' | 'checkbox'
+  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox'
   opcoes?: Opcoes
 };
 type Campos = Record<string, CampoFiltro>;

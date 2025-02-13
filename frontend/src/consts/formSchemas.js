@@ -2661,6 +2661,7 @@ export const projetoFiltro = object().shape({
   portfolio: number().label('portfolio').nullableOuVazio(),
   orgao_responsavel_id: number().label('órgão responsável').nullableOuVazio(),
   status: string().label('status').nullableOuVazio(),
+  palavra_chave: string().label('Palavra chave').nullableOuVazio(),
   etapa_id: number().label('etapa').nullableOuVazio(),
   data_registro: date().label('data de registro').max(new Date()).nullableOuVazio(),
   revisado: boolean().label('revisado').nullableOuVazio(),
