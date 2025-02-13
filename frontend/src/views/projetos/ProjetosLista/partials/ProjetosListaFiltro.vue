@@ -53,7 +53,7 @@ const etapasLista = computed(() => etapasProjetosStore.lista || []);
 const opcoesFormulario = computed(() => ({
   orgaos: organResponsibles.value.map((item) => ({
     id: item.id,
-    label: item.descricao,
+    label: `${item.sigla} - ${item.descricao}`,
   })),
   portfolio: portfolioLista.value.map((item) => ({
     id: item.id,
