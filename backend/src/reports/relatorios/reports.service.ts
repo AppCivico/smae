@@ -458,14 +458,14 @@ export class ReportsService {
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
-                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                this.logger.log(`Adquirindo lock para verificação de relatórios`);
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
                 pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked
             `;
                 if (!locked[0].locked) {
-                    this.logger.debug(`Já está em processamento...`);
+                    this.logger.log(`Já está em processamento...`);
                     return;
                 }
 
@@ -589,6 +589,8 @@ export class ReportsService {
         this.logger.log(pending.length + ' relatórios pendentes');
 
         for (const job of pending) {
+            this.logger.debug(`iniciando processamento do relatório ID ${job.relatorio_id}`);
+
             await this.prisma.relatorioFila.update({
                 where: { id: job.id },
                 data: {
@@ -639,6 +641,8 @@ export class ReportsService {
 
                 const zipBuffer = await this.zipFiles(files);
 
+                this.logger.debug(`chamando upload de report`);
+                this.logger.debug(`zipBuffer.length: ${zipBuffer.length}`);
                 const arquivoId = await this.uploadService.uploadReport(
                     relatorio.fonte,
                     filename,
