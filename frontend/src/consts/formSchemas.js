@@ -967,7 +967,7 @@ export const equipes = object({
     .nullable(),
   participantes: array()
     .label('Participantes alocados à equipe')
-    .required('Participantes inválidos'),
+    .nullable('Participantes inválidos'),
   perfil: mixed()
     .label('Tipo de equipe')
     .oneOf(Object.keys(tipoDePerfil))
