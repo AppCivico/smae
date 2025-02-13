@@ -473,7 +473,7 @@ export class EquipeRespService {
                     if (!temPriv) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
-                            'SMAE.GrupoVariavel.participante',
+                            CONST_PERFIL_PARTICIPANTE_EQUIPE,
                             prismaTx
                         );
                     }
