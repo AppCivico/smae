@@ -7,7 +7,7 @@ import { useOrgansStore, usePortfolioStore } from '@/stores';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
 const ordenador = [
-  'portfolio',
+  'portfolio_id',
   'orgao_responsavel_id',
   'status',
   'etapa_id',
@@ -68,13 +68,13 @@ const opcoesFormulario = computed(() => ({
 const campos = computed<Formulario>(() => [
   {
     campos: {
-      portfolio: { tipo: 'select', opcoes: opcoesFormulario.value.portfolio },
+      portfolio_id: { tipo: 'select', opcoes: opcoesFormulario.value.portfolio },
       orgao_responsavel_id: { tipo: 'select', opcoes: opcoesFormulario.value.orgaos },
       status: {
         tipo: 'select',
         opcoes: mapaStatus,
       },
-      etapa_id: { tipo: 'select', opcoes: opcoesFormulario.value.etapas },
+      // etapa_id: { tipo: 'select', opcoes: opcoesFormulario.value.etapas },
       data_registro: { tipo: 'date' },
       revisado: { tipo: 'checkbox' },
     },
@@ -95,7 +95,6 @@ const campos = computed<Formulario>(() => [
 ]);
 
 const valoresIniciais = computed(() => ({
-  ordem_direcao: 'desc',
   ipp: 100,
 }));
 

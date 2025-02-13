@@ -78,7 +78,14 @@ addMethod(string, 'nullableOuVazio', function _() {
 addMethod(date, 'nullableOuVazio', function _() {
   return this
     .nullable()
-    .transform((v) => (v === '' ? null : v));
+    .transform((v) => {
+      try {
+        v.toISOString();
+        return v;
+      } catch (e) {
+        return null;
+      }
+    });
 });
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -164,7 +171,7 @@ setLocale({
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
 
-const direcaoOpcoes = ['asc', 'desc', undefined];
+const direcaoOpcoes = ['asc', 'desc', null];
 
 export const acompanhamento = object()
   .shape({
@@ -2658,16 +2665,38 @@ export const projeto = object()
   });
 
 export const projetoFiltro = object().shape({
-  portfolio: number().label('portfolio').nullableOuVazio(),
-  orgao_responsavel_id: number().label('órgão responsável').nullableOuVazio(),
-  status: string().label('status').nullableOuVazio(),
-  palavra_chave: string().label('Palavra chave').nullableOuVazio(),
-  etapa_id: number().label('etapa').nullableOuVazio(),
-  data_registro: date().label('data de registro').max(new Date()).nullableOuVazio(),
-  revisado: boolean().label('revisado').nullableOuVazio(),
-  ordem_coluna: string().label('Ordenar por').nullableOuVazio(),
-  ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
-  ipp: number().label('Itens por página').nullableOuVazio(),
+  data_registro: date()
+    .label('data de registro')
+    .max(new Date())
+    .nullableOuVazio(),
+  etapa_id: number()
+    .label('etapa')
+    .nullableOuVazio(),
+  ipp: number()
+    .label('Itens por página')
+    .nullableOuVazio(),
+  ordem_coluna: string()
+    .label('Ordenar por')
+    .nullableOuVazio(),
+  ordem_direcao: string()
+    .label('Direção')
+    .oneOf(direcaoOpcoes)
+    .nullableOuVazio(),
+  orgao_responsavel_id: number()
+    .label('órgão responsável')
+    .nullableOuVazio(),
+  palavra_chave: string()
+    .label('Palavra chave')
+    .nullableOuVazio(),
+  portfolio_id: number()
+    .label('portfolio')
+    .nullableOuVazio(),
+  revisado: boolean()
+    .label('revisado')
+    .nullableOuVazio(),
+  status: string()
+    .label('status')
+    .nullableOuVazio(),
 });
 
 export const região = object()
