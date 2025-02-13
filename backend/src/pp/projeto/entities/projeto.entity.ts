@@ -58,6 +58,7 @@ export class ProjetoV2Dto extends ProjetoMdoDto {
     previsao_termino: string | null;
 
     orgao_responsavel: IdSiglaDescricao | null;
+    projeto_etapa: string | null;
 }
 
 export class ListProjetoDto {

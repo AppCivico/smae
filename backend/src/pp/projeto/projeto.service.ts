@@ -1346,6 +1346,7 @@ export class ProjetoService {
                               descricao: r.orgao_responsavel_descricao!,
                           }
                         : null,
+                        projeto_etapa: r.projeto_etapa
                 } satisfies ProjetoV2Dto;
             }),
         };
