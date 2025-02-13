@@ -42,11 +42,7 @@ const ProjetosItem = defineAsyncComponent({
   loader: () => import('@/views/projetos/ProjetosItem.vue'),
   loadingComponent: LoadingComponent,
 });
-const ProjetosLista = defineAsyncComponent({
-  // loader: () => import('@/views/projetos/ProjetosLista.vue'),
-  loader: () => import('@/views/projetos/ProjetosLista/ProjetosLista.vue'),
-  loadingComponent: LoadingComponent,
-});
+const ProjetosLista = () => import('@/views/projetos/ProjetosLista/ProjetosLista.vue');
 const ProjetosResumo = defineAsyncComponent({
   loader: () => import('@/views/projetos/ProjetosResumo.vue'),
   loadingComponent: LoadingComponent,

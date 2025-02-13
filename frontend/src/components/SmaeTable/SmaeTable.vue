@@ -142,7 +142,6 @@
 
 <script lang="ts" setup>
 import { type Component, computed, useSlots } from 'vue';
-import { gerarToken } from '@/helpers/geradorToken';
 import TableCell from './partials/TableCell.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
