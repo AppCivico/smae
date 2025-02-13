@@ -34,8 +34,10 @@ function alterarStatusRevsado(id: string, statusRevisao: boolean) {
   projetosStore.revisar(id, statusRevisao);
 }
 
-function handleDesmarcarTodos() {
-  projetosStore.revisarTodos(false);
+async function handleDesmarcarTodos() {
+  await projetosStore.revisarTodos();
+
+  atualizarDados();
 }
 
 async function handleDeletarItem({ id }) {
@@ -122,7 +124,7 @@ watch(() => route.query, () => {
         <input
           type="checkbox"
           class="interruptor"
-          :value="linha.revisado"
+          :checked="linha.revisado"
           @change="ev => alterarStatusRevsado(linha.id, ev.target.checked)"
         >
       </template>
