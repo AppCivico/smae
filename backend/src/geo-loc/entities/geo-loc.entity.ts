@@ -82,6 +82,7 @@ export class FilterCamadasDto {
     @Transform(PositiveNumberTransform)
     regiao_nivel_regionalizacao?: number;
 
+    @IsOptional()
     @Transform(({ value }: any) => value === 'true')
     @IsBoolean()
     retornar_regioes?: boolean;
