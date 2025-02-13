@@ -80,6 +80,11 @@ const campos = computed<Formulario>(() => [
     },
   },
   {
+    campos: {
+      palavra_chave: { tipo: 'search' },
+    },
+  },
+  {
     class: 'maxw',
     campos: {
       ordem_coluna: { class: 'fb0', tipo: 'select', opcoes: ordenador },
