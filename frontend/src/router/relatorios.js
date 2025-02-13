@@ -1,6 +1,6 @@
-import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
+import { defineAsyncComponent } from 'vue';
 
 const NovoMensal = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoMensal.vue'),
@@ -683,6 +683,7 @@ export default {
         fonteParaRelatório: 'PSIndicadores',
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: undefined,
+        tituloSingular: 'Plano Setorial',
         limitarÀsPermissões: [
           'Reports.executar.PlanoSetorial',
           'Reports.executar.ProgramaDeMetas',
@@ -693,10 +694,10 @@ export default {
         {
           path: '',
           name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
-          component: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'), //
+          component: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'),
         },
         {
-          component: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
+          component: () => NovoSemestralOuAnual,
           path: 'novo',
           name: 'planoSetorial.novoRelatórioSemestralOuAnual',
           meta: {
