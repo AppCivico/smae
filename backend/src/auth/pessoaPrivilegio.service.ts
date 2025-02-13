@@ -18,7 +18,10 @@ export class PessoaPrivilegioService {
                 id: {
                     in: pessoaIds,
                 },
-                desativado: false,
+                // desativado: não considerar, pois os usuários desativados podem ter equipes/grupos de painel
+                // decidido em 2025-02-13, não vamos usar o "Suspendido" por enquanto
+                // pois não verificamos que ainda há esses grupos registrados ao inativar o usuário, somente apenas na
+                // remoção dos privilégios
                 NOT: { pessoa_fisica_id: null },
 
                 PessoaPerfil: privileges.length
