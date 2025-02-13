@@ -281,7 +281,7 @@ export const useProjetosStore = defineStore('projetos', {
       }
     },
 
-    async revisarTodos(status: boolean): Promise<void> {
+    async revisarTodos(): Promise<void> {
       try {
         await this.requestS.post(`${baseUrl}/projeto/revisar-todas`, {});
       } catch (erro) {
