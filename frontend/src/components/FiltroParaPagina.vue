@@ -48,6 +48,11 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     ...valoresControlados,
   };
 
+  if (query.pagina) {
+    delete query.pagina;
+    delete query.token_paginacao;
+  }
+
   const queryFiltrada = Object.keys(query).reduce((amount, item) => {
     const value = query[item];
 
@@ -118,7 +123,7 @@ watch(() => route.query, (val) => {
                   <input
                     type="checkbox"
                     class="interruptor"
-                    :value="value"
+                    :checked="value"
                     @input="(ev) => handleInput(ev.target.checked)"
                   >
                 </div>
