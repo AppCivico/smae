@@ -40,11 +40,12 @@ type Endereco = {
 const regiaoPadrao = 180;
 const nivelRegionalizacaoPadrao = 3;
 
-const strokeColor = '#152741';
-const opacidadePreenchimento = 0.25;
+const strokeColor = '#660000';
+const opacidadePreenchimento = 0.35;
+const espessuraDoFio = 3;
 
-const corParaMaximo = '#152741';
-const corParaMinimo = '#f7c234';
+const corParaMaximo = '#511515';
+const corParaMinimo = '#ffd29e';
 const route = useRoute();
 const router = useRouter();
 
@@ -116,7 +117,7 @@ const locaisAgrupados = computed(() => {
 
   const cores = [
     corParaMinimo,
-    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, { format: 'hsl', huePath: 'long' }),
+    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 2, { format: 'hsl', huePath: 'short' }),
     corParaMaximo,
   ];
   return {
@@ -124,13 +125,15 @@ const locaisAgrupados = computed(() => {
       .map((camada) => {
         if (!camada.config) {
           camada.config = {
+            className: 'camada',
             color: strokeColor,
+            weight: espessuraDoFio,
             fillOpacity: opacidadePreenchimento,
           };
         }
 
         camada.config.fillColor = totalDeProjetos[camada.id]
-          ? cores[totalDeProjetos[camada.id] - 1]
+          ? cores[totalDeProjetos[camada.id]]
           : cores[0];
 
         return camada;
@@ -673,7 +676,11 @@ watch(
 }
 
 :deep(.leaflet-layer) {
-  filter: grayscale(0.8) hue-rotate(-65deg);
+  filter: grayscale(0.8);
+}
+
+:deep(.camada) {
+  mix-blend-mode: multiply;
 }
 
 .painel-flutuante__dados {
