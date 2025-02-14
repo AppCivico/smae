@@ -11,15 +11,21 @@ import dinheiro from '@/helpers/dinheiro';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import projectStatuses from '@/consts/projectStatuses';
 import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
+import { useAuthStore } from '@/stores/auth.store';
 
 const route = useRoute();
 const projetosStore = useProjetosStore();
+const authStore = useAuthStore();
 
 const { ultimoVisitado } = storeToRefs(projetosStore);
 
 const { paginacaoProjetos } = storeToRefs(projetosStore);
 
 const listaDeProjetos = computed(() => projetosStore.listaV2);
+const podeExcluir = computed(() => authStore.temPermissãoPara([
+  'Projeto.administrador_no_orgao',
+  'Projeto.administrador',
+]));
 
 function atualizarDados() {
   projetosStore.buscarTudoV2(route.query);
@@ -70,6 +76,8 @@ watch(() => route.query, () => {
           v-bind="paginacaoProjetos"
         />
 
+        {{ podeExcluir }}
+
         <SmaeTable
           class="mt2"
           :dados="listaDeProjetos"
@@ -92,6 +100,7 @@ watch(() => route.query, () => {
             classe: 'selecionado'
           }"
           :rota-editar="{ name: 'projetosEditar' }"
+          :esconder-deletar="!podeExcluir"
           @deletar="handleDeletarItem"
         >
           <template #cabecalho:acao>
