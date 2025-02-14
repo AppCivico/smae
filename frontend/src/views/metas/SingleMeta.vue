@@ -101,11 +101,7 @@ iniciar();
       </div>
       <hr class="ml2 f1">
       <SmaeLink
-        v-if="temPermissãoPara([
-          'CadastroMeta.administrador_no_pdm',
-          'CadastroMetaPS.administrador_no_pdm',
-          'CadastroMetaPDM.administrador_no_pdm'
-        ]) && activePdm?.pode_editar"
+        v-if="singleMeta?.pode_editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
       >
@@ -155,7 +151,7 @@ iniciar();
 
         <div
           v-if="route.meta.entidadeMãe === 'pdm'"
-          class="flex g2"
+          class="flex g2 mb2"
         >
           <div
             v-if="singleMeta.orgaos_participantes.filter(x => x.responsavel)"
@@ -198,7 +194,7 @@ iniciar();
 
         <div
           v-else
-          class="flex g2"
+          class="flex g2 mb2"
         >
           <div
             v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"

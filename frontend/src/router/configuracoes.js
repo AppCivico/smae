@@ -124,6 +124,7 @@ export default [
         'Projeto.administrar_portfolios',
         'ProjetoProgramaMDO.',
         'ProjetoTagMDO.',
+        'ReferencialEm.Equipe.ProgramaDeMetas',
       ],
       presenteNoMenu: true,
       pesoNoMenu: 5,
