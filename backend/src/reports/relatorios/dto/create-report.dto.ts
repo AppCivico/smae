@@ -62,8 +62,4 @@ export class CreateReportDto {
     @IsOptional()
     @IsBoolean()
     eh_publico?: boolean;
-
-    @IsOptional()
-    @IsBoolean()
-    background?: boolean;
 }

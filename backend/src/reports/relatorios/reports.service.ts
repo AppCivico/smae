@@ -228,7 +228,6 @@ export class ReportsService {
                 parametros_processados: await this.buildParametrosProcessados(dto),
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
-                processado_em: dto.background ? new Date(Date.now()) : null,
             },
             select: { id: true },
         });
