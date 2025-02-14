@@ -403,6 +403,8 @@ export class PdmService {
                 if (pdm.arquivo_logo_id) {
                     logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
                 }
+                const pode_editar = await this.calcPodeEditar({ ...pdm, tipo: tipo }, user);
+                console.log(pode_editar);
 
                 return {
                     id: pdm.id,
@@ -427,7 +429,7 @@ export class PdmService {
                     nivel_orcamento: pdm.nivel_orcamento,
                     tipo: pdm.tipo,
 
-                    pode_editar: await this.calcPodeEditar({ ...pdm, tipo: tipo }, user),
+                    pode_editar: pode_editar,
                     logo: logo,
                     data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
                     data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
@@ -471,13 +473,12 @@ export class PdmService {
                 this.logger.log('Verificando permissão pelas equipes');
 
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
-
                 // e todos os itens são do mesmo órgão
                 const podeEditar = parsed.some(
                     (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
                 );
                 this.logger.verbose(`podeEditar: ${podeEditar}`);
-                return true;
+                return podeEditar;
             }
 
             this.logger.verbose(`podeEditar: false`);
@@ -537,6 +538,7 @@ export class PdmService {
             periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
             considerar_atraso_apos: Date2YMD.toStringOrNull(pdm.considerar_atraso_apos),
         };
+        console.log(pdmInfo.pode_editar);
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
         if (tipo == '_PS' || tipo == 'PDM_AS_PS') {
