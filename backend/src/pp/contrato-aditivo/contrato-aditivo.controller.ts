@@ -11,6 +11,7 @@ import { CreateContratoAditivoDto } from './dto/create-contrato-aditivo.dto';
 import { ListContratoAditivoDto } from './entities/contrato-aditivo.entity';
 import { UpdateContratoAditivoDto } from './dto/update-contrato-aditivo.dto';
 import { ContratoAditivoService } from './contrato-aditivo.service';
+import { ProjetoService } from '../projeto/projeto.service';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
@@ -26,7 +27,10 @@ const rolesMDO: ListaDePrivilegios[] = [
 @Controller('contrato-pp')
 @ApiTags('Projeto - Contrato Aditivo PP')
 export class ContratoAditivoPPController {
-    constructor(private readonly contratoAditivoService: ContratoAditivoService) {}
+    constructor(
+        private readonly projetoService: ProjetoService,
+        private readonly contratoAditivoService: ContratoAditivoService
+    ) {}
 
     @Post(':id/aditivo')
     @ApiBearerAuth('access-token')
@@ -36,6 +40,7 @@ export class ContratoAditivoPPController {
         @Body() createContratoAditivoDto: CreateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         return await this.contratoAditivoService.create(+params.id, createContratoAditivoDto, user);
     }
 
@@ -43,6 +48,7 @@ export class ContratoAditivoPPController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListContratoAditivoDto> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
             linhas: await this.contratoAditivoService.findAll(+params.id, user),
         };
@@ -56,6 +62,7 @@ export class ContratoAditivoPPController {
         @Body() dto: UpdateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         return await this.contratoAditivoService.update(+params.id, +params.id2, dto, user);
     }
 
@@ -65,6 +72,7 @@ export class ContratoAditivoPPController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         await this.contratoAditivoService.remove(+params.id, +params.id2, user);
         return '';
     }
@@ -73,7 +81,10 @@ export class ContratoAditivoPPController {
 @Controller('contrato-mdo')
 @ApiTags('Projeto - Contrato Aditivo MDO')
 export class ContratoAditivoMDOController {
-    constructor(private readonly contratoAditivoService: ContratoAditivoService) {}
+    constructor(
+        private readonly projetoService: ProjetoService,
+        private readonly contratoAditivoService: ContratoAditivoService
+    ) {}
 
     @Post(':id/aditivo')
     @ApiBearerAuth('access-token')
@@ -83,6 +94,7 @@ export class ContratoAditivoMDOController {
         @Body() createContratoAditivoDto: CreateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
         return await this.contratoAditivoService.create(+params.id, createContratoAditivoDto, user);
     }
 
@@ -90,6 +102,7 @@ export class ContratoAditivoMDOController {
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListContratoAditivoDto> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
         return {
             linhas: await this.contratoAditivoService.findAll(+params.id, user),
         };
@@ -103,6 +116,7 @@ export class ContratoAditivoMDOController {
         @Body() dto: UpdateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
         return await this.contratoAditivoService.update(+params.id, +params.id2, dto, user);
     }
 
@@ -112,6 +126,7 @@ export class ContratoAditivoMDOController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
         await this.contratoAditivoService.remove(+params.id, +params.id2, user);
         return '';
     }
