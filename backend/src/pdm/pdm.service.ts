@@ -267,22 +267,7 @@ export class PdmService {
                         PdmPerfil: {
                             some: {
                                 removido_em: null,
-                                tipo: 'CP',
-                                equipe_id: { in: collab },
-                            },
-                        },
-                    });
-                }
-
-                if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                    this.logger.log('Usuário com permissão total em PS no CP');
-
-                    orList.push({
-                        tipo: tipoPdm,
-                        PdmPerfil: {
-                            some: {
-                                removido_em: null,
-                                tipo: 'PONTO_FOCAL',
+                                tipo: { in: ['CP', 'PONTO_FOCAL', 'ADMIN'] },
                                 equipe_id: { in: collab },
                             },
                         },
