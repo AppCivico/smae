@@ -6,6 +6,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class TarefaUtilsService {
     constructor(private readonly prisma: PrismaService) {}
 
+    async recalcNivel(prismaTx: Prisma.TransactionClient, crongorama_id: number) {
+        // depois de mover os parents, as tarefas filhas ficam os os níveis errados
+        // essa função ajusta os de todos os filhos do cronograma de acordo com o parent_id
+        await prismaTx.$queryRaw`SELECT f_tarefa_recalc_nivel(${crongorama_id}::int)::text`;
+    }
+
     async decrementaNumero(
         dto: {
             tarefa_pai_id: number | null;

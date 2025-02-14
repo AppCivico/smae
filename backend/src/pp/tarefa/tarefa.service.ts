@@ -1141,6 +1141,7 @@ export class TarefaService {
                 }
             }
 
+            let recalcNivel = false;
             if (
                 'dependencias' in dto &&
                 ((dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id) ||
@@ -1213,6 +1214,7 @@ export class TarefaService {
                         prismaTx,
                         tarefaCronoId
                     );
+                    recalcNivel = true;
                 } else {
                     // mudou apenas o numero
                     this.logger.debug('Apenas mudança de número foi detectada');
@@ -1236,6 +1238,7 @@ export class TarefaService {
                         prismaTx,
                         tarefaCronoId
                     );
+                    recalcNivel = true;
                 }
             } else if ('dependencias' in dto) {
                 // nao deixar nem o nivel sem passar o pai
@@ -1337,6 +1340,8 @@ export class TarefaService {
                     });
                 }
             }
+
+            if (recalcNivel) await this.utils.recalcNivel(prismaTx, tarefaCronoId);
 
             return { id: tarefa.id };
         };
