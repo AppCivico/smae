@@ -39,7 +39,8 @@ async function iniciar() {
   if (singleAtividade.value.id !== atividadeId) {
     await AtividadesStore.getByIdReal(atividadeId);
   }
-  if (route.meta.entidadeMãe === 'pdm') {
+
+  if (['pdm', 'programaDeMetas'].includes(route.meta.entidadeMãe)) {
     if (singleAtividade.value.id) {
       AtividadesStore.getRelacionados({ atividade_id: singleAtividade.value.id });
     }

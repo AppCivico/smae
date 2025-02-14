@@ -55,7 +55,7 @@ async function iniciar() {
     await Promise.allSettled(promessas);
   }
 
-  if (route.meta.entidadeMãe === 'pdm') {
+  if (['pdm', 'programaDeMetas'].includes(route.meta.entidadeMãe)) {
     if (singleIniciativa.value.id) {
       IniciativasStore.getRelacionados({
         iniciativa_id: singleIniciativa.value.id,

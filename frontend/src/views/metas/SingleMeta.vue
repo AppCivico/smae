@@ -1,7 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -14,6 +11,9 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
@@ -56,7 +56,7 @@ async function iniciar() {
 
   if (metaId && activePdm.value.id) {
     MetasStore.getRelacionados({
-      metaId, pdm_id: activePdm.value.id,
+      meta_id: metaId, pdm_id: activePdm.value.id,
     });
   }
 
