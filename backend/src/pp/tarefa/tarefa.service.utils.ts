@@ -6,37 +6,37 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class TarefaUtilsService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async recalcNivel(prismaTx: Prisma.TransactionClient, crongorama_id: number) {
+    async recalcNivel(prismaTx: Prisma.TransactionClient, tarefa_cronograma_id: number) {
         // depois de mover os parents, as tarefas filhas ficam os os níveis errados
         // essa função ajusta os de todos os filhos do cronograma de acordo com o parent_id
-        await prismaTx.$queryRaw`SELECT f_tarefa_recalc_nivel(${crongorama_id}::int)::text`;
+        await prismaTx.$queryRaw`SELECT f_tarefa_recalc_nivel(${tarefa_cronograma_id}::int)::text`;
     }
 
     async decrementaNumero(
         dto: {
+            id: number;
             tarefa_pai_id: number | null;
             numero: number;
         },
         prismaTx: Prisma.TransactionClient,
-        tarefa_cronograma_id: number
+        tarefa_cronograma_id: number,
+        maiorNumero: number | null
     ) {
-        const maiorNumero = await this.maiorNumeroDoNivel(prismaTx, dto);
+        if (maiorNumero == null || dto.numero >= maiorNumero) return; // já está no final
 
-        // não faz sentido, já que sempre existe pelo menos a própria task que estava sendo removida
-        if (maiorNumero == null) return;
-
-        // se o numero é maior ou igual, ele já era o ultimo nível, então não precisa mexer em nada
-        if (dto.numero >= maiorNumero) return;
-
-        await prismaTx.$executeRaw`update tarefa
-            set numero = numero - 1
-            where removido_em is null and
-            tarefa_cronograma_id = ${tarefa_cronograma_id}::int and
-            (CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
-                THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
-                ELSE tarefa_pai_id IS NULL
-            END) AND
-            numero >= ${dto.numero}::int
+        await prismaTx.$executeRaw`
+            UPDATE tarefa
+            SET numero = numero - 1
+            WHERE removido_em IS NULL
+              AND tarefa_cronograma_id = ${tarefa_cronograma_id}::int
+              AND id != ${dto.id}
+              AND (
+                CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
+                     THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
+                     ELSE tarefa_pai_id IS NULL
+                END
+              )
+              AND numero >= ${dto.numero}::int
         `;
     }
 
@@ -47,40 +47,61 @@ export class TarefaUtilsService {
         },
         prismaTx: Prisma.TransactionClient,
         tarefa_cronograma_id: number,
-        extraNumber: 0 | 1 = 0
+        tarefa_update_id: number | null = null,
+        maiorNumero: number | null
     ): Promise<number> {
-        let numero = dto.numero;
-        const numeroMaximo = await this.maiorNumeroDoNivel(prismaTx, dto);
-
-        if (numeroMaximo == null) {
-            // se não há registros, o nível é o primeiro sempre
-            numero = 1;
-        } else if (dto.numero <= numeroMaximo) {
-            // se há uma tarefa com o número desejado, todas elas serão empurradas para o proximo número
-            await prismaTx.$executeRaw`update tarefa
-                    set numero = numero + 1
-                    where removido_em is null and
-                    tarefa_cronograma_id = ${tarefa_cronograma_id}::int and
-                    (CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
-                        THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
-                        ELSE tarefa_pai_id IS NULL
-                    END) AND
-                    numero >= ${dto.numero}::int
-                `;
-        } else {
-            // se não há tarefas com o número desejado, o número é o maior + 1 (no create, no update é 0)
-            numero = numeroMaximo + extraNumber;
+        // se não tem nenhuma tarefa, o numero é 1
+        if (maiorNumero == null) {
+            return 1;
         }
-        return numero;
+
+        // não deixa passar do máximo, nunca!
+        const novoNumero = Math.min(dto.numero, maiorNumero);
+        console.log(`Incrementing: requested ${dto.numero}, assigned ${novoNumero}`);
+
+        const emUso = await prismaTx.tarefa.findFirst({
+            where: {
+                removido_em: null,
+                tarefa_pai_id: dto.tarefa_pai_id,
+                tarefa_cronograma_id: tarefa_cronograma_id,
+                numero: novoNumero,
+                id: tarefa_update_id ? { not: tarefa_update_id } : undefined,
+            },
+        });
+
+        // Só numera se houver conflito
+        if (emUso) {
+            await prismaTx.$executeRaw`
+              UPDATE tarefa
+              SET numero = numero + 1
+              WHERE removido_em IS NULL
+                AND tarefa_cronograma_id = ${tarefa_cronograma_id}::int
+                AND id != ${tarefa_update_id}
+                AND (
+                  CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
+                    THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
+                    ELSE tarefa_pai_id IS NULL
+                  END
+                )
+                AND numero >= ${novoNumero}::int
+            `;
+        }
+
+        return novoNumero;
     }
 
-    private async maiorNumeroDoNivel(
+    async maiorNumeroDoNivel(
         prismaTx: Prisma.TransactionClient,
-        dto: { tarefa_pai_id: number | null }
+        tarefa_pai_id: number | null,
+        tarefa_cronograma_id: number
     ): Promise<number | null> {
         const lookup = await prismaTx.tarefa.aggregate({
             _max: { numero: true },
-            where: { removido_em: null, tarefa_pai_id: dto.tarefa_pai_id },
+            where: {
+                removido_em: null,
+                tarefa_pai_id: tarefa_pai_id,
+                tarefa_cronograma_id: tarefa_cronograma_id,
+            },
         });
         return lookup._max.numero;
     }
