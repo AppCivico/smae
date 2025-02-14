@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import SmaeLink from '@/components/SmaeLink.vue';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
@@ -57,6 +58,15 @@ watch(() => route.query, () => {
   <section class="projetos-lista">
     <div class="projetos-lista__header flex spacebetween center mb2">
       <TituloDaPagina />
+
+      <hr class="ml2 f1">
+
+      <SmaeLink
+        :to="{ name: 'projetosCriar' }"
+        class="btn big ml2"
+      >
+        Novo projeto
+      </SmaeLink>
     </div>
 
     <ProjetosListaFiltro />
@@ -70,10 +80,11 @@ watch(() => route.query, () => {
       class="mt2"
       :dados="listaDeProjetos"
       :colunas="[
+        { chave: 'nome', label: 'Nome do Projeto' },
         { chave: 'portfolio.titulo', label: 'Portfólio' },
         { chave: 'orgao_responsavel.descricao', label: 'Órgão Responsável' },
-        { chave: 'nome', label: 'Nome do Projeto' },
         { chave: 'status', label: 'Status' },
+        { chave: 'projeto_etapa', label: 'Etapa' },
         { chave: 'previsao_termino', label: 'Término Planejado' },
         { chave: 'previsao_custo', label: 'Custo Total Planejado' },
         { chave: 'revisado', label: 'Revisado' },
@@ -98,9 +109,9 @@ watch(() => route.query, () => {
         </button>
       </template>
 
-      <template #['celula:portfolio.titulo']="{ linha }">
+      <template #['celula:nome']="{ linha }">
         <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
-          {{ linha.portfolio.titulo }}
+          {{ linha.nome }}
         </SmaeLink>
       </template>
 
@@ -117,7 +128,7 @@ watch(() => route.query, () => {
       </template>
 
       <template #celula:previsao_custo="{ linha }">
-        {{ dinheiro(linha.previsao_custo) }}
+        {{ dinheiro(linha.previsao_custo) || '-' }}
       </template>
 
       <template #celula:revisado="{ linha }">

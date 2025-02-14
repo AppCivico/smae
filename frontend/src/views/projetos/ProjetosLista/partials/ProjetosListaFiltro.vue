@@ -10,7 +10,7 @@ const ordenador = [
   'portfolio_id',
   'orgao_responsavel_id',
   'status',
-  'etapa_id',
+  'projeto_etapa_id',
   'data_registro',
   'revisado',
 ].map((item) => ({
@@ -63,6 +63,10 @@ const opcoesFormulario = computed(() => ({
     id: item.id,
     label: item.descricao,
   })),
+  revisado: [
+    { id: true, label: 'Revisado' },
+    { id: false, label: 'Não revisado' },
+  ],
 }));
 
 const campos = computed<Formulario>(() => [
@@ -74,9 +78,9 @@ const campos = computed<Formulario>(() => [
         tipo: 'select',
         opcoes: mapaStatus,
       },
-      // etapa_id: { tipo: 'select', opcoes: opcoesFormulario.value.etapas },
+      projeto_etapa_id: { tipo: 'select', opcoes: opcoesFormulario.value.etapas },
       data_registro: { tipo: 'date' },
-      revisado: { tipo: 'checkbox' },
+      revisado: { tipo: 'select', opcoes: opcoesFormulario.value.revisado },
     },
   },
   {

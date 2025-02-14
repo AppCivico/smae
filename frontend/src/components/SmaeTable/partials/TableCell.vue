@@ -10,7 +10,7 @@
         :caminho="caminho"
         :linha="linha"
       >
-        {{ conteudoColuna }}
+        {{ conteudoColuna || '-' }}
       </slot>
     </td>
   </slot>
