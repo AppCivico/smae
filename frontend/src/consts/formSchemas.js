@@ -2669,7 +2669,7 @@ export const projetoFiltro = object().shape({
     .label('data de registro')
     .max(new Date())
     .nullableOuVazio(),
-  etapa_id: number()
+  projeto_etapa_id: number()
     .label('etapa')
     .nullableOuVazio(),
   ipp: number()
