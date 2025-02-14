@@ -131,6 +131,9 @@ export default {
           'Projeto.administrador_no_orgao',
           'Projeto.administrador',
         ],
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+        ],
       },
     },
 
