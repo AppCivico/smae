@@ -1455,7 +1455,7 @@ export class TarefaService {
                 and t.removido_em is null
           )
           SELECT
-            max(nivel) - min(nivel) as numero_de_niveis,
+            max(nivel) - min(nivel) + 1 as numero_de_niveis,
             array_agg(id) as filhas
           FROM tarefa_path;`;
         const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
