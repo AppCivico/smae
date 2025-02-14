@@ -139,8 +139,6 @@ export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJ
                 pdm: {
                     PdmPerfil: {
                         some: {
-                            // TODO: validar como fica com estrutura nova de equipes
-                            //pessoa_id: user.id,
                             removido_em: null,
                             tipo: 'ADMIN',
                         },
@@ -155,14 +153,13 @@ export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJ
                 pdm: {
                     PdmPerfil: {
                         some: {
-                            // TODO: validar como fica com estrutura nova de equipes
-                            //pessoa_id: user.id,
                             removido_em: null,
                             tipo: 'CP',
                         },
                     },
                 },
                 ViewMetaPessoaResponsavelNaCp: {
+                    // NA CP
                     some: {
                         pessoa_id: user.id,
                     },
@@ -177,8 +174,6 @@ export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJ
                 pdm: {
                     PdmPerfil: {
                         some: {
-                            // TODO: validar como fica com estrutura nova de equipes
-                            //pessoa_id: user.id,
                             removido_em: null,
                             tipo: 'PONTO_FOCAL',
                         },
@@ -189,12 +184,11 @@ export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJ
                         pessoa_id: user.id,
                     },
                 },
-                // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
             });
         }
 
         if (orSet.length == 0) {
-            //this.logger.verbose('Usuário não tem permissão para nenhuma meta');
+            Logger.warn('Usuário não tem permissão para nenhuma meta');
             orSet.push({ id: MIN_DB_SAFE_INT32 });
         }
 
@@ -564,9 +558,12 @@ export class MetaService {
                 macro_tema: { select: { descricao: true, id: true } },
                 tema: { select: { descricao: true, id: true } },
                 sub_tema: { select: { descricao: true, id: true } },
-                pdm_id: true,
+                pdm: {
+                    select: { id: true, orgao_admin_id: true },
+                },
                 status: true,
                 ativo: true,
+                criado_por: true,
                 meta_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true, sigla: true } },
@@ -711,7 +708,35 @@ export class MetaService {
             } else if (ehPdm && user.hasSomeRoles(['PDM.tecnico_cp'])) {
                 podeEditar = coordenadores_cp.some((r) => r.id == user.id);
             } else if (!ehPdm) {
-                podeEditar = true; // TODO plano setorial
+                if (
+                    user.hasSomeRoles([tipo == 'PDM_AS_PS' ? 'CadastroPDM.administrador' : 'CadastroPS.administrador'])
+                ) {
+                    podeEditar = true;
+                }
+
+                if (
+                    !podeEditar &&
+                    user.hasSomeRoles([
+                        tipo == 'PDM_AS_PS'
+                            ? 'CadastroPDM.administrador_no_orgao'
+                            : 'CadastroPS.administrador_no_orgao',
+                    ])
+                ) {
+                    // se ele mesmo criou, pode editar
+                    podeEditar = dbMeta.criado_por == user.id;
+                    if (!podeEditar) podeEditar = dbMeta.pdm.orgao_admin_id === user.orgao_id;
+                }
+
+                if (!podeEditar) {
+                    const psPerfis = dbMeta.PdmPerfil.filter((r) => r.tipo == 'CP' || r.tipo == 'ADMIN');
+                    const collab = await user.getEquipesColaborador(this.prisma);
+                    for (const psPerfil of psPerfis) {
+                        if (collab.includes(psPerfil.equipe_id)) {
+                            podeEditar = true;
+                            break;
+                        }
+                    }
+                }
             }
 
             let resumoOrigem: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
@@ -731,7 +756,7 @@ export class MetaService {
                 macro_tema: dbMeta.macro_tema,
                 tema: dbMeta.tema,
                 sub_tema: dbMeta.sub_tema,
-                pdm_id: dbMeta.pdm_id,
+                pdm_id: dbMeta.pdm.id,
                 status: dbMeta.status,
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
