@@ -46,7 +46,8 @@ export class TarefaUtilsService {
             numero: number;
         },
         prismaTx: Prisma.TransactionClient,
-        tarefa_cronograma_id: number
+        tarefa_cronograma_id: number,
+        extraNumber: 0 | 1 = 0
     ): Promise<number> {
         let numero = dto.numero;
         const numeroMaximo = await this.maiorNumeroDoNivel(prismaTx, dto);
@@ -67,8 +68,8 @@ export class TarefaUtilsService {
                     numero >= ${dto.numero}::int
                 `;
         } else {
-            // por padrão, é o nível maior + 1
-            numero = numeroMaximo + 1;
+            // se não há tarefas com o número desejado, o número é o maior + 1 (no create, no update é 0)
+            numero = numeroMaximo + extraNumber;
         }
         return numero;
     }

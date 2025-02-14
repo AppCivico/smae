@@ -209,7 +209,7 @@ export class TarefaService {
                         throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
                 }
 
-                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId);
+                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId, 1);
 
                 const tarefa = await prismaTx.tarefa.create({
                     data: {
