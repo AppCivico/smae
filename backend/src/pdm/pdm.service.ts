@@ -222,7 +222,7 @@ export class PdmService {
             });
 
             if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
-                this.logger.log('Usuário com permissão total em PS/PDM');
+                this.logger.log('Usuário com permissão total em *TODOS* PS/PDM');
                 orList.push({
                     // só pra ter algo, sempre vai dar true
                     removido_em: null,
@@ -234,7 +234,7 @@ export class PdmService {
                 const collab = await user.getEquipesColaborador(this.prisma);
 
                 if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
-                    this.logger.log('Usuário com permissão total em PS no órgão');
+                    this.logger.log('Usuário com permissão total *no órgão* em PS/PDM no órgão');
 
                     const orgaoId = user.orgao_id;
                     if (!orgaoId) throw new HttpException('Usuário sem órgão associado', 400);
@@ -260,7 +260,7 @@ export class PdmService {
                 }
 
                 if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                    this.logger.log('Usuário com permissão total em PS no CP');
+                    this.logger.log('Usuário pode ser participante em equipes PS/PDM');
 
                     orList.push({
                         tipo: tipoPdm,
