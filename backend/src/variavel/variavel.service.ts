@@ -2819,6 +2819,8 @@ export class VariavelService {
                             referencia_data: { in: dataValores },
                             removido_em: null,
                             ultima_revisao: true,
+                            fase: 'Liberacao',
+                            aprovada: true,
                         },
                         by: ['referencia_data'],
                         _count: true,
