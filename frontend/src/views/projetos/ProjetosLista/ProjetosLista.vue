@@ -2,7 +2,6 @@
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import SmaeLink from '@/components/SmaeLink.vue';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
