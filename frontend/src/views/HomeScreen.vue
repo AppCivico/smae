@@ -47,7 +47,6 @@ async function escolher(opção: keyof ModulosDoSistema) {
       localStorage.setItem('sistemaEscolhido', opção);
 
       if (dadosDoSistemaEscolhido.value?.rotaInicial) {
-        router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
         const listaDeRotasPossiveis = !Array.isArray(dadosDoSistemaEscolhido.value?.rotaInicial)
           ? [dadosDoSistemaEscolhido.value?.rotaInicial]
           : dadosDoSistemaEscolhido.value?.rotaInicial;

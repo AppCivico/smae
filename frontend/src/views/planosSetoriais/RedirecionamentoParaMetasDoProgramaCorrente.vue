@@ -17,7 +17,7 @@ async function iniciar() {
     // mesmo após consulta, a lista ainda é vazia?
     // então, vamos para a lista de variáveis
     if (!lista.value.length) {
-      await router.push({
+      return router.push({
         name: 'variaveisListar',
       });
     }
@@ -25,16 +25,14 @@ async function iniciar() {
 
   const planoAtivo = lista.value.find((plano) => plano.ativo);
 
-  if (planoAtivo) {
-    router.push({
+  return planoAtivo
+    ? router.push({
       name: `${route.meta.entidadeMãe}.listaDeMetas`,
       params: { planoSetorialId: planoAtivo.id },
-    });
-  } else {
-    router.push({
+    })
+    : router.push({
       name: `${route.meta.entidadeMãe}.planosSetoriaisListar`,
     });
-  }
 }
 iniciar();
 </script>

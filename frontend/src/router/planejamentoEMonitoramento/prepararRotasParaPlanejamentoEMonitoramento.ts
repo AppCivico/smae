@@ -30,7 +30,10 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         tituloSingular: 'Programa de Meta',
         tituloPlural: 'Programa de Metas',
         segmentoRaiz: '/programa-de-meta',
-        privilegioRaiz: 'CadastroPDM.',
+        privilegioRaiz: [
+          'CadastroPDM.',
+          'ReferencialEm.Equipe.ProgramaDeMetas',
+        ],
         presenteNoMenu: false,
       };
 
@@ -213,10 +216,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
                 meta: {
                   título: 'Nova Tag',
-                  limitarÀsPermissões: [
-                    'CadastroTagPS.inserir',
-                    'CadastroTagPDM.inserir',
-                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -234,10 +233,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 }),
                 meta: {
                   título: 'Editar Tag',
-                  limitarÀsPermissões: [
-                    'CadastroTagPS.editar',
-                    'CadastroTagPDM.editar',
-                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTags`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -271,10 +266,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Novo ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: [
-                    'CadastroMacroTemaPS.inserir',
-                    'CadastroMacroTemaPDM.inserir',
-                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -300,10 +291,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Editar ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: [
-                    'CadastroMacroTemaPS.editar',
-                    'CadastroMacroTemaPDM.editar',
-                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisMacrotemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -337,10 +324,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Nova ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: [
-                    'CadastroTemaPS.inserir',
-                    'CadastroTemaPDM.inserir',
-                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -365,10 +348,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Editar ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: [
-                    'CadastroTemaPS.editar',
-                    'CadastroTemaPDM.editar',
-                  ],
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisTemas`,
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
@@ -403,10 +382,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 
                     return `Novo ${tituloEntidade}`;
                   },
-                  limitarÀsPermissões: [
-                    'CadastroSubTemaPS.inserir',
-                    'CadastroSubTemaPDM.inserir',
-                  ],
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
                     `${entidadeMãe}.planosSetoriaisSubtemas`,
@@ -432,10 +407,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                     return `Editar ${tituloEntidade}`;
                   },
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisSubtemas`,
-                  limitarÀsPermissões: [
-                    'CadastroSubTemaPS.editar',
-                    'CadastroSubTemaPDM.editar',
-                  ],
                   rotasParaMigalhasDePão: [
                     `${entidadeMãe}.planosSetoriaisListar`,
                     `${entidadeMãe}.planosSetoriaisSubtemas`,
