@@ -21,11 +21,6 @@ const { paginacaoProjetos } = storeToRefs(projetosStore);
 
 const listaDeProjetos = computed(() => projetosStore.listaV2);
 
-function obterStatus(status: string) {
-  const mapaDeEstatus = projectStatuses as Record<string, string>;
-  return mapaDeEstatus[status] || status;
-}
-
 function atualizarDados() {
   projetosStore.buscarTudoV2(route.query);
 }
@@ -119,7 +114,7 @@ watch(() => route.query, () => {
       </template>
 
       <template #celula:status="{ linha }">
-        {{ obterStatus(linha.status) }}
+        {{ projectStatuses[linha.status]?.nome || linha.status }}
       </template>
 
       <template #celula:previsao_termino="{ linha }">

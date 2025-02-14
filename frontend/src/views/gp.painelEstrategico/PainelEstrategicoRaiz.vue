@@ -17,6 +17,7 @@ import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import projectStatuses from '@/consts/projectStatuses';
 import gerarCoresIntermediarias from '@/helpers/cores/gerarCoresIntermediarias';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
@@ -421,13 +422,12 @@ watch(
           <template #painel-flutuante="dados">
             <p
               v-if="dados.projeto_nome"
-              class="w900"
+              class="painel-flutuante__titulo"
             >
               {{ dados.projeto_nome }}
             </p>
             <p
               v-else-if="dados.titulo"
-              class="w900"
             >
               {{ dados.titulo }}
             </p>
@@ -464,11 +464,18 @@ watch(
               </div>
               <div
                 v-if="dados.projeto_status"
+                class="painel-flutuante__status"
               >
                 <dt>
                   Status
                 </dt>
-                <dd>{{ dados.projeto_status }}</dd>
+                <dd
+                  :style="{
+                    '--statusColor': projectStatuses[dados.projeto_status]?.cor,
+                  }"
+                >
+                  {{ dados.projeto_status }}
+                </dd>
               </div>
               <div
                 v-if="dados.projeto_etapa"
@@ -683,20 +690,23 @@ watch(
   mix-blend-mode: multiply;
 }
 
-.painel-flutuante__dados {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+.painel-flutuante__status dd {
+  display: flex;
+  border-radius: 8px;
+  display: flex;
+  align-items: stretch;
 
-  dt {
-    font-weight: bold;
-    color: @c600;
-    font-size: smaller;
-    text-transform: lowercase;
-  }
+  background-color: color-mix(in srgb, var(--statusColor, fuchsia) 15%, transparent);
 
-  dd {
-    font-weight: normal;
+  &::before {
+    color: var(--statusColor, fuchsia);
+    margin-right: 0.25em;
+    content: '';
+    width: 8px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    display: block;
+    border-radius: 999em;
   }
 }
 </style>

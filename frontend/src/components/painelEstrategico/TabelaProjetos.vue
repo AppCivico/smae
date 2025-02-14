@@ -101,7 +101,7 @@ defineProps({
               {{ projeto.meta?.codigo || ' - ' }}
             </td>
             <td class="tl">
-              {{ statuses[projeto.status] || projeto.status }}
+              {{ statuses[projeto.status]?.nome || projeto.status }}
             </td>
             <td class="tl">
               {{ projeto.etapa_atual || ' - ' }}

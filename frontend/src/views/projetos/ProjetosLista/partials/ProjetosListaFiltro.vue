@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import projectStatuses from '@/consts/projectStatuses';
-import { projetoFiltro as schema } from '@/consts/formSchemas';
 import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
+import { projetoFiltro as schema } from '@/consts/formSchemas';
+import projectStatuses from '@/consts/projectStatuses';
+import statusObras from '@/consts/statusObras';
 import { useOrgansStore, usePortfolioStore } from '@/stores';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { computed, onMounted } from 'vue';
 
 const ordenador = [
   'portfolio_id',
@@ -33,7 +34,9 @@ const mapaStatus = [
   'MDO_Paralisada',
 ].map((item) => ({
   id: item,
-  label: projectStatuses[item] || item,
+  label: projectStatuses[item]?.nome
+    || statusObras[item]?.nome
+    || item,
 }));
 
 const organsStore = useOrgansStore();

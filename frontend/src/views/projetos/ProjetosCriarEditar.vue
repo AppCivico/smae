@@ -7,8 +7,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
-import statuses from '@/consts/projectStatuses';
-import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
+import listaDeStatuses from '@/consts/projectStatuses';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -25,8 +24,6 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
 const DotaçãoStore = useDotaçãoStore();
@@ -407,7 +404,7 @@ watch(emFoco, () => {
             :value="item.valor"
             :disabled="emFoco?.permissoes.status_permitidos?.indexOf(item.valor) === -1"
           >
-            {{ item.etiqueta }}
+            {{ item.nome }}
           </option>
         </Field>
         <ErrorMessage

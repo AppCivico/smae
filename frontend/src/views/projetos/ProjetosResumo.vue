@@ -97,7 +97,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ schema.fields.status.spec.label }}
         </dt>
         <dd class="t13">
-          {{ statuses[emFoco?.status] || emFoco?.status }}
+          {{ statuses[emFoco?.status]?.nome || emFoco?.status }}
         </dd>
       </dl>
     </div>
