@@ -592,7 +592,7 @@ export class ReportsService {
         this.logger.log(pending.length + ' relatórios pendentes');
 
         for (const job of pending) {
-            this.logger.debug(`iniciando processamento do relatório ID ${job.relatorio_id}`);
+            this.logger.log(`iniciando processamento do relatório ID ${job.relatorio_id}`);
 
             await this.prisma.relatorioFila.update({
                 where: { id: job.id },
@@ -644,8 +644,6 @@ export class ReportsService {
 
                 const zipBuffer = await this.zipFiles(files);
 
-                this.logger.debug(`chamando upload de report`);
-                this.logger.debug(`zipBuffer.length: ${zipBuffer.length}`);
                 const arquivoId = await this.uploadService.uploadReport(
                     relatorio.fonte,
                     filename,
@@ -673,21 +671,6 @@ export class ReportsService {
                 if (relatorio.criador) {
                     // A fonte precisa ser em slug para construir a URL.
                     const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
-
-                    const params = {
-                        id: job.relatorio_id,
-                        fonte: await this.getRelatorioFonteString(relatorio.fonte),
-                        parametros: relatorio.parametros_processados
-                            ? Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
-                                  key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
-                                  value: value,
-                              }))
-                            : null,
-                        data_criacao: relatorio.criado_em,
-                        link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
-                    };
-
-                    this.logger.debug(params);
 
                     await this.prisma.emaildbQueue.create({
                         data: {
