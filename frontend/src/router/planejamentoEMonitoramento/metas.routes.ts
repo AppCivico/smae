@@ -124,9 +124,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: ListMetas,
       meta: {
         limitarÀsPermissões: [
-          'Menu.metas',
-          'CadastroPS.administrador',
           'CadastroPS.administrador_no_orgao',
+          'CadastroPS.administrador',
+          'Menu.metas',
+          'ReferencialEm.Equipe.PS',
         ],
       },
     },
