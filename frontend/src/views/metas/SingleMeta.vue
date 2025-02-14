@@ -150,8 +150,56 @@ iniciar();
             </div>
           </div>
         </div>
+
         <hr class="mt2 mb2">
-        <div class="flex g2">
+
+        <div
+          v-if="route.meta.entidadeMãe === 'pdm'"
+          class="flex g2"
+        >
+          <div
+            v-if="singleMeta.orgaos_participantes.filter(x => x.responsavel)"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão responsável
+            </div>
+            <div class="t13">
+              {{ singleMeta.orgaos_participantes.filter((x) =>
+                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
+            </div>
+          </div>
+          <div
+            v-if="singleMeta.orgaos_participantes.filter(x => !x.responsavel).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão participante
+            </div>
+            <div class="t13">
+              {{
+                singleMeta.orgaos_participantes
+                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+              }}
+            </div>
+          </div>
+          <div
+            v-if="singleMeta.coordenadores_cp"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Responsável na coordenadoria de planejamento
+            </div>
+            <div class="t13">
+              {{ singleMeta.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-else
+          class="flex g2"
+        >
           <div
             v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
             class="mr2 f1"
