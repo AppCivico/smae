@@ -186,7 +186,7 @@ export const ProjetoGetPermissionSet = async (
         });
     }
 
-    if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
+    if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.espectador_de_projeto'])) {
         Logger.verbose(
             `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${user.id} (SMAE|MDO.espectador_de_projeto)`
         );
@@ -1346,7 +1346,7 @@ export class ProjetoService {
                               descricao: r.orgao_responsavel_descricao!,
                           }
                         : null,
-                        projeto_etapa: r.projeto_etapa
+                    projeto_etapa: r.projeto_etapa,
                 } satisfies ProjetoV2Dto;
             }),
         };
