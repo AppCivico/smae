@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FeatureFlagDto } from './FeatureFlagDto';
-import { ModuloSistema, TipoPdm } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe } from '@prisma/client';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
+import { FeatureFlagDto } from './FeatureFlagDto';
 
 export class PessoaFromJwtBase {
     @ApiProperty({ description: 'ID da Pessoa' })
@@ -26,10 +26,16 @@ export class PessoaFromJwtBase {
     ip: string | null;
 
     @ApiProperty({
-        description: 'Lista de tipos de PDM que ela tem acesso de acordo com as equipes atuais',
+        description: 'Lista de perfis nas equipes que o usuário participa em Programa de Metas',
         isArray: true,
     })
-    equipe_pdm_tipos: TipoPdm[];
+    perfis_equipe_pdm: PerfilResponsavelEquipe[];
+
+    @ApiProperty({
+        description: 'Lista de perfis nas equipes que o usuário participa em Planos Setoriais',
+        isArray: true,
+    })
+    perfis_equipe_ps: PerfilResponsavelEquipe[];
 
     sobreescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];

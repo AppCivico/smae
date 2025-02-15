@@ -454,10 +454,12 @@ export class PdmService {
             const dbValue = pdm.ps_admin_cps?.valueOf();
             const collab = await user.getEquipesColaborador(this.prisma);
 
+            console.log(collab);
             if (Array.isArray(dbValue)) {
                 this.logger.log('Verificando permissão pelas equipes');
 
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
+                console.log(parsed);
                 // e todos os itens são do mesmo órgão
                 const podeEditar = parsed.some(
                     (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)

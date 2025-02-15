@@ -24,6 +24,10 @@ export class Arr {
         const setA = new Set(a);
         return b.filter((element) => setA.has(element));
     }
+    static hasIntersection<T>(a: T[], b: T[]): boolean {
+        const setA = new Set(a);
+        return b.some((element) => setA.has(element));
+    }
     static removeFrom(a: number[], b: number[]): number[] {
         const setB = new Set(b);
         return a.filter((element) => !setB.has(element));

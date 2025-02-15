@@ -1,4 +1,4 @@
-import { ModuloSistema, PessoaFisica, TipoPdm } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe, PessoaFisica } from '@prisma/client';
 
 export class Pessoa {
     id?: number;
@@ -17,7 +17,8 @@ export class Pessoa {
     desativado: boolean;
 
     pessoa_fisica: PessoaFisica | null;
-    equipe_pdm_tipos: TipoPdm[];
+    perfis_equipe_pdm: PerfilResponsavelEquipe[];
+    perfis_equipe_ps: PerfilResponsavelEquipe[];
     sobreescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];
 }

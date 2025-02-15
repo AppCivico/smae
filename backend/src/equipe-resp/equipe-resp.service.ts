@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { PerfilResponsavelEquipe, Prisma } from '@prisma/client';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -7,7 +8,6 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
 
 @Injectable()
 export class EquipeRespService {
@@ -207,56 +207,50 @@ export class EquipeRespService {
                 pessoa_id: pessoaId,
                 removido_em: null,
             },
+            select: { grupo_responsavel_equipe: { select: { id: true } } },
+        });
+
+        const perfisPdm = new Set<PerfilResponsavelEquipe>();
+        const perfisPs = new Set<PerfilResponsavelEquipe>();
+
+        // Get PDM types and their associated profiles
+        const pdmTiposEPerfis = await prismaTx.pdm.findMany({
+            where: {
+                removido_em: null,
+                PdmPerfil: {
+                    some: {
+                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
+                        removido_em: null,
+                    },
+                },
+            },
             select: {
-                grupo_responsavel_equipe: {
-                    select: {
-                        id: true,
-                        perfil: true,
+                tipo: true,
+                PdmPerfil: {
+                    select: { equipe: { select: { perfil: true } } },
+                    where: {
+                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
+                        removido_em: null,
                     },
                 },
             },
         });
 
-        const tipos = new Set<TipoPdm>();
-        const perfilBanco = equipes.map(
-            (e) =>
-                e.grupo_responsavel_equipe.perfil == 'Medicao' ||
-                e.grupo_responsavel_equipe.perfil == 'Liberacao' ||
-                e.grupo_responsavel_equipe.perfil == 'Validacao'
-        );
-
-        // se tem algum perfil de banco, então já libera ambos os menus
-        // provavelmente não vai ficar assim, mas não tem outra forma de fazer por enquanto
-        // se cruzar pelo indicador vai ficar muito complexo, então provavelmente vai ser pelo
-        // sobreescrever_modulos=TRUE + modulos_permitidos que vai ser usar pra controlar
-        if (perfilBanco.length) {
-            tipos.add('PDM');
-            tipos.add('PS');
-        } else {
-            // Pega os tipos de PDM dos grupos
-            const pdmTipos = await prismaTx.pdm.findMany({
-                distinct: ['tipo'],
-                where: {
-                    removido_em: null,
-                    PdmPerfil: {
-                        some: {
-                            equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
-                            removido_em: null,
-                        },
-                    },
-                },
-                select: { tipo: true },
+        for (const item of pdmTiposEPerfis) {
+            item.PdmPerfil.forEach((perfil) => {
+                if (item.tipo === 'PDM') {
+                    perfisPdm.add(perfil.equipe.perfil);
+                } else if (item.tipo === 'PS') {
+                    perfisPs.add(perfil.equipe.perfil);
+                }
             });
-
-            for (const tipo of pdmTipos) {
-                tipos.add(tipo.tipo);
-            }
         }
 
         await prismaTx.pessoa.update({
             where: { id: pessoaId },
             data: {
-                equipe_pdm_tipos: Array.from(tipos),
+                perfis_equipe_pdm: Array.from(perfisPdm),
+                perfis_equipe_ps: Array.from(perfisPs),
             },
         });
     }

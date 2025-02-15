@@ -246,4 +246,6 @@ export type ListaDePrivilegios =
     | 'Menu.metas'
     | 'Menu.meta.pdm'
     | 'ReferencialEm.Equipe.ProgramaDeMetas'
-    | 'ReferencialEm.Equipe.PS';
+    | 'ReferencialEm.Equipe.PS'
+    | 'ReferencialEm.EquipeBanco.ProgramaDeMetas'
+    | 'ReferencialEm.EquipeBanco.PS';

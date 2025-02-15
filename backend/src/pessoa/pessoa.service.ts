@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { ModuloSistema, Pessoa, Prisma } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -10,6 +10,7 @@ import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { Arr } from '../mf/metas/dash/metas.service';
 import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
@@ -75,7 +76,8 @@ export class PessoaService {
             flags: {} as any,
             modulo_sistema: filterModulos as ModuloSistema[],
             ip: null,
-            equipe_pdm_tipos: pessoa.equipe_pdm_tipos,
+            perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
+            perfis_equipe_ps: pessoa.perfis_equipe_ps,
             modulos_permitidos: pessoa.modulos_permitidos,
             sobreescrever_modulos: pessoa.sobreescrever_modulos,
         });
@@ -1619,11 +1621,17 @@ export class PessoaService {
                     -- se a pessoa tem sobreescrever_modulos, então filtra mais uma vez
                     -- apenas os módulos que ela tem permissão pela sobrescrita
                     AND (pms.id IS NULL OR m.modulo_sistema && ARRAY_APPEND(pms.modulos_permitidos,'SMAE'))
+            ),
+            _pessoa AS (
+                SELECT perfis_equipe_ps, perfis_equipe_pdm
+                FROM pessoa
+                WHERE id = ${pessoaId}
             )
             SELECT
                 array_agg(DISTINCT cod_priv) AS privilegios,
                 array_agg(DISTINCT modulo_sistema) AS sistemas,
-                (select equipe_pdm_tipos from pessoa where id = ${pessoaId}) as equipe_pdm_tipos
+                (SELECT perfis_equipe_pdm FROM _pessoa) as perfis_equipe_pdm,
+                (SELECT perfis_equipe_ps FROM _pessoa) as perfis_equipe_ps
             FROM perms;
         `;
         if (!dados[0] || dados[0].sistemas === null || !Array.isArray(dados[0].sistemas)) {
@@ -1640,23 +1648,57 @@ export class PessoaService {
         if (ret.privilegios.includes('SMAE.login_suspenso'))
             throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
 
-        if (
-            (ret.equipe_pdm_tipos.includes('PDM') ||
-                ret.privilegios.includes('CadastroPDM.administrador_no_orgao') ||
-                ret.privilegios.includes('CadastroPDM.administrador')) &&
-            filterModulos.includes('ProgramaDeMetas')
-        ) {
-            ret.privilegios.push('Menu.metas');
-            ret.privilegios.push('ReferencialEm.Equipe.ProgramaDeMetas');
-        }
+        const ehAdmin = (tipo: 'PS' | 'PDM') => {
+            return (
+                ret.privilegios.includes(`Cadastro${tipo}.administrador_no_orgao`) ||
+                ret.privilegios.includes(`Cadastro${tipo}.administrador`)
+            );
+        };
 
-        if (
-            (ret.equipe_pdm_tipos.includes('PS') ||
-                ret.privilegios.includes('CadastroPS.administrador_no_orgao') ||
-                ret.privilegios.includes('CadastroPS.administrador')) &&
-            filterModulos.includes('PlanoSetorial')
-        ) {
-            ret.privilegios.push('ReferencialEm.Equipe.PS');
+        const configuracoesModulo: {
+            tipo: 'PDM' | 'PS';
+            modulo: 'ProgramaDeMetas' | 'PlanoSetorial';
+            chaveEquipe: 'perfis_equipe_pdm' | 'perfis_equipe_ps';
+            perfilEquipe: PerfilResponsavelEquipe[];
+            privilegios: ListaDePrivilegios[];
+        }[] = [
+            {
+                tipo: 'PDM',
+                modulo: 'ProgramaDeMetas',
+                chaveEquipe: 'perfis_equipe_pdm',
+                perfilEquipe: ['AdminPS', 'TecnicoPS', 'PontoFocalPS'],
+                privilegios: ['Menu.metas', 'ReferencialEm.Equipe.ProgramaDeMetas'],
+            },
+            {
+                tipo: 'PS',
+                modulo: 'PlanoSetorial',
+                chaveEquipe: 'perfis_equipe_ps',
+                perfilEquipe: ['AdminPS', 'TecnicoPS', 'PontoFocalPS'],
+                privilegios: ['Menu.metas', 'ReferencialEm.Equipe.PS'],
+            },
+            {
+                tipo: 'PDM',
+                modulo: 'ProgramaDeMetas',
+                chaveEquipe: 'perfis_equipe_pdm',
+                perfilEquipe: ['Medicao', 'Validacao', 'Liberacao'],
+                privilegios: ['ReferencialEm.EquipeBanco.ProgramaDeMetas'],
+            },
+            {
+                tipo: 'PS',
+                modulo: 'PlanoSetorial',
+                chaveEquipe: 'perfis_equipe_ps',
+                perfilEquipe: ['Medicao', 'Validacao', 'Liberacao'],
+                privilegios: ['ReferencialEm.EquipeBanco.PS'],
+            },
+        ];
+
+        for (const config of configuracoesModulo) {
+            if (
+                (ehAdmin(config.tipo) || Arr.hasIntersection(ret[config.chaveEquipe], config.perfilEquipe)) &&
+                filterModulos.includes(config.modulo)
+            ) {
+                ret.privilegios.push(...config.privilegios);
+            }
         }
 
         return ret;

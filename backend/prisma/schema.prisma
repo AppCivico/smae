@@ -28,7 +28,10 @@ model Pessoa {
     desativado_motivo   String?
     pessoa_fisica_id    Int?
 
-    equipe_pdm_tipos TipoPdm[] @default([])
+    equipe_pdm_tipos TipoPdm[] @default([]) @ignore
+
+    perfis_equipe_pdm PerfilResponsavelEquipe[]
+    perfis_equipe_ps  PerfilResponsavelEquipe[]
 
     sobreescrever_modulos Boolean         @default(false)
     modulos_permitidos    ModuloSistema[]
