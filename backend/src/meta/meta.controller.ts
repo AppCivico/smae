@@ -120,6 +120,7 @@ export class MetaSetorialController {
         'CadastroMetaPDM.administrador_no_pdm',
         'CadastroPDM.administrador',
         'CadastroPDM.administrador_no_orgao',
+        'SMAE.GrupoVariavel.participante',
     ];
     public static ReadPerm: ListaDePrivilegios[] = [
         ...MetaSetorialController.WritePerm,
