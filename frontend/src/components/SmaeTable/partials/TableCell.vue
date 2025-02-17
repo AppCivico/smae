@@ -4,7 +4,10 @@
     :caminho="caminho"
     :linha="linha"
   >
-    <td :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]">
+    <td
+      :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]"
+      v-bind="$attrs"
+    >
       <slot
         :name="`celula:${caminho}`"
         :caminho="caminho"
@@ -17,9 +20,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineProps } from 'vue';
+import { computed, defineProps, defineOptions } from 'vue';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
 import type { Linha } from '../types/tipagem';
+
+defineOptions({ inheritAttrs: false });
 
 export type ParametrosDaColuna = {
   linha: Linha
