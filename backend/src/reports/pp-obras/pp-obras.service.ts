@@ -418,7 +418,9 @@ export class PPObrasService implements ReportableService {
                 LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
                 LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id`,
+                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'obras.csv'
             )
@@ -456,7 +458,9 @@ export class PPObrasService implements ReportableService {
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
                 LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id`,
+                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'cronograma.csv'
             )
@@ -472,7 +476,9 @@ export class PPObrasService implements ReportableService {
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
                 JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
-                JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL`,
+                JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'regioes.csv'
             )
@@ -504,7 +510,9 @@ export class PPObrasService implements ReportableService {
                 FROM projeto
                 JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
                 JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id`,
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'acompanhamentos.csv'
             )
@@ -520,7 +528,9 @@ export class PPObrasService implements ReportableService {
                     projeto_fonte_recurso.fonte_recurso_cod_sof
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
-                JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id`,
+                JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'fontes_recurso.csv'
             )
@@ -579,7 +589,9 @@ export class PPObrasService implements ReportableService {
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
                 JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
                 LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
-                LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL`,
+                LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'contratos.csv'
             )
@@ -601,7 +613,9 @@ export class PPObrasService implements ReportableService {
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
                 JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
                 JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL`,
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'aditivos.csv'
             )
@@ -625,7 +639,9 @@ export class PPObrasService implements ReportableService {
                 LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
                 LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
                 LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
-                LEFT JOIN pdm ON pdm.id = meta.pdm_id`,
+                LEFT JOIN pdm ON pdm.id = meta.pdm_id
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'origens.csv'
             )
@@ -643,7 +659,9 @@ export class PPObrasService implements ReportableService {
                     projeto_registro_sei.observacoes
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
-                JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL`,
+                JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'processos_sei.csv'
             )
@@ -658,7 +676,9 @@ export class PPObrasService implements ReportableService {
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
                 JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
-                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id`,
+                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+                ${whereCond.whereString}
+                `,
                 whereCond.queryParams,
                 'enderecos.csv'
             )
@@ -712,8 +732,8 @@ export class PPObrasService implements ReportableService {
                     // reduz o número de linhas pra não virar um "IN" gigante
                     portfolio_id: filters.portfolio_id,
                     tipo: filters.tipo_projeto,
-                    orgao_responsavel_id: filters.orgao_responsavel_id,
-                    grupo_tematico_id: filters.grupo_tematico_id,
+                    orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
+                    grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
                     removido_em: null,
                 },
                 select: { id: true },
@@ -725,6 +745,7 @@ export class PPObrasService implements ReportableService {
 
             whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
             queryParams.push(allowed.map((n) => n.id));
+            paramIndex++;
         }
 
         // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
@@ -768,8 +789,6 @@ export class PPObrasService implements ReportableService {
 
         whereConditions.push(`projeto.removido_em IS NULL`);
         whereConditions.push(`portfolio.modelo_clonagem = false`);
-        whereConditions.push(`projeto.removido_em IS NULL`);
-        whereConditions.push(`projeto.tipo = 'MDO'`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };

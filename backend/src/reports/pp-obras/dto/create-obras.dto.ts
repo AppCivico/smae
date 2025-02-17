@@ -18,7 +18,6 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
 
     @IsOptional()
     @IsNumber()
-    @Transform(NumberTransform)
     grupo_tematico_id?: number;
 
     @IsOptional()
@@ -28,7 +27,6 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
 
     @IsOptional()
     @IsNumber()
-    @Transform(NumberTransform)
     orgao_responsavel_id?: number;
 
     @IsOptional()

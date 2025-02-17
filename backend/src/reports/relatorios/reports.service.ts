@@ -454,7 +454,7 @@ export class ReportsService {
         );
     }
 
-    @Cron('*/2 * * * *')
+    @Cron('*/1 * * * *')
     async handleRelatorioFilaCron() {
         if (!this.enabled) return;
         if (process.env['DISABLE_REPORT_CRONTAB']) return;
