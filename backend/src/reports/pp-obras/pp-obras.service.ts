@@ -10,7 +10,6 @@ import {
 import { formataSEI } from 'src/common/formata-sei';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
-import { Transform } from 'stream';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
@@ -33,6 +32,7 @@ import {
 
 const {
     Parser,
+    AsyncParser,
     transforms: { flatten },
 } = require('json2csv');
 
@@ -238,11 +238,6 @@ class RetornoDbLoc {
     endereco: string;
     geojson: unknown;
 }
-
-const json2csvParser = new Parser({
-    ...DefaultCsvOptions,
-    transforms: defaultTransform,
-});
 
 @Injectable()
 export class PPObrasService implements ReportableService {
@@ -688,33 +683,35 @@ export class PPObrasService implements ReportableService {
     }
 
     private async streamQueryToCSV(query: string, params: any[], filename: string): Promise<FileOutput> {
-        const csvStream = new Transform({
-            objectMode: true,
-            transform(row, encoding, callback) {
-                try {
-                    const csvLine = json2csvParser.parse([row]);
-                    callback(null, csvLine);
-                } catch (error) {
-                    callback(error);
-                }
-            },
+        const parser = new AsyncParser({
+            ...DefaultCsvOptions,
+            transforms: defaultTransform,
+            withBOM: true,
         });
 
         const chunks: Buffer[] = [];
 
-        await this.prisma.$queryRawUnsafe(query, ...params).then(async (cursor: any) => {
-            for await (const row of cursor) {
-                csvStream.write(row);
-            }
-            csvStream.end();
-        });
-
-        return new Promise((resolve) => {
-            csvStream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-            csvStream.on('end', () => {
-                resolve({ name: filename, buffer: Buffer.concat(chunks) });
+        // Add TypeScript types to event handlers
+        parser.processor
+            .on('data', (chunk: Buffer) => chunks.push(chunk))
+            .on('end', () => {})
+            .on('error', (err: Error) => {
+                throw err;
             });
-        });
+
+        // Type assertion for Prisma cursor
+        const cursor = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
+
+        // Properly typed row iteration
+        for await (const row of cursor) {
+            parser.input.push(JSON.stringify(row));
+        }
+
+        parser.input.push(null);
+
+        await new Promise((resolve) => parser.processor.on('finish', resolve));
+
+        return { name: filename, buffer: Buffer.concat(chunks) };
     }
 
     private async buildFilteredWhereStr(filters: CreateRelObrasDto, user: PessoaFromJwt | null): Promise<WhereCond> {
