@@ -453,11 +453,11 @@ const formularioSujo = useIsFormDirty();
           />
 
           <Field
-            v-model="latitudeDeBusca"
+            v-model.number="latitudeDeBusca"
+            step="0.01"
             name="latitude_de_busca"
-            type="search"
+            type="number"
             class="inputtext light mb1"
-            autocomplete="street-address"
             minlength="3"
             :class="{
               loading: buscandoEndereços,
@@ -478,11 +478,11 @@ const formularioSujo = useIsFormDirty();
           />
 
           <Field
-            v-model="longitudeDeBusca"
+            v-model.number="longitudeDeBusca"
+            step="0.01"
             name="longitude_de_busca"
-            type="search"
+            type="number"
             class="inputtext light mb1"
-            autocomplete="street-address"
             minlength="3"
             :class="{
               loading: buscandoEndereços,
