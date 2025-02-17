@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { nextTick, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Field, useForm, ErrorMessage } from 'vee-validate';
+import {
+  Field, useForm, ErrorMessage, useIsFormDirty,
+} from 'vee-validate';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
+
+defineOptions({ inheritAttrs: false });
 
 type OpcaoPadronizada = {
   id: number | string
@@ -31,16 +35,24 @@ type Props = {
   schema: Record<string, any>
   valoresIniciais?: Record<string, any>
 };
+type Emits = {
+  'update:formularioSujo': [boolean]
+};
 
 const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 const route = useRoute();
 const router = useRouter();
 
-const { handleSubmit, isSubmitting, setValues } = useForm({
+const {
+  handleSubmit, isSubmitting, resetForm, setValues,
+} = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
 });
+
+const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const query = {
@@ -81,17 +93,27 @@ function padronizarOpcoes(opcoes: Opcoes): OpcaoPadronizada[] {
   });
 }
 
-watch(() => route.query, (val) => {
-  setValues(val);
+watch(formularioSujo, () => {
+  emit('update:formularioSujo', formularioSujo.value);
+});
+
+watch(() => route.query, () => {
+  setValues(route.query);
+
+  nextTick(() => {
+    resetForm({ values: route.query });
+  });
 }, { deep: true });
+
+onMounted(() => {
+  resetForm({ values: route.query });
+});
 </script>
 
 <template>
-  <section class="comunicados-gerais-filtro">
+  <div class="comunicados-gerais-filtro">
     <FormularioQueryString :valores-iniciais="valoresIniciais">
-      <form
-        @submit="onSubmit"
-      >
+      <form @submit="onSubmit">
         <div
           v-for="(linha, linhaIndex) in formulario"
           :key="`linha--${linhaIndex}`"
@@ -175,5 +197,5 @@ watch(() => route.query, (val) => {
         </div>
       </form>
     </FormularioQueryString>
-  </section>
+  </div>
 </template>

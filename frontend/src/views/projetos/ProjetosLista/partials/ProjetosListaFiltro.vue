@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
 import { projetoFiltro as schema } from '@/consts/formSchemas';
 import projectStatuses from '@/consts/projectStatuses';
 import statusObras from '@/consts/statusObras';
 import { useOrgansStore, usePortfolioStore } from '@/stores';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { computed, onMounted } from 'vue';
 
 const ordenador = [
   'portfolio_id',
@@ -42,6 +42,8 @@ const mapaStatus = [
 const organsStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
 const etapasProjetosStore = useEtapasProjetosStore();
+
+const formularioSujo = ref<boolean>(false);
 
 const organResponsibles = computed(() => {
   if (!Array.isArray(organsStore.organResponsibles)) {
@@ -115,10 +117,13 @@ onMounted(() => {
 <template>
   <section class="comunicados-gerais-filtro">
     <FiltroParaPagina
+      v-model:formulario-sujo="formularioSujo"
       :formulario="campos"
       :schema="schema"
       :valores-iniciais="valoresIniciais"
     />
+
+    <slot :formulario-sujo="formularioSujo" />
   </section>
 </template>
 

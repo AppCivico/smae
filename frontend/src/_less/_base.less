@@ -1765,6 +1765,11 @@ p {
   }
 }
 
+.filtro-sujo {
+  filter: grayscale(1) blur(2px) opacity(0.35);
+  pointer-events: none;
+}
+
 // apenas para abrigar as regras comuns a todos os checkboxes e radios, porque
 // LESS não tem [**placeholder selectors** como no SASS](https://sass-lang.com/documentation/style-rules/placeholder-selectors/)
 .input-checkbox-and-radio {

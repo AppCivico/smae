@@ -63,77 +63,79 @@ watch(() => route.query, () => {
       </SmaeLink>
     </div>
 
-    <ProjetosListaFiltro />
+    <ProjetosListaFiltro v-slot="{ formularioSujo }">
+      <div :class="{'filtro-sujo': formularioSujo}">
+        <MenuPaginacao
+          class="mt2 bgt"
+          v-bind="paginacaoProjetos"
+        />
 
-    <MenuPaginacao
-      class="mt2 bgt"
-      v-bind="paginacaoProjetos"
-    />
-
-    <SmaeTable
-      class="mt2"
-      :dados="listaDeProjetos"
-      :colunas="[
-        { chave: 'nome', label: 'Nome do Projeto' },
-        { chave: 'portfolio.titulo', label: 'Portfólio' },
-        { chave: 'orgao_responsavel.descricao', label: 'Órgão Responsável' },
-        { chave: 'status', label: 'Status' },
-        { chave: 'projeto_etapa', label: 'Etapa' },
-        { chave: 'previsao_termino', label: 'Término Planejado' },
-        { chave: 'previsao_custo', label: 'Custo Total Planejado' },
-        { chave: 'revisado', label: 'Revisado' },
-      ]"
-      parametro-da-rota-editar="projetoId"
-      parametro-no-objeto-para-editar="id"
-      parametro-no-objeto-para-excluir="portfolio.titulo"
-      :personalizar-linhas="{
-        parametro: 'id',
-        alvo: ultimoVisitado,
-        classe: 'selecionado'
-      }"
-      :rota-editar="{ name: 'projetosEditar' }"
-      @deletar="handleDeletarItem"
-    >
-      <template #cabecalho:acao>
-        <button
-          class="btn outline bgnone tcprimary"
-          @click="handleDesmarcarTodos"
+        <SmaeTable
+          class="mt2"
+          :dados="listaDeProjetos"
+          :colunas="[
+            { chave: 'nome', label: 'Nome do Projeto' },
+            { chave: 'portfolio.titulo', label: 'Portfólio' },
+            { chave: 'orgao_responsavel.descricao', label: 'Órgão Responsável' },
+            { chave: 'status', label: 'Status' },
+            { chave: 'projeto_etapa', label: 'Etapa' },
+            { chave: 'previsao_termino', label: 'Término Planejado' },
+            { chave: 'previsao_custo', label: 'Custo Total Planejado' },
+            { chave: 'revisado', label: 'Revisado' },
+          ]"
+          parametro-da-rota-editar="projetoId"
+          parametro-no-objeto-para-editar="id"
+          parametro-no-objeto-para-excluir="portfolio.titulo"
+          :personalizar-linhas="{
+            parametro: 'id',
+            alvo: ultimoVisitado,
+            classe: 'selecionado'
+          }"
+          :rota-editar="{ name: 'projetosEditar' }"
+          @deletar="handleDeletarItem"
         >
-          Desmarcar todas
-        </button>
-      </template>
+          <template #cabecalho:acao>
+            <button
+              class="btn outline bgnone tcprimary"
+              @click="handleDesmarcarTodos"
+            >
+              Desmarcar todas
+            </button>
+          </template>
 
-      <template #['celula:nome']="{ linha }">
-        <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
-          {{ linha.nome }}
-        </SmaeLink>
-      </template>
+          <template #['celula:nome']="{ linha }">
+            <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
+              {{ linha.nome }}
+            </SmaeLink>
+          </template>
 
-      <template #['celula:orgao_responsavel.descricao']="{ linha }">
-        {{ linha.orgao_responsavel?.descricao || '-' }}
-      </template>
+          <template #['celula:orgao_responsavel.descricao']="{ linha }">
+            {{ linha.orgao_responsavel?.descricao || '-' }}
+          </template>
 
-      <template #celula:status="{ linha }">
-        {{ projectStatuses[linha.status]?.nome || linha.status }}
-      </template>
+          <template #celula:status="{ linha }">
+            {{ projectStatuses[linha.status]?.nome || linha.status }}
+          </template>
 
-      <template #celula:previsao_termino="{ linha }">
-        {{ dateIgnorarTimezone(linha.previsao_termino, 'MM/yyyy') || '-' }}
-      </template>
+          <template #celula:previsao_termino="{ linha }">
+            {{ dateIgnorarTimezone(linha.previsao_termino, 'MM/yyyy') || '-' }}
+          </template>
 
-      <template #celula:previsao_custo="{ linha }">
-        {{ dinheiro(linha.previsao_custo) || '-' }}
-      </template>
+          <template #celula:previsao_custo="{ linha }">
+            {{ dinheiro(linha.previsao_custo) || '-' }}
+          </template>
 
-      <template #celula:revisado="{ linha }">
-        <input
-          type="checkbox"
-          class="interruptor"
-          :checked="linha.revisado"
-          @change="ev => alterarStatusRevsado(linha.id, ev.target.checked)"
-        >
-      </template>
-    </SmaeTable>
+          <template #celula:revisado="{ linha }">
+            <input
+              type="checkbox"
+              class="interruptor"
+              :checked="linha.revisado"
+              @change="ev => alterarStatusRevsado(linha.id, ev.target.checked)"
+            >
+          </template>
+        </SmaeTable>
+      </div>
+    </ProjetosListaFiltro>
   </section>
 </template>
 
