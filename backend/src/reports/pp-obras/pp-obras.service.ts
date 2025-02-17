@@ -768,6 +768,8 @@ export class PPObrasService implements ReportableService {
 
         whereConditions.push(`projeto.removido_em IS NULL`);
         whereConditions.push(`portfolio.modelo_clonagem = false`);
+        whereConditions.push(`projeto.removido_em IS NULL`);
+        whereConditions.push(`projeto.tipo = 'MDO'`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };

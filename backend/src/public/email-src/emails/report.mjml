@@ -16,7 +16,7 @@
             <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Data de criação: [% data_criacao %]</p>
         </mj-text>
 
-        [% IF parametros %]
+        [% IF parametros.0 %]
         <mj-text>
         <div style="margin-top: 16px;">
             <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Parâmetros:</p>
