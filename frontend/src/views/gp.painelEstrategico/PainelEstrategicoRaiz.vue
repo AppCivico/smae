@@ -474,7 +474,7 @@ watch(
                     '--statusColor': projectStatuses[dados.projeto_status]?.cor,
                   }"
                 >
-                  {{ dados.projeto_status }}
+                  {{ projectStatuses[dados.projeto_status]?.nome || dados.projeto_status }}
                 </dd>
               </div>
               <div
