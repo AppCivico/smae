@@ -1061,12 +1061,12 @@ export class PainelEstrategicoService {
                 CASE
                     WHEN p.status = 'Registrado'::"ProjetoStatus" THEN 'Registrado'::text
                     WHEN p.status = 'Selecionado'::"ProjetoStatus" THEN 'Selecionado'::text
-                    WHEN p.status = 'EmPlanejamento'::"ProjetoStatus" THEN 'Em Planejamento'::text
+                    WHEN p.status = 'EmPlanejamento'::"ProjetoStatus" THEN 'EmPlanejamento'::text
                     WHEN p.status = 'Planejado'::"ProjetoStatus" THEN 'Planejado'::text
                     WHEN p.status = 'Validado'::"ProjetoStatus" THEN 'Validado'::text
-                    WHEN p.status = 'EmAcompanhamento'::"ProjetoStatus" THEN 'Em Acompanhamento'::text
+                    WHEN p.status = 'EmAcompanhamento'::"ProjetoStatus" THEN 'EmAcompanhamento'::text
                     WHEN p.status = 'Suspenso'::"ProjetoStatus" THEN 'Suspenso'::text
-                    WHEN p.status = 'Fechado'::"ProjetoStatus" THEN 'Concluído'::text
+                    WHEN p.status = 'Fechado'::"ProjetoStatus" THEN 'Fechado'::text
                     ELSE NULL::text
                 END as projeto_status
             FROM projeto p
