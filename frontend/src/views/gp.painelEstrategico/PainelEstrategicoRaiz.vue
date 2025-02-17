@@ -428,12 +428,13 @@ watch(
             </p>
             <p
               v-else-if="dados.titulo"
+              class="painel-flutuante__titulo"
             >
               {{ dados.titulo }}
             </p>
             <p
               v-else-if="dados.rotulo"
-              class="w900"
+              class="painel-flutuante__titulo"
             >
               {{ dados.rotulo }}
             </p>
@@ -706,7 +707,7 @@ watch(
     flex-shrink: 0;
     background-color: currentColor;
     display: block;
-    border-radius: 999em;
+    border-radius: 8px;
   }
 }
 </style>

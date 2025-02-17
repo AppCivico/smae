@@ -217,7 +217,7 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
 
   if (conteudo) {
     item.bindTooltip(conteudo, {
-      direction: 'center',
+      direction: 'auto',
       className: 'painel-flutuante',
       ...props.opcoesDoPainelFlutuante,
       ...opcoes,
@@ -544,8 +544,7 @@ watch(() => props.polígonos, (valorNovo) => {
 }
 
 .painel-flutuante {
-  width: min(90vw, 33.571429rem); //470px
-  translate: -50%;
+  width: 33.571429rem; //470px
   padding: 1.071429rem; //15px
   box-shadow: 0px 6px 4.5px 0px #00000080;
   border-radius: 12px;
@@ -555,6 +554,10 @@ watch(() => props.polígonos, (valorNovo) => {
   font-weight: 500;
   font-size: 1.285714rem;// 18px
   line-height: 1.166667; //21
+
+  &::before {
+    content: none;
+  }
 }
 
 .painel-flutuante__conteudo {
@@ -566,8 +569,6 @@ watch(() => props.polígonos, (valorNovo) => {
 
   :only-child {
     margin-bottom: 0;
-    border-bottom: 0;
-    padding-bottom: 0;
   }
 }
 
@@ -598,7 +599,7 @@ watch(() => props.polígonos, (valorNovo) => {
   }
 
   div {
-    background-color: @branco;
+    min-width: 0;
   }
 
   dt {
