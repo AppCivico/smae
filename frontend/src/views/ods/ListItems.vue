@@ -49,7 +49,7 @@ async function checkDelete({ id, titulo }) {
         :to="{ name: 'categorias.novo'}"
         class="btn big ml2"
       >
-        Nova categoria
+        Nova categoria de tags
       </router-link>
     </div>
 

@@ -746,7 +746,7 @@ export default [
     path: '/categorias',
     meta: {
       limitarÀsPermissões: 'CadastroOds.',
-      título: 'Categorias',
+      título: 'Categorias de Tags',
       rotasParaMenuSecundário,
       entidadeMãe: 'pdm',
     },
@@ -761,7 +761,7 @@ export default [
         name: 'categorias.novo',
         component: AddEditODS,
         meta: {
-          título: 'Nova Categoria',
+          título: 'Nova Categoria de Tags',
           rotaDeEscape: 'categorias.lista',
           rotasParaMigalhasDePão: ['categorias.lista'],
         },
