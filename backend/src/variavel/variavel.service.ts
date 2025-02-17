@@ -28,6 +28,7 @@ import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
+import { SeriesArrayShuffle } from '../common/shuffleArray';
 import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
@@ -65,7 +66,6 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
-import { SeriesArrayShuffle } from '../common/shuffleArray';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -3942,6 +3942,17 @@ export class VariavelService {
                 medicao_orgao_id: true,
                 validacao_orgao_id: true,
                 liberacao_orgao_id: true,
+
+                medicao_orgao: {
+                    select: { id: true, sigla: true },
+                },
+                validacao_orgao: {
+                    select: { id: true, sigla: true },
+                },
+                liberacao_orgao: {
+                    select: { id: true, sigla: true },
+                },
+
                 VariavelGrupoResponsavelEquipe: {
                     where: {
                         removido_em: null,
@@ -4030,6 +4041,11 @@ export class VariavelService {
                 validacao_orgao_id: detalhes.validacao_orgao_id,
                 liberacao_orgao_id: detalhes.liberacao_orgao_id,
                 orgao_proprietario: detalhes.orgao_proprietario!,
+
+                liberacao_orgao: detalhes.liberacao_orgao,
+                medicao_orgao: detalhes.medicao_orgao,
+                validacao_orgao: detalhes.validacao_orgao,
+
                 medicao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
                     (e) => e.grupo_responsavel_equipe.perfil === 'Medicao'
                 ).map((e) => e.grupo_responsavel_equipe.id),
