@@ -339,9 +339,16 @@ function prepararGeoJsonS(items) {
 }
 
 function criarPolígono(dadosDoPolígono) {
-  const config = {
+  let config = {};
+
+  // mapear propriedade para manter compatibilidade com o backend
+  if (dadosDoPolígono.config?.cor) {
+    config.color = dadosDoPolígono.config?.cor;
+  }
+
+  config = {
+    config,
     // mapear propriedade para manter compatibilidade com o backend
-    color: dadosDoPolígono.config?.cor,
     ...props.opçõesDoPolígono,
     ...dadosDoPolígono.config,
   };
