@@ -4,7 +4,6 @@ import { computed } from 'vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
-import { useOrgansStore } from '@/stores';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
@@ -31,13 +30,8 @@ type CategoriaComAssuntoMapeado = {
   [key: number]: CategororiaComAssunto
 };
 
-
 const assuntosStore = useAssuntosStore();
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
-
-const organsStore = useOrgansStore();
-const { órgãosPorId } = storeToRefs(organsStore);
-
 
 const {
   emFoco,
