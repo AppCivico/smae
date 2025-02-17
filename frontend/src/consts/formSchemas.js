@@ -2685,7 +2685,7 @@ export const projetoFiltro = object().shape({
     .oneOf(direcaoOpcoes)
     .nullableOuVazio(),
   orgao_responsavel_id: number()
-    .label('Órgão Responsável')
+    .label('Órgão responsável')
     .nullableOuVazio(),
   palavra_chave: string()
     .label('Palavra chave')

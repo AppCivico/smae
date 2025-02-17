@@ -103,11 +103,7 @@ watch(() => route.query, () => {
   nextTick(() => {
     resetForm({ values: route.query });
   });
-}, { deep: true });
-
-onMounted(() => {
-  resetForm({ values: route.query });
-});
+}, { deep: true, immediate: true });
 </script>
 
 <template>
