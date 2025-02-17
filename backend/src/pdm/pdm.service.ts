@@ -222,7 +222,7 @@ export class PdmService {
             });
 
             if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
-                this.logger.log('Usuário com permissão total em PS/PDM');
+                this.logger.log('Usuário com permissão total em *TODOS* PS/PDM');
                 orList.push({
                     // só pra ter algo, sempre vai dar true
                     removido_em: null,
@@ -234,7 +234,7 @@ export class PdmService {
                 const collab = await user.getEquipesColaborador(this.prisma);
 
                 if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
-                    this.logger.log('Usuário com permissão total em PS no órgão');
+                    this.logger.log('Usuário com permissão total *no órgão* em PS/PDM no órgão');
 
                     const orgaoId = user.orgao_id;
                     if (!orgaoId) throw new HttpException('Usuário sem órgão associado', 400);
@@ -260,29 +260,14 @@ export class PdmService {
                 }
 
                 if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                    this.logger.log('Usuário com permissão total em PS no CP');
+                    this.logger.log('Usuário pode ser participante em equipes PS/PDM');
 
                     orList.push({
                         tipo: tipoPdm,
                         PdmPerfil: {
                             some: {
                                 removido_em: null,
-                                tipo: 'CP',
-                                equipe_id: { in: collab },
-                            },
-                        },
-                    });
-                }
-
-                if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
-                    this.logger.log('Usuário com permissão total em PS no CP');
-
-                    orList.push({
-                        tipo: tipoPdm,
-                        PdmPerfil: {
-                            some: {
-                                removido_em: null,
-                                tipo: 'PONTO_FOCAL',
+                                tipo: { in: ['CP', 'PONTO_FOCAL', 'ADMIN'] },
                                 equipe_id: { in: collab },
                             },
                         },
@@ -403,6 +388,8 @@ export class PdmService {
                 if (pdm.arquivo_logo_id) {
                     logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
                 }
+                const pode_editar = await this.calcPodeEditar({ ...pdm, tipo: tipo }, user);
+                console.log(pode_editar);
 
                 return {
                     id: pdm.id,
@@ -427,7 +414,7 @@ export class PdmService {
                     nivel_orcamento: pdm.nivel_orcamento,
                     tipo: pdm.tipo,
 
-                    pode_editar: await this.calcPodeEditar({ ...pdm, tipo: tipo }, user),
+                    pode_editar: pode_editar,
                     logo: logo,
                     data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
                     data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
@@ -467,17 +454,18 @@ export class PdmService {
             const dbValue = pdm.ps_admin_cps?.valueOf();
             const collab = await user.getEquipesColaborador(this.prisma);
 
+            console.log(collab);
             if (Array.isArray(dbValue)) {
                 this.logger.log('Verificando permissão pelas equipes');
 
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
-
+                console.log(parsed);
                 // e todos os itens são do mesmo órgão
                 const podeEditar = parsed.some(
                     (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
                 );
                 this.logger.verbose(`podeEditar: ${podeEditar}`);
-                return true;
+                return podeEditar;
             }
 
             this.logger.verbose(`podeEditar: false`);
@@ -537,6 +525,7 @@ export class PdmService {
             periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
             considerar_atraso_apos: Date2YMD.toStringOrNull(pdm.considerar_atraso_apos),
         };
+        console.log(pdmInfo.pode_editar);
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
         if (tipo == '_PS' || tipo == 'PDM_AS_PS') {

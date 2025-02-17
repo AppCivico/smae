@@ -96,9 +96,10 @@ const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
 }
 
 .card-envelope-titulo__icone {
-  background-color: v-bind(cor);
+  width: max-content;
   grid-column: 3 / 4;
   grid-row: 1 / 2;
+  background-color: v-bind(cor);
 
   svg {
     fill: @branco;

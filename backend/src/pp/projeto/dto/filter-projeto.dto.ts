@@ -10,7 +10,7 @@ import {
     IsInt,
     IsOptional,
     IsString,
-    MaxLength
+    MaxLength,
 } from 'class-validator';
 import {
     NumberArrayTransformOrEmpty,
@@ -91,6 +91,7 @@ export const ProjetoMdoOrderEnum = {
     regioes: 'regioes',
     status: 'status',
     registrado_em: 'registrado_em',
+    projeto_etapa: 'projeto_etapa',
 };
 export type ProjetoMdoOrderEnum = keyof typeof ProjetoMdoOrderEnum;
 
@@ -139,6 +140,11 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
     equipamento_id?: number[];
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    projeto_etapa_id?: number[];
 
     @IsOptional()
     @IsInt()

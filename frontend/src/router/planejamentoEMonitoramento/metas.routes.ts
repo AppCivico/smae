@@ -13,7 +13,6 @@ import {
   SingleEvolucao,
   SingleIniciativa,
   SingleMeta,
-  SinglePainelMeta,
 } from '@/views/metas';
 import {
   AddEditCusteio,
@@ -124,9 +123,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       component: ListMetas,
       meta: {
         limitarÀsPermissões: [
-          'Menu.metas',
-          'CadastroPS.administrador',
           'CadastroPS.administrador_no_orgao',
+          'CadastroPS.administrador',
+          'Menu.metas',
+          'ReferencialEm.Equipe.PS',
         ],
       },
     },
@@ -384,18 +384,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     // /////////////////////////////////////////////////////////////////////////
 
-    {
-      path: ':meta_id/painel',
-      name: `${entidadeMãe}.painelDaMeta`,
-      component: SinglePainelMeta,
-      meta: {
-        títuloParaMenu: 'Painel da meta',
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
-    },
     {
       path: ':meta_id/evolucao',
       name: `${entidadeMãe}.evoluçãoDaMeta`,

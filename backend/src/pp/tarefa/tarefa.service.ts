@@ -209,7 +209,9 @@ export class TarefaService {
                         throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
                 }
 
-                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId);
+                const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
+                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId, null, maiorNumero);
 
                 const tarefa = await prismaTx.tarefa.create({
                     data: {
@@ -1141,6 +1143,7 @@ export class TarefaService {
                 }
             }
 
+            let recalcNivel = false;
             if (
                 'dependencias' in dto &&
                 ((dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id) ||
@@ -1194,14 +1197,19 @@ export class TarefaService {
                             novoPai
                         );
                     }
+
+                    const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero(
                         {
+                            id: tarefa.id,
                             numero: tarefa.numero,
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        maiorNumero
                     );
 
                     // aumenta o numero de onde vai entrar
@@ -1211,20 +1219,29 @@ export class TarefaService {
                             tarefa_pai_id: dto.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        tarefa.id,
+                        maiorNumero
                     );
+                    console.log('dto.numero' + dto.numero);
+
+                    recalcNivel = true;
                 } else {
                     // mudou apenas o numero
                     this.logger.debug('Apenas mudança de número foi detectada');
 
+                    const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero(
                         {
+                            id: tarefa.id,
                             numero: tarefa.numero,
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        maiorNumero
                     );
 
                     // aumenta o numero de onde vai entrar
@@ -1234,8 +1251,12 @@ export class TarefaService {
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        tarefa.id,
+                        maiorNumero
                     );
+                    console.log('dto.numero' + dto.numero);
+                    recalcNivel = true;
                 }
             } else if ('dependencias' in dto) {
                 // nao deixar nem o nivel sem passar o pai
@@ -1337,6 +1358,8 @@ export class TarefaService {
                     });
                 }
             }
+
+            if (recalcNivel) await this.utils.recalcNivel(prismaTx, tarefaCronoId);
 
             return { id: tarefa.id };
         };
@@ -1450,7 +1473,7 @@ export class TarefaService {
                 and t.removido_em is null
           )
           SELECT
-            max(nivel) - min(nivel) as numero_de_niveis,
+            max(nivel) - min(nivel) + 1 as numero_de_niveis,
             array_agg(id) as filhas
           FROM tarefa_path;`;
         const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
@@ -1507,11 +1530,12 @@ export class TarefaService {
                     );
 
                 const dto = {
+                    id: tarefa.id,
                     numero: tarefa.numero,
                     tarefa_pai_id: tarefa.tarefa_pai_id,
                 };
 
-                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId);
+                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId, Number.MAX_SAFE_INTEGER);
 
                 await prismaTx.tarefa.update({
                     where: {

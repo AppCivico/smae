@@ -37,8 +37,8 @@ export class ProjetoMdoDto {
     nome: string;
     codigo: string | null;
     portfolio: IdTituloDto;
-    orgao_origem: IdSiglaDescricao;
-    grupo_tematico: IdNomeDto;
+    orgao_origem: IdSiglaDescricao | null;
+    grupo_tematico: IdNomeDto | null;
     tipo_intervencao: IdNomeDto | null;
     equipamento: IdNomeDto | null;
     empreendimento: IdNomeIdentificadorDto | null;
@@ -50,6 +50,15 @@ export class ProjetoMdoDto {
         description: 'Status da obra, apenas os que começam com MDO_...',
     })
     status: ProjetoStatus;
+}
+
+export class ProjetoV2Dto extends ProjetoMdoDto {
+    previsao_custo: number | null;
+    @IsDateYMD({ nullable: true })
+    previsao_termino: string | null;
+
+    orgao_responsavel: IdSiglaDescricao | null;
+    projeto_etapa: string | null;
 }
 
 export class ListProjetoDto {

@@ -284,13 +284,21 @@ export class UploadService {
             originalname.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
         ].join('/');
 
-        await this.storage.putBlob(key, buffer, {
+        console.log(`==========================================`);
+        console.log(`Uploading report to key: ${key}`);
+        console.log(`Buffer length: ${buffer.length}`);
+
+        const obj = await this.storage.putBlob(key, buffer, {
             'Content-Type': mimetype || 'application/octet-stream',
             'x-user-id': user ? user.id : 'sistema',
             'x-orgao-id': user ? user.orgao_id || 'sem-orgao' : 'n/a',
             'x-category': category,
             'x-tipo': 'reports',
         });
+
+        console.log(obj);
+
+        console.log(`==========================================`);
 
         await this.prisma.arquivo.create({
             data: {

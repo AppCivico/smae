@@ -1,7 +1,8 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { FonteRelatorio, Prisma, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ModuloSistema, Prisma, TipoRelatorio } from '@prisma/client';
+import { InputJsonValue } from '@prisma/client/runtime/library';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { createWriteStream, WriteStream } from 'fs';
@@ -9,13 +10,17 @@ import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
+import { uuidv7 } from 'uuidv7';
+import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
+import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { PessoaService } from '../../pessoa/pessoa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
+import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
@@ -26,16 +31,14 @@ import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
+import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { TransferenciasService } from '../transferencias/transferencias.service';
+import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioParamDto } from './entities/report.entity';
-import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
-import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
-import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
-import * as XLSX from 'xlsx';
-import { InputJsonValue } from '@prisma/client/runtime/library';
+import { CrontabIsEnabled } from 'src/common/CrontabIsEnabled';
 
 type RelatorioProcesado = Record<string, string | Array<string>>;
 
@@ -56,9 +59,14 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
+    private enabled: boolean;
+    baseUrl: string;
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
+
+        @Inject(forwardRef(() => PessoaService)) private readonly pessoaService: PessoaService,
 
         @Inject(forwardRef(() => OrcamentoService)) private readonly orcamentoService: OrcamentoService,
         @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService,
@@ -77,9 +85,13 @@ export class ReportsService {
         private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
-    ) {}
+    ) {
+        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.enabled = CrontabIsEnabled('reports');
+    }
 
-    async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
+    async runReport(dto: CreateReportDto, user: PessoaFromJwt | null): Promise<FileOutput[]> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
@@ -122,7 +134,7 @@ export class ReportsService {
             },
         };
 
-        return await service.toFileOutput(parametros, mockContext);
+        return await service.toFileOutput(parametros, mockContext, user);
     }
 
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
@@ -193,7 +205,12 @@ export class ReportsService {
         return zip.toBuffer();
     }
 
-    async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt | null): Promise<RecordWithId> {
+    async saveReport(
+        dto: CreateReportDto,
+        arquivoId: number | null,
+        user: PessoaFromJwt | null,
+        sistema: ModuloSistema = 'SMAE'
+    ): Promise<RecordWithId> {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
@@ -203,7 +220,9 @@ export class ReportsService {
                 pdm_id: pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
-                eh_publico: dto.eh_publico, // Default é true.
+                sistema: sistema,
+                /// here it's easy because the user is saying what he wants
+                visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
                 tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
                 parametros_processados: await this.buildParametrosProcessados(dto),
@@ -212,7 +231,13 @@ export class ReportsService {
             },
             select: { id: true },
         });
-        this.logger.log(`persistido arquivo ${arquivoId} no relatório ${result.id}`);
+
+        await this.prisma.relatorioFila.create({
+            data: {
+                relatorio_id: result.id,
+            },
+        });
+
         return { id: result.id };
     }
 
@@ -273,9 +298,10 @@ export class ReportsService {
         return service;
     }
 
-    async findAll(filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
+    async findAll(filters: FilterRelatorioDto, user: PessoaFromJwt): Promise<PaginatedDto<RelatorioDto>> {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
+        const sistema = user.assertOneModuloSistema('buscar', 'Relatórios');
 
         let ipp = filters.ipp ? filters.ipp : 25;
         let offset = 0;
@@ -291,7 +317,20 @@ export class ReportsService {
                 fonte: filters.fonte,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
-                eh_publico: true,
+                sistema: { in: [sistema, 'SMAE'] },
+                AND: [
+                    {
+                        OR: [
+                            {
+                                visibilidade: 'Privado',
+                                criado_por: user.id,
+                            },
+                            {
+                                visibilidade: 'Publico',
+                            },
+                        ],
+                    },
+                ],
             },
             select: {
                 id: true,
@@ -322,7 +361,9 @@ export class ReportsService {
                     ...r,
                     parametros_processados: this.bffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
-                    arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
+                    arquivo: r.arquivo_id
+                        ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
+                        : null,
                 };
             }),
             tem_mais: tem_mais,
@@ -392,7 +433,7 @@ export class ReportsService {
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
-                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                this.logger.debug(`Adquirindo lock para verificação de relatórios de Projeto`);
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
@@ -404,6 +445,34 @@ export class ReportsService {
                 }
 
                 await this.verificaRelatorioProjetos();
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
+            }
+        );
+    }
+
+    @Cron('*/2 * * * *')
+    async handleRelatorioFilaCron() {
+        if (!this.enabled) return;
+        if (process.env['DISABLE_REPORT_CRONTAB']) return;
+
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                this.logger.log(`Adquirindo lock para verificação de relatórios`);
+                const locked: {
+                    locked: boolean;
+                }[] = await prisma.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked
+            `;
+                if (!locked[0].locked) {
+                    this.logger.log(`Já está em processamento...`);
+                    return;
+                }
+
+                await this.verificaRelatorioFila();
             },
             {
                 maxWait: 30000,
@@ -482,7 +551,7 @@ export class ReportsService {
                     projeto_id: job.projeto_id,
                 } satisfies CreateRelProjetoDto,
             };
-            const files = await this.runReport(dto);
+            const files = await this.runReport(dto, null);
             const zipBuffer = await this.zipFiles(files);
 
             const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, null);
@@ -495,6 +564,152 @@ export class ReportsService {
                     relatorio_id: report.id,
                 },
             });
+        }
+    }
+
+    private async verificaRelatorioFila(filtroId?: number | undefined) {
+        const pending = await this.prisma.relatorioFila.findMany({
+            where: {
+                executado_em: null,
+                AND: [
+                    {
+                        OR: [
+                            { id: filtroId },
+                            { congelado_em: null },
+                            {
+                                congelado_em: {
+                                    lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            take: 1,
+            orderBy: { criado_em: 'asc' },
+        });
+
+        this.logger.log(pending.length + ' relatórios pendentes');
+
+        for (const job of pending) {
+            this.logger.log(`iniciando processamento do relatório ID ${job.relatorio_id}`);
+
+            await this.prisma.relatorioFila.update({
+                where: { id: job.id },
+                data: {
+                    congelado_em: new Date(Date.now()),
+                },
+            });
+
+            try {
+                const now = new Date(Date.now());
+
+                const relatorio = await this.prisma.relatorio.findFirst({
+                    where: { id: job.relatorio_id },
+                    select: {
+                        fonte: true,
+                        parametros: true,
+                        parametros_processados: true,
+                        sistema: true,
+                        criado_em: true,
+                        criado_por: true,
+                        criador: {
+                            select: {
+                                email: true,
+                            },
+                        },
+                    },
+                });
+                if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
+
+                const pessoaJwt = relatorio.criado_por
+                    ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
+                    : null;
+
+                const files = await this.runReport(
+                    {
+                        fonte: relatorio.fonte,
+                        parametros: relatorio.parametros,
+                    },
+                    pessoaJwt
+                );
+
+                const contentType = 'application/zip';
+                const filename = [
+                    relatorio.fonte.toString(),
+                    DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
+                ]
+                    .filter((r) => r)
+                    .join('-');
+
+                const zipBuffer = await this.zipFiles(files);
+
+                const arquivoId = await this.uploadService.uploadReport(
+                    relatorio.fonte,
+                    filename,
+                    zipBuffer,
+                    contentType,
+                    null
+                );
+
+                await this.prisma.relatorio.update({
+                    where: { id: job.relatorio_id },
+                    data: {
+                        arquivo_id: arquivoId,
+                        processado_em: now,
+                    },
+                });
+
+                await this.prisma.relatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        executado_em: new Date(Date.now()),
+                    },
+                });
+
+                // Enviando email com o relatório para o usuário.
+                if (relatorio.criador) {
+                    // A fonte precisa ser em slug para construir a URL.
+                    const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
+
+                    await this.prisma.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `Seu relatório ficou pronto!`,
+                            template: 'report.html',
+                            to: relatorio.criador.email,
+                            variables: {
+                                id: job.relatorio_id,
+                                fonte: await this.getRelatorioFonteString(relatorio.fonte),
+                                parametros: relatorio.parametros_processados
+                                    ? Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
+                                          key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+                                          value: value,
+                                      }))
+                                    : null,
+                                data_criacao: relatorio.criado_em.toLocaleString('pt-BR', {
+                                    timeZone: 'America/Sao_Paulo',
+                                }),
+                                link: new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')),
+                            },
+                        },
+                    });
+                }
+            } catch (error) {
+                this.logger.error(`Falha ao processar relatório ID ${job.relatorio_id}: ${error}`);
+
+                await this.prisma.relatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        err_msg: error.toString().replace(/\s/g, ''),
+                        executado_em: new Date(Date.now()),
+                        congelado_em: null,
+                    },
+                });
+
+                continue;
+            }
         }
     }
 
@@ -612,5 +827,54 @@ export class ReportsService {
         );
 
         return mapeamento[nomeChave];
+    }
+
+    private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
+        switch (fonte) {
+            case FonteRelatorio.CasaCivilAtvPendentes:
+                return 'Casa Civil - Atividades Pendentes';
+            case FonteRelatorio.Indicadores:
+                return 'Indicadores';
+            case FonteRelatorio.MonitoramentoMensal:
+                return 'Monitoramento Mensal';
+            case FonteRelatorio.Obras:
+                return 'Obras';
+            case FonteRelatorio.ObrasOrcamento:
+                return 'Obras - Orçamento';
+            case FonteRelatorio.ObrasPrevisaoCusto:
+                return 'Obras - Previsão de Custo';
+            case FonteRelatorio.ObraStatus:
+                return 'Status de Obras';
+            case FonteRelatorio.Orcamento:
+                return 'Orçamento';
+            case FonteRelatorio.Parlamentares:
+                return 'Parlamentares';
+            case FonteRelatorio.PrevisaoCusto:
+                return 'Previsão de Custo';
+            case FonteRelatorio.Projeto:
+                return 'Projeto';
+            case FonteRelatorio.ProjetoOrcamento:
+                return 'Projeto - Orçamento';
+            case FonteRelatorio.ProjetoPrevisaoCusto:
+                return 'Projeto - Previsão de Custo';
+            case FonteRelatorio.ProjetoStatus:
+                return 'Status de Projetos';
+            case FonteRelatorio.Projetos:
+                return 'Projetos';
+            case FonteRelatorio.Transferencias:
+                return 'Transferências';
+            case FonteRelatorio.TribunalDeContas:
+                return 'Tribunal de Contas';
+            case FonteRelatorio.PSMonitoramentoMensal:
+                return 'Plano Setorial - Monitoramento Mensal';
+            case FonteRelatorio.PSOrcamento:
+                return 'Plano Setorial - Orçamento';
+            case FonteRelatorio.PSPrevisaoCusto:
+                return 'Plano Setorial - Previsão de Custo';
+            case FonteRelatorio.PSIndicadores:
+                return 'Plano Setorial - Indicadores';
+            default:
+                return 'Desconhecido';
+        }
     }
 }

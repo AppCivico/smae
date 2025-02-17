@@ -2,6 +2,10 @@ import { TransformFnParams } from 'class-transformer';
 import { MAX_DTO_SAFE_NUM, MIN_DTO_SAFE_NUM } from '../../common/dto/consts';
 
 export function NumberArrayTransformOrUndef(a: TransformFnParams): number[] | undefined {
+    if (typeof a.value === 'string' && a.value.length < 10000 && a.value.includes(',')) {
+        a.value = a.value.split(',');
+    }
+
     if (Array.isArray(a.value)) {
         const result: number[] = [];
 
@@ -22,6 +26,10 @@ export function NumberArrayTransformOrUndef(a: TransformFnParams): number[] | un
 }
 
 export function NumberArrayTransformOrEmpty(a: TransformFnParams): number[] {
+    if (a.value && typeof a.value === 'string' && a.value.length < 10000 && a.value.includes(',')) {
+        a.value = a.value.split(',');
+    }
+
     if (Array.isArray(a.value)) {
         const result: number[] = [];
 

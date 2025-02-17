@@ -1,14 +1,12 @@
 <script setup>
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
-import statuses from '@/consts/projectStatuses';
 import truncate from '@/helpers/truncate';
-import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useRegionsStore } from '@/stores/regions.store.js';
+import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';

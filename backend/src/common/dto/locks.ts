@@ -13,3 +13,4 @@ export const JOB_AVISO_EMAIL = id++;
 export const JOB_LISTA_SEI_LOCK = id++;
 export const JOB_TRANSFERE_GOV_LOCK = id++;
 export const JOB_CICLO_VARIAVEL = id++;
+export const JOB_REPORT_LOCK = id++;

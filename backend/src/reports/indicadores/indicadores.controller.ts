@@ -1,19 +1,13 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiExtraModels,
-    ApiOkResponse,
-    ApiProduces,
-    ApiTags,
-
-    refs,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiProduces, ApiTags, refs } from '@nestjs/swagger';
 import { Response as ExpressResponse } from 'express';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { JsonStringifyTransformStream } from '../../auth/pipe/JsonStringifyTransformStream.pipe';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { IndicadoresService } from './indicadores.service';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/indicadores')
@@ -23,8 +17,11 @@ export class IndicadoresController {
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.PDM'])
-    async create(@Body() dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
-        return await this.indicadoresService.asJSON(dto);
+    async create(
+        @Body() dto: CreateRelIndicadorDto,
+        @CurrentUser() user: PessoaFromJwt | null
+    ): Promise<ListIndicadoresDto> {
+        return await this.indicadoresService.asJSON(dto, user);
     }
 
     @Post('/stream-linhas')
@@ -40,12 +37,17 @@ export class IndicadoresController {
         },
     })
     @ApiExtraModels(RelIndicadoresDto)
-    streamLinhas(@Body() dto: CreateRelIndicadorDto, @Res() res: ExpressResponse) {
+    streamLinhas(
+        @Body() dto: CreateRelIndicadorDto,
+
+        @CurrentUser() user: PessoaFromJwt | null,
+        @Res() res: ExpressResponse
+    ) {
         res.setHeader('Content-Type', 'application/jsonlines+json');
         res.writeHead(200);
         res.flushHeaders();
 
-        const stream = this.indicadoresService.streamLinhas(dto).on('error', this.processError(res));
+        const stream = this.indicadoresService.streamLinhas(dto, user).on('error', this.processError(res));
         const transformStream = JsonStringifyTransformStream();
 
         stream.pipe(transformStream).pipe(res);
@@ -63,12 +65,16 @@ export class IndicadoresController {
     })
     @ApiExtraModels(RelIndicadoresVariaveisDto)
     @ApiProduces('application/jsonlines+json')
-    streamRegioes(@Body() dto: CreateRelIndicadorRegioesDto, @Res() res: ExpressResponse) {
+    streamRegioes(
+        @Body() dto: CreateRelIndicadorRegioesDto,
+        @CurrentUser() user: PessoaFromJwt | null,
+        @Res() res: ExpressResponse
+    ) {
         res.setHeader('Content-Type', 'application/jsonlines+json');
         res.writeHead(200);
         res.flushHeaders();
 
-        const stream = this.indicadoresService.streamRegioes(dto).on('error', this.processError(res));
+        const stream = this.indicadoresService.streamRegioes(dto, user).on('error', this.processError(res));
         const transformStream = JsonStringifyTransformStream();
 
         stream.pipe(transformStream).pipe(res);

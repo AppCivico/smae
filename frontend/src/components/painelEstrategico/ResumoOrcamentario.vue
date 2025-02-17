@@ -33,7 +33,7 @@ defineProps({
         class="mb0 t36 w700"
       >
         <template #prefix>
-          R$
+          <span class="ff-regular">R$</span>
         </template>
       </AnimatedNumber>
     </div>
@@ -49,7 +49,7 @@ defineProps({
         class="mb0 t36 w700"
       >
         <template #prefix>
-          R$
+          <span class="ff-regular">R$</span>
         </template>
       </AnimatedNumber>
     </div>
@@ -65,7 +65,7 @@ defineProps({
         class="mb0 t36 w700 liquidado"
       >
         <template #prefix>
-          R$
+          <span class="ff-regular">R$</span>
         </template>
       </AnimatedNumber>
     </div>
@@ -73,15 +73,22 @@ defineProps({
 </template>
 
 <style scoped lang="less">
-    dt{
+    dl {
+      container-type: inline-size;
+    }
+    dt {
       color: #7E858D;
     }
 
     dd {
+      padding: 0 0.1rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-family: "Roboto Slab", serif;
+      font-family: "Roboto Mono", monospace;
+      letter-spacing: -0.1em;
+      overflow-wrap: anywhere;
+      font-size: clamp(1rem, 10cqi, 3rem);
     }
 
     .liquidado {

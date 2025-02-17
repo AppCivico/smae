@@ -1,13 +1,14 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
+import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
@@ -251,6 +252,8 @@ class RetornoDbLoc {
 
 @Injectable()
 export class PPProjetosService implements ReportableService {
+    private tipo: TipoProjeto = 'PP';
+
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
@@ -258,7 +261,7 @@ export class PPProjetosService implements ReportableService {
         @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
-    async asJSON(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
+    async asJSON(dto: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<PPProjetosRelatorioDto> {
         const out_projetos: RelProjetosDto[] = [];
         const out_cronogramas: RelProjetosCronogramaDto[] = [];
         const out_riscos: RelProjetosRiscosDto[] = [];
@@ -271,7 +274,7 @@ export class PPProjetosService implements ReportableService {
         const out_origens: RelProjetosOrigemDto[] = [];
         const out_enderecos: RelProjetosGeolocDto[] = [];
 
-        const whereCond = await this.buildFilteredWhereStr(dto);
+        const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_projetos);
         await this.queryDataCronograma(whereCond, out_cronogramas);
@@ -300,8 +303,12 @@ export class PPProjetosService implements ReportableService {
         };
     }
 
-    async toFileOutput(params: CreateRelProjetosDto, ctx: ReportContext): Promise<FileOutput[]> {
-        const dados = await this.asJSON(params);
+    async toFileOutput(
+        params: CreateRelProjetosDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
+        const dados = await this.asJSON(params, user);
         await ctx.progress(50);
 
         const out: FileOutput[] = [];
@@ -457,11 +464,34 @@ export class PPProjetosService implements ReportableService {
         ];
     }
 
-    private async buildFilteredWhereStr(filters: CreateRelProjetosDto): Promise<WhereCond> {
+    private async buildFilteredWhereStr(filters: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<WhereCond> {
         const whereConditions: string[] = [];
         const queryParams: any[] = [];
 
         let paramIndex = 1;
+
+        if (user) {
+            const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
+
+            const allowed = await this.prisma.projeto.findMany({
+                where: {
+                    AND: perms,
+                    // reduz o número de linhas pra não virar um "IN" gigante
+                    portfolio_id: filters.portfolio_id,
+                    codigo: filters.codigo,
+                    status: filters.status,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            if (allowed.length === 0) {
+                return { whereString: 'WHERE false', queryParams: [] };
+            }
+
+            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+            queryParams.push(allowed.map((n) => n.id));
+        }
 
         if (filters.portfolio_id) {
             whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
@@ -786,7 +816,7 @@ export class PPProjetosService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne('PP', db.projeto_id, undefined, 'ReadOnly');
+            await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
 
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {
@@ -1107,7 +1137,7 @@ export class PPProjetosService implements ReportableService {
                 WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_reajustado,
             (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL

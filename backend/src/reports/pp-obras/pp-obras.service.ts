@@ -1,17 +1,20 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Date2YMD } from '../../common/date2ymd';
-import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
-import { PrismaService } from '../../prisma/prisma.service';
-
 import {
     CategoriaProcessoSei,
     ContratoPrazoUnidade,
     ProjetoOrigemTipo,
     ProjetoStatus,
     StatusContrato,
+    TipoProjeto,
 } from '@prisma/client';
+import { formataSEI } from 'src/common/formata-sei';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
+import { Transform } from 'stream';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { Date2YMD } from '../../common/date2ymd';
+import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelObrasDto } from './dto/create-obras.dto';
 import {
@@ -27,7 +30,6 @@ import {
     RelObrasRegioesDto,
     RelObrasSeiDto,
 } from './entities/obras.entity';
-import { formataSEI } from 'src/common/formata-sei';
 
 const {
     Parser,
@@ -237,8 +239,15 @@ class RetornoDbLoc {
     geojson: unknown;
 }
 
+const json2csvParser = new Parser({
+    ...DefaultCsvOptions,
+    transforms: defaultTransform,
+});
+
 @Injectable()
 export class PPObrasService implements ReportableService {
+    private tipo: TipoProjeto = 'MDO';
+
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
@@ -246,7 +255,7 @@ export class PPObrasService implements ReportableService {
         @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
-    async asJSON(dto: CreateRelObrasDto): Promise<PPObrasRelatorioDto> {
+    async asJSON(dto: CreateRelObrasDto, user: PessoaFromJwt | null): Promise<PPObrasRelatorioDto> {
         const out_obras: RelObrasDto[] = [];
         const out_cronogramas: RelObrasCronogramaDto[] = [];
         const out_acompanhamentos: RelObrasAcompanhamentosDto[] = [];
@@ -258,7 +267,7 @@ export class PPObrasService implements ReportableService {
         const out_processos_sei: RelObrasSeiDto[] = [];
         const out_enderecos: RelObrasGeolocDto[] = [];
 
-        const whereCond = await this.buildFilteredWhereStr(dto);
+        const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_obras);
         await this.queryDataCronograma(whereCond, out_cronogramas);
@@ -285,156 +294,438 @@ export class PPObrasService implements ReportableService {
         };
     }
 
-    async toFileOutput(params: CreateRelObrasDto, ctx: ReportContext): Promise<FileOutput[]> {
-        const dados = await this.asJSON(params);
-        await ctx.progress(50);
-
+    async toFileOutput(dto: CreateRelObrasDto, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
+        ctx.progress(50);
 
-        if (dados.linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
+        const whereCond = await this.buildFilteredWhereStr(dto, user);
 
-            for (const r of dados.linhas) {
-                if (r.status) (r as any)['status-traduzido'] = ProjetoStatusParaExibicao[r.status];
-            }
-            const linhas = json2csvParser.parse(dados.linhas);
-            out.push({
-                name: 'obras.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id,
+                    projeto.portfolio_id,
+                    portfolio.titulo as portfolio_titulo,
+                    projeto.meta_id,
+                    meta.titulo as meta_nome,
+                    pdm.id as pdm_id,
+                    pdm.nome as pdm_nome,
+                    projeto.nome,
+                    projeto.codigo,
+                    projeto.objeto,
+                    projeto.objetivo,
+                    tc.previsao_inicio AS inicio_planejado,
+                    tc.previsao_termino AS termino_planejado,
+                    projeto.previsao_inicio AS previsao_inicio,
+                    projeto.previsao_termino AS previsao_termino,
+                    coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
+                    projeto.previsao_custo AS previsao_custo,
+                    tc.previsao_custo AS custo_planejado,
+                    projeto.escopo,
+                    projeto.nao_escopo,
+                    projeto.secretario_responsavel,
+                    projeto.secretario_executivo,
+                    projeto.coordenador_ue,
+                    projeto.data_aprovacao,
+                    projeto.data_revisao,
+                    projeto.versao,
+                    projeto.status,
+                    orgao_responsavel.id AS orgao_responsavel_id,
+                    orgao_responsavel.sigla AS orgao_responsavel_sigla,
+                    orgao_responsavel.descricao AS orgao_responsavel_descricao,
+                    resp.id AS responsavel_id,
+                    resp.nome_exibicao AS responsavel_nome_exibicao,
+                    orgao_gestor.id as orgao_gestor_id,
+                    orgao_gestor.sigla as orgao_gestor_sigla,
+                    orgao_gestor.descricao as orgao_gestor_descricao,
+                    (
+                        SELECT
+                            string_agg(nome_exibicao, '|')
+                        FROM pessoa
+                        WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
+                    ) as assessores,
+                    (
+                        SELECT
+                            string_agg(nome_exibicao, '|')
+                        FROM pessoa
+                        WHERE id = ANY(projeto.colaboradores_no_orgao)
+                    ) as pontos_focais_colaboradores,
+                    r.valor_percentual AS fonte_recurso_valor_pct,
+                    r.valor_nominal AS fonte_recurso_valor_nominal,
+                    o.id AS orgao_id,
+                    o.sigla AS orgao_sigla,
+                    o.descricao AS orgao_descricao,
+                    orgao_executor.id AS orgao_executor_id,
+                    orgao_executor.sigla AS orgao_executor_sigla,
+                    orgao_executor.descricao AS orgao_executor_descricao,
+                    orgao_origem.id AS orgao_origem_id,
+                    orgao_origem.sigla AS orgao_origem_sigla,
+                    orgao_origem.descricao AS orgao_origem_descricao,
+                    orgao_colaborador.id AS orgao_colaborador_id,
+                    orgao_colaborador.sigla AS orgao_colaborador_sigla,
+                    orgao_colaborador.descricao AS orgao_colaborador_descricao,
+                    pe.descricao AS projeto_etapa,
+                    grupo_tematico.id AS grupo_tematico_id,
+                    grupo_tematico.nome AS grupo_tematico_nome,
+                    tipo_intervencao.id AS tipo_intervencao_id,
+                    tipo_intervencao.nome AS tipo_intervencao_nome,
+                    tipo_intervencao.conceito AS tipo_intervencao_conceito,
+                    equipamento.id AS equipamento_id,
+                    equipamento.nome AS equipamento_nome,
+                    mdo_detalhamento AS detalhamento,
+                    origem_tipo,
+                    origem_outro as descricao,
+                    secretario_colaborador,
+                    mdo_previsao_inauguracao as data_inauguracao_planejada,
+                    (
+                        SELECT
+                            string_agg(regiao.descricao, '|')
+                        FROM projeto_regiao
+                        JOIN regiao ON regiao.id = projeto_regiao.regiao_id
+                        WHERE projeto_regiao.projeto_id = projeto.id
+                        AND projeto_regiao.removido_em IS NULL
+                        AND regiao.removido_em IS NULL
+                    ) AS subprefeituras,
+                    projeto.mdo_programa_habitacional as programa_habitacional,
+                    projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
+                    projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
+                    projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
+                    empreendimento.id AS empreendimento_id,
+                    empreendimento.identificador AS empreendimento_identificador,
+                    projeto.mdo_observacoes
+                FROM projeto
+                LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
+                LEFT JOIN pdm ON pdm.id = meta.pdm_id
+                LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
+                LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
+                LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
+                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+                LEFT JOIN LATERAL (
+                        SELECT projeto.portfolio_id AS portfolio_id
+                        UNION ALL
+                        SELECT ppc.portfolio_id
+                        FROM portfolio_projeto_compartilhado ppc
+                        WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
+                    ) AS port_array ON true
+                LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
+                LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
+                LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
+                LEFT JOIN orgao o ON po.orgao_id = o.id
+                LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
+                LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
+                LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
+                LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
+                LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
+                LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+                LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
+                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id`,
+                whereCond.queryParams,
+                'obras.csv'
+            )
+        );
 
-        if (dados.cronograma.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.cronograma);
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    tc.projeto_id AS projeto_id,
+                    projeto.codigo AS projeto_codigo,
+                    tc.atraso,
+                    resp.id AS responsavel_id,
+                    resp.nome_exibicao AS responsavel_nome_exibicao,
+                    t.id,
+                    t.numero,
+                    t.nivel,
+                    '' AS hierarquia,
+                    t.tarefa,
+                    t.inicio_planejado,
+                    t.termino_planejado,
+                    t.custo_estimado,
+                    t.inicio_real,
+                    t.termino_real,
+                    t.duracao_real,
+                    t.percentual_concluido,
+                    t.custo_real,
+                    (
+                        SELECT
+                        string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
+                        FROM tarefa_dependente td
+                        JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
+                        WHERE td.tarefa_id = t.id
+                    ) as dependencias
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+                LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id`,
+                whereCond.queryParams,
+                'cronograma.csv'
+            )
+        );
 
-        if (dados.acompanhamentos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.acompanhamentos);
-            out.push({
-                name: 'acompanhamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id AS projeto_id,
+                    regiao.descricao AS descricao,
+                    regiao.pdm_codigo_sufixo AS sigla,
+                    regiao.nivel AS nivel
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
+                JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL`,
+                whereCond.queryParams,
+                'regioes.csv'
+            )
+        );
 
-        if (dados.regioes.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.regioes);
-            out.push({
-                name: 'regioes.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id AS projeto_id,
+                    projeto.codigo AS projeto_codigo,
+                    projeto_acompanhamento.data_registro,
+                    projeto_acompanhamento.participantes,
+                    projeto_acompanhamento.cronograma_paralisado,
+                    projeto_acompanhamento_item.prazo_encaminhamento,
+                    projeto_acompanhamento.pauta,
+                    projeto_acompanhamento_item.prazo_realizado,
+                    projeto_acompanhamento.detalhamento,
+                    projeto_acompanhamento_item.encaminhamento,
+                    projeto_acompanhamento_item.responsavel,
+                    projeto_acompanhamento.observacao,
+                    projeto_acompanhamento.detalhamento_status,
+                    projeto_acompanhamento.pontos_atencao,
+                    (
+                        SELECT string_agg(r.codigo::text, '|')
+                        FROM projeto_acompanhamento_risco ar
+                        JOIN projeto_risco r ON ar.projeto_risco_id = r.id
+                        WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
+                    ) AS riscos
+                FROM projeto
+                JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
+                JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id`,
+                whereCond.queryParams,
+                'acompanhamentos.csv'
+            )
+        );
 
-        if (dados.fontes_recurso.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.fontes_recurso);
-            out.push({
-                name: 'fontes_recurso.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id AS projeto_id,
+                    projeto_fonte_recurso.valor_percentual,
+                    projeto_fonte_recurso.valor_nominal,
+                    projeto_fonte_recurso.fonte_recurso_ano,
+                    projeto_fonte_recurso.fonte_recurso_cod_sof
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id`,
+                whereCond.queryParams,
+                'fontes_recurso.csv'
+            )
+        );
 
-        if (dados.contratos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.contratos);
-            out.push({
-                name: 'contratos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    contrato.id AS id,
+                    projeto.id AS obra_id,
+                    contrato.numero AS numero,
+                    contrato.contrato_exclusivo AS exclusivo,
+                    contrato.status AS status,
+                    contrato.objeto_resumo AS objeto,
+                    contrato.objeto_detalhado AS descricao_detalhada,
+                    contrato.contratante AS contratante,
+                    contrato.empresa_contratada AS empresa_contratada,
+                    contrato.prazo_numero AS prazo,
+                    contrato.prazo_unidade AS unidade_prazo,
+                    contrato.data_inicio AS data_inicio,
+                    contrato.data_termino AS data_termino,
+                    contrato.observacoes AS observacoes,
+                    contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+                    modalidade_contratacao.id AS modalidade_contratacao_id,
+                    modalidade_contratacao.nome AS modalidade_contratacao_nome,
+                    orgao.id AS orgao_id,
+                    orgao.sigla AS orgao_sigla,
+                    orgao.descricao AS orgao_descricao,
+                    contrato.valor AS valor,
+                    (
+                        SELECT max(valor)
+                        FROM contrato_aditivo
+                        JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                        WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
+                    ) AS valor_reajustado,
+                    (
+                        SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
+                    ) AS valor_com_reajuste,
+                    (
+                        SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+                    ) AS data_termino_atualizada,
+                    (
+                        SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+                    ) AS percentual_medido,
+                    (
+                        SELECT string_agg(contrato_sei.numero_sei::text, '|')
+                        FROM contrato_sei
+                        WHERE contrato_sei.contrato_id = contrato.id
+                    ) AS processos_sei,
+                    (
+                        SELECT string_agg(cod_sof::text, '|')
+                        FROM contrato_fonte_recurso
+                        WHERE contrato_id = contrato.id
+                    ) AS fontes_recurso
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+                LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
+                LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL`,
+                whereCond.queryParams,
+                'contratos.csv'
+            )
+        );
 
-        if (dados.aditivos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.aditivos);
-            out.push({
-                name: 'aditivos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    contrato_aditivo.id AS aditivo_id,
+                    contrato.id AS contrato_id,
+                    contrato_aditivo.numero AS numero,
+                    tipo_aditivo.id AS tipo_aditivo_id,
+                    tipo_aditivo.nome AS tipo_aditivo_nome,
+                    contrato_aditivo.data,
+                    contrato_aditivo.data_termino_atualizada AS data_termino_atual,
+                    contrato_aditivo.valor AS valor_com_reajuste,
+                    contrato_aditivo.percentual_medido
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+                JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL`,
+                whereCond.queryParams,
+                'aditivos.csv'
+            )
+        );
 
-        if (dados.origens.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.origens);
-            out.push({
-                name: 'origens.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id AS projeto_id,
+                    meta.pdm_id,
+                    pdm.nome AS pdm_titulo,
+                    meta.id as meta_id,
+                    meta.titulo as meta_titulo,
+                    iniciativa.id iniciativa_id,
+                    iniciativa.titulo as iniciativa_titulo,
+                    atividade.id atividade_id,
+                    atividade.titulo as atividade_titulo
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
+                LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
+                LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
+                LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
+                LEFT JOIN pdm ON pdm.id = meta.pdm_id`,
+                whereCond.queryParams,
+                'origens.csv'
+            )
+        );
 
-        if (dados.processos_sei.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.processos_sei);
-            out.push({
-                name: 'processos_sei.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id AS obra_id,
+                    projeto_registro_sei.categoria,
+                    projeto_registro_sei.processo_sei,
+                    projeto_registro_sei.descricao,
+                    projeto_registro_sei.link,
+                    projeto_registro_sei.comentarios,
+                    projeto_registro_sei.observacoes
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL`,
+                whereCond.queryParams,
+                'processos_sei.csv'
+            )
+        );
 
-        if (dados.enderecos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.enderecos);
-            out.push({
-                name: 'enderecos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    projeto.id AS projeto_id,
+                    geo.endereco_exibicao AS endereco,
+                    geo.geom_geojson AS geojson
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id`,
+                whereCond.queryParams,
+                'enderecos.csv'
+            )
+        );
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return out;
     }
 
-    private async buildFilteredWhereStr(filters: CreateRelObrasDto): Promise<WhereCond> {
+    private async streamQueryToCSV(query: string, params: any[], filename: string): Promise<FileOutput> {
+        const csvStream = new Transform({
+            objectMode: true,
+            transform(row, encoding, callback) {
+                try {
+                    const csvLine = json2csvParser.parse([row]);
+                    callback(null, csvLine);
+                } catch (error) {
+                    callback(error);
+                }
+            },
+        });
+
+        const chunks: Buffer[] = [];
+
+        await this.prisma.$queryRawUnsafe(query, ...params).then(async (cursor: any) => {
+            for await (const row of cursor) {
+                csvStream.write(row);
+            }
+            csvStream.end();
+        });
+
+        return new Promise((resolve) => {
+            csvStream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+            csvStream.on('end', () => {
+                resolve({ name: filename, buffer: Buffer.concat(chunks) });
+            });
+        });
+    }
+
+    private async buildFilteredWhereStr(filters: CreateRelObrasDto, user: PessoaFromJwt | null): Promise<WhereCond> {
         const whereConditions: string[] = [];
         const queryParams: any[] = [];
 
         let paramIndex = 1;
+
+        if (user) {
+            const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
+
+            const allowed = await this.prisma.projeto.findMany({
+                where: {
+                    AND: perms,
+                    // reduz o número de linhas pra não virar um "IN" gigante
+                    portfolio_id: filters.portfolio_id,
+                    tipo: filters.tipo_projeto,
+                    orgao_responsavel_id: filters.orgao_responsavel_id,
+                    grupo_tematico_id: filters.grupo_tematico_id,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            if (allowed.length === 0) {
+                return { whereString: 'WHERE false', queryParams: [] };
+            }
+
+            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+            queryParams.push(allowed.map((n) => n.id));
+        }
 
         // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
         if (filters.tipo_projeto) {
@@ -477,6 +768,8 @@ export class PPObrasService implements ReportableService {
 
         whereConditions.push(`projeto.removido_em IS NULL`);
         whereConditions.push(`portfolio.modelo_clonagem = false`);
+        whereConditions.push(`projeto.removido_em IS NULL`);
+        whereConditions.push(`projeto.tipo = 'MDO'`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };
@@ -761,7 +1054,7 @@ export class PPObrasService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne('MDO', db.projeto_id, undefined, 'ReadOnly');
+            await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
 
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {

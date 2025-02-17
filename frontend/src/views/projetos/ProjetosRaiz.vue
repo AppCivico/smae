@@ -6,6 +6,7 @@ const portfolioStore = usePortfolioStore();
 
 portfolioStore.buscarTudo();
 </script>
+
 <template>
   <Dashboard>
     <MigalhasDePão class="mb1" />

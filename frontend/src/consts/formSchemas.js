@@ -1,4 +1,18 @@
 /* eslint-disable no-template-curly-in-string */
+import { isAfter, isBefore } from 'date-fns';
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -21,20 +35,6 @@ import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
-import { isAfter, isBefore } from 'date-fns';
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -78,7 +78,14 @@ addMethod(string, 'nullableOuVazio', function _() {
 addMethod(date, 'nullableOuVazio', function _() {
   return this
     .nullable()
-    .transform((v) => (v === '' ? null : v));
+    .transform((v) => {
+      try {
+        v.toISOString();
+        return v;
+      } catch (e) {
+        return null;
+      }
+    });
 });
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -163,6 +170,8 @@ setLocale({
 });
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
+
+const direcaoOpcoes = ['asc', 'desc', null];
 
 export const acompanhamento = object()
   .shape({
@@ -965,7 +974,7 @@ export const equipes = object({
     .nullable(),
   participantes: array()
     .label('Participantes alocados à equipe')
-    .required('Participantes inválidos'),
+    .nullable('Participantes inválidos'),
   perfil: mixed()
     .label('Tipo de equipe')
     .oneOf(Object.keys(tipoDePerfil))
@@ -2654,6 +2663,41 @@ export const projeto = object()
       .nullable()
       .max(20),
   });
+
+export const projetoFiltro = object().shape({
+  data_registro: date()
+    .label('data de registro')
+    .max(new Date())
+    .nullableOuVazio(),
+  projeto_etapa_id: number()
+    .label('etapa')
+    .nullableOuVazio(),
+  ipp: number()
+    .label('Itens por página')
+    .nullableOuVazio(),
+  ordem_coluna: string()
+    .label('Ordenar por')
+    .nullableOuVazio(),
+  ordem_direcao: string()
+    .label('Direção')
+    .oneOf(direcaoOpcoes)
+    .nullableOuVazio(),
+  orgao_responsavel_id: number()
+    .label('órgão responsável')
+    .nullableOuVazio(),
+  palavra_chave: string()
+    .label('Palavra chave')
+    .nullableOuVazio(),
+  portfolio_id: number()
+    .label('portfolio')
+    .nullableOuVazio(),
+  revisado: boolean()
+    .label('revisado')
+    .nullableOuVazio(),
+  status: string()
+    .label('status')
+    .nullableOuVazio(),
+});
 
 export const região = object()
   .shape({

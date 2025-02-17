@@ -411,7 +411,10 @@ watch(accessProfiles, () => {
             Acesso aos módulos
           </p>
 
-          <ul class="lista-de-perfis t12">
+          <ul
+            v-selecionar-multiplas-opcoes
+            class="flex flexwrap g2 t12"
+          >
             <li
               v-for="módulo in módulosOrdenados"
               :key="módulo.id"

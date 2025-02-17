@@ -1,7 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -14,6 +11,9 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 defineOptions({
@@ -56,7 +56,7 @@ async function iniciar() {
 
   if (metaId && activePdm.value.id) {
     MetasStore.getRelacionados({
-      metaId, pdm_id: activePdm.value.id,
+      meta_id: metaId, pdm_id: activePdm.value.id,
     });
   }
 
@@ -101,11 +101,7 @@ iniciar();
       </div>
       <hr class="ml2 f1">
       <SmaeLink
-        v-if="temPermissãoPara([
-          'CadastroMeta.administrador_no_pdm',
-          'CadastroMetaPS.administrador_no_pdm',
-          'CadastroMetaPDM.administrador_no_pdm'
-        ]) && activePdm?.pode_editar"
+        v-if="singleMeta?.pode_editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
       >
@@ -150,8 +146,56 @@ iniciar();
             </div>
           </div>
         </div>
+
         <hr class="mt2 mb2">
-        <div class="flex g2">
+
+        <div
+          v-if="route.meta.entidadeMãe === 'pdm'"
+          class="flex g2 mb2"
+        >
+          <div
+            v-if="singleMeta.orgaos_participantes.filter(x => x.responsavel)"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão responsável
+            </div>
+            <div class="t13">
+              {{ singleMeta.orgaos_participantes.filter((x) =>
+                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
+            </div>
+          </div>
+          <div
+            v-if="singleMeta.orgaos_participantes.filter(x => !x.responsavel).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão participante
+            </div>
+            <div class="t13">
+              {{
+                singleMeta.orgaos_participantes
+                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+              }}
+            </div>
+          </div>
+          <div
+            v-if="singleMeta.coordenadores_cp"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Responsável na coordenadoria de planejamento
+            </div>
+            <div class="t13">
+              {{ singleMeta.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-else
+          class="flex g2 mb2"
+        >
           <div
             v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
             class="mr2 f1"
@@ -314,7 +358,7 @@ iniciar();
                     </div>
                     <div class="mr1 f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Órgão participante
+                        Equipe do órgão responsável
                       </div>
                       <div class="t13">
                         {{
@@ -329,7 +373,7 @@ iniciar();
                     </div>
                     <div class="f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Responsável na coordenadoria de planejamento
+                        Equipe técnica responsável
                       </div>
                       <div class="t13">
                         {{

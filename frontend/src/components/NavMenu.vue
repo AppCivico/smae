@@ -69,6 +69,7 @@ onBeforeRouteUpdate(() => {
 
       <div class="cabeçalho__nome-e-ícone-do-módulo">
         <img
+          v-if="dadosDoSistemaEscolhido?.ícone"
           :src="dadosDoSistemaEscolhido.ícone"
           class="cabeçalho__ícone-do-módulo"
           width="24"

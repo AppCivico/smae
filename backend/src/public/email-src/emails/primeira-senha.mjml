@@ -8,12 +8,22 @@
     <mj-section background-color="#fff">
       <mj-column>
         <mj-text>
-          <p>Bem vindo ao SMAE, [% nome_exibicao %]. Uma senha temporária foi criada para o primeiro acesso:</p>
+          <p>Bem vindo ao SMAE, [% nome_exibicao %]. </p>
           <p>[% tos | raw %]</p>
         </mj-text>
 
-        <mj-text>
-          <p>Sua nova senha para o sistema SMAE é [% nova_senha %]</p>
+        <mj-text padding-bottom="0">
+          <p>Uma senha temporária foi criada para o primeiro acesso:</p>
+        </mj-text>
+
+        <mj-text
+          padding-top="0"
+          color="black"
+          font-weight="900"
+          align="center"
+          font-size="32px"
+          line-height="21px"
+        >[% nova_senha %]
         </mj-text>
 
         <mj-button href="[% link %]">Acessar sistema</mj-button>

@@ -24,6 +24,7 @@ import {
 import { Stream2Buffer } from '../../common/helpers/Streaming';
 import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
 import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 
 const {
     Parser,
@@ -96,11 +97,11 @@ export class PPProjetoService implements ReportableService {
         @Inject(forwardRef(() => AcompanhamentoService)) private readonly acompanhamentoService: AcompanhamentoService
     ) {}
 
-    async asJSON(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
+    async asJSON(dto: CreateRelProjetoDto, user: PessoaFromJwt | null): Promise<PPProjetoRelatorioDto> {
         const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(
             'PP',
             dto.projeto_id,
-            undefined,
+            user ?? undefined,
             'ReadOnly'
         );
 
@@ -481,10 +482,14 @@ export class PPProjetoService implements ReportableService {
         });
     }
 
-    async toFileOutput(params: CreateRelProjetoDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: CreateRelProjetoDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         await ctx.progress(1);
         // relatório de apenas 1 item, por enquanto não há problemas de performance / memória
-        const dados = await this.asJSON(params);
+        const dados = await this.asJSON(params, user);
 
         await ctx.progress(40);
 

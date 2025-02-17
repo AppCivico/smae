@@ -1,3 +1,4 @@
+import type { PainelEstrategicoGeoLocalizacaoDto } from '@back/gestao-projetos/painel-estrategico/entities/painel-estrategico-responses.dto';
 import { jwtDecode } from 'jwt-decode';
 import { camelCase } from 'lodash';
 import type { StoreGeneric } from 'pinia';
@@ -19,9 +20,16 @@ type Erros = {
   orcamentosPaginados: unknown;
 };
 
-type Estado = Record<string, unknown> & {
+type ItemGenerico = Record<string, (unknown[] | Record<string, unknown>)>;
+
+type Estado = ItemGenerico & {
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
+  grandesNumeros: {
+    total_projetos?: number;
+    total_orgaos?: number;
+    total_metas?: number;
+  };
   paginacaoProjetos: {
     tokenPaginacao: string;
     paginas: number;
@@ -40,7 +48,9 @@ type Estado = Record<string, unknown> & {
   };
 };
 
-export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defineStore(prefixo ? `${prefixo}.painelEstrategico` : 'painelEstrategico', {
+export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defineStore(prefixo
+  ? `${prefixo}.painelEstrategico`
+  : 'painelEstrategico', {
   state: (): Estado => ({
     anosMapaCalorConcluidos: [],
     anosMapaCalorPlanejados: [],
@@ -89,37 +99,6 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       validoAte: 0,
     },
   }),
-  getters: {
-    locaisAgrupados: ({ projetosParaMapa }) => projetosParaMapa
-      .reduce((acc, cur) => {
-        if (Array.isArray(cur.geolocalizacao) && cur.geolocalizacao.length) {
-          cur.geolocalizacao.forEach((geolocalizacao) => {
-            if (geolocalizacao.endereco) {
-              acc.enderecos.push(geolocalizacao.endereco);
-
-              const rotulo = [cur.projeto_codigo, cur.projeto_nome].join(' - ');
-              const descricao = [cur.projeto_status, cur.projeto_etapa].join('<br/>');
-
-              if (rotulo) {
-                acc.enderecos[acc.enderecos.length - 1].properties.rotulo = rotulo;
-              }
-
-              if (descricao) {
-                acc.enderecos[acc.enderecos.length - 1].properties.descricao = descricao;
-              }
-            }
-            if (geolocalizacao.camadas) {
-              acc.camadas = acc.camadas.concat(geolocalizacao.camadas);
-            }
-          });
-        }
-
-        return acc;
-      }, {
-        camadas: [],
-        enderecos: [],
-      }),
-  },
   actions: {
     async buscarDados(params = {}): Promise<void> {
       this.chamadasPendentes.dados = true;
@@ -145,8 +124,10 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       this.erros.projetosParaMapa = null;
 
       try {
-        // TO-DO: atualizar endpoint
-        const { linhas } = await this.requestS.post(`${baseUrl}/painel-estrategico/geo-localizacao`, params);
+        const { linhas } = await this.requestS.post(
+          `${baseUrl}/painel-estrategico/geo-localizacao/v2`,
+          params,
+        ) as PainelEstrategicoGeoLocalizacaoDto;
 
         this.projetosParaMapa = linhas;
       } catch (error: unknown) {

@@ -4,6 +4,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
 import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 
 const {
     Parser,
@@ -35,10 +37,10 @@ type ProjetoStatusDbRow = {
 export class PPStatusService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async asJSON(dto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
+    async asJSON(dto: CreateRelProjetoStatusDto, user: PessoaFromJwt | null): Promise<PPProjetoStatusRelatorioDto> {
         this.verificaParams(dto);
 
-        const projetoRows = await this.buscaProjetos(dto);
+        const projetoRows = await this.buscaProjetos(dto, user);
 
         if (projetoRows.length == 0) throw new HttpException('Não há linhas para estas condições.', 400);
 
@@ -97,11 +99,21 @@ export class PPStatusService implements ReportableService {
         };
     }
 
-    private async buscaProjetos(dto: CreateRelProjetoStatusDto) {
+    private async buscaProjetos(dto: CreateRelProjetoStatusDto, user: PessoaFromJwt | null) {
+        let whereSet: Awaited<ReturnType<typeof ProjetoGetPermissionSet>> | undefined = undefined;
+        if (user) {
+            const sistema = user.modulo_sistema[0];
+            if (!sistema) throw new Error('Usuário sem sistema');
+            if (!dto.tipo_pdm) throw new Error('Tipo de PDM não informado');
+
+            whereSet = await ProjetoGetPermissionSet(dto.tipo_pdm, user, false);
+        }
+
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: dto.tipo_pdm,
                 id: dto.projeto_id ? dto.projeto_id : undefined,
+                AND: whereSet,
                 removido_em: null,
                 portfolio: {
                     tipo_projeto: dto.tipo_pdm,
@@ -168,10 +180,14 @@ export class PPStatusService implements ReportableService {
         if (!dto.tipo_pdm) dto.tipo_pdm = 'PP';
     }
 
-    async toFileOutput(params: CreateRelProjetoStatusDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: CreateRelProjetoStatusDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         // mais um relatório relativamente simples, se tiver problema de memória, pode ser que seja necessário
         // fazer paginação na busca dos projetos, mas a princípio não deve ser necessário
-        const dados = await this.asJSON(params);
+        const dados = await this.asJSON(params, user);
         await ctx.progress(50);
 
         const out: FileOutput[] = [];

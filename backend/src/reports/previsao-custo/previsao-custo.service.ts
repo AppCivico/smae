@@ -1,9 +1,10 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
@@ -18,10 +19,10 @@ export class PrevisaoCustoService implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService
+        private readonly dotacaoService: DotacaoService,
     ) {}
 
-    async asJSON(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
+    async asJSON(dto: SuperCreateRelPrevisaoCustoDto, user: PessoaFromJwt | null): Promise<ListPrevisaoCustoDto> {
         let ano: number;
         let filtroMetas: number[] | undefined = undefined;
 
@@ -30,7 +31,11 @@ export class PrevisaoCustoService implements ReportableService {
 
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
-            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+            const { metas } = await this.utils.applyFilter(
+                dto,
+                { iniciativas: false, atividades: false },
+                user
+            );
 
             filtroMetas = metas.map((r) => r.id);
         }
@@ -96,9 +101,13 @@ export class PrevisaoCustoService implements ReportableService {
         return partes.join('.');
     }
 
-    async toFileOutput(params: SuperCreateRelPrevisaoCustoDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: SuperCreateRelPrevisaoCustoDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         // em teoria custo previsto pode ficar pesado, mas por enquanto não temos muitos registros
-        const dados = await this.asJSON(params);
+        const dados = await this.asJSON(params, user);
         await ctx.progress(50);
 
         const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;

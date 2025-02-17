@@ -214,6 +214,7 @@ export type ListaDePrivilegios =
     | 'MDO.colaborador_de_projeto'
     | 'MDO.espectador_de_projeto'
     | 'MDO.revisar_obra'
+    | 'Projeto.revisar_projeto'
     | 'ModalidadeContratacao.inserir'
     | 'ModalidadeContratacao.editar'
     | 'ModalidadeContratacao.remover'
@@ -245,4 +246,6 @@ export type ListaDePrivilegios =
     | 'Menu.metas'
     | 'Menu.meta.pdm'
     | 'ReferencialEm.Equipe.ProgramaDeMetas'
-    | 'ReferencialEm.Equipe.PS';
+    | 'ReferencialEm.Equipe.PS'
+    | 'ReferencialEm.EquipeBanco.ProgramaDeMetas'
+    | 'ReferencialEm.EquipeBanco.PS';

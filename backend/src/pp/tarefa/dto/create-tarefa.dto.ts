@@ -10,6 +10,7 @@ import {
     IsOptional,
     IsPositive,
     IsString,
+    Max,
     MaxLength,
     Min,
     MinLength,
@@ -56,6 +57,7 @@ export class CreateTarefaDto {
      */
     @IsInt({ message: '$property| precisa ser inteiro' })
     @IsPositive({ message: '$property| precisa ser positivo' })
+    @Max(32, { message: '$property| Máximo 32' })
     nivel: number;
 
     /**
@@ -63,6 +65,7 @@ export class CreateTarefaDto {
      */
     @IsInt({ message: '$property| precisa ser inteiro' })
     @IsPositive({ message: '$property| precisa ser positivo' })
+    @Max(99999, { message: '$property| Máximo 99999' })
     numero: number;
 
     @IsInt({ message: '$property| precisa ser inteiro' })

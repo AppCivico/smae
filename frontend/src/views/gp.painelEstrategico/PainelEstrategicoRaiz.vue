@@ -17,27 +17,131 @@ import ProjetosPorStatus from '@/components/painelEstrategico/ProjetosPorStatus.
 import ResumoOrcamentario from '@/components/painelEstrategico/ResumoOrcamentario.vue';
 import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
+import projectStatuses from '@/consts/projectStatuses';
+import gerarCoresIntermediarias from '@/helpers/cores/gerarCoresIntermediarias';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import type { GeoLocCamadaFullDto } from '@back/geo-loc/entities/geo-loc.entity.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+type Camada = GeoLocCamadaFullDto & {
+  id: number
+  config: Record<string, unknown>
+  totalDeProjetos: number
+};
+
+type Endereco = {
+  properties: Record<string, unknown>
+};
+
+const regiaoPadrao = 180;
+const nivelRegionalizacaoPadrao = 3;
+
+const strokeColor = '#660000';
+const opacidadePreenchimento = 0.35;
+const espessuraDoFio = 3;
+
+const corParaMaximo = '#511515';
+const corParaMinimo = '#ffd29e';
 const route = useRoute();
 const router = useRouter();
 
 const painelEstrategicoStore = usePainelEstrategicoStore(route.meta.entidadeMãe as string);
 
+const regionsStore = useRegionsStore();
+
+const { camadas } = storeToRefs(regionsStore);
+
 const alertStore = useAlertStore();
 
 const {
   chamadasPendentes,
-  locaisAgrupados,
   erros,
   paginacaoProjetos,
   paginacaoOrcamentos,
+  projetosParaMapa,
 } = storeToRefs(painelEstrategicoStore);
+
+const camadasDaCidade = ref<number[]>([]);
+
+const locaisAgrupados = computed(() => {
+  const totalDeProjetos: Record<number, number> = {};
+  const enderecos: Endereco[] = [];
+
+  let i = 0;
+  let maximoDeProjetos = 0;
+
+  while (projetosParaMapa.value[i as keyof unknown]) {
+    const projeto = projetosParaMapa.value[i as keyof unknown];
+    if (projeto.geolocalizacao_sumario) {
+      let subPrefeitura = '';
+      if (projeto.geolocalizacao_sumario.camadas) {
+        for (let k = 0; k < projeto.geolocalizacao_sumario.camadas.length; k += 1) {
+          const camadaId = projeto.geolocalizacao_sumario.camadas[k];
+          const camada = camadas.value?.[camadaId] as unknown as GeoLocCamadaFullDto;
+
+          if (nivelRegionalizacaoPadrao === camada?.nivel_regionalizacao) {
+            if (totalDeProjetos[camadaId]) {
+              totalDeProjetos[camadaId] += 1;
+            } else {
+              totalDeProjetos[camadaId] = 1;
+            }
+
+            subPrefeitura = camada?.regiao?.reduce((acc, cur) => `${acc + cur.descricao}, `, '')?.slice(0, -2)
+              || camada?.titulo
+              || '';
+
+            maximoDeProjetos = Math.max(
+              maximoDeProjetos,
+              totalDeProjetos[camadaId],
+            );
+          }
+        }
+      }
+
+      if (projeto.geolocalizacao_sumario.endereco_geom_geojson) {
+        enderecos.push(projeto.geolocalizacao_sumario.endereco_geom_geojson);
+
+        enderecos[enderecos.length - 1].properties.projeto_nome = projeto.projeto_nome;
+        enderecos[enderecos.length - 1].properties.projeto_status = projeto.projeto_status;
+        enderecos[enderecos.length - 1].properties.projeto_etapa = projeto.projeto_etapa;
+        enderecos[enderecos.length - 1].properties.orgao_resp_sigla = projeto.orgao_resp_sigla;
+        enderecos[enderecos.length - 1].properties.subPrefeitura = subPrefeitura;
+      }
+    }
+    i += 1;
+  }
+
+  const cores = [
+    corParaMinimo,
+    ...gerarCoresIntermediarias(corParaMinimo, corParaMaximo, maximoDeProjetos - 1, { format: 'hsl', huePath: 'short' }),
+    corParaMaximo,
+  ];
+  return {
+    camadas: (camadasDaCidade.value.map((id) => ({ id })) as Camada[])
+      .map((camada) => {
+        if (!camada.config) {
+          camada.config = {
+            className: 'camada',
+            color: strokeColor,
+            weight: espessuraDoFio,
+            fillOpacity: opacidadePreenchimento,
+          };
+        }
+
+        camada.config.fillColor = totalDeProjetos[camada.id]
+          ? cores[totalDeProjetos[camada.id]]
+          : cores[0];
+
+        return camada;
+      }),
+    enderecos,
+  };
+});
 
 const limparPaginacao = () => {
   paginacaoProjetos.value.validoAte = 0;
@@ -116,7 +220,7 @@ function buscarOrcamentos() {
   });
 }
 
-function iniciar() {
+async function iniciar() {
   const parametros = {
     portfolio_id: route.query.portfolio_id,
     orgao_responsavel_id: route.query.orgao_responsavel_id,
@@ -124,7 +228,16 @@ function iniciar() {
   };
 
   painelEstrategicoStore.buscarDados(parametros);
-  painelEstrategicoStore.buscarProjetosParaMapa(parametros);
+
+  if (!camadasDaCidade.value.length) {
+    camadasDaCidade.value = await regionsStore.buscarCamadas({
+      filha_de_regiao_id: regiaoPadrao,
+      regiao_nivel_regionalizacao: nivelRegionalizacaoPadrao,
+      retornar_regioes: true,
+    });
+  }
+
+  painelEstrategicoStore.buscarProjetosParaMapa(parametros, camadasDaCidade.value);
   buscarProjetos();
   buscarOrcamentos();
 }
@@ -305,7 +418,78 @@ watch(
             opacity: 0.5,
           }"
           zoom="16"
-        />
+        >
+          <template #painel-flutuante="dados">
+            <p
+              v-if="dados.projeto_nome"
+              class="painel-flutuante__titulo"
+            >
+              {{ dados.projeto_nome }}
+            </p>
+            <p
+              v-else-if="dados.titulo"
+            >
+              {{ dados.titulo }}
+            </p>
+            <p
+              v-else-if="dados.rotulo"
+              class="w900"
+            >
+              {{ dados.rotulo }}
+            </p>
+
+            <dl
+              v-if="dados.projeto_status
+                || dados.projeto_orgao_responsavel
+                || dados.subPrefeitura
+                || dados.orgao_resp_sigla
+                || dados.projeto_etapa"
+              class="painel-flutuante__dados"
+            >
+              <div
+                v-if="dados.orgao_resp_sigla"
+              >
+                <dt>
+                  Órgão Responsável
+                </dt>
+                <dd>{{ dados.orgao_resp_sigla }}</dd>
+              </div>
+              <div
+                v-if="dados.subPrefeitura"
+              >
+                <dt>
+                  Subprefeitura
+                </dt>
+                <dd>{{ dados.subPrefeitura }}</dd>
+              </div>
+              <div
+                v-if="dados.projeto_status"
+                class="painel-flutuante__status"
+              >
+                <dt>
+                  Status
+                </dt>
+                <dd
+                  :style="{
+                    '--statusColor': projectStatuses[dados.projeto_status]?.cor,
+                  }"
+                >
+                  {{ projectStatuses[dados.projeto_status]?.nome || dados.projeto_status }}
+                </dd>
+              </div>
+              <div
+                v-if="dados.projeto_etapa"
+              >
+                <dt>
+                  Etapa
+                </dt>
+                <dd>
+                  {{ dados.projeto_etapa }}
+                </dd>
+              </div>
+            </dl>
+          </template>
+        </MapaExibir>
       </CardEnvelope.conteudo>
 
       <CardEnvelope.Slide class="cartao-de-projetos">
@@ -458,14 +642,14 @@ watch(
 
 .lista-de-cartoes {
   display: grid;
-  gap: 2rem 4rem;
+  gap: 2rem 3rem;
 
   @media screen and (min-width: @duas-colunas) {
     grid-template-columns: 2.5fr 1.5fr;
   }
 
   @media screen and (min-width: @tres-colunas) {
-    grid-template-columns: 2.5fr 1.5fr 2fr;
+    grid-template-columns: 3fr 2fr 2fr;
   }
 }
 
@@ -495,6 +679,34 @@ watch(
 
   @media screen and (min-width: @tres-colunas) {
     grid-column: auto;
+  }
+}
+
+:deep(.leaflet-layer) {
+  filter: grayscale(0.8);
+}
+
+:deep(.camada) {
+  mix-blend-mode: multiply;
+}
+
+.painel-flutuante__status dd {
+  display: flex;
+  border-radius: 8px;
+  display: flex;
+  align-items: stretch;
+
+  background-color: color-mix(in srgb, var(--statusColor, @cinza-medio) 15%, transparent);
+
+  &::before {
+    color: var(--statusColor, @cinza-medio);
+    margin-right: 0.25em;
+    content: '';
+    width: 8px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    display: block;
+    border-radius: 999em;
   }
 }
 </style>

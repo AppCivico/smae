@@ -6,16 +6,13 @@ import {
 } from 'vee-validate';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import statuses from '@/consts/projectStatuses';
+import listaDeStatuses from '@/consts/projectStatuses';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
-import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-
-const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const route = useRoute();
 const router = useRouter();
@@ -176,7 +173,7 @@ iniciar();
             :key="item.valor"
             :value="item.valor"
           >
-            {{ item.etiqueta }}
+            {{ item.nome }}
           </option>
         </Field>
         <div

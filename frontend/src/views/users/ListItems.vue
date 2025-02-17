@@ -48,76 +48,76 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
   : usersStore.users.map((x) => ({
     ...x,
     // TODO: usar esses valores na própria tabela para poupar recursos
-    siglaDoÓrgãoParaBuscaLivre: filterOrgan(x.orgao_id).sigla,
-    // TODO: usar esses valores na própria tabela para poupar recursos
     nomesDosPerfisParaBuscaLivre: filterPerfil(x.perfil_acesso_ids),
   }))));
 </script>
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>Gerenciar usuários</h1>
-      <hr class="ml2 f1">
-      <router-link
-        v-if="perm?.CadastroPessoa?.inserir"
-        :to="{
-          name: 'criarUsuários'
-        }"
-        class="btn big ml2"
-      >
-        Novo usuário
-      </router-link>
-    </div>
-    <div class="flex flexwrap g1">
-      <div class="f1">
-        <label class="label tc300">Órgão</label>
-        <select
-          v-model.number="orgao"
-          class="inputtext"
+    <header class="mb2">
+      <div class="flex spacebetween center mb2">
+        <h1>Gerenciar usuários</h1>
+        <hr class="ml2 f1">
+        <router-link
+          v-if="perm?.CadastroPessoa?.inserir"
+          :to="{
+            name: 'criarUsuários'
+          }"
+          class="btn big ml2"
         >
-          <option :value="0">
-            Todos
-          </option>
-          <template v-if="organs.length">
-            <option
-              v-for="organ in organs"
-              :key="organ.id"
-              :value="organ.id"
-              :title="organ.descricao?.length > 36 ? organ.descricao : null"
-            >
-              {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
-            </option>
-          </template>
-        </select>
+          Novo usuário
+        </router-link>
       </div>
-
-      <div class="f1">
-        <label class="label tc300">Perfil</label>
-        <select
-          v-model.number="perfil"
-          class="inputtext"
-        >
-          <option :value="0">
-            Todos
-          </option>
-          <template v-if="accessProfiles.length">
-            <option
-              v-for="perfil in accessProfiles"
-              :key="perfil.id"
-              :value="perfil.id"
-            >
-              {{ perfil.nome }}
+      <div class="flex flexwrap g1">
+        <div class="f1">
+          <label class="label tc300">Órgão</label>
+          <select
+            v-model.number="orgao"
+            class="inputtext"
+          >
+            <option :value="0">
+              Todos
             </option>
-          </template>
-        </select>
-      </div>
+            <template v-if="organs.length">
+              <option
+                v-for="organ in organs"
+                :key="organ.id"
+                :value="organ.id"
+                :title="organ.descricao?.length > 36 ? organ.descricao : null"
+              >
+                {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
+              </option>
+            </template>
+          </select>
+        </div>
 
-      <LocalFilter
-        v-model="listaFiltradaPorTermoDeBusca"
-        :lista="listaDeUsuáriosComNomesAlémDeIds"
-        class="f2 search"
-      />
-    </div>
+        <div class="f1">
+          <label class="label tc300">Perfil</label>
+          <select
+            v-model.number="perfil"
+            class="inputtext"
+          >
+            <option :value="0">
+              Todos
+            </option>
+            <template v-if="accessProfiles.length">
+              <option
+                v-for="perfil in accessProfiles"
+                :key="perfil.id"
+                :value="perfil.id"
+              >
+                {{ perfil.nome }}
+              </option>
+            </template>
+          </select>
+        </div>
+
+        <LocalFilter
+          v-model="listaFiltradaPorTermoDeBusca"
+          :lista="listaDeUsuáriosComNomesAlémDeIds"
+          class="f2 search"
+        />
+      </div>
+    </header>
 
     <table class="tablemain fix">
       <thead>
@@ -163,7 +163,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
             </td>
             <td>{{ user.nome_exibicao }}</td>
             <td>{{ user.lotacao ?? '-' }}</td>
-            <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
+            <td>{{ user.orgao?.sigla || user.orgao_id || '-' }}</td>
             <td>
               {{ user.perfil_acesso_ids?.length
                 ? filterPerfil(user.perfil_acesso_ids) : '-' }}

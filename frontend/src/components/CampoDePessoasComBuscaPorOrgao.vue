@@ -253,7 +253,7 @@ watch(
               mapaDeÓrgãos[órgão.id] && listaDeÓrgãos[idx].id !== órgão.id
             "
           >
-            {{ órgão.id }} - {{ órgão.sigla }} -
+            {{ órgão.sigla }} -
             {{ truncate(órgão.descricao, 36) }}
           </option>
         </select>

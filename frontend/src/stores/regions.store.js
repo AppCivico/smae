@@ -145,11 +145,11 @@ export const useRegionsStore = defineStore({
         this.tempRegions = { error };
       }
     },
-    async buscarCamadas(ids) {
+    async buscarCamadas(params) {
       this.chamadasPendentes.camadas = true;
       this.erros.camadas = null;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/camada`, { camada_ids: ids });
+        const { linhas } = await this.requestS.get(`${baseUrl}/camada`, params);
 
         if (!this.camadas) {
           this.camadas = {};
@@ -163,8 +163,10 @@ export const useRegionsStore = defineStore({
             this.camadas[camada.id] = camada;
           }
         }
+        return linhas.map((camada) => camada.id);
       } catch (error) {
         this.erros.camadas = error;
+        return [];
       } finally {
         this.chamadasPendentes.camadas = false;
       }
@@ -212,6 +214,5 @@ export const useRegionsStore = defineStore({
 
       return agrupadas;
     },
-
   },
 });

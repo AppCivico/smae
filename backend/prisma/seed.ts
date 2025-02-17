@@ -562,6 +562,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.espectador_de_projeto', 'Participante de Grupos de Portfólio'],
         ['SMAE.gestor_de_projeto', 'Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', 'Colaborador de projeto'],
+        ['Projeto.revisar_projeto', 'Revisar projetos'],
     ],
     ProjetoMDO: [
         ['ProjetoMDO.administrar_portfolios', 'Administrar todos os portfólios de MdO, sem acesso aos projetos'],
@@ -925,6 +926,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
             'Projeto.orcamento',
+            'Projeto.revisar_projeto',
             ...PPCadastroBasico,
         ],
     },
@@ -976,6 +978,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
+            'Projeto.revisar_projeto',
         ],
     },
     {
@@ -1004,6 +1007,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
+            'Projeto.revisar_projeto',
         ],
     },
     {
@@ -1036,11 +1040,19 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao: 'Pode participar como leitor em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
     },
+    {
+        nome: 'Observador de projetos com orçamento',
+        descricao: 'Pode participar como leitor em portfólio e projetos e visualizar a execução orçamentária',
+        privilegios: [
+            'Projeto.orcamento', // adiciona a permissão de orçamento
+            'SMAE.espectador_de_projeto', // manter em sync com o Observador de projetos
+        ],
+    },
     // TODO Observador de obras
     {
         nome: atualizarNomePerfil('Observador de obra', []),
         descricao: 'Pode participar como leitor em portfólio e obras',
-        privilegios: ['MDO.espectador_de_projeto', 'MDO.revisar_obra'],
+        privilegios: ['MDO.espectador_de_projeto'],
     },
     {
         nome: atualizarNomePerfil('Observador de painéis externos', []),
@@ -1152,7 +1164,7 @@ PerfilAcessoConfig.push(
     },
     {
         nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
-        descricao: 'Acesso restrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
+        descricao: 'Acesso irrestrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',
@@ -1164,7 +1176,7 @@ PerfilAcessoConfig.push(
     },
     {
         nome: atualizarNomePerfil('Administrador de Programa de Metas no órgão', []),
-        descricao: 'Acesso restrito aos Programa de Metas e Banco de Variáveis do próprio órgão ao qual pertence.',
+        descricao: 'Acesso irrestrito aos Programa de Metas e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'CadastroPDM.administrador_no_orgao', // so pode criar no orgao_admin dele
             'CadastroVariavelGlobal.administrador_no_orgao',

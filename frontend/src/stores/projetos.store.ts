@@ -1,24 +1,26 @@
+import { defineStore } from 'pinia';
+import { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type {
   DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
-} from '@/../../backend/src/meta/dto/create-meta.dto';
-import type { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
+} from '@back/meta/dto/create-meta.dto';
+import type { ProjetoAcao } from '@back/pp/projeto/acao/dto/acao.dto';
 import type {
   ListProjetoDocumento,
   ListProjetoDto,
   ProjetoDetailDto,
   ProjetoDto,
-} from '@/../../backend/src/pp/projeto/entities/projeto.entity';
+  ProjetoMdoDto,
+} from '@back/pp/projeto/entities/projeto.entity';
 import type {
   ListProjetoProxyPdmMetaDto,
   ProjetoProxyPdmMetaDto,
-} from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
-import type { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
-import consolidarDiretorios from '@/helpers/consolidarDiretorios';
+} from '@back/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+import type { DiretorioItemDto } from '@back/upload/dto/diretorio.dto';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
-import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -28,6 +30,7 @@ type MetaSimplificada = ListDadosMetaIniciativaAtividadesDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
+  listaV2: boolean;
   emFoco: boolean;
   pdmsSimplificados: boolean;
   metaSimplificada: boolean;
@@ -39,7 +42,16 @@ interface ChamadasPendentes {
 }
 
 interface Estado {
+  ultimoVisitado: number | null;
   lista: Lista;
+  listaV2: PaginatedWithPagesDto<ProjetoMdoDto>['linhas'];
+  paginacaoProjetos: {
+    tokenPaginacao: string | null;
+    paginas: number;
+    paginaCorrente: number;
+    temMais: boolean;
+    totalRegistros: number;
+  };
   emFoco: ProjetoDetailDto | null;
   arquivos: ListProjetoDocumento['linhas'] | [];
   diretórios: DiretorioItemDto[];
@@ -57,13 +69,23 @@ interface Estado {
 
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
+    ultimoVisitado: Number(sessionStorage.getItem('projetos.ultimoVisitado')) || null,
     lista: [],
+    listaV2: [],
+    paginacaoProjetos: {
+      tokenPaginacao: '',
+      paginas: 0,
+      paginaCorrente: 0,
+      temMais: true,
+      totalRegistros: 0,
+    },
     emFoco: null,
     arquivos: [],
     diretórios: [],
 
     chamadasPendentes: {
       lista: false,
+      listaV2: false,
       emFoco: false,
       pdmsSimplificados: false,
       metaSimplificada: false,
@@ -90,9 +112,11 @@ export const useProjetosStore = defineStore('projetos', {
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto/${id}`, params);
         this.emFoco = resposta;
+        sessionStorage.setItem('projetos.ultimoVisitado', this.emFoco.id);
       } catch (erro: unknown) {
         this.erro = erro;
       }
+
       this.chamadasPendentes.emFoco = false;
     },
 
@@ -162,6 +186,37 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.emFoco = false;
     },
 
+    async buscarTudoV2(params = {}): Promise<void> {
+      this.listaV2 = [];
+      this.chamadasPendentes.listaV2 = true;
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        const { linhas, ...paginacao } = (await this.requestS.get(
+          `${baseUrl}/projeto/v2`,
+          params,
+        )) as PaginatedWithPagesDto<ProjetoMdoDto>;
+
+        this.paginacaoProjetos = {
+          tokenPaginacao: paginacao.token_paginacao,
+          paginas: paginacao.paginas,
+          paginaCorrente: paginacao.pagina_corrente,
+          temMais: paginacao.tem_mais,
+          totalRegistros: paginacao.total_registros,
+        };
+
+        this.listaV2 = linhas;
+
+        sessionStorage.removeItem('projetos.ultimoVisitado');
+        this.ultimoVisitado = null;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      } finally {
+        this.chamadasPendentes.listaV2 = false;
+        this.chamadasPendentes.emFoco = true;
+      }
+    },
+
     // Obsoleta
     async buscarDiretórios(idDoProjeto = 0): Promise<void> {
       this.chamadasPendentes.diretórios = true;
@@ -208,6 +263,29 @@ export const useProjetosStore = defineStore('projetos', {
         this.erro = erro;
         this.chamadasPendentes.mudarStatus = false;
         return false;
+      }
+    },
+
+    async revisar(projetoId: string, status: boolean): Promise<void> {
+      try {
+        await this.requestS.post(`${baseUrl}/projeto/revisar`, {
+          obras: [
+            {
+              projeto_id: projetoId,
+              revisado: status,
+            },
+          ],
+        });
+      } catch (erro) {
+        this.erro = erro;
+      }
+    },
+
+    async revisarTodos(): Promise<void> {
+      try {
+        await this.requestS.post(`${baseUrl}/projeto/revisar-todas`, {});
+      } catch (erro) {
+        this.erro = erro;
       }
     },
 
