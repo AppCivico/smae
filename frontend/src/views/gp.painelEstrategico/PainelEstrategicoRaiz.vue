@@ -696,10 +696,10 @@ watch(
   display: flex;
   align-items: stretch;
 
-  background-color: color-mix(in srgb, var(--statusColor, fuchsia) 15%, transparent);
+  background-color: color-mix(in srgb, var(--statusColor, @cinza-medio) 15%, transparent);
 
   &::before {
-    color: var(--statusColor, fuchsia);
+    color: var(--statusColor, @cinza-medio);
     margin-right: 0.25em;
     content: '';
     width: 8px;
