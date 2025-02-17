@@ -2691,7 +2691,7 @@ export const projetoFiltro = object().shape({
     .label('Palavra chave')
     .nullableOuVazio(),
   portfolio_id: number()
-    .label('Portfolio')
+    .label('Portfólio')
     .nullableOuVazio(),
   revisado: boolean()
     .label('Revisado')
