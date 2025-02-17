@@ -2670,11 +2670,13 @@ export const projetoFiltro = object().shape({
     .max(new Date())
     .nullableOuVazio(),
   projeto_etapa_id: number()
-    .label('etapa')
+    .label('Etapa')
     .nullableOuVazio(),
   ipp: number()
     .label('Itens por página')
     .nullableOuVazio(),
+  nome: string()
+    .label('Nome').nullableOuVazio(),
   ordem_coluna: string()
     .label('Ordenar por')
     .nullableOuVazio(),
@@ -2683,19 +2685,19 @@ export const projetoFiltro = object().shape({
     .oneOf(direcaoOpcoes)
     .nullableOuVazio(),
   orgao_responsavel_id: number()
-    .label('órgão responsável')
+    .label('Órgão Responsável')
     .nullableOuVazio(),
   palavra_chave: string()
     .label('Palavra chave')
     .nullableOuVazio(),
   portfolio_id: number()
-    .label('portfolio')
+    .label('Portfolio')
     .nullableOuVazio(),
   revisado: boolean()
-    .label('revisado')
+    .label('Revisado')
     .nullableOuVazio(),
   status: string()
-    .label('status')
+    .label('Status')
     .nullableOuVazio(),
 });
 

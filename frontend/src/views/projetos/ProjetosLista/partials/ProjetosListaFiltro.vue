@@ -8,16 +8,26 @@ import { useOrgansStore, usePortfolioStore } from '@/stores';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
 const ordenador = [
+  'nome',
   'portfolio_id',
   'orgao_responsavel_id',
   'status',
   'projeto_etapa_id',
-  'data_registro',
-  'revisado',
-].map((item) => ({
-  id: item,
-  label: schema.fields[item].spec.label,
-}));
+  // 'previsao_termino'
+].map((item) => {
+  if (!schema.fields[item]) {
+    console.error(`Item de ordenação ${item} não encontrado`);
+    return {
+      id: item,
+      label: item,
+    };
+  }
+
+  return {
+    id: item,
+    label: schema.fields[item].spec.label,
+  };
+});
 
 const mapaStatus = [
   'Registrado',
