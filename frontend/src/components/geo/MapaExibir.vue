@@ -558,6 +558,11 @@ watch(() => props.polígonos, (valorNovo) => {
   &::before {
     content: none;
   }
+
+  // contornar erro de exibição de painel flutuante obsoleto
+  &:empty {
+    display: none;
+  }
 }
 
 .painel-flutuante__conteudo {
