@@ -537,8 +537,9 @@ watch(() => props.polígonos, (valorNovo) => {
 }
 
 .painel-flutuante {
+  width: min(90vw, 33.571429rem); //470px
   translate: -50%;
-  padding: 0;
+  padding: 1.071429rem; //15px
   box-shadow: 0px 6px 4.5px 0px #00000080;
   border-radius: 12px;
   opacity: 1 !important;
@@ -550,11 +551,7 @@ watch(() => props.polígonos, (valorNovo) => {
 }
 
 .painel-flutuante__conteudo {
-  width: min(90vw, 33.571429rem); //470px
-
   white-space: normal;
-
-  padding: 1.071429rem; //15px
 
   :last-child {
     margin-bottom: 0;
