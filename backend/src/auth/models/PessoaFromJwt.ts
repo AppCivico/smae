@@ -145,8 +145,6 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
                         `${metaInfo.pdm.tipo == 'PDM' ? 'Programa de Metas' : 'Plano Setorial'}`,
                     400
                 );
-
-            throw new HttpException('xxx', 404);
         }
     }
 
