@@ -209,6 +209,10 @@ export default {
             título: () => useProjetosStore()?.emFoco?.nome || 'Editar projeto',
             títuloParaMenu: 'Editar projeto',
             rotaDeEscape: 'projetosResumo',
+            limitarÀsPermissões: [
+              'Projeto.administrador_no_orgao',
+              'Projeto.administrador',
+            ],
           },
 
           children: [

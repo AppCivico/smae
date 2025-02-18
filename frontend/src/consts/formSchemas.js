@@ -2665,7 +2665,7 @@ export const projeto = object()
   });
 
 export const projetoFiltro = object().shape({
-  data_registro: date()
+  registrado_em: date()
     .label('data de registro')
     .max(new Date())
     .nullableOuVazio(),

@@ -94,7 +94,7 @@ const campos = computed<Formulario>(() => [
         opcoes: mapaStatus,
       },
       projeto_etapa_id: { tipo: 'select', opcoes: opcoesFormulario.value.etapas },
-      data_registro: { tipo: 'date' },
+      registrado_em: { tipo: 'date' },
       revisado: { tipo: 'select', opcoes: opcoesFormulario.value.revisado },
     },
   },
