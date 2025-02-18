@@ -17,7 +17,17 @@ export function hasTimeInDate(date) {
  * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options
  */
 function dateToDate(d, options = {}) {
-  if (!d || typeof d === 'boolean' || typeof d === 'number') return 'Invalid Date';
+  switch (true) {
+    case d === null:
+    case d === undefined:
+    case d === '':
+      return '';
+    case typeof d === 'boolean':
+    case typeof d === 'number':
+      return 'Invalid Date';
+    default:
+      break;
+  }
 
   const timeZone = hasTimeInDate(d) ? 'America/Sao_Paulo' : 'UTC';
   const dd = d ? new Date(d) : false;

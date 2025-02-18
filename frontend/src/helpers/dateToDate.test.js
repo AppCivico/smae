@@ -1,21 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import dateToDate, {
-  dateToYear,
-  dateToMonth,
   dateToDay,
+  dateToMonth,
   dateToMonthYear,
+  dateToShortDate,
+  dateToYear,
+  hasTimeInDate,
   localizarData,
   localizarDataHorario,
-  dateToShortDate,
-  hasTimeInDate,
 } from './dateToDate';
 
 describe('dateToDate Utilities', () => {
   describe('dateToDate', () => {
     it('deve retornar "Invalid Date" para entradas inválidas', () => {
-      expect(dateToDate(null)).toBe('Invalid Date');
-      expect(dateToDate(undefined)).toBe('Invalid Date');
-      expect(dateToDate('')).toBe('Invalid Date');
+      expect(dateToDate(null)).toBe('');
+      expect(dateToDate(undefined)).toBe('');
+      expect(dateToDate('')).toBe('');
       expect(dateToDate('invalid')).toBe('Invalid Date');
       expect(dateToDate({})).toBe('Invalid Date');
       expect(dateToDate(true)).toBe('Invalid Date');
@@ -86,8 +86,8 @@ describe('dateToDate Utilities', () => {
     });
 
     it('deve retornar "Invalid Date" para entradas inválidas', () => {
-      expect(localizarData(null)).toBe('Invalid Date');
-      expect(localizarData(undefined)).toBe('Invalid Date');
+      expect(localizarData(null)).toBe('');
+      expect(localizarData(undefined)).toBe('');
       expect(localizarData('invalid')).toBe('Invalid Date');
       expect(localizarData([])).toBe('Invalid Date');
       expect(localizarData({})).toBe('Invalid Date');
