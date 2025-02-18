@@ -1,8 +1,8 @@
 <script setup>
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 // eslint-disable-next-line import/no-named-default
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
@@ -96,7 +96,8 @@ iniciar();
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPS.administrador_no_pdm',
-              'CadastroMetaPDM.administrador_no_pdm'
+              'CadastroMetaPDM.administrador_no_pdm',
+              'SMAE.GrupoVariavel.participante',
             ]) && activePdm?.pode_editar"
             :to="`${parentlink}/indicadores/${ind.id}`"
             title="Editar indicador"

@@ -317,7 +317,8 @@ iniciar();
                     v-if="temPermissãoPara([
                       'CadastroMeta.administrador_no_pdm',
                       'CadastroMetaPS.administrador_no_pdm',
-                      'CadastroMetaPDM.administrador_no_pdm'
+                      'CadastroMetaPDM.administrador_no_pdm',
+                      'SMAE.GrupoVariavel.participante',
                     ])"
                     class="f0 flex g1"
                   >
