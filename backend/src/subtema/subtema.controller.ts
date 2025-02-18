@@ -25,6 +25,7 @@ import { ListSubTemaDto } from './dto/list-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 import { SubTemaDto } from './entities/subtema.entity';
 import { SubTemaService } from './subtema.service';
+import { MetaSetorialController } from '../meta/meta.controller';
 
 @ApiTags('SubTema para PDM')
 @Controller('subtema')
@@ -86,6 +87,7 @@ const PermsPS: ListaDePrivilegios[] = [
     'CadastroSubTemaPDM.inserir',
     'CadastroSubTemaPDM.editar',
     'CadastroSubTemaPDM.remover',
+    ...MetaSetorialController.ReadPerm,
 ];
 
 @ApiTags('SubTema para Plano Setorial')

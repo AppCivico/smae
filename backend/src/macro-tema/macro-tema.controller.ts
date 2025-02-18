@@ -24,6 +24,7 @@ import { ListEixoDto } from './dto/list-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
 import { MacroTemaDto } from './entities/macro-tema.entity';
 import { MacroTemaService } from './macro-tema.service';
+import { MetaSetorialController } from '../meta/meta.controller';
 
 @ApiTags('Macro Tema para PDM (Antigo Eixo)')
 @Controller('macrotema')
@@ -81,7 +82,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTemaPS.inserir', 'CadastroMacroTemaPDM.inserir'])
+    @Roles(['CadastroMacroTemaPS.inserir', 'CadastroMacroTemaPDM.inserir', ...MetaSetorialController.ReadPerm])
     async create(
         @Body() createEixoDto: CreateEixoDto,
         @CurrentUser() user: PessoaFromJwt,
@@ -106,7 +107,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTemaPS.editar', 'CadastroMacroTemaPDM.editar'])
+    @Roles(['CadastroMacroTemaPS.editar', 'CadastroMacroTemaPDM.editar', ...MetaSetorialController.ReadPerm])
     async update(
         @Param() params: FindOneParams,
         @Body() updateEixoDto: UpdateEixoDto,
@@ -118,7 +119,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTemaPS.remover', 'CadastroMacroTemaPDM.remover'])
+    @Roles(['CadastroMacroTemaPS.remover', 'CadastroMacroTemaPDM.remover', ...MetaSetorialController.ReadPerm])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {

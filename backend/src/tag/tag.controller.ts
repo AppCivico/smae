@@ -24,6 +24,7 @@ import { ListTagDto } from './dto/list-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { TagDto } from './entities/tag.entity';
 import { TagService } from './tag.service';
+import { MetaSetorialController } from '../meta/meta.controller';
 
 @ApiTags('Tag')
 @Controller('tag')
@@ -81,7 +82,7 @@ export class TagPSController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTagPS.inserir', 'CadastroTagPDM.inserir'])
+    @Roles(['CadastroTagPS.inserir', 'CadastroTagPDM.inserir', ...MetaSetorialController.ReadPerm])
     async create(
         @Body() createTagDto: CreateTagDto,
         @CurrentUser() user: PessoaFromJwt,
@@ -92,19 +93,13 @@ export class TagPSController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(
-        @Query() filters: FilterTagDto,
-        @TipoPDM() tipo: TipoPdmType
-    ): Promise<ListTagDto> {
+    async findAll(@Query() filters: FilterTagDto, @TipoPDM() tipo: TipoPdmType): Promise<ListTagDto> {
         return { linhas: await this.tagService.findAll(tipo, filters) };
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(
-        @Param() params: FindOneParams,
-        @TipoPDM() tipo: TipoPdmType
-    ): Promise<TagDto> {
+    async findOne(@Param() params: FindOneParams, @TipoPDM() tipo: TipoPdmType): Promise<TagDto> {
         const linhas = await this.tagService.findAll(tipo, { id: [+params.id] });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
@@ -112,7 +107,7 @@ export class TagPSController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTagPS.editar', 'CadastroTagPDM.editar'])
+    @Roles(['CadastroTagPS.editar', 'CadastroTagPDM.editar', ...MetaSetorialController.ReadPerm])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateTagDto,
@@ -124,14 +119,10 @@ export class TagPSController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTagPS.remover', 'CadastroTagPDM.remover'])
+    @Roles(['CadastroTagPS.remover', 'CadastroTagPDM.remover', ...MetaSetorialController.ReadPerm])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt,
-        @TipoPDM() tipo: TipoPdmType
-    ) {
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
         await this.tagService.remove(tipo, +params.id, user);
         return '';
     }

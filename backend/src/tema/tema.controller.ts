@@ -24,6 +24,7 @@ import { ListObjetivoEstrategicoDto } from './dto/list-tema.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
 import { ObjetivoEstrategicoDto } from './entities/objetivo-estrategico.entity';
 import { TemaService } from './tema.service';
+import { MetaSetorialController } from '../meta/meta.controller';
 
 @ApiTags('Tema para PDM (Antigo Objetivo Estratégico)')
 @Controller('tema')
@@ -84,7 +85,7 @@ export class TemaControllerPS {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTemaPS.inserir', 'CadastroTemaPDM.inserir'])
+    @Roles(['CadastroTemaPS.inserir', 'CadastroTemaPDM.inserir', ...MetaSetorialController.ReadPerm])
     async create(
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt,
@@ -112,7 +113,7 @@ export class TemaControllerPS {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTemaPS.editar', 'CadastroTemaPDM.editar'])
+    @Roles(['CadastroTemaPS.editar', 'CadastroTemaPDM.editar', ...MetaSetorialController.ReadPerm])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateObjetivoEstrategicoDto,
@@ -124,7 +125,7 @@ export class TemaControllerPS {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTemaPS.remover', 'CadastroTemaPDM.remover'])
+    @Roles(['CadastroTemaPS.remover', 'CadastroTemaPDM.remover', ...MetaSetorialController.ReadPerm])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
