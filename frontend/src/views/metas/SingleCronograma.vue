@@ -433,7 +433,7 @@ watchEffect(() => {
                 height="24"
               ><use xlink:href="#i_variavel" /></svg>
               <div>
-                Vínculada à variável
+                Vinculada à variável
                 <strong v-if="r.etapa?.variavel?.codigo">
                   {{ r.etapa.variavel.codigo }}
                 </strong>
@@ -604,7 +604,8 @@ watchEffect(() => {
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
                 'CadastroMetaPS.administrador_no_pdm',
-                'CadastroMetaPDM.administrador_no_pdm'
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
               ])"
               class="ml1 f0"
               style="flex-basis:20px;"
@@ -613,7 +614,8 @@ watchEffect(() => {
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
                 'CadastroMetaPS.administrador_no_pdm',
-                'CadastroMetaPDM.administrador_no_pdm'
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
               ])"
               class="ml1 f0"
               style="flex-basis:20px;"
@@ -699,7 +701,8 @@ watchEffect(() => {
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
                 'CadastroMetaPS.administrador_no_pdm',
-                'CadastroMetaPDM.administrador_no_pdm'
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
               ])"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -724,7 +727,8 @@ watchEffect(() => {
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
                 'CadastroMetaPS.administrador_no_pdm',
-                'CadastroMetaPDM.administrador_no_pdm'
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
               ])"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -778,7 +782,8 @@ watchEffect(() => {
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
                   'CadastroMetaPS.administrador_no_pdm',
-                  'CadastroMetaPDM.administrador_no_pdm'
+                  'CadastroMetaPDM.administrador_no_pdm',
+                  'SMAE.GrupoVariavel.participante',
                 ])"
                 class="ml1 f0"
                 style="flex-basis:20px;"
@@ -787,7 +792,8 @@ watchEffect(() => {
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
                   'CadastroMetaPS.administrador_no_pdm',
-                  'CadastroMetaPDM.administrador_no_pdm'
+                  'CadastroMetaPDM.administrador_no_pdm',
+                  'SMAE.GrupoVariavel.participante',
                 ])"
                 class="ml1 f0"
                 style="flex-basis:20px;"
@@ -887,7 +893,8 @@ watchEffect(() => {
                   v-if="temPermissãoPara([
                     'CadastroMeta.administrador_no_pdm',
                     'CadastroMetaPS.administrador_no_pdm',
-                    'CadastroMetaPDM.administrador_no_pdm'
+                    'CadastroMetaPDM.administrador_no_pdm',
+                    'SMAE.GrupoVariavel.participante',
                   ])"
                   class="ml1 f0 flex center mr05"
                 >
@@ -911,7 +918,8 @@ watchEffect(() => {
                   v-if="temPermissãoPara([
                     'CadastroMeta.administrador_no_pdm',
                     'CadastroMetaPS.administrador_no_pdm',
-                    'CadastroMetaPDM.administrador_no_pdm'
+                    'CadastroMetaPDM.administrador_no_pdm',
+                    'SMAE.GrupoVariavel.participante',
                   ])"
                   class="ml1 f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -935,7 +943,8 @@ watchEffect(() => {
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPS.administrador_no_pdm',
-              'CadastroMetaPDM.administrador_no_pdm'
+              'CadastroMetaPDM.administrador_no_pdm',
+              'SMAE.GrupoVariavel.participante',
             ])"
             class="pl3"
           >
@@ -957,7 +966,8 @@ watchEffect(() => {
           v-if="temPermissãoPara([
             'CadastroMeta.administrador_no_pdm',
             'CadastroMetaPS.administrador_no_pdm',
-            'CadastroMetaPDM.administrador_no_pdm'
+            'CadastroMetaPDM.administrador_no_pdm',
+            'SMAE.GrupoVariavel.participante',
           ])"
           class="pl1"
         >
