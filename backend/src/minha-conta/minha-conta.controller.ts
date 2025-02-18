@@ -39,6 +39,8 @@ export class MinhaContaController {
             modulos_sobrescritos = !user.sistemas.every((sistema) => sistemas.includes(sistema));
         }
 
+        sistemas = sistemas.filter((sistema) => sistema != 'SMAE');
+
         return {
             sessao: {
                 id: user.id,
