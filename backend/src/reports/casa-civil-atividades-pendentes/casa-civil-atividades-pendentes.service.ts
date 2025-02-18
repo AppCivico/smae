@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext } from '../utils/utils.service';
+import { Date2YMD } from '../../common/date2ymd';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
-import { PrismaService } from '../../prisma/prisma.service';
-import { Date2YMD } from '../../common/date2ymd';
 
 const {
     Parser,

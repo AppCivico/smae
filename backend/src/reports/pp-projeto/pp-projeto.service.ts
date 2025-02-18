@@ -9,7 +9,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
 import {
     PPProjetoRelatorioDto,
@@ -25,6 +25,7 @@ import { Stream2Buffer } from '../../common/helpers/Streaming';
 import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
 import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
     Parser,
@@ -491,6 +492,25 @@ export class PPProjetoService implements ReportableService {
         // relatório de apenas 1 item, por enquanto não há problemas de performance / memória
         const dados = await this.asJSON(params, user);
 
+        // relatorio está sendo gerado pelo sistema, vamos configurar a restrição de acesso de acordo
+        // com os dados do relatório
+        if (!user) {
+            const orgao_port = await this.prisma.portfolio.findFirstOrThrow({
+                where: { id: dados.detail.portfolio_id },
+                select: { orgaos: { select: { id: true } } },
+            });
+
+            ctx.setRestricaoAcesso({
+                portfolio_orgao_ids: orgao_port.orgaos.map((o) => o.id),
+//                roles: [
+//                    'Projeto.administrador_no_orgao',
+//                    'ProjetoMDO.administrador_no_orgao',
+//                    'Projeto.administrador',
+//                    'ProjetoMDO.administrador',
+//                ],
+            });
+        }
+
         await ctx.progress(40);
 
         const out: FileOutput[] = [];
@@ -551,6 +571,7 @@ export class PPProjetoService implements ReportableService {
         await ctx.progress(65);
 
         if (dados.planos_acao.length) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
@@ -10,6 +10,7 @@ import {
 } from './entities/transferencias.entity';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { formataSEI } from 'src/common/formata-sei';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
     Parser,

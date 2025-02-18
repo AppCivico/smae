@@ -3448,6 +3448,9 @@ model Relatorio {
 
     visibilidade RelatorioVisibilidade @default(Privado)
 
+    restrito_para Json? @db.Json
+    progresso     Int   @default(100) @db.SmallInt
+
     sistema ModuloSistema @default(SMAE)
 
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.

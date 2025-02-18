@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FonteRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { WriteStream } from 'fs';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { MetasGetPermissionSet } from '../../meta/meta.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -21,6 +20,7 @@ import { CreatePsMonitoramentoMensalFilterDto } from '../ps-monitoramento-mensal
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 @Injectable()
 export class UtilsService {
@@ -99,13 +99,6 @@ export class FileOutput {
     name: string;
     buffer?: Buffer;
     localFile?: string;
-}
-
-export interface ReportContext {
-    progress: (progress: number) => Promise<void>;
-    cancel: () => void;
-    isCancelled: () => boolean;
-    getTmpFile: (prefix: string) => { path: string; stream: WriteStream };
 }
 
 export interface ReportableService {

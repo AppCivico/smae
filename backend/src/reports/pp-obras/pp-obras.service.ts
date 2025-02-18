@@ -14,7 +14,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput,   ReportableService } from '../utils/utils.service';
 import { CreateRelObrasDto } from './dto/create-obras.dto';
 import {
     PPObrasRelatorioDto,
@@ -29,6 +29,7 @@ import {
     RelObrasRegioesDto,
     RelObrasSeiDto,
 } from './entities/obras.entity';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
     Parser,
