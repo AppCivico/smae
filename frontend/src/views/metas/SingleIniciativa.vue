@@ -59,6 +59,7 @@ async function iniciar() {
     if (singleIniciativa.value.id) {
       IniciativasStore.getRelacionados({
         iniciativa_id: singleIniciativa.value.id,
+        pdm_id: activePdm.value.id,
       });
     }
   }

@@ -56,7 +56,8 @@ async function iniciar() {
 
   if (metaId && activePdm.value.id) {
     MetasStore.getRelacionados({
-      meta_id: metaId, pdm_id: activePdm.value.id,
+      meta_id: metaId,
+      pdm_id: activePdm.value.id,
     });
   }
 

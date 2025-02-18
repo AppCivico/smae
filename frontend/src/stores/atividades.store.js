@@ -50,7 +50,7 @@ export const useAtividadesStore = defineStore({
     async getRelacionados(params) {
       try {
         if (params.atividade_id) {
-          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
           this.relacionadosAtividade = response;
           return true;
         }

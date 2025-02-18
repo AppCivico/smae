@@ -52,7 +52,7 @@ export const useIniciativasStore = defineStore({
     async getRelacionados(params) {
       try {
         if (params.iniciativa_id) {
-          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
+          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
           this.relacionadosIniciativa = response;
           return true;
         }
