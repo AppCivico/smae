@@ -217,7 +217,7 @@ iniciar();
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Equipe técnica do administrador do plano
+              Equipe técnica de monitoramento
             </div>
             <div class="t13">
               {{ combinadorDeListas(

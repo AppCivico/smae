@@ -672,7 +672,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
         class="mb2"
       >
         <legend class="label">
-          Equipe Técnica de Administração do Plano
+          Equipe Técnica de Monitoramento
         </legend>
 
         <div>

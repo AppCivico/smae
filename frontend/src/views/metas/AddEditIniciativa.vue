@@ -443,7 +443,7 @@ function filterResponsible(orgao_id) {
 
       <fieldset v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <legend class="label">
-          Equipe Técnica de Administração do Plano
+          Equipe Técnica de Monitoramento
         </legend>
 
         <div>
