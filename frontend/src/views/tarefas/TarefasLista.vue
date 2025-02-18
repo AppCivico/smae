@@ -162,8 +162,8 @@ export default {
       </SmaeLink>
 
       <SmaeLink
-        v-if="route.meta.entidadeMãe === 'projeto'
-          || route.meta.entidadeMãe === 'obras'"
+        v-if="['projeto', 'obras'].includes($route.meta.entidadeMãe)
+          && !apenasLeitura"
         :to="{
           name: '.TarefasClonar',
           params: $route.params,
