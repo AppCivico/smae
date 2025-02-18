@@ -10,6 +10,8 @@ import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchema
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
@@ -30,7 +32,6 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: 0,
   },
-  salvar_arquivo: false,
 }));
 
 const formularioSujo = useIsFormDirty();
@@ -40,17 +41,14 @@ async function onSubmit(values) {
   try {
     carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
     carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
 
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
 
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
+      if (route.meta?.rotaDeEscape) {
         router.push({ name: route.meta.rotaDeEscape });
       }
     }
@@ -74,7 +72,7 @@ portfolioStore.buscarTudo();
   </header>
 
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -152,50 +150,64 @@ portfolioStore.buscarTudo();
           {{ errors['parametros.fim'] }}
         </div>
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.eh_publico"
+          as="select"
+          class="inputtext light
+            mb1"
+          :class="{
+            error: errors['parametros.eh_publico'],
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :disabled="portfolioStore.chamadasPendentes.lista"
+        >
+          <option>
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['parametros.eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['parametros.eh_publico'] }}
+        </div>
+      </div>
     </div>
 
     <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Consolidado"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Consolidado</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Analitico"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Analítico</span>
-        </label>
-      </div>
+      <label class="block mb1">
+        <Field
+          name="parametros.tipo"
+          type="radio"
+          value="Consolidado"
+          class="inputcheckbox"
+          :class="{ 'error': errors['parametros.tipo'] }"
+        />
+        <span>Consolidado</span>
+      </label>
+      <label class="block mb1">
+        <Field
+          name="parametros.tipo"
+          type="radio"
+          value="Analitico"
+          class="inputcheckbox"
+          :class="{ 'error': errors['parametros.tipo'] }"
+        />
+        <span>Analítico</span>
+      </label>
       <div class="error-msg">
         {{ errors['parametros.tipo'] }}
-      </div>
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
       </div>
     </div>
 
@@ -207,7 +219,7 @@ portfolioStore.buscarTudo();
         :disabled="PdMStore.PdM?.loading ||
           isSubmitting"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

@@ -6,6 +6,8 @@ import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMai
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import {
   prepararEtiquetas,
   prepararEsferaDeTransferência,

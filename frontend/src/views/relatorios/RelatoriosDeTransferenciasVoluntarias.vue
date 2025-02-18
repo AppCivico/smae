@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import {
   prepararEsferaDeTransferência,
   prepararEtiquetas,
@@ -38,7 +40,6 @@ async function iniciar() {
   etiquetasParaValoresDeParâmetros.value.orgao_gestor_id = await prepararÓrgãos();
   etiquetasParaValoresDeParâmetros.value.partido_id = await prepararPartidos();
   etiquetasParaValoresDeParâmetros.value.parlamentar_id = await prepararParlamentares();
-
 }
 
 iniciar();

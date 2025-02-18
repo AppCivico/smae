@@ -6,6 +6,8 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { relatórioDePrevisãoDeCustoPortfolioObras as schema } from '@/consts/formSchemas';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { prepararEtiquetas, prepararPortfoliosObras } from './helpers/preparadorDeColunaParametros';
 
 const relatóriosStore = useRelatoriosStore();
@@ -14,7 +16,7 @@ const { temPermissãoPara } = storeToRefs(useAuthStore());
 const fonte = 'ObrasPrevisaoCusto';
 
 const etiquetasParaValoresDeParâmetros = ref({
-  portfolio_id: {}, 
+  portfolio_id: {},
 });
 
 const etiquetasParaParâmetros = prepararEtiquetas(schema);

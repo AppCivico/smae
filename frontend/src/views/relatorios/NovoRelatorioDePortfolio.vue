@@ -33,26 +33,18 @@ const initialValues = {
     orgao_responsavel_id: null,
     portfolio_id: null,
   },
-  salvar_arquivo: false,
 };
 
 async function onSubmit(values) {
   const carga = values;
 
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
     const r = await relatoriosStore.insert(carga);
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -79,7 +71,7 @@ iniciar();
   </header>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -183,25 +175,39 @@ iniciar();
           {{ errors['parametros.status'] }}
         </div>
       </div>
-    </div>
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div
-        v-if="errors.salvar_arquivo"
-        class="error-msg"
-      >
-        {{ errors.salvar_arquivo }}
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.eh_publico"
+          as="select"
+          class="inputtext light
+            mb1"
+          :class="{
+            error: errors['parametros.eh_publico'],
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :disabled="portfolioStore.chamadasPendentes.lista"
+        >
+          <option>
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['parametros.projeto_id']"
+          class="error-msg"
+        >
+          {{ errors['parametros.projeto_id'] }}
+        </div>
       </div>
     </div>
 
@@ -216,7 +222,7 @@ iniciar();
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>
