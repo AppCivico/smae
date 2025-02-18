@@ -31,7 +31,7 @@ const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStor
 const editModalStore = useEditModalStore();
 
 const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
+const { activePdm, singleMeta } = storeToRefs(MetasStore);
 
 const metaId = computed(() => {
   const id = Number(route.params.meta_id);
@@ -163,7 +163,8 @@ watchEffect(() => {
         'SMAE.GrupoVariavel.participante',
       ])
         && !singleCronograma?.loading
-        && singleCronograma?.id"
+        && singleCronograma?.id
+        && singleMeta?.pode_editar"
       :to="`${parentLink}/cronograma/${singleCronograma?.id}`"
       class="btn ml2"
     >
@@ -176,8 +177,9 @@ watchEffect(() => {
         'CadastroMetaPDM.administrador_no_pdm',
         'SMAE.GrupoVariavel.participante',
       ])
-        && !singleCronograma?.loading && singleCronograma?.id
-      "
+        && !singleCronograma?.loading
+        && singleCronograma?.id
+        && singleMeta?.pode_editar"
       class="ml1 dropbtn"
     >
       <span class="btn">Nova etapa</span>
@@ -479,7 +481,8 @@ watchEffect(() => {
                 'CadastroMetaPS.administrador_no_pdm',
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
-              ])"
+              ])
+              && singleMeta?.pode_editar"
               class="dropbtn right"
             >
               <span class=""><svg
@@ -606,7 +609,8 @@ watchEffect(() => {
                 'CadastroMetaPS.administrador_no_pdm',
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
-              ])"
+              ])
+              && singleMeta?.pode_editar"
               class="ml1 f0"
               style="flex-basis:20px;"
             />
@@ -616,7 +620,8 @@ watchEffect(() => {
                 'CadastroMetaPS.administrador_no_pdm',
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
-              ])"
+              ])
+              && singleMeta?.pode_editar"
               class="ml1 f0"
               style="flex-basis:20px;"
             />
@@ -703,7 +708,8 @@ watchEffect(() => {
                 'CadastroMetaPS.administrador_no_pdm',
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
-              ])"
+              ])
+              && singleMeta?.pode_editar"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -729,7 +735,8 @@ watchEffect(() => {
                 'CadastroMetaPS.administrador_no_pdm',
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
-              ])"
+              ])
+              && singleMeta?.pode_editar"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -784,7 +791,8 @@ watchEffect(() => {
                   'CadastroMetaPS.administrador_no_pdm',
                   'CadastroMetaPDM.administrador_no_pdm',
                   'SMAE.GrupoVariavel.participante',
-                ])"
+                ])
+                && singleMeta?.pode_editar"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
@@ -794,7 +802,8 @@ watchEffect(() => {
                   'CadastroMetaPS.administrador_no_pdm',
                   'CadastroMetaPDM.administrador_no_pdm',
                   'SMAE.GrupoVariavel.participante',
-                ])"
+                ])
+                && singleMeta?.pode_editar"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
@@ -895,7 +904,8 @@ watchEffect(() => {
                     'CadastroMetaPS.administrador_no_pdm',
                     'CadastroMetaPDM.administrador_no_pdm',
                     'SMAE.GrupoVariavel.participante',
-                  ])"
+                  ])
+                  && singleMeta?.pode_editar"
                   class="ml1 f0 flex center mr05"
                 >
                   <button
@@ -920,7 +930,8 @@ watchEffect(() => {
                     'CadastroMetaPS.administrador_no_pdm',
                     'CadastroMetaPDM.administrador_no_pdm',
                     'SMAE.GrupoVariavel.participante',
-                  ])"
+                  ])
+                  && singleMeta?.pode_editar"
                   class="ml1 f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
                 >
@@ -945,7 +956,8 @@ watchEffect(() => {
               'CadastroMetaPS.administrador_no_pdm',
               'CadastroMetaPDM.administrador_no_pdm',
               'SMAE.GrupoVariavel.participante',
-            ])"
+            ])
+            && singleMeta?.pode_editar"
             class="pl3"
           >
             <SmaeLink
@@ -968,7 +980,8 @@ watchEffect(() => {
             'CadastroMetaPS.administrador_no_pdm',
             'CadastroMetaPDM.administrador_no_pdm',
             'SMAE.GrupoVariavel.participante',
-          ])"
+          ])
+          && singleMeta?.pode_editar"
           class="pl1"
         >
           <SmaeLink
