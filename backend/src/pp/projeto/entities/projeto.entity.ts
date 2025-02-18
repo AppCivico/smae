@@ -53,6 +53,7 @@ export class ProjetoMdoDto {
 }
 
 export class ProjetoV2Dto extends ProjetoMdoDto {
+    registrado_em: Date;
     previsao_custo: number | null;
     @IsDateYMD({ nullable: true })
     previsao_termino: string | null;

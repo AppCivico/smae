@@ -1339,6 +1339,7 @@ export class ProjetoService {
                     portfolio: r.portfolio,
                     revisado: canRevise ? (linhaRevisao ? true : false) : null,
                     previsao_custo: r.previsao_custo,
+                    registrado_em: r.registrado_em,
                     previsao_termino: Date2YMD.toStringOrNull(r.previsao_termino),
                     orgao_responsavel: r.orgao_responsavel_id
                         ? {
