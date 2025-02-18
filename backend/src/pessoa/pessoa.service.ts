@@ -1667,7 +1667,7 @@ export class PessoaService {
                 modulo: 'ProgramaDeMetas',
                 chaveEquipe: 'perfis_equipe_pdm',
                 perfilEquipe: ['AdminPS', 'TecnicoPS', 'PontoFocalPS'],
-                privilegios: ['Menu.metas', 'ReferencialEm.Equipe.ProgramaDeMetas'],
+                privilegios: ['ReferencialEm.Equipe.ProgramaDeMetas'],
             },
             {
                 tipo: 'PS',
