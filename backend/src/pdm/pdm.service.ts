@@ -453,23 +453,28 @@ export class PdmService {
 
             const dbValue = pdm.ps_admin_cps?.valueOf();
             const collab = await user.getEquipesColaborador(this.prisma);
+            let podeEditar = false;
 
-            console.log(collab);
             if (Array.isArray(dbValue)) {
                 this.logger.log('Verificando permissão pelas equipes');
 
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
-                console.log(parsed);
-                // e todos os itens são do mesmo órgão
-                const podeEditar = parsed.some(
-                    (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
-                );
+
+                // se for ADMIN, pode editar o PDM/PS
+                podeEditar = parsed.some((item) => item.tipo == 'ADMIN' && collab.includes(item.equipe_id));
+
+                if (!podeEditar) {
+                    // e se for TEC todos os itens são do mesmo órgão
+                    podeEditar = parsed.some(
+                        (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
+                    );
+                }
+
                 this.logger.verbose(`podeEditar: ${podeEditar}`);
                 return podeEditar;
             }
 
             this.logger.verbose(`podeEditar: false`);
-
             // ponto focal nunca pode editar
 
             return false;
