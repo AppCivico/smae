@@ -13,7 +13,7 @@ import { UniqueNumbers } from '../common/UniqueNumbers';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
-import { PdmService } from '../pdm/pdm.service';
+import { AdminCpDbItem, PdmService } from '../pdm/pdm.service';
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -36,6 +36,7 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
+import { plainToInstance } from 'class-transformer';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -559,7 +560,7 @@ export class MetaService {
                 tema: { select: { descricao: true, id: true } },
                 sub_tema: { select: { descricao: true, id: true } },
                 pdm: {
-                    select: { id: true, orgao_admin_id: true },
+                    select: { id: true, orgao_admin_id: true, ps_admin_cps: true },
                 },
                 status: true,
                 ativo: true,
@@ -735,6 +736,19 @@ export class MetaService {
                             podeEditar = true;
                             break;
                         }
+                    }
+                }
+
+                if (!podeEditar) {
+                    const dbValue = dbMeta.pdm.ps_admin_cps?.valueOf();
+                    const collab = await user.getEquipesColaborador(this.prisma);
+
+                    if (Array.isArray(dbValue)) {
+                        this.logger.log('Verificando permissão de ADMIN no PDM');
+
+                        const parsed = plainToInstance(AdminCpDbItem, dbValue);
+                        // pode editar se for ADMIN do PDM/PS e estiver na equipe
+                        podeEditar = parsed.some((item) => item.tipo == 'ADMIN' && collab.includes(item.equipe_id));
                     }
                 }
             }
