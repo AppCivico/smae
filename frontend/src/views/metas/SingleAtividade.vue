@@ -21,7 +21,7 @@ const { iniciativa_id: iniciativaId } = route.params;
 const { atividade_id: atividadeId } = route.params;
 
 const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
+const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
 const EquipesStore = useEquipesStore();
@@ -77,7 +77,8 @@ iniciar();
         'CadastroMetaPS.administrador_no_pdm',
         'CadastroMetaPDM.administrador_no_pdm',
         'SMAE.GrupoVariavel.participante',
-      ])"
+      ])
+        && singleMeta?.pode_editar"
       :to="`/metas/${metaId}/iniciativas/${iniciativaId}/atividades/editar/${atividadeId}`"
       class="btn big ml2"
     >

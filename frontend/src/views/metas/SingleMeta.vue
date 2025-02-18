@@ -313,13 +313,14 @@ iniciar();
                       {{ ini.titulo }}
                     </h2>
                   </SmaeLink>
+
                   <div
                     v-if="temPermissãoPara([
                       'CadastroMeta.administrador_no_pdm',
                       'CadastroMetaPS.administrador_no_pdm',
                       'CadastroMetaPDM.administrador_no_pdm',
                       'SMAE.GrupoVariavel.participante',
-                    ])"
+                    ]) && singleMeta?.pode_editar"
                     class="f0 flex g1"
                   >
                     <SmaeLink

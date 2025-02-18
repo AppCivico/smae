@@ -28,7 +28,7 @@ const { iniciativa_id: iniciativaId } = route.params;
 const parentlink = `${metaId ? `/metas/${metaId}` : ''}${iniciativaId ? `/iniciativas/${iniciativaId}` : ''}`;
 
 const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
+const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
@@ -108,7 +108,8 @@ iniciar();
         'CadastroMeta.administrador_no_pdm',
         'CadastroMetaPS.administrador_no_pdm',
         'CadastroMetaPDM.administrador_no_pdm'
-      ])"
+      ])
+        && singleMeta?.pode_editar"
       :to="`/metas/${metaId}/iniciativas/editar/${iniciativaId}`"
       class="btn big ml2"
     >
@@ -207,7 +208,8 @@ iniciar();
               'CadastroMetaPS.administrador_no_pdm',
               'CadastroMetaPDM.administrador_no_pdm',
               'SMAE.GrupoVariavel.participante',
-            ])"
+            ])
+              && singleMeta?.pode_editar"
             :to="`${parentlink}/atividades/novo`"
             class="btn ml2"
           >
