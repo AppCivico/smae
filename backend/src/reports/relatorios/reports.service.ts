@@ -697,7 +697,7 @@ export class ReportsService {
                     });
                 }
             } catch (error) {
-                this.logger.error(`Falha ao processar relatório ID ${job.relatorio_id}: ${error}`);
+                this.logger.debug(`Falha ao processar relatório ID ${job.relatorio_id}: ${error}`);
 
                 await this.prisma.relatorioFila.update({
                     where: { id: job.id },
