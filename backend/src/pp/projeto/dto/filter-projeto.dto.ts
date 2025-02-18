@@ -180,16 +180,16 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
 
     @IsOptional()
     @IsOnlyDate()
-    @Transform(DateTransform)
-    registrado_em?: Date;
+    @IsString()
+    registrado_em?: string;
 
     @IsOptional()
     @IsOnlyDate()
-    @Transform(DateTransform)
-    registrado_em_de?: Date;
+    @IsString()
+    registrado_em_de?: string;
 
     @IsOptional()
     @IsOnlyDate()
-    @Transform(DateTransform)
-    registrado_em_ate?: Date;
+    @IsString()
+    registrado_em_ate?: string;
 }

@@ -3432,29 +3432,30 @@ export class ProjetoService {
         userId?: number
     ): Prisma.ProjetoWhereInput[] {
         if (filters.registrado_em) {
-            filters.registrado_em_de = DateTime.fromJSDate(filters.registrado_em).toJSDate();
-            filters.registrado_em_ate = DateTime.fromJSDate(filters.registrado_em).toJSDate();
+            filters.registrado_em_de = filters.registrado_em;
+            filters.registrado_em_ate = filters.registrado_em;
 
             delete filters.registrado_em;
         }
 
         if (filters.registrado_em_de)
-            filters.registrado_em_de = DateTime.fromJSDate(filters.registrado_em_de)
-                .setZone('America/Sao_Paulo')
+            filters.registrado_em_de = DateTime.fromISO(filters.registrado_em_de, {
+                zone: 'America/Sao_Paulo',
+            })
                 .startOf('day')
-                .toJSDate();
+                .toString();
 
-        if (filters.registrado_em_de)
-            filters.registrado_em_de = DateTime.fromJSDate(filters.registrado_em_de)
-                .setZone('America/Sao_Paulo')
-                .endOf('day')
-                .toJSDate();
+        if (filters.registrado_em_ate)
+            filters.registrado_em_ate = DateTime.fromISO(filters.registrado_em_ate, { zone: 'America/Sao_Paulo' })
+                .startOf('day')
+                .plus({ days: 1 })
+                .toString();
 
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 registrado_em: {
                     gte: filters.registrado_em_de,
-                    lte: filters.registrado_em_ate,
+                    lt: filters.registrado_em_ate,
                 },
                 id: { in: ids != undefined ? ids : undefined },
                 OR: [
