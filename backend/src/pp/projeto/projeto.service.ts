@@ -3431,8 +3431,31 @@ export class ProjetoService {
         ids: number[] | undefined,
         userId?: number
     ): Prisma.ProjetoWhereInput[] {
+        if (filters.registrado_em) {
+            filters.registrado_em_de = DateTime.fromJSDate(filters.registrado_em).toJSDate();
+            filters.registrado_em_ate = DateTime.fromJSDate(filters.registrado_em).toJSDate();
+
+            delete filters.registrado_em;
+        }
+
+        if (filters.registrado_em_de)
+            filters.registrado_em_de = DateTime.fromJSDate(filters.registrado_em_de)
+                .setZone('America/Sao_Paulo')
+                .startOf('day')
+                .toJSDate();
+
+        if (filters.registrado_em_de)
+            filters.registrado_em_de = DateTime.fromJSDate(filters.registrado_em_de)
+                .setZone('America/Sao_Paulo')
+                .endOf('day')
+                .toJSDate();
+
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
+                registrado_em: {
+                    gte: filters.registrado_em_de,
+                    lte: filters.registrado_em_ate,
+                },
                 id: { in: ids != undefined ? ids : undefined },
                 OR: [
                     { portfolio_id: filters.portfolio_id },

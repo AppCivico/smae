@@ -18,6 +18,8 @@ import {
 } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
+import { DateTransform } from '../../../auth/transforms/date.transform';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -92,6 +94,7 @@ export const ProjetoMdoOrderEnum = {
     status: 'status',
     registrado_em: 'registrado_em',
     projeto_etapa: 'projeto_etapa',
+    projeto_etapa_id: 'projeto_etapa',
 };
 export type ProjetoMdoOrderEnum = keyof typeof ProjetoMdoOrderEnum;
 
@@ -174,4 +177,19 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsBoolean({ message: '$property| Precisa ser um boolean' })
     @Transform(({ value }: any) => value === 'true')
     revisado?: boolean;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    registrado_em?: Date;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    registrado_em_de?: Date;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    registrado_em_ate?: Date;
 }
