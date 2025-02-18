@@ -266,7 +266,7 @@ function maskDate(el) {
 }
 
 // @todo, talvez isso deva ser um helper?
-function pegaPsTecnicoCpCompleto(idsDasEquipes) {
+function pegaPsTecnicoCpCompleto(idsDasEquipes = []) {
   const listaDeEquipes = lista.value;
 
   return listaDeEquipes.filter((equipe) => idsDasEquipes.includes(equipe.id));
@@ -473,7 +473,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
                   busca: '',
                   participantes: values?.ps_ponto_focal?.equipes || [],
                 }"
-                :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa.ps_ponto_focal.equipes)"
+                :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa?.ps_ponto_focal?.equipes)"
                 label="titulo"
               />
             </div>
