@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Modulo, ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
+import type { ModuloSistema, ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store';
@@ -13,6 +13,7 @@ import { useProcessosStore } from '@/stores/processos.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
 import { useUsersStore } from '@/stores/users.store';
+import type { MinhaContaDto } from '@back/minha-conta/models/minha-conta.dto.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -32,8 +33,8 @@ const {
   rotaEhPermitida,
 } = storeToRefs(authStore);
 
-const módulosAcessíveis = ref([]);
-const módulosDisponíveis = ref([]);
+const modulosAcessiveis = ref<ModuloSistema[]>([]);
+const modulosDisponiveis = ref<ModuloSistema[]>([]);
 
 // PRA-FAZER: mover para o gerenciador de estado `auth.store`
 async function escolher(opção: keyof ModulosDoSistema) {
@@ -87,11 +88,22 @@ async function iniciar() {
 
   requestS.get(`${baseUrl}/minha-conta`, null, { headers: { 'smae-sistemas': Object.keys(módulos).join(',') } })
     .then((resposta) => {
-      const { sessao: { sistemas, sistemas_disponiveis: sistemasDisponiveis } } = resposta;
+      const {
+        sessao: { sistemas, sistemas_disponiveis: sistemasDisponiveis },
+      } = resposta as MinhaContaDto;
+
       sessao.value = resposta.sessao;
+
       if (Array.isArray(sistemas)) {
-        módulosAcessíveis.value.splice(0, módulosAcessíveis.value.length, ...sistemas);
-        módulosDisponíveis.value.splice(0, módulosDisponíveis.value.length, ...sistemasDisponiveis);
+        modulosAcessiveis.value.splice(0, modulosAcessiveis.value.length);
+
+        sistemas
+          .forEach((sistema: ModuloSistema) => {
+            if (sistema !== 'SMAE') {
+              modulosAcessiveis.value.push(sistema);
+            }
+          });
+        modulosDisponiveis.value.splice(0, modulosDisponiveis.value.length, ...sistemasDisponiveis);
       }
     })
     .catch((err) => {
@@ -128,11 +140,11 @@ iniciar();
     </div>
 
     <ul
-      v-if="módulosDisponíveis.length"
+      v-if="modulosDisponiveis.length"
       class="escolha-de-módulos__lista flex column g2 uc"
     >
       <li
-        v-for="(sistema, k) in módulosDisponíveis"
+        v-for="(sistema, k) in modulosDisponiveis"
         :key="k"
       >
         <button
@@ -140,12 +152,12 @@ iniciar();
           class="escolha-de-módulos__opção opção uc like-a__link tprimary tl t24 w700
         flex g05 center"
           :disabled="!módulos[sistema as keyof ModulosDoSistema]?.rotaInicial
-            || !módulosAcessíveis.includes(sistema)"
+            || !modulosAcessiveis.includes(sistema)"
           @click="escolher(sistema)"
         >
           <img
             v-if="módulos[sistema as keyof ModulosDoSistema]?.ícone"
-            :src="módulos[sistema as keyof ModulosDoSistema].ícone"
+            :src="módulos[sistema as keyof ModulosDoSistema]?.ícone"
             class="opção__ícone"
             aria-hidden="true"
             width="48"

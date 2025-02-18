@@ -15,13 +15,18 @@ export type Modulo = {
   possiveisEntidadesMae: string | string[];
 };
 
+export enum ModuloSistema {
+  SMAE = 'SMAE',
+  PDM = 'PDM',
+  CasaCivil = 'CasaCivil',
+  Projetos = 'Projetos',
+  PlanoSetorial = 'PlanoSetorial',
+  MDO = 'MDO',
+  ProgramaDeMetas = 'ProgramaDeMetas',
+}
+
 export type ModulosDoSistema = {
-  PDM: Modulo;
-  Projetos: Modulo;
-  CasaCivil: Modulo;
-  MDO: Modulo;
-  PlanoSetorial: Modulo;
-  ProgramaDeMetas: Modulo;
+  [key in ModuloSistema]?: Modulo;
 };
 
 const modulos: ModulosDoSistema = {
