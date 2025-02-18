@@ -51,7 +51,9 @@
           </td>
           <td>
             <component
-              :is="relacionamento.ehPlanoSetorial ? SmaeLink : 'span'"
+              :is="relacionamento.dentroDoModuloCorrente
+                ? SmaeLink
+                : 'span'"
               :to="{
                 name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
                 params: { planoSetorialId: relacionamento.pdm_id }
@@ -67,9 +69,11 @@
               : null"
           >
             <component
-              :is="relacionamento.ehPlanoSetorial ? SmaeLink : 'span'"
+              :is="relacionamento.dentroDoModuloCorrente
+                ? SmaeLink
+                : 'span'"
               :to="{
-                name: 'planoSetorial:meta',
+                name: '.meta',
                 params: {
                   meta_id: relacionamento.meta_id,
                   planoSetorialId: relacionamento.pdm_id
@@ -89,9 +93,9 @@
               : null"
           >
             <component
-              :is="
-                relacionamento.ehPlanoSetorial && relacionamento.iniciativa_id
-                  ? SmaeLink : 'span'"
+              :is="relacionamento.dentroDoModuloCorrente && relacionamento.iniciativa_id
+                ? SmaeLink
+                : 'span'"
               :to="{
                 name: 'planoSetorial:resumoDeIniciativa',
                 params: {
@@ -117,9 +121,9 @@
               : null"
           >
             <component
-              :is="
-                relacionamento.ehPlanoSetorial && relacionamento.atividade_id
-                  ? SmaeLink : 'span'"
+              :is="relacionamento.dentroDoModuloCorrente && relacionamento.atividade_id
+                ? SmaeLink
+                : 'span'"
               :to="{
                 name: 'planoSetorial:resumoDeAtividade',
                 params: {
@@ -147,18 +151,17 @@
 <script lang="ts" setup>
 import type { IdSigla } from '@/../../backend/src/common/dto/IdSigla.dto.ts';
 import type { MetaPdmDto } from '@/../../backend/src/meta/entities/meta.entity.ts';
-
+import tiposDePlanos from '@/consts/tiposDePlanos';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import truncate from '@/helpers/truncate';
+import SmaeLink from '@/components/SmaeLink.vue';
 import { uniqBy } from 'lodash';
 import { computed, defineProps } from 'vue';
 import { useRoute } from 'vue-router';
-import tiposDePlanos from '@/consts/tiposDePlanos';
-import SmaeLink from '@/components/SmaeLink.vue';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
-import truncate from '@/helpers/truncate';
 
 type MetaPdmDtoComOrgaosCombinados = MetaPdmDto & {
   orgaos: IdSigla[];
-  ehPlanoSetorial: boolean;
+  dentroDoModuloCorrente: boolean;
 };
 
 const props = defineProps({
@@ -198,7 +201,7 @@ function combinadorDeOrgaos(relacionamento: MetaPdmDto): IdSigla[] {
 const listaComOrgaosCombinados = computed<MetaPdmDtoComOrgaosCombinados[]>(() => props.relacionamentos.map((relacionamento) => ({
   ...relacionamento,
   orgaos: combinadorDeOrgaos(relacionamento),
-  ehPlanoSetorial: relacionamento.tipo === 'PS',
+  dentroDoModuloCorrente: relacionamento.tipo === 'PS' && route.meta.entidadeMãe === 'planoSetorial',
 })));
 </script>
 <style scoped>
