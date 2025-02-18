@@ -38,11 +38,8 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     liberacao_orgao: IdSigla | null;
 
     medicao_orgao_id: number | null;
-    medicao_orgao: OrgaoResumo | null;
     validacao_orgao_id: number | null;
-    validacao_orgao: OrgaoResumo | null;
     liberacao_orgao_id: number | null;
-    liberacao_orgao: OrgaoResumo | null;
 }
 
 export class VariavelResumoInput {
