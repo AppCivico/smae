@@ -492,6 +492,7 @@ export class PPProjetosService implements ReportableService {
 
             whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
             queryParams.push(allowed.map((n) => n.id));
+            paramIndex++;
         }
 
         if (filters.portfolio_id) {
@@ -528,6 +529,10 @@ export class PPProjetosService implements ReportableService {
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
 
+        // TODO: melhorar essa query
+        // Esse idx é utilizado no union, e em teoria o portfolio_id sempre é enviado.
+        // No entanto, lá na definição de filtros, caso o usuário não tenha permissão/a query não retorne nada (ver buildFilteredWhereStr),
+        // esse if irá ser pulado, portanto definindo o
         let portfolioParamIdx;
         if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
             const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
@@ -677,7 +682,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = $${portfolioParamIdx}
+          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = ${portfolioParamIdx !== undefined ? `$${portfolioParamIdx}` : '0'}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
