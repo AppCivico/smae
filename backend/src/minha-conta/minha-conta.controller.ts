@@ -27,14 +27,8 @@ export class MinhaContaController {
         let sistemas: ModuloSistema[] = user.sistemas;
         let modulos_sobrescritos = false;
 
-        if (!user.sobreescrever_modulos) {
-            sistemas = sistemas.filter((sistema) => {
-                if (sistema === 'ProgramaDeMetas' && !user.hasSomeRoles(['ReferencialEm.Equipe.ProgramaDeMetas']))
-                    return false;
-                if (sistema === 'PlanoSetorial' && !user.hasSomeRoles(['ReferencialEm.Equipe.PS'])) return false;
-                return true;
-            });
-        } else {
+        // deixa o sistema agir naturalmente se não tiver marcado para sobrescrever
+        if (user.sobreescrever_modulos) {
             sistemas = user.modulos_permitidos;
             modulos_sobrescritos = !user.sistemas.every((sistema) => sistemas.includes(sistema));
         }
