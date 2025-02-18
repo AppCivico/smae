@@ -560,62 +560,71 @@ export class ReportsService {
         });
 
         for (const job of pending) {
-            const now = new Date(Date.now());
-            await this.prisma.projetoRelatorioFila.update({
-                where: { id: job.id },
-                data: {
-                    congelado_em: new Date(Date.now()),
-                },
-            });
-
-            const contentType = 'application/zip';
-            const filename = ['Projeto', DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
-                .filter((r) => r)
-                .join('-');
-
-            const relatorio = await this.prisma.relatorio.create({
-                data: {
-                    fonte: 'Projeto',
-                    parametros: {
-                        projeto_id: job.projeto_id,
+            try {
+                const now = new Date(Date.now());
+                await this.prisma.projetoRelatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        congelado_em: new Date(Date.now()),
                     },
-                    visibilidade: 'Restrito',
-                    progresso: 0,
-                },
-            });
+                });
 
-            const contexto = new ReportContext(this.prisma, relatorio.id);
+                const contentType = 'application/zip';
+                const filename = ['Projeto', DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
+                    .filter((r) => r)
+                    .join('-');
 
-            await this.runReport(
-                {
-                    fonte: relatorio.fonte,
-                    parametros: {
-                        projeto_id: job.projeto_id,
+                const relatorio = await this.prisma.relatorio.create({
+                    data: {
+                        fonte: 'Projeto',
+                        parametros: {
+                            projeto_id: job.projeto_id,
+                        },
+                        visibilidade: 'Restrito',
+                        progresso: 0,
                     },
-                },
-                null,
-                contexto
-            );
-            const zipBuffer = await this.zipFiles(contexto.getFiles());
+                });
 
-            const arquivoId = await this.uploadService.uploadReport(
-                relatorio.fonte,
-                filename,
-                zipBuffer,
-                contentType,
-                null
-            );
-            const relatorioId = relatorio.id;
+                const contexto = new ReportContext(this.prisma, relatorio.id);
 
-            await this.updateRelatorioMetadata(relatorioId, arquivoId, now, contexto);
+                await this.runReport(
+                    {
+                        fonte: relatorio.fonte,
+                        parametros: {
+                            projeto_id: job.projeto_id,
+                        },
+                    },
+                    null,
+                    contexto
+                );
+                const zipBuffer = await this.zipFiles(contexto.getFiles());
 
-            await this.prisma.projetoRelatorioFila.update({
-                where: { id: job.id },
-                data: {
-                    executado_em: new Date(Date.now()),
-                    relatorio_id: relatorio.id,
-                },
-            });
+                const arquivoId = await this.uploadService.uploadReport(
+                    relatorio.fonte,
+                    filename,
+                    zipBuffer,
+                    contentType,
+                    null
+                );
+                const relatorioId = relatorio.id;
+
+                await this.updateRelatorioMetadata(relatorioId, arquivoId, now, contexto);
+
+                await this.prisma.projetoRelatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        executado_em: new Date(Date.now()),
+                        relatorio_id: relatorio.id,
+                    },
+                });
+            } catch (error) {
+                console.error(error);
+
+                this.logger.error(`Falha ao processar relatório ID ${job.id}: ${error}`);
+
+                // timeout do lock vai tentar novamente em 1 hr
+                continue;
+            }
         }
     }
 
