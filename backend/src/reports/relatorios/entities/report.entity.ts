@@ -12,6 +12,8 @@ export class RelatorioDto {
     fonte: string;
     arquivo: string | null;
     parametros: any;
+    progresso: number | null;
+    err_msg: string | null;
 
     @ApiProperty({
         type: RelatorioParamDto,

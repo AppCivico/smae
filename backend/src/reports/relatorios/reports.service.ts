@@ -36,8 +36,8 @@ import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
-import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
 import { ReportContext } from './helpers/reports.contexto';
+import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -86,7 +86,7 @@ export class ReportsService {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
         this.enabled = CrontabIsEnabled('reports');
-        this.enabled=true;
+        this.enabled = true;
     }
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
@@ -385,6 +385,13 @@ export class ReportsService {
                 parametros: true,
                 parametros_processados: true,
                 pdm_id: true,
+                progresso: true,
+                processamento: {
+                    select: {
+                        congelado_em: true,
+                        err_msg: true,
+                    },
+                },
             },
             orderBy: {
                 criado_em: 'desc',
@@ -401,14 +408,19 @@ export class ReportsService {
 
         return {
             linhas: rows.map((r) => {
+                const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
+                const haErro = r.processamento?.map((p) => p.err_msg).join(' ');
+
                 return {
                     ...r,
+                    progresso: progresso,
+                    err_msg: r.arquivo_id !== null ? haErro : null,
                     parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: r.arquivo_id
                         ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
                         : null,
-                };
+                } satisfies RelatorioDto;
             }),
             tem_mais: tem_mais,
             token_ttl: PAGINATION_TOKEN_TTL,
@@ -568,6 +580,7 @@ export class ReportsService {
                         projeto_id: job.projeto_id,
                     },
                     visibilidade: 'Restrito',
+                    progresso: 0,
                 },
             });
 
@@ -675,6 +688,11 @@ export class ReportsService {
                 });
                 if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
                 const contexto = new ReportContext(this.prisma, relatorio.id);
+
+                await this.prisma.relatorio.update({
+                    where: { id: job.relatorio_id },
+                    data: { progresso: 0 },
+                });
 
                 const pessoaJwt = relatorio.criado_por
                     ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
