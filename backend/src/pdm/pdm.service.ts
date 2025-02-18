@@ -461,7 +461,9 @@ export class PdmService {
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
 
                 // se for ADMIN, pode editar o PDM/PS
-                podeEditar = parsed.some((item) => item.tipo == 'ADMIN' && collab.includes(item.equipe_id));
+                podeEditar = parsed.some(
+                    (item) => item.tipo == 'ADMIN' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
+                );
 
                 if (!podeEditar) {
                     // e se for TEC todos os itens são do mesmo órgão

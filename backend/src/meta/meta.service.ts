@@ -748,7 +748,12 @@ export class MetaService {
 
                         const parsed = plainToInstance(AdminCpDbItem, dbValue);
                         // pode editar se for ADMIN do PDM/PS e estiver na equipe
-                        podeEditar = parsed.some((item) => item.tipo == 'ADMIN' && collab.includes(item.equipe_id));
+                        podeEditar = parsed.some(
+                            (item) =>
+                                item.tipo == 'ADMIN' &&
+                                item.orgao_id == user.orgao_id &&
+                                collab.includes(item.equipe_id)
+                        );
                     }
                 }
             }
