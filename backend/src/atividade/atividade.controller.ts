@@ -25,6 +25,8 @@ import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { ListAtividadeDto } from './dto/list-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { AtividadeDto } from './entities/atividade.entity';
+import { RelacionadosDTO } from '../meta/entities/meta.entity';
+import { FilterRelacionadosDTO } from '../meta/dto/filter-meta.dto';
 
 @ApiTags('Atividade')
 @Controller('atividade')
@@ -47,6 +49,18 @@ export class AtividadeController {
     @Roles(MetaController.ReadPerm)
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(this.tipoPdm, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get('relacionados')
+    @Roles(MetaSetorialController.ReadPerm)
+    async buscaRelacionados(
+        @Query() dto: FilterRelacionadosDTO,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RelacionadosDTO> {
+        return await this.atividadeService.metaService.buscaRelacionados(tipo, dto, user);
     }
 
     @ApiBearerAuth('access-token')

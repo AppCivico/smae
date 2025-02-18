@@ -35,7 +35,7 @@ export class IniciativaService {
     private readonly logger = new Logger(IniciativaService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly metaService: MetaService,
+        readonly metaService: MetaService,
         private readonly variavelService: VariavelService
     ) {}
 

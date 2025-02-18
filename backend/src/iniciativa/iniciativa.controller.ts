@@ -18,6 +18,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { FilterRelacionadosDTO } from '../meta/dto/filter-meta.dto';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { CreateIniciativaDto } from './dto/create-iniciativa.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
@@ -25,6 +26,7 @@ import { ListIniciativaDto } from './dto/list-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IniciativaDto } from './entities/iniciativa.entity';
 import { IniciativaService } from './iniciativa.service';
+import { RelacionadosDTO } from '../meta/entities/meta.entity';
 
 @ApiTags('Iniciativa')
 @Controller('iniciativa')
@@ -109,6 +111,18 @@ export class IniciativaSetorialController {
         @TipoPDM() tipo: TipoPdmType
     ): Promise<ListIniciativaDto> {
         return { linhas: await this.iniciativaService.findAll(tipo, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get('relacionados')
+    @Roles(MetaSetorialController.ReadPerm)
+    async buscaRelacionados(
+        @Query() dto: FilterRelacionadosDTO,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RelacionadosDTO> {
+        return await this.iniciativaService.metaService.buscaRelacionados(tipo, dto, user);
     }
 
     @ApiBearerAuth('access-token')
