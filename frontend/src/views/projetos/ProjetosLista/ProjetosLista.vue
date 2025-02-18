@@ -76,8 +76,6 @@ watch(() => route.query, () => {
           v-bind="paginacaoProjetos"
         />
 
-        {{ podeExcluir }}
-
         <SmaeTable
           class="mt2"
           :dados="listaDeProjetos"
