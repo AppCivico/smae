@@ -7,6 +7,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import dateToTitle from '@/helpers/dateToTitle';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { relatorioOrcamentarioPlanoSetorial as schema } from '@/consts/formSchemas';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -61,34 +62,44 @@ function excluirRelatório(id) {
           </td>
 
           <td class="tr">
-            <button
-              v-if="temPermissãoPara(['Reports.remover.'])"
-              class="like-a__text addlink"
-              arial-label="excluir"
-              title="excluir"
-              @click="excluirRelatório(item.id)"
-            >
-              <svg
-                width="20"
-                height="20"
+            <div class="flex g05">
+              <button
+                v-if="temPermissãoPara(['Reports.remover.'])"
+                class="like-a__text addlink"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirRelatório(item.id)"
               >
-                <use xlink:href="#i_waste" />
-              </svg>
-            </button>
-
-            <a
-              class="ml1"
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            >
-              <svg
-                width="20"
-                height="20"
+                <svg
+                  width="20"
+                  height="20"
+                >
+                  <use xlink:href="#i_waste" />
+                </svg>
+              </button>
+              <LoadingComponent
+                v-if="!item.arquivo"
+                title="Relatório em processamento"
               >
-                <use xlink:href="#i_baixar" />
-              </svg>
-            </a>
+                <span class="sr-only">
+                  Relatório em processamento
+                </span>
+              </LoadingComponent>
+              <a
+                v-else
+                class="ml1"
+                :href="`${baseUrl}/download/${item.arquivo}`"
+                download
+                title="baixar"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                >
+                  <use xlink:href="#i_baixar" />
+                </svg>
+              </a>
+            </div>
           </td>
         </tr>
       </template>

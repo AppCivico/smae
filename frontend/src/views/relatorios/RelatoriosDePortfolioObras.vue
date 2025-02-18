@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { prepararEtiquetas, prepararPortfoliosObras, prepararÓrgãos } from './helpers/preparadorDeColunaParametros';
 
 const relatóriosStore = useRelatoriosStore();

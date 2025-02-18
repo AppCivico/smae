@@ -33,12 +33,12 @@ export const prepararInterfaceDeTransferência = () => Object.values(interfacesD
 export const prepararCargos = () => Object.values(cargosDeParlamentar)
   .reduce((acc, cur) => ({ ...acc, [cur.valor]: cur.nome }), {});
 
-/*ÓrgãosStore.getAll()
+/* ÓrgãosStore.getAll()
   .then(() => ÓrgãosStore.órgãosComoLista
     .reduce((acc, cur) => ({ ...acc, [cur.id]: cur.sigla }), {}))
   .catch((error) => {
     throw new Error(error);
-  });*/
+  }); */
 
 export const prepararPdm = () => PdMStore.getAll()
   .then(() => (Array.isArray(PdMStore.PdM)
@@ -113,51 +113,47 @@ export const prepararTipoTransferencia = async () => {
   }
 };
 
-/* 
+/*
 export const prepararParlamentares = () => parlamentaresStore.buscarTudo()
   .then(() => parlamentaresStore.parlamentaresComoLista
     .reduce((acc, cur) => ({ ...acc, [cur.id]: cur.nome }), {}))
   .catch((error) => {
     throw new Error(error);
-  });*/
+  }); */
 
-  // Busca os parlamentares e substitui o código pelo nome de urna
-  export const prepararParlamentares = async () => {
-    try {
-      if (!parlamentaresStore.lista.length) {
-        await parlamentaresStore.buscarTudo();
-      }
-      return parlamentaresStore.lista.reduce((acc, cur) => ({
-        ...acc,
-        [cur.id]: cur.nome_popular,
-      }), {});
-    } catch (error) {
-      throw new Error(error);
+// Busca os parlamentares e substitui o código pelo nome de urna
+export const prepararParlamentares = async () => {
+  try {
+    if (!parlamentaresStore.lista.length) {
+      await parlamentaresStore.buscarTudo();
     }
-  };
+    return parlamentaresStore.lista.reduce((acc, cur) => ({
+      ...acc,
+      [cur.id]: cur.nome_popular,
+    }), {});
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
-  // Busca os órgãos e substitui o código pela sigla
-  export const prepararÓrgãos = async () => {
-    try {
-      if (!ÓrgãosStore.órgãosComoLista.length) {
-        await ÓrgãosStore.getAll();
-      }
-      return ÓrgãosStore.órgãosComoLista.reduce((acc, cur) => ({
-        ...acc,
-        [cur.id]: cur.sigla,
-      }), {});
-    } catch (error) {
-      throw new Error(error);
+// Busca os órgãos e substitui o código pela sigla
+export const prepararÓrgãos = async () => {
+  try {
+    if (!ÓrgãosStore.órgãosComoLista.length) {
+      await ÓrgãosStore.getAll();
     }
-  };
+    return ÓrgãosStore.órgãosComoLista.reduce((acc, cur) => ({
+      ...acc,
+      [cur.id]: cur.sigla,
+    }), {});
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
-
-
-
-
-/*export const prepararÓrgãos = () => ÓrgãosStore.getAll()
+/* export const prepararÓrgãos = () => ÓrgãosStore.getAll()
   .then(() => ÓrgãosStore.órgãosComoLista
     .reduce((acc, cur) => ({ ...acc, [cur.id]: cur.sigla }), {}))
   .catch((error) => {
     throw new Error(error);
-  });*/
+  }); */

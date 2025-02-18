@@ -5,6 +5,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -78,35 +79,50 @@ function excluirRelatório(id) {
             <template v-else>
               {{ Array.isArray(item.parametros[chave])
                 ? item.parametros[chave]
-                  .map((x) => props.etiquetasParaValoresDeParâmetros?.[chave]?.[x])
+                  .map((x) =>
+                    typeof x === 'boolean'
+                      ? (x ? 'Sim' : 'Não')
+                      : props.etiquetasParaValoresDeParâmetros?.[chave]?.[x] || x
+                  )
                   .join(', ')
-                : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
-                  || item.parametros[chave] }}
+                : typeof item.parametros[chave] === 'boolean'
+                  ? (item.parametros[chave] ? 'Sim' : 'Não')
+                  : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
+                    || item.parametros[chave] }}
             </template>
           </td>
 
           <td class="tr">
-            <button
-              v-if="temPermissãoPara(['Reports.remover.'])"
-              class="like-a__text addlink"
-              arial-label="excluir"
-              title="excluir"
-              @click="excluirRelatório(item.id)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_waste" /></svg>
-            </button>
-
-            <a
-              class="ml1"
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            ><img
-              src="../../assets/icons/baixar.svg"
-            ></a>
+            <div class="flex g05">
+              <button
+                v-if="temPermissãoPara(['Reports.remover.'])"
+                class="like-a__text addlink"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirRelatório(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_waste" /></svg>
+              </button>
+              <LoadingComponent
+                v-if="!item.arquivo"
+                title="Relatório em processamento"
+              >
+                <span class="sr-only">
+                  Relatório em processamento
+                </span>
+              </LoadingComponent>
+              <a
+                v-else
+                :href="`${baseUrl}/download/${item.arquivo}`"
+                download
+                title="baixar"
+              ><img
+                src="@/assets/icons/baixar.svg"
+              ></a>
+            </div>
           </td>
         </tr>
       </template>

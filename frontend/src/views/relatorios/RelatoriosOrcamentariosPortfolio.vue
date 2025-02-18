@@ -4,13 +4,47 @@ import TabelaDeOrçamentários from '@/components/relatorios/TabelaDeOrcamentari
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
+import {
+  onUnmounted,
+  computed,
+  watch,
+} from 'vue';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const relatóriosStore = useRelatoriosStore();
 const fonte = 'ProjetoOrcamento';
 
-relatóriosStore.$reset();
-relatóriosStore.getAll({ fonte });
+let intervaloDeAtualizacao = null;
+const temAlgumRelatorioEmProcessamento = computed(() => relatóriosStore
+  .lista.some((relatorio) => !relatorio.arquivo));
+
+async function carregarRelatorios() {
+  await relatóriosStore.getAll({ fonte });
+}
+
+async function iniciar() {
+  relatóriosStore.$reset();
+  relatóriosStore.getAll({ fonte });
+}
+
+watch(temAlgumRelatorioEmProcessamento, (novoValor) => {
+  if (novoValor) {
+    if (!intervaloDeAtualizacao) {
+      intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
+    }
+  } else {
+    clearInterval(intervaloDeAtualizacao);
+    intervaloDeAtualizacao = null;
+  }
+});
+
+iniciar();
+
+onUnmounted(() => {
+  if (intervaloDeAtualizacao) {
+    clearInterval(intervaloDeAtualizacao);
+  }
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -24,11 +58,6 @@ relatóriosStore.getAll({ fonte });
       Novo relatório
     </router-link>
   </div>
-  <!--div class="flex center mb2">
-      <div class="f2 search">
-          <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
-      </div>
-  </div-->
 
   <TabelaDeOrçamentários class="mb1" />
 

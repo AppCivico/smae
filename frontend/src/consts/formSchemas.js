@@ -2868,6 +2868,9 @@ export const relatórioDePrevisãoDeCustoPortfolio = object()
         .min(startYear, `\${label} não pode ser menor do que ${startYear}`)
         .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
+      eh_publico: boolean()
+        .label('Relatório Público')
+        .required(),
     }),
     salvar_arquivo: boolean(),
   });
@@ -2886,6 +2889,9 @@ export const relatórioDeProjeto = object({
       .min(1, '${label} é obrigatório')
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .required(),
   }),
   salvar_arquivo: boolean(),
 });
@@ -2914,6 +2920,9 @@ export const relatórioDeStatus = object({
       .label('Projeto')
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .required(),
   }),
   salvar_arquivo: boolean(),
 });
@@ -2973,6 +2982,9 @@ export const relatórioDePortfolio = object({
         'Validado',
         null,
       ]),
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .required(),
   }),
   salvar_arquivo: boolean(),
 });
@@ -3274,6 +3286,9 @@ export const relatórioOrçamentárioPortfolio = object({
         'Analitico',
         'Consolidado',
       ])
+      .required(),
+    eh_publico: boolean()
+      .label('Relatório Público')
       .required(),
   }),
 });
