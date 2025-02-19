@@ -1,7 +1,7 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { FonteRelatorio, ModuloSistema, Prisma, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
@@ -381,6 +381,7 @@ export class ReportsService {
                 criado_em: true,
                 criador: { select: { nome_exibicao: true } },
                 fonte: true,
+                visibilidade: true,
                 arquivo_id: true,
                 parametros: true,
                 parametros_processados: true,
@@ -411,9 +412,12 @@ export class ReportsService {
                 const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
                 const haErro = r.processamento?.map((p) => p.err_msg).join(' ');
 
+                const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
+
                 return {
                     ...r,
                     progresso: progresso,
+                    eh_publico: eh_publico,
                     err_msg: r.arquivo_id !== null ? haErro : null,
                     parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
