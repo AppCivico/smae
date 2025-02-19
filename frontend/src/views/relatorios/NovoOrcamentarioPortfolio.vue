@@ -153,15 +153,16 @@ portfolioStore.buscarTudo();
       <div class="f1">
         <LabelFromYup
           name="eh_publico"
-          :schema="schema.fields.parametros"
+          :schema="schema"
+          required
         />
         <Field
-          name="parametros.eh_publico"
+          name="eh_publico"
           as="select"
           class="inputtext light
             mb1"
           :class="{
-            error: errors['parametros.eh_publico'],
+            error: errors['eh_publico'],
             loading: portfolioStore.chamadasPendentes.lista
           }"
           :disabled="portfolioStore.chamadasPendentes.lista"
