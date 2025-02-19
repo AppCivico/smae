@@ -4,7 +4,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';

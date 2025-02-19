@@ -13,7 +13,7 @@ import periodicidades from '@/consts/periodicidades';
 import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
 import dateToDate from '@/helpers/dateToDate';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useAuthStore } from '@/stores/auth.store';

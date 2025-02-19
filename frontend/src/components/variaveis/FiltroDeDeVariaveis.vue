@@ -388,7 +388,7 @@ import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { usePsMetasStore } from '@/stores/metasPs.store';
 import { useOrgansStore } from '@/stores/organs.store';

@@ -1,7 +1,7 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';

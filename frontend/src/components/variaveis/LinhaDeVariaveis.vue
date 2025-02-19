@@ -60,7 +60,7 @@ import type { VariavelGlobalItemDto, VariavelItemDto } from '@/../../backend/src
 import { storeToRefs } from 'pinia';
 import { defineProps } from 'vue';
 import { useRoute } from 'vue-router';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 
 defineOptions({

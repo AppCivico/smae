@@ -13,7 +13,7 @@ import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';

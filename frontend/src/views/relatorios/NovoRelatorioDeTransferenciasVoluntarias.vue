@@ -3,7 +3,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePartidosStore } from '@/stores/partidos.store';

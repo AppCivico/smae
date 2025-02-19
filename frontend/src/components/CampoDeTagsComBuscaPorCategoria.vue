@@ -1,7 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useOdsStore } from '@/stores/odsPs.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';

@@ -1,7 +1,7 @@
 <script setup>
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRiscosStore } from '@/stores/riscos.store.ts';

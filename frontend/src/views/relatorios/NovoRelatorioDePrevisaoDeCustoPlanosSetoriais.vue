@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { Field, Form, useIsFormDirty } from 'vee-validate';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';

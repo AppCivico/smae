@@ -5,7 +5,7 @@ import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelac
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { router } from '@/router';
 import {
   useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,

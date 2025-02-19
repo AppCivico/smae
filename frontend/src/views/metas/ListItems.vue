@@ -5,7 +5,7 @@ import {
   onMounted, reactive, ref, watch,
 } from 'vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useMetasStore } from '@/stores/metas.store';

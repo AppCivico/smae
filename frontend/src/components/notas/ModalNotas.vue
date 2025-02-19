@@ -1,7 +1,7 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { nota as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useOrgansStore } from '@/stores/organs.store';

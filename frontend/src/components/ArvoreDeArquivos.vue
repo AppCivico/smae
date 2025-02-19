@@ -1,6 +1,6 @@
 <script setup>
 import dateToField from '@/helpers/dateToField';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { ref } from 'vue';
 import oArquivoEhEditavel from './ArvoreDeArquivos.helpers/oArquivoEhEditavel';
 

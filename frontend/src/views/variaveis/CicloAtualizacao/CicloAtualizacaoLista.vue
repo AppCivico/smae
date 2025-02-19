@@ -162,7 +162,7 @@
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { computed, onMounted, watch } from 'vue';

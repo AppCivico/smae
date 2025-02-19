@@ -1,7 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import LocalFilter from '@/components/LocalFilter.vue';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useUsersStore } from '@/stores/users.store';

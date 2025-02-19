@@ -48,7 +48,7 @@
 import { computed } from 'vue';
 import { format } from 'date-fns';
 
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
 import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface';
 

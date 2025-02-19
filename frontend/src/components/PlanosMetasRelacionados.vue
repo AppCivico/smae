@@ -153,7 +153,7 @@ import type { IdSigla } from '@/../../backend/src/common/dto/IdSigla.dto.ts';
 import type { MetaPdmDto } from '@/../../backend/src/meta/entities/meta.entity.ts';
 import tiposDePlanos from '@/consts/tiposDePlanos';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
 import { uniqBy } from 'lodash';
 import { computed, defineProps } from 'vue';

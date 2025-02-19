@@ -2,7 +2,7 @@
 import SmallModal from '@/components/SmallModal.vue';
 import { andamentoDaFase } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useUsersStore } from '@/stores/users.store';

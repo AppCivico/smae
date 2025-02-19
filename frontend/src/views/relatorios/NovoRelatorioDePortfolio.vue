@@ -8,7 +8,7 @@ import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import listaDeStatuses from '@/consts/projectStatuses';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';

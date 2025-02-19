@@ -20,7 +20,7 @@ import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPor
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { meta as metaSchema } from '@/consts/formSchemas';
 import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEquipesStore } from '@/stores/equipes.store';

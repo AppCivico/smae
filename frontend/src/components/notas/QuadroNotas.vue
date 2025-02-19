@@ -61,7 +61,7 @@
 <script setup>
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import removerHtml from '@/helpers/removerHtml';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';

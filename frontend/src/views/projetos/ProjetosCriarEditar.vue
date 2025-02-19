@@ -17,7 +17,7 @@ import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudanç
 import { projeto as schema } from '@/consts/formSchemas';
 import listaDeStatuses from '@/consts/projectStatuses';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';

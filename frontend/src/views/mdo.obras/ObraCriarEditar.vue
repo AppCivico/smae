@@ -10,7 +10,7 @@ import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';

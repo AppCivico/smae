@@ -1,7 +1,7 @@
 <script setup>
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';

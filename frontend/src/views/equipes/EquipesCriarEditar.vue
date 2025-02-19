@@ -185,7 +185,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { equipes as schema } from '@/consts/formSchemas';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';

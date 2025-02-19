@@ -4,7 +4,7 @@ import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';

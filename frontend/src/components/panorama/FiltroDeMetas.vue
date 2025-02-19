@@ -1,6 +1,6 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';

@@ -348,7 +348,7 @@ import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 
 import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
