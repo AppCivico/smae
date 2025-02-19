@@ -301,6 +301,7 @@ const getOrderByConfig = (
         case 'orgao_origem_nome':
             return [{ orgao_origem: { descricao: direction } }, { codigo: 'asc' }];
         case 'projeto_etapa':
+        case 'projeto_etapa_id':
             return [{ projeto_etapa: { descricao: direction } }, { codigo: 'asc' }];
         default:
             return [{ codigo: 'asc' }];
