@@ -1,12 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ApiPaginatedResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../../common/decorators/find-params';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { UploadService } from '../../upload/upload.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
@@ -34,11 +34,13 @@ export class ReportsController {
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
         type: '',
     })
-    async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt, @Res() res: Response) {
+    async create(
+        @Body() dto: CreateReportDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('criar', 'Relatórios');
-        await this.reportsService.saveReport(dto, null, user, sistema);
 
-        res.status(200).send('Relatório adicionado na fila.');
+        return await this.reportsService.saveReport(dto, null, user, sistema);
     }
 
     @ApiBearerAuth('access-token')

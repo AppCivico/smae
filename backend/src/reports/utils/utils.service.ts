@@ -137,6 +137,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             theClass = CreateRelProjetoDto;
             break;
         case 'Projetos':
+            console.log('CreateRelProjetosDto');
             theClass = CreateRelProjetosDto;
             break;
         case 'ProjetoStatus':
@@ -167,8 +168,19 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             fonte satisfies never;
     }
     const validatorObject = plainToInstance(theClass, value, {
-        excludeExtraneousValues: true,
+        enableCircularCheck: false,
+        enableImplicitConversion: false,
+        excludeExtraneousValues: false,
+        excludePrefixes: undefined,
+        exposeDefaultValues: false,
+        exposeUnsetFields: true,
+        groups: undefined,
+        ignoreDecorators: false,
+        strategy: undefined,
+        targetMaps: undefined,
+        version: undefined,
     });
+    console.log('validatorObject', validatorObject);
 
     return validatorObject;
 }
