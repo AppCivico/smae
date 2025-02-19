@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import titleCase from '@/helpers/texto/titleCase';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -430,13 +431,13 @@ watch(
               v-else-if="dados.titulo"
               class="painel-flutuante__titulo"
             >
-              {{ dados.titulo }}
+              {{ titleCase(dados.titulo) }}
             </p>
             <p
               v-else-if="dados.rotulo"
               class="painel-flutuante__titulo"
             >
-              {{ dados.rotulo }}
+              {{ titleCase(dados.rotulo) }}
             </p>
 
             <dl
@@ -445,7 +446,6 @@ watch(
                 || dados.subPrefeitura
                 || dados.orgao_resp_sigla
                 || dados.projeto_etapa"
-              class="painel-flutuante__dados"
             >
               <div
                 v-if="dados.orgao_resp_sigla"
@@ -692,19 +692,20 @@ watch(
 }
 
 .painel-flutuante__status dd {
-  display: flex;
-  border-radius: 8px;
-  display: flex;
-  align-items: stretch;
-
+  border-radius: 4px 8px 8px 4px;
+  position: relative;
   background-color: color-mix(in srgb, var(--statusColor, @cinza-medio) 15%, transparent);
+  padding-left: calc(0.25em + 8px);
+  padding-right: 0.25em;
 
   &::before {
     color: var(--statusColor, @cinza-medio);
-    margin-right: 0.25em;
     content: '';
     width: 8px;
-    flex-shrink: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    position: absolute;
     background-color: currentColor;
     display: block;
     border-radius: 8px;

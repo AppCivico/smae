@@ -544,16 +544,36 @@ watch(() => props.polígonos, (valorNovo) => {
 }
 
 .painel-flutuante {
-  width: 33.571429rem; //470px
-  padding: 1.071429rem; //15px
+  font-size: 0.857143rem;
+
+  min-width: min-content;
+  max-width: fit-content;
+  padding: 0.5em;
   box-shadow: 0px 6px 4.5px 0px #00000080;
   border-radius: 12px;
-  opacity: 1 !important;
   background-color: @branco;
   border: 2px solid @c400;
   font-weight: 500;
-  font-size: 1.285714rem;// 18px
-  line-height: 1.166667; //21
+
+  // larguras duplicadas no container. Por que? Não sei. Algum conflito com o
+  // cálculo de largura pelo plugin do Leaflet
+  @media screen and (min-width: 480px) {
+    width: 10em;
+  }
+
+  @media screen and (min-width: 800px) {
+    font-size: 1rem;
+    width: 15em;
+  }
+
+  @media screen and (min-width: 1024px) {
+    width: 25em;
+    padding: 0.75em 0.5em;
+  }
+
+  @media screen and (min-width: 1980px) {
+    font-size: 1.285714rem;
+  }
 
   &::before {
     content: none;
@@ -567,6 +587,8 @@ watch(() => props.polígonos, (valorNovo) => {
 
 .painel-flutuante__conteudo {
   white-space: normal;
+  max-width: fit-content;
+  width: 6em;
 
   :last-child {
     margin-bottom: 0;
@@ -574,33 +596,61 @@ watch(() => props.polígonos, (valorNovo) => {
 
   :only-child {
     margin-bottom: 0;
+
+    @media screen and (max-width: 1024px) {
+      padding-bottom: 0;
+      border: 0;
+    }
+  }
+
+  // larguras duplicadas no wrapper. Por que? Não sei. Algum conflito com o
+  // cálculo de largura pelo plugin do Leaflet
+  @media screen and (min-width: 480px) {
+    width: 10em;
+  }
+
+  @media screen and (min-width: 800px) {
+    width: 15em;
+  }
+
+  @media screen and (min-width: 1024px) {
+    width: 25em;
   }
 }
 
 .painel-flutuante__titulo {
   font-weight: 700;
-  font-size: 1.571429rem !important;
-  line-height: 1.181818; // 26px
-  margin-bottom: 15/14rem; // 15px
+  font-size: 1em;
+  margin-bottom: 0.75em;
   border-bottom: 1px solid @c300;
-  padding-bottom: 0.857143rem; // 12px
+  padding-bottom: calc(0.375em - 1px);
+
+  @media screen and (min-width: 1980px) {
+    font-size: 1.111111rem;
+  }
 }
 
 .painel-flutuante dl {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  position: relative;
-  gap: 1.785714rem 5.714286rem; // 25px 80px
+  grid-template-columns: 1fr;
+  gap: 1em 1.25em;
+  min-width: min-content;
+  font-size: 100%;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 1px;
-    height: 100%;
-    background-color: @c300;
+  @media screen and (min-width: 800px) {
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 100%;
+      background-color: @c300;
+    }
   }
 
   div {
@@ -608,16 +658,17 @@ watch(() => props.polígonos, (valorNovo) => {
   }
 
   dt {
-    font-weight: 300;
+    font-weight: 400;
     color: @cinza-medio;
-    margin-bottom: 0.285714rem; // 4px
-    font-size: 1.142857rem; // 16rem
-    line-height: 1.1875; // 19px
+    margin-bottom: 0.25em;
+    font-size: 100%;
   }
 
   dd {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 }
 </style>
