@@ -15,7 +15,7 @@ function nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: st
         meta: { coluna: 'titulo', chaves: ['metas'] },
         atividade: { coluna: 'titulo' },
         iniciativa: { coluna: 'titulo' },
-        orgao: { coluna: 'sigla', chaves: ['orgaos', 'orgao_gestor'] },
+        orgao: { coluna: 'sigla', chaves: ['orgaos', 'orgao_gestor', 'orgao_responsavel'] },
         portfolio: { coluna: 'titulo' },
         indicador: { coluna: 'titulo' },
         partido: { coluna: 'nome' },
