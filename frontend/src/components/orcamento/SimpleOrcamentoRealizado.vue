@@ -15,7 +15,8 @@ import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 
-const rota = useRoute();
+const route = useRoute();
+
 const gblLimiteDeSeleçãoSimultânea = inject('gblLimiteDeSeleçãoSimultânea');
 
 const emit = defineEmits(['apagar', 'editar']);
@@ -47,6 +48,10 @@ const { permissõesDoProjetoEmFoco } = storeToRefs(useProjetosStore());
 
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
+
+const permissoesDoItemEmFoco = computed(() => (route.params.entidadeMãe === 'obras'
+  ? permissõesDaObraEmFoco.value
+  : permissõesDoProjetoEmFoco.value));
 
 const linhasFiltradas = computed(() => (Array.isArray(OrcamentoRealizado.value[ano]) && órgãoEUnidadeSelecionados.value !== ''
   ? OrcamentoRealizado.value[ano]
@@ -126,7 +131,7 @@ async function excluirEmLote(ids) {
         órgãoEUnidadeSelecionados.value = '';
         linhasSelecionadas.value = [];
         alertStore.success(mensagem);
-        await OrcamentosStore.getOrcamentoRealizadoById(rota.params.meta_id, rota.query.aba);
+        await OrcamentosStore.getOrcamentoRealizadoById(route.params.meta_id, route.query.aba);
       }
     } catch (error) {
       alertStore.error(error);
@@ -151,8 +156,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 
         <div
           v-if="activePdm?.pode_editar
-            || !permissõesDaObraEmFoco?.apenas_leitura
-            || !permissõesDoProjetoEmFoco?.apenas_leitura"
+            || !permissoesDoItemEmFoco?.apenas_leitura"
         >
           <div
             v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
@@ -249,7 +253,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 
         <button
           v-if="podeExcluirEmLote && config?.execucao_disponivel &&
-            (activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
+            (activePdm?.pode_editar || !permissoesDoItemEmFoco?.apenas_leitura)"
           type="button"
           class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"
@@ -345,7 +349,8 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
               v-model="linhasSelecionadas"
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
-              :permissao="config.execucao_disponivel"
+              :permissao="config.execucao_disponivel
+                && !permissoesDoItemEmFoco?.apenas_leitura"
               :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
               :parentlink="parentlink"
             />
@@ -382,7 +387,8 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                 v-model="linhasSelecionadas"
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
-                :permissao="config.execucao_disponivel"
+                :permissao="config.execucao_disponivel
+                  && !permissoesDoItemEmFoco?.apenas_leitura"
                 :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                 :parentlink="parentlink"
               />
@@ -422,7 +428,8 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                   v-model="linhasSelecionadas"
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
-                  :permissao="config.execucao_disponivel"
+                  :permissao="config.execucao_disponivel
+                    && !permissoesDoItemEmFoco?.apenas_leitura"
                   :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                   :parentlink="parentlink"
                 />
