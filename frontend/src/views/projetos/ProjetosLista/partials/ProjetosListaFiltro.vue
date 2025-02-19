@@ -7,28 +7,6 @@ import statusObras from '@/consts/statusObras';
 import { useOrgansStore, usePortfolioStore } from '@/stores';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
-const ordenador = [
-  'nome',
-  'portfolio_id',
-  'orgao_responsavel_id',
-  'status',
-  'projeto_etapa_id',
-  // 'previsao_termino'
-].map((item) => {
-  if (!schema.fields[item]) {
-    console.error(`Item de ordenação ${item} não encontrado`);
-    return {
-      id: item,
-      label: item,
-    };
-  }
-
-  return {
-    id: item,
-    label: schema.fields[item].spec.label,
-  };
-});
-
 const mapaStatus = [
   'Registrado',
   'Selecionado',
@@ -64,6 +42,42 @@ const organResponsibles = computed(() => {
 });
 const portfolioLista = computed(() => portfolioStore.lista || []);
 const etapasLista = computed(() => etapasProjetosStore.lista || []);
+const ordenador = computed(() => {
+  const ordemIdMap = {
+    nome: 'nome',
+    portfolio_id: 'portfolio_titulo',
+    orgao_responsavel_id: 'orgao_origem_nome',
+    status: 'status',
+    projeto_etapa_id: 'projeto_etapa',
+  } as const;
+
+  const itemsParaFiltro = [
+    'nome',
+    'portfolio_id',
+    'orgao_responsavel_id',
+    'status',
+    'projeto_etapa_id',
+    // 'previsao_termino'
+  ] as const;
+
+  return itemsParaFiltro.map((item) => {
+    const id = ordemIdMap[item];
+
+    if (!schema.fields[item]) {
+      console.error(`Item de ordenação ${item} não encontrado`);
+
+      return {
+        id,
+        label: item,
+      };
+    }
+
+    return {
+      id,
+      label: schema.fields[item].spec.label,
+    };
+  });
+});
 
 const opcoesFormulario = computed(() => ({
   orgaos: organResponsibles.value.map((item) => ({
@@ -106,7 +120,7 @@ const campos = computed<Formulario>(() => [
   {
     class: 'maxw',
     campos: {
-      ordem_coluna: { class: 'fb0', tipo: 'select', opcoes: ordenador },
+      ordem_coluna: { class: 'fb0', tipo: 'select', opcoes: ordenador.value },
       ordem_direcao: { class: 'fb0', tipo: 'select', opcoes: [{ id: 'asc', label: 'Crescente' }, { id: 'desc', label: 'Decrescente' }] },
       ipp: { class: 'fb0', tipo: 'select', opcoes: [10, 25, 50, 100] },
     },
