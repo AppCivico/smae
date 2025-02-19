@@ -320,7 +320,6 @@ watchEffect(() => {
     <MapaExibir
       v-if="marcadoresDasEtapas.length"
       :geo-json="marcadoresDasEtapas"
-      :opcoes-do-painel-flutuante="{ permanent: true }"
       class="mb2"
       zoom="16"
     />

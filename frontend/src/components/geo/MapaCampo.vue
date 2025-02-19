@@ -612,7 +612,6 @@ const formularioSujo = useIsFormDirty();
             v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
-            :opcoes-do-painel-flutuante="{ permanent: true }"
             class="mb1"
             :latitude="marcador[0]"
             :longitude="marcador[1]"

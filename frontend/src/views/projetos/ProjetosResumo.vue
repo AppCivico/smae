@@ -234,7 +234,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <MapaExibir
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
-        :opcoes-do-painel-flutuante="{ permanent: true }"
         class="mb1"
         :opções-do-polígono="{
           fill: true,
