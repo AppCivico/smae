@@ -82,31 +82,35 @@ async function checkDelete({ id, descricao }) {
             <td>{{ item.descricao }}</td>
             <td>{{ item.sigla }}</td>
             <td class="tr">
-                <router-link
-                  v-if="perm?.CadastroUnidadeMedida?.editar"
-                  :to="{
-                    name: 'unidadeMedida.editar',
-                    params: { id: item.id }
-                  }"
-                  class="tprimary"
+              <router-link
+                v-if="perm?.CadastroUnidadeMedida?.editar"
+                :to="{
+                  name: 'unidadeMedida.editar',
+                  params: { id: item.id }
+                }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_edit" /></svg>
-                </router-link>
+                  <use xlink:href="#i_edit" />
+                </svg>
+              </router-link>
 
-                <button
-                  v-if="perm?.CadastroUnidadeMedida.remover"
-                  class="ml1 like-a__text"
-                  @click="checkDelete(item)"
+              <button
+                v-if="perm?.CadastroUnidadeMedida.remover"
+                class="ml1 like-a__text"
+                @click="checkDelete(item)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  class="blue"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    class="blue"
-                  ><use xlink:href="#i_waste" /></svg>
-                </button>
+                  <use xlink:href="#i_waste" />
+                </svg>
+              </button>
             </td>
           </tr>
         </template>

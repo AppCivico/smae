@@ -116,7 +116,7 @@ function filterItems() {
               </router-link>
 
               <button
-                v-if="perm?.CadastroUnidadeMedida.remover"
+                v-if="perm?.CadastroTipoDocumento.remover"
                 class="ml1 like-a__text"
                 @click="checkDelete(item)"
               >
