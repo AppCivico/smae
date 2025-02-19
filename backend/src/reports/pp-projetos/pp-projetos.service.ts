@@ -479,8 +479,8 @@ export class PPProjetosService implements ReportableService {
                     AND: perms,
                     // reduz o número de linhas pra não virar um "IN" gigante
                     portfolio_id: filters.portfolio_id,
-                    codigo: filters.codigo,
-                    status: filters.status,
+                    codigo: filters.codigo ?? undefined,
+                    status: filters.status ?? undefined,
                     removido_em: null,
                 },
                 select: { id: true },
