@@ -18,7 +18,6 @@ import {
 } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
-import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 export class FilterProjetoDto {

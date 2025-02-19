@@ -53,18 +53,6 @@ export class AtividadeController {
 
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
-    @Get('relacionados')
-    @Roles(MetaSetorialController.ReadPerm)
-    async buscaRelacionados(
-        @Query() dto: FilterRelacionadosDTO,
-        @CurrentUser() user: PessoaFromJwt,
-        @TipoPDM() tipo: TipoPdmType
-    ): Promise<RelacionadosDTO> {
-        return await this.atividadeService.metaService.buscaRelacionados(tipo, dto, user);
-    }
-
-    @ApiBearerAuth('access-token')
-    @ApiNotFoundResponse()
     @Get(':id')
     @Roles(MetaController.ReadPerm)
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<AtividadeDto> {
@@ -120,6 +108,18 @@ export class AtividadeSetorialController {
         @TipoPDM() tipo: TipoPdmType
     ): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(tipo, filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get('relacionados')
+    @Roles(MetaSetorialController.ReadPerm)
+    async buscaRelacionados(
+        @Query() dto: FilterRelacionadosDTO,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RelacionadosDTO> {
+        return await this.atividadeService.metaService.buscaRelacionados(tipo, dto, user);
     }
 
     @ApiBearerAuth('access-token')
