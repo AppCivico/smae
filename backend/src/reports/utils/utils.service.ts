@@ -166,7 +166,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         default:
             fonte satisfies never;
     }
-    const validatorObject = plainToInstance(theClass, value);
+    const validatorObject = plainToInstance(theClass, value, {
+        excludeExtraneousValues: true,
+    });
 
     return validatorObject;
 }

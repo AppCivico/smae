@@ -278,7 +278,6 @@ export class PPProjetosService implements ReportableService {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_projetos);
-        await this.queryDataCronograma(whereCond, out_cronogramas);
         await this.queryDataRiscos(whereCond, out_riscos);
         await this.queryDataPlanosAcao(whereCond, out_planos_acao);
         await this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao);
@@ -288,6 +287,8 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataProjetosGeoloc(whereCond, out_enderecos);
+
+        await this.queryDataCronograma(whereCond, out_cronogramas);
 
         return {
             linhas: out_projetos,
@@ -813,8 +814,12 @@ export class PPProjetosService implements ReportableService {
 
         await this.putRowsCronogramaInto(data, out);
     }
-
     private async putRowsCronogramaInto(input: RetornoDbCronograma[], out: RelProjetosCronogramaDto[]) {
+        const projetoChecked = new Set<number>();
+
+        // Cache de tarefasHierarquia results por projeto_id
+        const tarefasHierarquiaCache: Record<number, Record<string, string>> = {};
+
         for (const db of input) {
             interface dependenciaRow {
                 id: number;
@@ -822,25 +827,38 @@ export class PPProjetosService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
+            if (!projetoChecked.has(db.projeto_id)) {
+                projetoChecked.add(db.projeto_id);
+                await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
+            }
 
-            const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
-                where: {
-                    projeto_id: db.projeto_id,
-                    removido_em: null,
-                },
-                select: { id: true },
-            });
+            let tarefasHierarquia: Record<string, string>;
 
-            let tarefasHierarquia: Record<string, string> = {};
-            if (tarefaCronoId) tarefasHierarquia = await this.tarefasService.tarefasHierarquia(tarefaCronoId.id);
+            if (tarefasHierarquiaCache[db.projeto_id]) {
+                tarefasHierarquia = tarefasHierarquiaCache[db.projeto_id];
+            } else {
+                const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
+                    where: {
+                        projeto_id: db.projeto_id,
+                        removido_em: null,
+                    },
+                    select: { id: true },
+                });
+
+                if (tarefaCronoId) {
+                    tarefasHierarquia = await this.tarefasService.tarefasHierarquia(tarefaCronoId.id);
+                    tarefasHierarquiaCache[db.projeto_id] = tarefasHierarquia;
+                } else {
+                    tarefasHierarquia = {};
+                }
+            }
 
             out.push({
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 tarefa_id: db.id,
                 hirearquia: tarefasHierarquia[db.id],
-                numero: db.numero,
+                numero: db.nivel,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
                 inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
