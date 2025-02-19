@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import {
+  computed, onBeforeMount, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
@@ -17,8 +19,7 @@ const route = useRoute();
 const projetosStore = useProjetosStore();
 const authStore = useAuthStore();
 
-const { ultimoVisitado } = storeToRefs(projetosStore);
-
+const ultimoVisitado = ref<number | null>(null);
 const { paginacaoProjetos } = storeToRefs(projetosStore);
 
 const listaDeProjetos = computed(() => projetosStore.listaV2);
@@ -50,6 +51,10 @@ async function handleDeletarItem({ id }) {
 watch(() => route.query, () => {
   atualizarDados();
 }, { immediate: true });
+
+onBeforeMount(() => {
+  ultimoVisitado.value = projetosStore.getUltimoVisitado();
+});
 </script>
 
 <template>

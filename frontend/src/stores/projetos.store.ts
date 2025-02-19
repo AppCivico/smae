@@ -390,6 +390,9 @@ export const useProjetosStore = defineStore('projetos', {
         return false;
       }
     },
+    getUltimoVisitado() {
+      return Number(sessionStorage.getItem('projetos.ultimoVisitado')) || null;
+    },
   },
   getters: {
     itemParaEdicao: ({ emFoco, route }) => ({
