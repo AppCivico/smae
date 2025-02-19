@@ -14,7 +14,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput,   ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelObrasDto } from './dto/create-obras.dto';
 import {
     PPObrasRelatorioDto,
@@ -741,7 +741,7 @@ export class PPObrasService implements ReportableService {
                 return { whereString: 'WHERE false', queryParams: [] };
             }
 
-            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+            whereConditions.push(`projeto.id IN (SELECT unnest($${paramIndex}::int[]))`);
             queryParams.push(allowed.map((n) => n.id));
             paramIndex++;
         }
