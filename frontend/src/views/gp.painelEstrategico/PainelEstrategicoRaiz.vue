@@ -41,12 +41,12 @@ type Endereco = {
 const regiaoPadrao = 180;
 const nivelRegionalizacaoPadrao = 3;
 
-const strokeColor = '#660000';
+const strokeColor = '#152741';
 const opacidadePreenchimento = 0.35;
 const espessuraDoFio = 3;
 
-const corParaMaximo = '#511515';
-const corParaMinimo = '#ffd29e';
+const corParaMaximo = '#003185'; // opção 4
+const corParaMinimo = '#d6e3ff'; // opção 4
 const route = useRoute();
 const router = useRouter();
 
