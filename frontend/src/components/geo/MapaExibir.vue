@@ -57,6 +57,12 @@ let marcadorNoMapa = null;
 const polígonosNoMapa = [];
 const geoJsonsNoMapa = [];
 
+const grupoDeElementosNoMapa = () => L.featureGroup(
+  []
+    .concat(polígonosNoMapa)
+    .concat(geoJsonsNoMapa),
+);
+
 const elementoPainelFlutuante = ref(null);
 const conteudoPainelFlutuante = ref(null);
 const elementoMapa = ref(null);
@@ -333,8 +339,7 @@ function prepararGeoJsonS(items) {
       mapa.addLayer(grupoDeMarcadores);
     }
 
-    const grupo = L.featureGroup(geoJsonsNoMapa);
-    mapa.fitBounds(grupo.getBounds());
+    mapa.fitBounds(grupoDeElementosNoMapa().getBounds());
   }
 }
 
@@ -448,6 +453,10 @@ async function iniciarMapa(element) {
     criarMarcadores([props.marcador]);
   }
 
+  if (props.marcadores?.length) {
+    criarMarcadores(props.marcadores);
+  }
+
   if (props.geoJson) {
     if (Array.isArray(props.geoJson)) {
       prepararGeoJsonS(props.geoJson);
@@ -480,7 +489,11 @@ function removerMapa() {
 const observer = new IntersectionObserver((entries) => {
   if (!mapa) {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
-      iniciarMapa(elementoMapa.value);
+      iniciarMapa(elementoMapa.value).then((foo) => {
+        nextTick(() => {
+          mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+        });
+      });
     }
   }
 }, { threshold: [0.25] });
@@ -490,6 +503,12 @@ useResizeObserver(elementoMapa, debounce(async (entries) => {
   const { height } = entry.contentRect;
 
   alturaCorrente.value = `${height}px`;
+
+  nextTick(() => {
+    if (mapa) {
+      mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+    }
+  });
 }, 400));
 
 onMounted(() => {
