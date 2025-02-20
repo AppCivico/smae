@@ -723,7 +723,10 @@ export class PPObrasService implements ReportableService {
 
         if (user) {
             const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
-
+            console.log('=========================');
+            console.log(filters);
+            console.log(perms);
+            console.log('=========================');
             const allowed = await this.prisma.projeto.findMany({
                 where: {
                     AND: perms,
@@ -736,6 +739,18 @@ export class PPObrasService implements ReportableService {
                 },
                 select: { id: true },
             });
+
+            const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
+                where: {
+                    projeto: {
+                        AND: perms,
+                    },
+                    removido_em: null,
+                    portfolio_id: filters.portfolio_id,
+                },
+                select: { projeto_id: true },
+            });
+            allowed.push(...allowed_shared.map((n) => ({ id: n.projeto_id })));
 
             if (allowed.length === 0) {
                 return { whereString: 'WHERE false', queryParams: [] };
