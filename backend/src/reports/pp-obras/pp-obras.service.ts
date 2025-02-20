@@ -723,10 +723,7 @@ export class PPObrasService implements ReportableService {
 
         if (user) {
             const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
-            console.log('=========================');
-            console.log(filters);
-            console.log(perms);
-            console.log('=========================');
+
             const allowed = await this.prisma.projeto.findMany({
                 where: {
                     AND: perms,
@@ -756,7 +753,7 @@ export class PPObrasService implements ReportableService {
                 return { whereString: 'WHERE false', queryParams: [] };
             }
 
-            whereConditions.push(`projeto.id IN (SELECT unnest($${paramIndex}::int[]))`);
+            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
             queryParams.push(allowed.map((n) => n.id));
             paramIndex++;
         }
