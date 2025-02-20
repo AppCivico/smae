@@ -765,11 +765,11 @@ export class PPObrasService implements ReportableService {
             paramIndex++;
         }
 
-        if (filters.portfolio_id) {
-            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
-            queryParams.push(filters.portfolio_id);
-            paramIndex++;
-        }
+        //if (filters.portfolio_id) {
+        //    whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
+        //    queryParams.push(filters.portfolio_id);
+        //    paramIndex++;
+        //}
 
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
