@@ -91,9 +91,9 @@ async function salvarTransferencia(cargaManipulada) {
     }
 
     if (props.transferenciaId) {
-      r = await TransferenciasVoluntarias.salvarItem(valoresFiltados, props.transferenciaId);
+      r = await TransferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId);
     } else {
-      r = await TransferenciasVoluntarias.salvarItem(valoresFiltados);
+      r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
     if (r) {
       TransferenciasVoluntarias.buscarItem(r.id);
