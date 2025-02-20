@@ -77,17 +77,18 @@ const classificacoesDisponiveis = computed(() => (values.tipo_id
   ? classificacaoComoLista.value.filter((x) => x.transferencia_tipo_id === values.tipo_id)
   : []));
 
-async function salvarTransferencia({ parlamentares = [], ...cargaManipulada }) {
+async function salvarTransferencia(cargaManipulada) {
   try {
     let r;
     const msg = props.transferenciaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const valoresFiltados = {
-      ...cargaManipulada,
-      parlamentares: parlamentares.filter((item) => item.parlamentar_id),
-    };
+    if (cargaManipulada.parlamentares) {
+      cargaManipulada.parlamentares = cargaManipulada.parlamentares.filter(
+        (item) => item.parlamentar_id,
+      );
+    }
 
     if (props.transferenciaId) {
       r = await TransferenciasVoluntarias.salvarItem(valoresFiltados, props.transferenciaId);
