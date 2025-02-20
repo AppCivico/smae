@@ -562,6 +562,11 @@ watch(() => props.polígonos, (valorNovo) => {
   }
 }
 
+.leaflet-interactive:focus {
+  outline: 0;
+  stroke-opacity: 0.85;
+}
+
 .painel-flutuante {
   font-size: 0.857143rem;
 
