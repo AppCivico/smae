@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FonteRelatorio } from '@prisma/client';
+import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { MetasGetPermissionSet } from '../../meta/meta.service';
@@ -190,3 +190,16 @@ export const DefaultCsvOptions = {
     eol: '\r\n',
     withBOM: false, // dont be evil!
 };
+
+export function EnumHumano(enumType: typeof ParlamentarCargo | typeof TipoRelatorio, value: string): string {
+    if (enumType === ParlamentarCargo) {
+        if (value === 'DeputadoFederal') return 'Deputado Federal';
+        if (value === 'DepudatoEstadual') return 'Deputado Estadual';
+    }
+
+    if (enumType === TipoRelatorio) {
+        if (value === 'Analitico') return 'Analítico';
+    }
+
+    return value;
+}
