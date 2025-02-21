@@ -423,6 +423,11 @@ export class ReportsService {
                     arquivo: r.arquivo_id
                         ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
                         : null,
+                    processamento: r.processamento
+                        ? {
+                              ...r.processamento[0],
+                          }
+                        : null,
                 } satisfies RelatorioDto;
             }),
             tem_mais: tem_mais,

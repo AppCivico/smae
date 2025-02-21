@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RelatorioVisibilidade } from '@prisma/client';
+import { IsEnum } from 'class-validator';
 
 export class RelatorioParamDto {
     filtro: string;
@@ -17,7 +18,9 @@ export class RelatorioDto {
     err_msg: string | null;
     // TODO: Remover isso aqui e mandar só enum de visibilidade.
     eh_publico: boolean;
+    @IsEnum(RelatorioVisibilidade)
     visibilidade: RelatorioVisibilidade;
+    processamento: any;
     @ApiProperty({
         type: RelatorioParamDto,
         isArray: true,
