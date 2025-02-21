@@ -49,19 +49,6 @@ export const useIniciativasStore = defineStore({
         return false;
       }
     },
-    async getRelacionados(params) {
-      try {
-        if (params.iniciativa_id) {
-          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
-          this.relacionadosIniciativa = response;
-          return true;
-        }
-        throw new Error('ID do PdM ou iniciativa não fornecido.');
-      } catch (error) {
-        this.relacionadosIniciativa = { error };
-        return false;
-      }
-    },
     async getById(meta_id, iniciativa_id) {
       try {
         if (!meta_id) {

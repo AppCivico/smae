@@ -47,19 +47,6 @@ export const useAtividadesStore = defineStore({
         return false;
       }
     },
-    async getRelacionados(params) {
-      try {
-        if (params.atividade_id) {
-          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
-          this.relacionadosAtividade = response;
-          return true;
-        }
-        throw new Error('ID do PdM ou atividade não fornecido.');
-      } catch (error) {
-        this.relacionadosAtividade = { error };
-        return false;
-      }
-    },
     async getById(iniciativa_id, atividade_id) {
       try {
         if (!iniciativa_id) throw 'Iniciativa inválida';
