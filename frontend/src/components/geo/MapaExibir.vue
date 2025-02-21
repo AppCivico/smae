@@ -225,6 +225,7 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
     item.bindTooltip(conteudo, {
       direction: 'auto',
       className: 'painel-flutuante',
+      sticky: true,
       ...props.opcoesDoPainelFlutuante,
       ...opcoes,
     });
@@ -569,6 +570,7 @@ watch(() => props.polígonos, (valorNovo) => {
 
 .painel-flutuante {
   font-size: 0.857143rem;
+  width: 6em;
 
   min-width: min-content;
   max-width: fit-content;
