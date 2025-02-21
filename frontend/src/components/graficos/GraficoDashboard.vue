@@ -13,7 +13,7 @@
 import {
   defineProps, provide, ref, computed,
 } from 'vue';
-
+import type { ECBasicOption } from 'echarts/types/dist/shared';
 import { BarChart, LineChart, HeatmapChart } from 'echarts/charts';
 import {
   GridComponent,
@@ -49,7 +49,7 @@ use([
 provide(THEME_KEY, 'light');
 
 const props = withDefaults(defineProps<{
-  option: object,
+  option: ECBasicOption,
   tooltipTemplate?:(params: TooltipOptions) => string
 }>(), {
   option: () => ({}),
@@ -58,7 +58,7 @@ const props = withDefaults(defineProps<{
 
 const el = ref(null);
 
-const preparedOptions = computed(() => {
+const preparedOptions = computed((): ECBasicOption => {
   const { tooltipTemplate } = props;
   if (!tooltipTemplate) {
     return props.option;
