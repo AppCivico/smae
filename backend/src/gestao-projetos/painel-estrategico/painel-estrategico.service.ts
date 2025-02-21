@@ -831,6 +831,7 @@ export class PainelEstrategicoService {
                                                             inner join projeto p on p.id = vp.id
                                                    where p.tipo = 'PP'
                                                      and p.removido_em is null
+                                                     and orcr.removido_em is null
                                                    group by vp.nome, vp.id) orc on orc.projeto_id = p.id
                                                    ${whereFilter}`)) as any;
         const body = {
