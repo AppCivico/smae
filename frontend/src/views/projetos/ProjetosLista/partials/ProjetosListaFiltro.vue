@@ -44,10 +44,8 @@ const portfolioLista = computed(() => portfolioStore.lista || []);
 const etapasLista = computed(() => etapasProjetosStore.lista || []);
 const ordenador = computed(() => {
   const ordemIdMap = {
-    nome: 'nome',
     portfolio_id: 'portfolio_titulo',
     orgao_responsavel_id: 'orgao_origem_nome',
-    status: 'status',
     projeto_etapa_id: 'projeto_etapa',
   } as const;
 
@@ -57,11 +55,12 @@ const ordenador = computed(() => {
     'orgao_responsavel_id',
     'status',
     'projeto_etapa_id',
-    // 'previsao_termino'
+    'previsao_custo',
+    'previsao_termino',
   ] as const;
 
   return itemsParaFiltro.map((item) => {
-    const id = ordemIdMap[item];
+    const id = ordemIdMap[item] || item;
 
     if (!schema.fields[item]) {
       console.error(`Item de ordenação ${item} não encontrado`);

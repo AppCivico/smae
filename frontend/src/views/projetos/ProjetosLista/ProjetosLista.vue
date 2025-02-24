@@ -87,9 +87,9 @@ onBeforeMount(() => {
           :colunas="[
             { chave: 'nome', label: 'Nome do Projeto' },
             { chave: 'portfolio.titulo', label: 'Portfólio' },
-            { chave: 'orgao_responsavel.descricao', label: 'Órgão Responsável' },
+            { chave: 'orgao_responsavel.sigla', label: 'Órgão Responsável' },
             { chave: 'status', label: 'Status' },
-            { chave: 'projeto_etapa', label: 'Etapa' },
+            { chave: 'projeto_etapa', label: 'Etapa Atual' },
             { chave: 'previsao_termino', label: 'Término Planejado' },
             { chave: 'previsao_custo', label: 'Custo Total Planejado' },
             { chave: 'revisado', label: 'Revisado' },
@@ -115,10 +115,12 @@ onBeforeMount(() => {
             </button>
           </template>
 
-          <template #['celula:nome']="{ linha }">
-            <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
-              {{ linha.nome }}
-            </SmaeLink>
+          <template #['celula-fora:nome']="{ linha }">
+            <th>
+              <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
+                {{ linha.nome }}
+              </SmaeLink>
+            </th>
           </template>
 
           <template #['celula:orgao_responsavel.descricao']="{ linha }">
@@ -134,7 +136,9 @@ onBeforeMount(() => {
           </template>
 
           <template #celula:previsao_custo="{ linha }">
-            {{ dinheiro(linha.previsao_custo) || '-' }}
+            <div class="tr">
+              {{ dinheiro(linha.previsao_custo) || '-' }}
+            </div>
           </template>
 
           <template #celula:revisado="{ linha }">

@@ -2665,18 +2665,12 @@ export const projeto = object()
   });
 
 export const projetoFiltro = object().shape({
-  registrado_em: date()
-    .label('data de registro')
-    .max(new Date())
-    .nullableOuVazio(),
-  projeto_etapa_id: number()
-    .label('Etapa')
-    .nullableOuVazio(),
   ipp: number()
     .label('Itens por página')
     .nullableOuVazio(),
   nome: string()
-    .label('Nome').nullableOuVazio(),
+    .label('Nome')
+    .nullableOuVazio(),
   ordem_coluna: string()
     .label('Ordenar por')
     .nullableOuVazio(),
@@ -2692,6 +2686,17 @@ export const projetoFiltro = object().shape({
     .nullableOuVazio(),
   portfolio_id: number()
     .label('Portfólio')
+    .nullableOuVazio(),
+  previsao_custo: string()
+    .label('Custo planejado'),
+  previsao_termino: string()
+    .label('Término planejado'),
+  projeto_etapa_id: number()
+    .label('Etapa')
+    .nullableOuVazio(),
+  registrado_em: date()
+    .label('data de registro')
+    .max(new Date())
     .nullableOuVazio(),
   revisado: boolean()
     .label('Revisado')
