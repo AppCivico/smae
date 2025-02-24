@@ -50,7 +50,11 @@ SELECT
   case
         when custoPrev.total_custo_previsto::float is null then '-infinity'::float
         else custoPrev.total_custo_previsto::float
-    end as previsao_custo_fake
+    end as previsao_custo_fake,
+    case
+        when cp.previsao_termino is null then '-infinity'::timestamp
+        else cp.previsao_termino
+    end AS previsao_termino_fake
 FROM projeto AS p
 JOIN portfolio port ON p.portfolio_id = port.id
 LEFT JOIN tarefa_cronograma cp ON p.id = cp.projeto_id AND cp.removido_em IS NULL

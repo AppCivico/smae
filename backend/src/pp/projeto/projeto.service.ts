@@ -280,10 +280,10 @@ const getOrderByConfigView = (
 
     switch (ordem_coluna) {
         case 'previsao_custo':
-            return [{ previsao_custo_fake: direction, }, { codigo: 'asc' }];
+            return [{ previsao_custo_fake: direction }, { codigo: 'asc' }];
 
         case 'previsao_termino':
-            return [{ previsao_termino: direction }, { codigo: 'asc' }];
+            return [{ previsao_termino_fake: direction }, { codigo: 'asc' }];
 
         default:
             throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);

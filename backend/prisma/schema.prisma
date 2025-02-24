@@ -3945,11 +3945,12 @@ view ViewProjetoV2 {
 
     regioes String
 
-    previsao_custo      Float?
-    previsao_custo_fake Float // Apenas para ordenação, sempre existe nem que seja -Inf
-    previsao_termino    DateTime? @db.Date
-    projeto_etapa       String?
-    orgao_gestor_id     Int?
+    previsao_custo        Float?
+    previsao_custo_fake   Float // Apenas para ordenação, sempre existe nem que seja -Inf
+    previsao_termino      DateTime? @db.Date
+    previsao_termino_fake DateTime  @db.Date
+    projeto_etapa         String?
+    orgao_gestor_id       Int?
 
     orgao_responsavel_id        Int?
     orgao_responsavel           Orgao?  @relation("orgao_responsavel", fields: [orgao_responsavel_id], references: [id])
