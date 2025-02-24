@@ -3099,6 +3099,7 @@ export class VariavelService {
                 if (ehAdminNoOrgao && variavel.orgao_proprietario_id !== orgao_id) {
                     throw new HttpException('Você não pode editar variáveis de outro órgão proprietário.', 400);
                 }
+                if (ehAdminNoOrgao) continue;
 
                 const variavelEquipes = variavel.VariavelGrupoResponsavelEquipe.filter(
                     (g) =>
