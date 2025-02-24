@@ -14,7 +14,7 @@ export class PsMonitoramentoMensalController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['Reports.executar.PlanoSetorial'])
+    @Roles(['Reports.executar.PlanoSetorial', 'Reports.executar.ProgramaDeMetas'])
     async create(
         @Body() createOrcamentoExecutadoDto: CreatePsMonitoramentoMensalFilterDto,
         @CurrentUser() user: PessoaFromJwt
