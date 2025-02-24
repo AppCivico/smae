@@ -268,6 +268,32 @@ export const ProjetoGetPermissionSet = async (
     return permissionsBaseSet;
 };
 
+const getOrderByConfigView = (
+    ordem_coluna: string,
+    ordem_direcao: 'asc' | 'desc'
+): Prisma.Enumerable<Prisma.ViewProjetoV2OrderByWithRelationInput> => {
+    if (ordem_coluna === 'regioes') {
+        throw new BadRequestException('Ordenação por regiões não é mais suportada');
+    }
+
+    const direction = ordem_direcao === 'asc' ? 'asc' : 'desc';
+
+    switch (ordem_coluna) {
+        case 'previsao_custo':
+            return [{ previsao_custo: direction }, { codigo: 'asc' }];
+
+        case 'previsao_termino':
+            return [{ previsao_termino: direction }, { codigo: 'asc' }];
+
+        default:
+            throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
+    }
+};
+
+const isOrderByConfigView = (ordem_coluna: string): boolean => {
+    return ordem_coluna.startsWith('previsao_custo') || ordem_coluna.startsWith('previsao_termino');
+};
+
 const getOrderByConfig = (
     ordem_coluna: string,
     ordem_direcao: 'asc' | 'desc'
@@ -303,6 +329,7 @@ const getOrderByConfig = (
         case 'projeto_etapa':
         case 'projeto_etapa_id':
             return [{ projeto_etapa: { descricao: direction } }, { codigo: 'asc' }];
+
         default:
             return [{ codigo: 'asc' }];
     }
@@ -1110,16 +1137,32 @@ export class ProjetoService {
         const permissionsSet = await ProjetoGetPermissionSet('MDO', user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
-        const projetoIds = await this.prisma.projeto.findMany({
-            where: {
-                registrado_em: { lte: now },
-                AND: [...permissionsSet, ...filterSet],
-            },
-            select: { id: true },
-            orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
-            skip: offset,
-            take: ipp,
-        });
+        let projetoIds;
+        if (isOrderByConfigView(filters.ordem_coluna)) {
+            projetoIds = await this.prisma.viewProjetoV2.findMany({
+                where: {
+                    projeto: {
+                        registrado_em: { lte: now },
+                        AND: [...permissionsSet, ...filterSet],
+                    },
+                },
+                select: { id: true },
+                orderBy: getOrderByConfigView(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        } else {
+            projetoIds = await this.prisma.projeto.findMany({
+                where: {
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
+                },
+                select: { id: true },
+                orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        }
 
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
@@ -1239,16 +1282,32 @@ export class ProjetoService {
         const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
-        const projetoIds = await this.prisma.projeto.findMany({
-            where: {
-                registrado_em: { lte: now },
-                AND: [...permissionsSet, ...filterSet],
-            },
-            select: { id: true },
-            orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
-            skip: offset,
-            take: ipp,
-        });
+        let projetoIds;
+        if (isOrderByConfigView(filters.ordem_coluna)) {
+            projetoIds = await this.prisma.viewProjetoV2.findMany({
+                where: {
+                    projeto: {
+                        registrado_em: { lte: now },
+                        AND: [...permissionsSet, ...filterSet],
+                    },
+                },
+                select: { id: true },
+                orderBy: getOrderByConfigView(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        } else {
+            projetoIds = await this.prisma.projeto.findMany({
+                where: {
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
+                },
+                select: { id: true },
+                orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        }
 
         const linhas = await this.prisma.viewProjetoV2.findMany({
             where: {
