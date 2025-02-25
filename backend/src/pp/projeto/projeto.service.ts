@@ -280,10 +280,10 @@ const getOrderByConfigView = (
 
     switch (ordem_coluna) {
         case 'previsao_custo':
-            return [{ previsao_custo_fake: direction }, { codigo: 'asc' }];
+            return [{ previsao_custo: direction, nulls: 'last' }, { codigo: 'asc' }];
 
         case 'previsao_termino':
-            return [{ previsao_termino_fake: direction }, { codigo: 'asc' }];
+            return [{ previsao_termino: direction, nulls: 'last' }, { codigo: 'asc' }];
 
         default:
             throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
@@ -310,28 +310,28 @@ const getOrderByConfig = (
         case 'codigo':
         case 'status':
         case 'registrado_em':
-            return [{ [ordem_coluna]: direction }, { codigo: 'asc' }];
+            return [{ [ordem_coluna]: direction, nulls: 'last' }, { codigo: 'asc' }];
 
         case 'portfolio_titulo':
-            return [{ portfolio: { titulo: direction } }, { codigo: 'asc' }];
+            return [{ portfolio: { titulo: direction, nulls: 'last' } }, { codigo: 'asc' }];
 
         case 'grupo_tematico_nome':
-            return [{ grupo_tematico: { nome: direction } }, { codigo: 'asc' }];
+            return [{ grupo_tematico: { nome: direction, nulls: 'last' } }, { codigo: 'asc' }];
 
         case 'tipo_intervencao_nome':
-            return [{ tipo_intervencao: { nome: direction } }, { codigo: 'asc' }];
+            return [{ tipo_intervencao: { nome: direction, nulls: 'last' } }, { codigo: 'asc' }];
 
         case 'equipamento_nome':
-            return [{ equipamento: { nome: direction } }, { codigo: 'asc' }];
+            return [{ equipamento: { nome: direction, nulls: 'last' } }, { codigo: 'asc' }];
 
         case 'orgao_origem_nome':
-            return [{ orgao_origem: { descricao: direction } }, { codigo: 'asc' }];
+            return [{ orgao_origem: { descricao: direction, nulls: 'last' } }, { codigo: 'asc' }];
         case 'projeto_etapa':
         case 'projeto_etapa_id':
-            return [{ projeto_etapa: { descricao: direction } }, { codigo: 'asc' }];
+            return [{ projeto_etapa: { descricao: direction, nulls: 'last' } }, { codigo: 'asc' }];
 
         default:
-            return [{ codigo: 'asc' }];
+            throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
     }
 };
 
