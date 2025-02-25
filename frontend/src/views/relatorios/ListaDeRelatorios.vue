@@ -93,7 +93,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TítuloDePágina />
     <router-link
       v-if="temPermissãoPara('Reports.executar.')"
@@ -102,7 +102,7 @@ onUnmounted(() => {
     >
       Novo relatório
     </router-link>
-  </div>
+  </header>
   <SmaeTable
     class="mt2"
     :dados="relatóriosStore.lista"
