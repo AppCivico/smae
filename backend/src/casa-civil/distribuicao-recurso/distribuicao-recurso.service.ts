@@ -92,9 +92,6 @@ export class DistribuicaoRecursoService {
                         );
                 }
 
-                // Valor do repasse não pode ser zero
-                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser zero.', 400);
-
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
                     throw new HttpException(
@@ -294,7 +291,8 @@ export class DistribuicaoRecursoService {
                         const rowParlamentarTransf = parlamentaresNaTransf.find(
                             (e) => e.parlamentar_id == novaRow.parlamentar_id
                         );
-                        if (!rowParlamentarTransf) throw new InternalServerErrorException('Erro em verificar valores na transferência.');
+                        if (!rowParlamentarTransf)
+                            throw new InternalServerErrorException('Erro em verificar valores na transferência.');
                         const valorNaTransf = rowParlamentarTransf.valor ?? 0;
 
                         if (valorNaTransf == 0)
@@ -1012,8 +1010,6 @@ export class DistribuicaoRecursoService {
                 }
                 delete dto.registros_sei;
 
-                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser zero.', 400);
-
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
                     throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
 
@@ -1313,7 +1309,8 @@ export class DistribuicaoRecursoService {
                         const rowParlamentarTransf = parlamentaresNaTransf.find(
                             (e) => e.parlamentar_id == relParlamentar.parlamentar_id
                         );
-                        if (!rowParlamentarTransf) throw new InternalServerErrorException('Erro em verificar valores na transferência.');
+                        if (!rowParlamentarTransf)
+                            throw new InternalServerErrorException('Erro em verificar valores na transferência.');
                         const valorNaTransf = rowParlamentarTransf.valor ?? 0;
                         if (valorNaTransf == 0 && relParlamentar.valor != null && relParlamentar.valor > 0)
                             throw new HttpException(
@@ -1793,7 +1790,9 @@ export class DistribuicaoRecursoService {
                 },
             });
             if (tarefasExistentes.length == 0)
-                throw new InternalServerErrorException('Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.');
+                throw new InternalServerErrorException(
+                    'Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.'
+                );
 
             let tarefa_pai_id: number | undefined;
             let numero: number = 1;
@@ -1950,7 +1949,8 @@ export class DistribuicaoRecursoService {
                     },
                 });
 
-                if (!tarefaFilha) throw new InternalServerErrorException('Erro ao encontrar tarefa filha para base de projeção.');
+                if (!tarefaFilha)
+                    throw new InternalServerErrorException('Erro ao encontrar tarefa filha para base de projeção.');
 
                 updates.push(
                     prismaTxn.tarefa.update({
@@ -1976,7 +1976,8 @@ export class DistribuicaoRecursoService {
                         db_projecao_termino: true,
                     },
                 });
-                if (!tarefaIrma) throw new InternalServerErrorException('Erro ao encontrar tarefa filha para base de projeção.');
+                if (!tarefaIrma)
+                    throw new InternalServerErrorException('Erro ao encontrar tarefa filha para base de projeção.');
 
                 updates.push(
                     prismaTxn.tarefa.update({

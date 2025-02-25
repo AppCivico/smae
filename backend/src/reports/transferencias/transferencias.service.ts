@@ -282,7 +282,7 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.orgao_gestor_id) {
-            whereConditions.push(`dt.orgao_gestor_id = $${paramIndex}`);
+            whereConditions.push(`dr.orgao_gestor_id = $${paramIndex}`);
             queryParams.push(filters.orgao_gestor_id);
             paramIndex++;
         }

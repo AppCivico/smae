@@ -205,7 +205,7 @@ export class MonitoramentoMensalMfService {
         left join atividade ai on ai.id = i.atividade_id
         left join iniciativa ii on  ii.id = coalesce(ai.iniciativa_id, i.iniciativa_id)
         left join meta mi on mi.id = coalesce(ii.meta_id, i.meta_id)
-        WHERE mi.id IN (${Prisma.join(metas)})
+        WHERE mi.id IN (${metas.length ? Prisma.join(metas) : 0})
         order by all_sv.serie, all_sv.codigo
         `;
 

@@ -205,7 +205,7 @@ export class CompromissoOrigemHelper {
                     where: { id: atv.iniciativa_id, removido_em: null },
                     select: { meta_id: true },
                 });
-                await prisma.iniciativa.findFirstOrThrow({
+                await prisma.meta.findFirstOrThrow({
                     where: { id: ini.meta_id, removido_em: null },
                     select: { id: true },
                 });
