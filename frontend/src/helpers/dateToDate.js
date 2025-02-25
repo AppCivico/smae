@@ -4,7 +4,7 @@ export function hasTimeInDate(date) {
   }
 
   if (typeof date === 'string') {
-    const hasDateAndTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|([+-]\d{2}:\d{2}))?$/.test(date);
+    const hasDateAndTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,4})?(?:Z|[+-]\d{2}:\d{2})?$/.test(date);
     const isOnlyTime = /^\d{2}:\d{2}:\d{2}$/.test(date);
 
     return hasDateAndTime && !isOnlyTime;
