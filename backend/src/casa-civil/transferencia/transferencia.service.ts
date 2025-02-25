@@ -703,6 +703,7 @@ export class TransferenciaService {
                         400
                     );
 
+                // TODO: quando o front-end começar a enviar os params de pct_custeio e pct_investimento, implementar a validação dos valores de porcentagem.
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
@@ -710,7 +711,9 @@ export class TransferenciaService {
                         valor_total: dto.valor_total,
                         valor_contrapartida: dto.valor_contrapartida,
                         custeio: dto.custeio,
+                        pct_custeio: dto.pct_custeio,
                         investimento: dto.investimento,
+                        pct_investimento: dto.pct_investimento,
                         dotacao: dto.dotacao,
                         ordenador_despesa: dto.ordenador_despesa,
                         gestor_contrato: dto.gestor_contrato,
@@ -1255,7 +1258,9 @@ export class TransferenciaService {
                 valor_total: true,
                 valor_contrapartida: true,
                 custeio: true,
+                pct_custeio: true,
                 investimento: true,
+                pct_investimento: true,
                 emenda: true,
                 dotacao: true,
                 demanda: true,
@@ -1376,7 +1381,9 @@ export class TransferenciaService {
             valor_total: row.valor_total,
             valor_contrapartida: row.valor_contrapartida,
             custeio: row.custeio,
+            pct_custeio: row.pct_custeio,
             investimento: row.investimento,
+            pct_investimento: row.pct_investimento,
             emenda: row.emenda,
             dotacao: row.dotacao,
             demanda: row.demanda,

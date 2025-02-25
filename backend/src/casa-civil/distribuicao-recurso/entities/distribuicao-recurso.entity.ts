@@ -17,7 +17,9 @@ export class DistribuicaoRecursoDto {
     valor_total: Decimal;
     valor_contrapartida: Decimal;
     custeio: Decimal;
+    pct_custeio: number | null;
     investimento: Decimal;
+    pct_investimento: number | null;
     empenho: Boolean | null;
     @IsDateYMD({ nullable: true })
     data_empenho: string | null;

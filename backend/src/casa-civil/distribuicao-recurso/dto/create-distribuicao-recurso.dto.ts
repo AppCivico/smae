@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -87,6 +87,24 @@ export class CreateDistribuicaoRecursoDto {
     )
     @ValidateIf((object, value) => value !== null)
     custeio: number;
+
+    @IsOptional()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    pct_custeio?: number;
+
+    @IsOptional()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    pct_investimento?: number;
 
     @IsNumberString(
         {},
