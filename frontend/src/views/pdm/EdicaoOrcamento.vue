@@ -15,7 +15,6 @@ import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import months from '@/consts/months';
 import { permissaoEdicaoOrcamento as schema } from '@/consts/formSchemas';
-import obterLabelDoSchema from '@/helpers/form/obterLabelDoSchema';
 
 const router = useRouter();
 const route = useRoute();
@@ -89,36 +88,38 @@ iniciar();
           >
             <h4>{{ field.value.ano_referencia }}</h4>
 
+            <Field
+              :name="`orcamento_config[${idx}].id`"
+              type="hidden"
+            />
+
             <div
               v-for="campo in camposSelecaoConfig"
               :key="`${field.value.ano_referencia}--${campo}`"
               class="mb05"
             >
-              <Field
-                :name="`orcamento_config[${idx}].id`"
-                type="hidden"
-              />
-
-              <label>
+              <LabelFromYup
+                v-slot="{ label }"
+                :name="`orcamento_config[${idx}].${campo}`"
+                :classe-label="false"
+                :schema="schema.fields.orcamento_config.innerType"
+              >
                 <Field
-                  v-slot="{ value, handleChange }"
+                  v-slot="{ value, handleChange, field: fieldCheckbox }"
                   :name="`orcamento_config[${idx}].${campo}`"
                   type="checkbox"
                 >
                   <input
+                    :id="fieldCheckbox.name"
                     class="inputcheckbox"
                     type="checkbox"
                     :checked="value"
                     @input="ev => handleChange(ev.target.checked)"
                   >
                 </Field>
-                <span>
-                  {{ obterLabelDoSchema(
-                    schema.fields.orcamento_config.innerType,
-                    campo
-                  ) }}
-                </span>
-              </label>
+
+                <span>{{ label }}</span>
+              </labelfromyup>
             </div>
 
             <div class="f1 mt1 mb2">
