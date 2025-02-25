@@ -2792,7 +2792,9 @@ export const relatórioDeParlamentares = object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioDePrevisãoDeCustoPdM = object()
@@ -2821,7 +2823,9 @@ export const relatórioDePrevisãoDeCustoPdM = object()
         .label('Tags')
         .nullable(),
     }),
-    salvar_arquivo: boolean(),
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .required(),
   });
 
 export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
@@ -2850,7 +2854,9 @@ export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
         .label('Tags')
         .nullable(),
     }),
-    salvar_arquivo: boolean(),
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .required(),
   });
 
 export const relatórioDePrevisãoDeCustoPortfolio = object()
@@ -2929,7 +2935,6 @@ export const relatórioDeStatus = object({
   eh_publico: boolean()
     .label('Relatório Público')
     .required(),
-  salvar_arquivo: boolean(),
 });
 
 export const relatórioDeStatusObra = object({
@@ -2957,7 +2962,9 @@ export const relatórioDeStatusObra = object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioDePortfolio = object({
@@ -2991,7 +2998,6 @@ export const relatórioDePortfolio = object({
   eh_publico: boolean()
     .label('Relatório Público')
     .required(),
-  salvar_arquivo: boolean(),
 });
 
 export const relatórioDePortfolioObras = object({
@@ -3022,7 +3028,9 @@ export const relatórioDePortfolioObras = object({
       .nullable()
       .transform((v) => (!v ? null : v)),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioDePrevisãoDeCustoPortfolioObras = object()
@@ -3046,7 +3054,9 @@ export const relatórioDePrevisãoDeCustoPortfolioObras = object()
         .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
     }),
-    salvar_arquivo: boolean(),
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .required(),
   });
 
 export const relatórioDeTransferênciasVoluntárias = object({
@@ -3102,7 +3112,9 @@ export const relatórioDeTransferênciasVoluntárias = object({
       ])
       .required('Escolha o tipo'),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioDeTribunalDeContas = object({
@@ -3134,7 +3146,9 @@ export const relatórioDeTribunalDeContas = object({
       ])
       .required('Escolha o tipo'),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioAtividadesPendentes = object({
@@ -3160,7 +3174,9 @@ export const relatórioAtividadesPendentes = object({
       .label('Data de término previsto')
       .transform((v) => (v === '' ? null : v)),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioMensal = object({
@@ -3217,13 +3233,14 @@ export const relatórioMensalPS = object({
     listar_variaveis_regionalizadas: boolean()
       .label('Listar variáveis regionalizadas em todos os níveis'),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioOrçamentárioPdM = object({
   fonte: string()
     .required(),
-  salvar_arquivo: boolean(),
   parametros: object({
     pdm_id: string()
       .required('Escolha um PdM'),
@@ -3241,12 +3258,14 @@ export const relatórioOrçamentárioPdM = object({
       ])
       .required('Escolha o tipo'),
   }),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioOrçamentárioPlanosSetoriais = object({
   fonte: string()
     .required(),
-  salvar_arquivo: boolean(),
   parametros: object({
     pdm_id: string()
       .label('Plano Setorial')
@@ -3265,6 +3284,9 @@ export const relatórioOrçamentárioPlanosSetoriais = object({
       ])
       .required('Escolha o tipo'),
   }),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioOrçamentárioPortfolio = object({
@@ -3301,7 +3323,6 @@ export const relatórioOrçamentárioPortfolio = object({
 export const relatóriosOrçamentáriosPortfolioObras = object({
   fonte: string()
     .required(),
-  salvar_arquivo: boolean(),
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')
@@ -3324,6 +3345,9 @@ export const relatóriosOrçamentáriosPortfolioObras = object({
       ])
       .required(),
   }),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioSemestralOuAnual = object({
@@ -3352,7 +3376,9 @@ export const relatórioSemestralOuAnual = object({
       ])
       .required('Escolha o tipo'),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const representatividade = object()

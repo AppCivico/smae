@@ -24,12 +24,11 @@ const initialValues = {
     cargo: null,
     partido_id: null,
     eleicao_id: null,
+    eh_publico: null,
   },
-  salvar_arquivo: false,
 };
 
 const { lista } = storeToRefs(partidosStore);
-
 
 const {
   chamadasPendentes, erro, mandatoParaEdição, eleições, idsDasEleiçõesQueParlamentarConcorreu,
@@ -46,18 +45,12 @@ async function onSubmit(values) {
   const carga = values;
 
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe o status na listagem de relatórios';
     const r = await relatoriosStore.insert(carga);
 
     if (r === true) {
       alertStore.success(msg);
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -75,19 +68,36 @@ partidosStore.buscarTudo();
     <CheckClose />
   </div>
 
-  <Form v-slot="{ errors, isSubmitting, values }" :validation-schema="schema" :initial-values="initialValues"
-    @submit="onSubmit">
+  <Form
+    v-slot="{ errors, isSubmitting }"
+    :validation-schema="schema"
+    :initial-values="initialValues"
+    @submit="onSubmit"
+  >
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
-        <LabelFromYup name="partido_id" :schema="schema.fields.parametros" />
-        <Field name="parametros.partido_id" as="select" class="inputtext light mb1" :class="{
-      error: errors['parametros.partido_id'],
-      loading: partidosStore.chamadasPendentes.lista
-    }" :disabled="partidosStore.chamadasPendentes.lista">
+        <LabelFromYup
+          name="partido_id"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.partido_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['parametros.partido_id'],
+            loading: partidosStore.chamadasPendentes.lista
+          }"
+          :disabled="partidosStore.chamadasPendentes.lista"
+        >
           <option :value="null">
             Selecionar
           </option>
-          <option v-for="item in lista" :key="item.id" :value="item.id">
+          <option
+            v-for="item in lista"
+            :key="item.id"
+            :value="item.id"
+          >
             {{ item.sigla }} - {{ item.nome }}
           </option>
         </Field>
@@ -95,54 +105,97 @@ partidosStore.buscarTudo();
         <ErrorMessage name="parametros.partido_id" />
       </div>
       <div class="f1">
-        <LabelFromYup name="cargo" :schema="schema.fields.parametros" />
-        <Field name="parametros.cargo" as="select" class="inputtext light mb1"
-          :class="{ error: errors['parametros.cargo'] }">
+        <LabelFromYup
+          name="cargo"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.cargo"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ error: errors['parametros.cargo'] }"
+        >
           <option :value="null">
             Selecionar
           </option>
-          <option v-for="item in cargosDeParlamentar" :key="item.valor" :value="item.valor">
+          <option
+            v-for="item in cargosDeParlamentar"
+            :key="item.valor"
+            :value="item.valor"
+          >
             {{ item.nome }}
           </option>
         </Field>
 
         <ErrorMessage name="parametros.cargo" />
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ error: errors['eh_publico'] }"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+
+        <ErrorMessage name="eh_publico" />
+      </div>
     </div>
-    <div class="f1">
-      <LabelFromYup name="eleicao_id" :schema="schema.fields.parametros" />
-      <Field v-model.number="eleiçãoEscolhida" name="parametros.eleicao_id" as="select" class="inputtext light mb1"
-        :class="{ error: errors.eleicao_id, loading: chamadasPendentes.emFoco }">
+    <div class="f1 mb2">
+      <LabelFromYup
+        name="eleicao_id"
+        :schema="schema.fields.parametros"
+      />
+      <Field
+        v-model.number="eleiçãoEscolhida"
+        name="parametros.eleicao_id"
+        as="select"
+        class="inputtext light mb1"
+        :class="{ error: errors.eleicao_id, loading: chamadasPendentes.emFoco }"
+      >
         <option :value="null">
           Selecionar
         </option>
-        <option v-for="pleito in eleiçõesDisponíveisParaEdição" :key="pleito.id" :value="pleito.id"
-          :disabled="idsDasEleiçõesQueParlamentarConcorreu?.includes(pleito.id)">
+        <option
+          v-for="pleito in eleiçõesDisponíveisParaEdição"
+          :key="pleito.id"
+          :value="pleito.id"
+          :disabled="idsDasEleiçõesQueParlamentarConcorreu?.includes(pleito.id)"
+        >
           {{ pleito.ano }} - {{ pleito.tipo || pleito.id }}
         </option>
       </Field>
-      <ErrorMessage class="error-msg" name="parametros.eleicao_id" />
-    </div>
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field name="salvar_arquivo" type="checkbox" :value="true" class="inputcheckbox" />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div v-if="errors['salvar_arquivo']" class="error-msg">
-        {{ errors['salvar_arquivo'] }}
-      </div>
+      <ErrorMessage
+        class="error-msg"
+        name="parametros.eleicao_id"
+      />
     </div>
 
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
-      <button class="btn big" :disabled="isSubmitting || Object.keys(errors)?.length" :title="Object.keys(errors)?.length
-      ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-      : null">
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+      <button
+        class="btn big"
+        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
+      >
+        Gerar relatório
       </button>
       <hr class="ml2 f1">
     </div>

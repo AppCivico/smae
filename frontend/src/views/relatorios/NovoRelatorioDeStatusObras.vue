@@ -2,7 +2,7 @@
 import { relatórioDeStatusObra as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { useObrasStore } from '@/stores/obras.store.js';
+import { useObrasStore } from '@/stores/obras.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -18,31 +18,25 @@ const router = useRouter();
 const initialValues = {
   fonte: 'ObraStatus',
   parametros: {
-    tipo: 'MDO',
+    tipo_pdm: 'MDO',
     portfolio_id: null,
     projeto_id: null,
     periodo_inicio: null,
     periodo_fim: null,
   },
-  salvar_arquivo: false,
 };
 
 async function onSubmit(values) {
   const carga = values;
 
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
-    const msg = 'Dados salvos com sucesso!';
     const r = await relatoriosStore.insert(carga);
 
     if (r === true) {
       alertStore.success(msg);
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -140,6 +134,34 @@ obrasStore.buscarTudo();
           {{ errors['parametros.projeto_id'] }}
         </div>
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+        >
+          <option>
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div>
 
     <div class="flex g2 mb2">
@@ -187,26 +209,6 @@ obrasStore.buscarTudo();
       </div>
     </div>
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div
-        v-if="errors['salvar_arquivo']"
-        class="error-msg"
-      >
-        {{ errors['salvar_arquivo'] }}
-      </div>
-    </div>
-
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -218,7 +220,7 @@ obrasStore.buscarTudo();
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

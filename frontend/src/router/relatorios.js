@@ -2,6 +2,10 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
 import { defineAsyncComponent } from 'vue';
 
+const ListaDeRelatorios = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/ListaDeRelatorios.vue'),
+  loadingComponent: LoadingComponent,
+});
 const NovoMensal = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoMensal.vue'),
   loadingComponent: LoadingComponent,
@@ -38,84 +42,24 @@ const NovoSemestralOuAnual = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
   loadingComponent: LoadingComponent,
 });
-const RelatóriosDePortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDePortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosDePrevisãoDeCustoPdM = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPdM.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosDePrevisãoDeCustoPortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatoriosDeProjeto = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDeProjeto.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosDeStatus = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDeStatus.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatoriosMensais = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosMensais.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatoriosOrcamentariosPdM = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPdM.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosOrçamentáriosPortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatoriosSemestraisOuAnuais = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'),
-  loadingComponent: LoadingComponent,
-});
 const NovoRelatórioDePortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoRelatorioDePortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosDePortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDePortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
 const NovoRelatórioDeStatusObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoRelatorioDeStatusObras.vue'),
   loadingComponent: LoadingComponent,
 });
-const RelatóriosDeStatusObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDeStatusObras.vue'),
-  loadingComponent: LoadingComponent,
-});
 const NovoRelatórioDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
 const NovoRelatórioOrçamentárioPortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
-const RelatóriosOrçamentáriosPortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosDePrevisãoDeCustoPlanosSetoriais = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPlanosSetoriais.vue'),
-  loadingComponent: LoadingComponent,
-});
 const NovoRelatórioDePrevisãoDeCustoPlanosSetoriais = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPlanosSetoriais.vue'),
-  loadingComponent: LoadingComponent,
-});
-const RelatóriosOrçamentáriosPlanosSetoriais = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPlanosSetoriais.vue'),
   loadingComponent: LoadingComponent,
 });
 const NovoRelatórioOrçamentárioPlanosSetoriais = defineAsyncComponent({
@@ -189,7 +133,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosMensais',
-          component: RelatoriosMensais,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'MonitoramentoMensal',
+            rotaNovoNovoRelatorio: 'novoRelatórioMensal',
+          },
         },
         {
           component: NovoMensal,
@@ -208,7 +156,6 @@ export default {
       meta: {
         entidadeMãe: 'pdm',
         título: 'Relatórios Semestrais e Anuais',
-        fonteParaRelatório: 'Indicadores',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PDM',
       },
@@ -216,7 +163,11 @@ export default {
         {
           path: '',
           name: 'pdm.RelatóriosSemestraisOuAnuais',
-          component: RelatoriosSemestraisOuAnuais,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Indicadores',
+            rotaNovoNovoRelatorio: 'pdm.novoRelatórioSemestralOuAnual',
+          },
         },
         {
           component: NovoSemestralOuAnual,
@@ -242,7 +193,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosOrçamentáriosPdM',
-          component: RelatoriosOrcamentariosPdM,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Orcamento',
+            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPdM',
+          },
         },
         {
           component: NovoOrcamentarioPdM,
@@ -267,7 +222,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosOrçamentáriosPortfolio',
-          component: RelatóriosOrçamentáriosPortfolio,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'ProjetoOrcamento',
+            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPortfolio',
+          },
         },
         {
           component: NovoOrçamentárioPortfolio,
@@ -293,7 +252,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeParlamentares',
-          component: () => import('@/views/relatorios/RelatoriosDeParlamentares.vue'),
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Parlamentares',
+            rotaNovoNovoRelatorio: 'novoRelatórioDeParlamentares',
+          },
         },
         {
           component: () => import('@/views/relatorios/NovoRelatorioDeParlamentares.vue'),
@@ -318,9 +281,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeTransferênciasVoluntárias',
-          component: () => import(
-            '@/views/relatorios/RelatoriosDeTransferenciasVoluntarias.vue'
-          ),
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Transferencias',
+            rotaNovoNovoRelatorio: 'novoRelatórioDeTransferênciasVoluntárias',
+          },
         },
         {
           component: () => import(
@@ -347,7 +312,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeTribunalDeContas',
-          component: () => import('@/views/relatorios/RelatoriosDeTribunalDeContas.vue'),
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'TribunalDeContas',
+            rotaNovoNovoRelatorio: 'novoRelatórioDeTribunalDeContas',
+          },
         },
         {
           component: () => import('@/views/relatorios/NovoRelatorioDeTribunalDeContas.vue'),
@@ -372,7 +341,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeAtividadesPendentes',
-          component: () => import('@/views/relatorios/RelatoriosDeAtividadesPendentes.vue'),
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'CasaCivilAtvPendentes',
+            rotaNovoNovoRelatorio: 'novoRelatórioDeAtividadePendente',
+          },
         },
         {
           component: () => import('@/views/relatorios/NovoRelatorioDeAtividadesPendentes.vue'),
@@ -397,7 +370,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeProjeto',
-          component: RelatoriosDeProjeto,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Projeto',
+            rotaNovoNovoRelatorio: 'novoRelatórioDeProjeto',
+          },
         },
         {
           component: NovoRelatórioDeProjeto,
@@ -424,13 +401,18 @@ export default {
         {
           path: '',
           name: 'RelatóriosDePrevisãoDeCustoPdM',
-          component: RelatóriosDePrevisãoDeCustoPdM,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'PrevisaoCusto',
+            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPdM',
+          },
         },
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPdM',
           component: NovoRelatórioDePrevisãoDeCustoPdM,
           meta: {
+            rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPdM',
             título: 'Novo relatório de previsão de custo de PdM',
           },
         },
@@ -448,7 +430,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDePrevisãoDeCustoPortfolio',
-          component: RelatóriosDePrevisãoDeCustoPortfolio,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'ProjetoPrevisaoCusto',
+            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolio',
+          },
         },
         {
           path: 'novo',
@@ -474,7 +460,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDePortfolio',
-          component: RelatóriosDePortfolio,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Projetos',
+            rotaNovoNovoRelatorio: 'novoRelatórioDePortfolio',
+          },
         },
         {
           component: NovoRelatórioDePortfolio,
@@ -500,7 +490,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeStatus',
-          component: RelatóriosDeStatus,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'ProjetoStatus',
+            rotaNovoNovoRelatorio: 'novoRelatórioDeStatus',
+          },
         },
         {
           component: NovoRelatórioDeStatus,
@@ -526,7 +520,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDePortfolioObras',
-          component: RelatóriosDePortfolioObras,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Obras',
+            rotaNovoNovoRelatorio: 'novoRelatórioDePortfolioObras',
+          },
         },
         {
           component: NovoRelatórioDePortfolioObras,
@@ -551,7 +549,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDeStatusObras',
-          component: RelatóriosDeStatusObras,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'ObraStatus',
+            rotaNovoNovoRelatorio: 'NovoRelatórioDeStatusObras',
+          },
         },
         {
           component: NovoRelatórioDeStatusObras,
@@ -576,7 +578,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosDePrevisãoDeCustoPortfolioObras',
-          component: RelatóriosDePrevisãoDeCustoPortfolioObras,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'ObrasPrevisaoCusto',
+            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
+          },
         },
         {
           path: 'novo',
@@ -601,7 +607,11 @@ export default {
         {
           path: '',
           name: 'RelatóriosOrçamentáriosPortfolioObras',
-          component: RelatóriosOrçamentáriosPortfolioObras,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'ObrasOrcamento',
+            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPortfolioObras',
+          },
         },
         {
           component: NovoRelatórioOrçamentárioPortfolioObras,
@@ -616,35 +626,6 @@ export default {
     },
 
     // ******** Planos Setoriais ******** //
-    {
-      path: 'previsao-de-custo-planos-setoriais',
-      meta: {
-        entidadeMãe: 'planoSetorial',
-        título: 'Relatórios de previsão de custo de Planos Setoriais',
-        títuloParaMenu: undefined,
-        limitarÀsPermissões: [
-          'Reports.executar.PlanoSetorial',
-          'Reports.executar.ProgramaDeMetas',
-        ],
-      },
-      children: [
-        {
-          path: '',
-          name: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
-          component: RelatóriosDePrevisãoDeCustoPlanosSetoriais,
-        },
-        {
-          path: 'novo',
-          name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
-          component: NovoRelatórioDePrevisãoDeCustoPlanosSetoriais,
-          meta: {
-            título: 'Novo relatório de previsão de custo de Planos Setoriais',
-            rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPlanosSetoriais'],
-          },
-        },
-      ],
-    },
-
     {
       path: 'ps/mensal',
       component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisRaizPS.vue'),
@@ -661,7 +642,11 @@ export default {
         {
           path: '',
           name: 'planoSetorial.RelatóriosMensais',
-          component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisPS.vue'),
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'PSMonitoramentoMensal',
+            rotaNovoNovoRelatorio: 'planoSetorial.novoRelatórioMensal',
+          },
         },
         {
           component: () => import('@/views/relatorios/planosSetoriais/NovoMensalPS.vue'),
@@ -680,7 +665,6 @@ export default {
       path: 'ps/semestral-ou-anual',
       meta: {
         entidadeMãe: 'planoSetorial',
-        fonteParaRelatório: 'PSIndicadores',
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: undefined,
         tituloSingular: 'Plano Setorial',
@@ -694,16 +678,54 @@ export default {
         {
           path: '',
           name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
-          component: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'),
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'PSIndicadores',
+            rotaNovoNovoRelatorio: 'planoSetorial.novoRelatórioSemestralOuAnual',
+          },
         },
         {
-          component: () => NovoSemestralOuAnual,
           path: 'novo',
           name: 'planoSetorial.novoRelatórioSemestralOuAnual',
+          component: () => NovoSemestralOuAnual,
           meta: {
             título: 'Novo relatório semestral ou anual',
             rotaDeEscape: 'planoSetorial.RelatóriosSemestraisOuAnuais',
             rotasParaMigalhasDePão: ['planoSetorial.RelatóriosSemestraisOuAnuais'],
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'previsao-de-custo-planos-setoriais',
+      meta: {
+        entidadeMãe: 'planoSetorial',
+        título: 'Relatórios de previsão de custo de Planos Setoriais',
+        títuloParaMenu: undefined,
+        limitarÀsPermissões: [
+          'Reports.executar.PlanoSetorial',
+          'Reports.executar.ProgramaDeMetas',
+        ],
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'PSPrevisaoCusto',
+            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
+          },
+        },
+        {
+          path: 'novo',
+          name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
+          component: NovoRelatórioDePrevisãoDeCustoPlanosSetoriais,
+          meta: {
+            rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+            título: 'Novo relatório de previsão de custo de Planos Setoriais',
+            rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPlanosSetoriais'],
           },
         },
       ],
@@ -723,12 +745,16 @@ export default {
         {
           path: '',
           name: 'RelatóriosOrçamentáriosPlanosSetoriais',
-          component: RelatóriosOrçamentáriosPlanosSetoriais,
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'PSOrcamento',
+            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPlanosSetoriais',
+          },
         },
         {
-          component: NovoRelatórioOrçamentárioPlanosSetoriais,
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPlanosSetoriais',
+          component: NovoRelatórioOrçamentárioPlanosSetoriais,
           meta: {
             título: 'Novo relatório orçamentário de Planos Setoriais',
             rotaDeEscape: 'RelatóriosOrçamentáriosPlanosSetoriais',
