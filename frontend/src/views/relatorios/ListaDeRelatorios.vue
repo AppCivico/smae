@@ -77,10 +77,6 @@ watch(fonte, (novaFonte, antigaFonte) => {
   }
 }, { immediate: true });
 
-watch(route, () => {
-  console.log(route.meta.título);
-}, { immediate: true });
-
 onMounted(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
