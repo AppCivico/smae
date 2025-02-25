@@ -689,9 +689,6 @@ export class TransferenciaService {
         const agora = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Valor do repasse não pode ser 0
-                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser 0.', 400);
-
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
                     throw new HttpException(
