@@ -15,6 +15,7 @@ import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+import { computed } from 'vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -34,6 +35,30 @@ const { activePdm, singleMeta, relacionadosMeta } = storeToRefs(MetasStore);
 const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
 const EquipesStore = useEquipesStore();
+
+const orgaosEquipeMeta = computed(() => {
+  if (singleMeta.value?.ps_ponto_focal?.equipes.length === 0) {
+    return null;
+  }
+  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleMeta.value?.ps_ponto_focal?.equipes);
+  const orgaoMeta = equipesSelecionadasMeta.reduce((amount, item) => {
+    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    return amount;
+  }, []);
+  return combinadorDeListas(orgaoMeta);
+});
+
+const orgaosEquipeMetaMonitoramento = computed(() => {
+  if (singleMeta.value?.ps_tecnico_cp?.equipes.length === 0) {
+    return null;
+  }
+  const equipesSelecionadasMetaMonitoramento = EquipesStore.equipesPorIds(singleMeta.value?.ps_tecnico_cp?.equipes);
+  const orgaoMetaMonitoramento = equipesSelecionadasMetaMonitoramento.reduce((amount, item) => {
+    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    return amount;
+  }, []);
+  return combinadorDeListas(orgaoMetaMonitoramento);
+});
 
 async function iniciar() {
   const promessas = [];
@@ -192,39 +217,59 @@ iniciar();
             </div>
           </div>
         </div>
-
         <div
           v-else
-          class="flex g2 mb2"
         >
-          <div
-            v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
-            class="mr2 f1"
-          >
-            <div class="t12 uc w700 mb05 tamarelo">
-              Equipes Responsáveis
+          <div class="flex g2 mb2">
+            <div class="mr2 f1">
+              <div class="t12 uc w700 mb05 tamarelo">
+                Órgãos Responsáveis
+              </div>
+              <div class="t13">            
+                {{orgaosEquipeMeta}}
+              </div>
             </div>
-            <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes),
-                false,
-                'titulo',
-              ) }}
+            <div class="mr2 f1">
+              <div class="t12 uc w700 mb05 tamarelo">
+                Órgãos Monitoramento
+              </div>
+              <div class="t13">            
+                {{orgaosEquipeMetaMonitoramento}}
+              </div>
             </div>
           </div>
           <div
-            v-if="EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes).length"
-            class="mr2 f1"
+            class="flex g2 mb2"
           >
-            <div class="t12 uc w700 mb05 tamarelo">
-              Equipe técnica de monitoramento
+            <div
+              v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
+              class="mr2 f1"
+            >
+              <div class="t12 uc w700 mb05 tamarelo">
+                Equipes Responsáveis
+              </div>
+              <div class="t13">
+                {{ combinadorDeListas(
+                  EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes),
+                  false,
+                  'titulo',
+                ) }}
+              </div>
             </div>
-            <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes),
-                false,
-                'titulo',
-              ) }}
+            <div
+              v-if="EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes).length"
+              class="mr2 f1"
+            >
+              <div class="t12 uc w700 mb05 tamarelo">
+                Equipe técnica de monitoramento
+              </div>
+              <div class="t13">
+                {{ combinadorDeListas(
+                  EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes),
+                  false,
+                  'titulo',
+                ) }}
+              </div>
             </div>
           </div>
         </div>
@@ -359,6 +404,20 @@ iniciar();
                         {{ ini.codigo }}
                       </div>
                     </div>
+                    <div class="mr1 f0">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Órgãos Responsáveis
+                      </div>
+                      <div class="t13">
+                        {{
+                          combinadorDeListas(
+                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
+                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                              return amount;
+                            }, []))
+                        }}     
+                      </div>
+                    </div>
                     <div class="mr1 f1">
                       <div class="t12 uc w700 mb05 tc300">
                         Equipe do órgão responsável
@@ -372,6 +431,20 @@ iniciar();
                                 false,
                                 'titulo',
                               ) }}
+                      </div>
+                    </div>
+                    <div class="f1">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Órgãos Monitoramento
+                      </div>
+                      <div class="t13">
+                        {{
+                          combinadorDeListas(
+                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                              return amount;
+                            }, []))
+                        }}     
                       </div>
                     </div>
                     <div class="f1">

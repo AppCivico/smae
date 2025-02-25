@@ -14,6 +14,7 @@ import {
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+import { computed } from 'vue'
 
 const EquipesStore = useEquipesStore();
 const alertStore = useAlertStore();
@@ -38,6 +39,18 @@ const {
 } = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
 const { Atividades } = storeToRefs(AtividadesStore);
+
+const orgaosEquipeIniciativa = computed(() => {
+  if (singleIniciativa.value?.ps_ponto_focal?.equipes.length === 0) {
+    return null;
+  }
+  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleIniciativa.value?.ps_ponto_focal?.equipes);
+  const orgaoIniciativa = equipesSelecionadasMeta.reduce((amount, item) => {
+    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    return amount;
+  }, []);
+  return combinadorDeListas(orgaoIniciativa);
+});
 
 async function iniciar() {
   const promessas = [];
@@ -128,7 +141,20 @@ iniciar();
             {{ singleIniciativa.codigo }}
           </div>
         </div>
-
+        <div class="mr1 f0">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgãos Responsáveis
+          </div>
+          <div class="t13">
+            {{
+              combinadorDeListas(
+                orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).reduce((amount, item) => {
+                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                  return amount;
+                }, []))
+            }}     
+          </div>
+        </div>
         <div
           v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
           class="mr2"
@@ -144,13 +170,26 @@ iniciar();
             ) }}
           </div>
         </div>
-
+        <div class="mr1 f0">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgãos Monitoramento
+          </div>
+          <div class="t13">
+            {{
+              combinadorDeListas(
+                orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                  return amount;
+                }, []))
+            }}     
+          </div>
+        </div>
         <div
           v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
           class="mr2"
         >
           <div class="t12 uc w700 mb05 tamarelo">
-            Equipe técnica do administrador do plano
+            Equipe técnica de monitoramento
           </div>
           <div class="t13">
             {{ combinadorDeListas(
@@ -281,6 +320,20 @@ iniciar();
                       {{ ini.codigo }}
                     </div>
                   </div>
+                  <div class="mr1 f0">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Órgãos Responsáveis
+                    </div>
+                    <div class="t13">
+                      {{
+                        combinadorDeListas(
+                          orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
+                            amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                            return amount;
+                          }, []))
+                      }}     
+                    </div>
+                  </div>                  
                   <div class="mr1 f1">
                     <div class="t12 uc w700 mb05 tc300">
                       Órgão participante

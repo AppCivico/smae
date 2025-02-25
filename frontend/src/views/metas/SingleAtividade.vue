@@ -96,6 +96,20 @@ iniciar();
             {{ singleAtividade.codigo }}
           </div>
         </div>
+        <div class="mr1 f0">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgãos Responsáveis
+          </div>
+          <div class="t13">
+            {{
+              combinadorDeListas(
+                orgaoAtividade = EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).reduce((amount, item) => {
+                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                  return amount;
+                }, []))
+            }}     
+          </div>
+        </div>
         <div
           v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
           class="mr2"
@@ -111,6 +125,20 @@ iniciar();
             ) }}
           </div>
         </div>
+        <div class="mr1 f0">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgãos Monitoramento
+          </div>
+          <div class="t13">
+            {{
+              combinadorDeListas(
+                orgaoAtividade = EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                  return amount;
+                }, []))
+            }}     
+          </div>
+        </div>        
         <div
           v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
           class="mr2"
