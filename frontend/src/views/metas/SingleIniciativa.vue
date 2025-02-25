@@ -306,8 +306,10 @@ iniciar();
                 </button>
               </div>
               <!-- Fim do cabeçalho -->
+              <!-- Órgãos -->
               <div class="flex g2 mb2">
-                <div class="mr1 f0">
+                <!-- Responsável -->
+                <div class="mr2 f1">
                   <div class="t12 uc w700 mb05 tc300">
                     Órgãos Responsáveis
                   </div>
@@ -320,24 +322,61 @@ iniciar();
                         }, []))
                     }}     
                   </div>
-                </div>                  
-                <div class="mr1 f1">
+                </div>           
+                <!-- Monitoramento -->     
+                <div class="mr2 f1">
                   <div class="t12 uc w700 mb05 tc300">
-                    Órgão participante
+                    Órgão monitoramento
                   </div>
                   <div class="t13">
-                    {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
+                    {{
+                      combinadorDeListas(
+                        orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                          amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                          return amount;
+                        }, []))
+                    }}     
                   </div>
                 </div>
-                <div class="f1">
-                  <div class="t12 uc w700 mb05 tc300">
-                    Responsável na coordenadoria de planejamento
-                  </div>
-                  <div class="t13">
-                    {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
-                  </div>
-                </div>
+                <!-- Fim órgão técnico responsável -->
               </div>
+              <!-- Fim dos órgãos -->
+                <!-- Equipes -->
+                <div class="flex g2 mb2">
+                  <!-- Responsável -->
+                  <div class="mr2 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Equipe do órgão responsável
+                    </div>
+                    <div class="t13">
+                      {{
+                        ini.ps_ponto_focal.equipes.length === 0
+                          ? '-' :
+                            combinadorDeListas(
+                              EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
+                              false,
+                              'titulo',
+                            ) }}
+                    </div>
+                  </div>
+                  <!-- Técnica -->
+                  <div class="mr2 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Equipe técnica monitoramento
+                    </div>
+                    <div class="t13">
+                      {{
+                        ini.ps_tecnico_cp.equipes.length === 0
+                          ? '-' :
+                            combinadorDeListas(
+                              EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
+                              false,
+                              'titulo',
+                            ) }}
+                    </div>
+                  </div>
+                </div>
+                <!-- Fim de equipes -->
             </header>
           </div>
         </template>
