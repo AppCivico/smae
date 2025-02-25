@@ -136,7 +136,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'MonitoramentoMensal',
-            rotaNovoNovoRelatorio: 'novoRelatórioMensal',
+            rotaNovoRelatorio: 'novoRelatórioMensal',
           },
         },
         {
@@ -166,7 +166,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Indicadores',
-            rotaNovoNovoRelatorio: 'pdm.novoRelatórioSemestralOuAnual',
+            rotaNovoRelatorio: 'pdm.novoRelatórioSemestralOuAnual',
           },
         },
         {
@@ -196,7 +196,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Orcamento',
-            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPdM',
+            rotaNovoRelatorio: 'novoRelatórioOrçamentárioPdM',
           },
         },
         {
@@ -225,7 +225,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'ProjetoOrcamento',
-            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPortfolio',
+            rotaNovoRelatorio: 'novoRelatórioOrçamentárioPortfolio',
           },
         },
         {
@@ -255,7 +255,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Parlamentares',
-            rotaNovoNovoRelatorio: 'novoRelatórioDeParlamentares',
+            rotaNovoRelatorio: 'novoRelatórioDeParlamentares',
           },
         },
         {
@@ -284,7 +284,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Transferencias',
-            rotaNovoNovoRelatorio: 'novoRelatórioDeTransferênciasVoluntárias',
+            rotaNovoRelatorio: 'novoRelatórioDeTransferênciasVoluntárias',
           },
         },
         {
@@ -315,7 +315,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'TribunalDeContas',
-            rotaNovoNovoRelatorio: 'novoRelatórioDeTribunalDeContas',
+            rotaNovoRelatorio: 'novoRelatórioDeTribunalDeContas',
           },
         },
         {
@@ -344,7 +344,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'CasaCivilAtvPendentes',
-            rotaNovoNovoRelatorio: 'novoRelatórioDeAtividadePendente',
+            rotaNovoRelatorio: 'novoRelatórioDeAtividadePendente',
           },
         },
         {
@@ -373,7 +373,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Projeto',
-            rotaNovoNovoRelatorio: 'novoRelatórioDeProjeto',
+            rotaNovoRelatorio: 'novoRelatórioDeProjeto',
           },
         },
         {
@@ -404,7 +404,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'PrevisaoCusto',
-            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPdM',
+            rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPdM',
           },
         },
         {
@@ -433,7 +433,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'ProjetoPrevisaoCusto',
-            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolio',
+            rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolio',
           },
         },
         {
@@ -463,7 +463,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Projetos',
-            rotaNovoNovoRelatorio: 'novoRelatórioDePortfolio',
+            rotaNovoRelatorio: 'novoRelatórioDePortfolio',
           },
         },
         {
@@ -493,7 +493,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'ProjetoStatus',
-            rotaNovoNovoRelatorio: 'novoRelatórioDeStatus',
+            rotaNovoRelatorio: 'novoRelatórioDeStatus',
           },
         },
         {
@@ -523,7 +523,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'Obras',
-            rotaNovoNovoRelatorio: 'novoRelatórioDePortfolioObras',
+            rotaNovoRelatorio: 'novoRelatórioDePortfolioObras',
           },
         },
         {
@@ -552,7 +552,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'ObraStatus',
-            rotaNovoNovoRelatorio: 'NovoRelatórioDeStatusObras',
+            rotaNovoRelatorio: 'NovoRelatórioDeStatusObras',
           },
         },
         {
@@ -581,7 +581,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'ObrasPrevisaoCusto',
-            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
+            rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
           },
         },
         {
@@ -610,7 +610,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'ObrasOrcamento',
-            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPortfolioObras',
+            rotaNovoRelatorio: 'novoRelatórioOrçamentárioPortfolioObras',
           },
         },
         {
@@ -645,7 +645,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'PSMonitoramentoMensal',
-            rotaNovoNovoRelatorio: 'planoSetorial.novoRelatórioMensal',
+            rotaNovoRelatorio: 'planoSetorial.novoRelatórioMensal',
           },
         },
         {
@@ -681,7 +681,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'PSIndicadores',
-            rotaNovoNovoRelatorio: 'planoSetorial.novoRelatórioSemestralOuAnual',
+            rotaNovoRelatorio: 'planoSetorial.novoRelatórioSemestralOuAnual',
           },
         },
         {
@@ -715,7 +715,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'PSPrevisaoCusto',
-            rotaNovoNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
+            rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
           },
         },
         {
@@ -748,7 +748,7 @@ export default {
           component: ListaDeRelatorios,
           meta: {
             fonteDoRelatorio: 'PSOrcamento',
-            rotaNovoNovoRelatorio: 'novoRelatórioOrçamentárioPlanosSetoriais',
+            rotaNovoRelatorio: 'novoRelatórioOrçamentárioPlanosSetoriais',
           },
         },
         {
