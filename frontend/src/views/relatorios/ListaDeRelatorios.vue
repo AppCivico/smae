@@ -97,7 +97,7 @@ onUnmounted(() => {
     <TítuloDePágina />
     <router-link
       v-if="temPermissãoPara('Reports.executar.')"
-      :to="{ name: $route.meta.rotaNovoNovoRelatorio }"
+      :to="{ name: $route.meta.rotaNovoRelatorio }"
       class="btn big ml2"
     >
       Novo relatório
