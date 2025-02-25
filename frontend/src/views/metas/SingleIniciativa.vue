@@ -15,6 +15,7 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 import { computed } from 'vue'
+import { computed } from 'vue'
 
 const EquipesStore = useEquipesStore();
 const alertStore = useAlertStore();
@@ -39,6 +40,18 @@ const {
 } = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
 const { Atividades } = storeToRefs(AtividadesStore);
+
+const orgaosEquipeIniciativa = computed(() => {
+  if (singleIniciativa.value?.ps_ponto_focal?.equipes.length === 0) {
+    return null;
+  }
+  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleIniciativa.value?.ps_ponto_focal?.equipes);
+  const orgaoIniciativa = equipesSelecionadasMeta.reduce((amount, item) => {
+    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    return amount;
+  }, []);
+  return combinadorDeListas(orgaoIniciativa);
+});
 
 const orgaosEquipeIniciativa = computed(() => {
   if (singleIniciativa.value?.ps_ponto_focal?.equipes.length === 0) {
@@ -148,10 +161,34 @@ iniciar();
           </div>
         </div>
         <div class="mr2 f1">
+      <div class="flex g2 mb2">
+        <div class="mr2 f1">
           <div class="t12 uc w700 mb05 tamarelo">
+            Órgãos Responsáveis
+          </div>
+          <div class="t13">
+            {{
+              combinadorDeListas(
+                orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).reduce((amount, item) => {
+                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                  return amount;
+                }, []))
+            }}     
+          </div>
+        </div>
+        <div class="mr2 f1">
+          <div class="t12 uc w700 mb05 tamarelo">
+            Órgãos Monitoramento
             Órgãos Monitoramento
           </div>
           <div class="t13">
+            {{
+              combinadorDeListas(
+                orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                  return amount;
+                }, []))
+            }}     
             {{
               combinadorDeListas(
                 orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).reduce((amount, item) => {
@@ -163,8 +200,11 @@ iniciar();
         </div>
       </div>
       <div class="flex g2 mb2">
+      </div>
+      <div class="flex g2 mb2">
         <div
           v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
+          class="mr2 f1"
           class="mr2 f1"
         >
           <div class="t12 uc w700 mb05 tamarelo">
@@ -182,8 +222,10 @@ iniciar();
         <div
           v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
           class="mr2 f1"
+          class="mr2 f1"
         >
           <div class="t12 uc w700 mb05 tamarelo">
+            Equipe técnica de monitoramento
             Equipe técnica de monitoramento
           </div>
           <div class="t13">
@@ -259,6 +301,7 @@ iniciar();
             class="board_variavel mb2"
           >
             <header class="p1 ge mb1">
+            <header class="p1 ge mb1">
               <div class="flex center g2 mb1">
                 <SmaeLink
                   :to="`${parentlink}/atividades/${ini.id}`"
@@ -278,6 +321,7 @@ iniciar();
                   class="f1 mt1"
                 >
                   <h2 class="mb1">
+                    {{ ini.codigo }} - {{ ini.titulo }}
                     {{ ini.codigo }} - {{ ini.titulo }}
                   </h2>
                 </SmaeLink>

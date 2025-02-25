@@ -3464,7 +3464,7 @@ model Relatorio {
     arquivo              Arquivo?               @relation(fields: [arquivo_id], references: [id])
     pdm                  Pdm?                   @relation(fields: [pdm_id], references: [id])
     ProjetoRelatorioFila ProjetoRelatorioFila[]
-    processamento        RelatorioFila[]
+    processamento        RelatorioFila?
 
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])

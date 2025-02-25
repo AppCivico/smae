@@ -15,12 +15,11 @@ export class RelatorioDto {
     arquivo: string | null;
     parametros: any;
     progresso: number | null;
-    err_msg: string | null;
     // TODO: Remover isso aqui e mandar só enum de visibilidade.
     eh_publico: boolean;
     @IsEnum(RelatorioVisibilidade)
     visibilidade: RelatorioVisibilidade;
-    processamento: any;
+    processamento: RelatorioProcessamentoDto | null;
     @ApiProperty({
         type: RelatorioParamDto,
         isArray: true,
@@ -28,4 +27,11 @@ export class RelatorioDto {
     })
     parametros_processados: RelatorioParamDto[] | null;
     pdm_id: number | null;
+}
+
+export class RelatorioProcessamentoDto {
+    id: number;
+    congelado_em: Date | null;
+    executado_em: Date | null;
+    err_msg: string | null;
 }
