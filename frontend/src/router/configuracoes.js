@@ -14,6 +14,8 @@ import {
   ListPdM,
 } from '@/views/pdm';
 
+import EdicaoOrcamento from '@/views/pdm/EdicaoOrcamento.vue';
+
 import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
 import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
@@ -996,8 +998,30 @@ export default [
       },
       {
         path: ':pdm_id',
-        name: 'editarPdm',
-        component: AddEditPdM,
+        meta: {
+          limitarÀsPermissões: [
+            'CadastroPdm.editar',
+          ],
+        },
+        children: [
+          {
+            path: '',
+            name: 'editarPdm',
+            component: AddEditPdM,
+          },
+          {
+            path: 'permissoes-orcamento',
+            name: 'pdm.permissoes-orcamento',
+            component: EdicaoOrcamento,
+            meta: {
+              título: 'Permissões para edição do orçamento',
+              rotaDeEscape: 'gerenciarPdm',
+              rotasParaMigalhasDePão: [
+                'gerenciarPdm',
+              ],
+            },
+          },
+        ],
       },
       {
         path: ':pdm_id/arquivos/novo',
