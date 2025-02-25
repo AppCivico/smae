@@ -27,7 +27,7 @@ const route = useRoute();
 
 const título = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
-  : route?.meta?.título;
+  : computed(() => route.meta.título);
 
 </script>
 <template>
