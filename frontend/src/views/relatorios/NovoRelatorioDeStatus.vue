@@ -168,13 +168,12 @@ projetosStore.buscarTudo();
           </option>
         </Field>
         <div
-          v-if="errors['parametros.eh_publico']"
+          v-if="errors['eh_publico']"
           class="error-msg"
         >
-          {{ errors['parametros.eh_publico'] }}
+          {{ errors['eh_publico'] }}
         </div>
       </div>
-
     </div>
 
     <div class="flex g2 mb2">
