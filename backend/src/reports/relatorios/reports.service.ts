@@ -35,7 +35,7 @@ import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-conta
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { RelatorioDto } from './entities/report.entity';
+import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
 
@@ -388,7 +388,9 @@ export class ReportsService {
                 progresso: true,
                 processamento: {
                     select: {
+                        id: true,
                         congelado_em: true,
+                        executado_em: true,
                         err_msg: true,
                     },
                 },
@@ -409,7 +411,6 @@ export class ReportsService {
         return {
             linhas: rows.map((r) => {
                 const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
-                const haErro = r.processamento?.map((p) => p.err_msg).join(' ');
 
                 const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
 
@@ -417,16 +418,18 @@ export class ReportsService {
                     ...r,
                     progresso: progresso,
                     eh_publico: eh_publico,
-                    err_msg: r.arquivo_id !== null ? haErro : null,
                     parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: r.arquivo_id
                         ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
                         : null,
                     processamento: r.processamento
-                        ? {
-                              ...r.processamento[0],
-                          }
+                        ? ({
+                              id: r.processamento.id,
+                              congelado_em: r.processamento.congelado_em,
+                              executado_em: r.processamento.executado_em,
+                              err_msg: r.processamento.err_msg,
+                          } satisfies RelatorioProcessamentoDto)
                         : null,
                 } satisfies RelatorioDto;
             }),
